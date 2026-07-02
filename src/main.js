@@ -4,6 +4,7 @@ import { pickDistractors } from "./distractors.js";
 import { killPoints } from "./scoring.js";
 import { sfx } from "./sfx.js";
 import { drawZombie } from "./zombie.js";
+import { recordAnswer, levelMastery } from "./mastery.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -19,6 +20,11 @@ sfx.enabled = store.get("sfx", true);
 let pool = [];            // current merged word pool
 let learnDeck = null;     // override deck for "review misses"
 let lastMode = "round";
+let masteryStore = store.get("mastery", {});
+function noteAnswer(hanzi, correct){
+  recordAnswer(masteryStore, hanzi, correct);
+  store.set("mastery", masteryStore);
+}
 
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
@@ -49,6 +55,7 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
   if(t==="scope"){ renderScope(); show("scope"); }
   else if(t==="scope-learn"){ renderScope(); show("scope"); }
   else if(t==="scores"){ renderScores(); show("scores"); }
+  else if(t==="progress"){ renderProgress(); show("progress"); }
   else { if(t==="home"){ stopBattle(); } show(t); }
 }));
 
@@ -121,6 +128,7 @@ $("#fc-card").onclick = ()=>{ fc.flipped = !fc.flipped; renderCard(); };
 $("#fc-spk").onclick = e=>{ e.stopPropagation(); const w=fc.deck[fc.i]; if(w) speak(w.h); };
 function nextCard(keep){
   const w = fc.deck[fc.i];
+  noteAnswer(w.h, !keep);        // "know it" (keep=false) = correct; "still learning" = incorrect
   if(keep) fc.deck.push(w);      // still learning → resurfaces at the end
   else fc.done++;
   fc.i++; fc.flipped = false;
@@ -233,6 +241,7 @@ function answer(btn, o){
   const z = B.zombie;
   if(!z || z.state!=="walk" || B.locked) return;
   B.attempts++;
+  noteAnswer(z.w.h, o.h === z.w.h);
   if(o.h === z.w.h){
     B.correct++; B.combo++;
     // farther kill = bigger bonus (replaces the old time bonus)
@@ -271,7 +280,7 @@ function killZombie(z){
 }
 function bite(timedOut){
   const z = B.zombie;
-  if(timedOut){ B.attempts++; B.combo = 0; pushMiss(z.w); revealCorrect(z.w); lockOptions(); }
+  if(timedOut){ B.attempts++; B.combo = 0; noteAnswer(z.w.h, false); pushMiss(z.w); revealCorrect(z.w); lockOptions(); }
   sfx.bite();
   B.lives--; B.flash = 1;
   B.resolved++;
@@ -393,6 +402,21 @@ function renderScores(){
     const row = document.createElement("div");
     row.className = "scorerow";
     row.innerHTML = `<span>${k}</span><span><b>${best[k].score}</b> <span style="color:var(--muted);font-size:12px">${best[k].date}</span></span>`;
+    box.appendChild(row);
+  }
+}
+
+/* ============================== progress ============================== */
+function renderProgress(){
+  const box = $("#progresslist");
+  box.innerHTML = "";
+  for(let n=1;n<=6;n++){
+    const words = D.levels[String(n)];
+    const m = levelMastery(masteryStore, words);
+    const row = document.createElement("div");
+    row.className = "scorerow";
+    row.innerHTML = `<span>HSK${n}</span>
+      <span><b>${m.pct}%</b> mastered · ${m.seen.toLocaleString()}/${words.length.toLocaleString()} seen</span>`;
     box.appendChild(row);
   }
 }

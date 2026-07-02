@@ -168,6 +168,28 @@
     ctx3.restore();
   }
 
+  // src/mastery.js
+  function recordAnswer(store2, hanzi, correct) {
+    const w = store2[hanzi] || (store2[hanzi] = { s: 0, k: 0, r: 0 });
+    w.s++;
+    if (correct) {
+      w.k++;
+      w.r++;
+    } else {
+      w.r = 0;
+    }
+  }
+  var wordStreak = (store2, hanzi) => store2[hanzi] ? store2[hanzi].r : 0;
+  var isMastered = (store2, hanzi) => wordStreak(store2, hanzi) >= 3;
+  function levelMastery(store2, levelWords) {
+    let seen = 0, mastered = 0;
+    for (const w of levelWords) {
+      if (store2[w.h]) seen++;
+      if (isMastered(store2, w.h)) mastered++;
+    }
+    return { seen, mastered, pct: levelWords.length ? Math.round(100 * mastered / levelWords.length) : 0 };
+  }
+
   // src/main.js
   var D = window.HSK_DATA;
   var $ = (s) => document.querySelector(s);
@@ -196,6 +218,11 @@
   var pool = [];
   var learnDeck = null;
   var lastMode = "round";
+  var masteryStore = store.get("mastery", {});
+  function noteAnswer(hanzi, correct) {
+    recordAnswer(masteryStore, hanzi, correct);
+    store.set("mastery", masteryStore);
+  }
   function shuffle2(a) {
     for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -237,6 +264,9 @@
     } else if (t === "scores") {
       renderScores();
       show("scores");
+    } else if (t === "progress") {
+      renderProgress();
+      show("progress");
     } else {
       if (t === "home") {
         stopBattle();
@@ -338,6 +368,7 @@
   };
   function nextCard(keep) {
     const w = fc.deck[fc.i];
+    noteAnswer(w.h, !keep);
     if (keep) fc.deck.push(w);
     else fc.done++;
     fc.i++;
@@ -483,6 +514,7 @@
     const z = B.zombie;
     if (!z || z.state !== "walk" || B.locked) return;
     B.attempts++;
+    noteAnswer(z.w.h, o.h === z.w.h);
     if (o.h === z.w.h) {
       B.correct++;
       B.combo++;
@@ -523,6 +555,7 @@
     if (timedOut) {
       B.attempts++;
       B.combo = 0;
+      noteAnswer(z.w.h, false);
       pushMiss(z.w);
       revealCorrect(z.w);
       lockOptions();
@@ -681,6 +714,19 @@
       const row = document.createElement("div");
       row.className = "scorerow";
       row.innerHTML = `<span>${k}</span><span><b>${best[k].score}</b> <span style="color:var(--muted);font-size:12px">${best[k].date}</span></span>`;
+      box.appendChild(row);
+    }
+  }
+  function renderProgress() {
+    const box = $("#progresslist");
+    box.innerHTML = "";
+    for (let n = 1; n <= 6; n++) {
+      const words = D.levels[String(n)];
+      const m = levelMastery(masteryStore, words);
+      const row = document.createElement("div");
+      row.className = "scorerow";
+      row.innerHTML = `<span>HSK${n}</span>
+      <span><b>${m.pct}%</b> mastered \xB7 ${m.seen.toLocaleString()}/${words.length.toLocaleString()} seen</span>`;
       box.appendChild(row);
     }
   }
