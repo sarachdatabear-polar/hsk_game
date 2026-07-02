@@ -2,6 +2,7 @@
 import { buildPool, coveragePct, scopeKey, meaning as meaningOf } from "./pool.js";
 import { pickDistractors } from "./distractors.js";
 import { killPoints } from "./scoring.js";
+import { sfx } from "./sfx.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -13,6 +14,7 @@ const store = {
 const scope = Object.assign({levels:[3], core:false, newOnly:false, topN:0, lang:"both"},
                             store.get("scope", {}));
 let settings = Object.assign({autoSpeak:true}, store.get("settings", {}));
+sfx.enabled = store.get("sfx", true);
 let pool = [];            // current merged word pool
 let learnDeck = null;     // override deck for "review misses"
 let lastMode = "round";
@@ -181,6 +183,7 @@ function startBattle(mode){
 }
 function stopBattle(){ B.on = false; if(window.speechSynthesis) speechSynthesis.cancel(); }
 $("#hud-quit").onclick = ()=>{ endBattle(true); };
+$("#hud-sfx").onclick = ()=>{ sfx.enabled = !sfx.enabled; store.set("sfx", sfx.enabled); $("#hud-sfx").textContent = sfx.enabled ? "🔔" : "🔕"; };
 $("#hud-audio").onclick = ()=>{
   settings.autoSpeak = !settings.autoSpeak;
   store.set("settings", settings);
@@ -191,6 +194,7 @@ function updateHud(){
   $("#hud-score").textContent = B.score;
   $("#hud-combo").textContent = B.combo>=2? "×"+B.combo+" 🔥":"";
   $("#hud-left").textContent = B.mode==="round"? (B.wordsTotal-B.resolved)+" left":"∞";
+  $("#hud-sfx").textContent = sfx.enabled ? "🔔" : "🔕";
   $("#hud-audio").textContent = settings.autoSpeak? "🔊":"🔇";
 }
 function pushMiss(w){ if(!B.missSet.has(w.h)){ B.missSet.add(w.h); B.misses.push(w); } }
@@ -233,6 +237,7 @@ function answer(btn, o){
     // farther kill = bigger bonus (replaces the old time bonus)
     const distFrac = Math.max(0, z.x - BEAR_X - 34) / (B.w - BEAR_X - 34);
     B.score += killPoints(B.combo, distFrac);
+    sfx.kill(); if (B.combo >= 3) sfx.combo(B.combo);
     btn.classList.add("good");
     lockOptions();
     B.proj = {x:BEAR_X+16, y:B.h-GROUND-30};   // honey pot flies at the zombie
@@ -240,6 +245,7 @@ function answer(btn, o){
   }else{
     // ONE attempt per word: wrong tap = the zombie charges. No retries.
     B.combo = 0;
+    sfx.wrong();
     btn.classList.add("bad");
     lockOptions();
     revealCorrect(z.w);
@@ -263,6 +269,7 @@ function killZombie(z){
 function bite(timedOut){
   const z = B.zombie;
   if(timedOut){ B.attempts++; B.combo = 0; pushMiss(z.w); revealCorrect(z.w); lockOptions(); }
+  sfx.bite();
   B.lives--; B.flash = 1;
   B.resolved++;
   scheduleNext(1500);   // long enough to read the revealed answer

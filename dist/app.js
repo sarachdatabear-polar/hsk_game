@@ -73,6 +73,47 @@
     return Math.round((10 + distBonus) * (1 + (combo - 1) * 0.1));
   }
 
+  // src/sfx.js
+  var ctx = null;
+  function ac() {
+    if (ctx) return ctx;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    return AC ? ctx = new AC() : null;
+  }
+  function tone(freq, dur, type = "square", vol = 0.15, when = 0) {
+    const a = ac();
+    if (!a || !sfx.enabled) return;
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, a.currentTime + when);
+    g.gain.exponentialRampToValueAtTime(1e-3, a.currentTime + when + dur);
+    o.connect(g).connect(a.destination);
+    o.start(a.currentTime + when);
+    o.stop(a.currentTime + when + dur);
+  }
+  var sfx = {
+    enabled: true,
+    kill() {
+      tone(660, 0.09);
+      tone(880, 0.12, "square", 0.15, 0.07);
+    },
+    // rising blip
+    wrong() {
+      tone(160, 0.25, "sawtooth", 0.18);
+    },
+    // buzz
+    bite() {
+      tone(220, 0.12, "sawtooth", 0.2);
+      tone(110, 0.3, "sawtooth", 0.2, 0.1);
+    },
+    combo(n) {
+      const base = 700 + Math.min(n, 8) * 60;
+      tone(base, 0.08, "triangle", 0.12);
+      tone(base * 1.5, 0.1, "triangle", 0.12, 0.06);
+    }
+  };
+
   // src/main.js
   var D = window.HSK_DATA;
   var $ = (s) => document.querySelector(s);
@@ -97,6 +138,7 @@
     store.get("scope", {})
   );
   var settings = Object.assign({ autoSpeak: true }, store.get("settings", {}));
+  sfx.enabled = store.get("sfx", true);
   var pool = [];
   var learnDeck = null;
   var lastMode = "round";
@@ -255,7 +297,7 @@
   $("#fc-know").onclick = () => nextCard(false);
   $("#fc-again").onclick = () => nextCard(true);
   var cv = $("#cv");
-  var ctx = cv.getContext("2d");
+  var ctx2 = cv.getContext("2d");
   var B = { on: false };
   var GROUND = 30;
   var BEAR_X = 52;
@@ -265,7 +307,7 @@
     cv.style.height = h + "px";
     cv.width = Math.round(w * dpr);
     cv.height = Math.round(h * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
     B.w = w;
     B.h = h;
   }
@@ -328,6 +370,11 @@
   $("#hud-quit").onclick = () => {
     endBattle(true);
   };
+  $("#hud-sfx").onclick = () => {
+    sfx.enabled = !sfx.enabled;
+    store.set("sfx", sfx.enabled);
+    $("#hud-sfx").textContent = sfx.enabled ? "\u{1F514}" : "\u{1F515}";
+  };
   $("#hud-audio").onclick = () => {
     settings.autoSpeak = !settings.autoSpeak;
     store.set("settings", settings);
@@ -338,6 +385,7 @@
     $("#hud-score").textContent = B.score;
     $("#hud-combo").textContent = B.combo >= 2 ? "\xD7" + B.combo + " \u{1F525}" : "";
     $("#hud-left").textContent = B.mode === "round" ? B.wordsTotal - B.resolved + " left" : "\u221E";
+    $("#hud-sfx").textContent = sfx.enabled ? "\u{1F514}" : "\u{1F515}";
     $("#hud-audio").textContent = settings.autoSpeak ? "\u{1F50A}" : "\u{1F507}";
   }
   function pushMiss(w) {
@@ -386,12 +434,15 @@
       B.combo++;
       const distFrac = Math.max(0, z.x - BEAR_X - 34) / (B.w - BEAR_X - 34);
       B.score += killPoints(B.combo, distFrac);
+      sfx.kill();
+      if (B.combo >= 3) sfx.combo(B.combo);
       btn.classList.add("good");
       lockOptions();
       B.proj = { x: BEAR_X + 16, y: B.h - GROUND - 30 };
       speak(z.w.h);
     } else {
       B.combo = 0;
+      sfx.wrong();
       btn.classList.add("bad");
       lockOptions();
       revealCorrect(z.w);
@@ -420,6 +471,7 @@
       revealCorrect(z.w);
       lockOptions();
     }
+    sfx.bite();
     B.lives--;
     B.flash = 1;
     B.resolved++;
@@ -463,68 +515,68 @@
     requestAnimationFrame(loop);
   }
   function draw(t) {
-    ctx.clearRect(0, 0, B.w, B.h);
+    ctx2.clearRect(0, 0, B.w, B.h);
     const gy = B.h - GROUND;
-    ctx.strokeStyle = "#6b5a34";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(0, gy + 12);
-    ctx.lineTo(B.w, gy + 12);
-    ctx.stroke();
-    ctx.textAlign = "center";
-    ctx.font = "36px serif";
-    ctx.fillText("\u{1F43B}", BEAR_X, gy + 6);
-    ctx.font = "22px serif";
-    ctx.fillText("\u{1F36F}", 16, gy + 8);
+    ctx2.strokeStyle = "#6b5a34";
+    ctx2.lineWidth = 3;
+    ctx2.beginPath();
+    ctx2.moveTo(0, gy + 12);
+    ctx2.lineTo(B.w, gy + 12);
+    ctx2.stroke();
+    ctx2.textAlign = "center";
+    ctx2.font = "36px serif";
+    ctx2.fillText("\u{1F43B}", BEAR_X, gy + 6);
+    ctx2.font = "22px serif";
+    ctx2.fillText("\u{1F36F}", 16, gy + 8);
     const z = B.zombie;
     if (z) {
       const wob = Math.sin(t / 160 + z.wob) * 3;
-      ctx.font = "600 26px 'Segoe UI',sans-serif";
-      const lw = Math.max(ctx.measureText(z.w.h).width, 64) + 22;
+      ctx2.font = "600 26px 'Segoe UI',sans-serif";
+      const lw = Math.max(ctx2.measureText(z.w.h).width, 64) + 22;
       const cx = Math.min(Math.max(z.x, lw / 2 + 6), B.w - lw / 2 - 6);
-      ctx.fillStyle = z.state === "dash" ? "rgba(255,214,204,.97)" : "rgba(255,240,210,.97)";
-      ctx.strokeStyle = z.state === "dash" ? "#e05a4e" : "#ffb347";
-      ctx.lineWidth = 2.5;
+      ctx2.fillStyle = z.state === "dash" ? "rgba(255,214,204,.97)" : "rgba(255,240,210,.97)";
+      ctx2.strokeStyle = z.state === "dash" ? "#e05a4e" : "#ffb347";
+      ctx2.lineWidth = 2.5;
       roundRect(cx - lw / 2, gy - 118, lw, 52, 10);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = "#1c241a";
-      ctx.fillText(z.w.h, cx, gy - 96);
-      ctx.font = "13px 'Segoe UI',sans-serif";
-      ctx.fillStyle = "#7a5b17";
-      ctx.fillText(z.w.p, cx, gy - 76);
-      ctx.font = "46px serif";
-      ctx.save();
-      ctx.translate(z.x, gy + 6 + (z.state === "dash" ? 0 : wob * 0.5));
-      ctx.scale(-1, 1);
-      ctx.fillText("\u{1F9DF}", 0, 0);
-      ctx.restore();
+      ctx2.fill();
+      ctx2.stroke();
+      ctx2.fillStyle = "#1c241a";
+      ctx2.fillText(z.w.h, cx, gy - 96);
+      ctx2.font = "13px 'Segoe UI',sans-serif";
+      ctx2.fillStyle = "#7a5b17";
+      ctx2.fillText(z.w.p, cx, gy - 76);
+      ctx2.font = "46px serif";
+      ctx2.save();
+      ctx2.translate(z.x, gy + 6 + (z.state === "dash" ? 0 : wob * 0.5));
+      ctx2.scale(-1, 1);
+      ctx2.fillText("\u{1F9DF}", 0, 0);
+      ctx2.restore();
     }
     if (B.proj) {
-      ctx.font = "20px serif";
-      ctx.fillText("\u{1F36F}", B.proj.x, B.proj.y);
+      ctx2.font = "20px serif";
+      ctx2.fillText("\u{1F36F}", B.proj.x, B.proj.y);
     }
-    ctx.fillStyle = "#8fce58";
+    ctx2.fillStyle = "#8fce58";
     for (const p of B.parts) {
-      ctx.globalAlpha = Math.max(0, p.life / 0.6);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 3.4, 0, 7);
-      ctx.fill();
+      ctx2.globalAlpha = Math.max(0, p.life / 0.6);
+      ctx2.beginPath();
+      ctx2.arc(p.x, p.y, 3.4, 0, 7);
+      ctx2.fill();
     }
-    ctx.globalAlpha = 1;
+    ctx2.globalAlpha = 1;
     if (B.flash > 0) {
-      ctx.fillStyle = `rgba(224,90,78,${(0.38 * B.flash).toFixed(3)})`;
-      ctx.fillRect(0, 0, B.w, B.h);
+      ctx2.fillStyle = `rgba(224,90,78,${(0.38 * B.flash).toFixed(3)})`;
+      ctx2.fillRect(0, 0, B.w, B.h);
     }
   }
   function roundRect(x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
+    ctx2.beginPath();
+    ctx2.moveTo(x + r, y);
+    ctx2.arcTo(x + w, y, x + w, y + h, r);
+    ctx2.arcTo(x + w, y + h, x, y + h, r);
+    ctx2.arcTo(x, y + h, x, y, r);
+    ctx2.arcTo(x, y, x + w, y, r);
+    ctx2.closePath();
   }
   function endBattle(quit) {
     stopBattle();
