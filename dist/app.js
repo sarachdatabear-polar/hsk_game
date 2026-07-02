@@ -114,6 +114,60 @@
     }
   };
 
+  // src/zombie.js
+  function drawZombie(ctx3, x, groundY, tMs, state) {
+    const speed = state === "dash" ? 3 : 1;
+    const ph = tMs / (220 / speed) % (Math.PI * 2);
+    const bob = Math.sin(ph) * 2.5;
+    const legSwing = Math.sin(ph) * (state === "dash" ? 10 : 6);
+    const dying = state === "dying";
+    ctx3.save();
+    ctx3.translate(x, groundY);
+    if (dying) {
+      ctx3.globalAlpha = 0.5;
+      ctx3.rotate(0.9);
+    }
+    ctx3.strokeStyle = "#3f6b33";
+    ctx3.lineWidth = 6;
+    ctx3.lineCap = "round";
+    ctx3.beginPath();
+    ctx3.moveTo(-5, -20);
+    ctx3.lineTo(-5 + legSwing * 0.4, 0);
+    ctx3.stroke();
+    ctx3.beginPath();
+    ctx3.moveTo(5, -20);
+    ctx3.lineTo(5 - legSwing * 0.4, 0);
+    ctx3.stroke();
+    ctx3.fillStyle = "#5d4a63";
+    ctx3.fillRect(-11, -40 + bob, 22, 22);
+    ctx3.strokeStyle = "#7ec850";
+    ctx3.lineWidth = 5;
+    ctx3.beginPath();
+    ctx3.moveTo(-9, -34 + bob);
+    ctx3.lineTo(-24, -30 + bob + legSwing * 0.3);
+    ctx3.stroke();
+    ctx3.beginPath();
+    ctx3.moveTo(-9, -28 + bob);
+    ctx3.lineTo(-22, -24 + bob - legSwing * 0.3);
+    ctx3.stroke();
+    ctx3.fillStyle = "#8fce58";
+    ctx3.beginPath();
+    ctx3.arc(0, -48 + bob, 10, 0, 7);
+    ctx3.fill();
+    ctx3.fillStyle = "#1c241a";
+    ctx3.beginPath();
+    ctx3.arc(-4, -50 + bob, 1.8, 0, 7);
+    ctx3.fill();
+    ctx3.fillRect(-7, -44 + bob, 6, 1.6);
+    ctx3.strokeStyle = "#3f6b33";
+    ctx3.lineWidth = 2;
+    ctx3.beginPath();
+    ctx3.moveTo(0, -58 + bob);
+    ctx3.lineTo(2, -62 + bob);
+    ctx3.stroke();
+    ctx3.restore();
+  }
+
   // src/main.js
   var D = window.HSK_DATA;
   var $ = (s) => document.querySelector(s);
@@ -459,8 +513,10 @@
   function killZombie(z) {
     const gy = B.h - GROUND;
     for (let i = 0; i < 12; i++) B.parts.push({ x: z.x, y: gy - 16, vx: (Math.random() - 0.5) * 240, vy: -Math.random() * 200, life: 0.6 });
+    z.state = "dying";
+    B.dyingUntil = performance.now() + 250;
+    B.proj = null;
     B.resolved++;
-    scheduleNext(450);
   }
   function bite(timedOut) {
     const z = B.zombie;
@@ -497,6 +553,8 @@
       } else if (z.state === "dash") {
         z.x -= B.speed * 7 * dt;
         if (z.x <= BEAR_X + 34) bite(false);
+      } else if (z.state === "dying" && t >= B.dyingUntil) {
+        scheduleNext(200);
       }
     }
     if (B.proj && B.zombie) {
@@ -545,12 +603,7 @@
       ctx2.font = "13px 'Segoe UI',sans-serif";
       ctx2.fillStyle = "#7a5b17";
       ctx2.fillText(z.w.p, cx, gy - 76);
-      ctx2.font = "46px serif";
-      ctx2.save();
-      ctx2.translate(z.x, gy + 6 + (z.state === "dash" ? 0 : wob * 0.5));
-      ctx2.scale(-1, 1);
-      ctx2.fillText("\u{1F9DF}", 0, 0);
-      ctx2.restore();
+      drawZombie(ctx2, z.x, gy + 6, t, z.state);
     }
     if (B.proj) {
       ctx2.font = "20px serif";

@@ -3,6 +3,7 @@ import { buildPool, coveragePct, scopeKey, meaning as meaningOf } from "./pool.j
 import { pickDistractors } from "./distractors.js";
 import { killPoints } from "./scoring.js";
 import { sfx } from "./sfx.js";
+import { drawZombie } from "./zombie.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -263,8 +264,10 @@ function scheduleNext(ms){
 function killZombie(z){
   const gy = B.h-GROUND;
   for(let i=0;i<12;i++) B.parts.push({x:z.x, y:gy-16, vx:(Math.random()-.5)*240, vy:-Math.random()*200, life:.6});
+  z.state = "dying";
+  B.dyingUntil = performance.now() + 250;
+  B.proj = null;
   B.resolved++;
-  scheduleNext(450);
 }
 function bite(timedOut){
   const z = B.zombie;
@@ -291,6 +294,8 @@ function loop(t){
     }else if(z.state==="dash"){
       z.x -= B.speed*7*dt;
       if(z.x <= BEAR_X+34) bite(false);         // charging after a wrong answer
+    }else if(z.state==="dying" && t >= B.dyingUntil){
+      scheduleNext(200);
     }
   }
   if(B.proj && B.zombie){
@@ -331,12 +336,7 @@ function draw(t){
     ctx.fillStyle = "#7a5b17";
     ctx.fillText(z.w.p, cx, gy-76);
     // zombie
-    ctx.font = "46px serif";
-    ctx.save();
-    ctx.translate(z.x, gy+6+(z.state==="dash"?0:wob*0.5));
-    ctx.scale(-1,1);                            // face the bear
-    ctx.fillText("🧟", 0, 0);
-    ctx.restore();
+    drawZombie(ctx, z.x, gy + 6, t, z.state);
   }
   if(B.proj){ ctx.font = "20px serif"; ctx.fillText("🍯", B.proj.x, B.proj.y); }
   // splat particles
