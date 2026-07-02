@@ -69,6 +69,23 @@ cd android; .\gradlew.bat assembleDebug --no-daemon
   YaHei Bold) — the plan referenced `.ttf`, but this machine has the `.ttc` collection.
 - Signed release APK: `npm run apk:release` (Task 8)
 
+## Emulator verification (Task 7)
+
+Verified on AVD `nbhsk` (Pixel 6, android-34 google_apis x86_64, headless):
+```powershell
+& "$env:ANDROID_HOME\emulator\emulator.exe" -avd nbhsk -no-window -no-audio -gpu swiftshader_indirect
+& "$env:ANDROID_HOME\platform-tools\adb.exe" install -r android\app\build\outputs\apk\debug\app-debug.apk
+& adb shell am start -n com.northbear.hskzombie/.MainActivity
+```
+Confirmed: app launches full-screen (no browser chrome), home + scope + battle render, sprite
+zombie + bilingual options draw, SFX/audio toggles present. Hardware **back button**: sub-screen →
+home, home → exits app (verified via `dumpsys activity activities` topResumedActivity). WebView JS
+state inspected over CDP (`adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>`).
+
+**Known minor:** the system status bar renders grey rather than `#141a14` on this API-34 emulator
+(theme `android:statusBarColor` appears to take precedence over the StatusBar plugin call). Cosmetic
+only; does not affect playability. Candidate future fix: set `android:statusBarColor` in the app theme.
+
 ## Notes
 - `android/` and `android-signing/` are **git-ignored**. `android/` is fully regenerable
   from `capacitor.config.json` + the web assets. `android-signing/` holds the release
