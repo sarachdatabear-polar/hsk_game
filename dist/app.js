@@ -230,6 +230,41 @@
     speechSynthesis.speak(u);
   }
 
+  // src/native.js
+  function isNative() {
+    return !!(typeof window !== "undefined" && window.Capacitor && typeof window.Capacitor.isNativePlatform === "function" && window.Capacitor.isNativePlatform());
+  }
+  function plugins() {
+    return typeof window !== "undefined" && window.Capacitor && window.Capacitor.Plugins || {};
+  }
+  function nextBackScreen(currentScreen2) {
+    return currentScreen2 === "home" ? null : "home";
+  }
+  function hapticKill() {
+    if (isNative()) plugins().Haptics?.impact({ style: "LIGHT" });
+  }
+  function hapticWrong() {
+    if (isNative()) plugins().Haptics?.impact({ style: "MEDIUM" });
+  }
+  var awakeOn = false;
+  function keepAwake(on) {
+    if (!isNative() || on === awakeOn) return;
+    awakeOn = on;
+    const ka = plugins().KeepAwake;
+    if (ka) on ? ka.keepAwake() : ka.allowSleep();
+  }
+  function initNative({ getScreen, goHome }) {
+    if (!isNative()) return;
+    const P = plugins();
+    P.StatusBar?.setBackgroundColor({ color: "#141a14" });
+    P.StatusBar?.setStyle({ style: "DARK" });
+    P.App?.addListener("backButton", () => {
+      const dest = nextBackScreen(getScreen());
+      if (dest === null) P.App.exitApp();
+      else goHome();
+    });
+  }
+
   // src/main.js
   var D = window.HSK_DATA;
   var $ = (s) => document.querySelector(s);
@@ -272,7 +307,9 @@
     return a;
   }
   fetch("audio/index.json").then((r) => r.json()).then((ix) => initAudio(ix)).catch(() => initAudio([]));
+  var currentScreen = "home";
   function show(name) {
+    currentScreen = name;
     document.querySelectorAll(".screen").forEach((el) => el.classList.remove("on"));
     $("#s-" + name).classList.add("on");
   }
@@ -473,6 +510,7 @@
     const avg = scope.levels.reduce((a, b) => a + b, 0) / scope.levels.length;
     B.speed = 30 * (1 + (avg - 1) * 0.1);
     show("battle");
+    keepAwake(true);
     sizeCanvas();
     updateHud();
     $("#opts").innerHTML = "";
@@ -480,6 +518,7 @@
   }
   function stopBattle() {
     B.on = false;
+    keepAwake(false);
     if (window.speechSynthesis) speechSynthesis.cancel();
   }
   $("#hud-quit").onclick = () => {
@@ -551,6 +590,7 @@
       const distFrac = Math.max(0, z.x - BEAR_X - 34) / (B.w - BEAR_X - 34);
       B.score += killPoints(B.combo, distFrac);
       sfx.kill();
+      hapticKill();
       if (B.combo >= 3) sfx.combo(B.combo);
       btn.classList.add("good");
       lockOptions();
@@ -560,6 +600,7 @@
       B.combo = 0;
       sfx.wrong();
       sfx.bite();
+      hapticWrong();
       btn.classList.add("bad");
       lockOptions();
       revealCorrect(z.w);
@@ -773,6 +814,10 @@
   if (location.hash === "#debug") {
     window.__debugTarget = () => B.zombie && B.zombie.w.h;
   }
+  initNative({ getScreen: () => currentScreen, goHome: () => {
+    stopBattle();
+    show("home");
+  } });
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
     navigator.serviceWorker.register("sw.js").catch(() => {
     });

@@ -6,6 +6,7 @@ import { sfx } from "./sfx.js";
 import { drawZombie } from "./zombie.js";
 import { recordAnswer, levelMastery } from "./mastery.js";
 import { initAudio, speak } from "./audio.js";
+import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -36,7 +37,9 @@ function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.rand
 fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>initAudio([]));
 
 /* ============================== screens ============================== */
+let currentScreen = "home";
 function show(name){
+  currentScreen = name;
   document.querySelectorAll(".screen").forEach(el=>el.classList.remove("on"));
   $("#s-"+name).classList.add("on");
 }
@@ -182,12 +185,13 @@ function startBattle(mode){
   const avg = scope.levels.reduce((a,b)=>a+b,0)/scope.levels.length;
   B.speed = 30 * (1 + (avg-1)*0.10);
   show("battle");
+  keepAwake(true);
   sizeCanvas();
   updateHud();
   $("#opts").innerHTML = "";
   requestAnimationFrame(loop);
 }
-function stopBattle(){ B.on = false; if(window.speechSynthesis) speechSynthesis.cancel(); }
+function stopBattle(){ B.on = false; keepAwake(false); if(window.speechSynthesis) speechSynthesis.cancel(); }
 $("#hud-quit").onclick = ()=>{ endBattle(true); };
 $("#hud-sfx").onclick = ()=>{ sfx.enabled = !sfx.enabled; store.set("sfx", sfx.enabled); $("#hud-sfx").textContent = sfx.enabled ? "🔔" : "🔕"; };
 $("#hud-audio").onclick = ()=>{
@@ -244,7 +248,7 @@ function answer(btn, o){
     // farther kill = bigger bonus (replaces the old time bonus)
     const distFrac = Math.max(0, z.x - BEAR_X - 34) / (B.w - BEAR_X - 34);
     B.score += killPoints(B.combo, distFrac);
-    sfx.kill(); if (B.combo >= 3) sfx.combo(B.combo);
+    sfx.kill(); hapticKill(); if (B.combo >= 3) sfx.combo(B.combo);
     btn.classList.add("good");
     lockOptions();
     B.proj = {x:BEAR_X+16, y:B.h-GROUND-30};   // honey pot flies at the zombie
@@ -253,7 +257,7 @@ function answer(btn, o){
     // ONE attempt per word: wrong tap = lose a heart. Skip the charge animation and
     // advance quickly — just long enough to see the correct answer flashed green.
     B.combo = 0;
-    sfx.wrong(); sfx.bite();
+    sfx.wrong(); sfx.bite(); hapticWrong();
     btn.classList.add("bad");
     lockOptions();
     revealCorrect(z.w);
@@ -425,6 +429,7 @@ function renderProgress(){
 /* ============================== boot ============================== */
 pool = buildPool(D.levels, scope);
 if(location.hash === "#debug"){ window.__debugTarget = ()=> B.zombie && B.zombie.w.h; }
+initNative({ getScreen: ()=>currentScreen, goHome: ()=>{ stopBattle(); show("home"); } });
 // SW is at the app root so its scope covers the whole app; http(s) only (no-op on file://).
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
   navigator.serviceWorker.register("sw.js").catch(()=>{});
