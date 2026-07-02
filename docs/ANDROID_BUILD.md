@@ -39,11 +39,31 @@ Test-Path "$env:ANDROID_HOME\platforms\android-34\android.jar"   # True
   cmd /c "`"...\sdkmanager.bat`" --sdk_root=`"$env:ANDROID_HOME`" platform-tools `"platforms;android-34`" `"build-tools;34.0.0`" < `"$yes`""
   ```
 
-## Regenerate & build (filled in by later tasks)
+## Regenerate & build
 
-- Regenerate the native project: `npx cap add android && npx cap sync android` (Task 3)
-- Debug APK: `cd android && .\gradlew.bat assembleDebug` (Task 3)
-- App icons/splash: `python scripts/make_android_icons.py` (Task 6)
+The `android/` folder is git-ignored and fully regenerable. To recreate it from scratch:
+
+```powershell
+$env:JAVA_HOME = [Environment]::GetEnvironmentVariable("JAVA_HOME","User")
+$env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
+cd C:\Users\sarac\Desktop\HSK\game
+npm run build; node scripts/stage-www.js   # stage web assets into www/
+npx cap add android                          # scaffold android/ (only if missing)
+npx cap sync android                         # copy www/ -> android assets + plugins
+```
+
+**Manual edits to reapply after a fresh `cap add android`** (android/ is git-ignored, so these
+don't persist across a regen):
+- `android/app/build.gradle` → `versionName "1.0.0"` (Capacitor generates `"1.0"`); `versionCode 1` and `applicationId "com.northbear.hskzombie"` are already correct.
+- Release signingConfig block (added in Task 8; the build script `scripts/build_apk.ps1` is the source of truth).
+
+Build the debug APK (no signing, for testing):
+```powershell
+cd android; .\gradlew.bat assembleDebug --no-daemon
+# -> android\app\build\outputs\apk\debug\app-debug.apk  (~20 MB, bundles all 2000 mp3s)
+```
+
+- App icons/splash: `python scripts/make_android_icons.py` (Task 6, re-run after each regen)
 - Signed release APK: `npm run apk:release` (Task 8)
 
 ## Notes
