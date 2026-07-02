@@ -190,46 +190,6 @@
     return { seen, mastered, pct: levelWords.length ? Math.round(100 * mastered / levelWords.length) : 0 };
   }
 
-  // src/audio.js
-  var mp3Set = /* @__PURE__ */ new Set();
-  var base = "audio/";
-  var zhVoice = null;
-  var current = null;
-  function initAudio(indexArray, baseUrl = "audio/") {
-    mp3Set = new Set(indexArray || []);
-    base = baseUrl;
-    if (window.speechSynthesis) {
-      const pick = () => {
-        const vs = speechSynthesis.getVoices();
-        zhVoice = vs.find((v) => /zh[-_]CN/i.test(v.lang)) || vs.find((v) => /^zh/i.test(v.lang)) || null;
-      };
-      pick();
-      speechSynthesis.onvoiceschanged = pick;
-    }
-  }
-  function speak(hanzi) {
-    if (!hanzi) return;
-    if (current) {
-      current.pause();
-      current = null;
-    }
-    if (window.speechSynthesis) speechSynthesis.cancel();
-    if (mp3Set.has(hanzi)) {
-      current = new Audio(base + encodeURIComponent(hanzi) + ".mp3");
-      current.play().catch(() => ttsFallback(hanzi));
-      return;
-    }
-    ttsFallback(hanzi);
-  }
-  function ttsFallback(hanzi) {
-    if (!window.speechSynthesis) return;
-    const u = new SpeechSynthesisUtterance(hanzi);
-    u.lang = "zh-CN";
-    u.rate = 0.85;
-    if (zhVoice) u.voice = zhVoice;
-    speechSynthesis.speak(u);
-  }
-
   // src/native.js
   function isNative() {
     return !!(typeof window !== "undefined" && window.Capacitor && typeof window.Capacitor.isNativePlatform === "function" && window.Capacitor.isNativePlatform());
@@ -263,6 +223,56 @@
       if (dest === null) P.App.exitApp();
       else goHome();
     });
+  }
+
+  // src/audio.js
+  var mp3Set = /* @__PURE__ */ new Set();
+  var base = "audio/";
+  var zhVoice = null;
+  var current = null;
+  function initAudio(indexArray, baseUrl = "audio/") {
+    mp3Set = new Set(indexArray || []);
+    base = baseUrl;
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      const pick = () => {
+        const vs = speechSynthesis.getVoices();
+        zhVoice = vs.find((v) => /zh[-_]CN/i.test(v.lang)) || vs.find((v) => /^zh/i.test(v.lang)) || null;
+      };
+      pick();
+      speechSynthesis.onvoiceschanged = pick;
+    }
+  }
+  function chooseTts() {
+    if (isNative() && window.Capacitor.Plugins && window.Capacitor.Plugins.TextToSpeech) return "native";
+    if (typeof window !== "undefined" && window.speechSynthesis) return "web";
+    return "none";
+  }
+  function speak(hanzi) {
+    if (!hanzi) return;
+    if (current) {
+      current.pause();
+      current = null;
+    }
+    if (typeof window !== "undefined" && window.speechSynthesis) speechSynthesis.cancel();
+    if (mp3Set.has(hanzi)) {
+      current = new Audio(base + encodeURIComponent(hanzi) + ".mp3");
+      current.play().catch(() => ttsFallback(hanzi));
+      return;
+    }
+    ttsFallback(hanzi);
+  }
+  function ttsFallback(hanzi) {
+    const mode = chooseTts();
+    if (mode === "native") {
+      window.Capacitor.Plugins.TextToSpeech.speak({ text: hanzi, lang: "zh-CN", rate: 1 }).catch(() => {
+      });
+    } else if (mode === "web") {
+      const u = new SpeechSynthesisUtterance(hanzi);
+      u.lang = "zh-CN";
+      u.rate = 0.85;
+      if (zhVoice) u.voice = zhVoice;
+      speechSynthesis.speak(u);
+    }
   }
 
   // src/main.js
