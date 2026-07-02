@@ -7,7 +7,8 @@
     "test": "vitest run",
     "build": "esbuild src/main.js --bundle --format=iife --outfile=dist/app.js",
     "serve": "python -m http.server 8000",
-    "cap:sync": "npm run build && node scripts/stage-www.js && npx cap sync android"
+    "cap:sync": "npm run build && node scripts/stage-www.js && npx cap sync android",
+    "apk:release": "powershell -ExecutionPolicy Bypass -File scripts/build_apk.ps1"
   },
   "devDependencies": {
     "@capacitor/android": "^6.2.1",

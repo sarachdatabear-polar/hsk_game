@@ -55,7 +55,34 @@ npx cap sync android                         # copy www/ -> android assets + plu
 **Manual edits to reapply after a fresh `cap add android`** (android/ is git-ignored, so these
 don't persist across a regen):
 - `android/app/build.gradle` → `versionName "1.0.0"` (Capacitor generates `"1.0"`); `versionCode 1` and `applicationId "com.northbear.hskzombie"` are already correct.
-- Release signingConfig block (added in Task 8; the build script `scripts/build_apk.ps1` is the source of truth).
+- Release signingConfig — add inside the `android { }` block of `android/app/build.gradle`:
+  ```gradle
+  def kp = new Properties()
+  def kpf = rootProject.file("keystore.properties")
+  if (kpf.exists()) { kp.load(new FileInputStream(kpf)) }
+  signingConfigs {
+      release {
+          if (kpf.exists()) {
+              storeFile file(kp['storeFile']); storePassword kp['storePassword']
+              keyAlias kp['keyAlias']; keyPassword kp['keyPassword']
+          }
+      }
+  }
+  ```
+  and in `buildTypes.release` add: `signingConfig kpf.exists() ? signingConfigs.release : signingConfigs.debug`.
+  `keystore.properties` is written (and deleted) by `scripts/build_apk.ps1`; its `storeFile` path MUST use
+  forward slashes (Java .properties treats `\` as an escape char).
+
+## Signing (Task 8)
+
+The release keystore is at `android-signing/nbhsk-release.keystore` (git-ignored). Its passwords are in
+`android-signing/KEYSTORE_INFO.txt`. To build a signed APK:
+```powershell
+$env:NBHSK_STORE_PASS = "<store pass from KEYSTORE_INFO.txt>"
+$env:NBHSK_KEY_PASS   = "<key pass from KEYSTORE_INFO.txt>"
+npm run apk:release      # -> dist-apk/HSK-Zombie-1.0.0.apk (release-signed, ~19 MB)
+```
+Verify: `apksigner verify --print-certs dist-apk/HSK-Zombie-1.0.0.apk` → `CN=NorthBear`.
 
 Build the debug APK (no signing, for testing):
 ```powershell
