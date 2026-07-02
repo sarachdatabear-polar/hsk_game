@@ -113,6 +113,29 @@ state inspected over CDP (`adb forward tcp:9222 localabstract:webview_devtools_r
 (theme `android:statusBarColor` appears to take precedence over the StatusBar plugin call). Cosmetic
 only; does not affect playability. Candidate future fix: set `android:statusBarColor` in the app theme.
 
+## Install on your phone (sideload)
+
+The app is distributed as a private signed APK — no Google Play, no account needed.
+
+1. Build it: `npm run apk:release` → `dist-apk/HSK-Zombie-1.0.0.apk`.
+2. Copy that `.apk` to your phone (USB cable, Google Drive, or a messaging app to yourself).
+3. On the phone, tap the file. Android will ask to allow "Install unknown apps" for whatever app
+   you opened it from (Files / Chrome / Drive) — enable it, then tap Install.
+4. Launch **HSK Zombie** from your app drawer. Works fully offline (words + 2000 audio clips are
+   bundled inside the app).
+
+To update later: bump `versionCode`/`versionName` in `android/app/build.gradle`, rebuild, reinstall.
+**The same keystore must sign every update** — back up `android-signing/` now.
+
+## Final regression (Task 9)
+
+The native wrapper does not touch the web/PWA build. Verified after all Phase-3 work:
+- `npx vitest run` → 30 passed (incl. native.js + audio.js unit tests)
+- Phase-2 headless e2e over `http://localhost:8000` → 21/21 checks (home, scope, flashcards, battle,
+  results, fight-misses, progress, scores, audio, offline PWA)
+- `file://` double-click of `index.html` → home renders, battle plays, `Capacitor.isNativePlatform()`
+  is false, zero console errors (native code fully inert on plain web)
+
 ## Notes
 - `android/` and `android-signing/` are **git-ignored**. `android/` is fully regenerable
   from `capacitor.config.json` + the web assets. `android-signing/` holds the release
