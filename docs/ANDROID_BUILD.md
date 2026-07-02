@@ -63,7 +63,10 @@ cd android; .\gradlew.bat assembleDebug --no-daemon
 # -> android\app\build\outputs\apk\debug\app-debug.apk  (~20 MB, bundles all 2000 mp3s)
 ```
 
-- App icons/splash: `python scripts/make_android_icons.py` (Task 6, re-run after each regen)
+- App icons/splash: `python scripts/make_android_icons.py` (Task 6, re-run after each `cap add android`
+  since it writes into the git-ignored `android/` res tree). Produces the green 熊 adaptive launcher
+  icon (dark-green background) and the centered-bear splash on `#141a14`. Uses `msyhbd.ttc` (Microsoft
+  YaHei Bold) — the plan referenced `.ttf`, but this machine has the `.ttc` collection.
 - Signed release APK: `npm run apk:release` (Task 8)
 
 ## Notes
