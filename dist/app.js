@@ -217,6 +217,7 @@
   sfx.enabled = store.get("sfx", true);
   var pool = [];
   var learnDeck = null;
+  var battleDeckOverride = null;
   var lastMode = "round";
   var masteryStore = store.get("mastery", {});
   function noteAnswer(hanzi, correct) {
@@ -331,6 +332,7 @@
   var fc = { deck: [], i: 0, flipped: false, done: 0, total: 0 };
   function startLearn() {
     const src = learnDeck && learnDeck.length ? learnDeck : pool;
+    fc.fromMisses = !!(learnDeck && learnDeck.length);
     fc.deck = shuffle2(src.slice(0, 400));
     fc.i = 0;
     fc.done = 0;
@@ -339,10 +341,13 @@
     show("learn");
     renderCard();
   }
+  function endLearn() {
+    show(fc.fromMisses ? "results" : "home");
+  }
   function renderCard() {
     const w = fc.deck[fc.i];
     if (!w) {
-      show("home");
+      endLearn();
       return;
     }
     $("#fc-count").textContent = `${fc.done} done \xB7 ${fc.deck.length - fc.i} left`;
@@ -374,7 +379,7 @@
     fc.i++;
     fc.flipped = false;
     if (fc.i >= fc.deck.length) {
-      show("home");
+      endLearn();
       return;
     }
     renderCard();
@@ -400,11 +405,12 @@
     if (B.on) sizeCanvas();
   });
   function pickWord() {
+    const deck = B.deck;
     for (let tries = 0; tries < 40; tries++) {
       let total = 0;
-      for (const w of pool) total += Math.sqrt(w.f) + 1;
+      for (const w of deck) total += Math.sqrt(w.f) + 1;
       let r = Math.random() * total;
-      for (const w of pool) {
+      for (const w of deck) {
         r -= Math.sqrt(w.f) + 1;
         if (r <= 0) {
           if (!B.recent.includes(w.h)) {
@@ -416,12 +422,14 @@
         }
       }
     }
-    return pool[Math.floor(Math.random() * pool.length)];
+    return deck[Math.floor(Math.random() * deck.length)];
   }
   function startBattle(mode) {
     lastMode = mode;
     B.on = true;
     B.mode = mode;
+    B.deck = battleDeckOverride && battleDeckOverride.length >= 2 ? battleDeckOverride : pool;
+    battleDeckOverride = null;
     B.zombie = null;
     B.proj = null;
     B.parts = [];
@@ -489,7 +497,7 @@
     B.speed *= 1.03;
   }
   function renderOptions(word) {
-    const opts = shuffle2([word, ...pickDistractors(pool, word)]);
+    const opts = shuffle2([word, ...pickDistractors(B.deck.length >= 8 ? B.deck : pool, word)]);
     const box = $("#opts");
     box.innerHTML = "";
     for (const o of opts) {
@@ -702,6 +710,11 @@
       learnDeck = B.misses.slice();
       startLearn();
     };
+    $("#r-fight-miss").style.display = B.misses.length >= 2 ? "block" : "none";
+    $("#r-fight-miss").onclick = () => {
+      battleDeckOverride = B.misses.slice();
+      startBattle("round");
+    };
     $("#r-again").onclick = () => startBattle(lastMode);
     show("results");
   }
@@ -731,4 +744,7 @@
     }
   }
   pool = buildPool(D.levels, scope);
+  if (location.hash === "#debug") {
+    window.__debugTarget = () => B.zombie && B.zombie.w.h;
+  }
 })();

@@ -19,6 +19,7 @@ let settings = Object.assign({autoSpeak:true}, store.get("settings", {}));
 sfx.enabled = store.get("sfx", true);
 let pool = [];            // current merged word pool
 let learnDeck = null;     // override deck for "review misses"
+let battleDeckOverride = null;  // when set, next battle draws only these words (e.g. "fight misses")
 let lastMode = "round";
 let masteryStore = store.get("mastery", {});
 function noteAnswer(hanzi, correct){
@@ -104,14 +105,16 @@ $("#go-learn").onclick   = ()=>{ learnDeck = null; startLearn(); };
 const fc = {deck:[], i:0, flipped:false, done:0, total:0};
 function startLearn(){
   const src = learnDeck && learnDeck.length ? learnDeck : pool;
+  fc.fromMisses = !!(learnDeck && learnDeck.length);  // came from a battle's "review misses"
   fc.deck = shuffle(src.slice(0, 400));       // session cap keeps it sane
   fc.i = 0; fc.done = 0; fc.total = fc.deck.length; fc.flipped = false;
   show("learn");
   renderCard();
 }
+function endLearn(){ show(fc.fromMisses ? "results" : "home"); }
 function renderCard(){
   const w = fc.deck[fc.i];
-  if(!w){ show("home"); return; }
+  if(!w){ endLearn(); return; }
   $("#fc-count").textContent = `${fc.done} done · ${fc.deck.length - fc.i} left`;
   const c = $("#fc-card");
   if(!fc.flipped){
@@ -132,7 +135,7 @@ function nextCard(keep){
   if(keep) fc.deck.push(w);      // still learning → resurfaces at the end
   else fc.done++;
   fc.i++; fc.flipped = false;
-  if(fc.i >= fc.deck.length){ show("home"); return; }
+  if(fc.i >= fc.deck.length){ endLearn(); return; }
   renderCard();
 }
 $("#fc-know").onclick  = ()=>nextCard(false);
@@ -157,12 +160,13 @@ function sizeCanvas(){
 window.addEventListener("resize", ()=>{ if(B.on) sizeCanvas(); });
 
 function pickWord(){
+  const deck = B.deck;
   // frequency-weighted, avoiding the last few words
   for(let tries=0; tries<40; tries++){
     let total = 0;
-    for(const w of pool) total += Math.sqrt(w.f)+1;
+    for(const w of deck) total += Math.sqrt(w.f)+1;
     let r = Math.random()*total;
-    for(const w of pool){
+    for(const w of deck){
       r -= Math.sqrt(w.f)+1;
       if(r<=0){
         if(!B.recent.includes(w.h)) { B.recent.push(w.h); if(B.recent.length>8) B.recent.shift(); return w; }
@@ -170,11 +174,15 @@ function pickWord(){
       }
     }
   }
-  return pool[Math.floor(Math.random()*pool.length)];
+  return deck[Math.floor(Math.random()*deck.length)];
 }
 function startBattle(mode){
   lastMode = mode;
   B.on = true; B.mode = mode;
+  // A miss deck can be as small as 2 (only 3 lives => at most 3 misses per round);
+  // distractors fall back to the full pool for small decks, so 2 is safe.
+  B.deck = (battleDeckOverride && battleDeckOverride.length >= 2) ? battleDeckOverride : pool;
+  battleDeckOverride = null;
   B.zombie = null; B.proj = null; B.parts = []; B.flash = 0;
   B.score = 0; B.combo = 0; B.lives = 3;
   B.wordsTotal = mode==="round"? 20 : Infinity;
@@ -216,7 +224,7 @@ function spawnZombie(){
   B.speed *= 1.03;
 }
 function renderOptions(word){
-  const opts = shuffle([word, ...pickDistractors(pool, word)]);
+  const opts = shuffle([word, ...pickDistractors(B.deck.length >= 8 ? B.deck : pool, word)]);
   const box = $("#opts");
   box.innerHTML = "";
   for(const o of opts){
@@ -388,6 +396,8 @@ function endBattle(quit){
   }
   $("#r-review").style.display = B.misses.length? "block":"none";
   $("#r-review").onclick = ()=>{ learnDeck = B.misses.slice(); startLearn(); };
+  $("#r-fight-miss").style.display = B.misses.length >= 2 ? "block" : "none";
+  $("#r-fight-miss").onclick = ()=>{ battleDeckOverride = B.misses.slice(); startBattle("round"); };
   $("#r-again").onclick = ()=>startBattle(lastMode);
   show("results");
 }
@@ -423,3 +433,4 @@ function renderProgress(){
 
 /* ============================== boot ============================== */
 pool = buildPool(D.levels, scope);
+if(location.hash === "#debug"){ window.__debugTarget = ()=> B.zombie && B.zombie.w.h; }
