@@ -1,0 +1,20 @@
+{
+  "appId": "com.northbear.hskzombie",
+  "appName": "HSK Zombie",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "backgroundColor": "#141a14",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 900,
+      "backgroundColor": "#141a14",
+      "androidSplashResourceName": "splash",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "backgroundColor": "#141a14",
+      "style": "DARK",
+      "overlaysWebView": false
+    }
+  }
+}

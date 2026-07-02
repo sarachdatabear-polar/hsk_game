@@ -6,10 +6,22 @@
   "scripts": {
     "test": "vitest run",
     "build": "esbuild src/main.js --bundle --format=iife --outfile=dist/app.js",
-    "serve": "python -m http.server 8000"
+    "serve": "python -m http.server 8000",
+    "cap:sync": "npm run build && node scripts/stage-www.js && npx cap sync android"
   },
   "devDependencies": {
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/cli": "^6.2.1",
     "esbuild": "^0.24.0",
     "vitest": "^2.1.0"
+  },
+  "dependencies": {
+    "@capacitor-community/keep-awake": "^5.0.1",
+    "@capacitor-community/text-to-speech": "^5.1.0",
+    "@capacitor/app": "^6.0.3",
+    "@capacitor/core": "^6.2.1",
+    "@capacitor/haptics": "^6.0.3",
+    "@capacitor/splash-screen": "^6.0.4",
+    "@capacitor/status-bar": "^6.0.3"
   }
 }
