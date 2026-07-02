@@ -53,4 +53,24 @@ describe("meaning", () => {
   it("both mode puts english main, thai sub", () => {
     expect(meaning(th, "both")).toEqual({ main: "cat", sub: "แมว" });
   });
+  it("english mode returns english with no sub", () => {
+    expect(meaning(th, "en")).toEqual({ main: "cat", sub: "" });
+  });
+});
+
+describe("buildPool merge fills empty fields from a later level", () => {
+  // Same hanzi at two levels: lv1 has empty Thai, lv2 supplies it. The merged
+  // record must keep lv1 as first-seen level but adopt lv2's non-empty Thai.
+  const LV = {
+    "1": [{ h: "书", p: "shū", e: "book", t: "",     lv: 1, f: 20, ta: 2, tt: 5, c: 1, n: 1 }],
+    "2": [{ h: "书", p: "shū", e: "",     t: "หนังสือ", lv: 2, f: 10, ta: 1, tt: 6, c: 0, n: 0 }]
+  };
+  it("prefers the non-empty thai while keeping lowest level and highest freq", () => {
+    const [w] = buildPool(LV, { levels: [1, 2], core: false, newOnly: false, topN: 0 });
+    expect(w.t).toBe("หนังสือ");   // filled from lv2
+    expect(w.e).toBe("book");      // lv1's english kept (lv2's was empty)
+    expect(w.lv).toBe(1);          // lowest first-seen level
+    expect(w.f).toBe(20);          // highest single-level freq
+    expect(w.fs).toBe(30);         // summed
+  });
 });
