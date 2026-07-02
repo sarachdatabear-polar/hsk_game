@@ -8,6 +8,7 @@ const pool = [
   mk("吃",   "to eat",  "กิน",  80),
   mk("水",   "water",   "น้ำ",  70),
   mk("大",   "big",     "ใหญ่", 60),
+  mk("狗",   "dog",     "หมา",  55),
   mk("同义", "sprint",  "วิ่ง", 50)                 // same thai gloss as target -> excluded
 ];
 const target = pool[0];
