@@ -769,4 +769,8 @@
   if (location.hash === "#debug") {
     window.__debugTarget = () => B.zombie && B.zombie.w.h;
   }
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    navigator.serviceWorker.register("sw.js").catch(() => {
+    });
+  }
 })();

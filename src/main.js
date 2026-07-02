@@ -423,3 +423,7 @@ function renderProgress(){
 /* ============================== boot ============================== */
 pool = buildPool(D.levels, scope);
 if(location.hash === "#debug"){ window.__debugTarget = ()=> B.zombie && B.zombie.w.h; }
+// SW is at the app root so its scope covers the whole app; http(s) only (no-op on file://).
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
