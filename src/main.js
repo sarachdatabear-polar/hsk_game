@@ -5,6 +5,7 @@ import { killPoints } from "./scoring.js";
 import { sfx } from "./sfx.js";
 import { drawZombie } from "./zombie.js";
 import { recordAnswer, levelMastery } from "./mastery.js";
+import { initAudio, speak } from "./audio.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -29,22 +30,10 @@ function noteAnswer(hanzi, correct){
 
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-/* ============================== audio (Web Speech, zh-CN) ============================== */
-let zhVoice = null;
-function pickVoice(){
-  if(!window.speechSynthesis) return;
-  const vs = speechSynthesis.getVoices();
-  zhVoice = vs.find(v=>/zh[-_]CN/i.test(v.lang)) || vs.find(v=>/^zh/i.test(v.lang)) || null;
-}
-if(window.speechSynthesis){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
-function speak(text){
-  if(!window.speechSynthesis || !text) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "zh-CN"; u.rate = 0.85;
-  if(zhVoice) u.voice = zhVoice;
-  speechSynthesis.speak(u);
-}
+/* ============================== audio (pre-recorded mp3 first, Web Speech fallback) ============================== */
+// index.json lists which words have a bundled mp3; fetch fails silently on file://
+// (keeping TTS-only), which is fine per the file:// constraint.
+fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>initAudio([]));
 
 /* ============================== screens ============================== */
 function show(name){

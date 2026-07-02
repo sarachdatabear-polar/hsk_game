@@ -108,9 +108,9 @@
       tone(110, 0.3, "sawtooth", 0.2, 0.1);
     },
     combo(n) {
-      const base = 700 + Math.min(n, 8) * 60;
-      tone(base, 0.08, "triangle", 0.12);
-      tone(base * 1.5, 0.1, "triangle", 0.12, 0.06);
+      const base2 = 700 + Math.min(n, 8) * 60;
+      tone(base2, 0.08, "triangle", 0.12);
+      tone(base2 * 1.5, 0.1, "triangle", 0.12, 0.06);
     }
   };
 
@@ -190,6 +190,46 @@
     return { seen, mastered, pct: levelWords.length ? Math.round(100 * mastered / levelWords.length) : 0 };
   }
 
+  // src/audio.js
+  var mp3Set = /* @__PURE__ */ new Set();
+  var base = "audio/";
+  var zhVoice = null;
+  var current = null;
+  function initAudio(indexArray, baseUrl = "audio/") {
+    mp3Set = new Set(indexArray || []);
+    base = baseUrl;
+    if (window.speechSynthesis) {
+      const pick = () => {
+        const vs = speechSynthesis.getVoices();
+        zhVoice = vs.find((v) => /zh[-_]CN/i.test(v.lang)) || vs.find((v) => /^zh/i.test(v.lang)) || null;
+      };
+      pick();
+      speechSynthesis.onvoiceschanged = pick;
+    }
+  }
+  function speak(hanzi) {
+    if (!hanzi) return;
+    if (current) {
+      current.pause();
+      current = null;
+    }
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    if (mp3Set.has(hanzi)) {
+      current = new Audio(base + encodeURIComponent(hanzi) + ".mp3");
+      current.play().catch(() => ttsFallback(hanzi));
+      return;
+    }
+    ttsFallback(hanzi);
+  }
+  function ttsFallback(hanzi) {
+    if (!window.speechSynthesis) return;
+    const u = new SpeechSynthesisUtterance(hanzi);
+    u.lang = "zh-CN";
+    u.rate = 0.85;
+    if (zhVoice) u.voice = zhVoice;
+    speechSynthesis.speak(u);
+  }
+
   // src/main.js
   var D = window.HSK_DATA;
   var $ = (s) => document.querySelector(s);
@@ -231,25 +271,7 @@
     }
     return a;
   }
-  var zhVoice = null;
-  function pickVoice() {
-    if (!window.speechSynthesis) return;
-    const vs = speechSynthesis.getVoices();
-    zhVoice = vs.find((v) => /zh[-_]CN/i.test(v.lang)) || vs.find((v) => /^zh/i.test(v.lang)) || null;
-  }
-  if (window.speechSynthesis) {
-    pickVoice();
-    speechSynthesis.onvoiceschanged = pickVoice;
-  }
-  function speak(text) {
-    if (!window.speechSynthesis || !text) return;
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "zh-CN";
-    u.rate = 0.85;
-    if (zhVoice) u.voice = zhVoice;
-    speechSynthesis.speak(u);
-  }
+  fetch("audio/index.json").then((r) => r.json()).then((ix) => initAudio(ix)).catch(() => initAudio([]));
   function show(name) {
     document.querySelectorAll(".screen").forEach((el) => el.classList.remove("on"));
     $("#s-" + name).classList.add("on");
