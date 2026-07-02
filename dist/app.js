@@ -214,15 +214,23 @@
     if (ka) on ? ka.keepAwake() : ka.allowSleep();
   }
   function initNative({ getScreen, goHome }) {
-    if (!isNative()) return;
-    const P = plugins();
-    P.StatusBar?.setBackgroundColor({ color: "#141a14" });
-    P.StatusBar?.setStyle({ style: "DARK" });
-    P.App?.addListener("backButton", () => {
-      const dest = nextBackScreen(getScreen());
-      if (dest === null) P.App.exitApp();
-      else goHome();
-    });
+    if (typeof window === "undefined" || !window.Capacitor) return;
+    let tries = 0;
+    const tick = () => {
+      const P = plugins();
+      if (isNative() && P.App && typeof P.App.addListener === "function") {
+        P.StatusBar?.setBackgroundColor({ color: "#141a14" });
+        P.StatusBar?.setStyle({ style: "DARK" });
+        P.App.addListener("backButton", () => {
+          const dest = nextBackScreen(getScreen());
+          if (dest === null) P.App.exitApp();
+          else goHome();
+        });
+        return;
+      }
+      if (++tries < 25) setTimeout(tick, 100);
+    };
+    tick();
   }
 
   // src/audio.js
