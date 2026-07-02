@@ -250,14 +250,16 @@ function answer(btn, o){
     B.proj = {x:BEAR_X+16, y:B.h-GROUND-30};   // honey pot flies at the zombie
     speak(z.w.h);                              // the sound sticks with the kill
   }else{
-    // ONE attempt per word: wrong tap = the zombie charges. No retries.
+    // ONE attempt per word: wrong tap = lose a heart. Skip the charge animation and
+    // advance quickly — just long enough to see the correct answer flashed green.
     B.combo = 0;
-    sfx.wrong();
+    sfx.wrong(); sfx.bite();
     btn.classList.add("bad");
     lockOptions();
     revealCorrect(z.w);
     pushMiss(z.w);
-    z.state = "dash";
+    B.lives--; B.flash = 1; B.resolved++;
+    scheduleNext(900);
   }
   updateHud();
 }

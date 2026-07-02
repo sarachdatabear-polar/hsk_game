@@ -559,11 +559,15 @@
     } else {
       B.combo = 0;
       sfx.wrong();
+      sfx.bite();
       btn.classList.add("bad");
       lockOptions();
       revealCorrect(z.w);
       pushMiss(z.w);
-      z.state = "dash";
+      B.lives--;
+      B.flash = 1;
+      B.resolved++;
+      scheduleNext(900);
     }
     updateHud();
   }
