@@ -27,4 +27,7 @@ describe("mastery", () => {
     const words = [{ h: "水" }, { h: "火" }, { h: "土" }];
     expect(levelMastery(s, words)).toEqual({ seen: 2, mastered: 1, pct: 33 });
   });
+  it("levelMastery returns pct=0 for empty word list", () => {
+    expect(levelMastery({}, [])).toEqual({ seen: 0, mastered: 0, pct: 0 });
+  });
 });
