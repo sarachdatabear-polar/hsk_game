@@ -5,9 +5,11 @@ festive vector-style art via Pillow + numpy). Re-run `python make_assets.py` fro
 `game/` folder to regenerate them. The 4 nav icon buttons are already wired to their
 PNGs in `index.html`; `#home-sound` stays emoji so its 🔔/🔕 on/off state shows.
 
-**Still needed (not generatable here):** `fonts/title.woff2` — a real display font.
-Download **ZCOOL KuaiLe** (SIL OFL) as woff2 and drop it in `fonts/`; the `@font-face`
-already falls back to Segoe UI, so the title renders fine meanwhile.
+**Fonts:** `fonts/title.woff2` is **ZCOOL KuaiLe** (SIL OFL, license in `fonts/OFL.txt`),
+subset to ASCII + 招财猫 (~6 KB) with `pyftsubset --unicodes="U+0020-007E,U+62DB,U+8D22,U+732B"`.
+Only the `h1` title and `.bignum` score digits use it; anything outside the subset falls
+back to Segoe UI per the `@font-face` stack. Re-subset from the full TTF if the title
+text ever gains new hanzi.
 
 To swap any PNG for higher-fidelity AI/painted art later, just overwrite the file with
 the same name and dimensions — no code changes needed. All assets have code/CSS
@@ -37,7 +39,7 @@ emptied.
 | `btn-progress.png` | 160×160 | yes | Gold circular icon button — Progress. Fallback = 📈 emoji. |
 | `btn-howto.png` | 160×160 | yes | Gold circular icon button — How to Play. Fallback = ❓ emoji. |
 | `btn-sound.png` | 160×160 | yes | Gold circular icon button — Sound toggle. Fallback = 🔔/🔕 emoji. |
-| `fonts/title.woff2` | — | — | Display font for arcade title + big numbers. Recommend ZCOOL KuaiLe (OFL, CJK+Latin). `@font-face` falls back to Segoe UI. |
+| `fonts/title.woff2` | — | — | Display font for arcade title + big numbers. ZCOOL KuaiLe (OFL), subset to ASCII + 招财猫. `@font-face` falls back to Segoe UI. |
 
 ## After dropping in assets
 
