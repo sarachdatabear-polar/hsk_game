@@ -41,3 +41,17 @@ export function meaning(w, lang) {
   if (lang === "th") return w.t ? { main: w.t, sub: "" } : { main: w.e + " *", sub: "" };
   return { main: w.e, sub: w.t || "" };
 }
+
+// Session length: how many words a "round" battle spawns before it ends.
+export function normalizeLen(v) {
+  if (v === null || v === undefined || v === "") return 20;
+  const n = Math.round(Number(v));
+  if (!Number.isFinite(n)) return 20;
+  return Math.min(500, Math.max(5, n));
+}
+
+// High-score bucket: longer rounds score more, so each length gets its own
+// key — except 20, which keeps the legacy "round" key so old bests survive.
+export function modeKey(mode, len) {
+  return (mode === "round" && len !== 20) ? "round" + len : mode;
+}

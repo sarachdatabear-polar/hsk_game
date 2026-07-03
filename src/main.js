@@ -1,5 +1,5 @@
 "use strict";
-import { buildPool, coveragePct, scopeKey, meaning as meaningOf } from "./pool.js";
+import { buildPool, coveragePct, scopeKey, meaning as meaningOf, normalizeLen, modeKey } from "./pool.js";
 import { pickDistractors } from "./distractors.js";
 import { killPoints } from "./scoring.js";
 import { sfx } from "./sfx.js";
@@ -16,12 +16,13 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem("nbhsk."+k); return v===null? d : JSON.parse(v);}catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem("nbhsk."+k, JSON.stringify(v)); }catch(e){} }
 };
-const scope = Object.assign({levels:[3], core:false, newOnly:false, topN:0, lang:"both"},
+const scope = Object.assign({levels:[3], core:false, newOnly:false, topN:0, lang:"both", sessionLen:20},
                             store.get("scope", {}));
 let settings = Object.assign({autoSpeak:true}, store.get("settings", {}));
 sfx.enabled = store.get("sfx", true);
 let pool = [];            // current merged word pool
 let learnDeck = null;     // override deck for "review misses"
+let lenCustomOpen = false;  // "Custom" chip tapped; input visible even if value matches a preset
 let battleDeckOverride = null;  // when set, next battle draws only these words (e.g. "fight misses")
 let lastMode = "round";
 let masteryStore = store.get("mastery", {});
@@ -82,6 +83,17 @@ function renderScope(){
   $("#readout").innerHTML =
     `Pool: <b>${pool.length.toLocaleString()}</b> words · ~<b>${coveragePct(pool, D.manifest, scope.levels)}%</b> of exam text`
     +(scope.lang!=="en" && noThai? `<div class="warn">* ${noThai.toLocaleString()} long-tail words have no Thai yet — English shown instead.</div>`:"");
+  const len = normalizeLen(scope.sessionLen);
+  scope.sessionLen = len;
+  if(![20,40,100].includes(len)) lenCustomOpen = true;
+  document.querySelectorAll("#len-chips .chip").forEach(c=>{
+    const on = c.dataset.len==="custom" ? lenCustomOpen : (!lenCustomOpen && +c.dataset.len===len);
+    c.classList.toggle("on", on);
+  });
+  const lenInput = $("#len-custom");
+  lenInput.hidden = !lenCustomOpen;
+  if(lenCustomOpen && document.activeElement !== lenInput) lenInput.value = len;
+  $("#go-battle").textContent = `🧧 Battle · ${len}`;
   store.set("scope", scope);
   const startable = pool.length >= 8;
   $("#go-battle").disabled = $("#go-endless").disabled = $("#go-learn").disabled = !startable;
@@ -90,6 +102,16 @@ $("#f-core").onclick = ()=>{ scope.core = !scope.core; renderScope(); };
 $("#f-new").onclick  = ()=>{ scope.newOnly = !scope.newOnly; renderScope(); };
 document.querySelectorAll("#topn-chips .chip").forEach(c=>c.onclick = ()=>{ scope.topN = +c.dataset.n; renderScope(); });
 document.querySelectorAll("#lang-chips .chip").forEach(c=>c.onclick = ()=>{ scope.lang = c.dataset.lang; renderScope(); });
+document.querySelectorAll("#len-chips .chip").forEach(c=>c.onclick = ()=>{
+  if(c.dataset.len==="custom"){ lenCustomOpen = true; renderScope(); $("#len-custom").focus(); }
+  else { lenCustomOpen = false; scope.sessionLen = +c.dataset.len; renderScope(); }
+});
+$("#len-custom").addEventListener("input", ()=>{
+  scope.sessionLen = normalizeLen($("#len-custom").value);
+  store.set("scope", scope);
+  $("#go-battle").textContent = `🧧 Battle · ${scope.sessionLen}`;
+});
+$("#len-custom").addEventListener("change", ()=>renderScope());  // blur/Enter: snap display to normalized value
 document.querySelectorAll("#preset-chips .chip").forEach(c=>c.onclick = ()=>{
   scope.levels = c.dataset.preset.split(",").map(Number); renderScope();
 });
@@ -183,7 +205,7 @@ function startBattle(mode){
   battleDeckOverride = null;
   B.zombie = null; B.proj = null; B.parts = []; B.flash = 0;
   B.score = 0; B.combo = 0; B.lives = 3;
-  B.wordsTotal = mode==="round"? 20 : Infinity;
+  B.wordsTotal = mode==="round"? normalizeLen(scope.sessionLen) : Infinity;
   B.spawned = 0; B.resolved = 0; B.correct = 0; B.attempts = 0;
   B.recent = []; B.misses = []; B.missSet = new Set();
   B.nextAt = 0; B.lastT = 0; B.locked = false;
@@ -402,7 +424,7 @@ function endBattle(quit){
   if(quit){ show("home"); return; }
   const acc = B.attempts? Math.round(100*B.correct/B.attempts) : 0;
   $("#r-score").textContent = B.score;
-  const key = scopeKey(scope)+"·"+B.mode;
+  const key = scopeKey(scope)+"·"+modeKey(B.mode, B.wordsTotal);
   const best = store.get("best", {});
   const prev = best[key]? best[key].score : 0;
   const isBest = B.score > prev;
