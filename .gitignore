@@ -7,3 +7,5 @@ android-signing/
 .gradle/
 www/
 dist-apk/
+__pycache__/
+*.pyc

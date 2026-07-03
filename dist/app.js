@@ -114,20 +114,59 @@
     }
   };
 
-  // src/zombie.js
-  function drawZombie(ctx3, x, groundY, tMs, state) {
-    const speed = state === "dash" ? 3 : 1;
-    const ph = tMs / (220 / speed) % (Math.PI * 2);
+  // src/sprites.js
+  var REGISTRY = {};
+  function loadSprites() {
+    const NAMES = ["cat-walk", "cat-happy", "maneki", "coin"];
+    for (const name of NAMES) {
+      const img = new Image();
+      img.src = "assets/" + name + ".png";
+      REGISTRY[name] = img;
+    }
+  }
+  function sprite(name) {
+    const img = REGISTRY[name];
+    if (!img) return null;
+    if (!img.complete || !img.naturalWidth) return null;
+    return img;
+  }
+
+  // src/cat.js
+  function drawCat(ctx3, x, groundY, tMs, state) {
+    const ph = tMs / 220 % (Math.PI * 2);
     const bob = Math.sin(ph) * 2.5;
-    const legSwing = Math.sin(ph) * (state === "dash" ? 10 : 6);
-    const dying = state === "dying";
+    const legSwing = Math.sin(ph) * 6;
+    const happy = state === "happy";
+    if (state === "walk") {
+      const img = sprite("cat-walk");
+      if (img) {
+        const frame = Math.floor(tMs / 110) % 6;
+        ctx3.drawImage(img, frame * 256, 0, 256, 256, x - 32, groundY - 64, 64, 64);
+        return;
+      }
+    }
+    if (happy) {
+      const img = sprite("cat-happy");
+      if (img) {
+        const frame = Math.floor(tMs / 80) % 4;
+        ctx3.drawImage(img, frame * 256, 0, 256, 256, x - 32, groundY - 64, 64, 64);
+        return;
+      }
+    }
     ctx3.save();
     ctx3.translate(x, groundY);
-    if (dying) {
-      ctx3.globalAlpha = 0.5;
-      ctx3.rotate(0.9);
+    if (happy) {
+      ctx3.rotate(-0.25);
+      ctx3.globalAlpha = 0.85;
+      ctx3.fillStyle = "#f5c518";
+      const sparkOffsets = [[-18, -60], [18, -60], [0, -72], [-22, -42], [22, -42]];
+      for (const [sx, sy] of sparkOffsets) {
+        ctx3.beginPath();
+        ctx3.arc(sx, sy + bob, 2.5, 0, 7);
+        ctx3.fill();
+      }
     }
-    ctx3.strokeStyle = "#3f6b33";
+    ctx3.strokeStyle = "#c87340";
     ctx3.lineWidth = 6;
     ctx3.lineCap = "round";
     ctx3.beginPath();
@@ -138,9 +177,9 @@
     ctx3.moveTo(5, -20);
     ctx3.lineTo(5 - legSwing * 0.4, 0);
     ctx3.stroke();
-    ctx3.fillStyle = "#5d4a63";
+    ctx3.fillStyle = "#e07830";
     ctx3.fillRect(-11, -40 + bob, 22, 22);
-    ctx3.strokeStyle = "#7ec850";
+    ctx3.strokeStyle = "#e07830";
     ctx3.lineWidth = 5;
     ctx3.beginPath();
     ctx3.moveTo(-9, -34 + bob);
@@ -150,20 +189,64 @@
     ctx3.moveTo(-9, -28 + bob);
     ctx3.lineTo(-22, -24 + bob - legSwing * 0.3);
     ctx3.stroke();
-    ctx3.fillStyle = "#8fce58";
+    ctx3.fillStyle = "#f09040";
     ctx3.beginPath();
     ctx3.arc(0, -48 + bob, 10, 0, 7);
     ctx3.fill();
-    ctx3.fillStyle = "#1c241a";
+    ctx3.fillStyle = "#f09040";
+    ctx3.beginPath();
+    ctx3.moveTo(-8, -56 + bob);
+    ctx3.lineTo(-13, -65 + bob);
+    ctx3.lineTo(-2, -58 + bob);
+    ctx3.closePath();
+    ctx3.fill();
+    ctx3.beginPath();
+    ctx3.moveTo(8, -56 + bob);
+    ctx3.lineTo(13, -65 + bob);
+    ctx3.lineTo(2, -58 + bob);
+    ctx3.closePath();
+    ctx3.fill();
+    ctx3.fillStyle = "#f5a0b0";
+    ctx3.beginPath();
+    ctx3.moveTo(-7, -57 + bob);
+    ctx3.lineTo(-11, -63 + bob);
+    ctx3.lineTo(-3, -59 + bob);
+    ctx3.closePath();
+    ctx3.fill();
+    ctx3.beginPath();
+    ctx3.moveTo(7, -57 + bob);
+    ctx3.lineTo(11, -63 + bob);
+    ctx3.lineTo(3, -59 + bob);
+    ctx3.closePath();
+    ctx3.fill();
+    ctx3.fillStyle = "#1c1008";
     ctx3.beginPath();
     ctx3.arc(-4, -50 + bob, 1.8, 0, 7);
     ctx3.fill();
-    ctx3.fillRect(-7, -44 + bob, 6, 1.6);
-    ctx3.strokeStyle = "#3f6b33";
-    ctx3.lineWidth = 2;
     ctx3.beginPath();
-    ctx3.moveTo(0, -58 + bob);
-    ctx3.lineTo(2, -62 + bob);
+    ctx3.arc(4, -50 + bob, 1.8, 0, 7);
+    ctx3.fill();
+    ctx3.fillStyle = "#e05a78";
+    ctx3.beginPath();
+    ctx3.arc(0, -47 + bob, 1.2, 0, 7);
+    ctx3.fill();
+    ctx3.strokeStyle = "#1c1008";
+    ctx3.lineWidth = 0.8;
+    ctx3.beginPath();
+    ctx3.moveTo(-4, -47 + bob);
+    ctx3.lineTo(-14, -45 + bob);
+    ctx3.stroke();
+    ctx3.beginPath();
+    ctx3.moveTo(-4, -47 + bob);
+    ctx3.lineTo(-14, -48 + bob);
+    ctx3.stroke();
+    ctx3.beginPath();
+    ctx3.moveTo(4, -47 + bob);
+    ctx3.lineTo(14, -45 + bob);
+    ctx3.stroke();
+    ctx3.beginPath();
+    ctx3.moveTo(4, -47 + bob);
+    ctx3.lineTo(14, -48 + bob);
     ctx3.stroke();
     ctx3.restore();
   }
@@ -325,6 +408,7 @@
     return a;
   }
   fetch("audio/index.json").then((r) => r.json()).then((ix) => initAudio(ix)).catch(() => initAudio([]));
+  loadSprites();
   var currentScreen = "home";
   function show(name) {
     currentScreen = name;
@@ -467,7 +551,7 @@
   var ctx2 = cv.getContext("2d");
   var B = { on: false };
   var GROUND = 30;
-  var BEAR_X = 52;
+  var MASCOT_X = 52;
   function sizeCanvas() {
     const w = cv.clientWidth, h = Math.round(Math.min(window.innerHeight * 0.4, 340));
     const dpr = window.devicePixelRatio || 1;
@@ -552,6 +636,11 @@
     store.set("settings", settings);
     $("#hud-audio").textContent = settings.autoSpeak ? "\u{1F50A}" : "\u{1F507}";
   };
+  $("#home-sound").addEventListener("click", () => {
+    sfx.enabled = !sfx.enabled;
+    store.set("sfx", sfx.enabled);
+    $("#home-sound").textContent = sfx.enabled ? "\u{1F514}" : "\u{1F515}";
+  });
   function updateHud() {
     $("#hud-lives").textContent = "\u2764\uFE0F".repeat(B.lives) + "\u{1F5A4}".repeat(Math.max(0, 3 - B.lives));
     $("#hud-score").textContent = B.score;
@@ -605,14 +694,14 @@
     if (o.h === z.w.h) {
       B.correct++;
       B.combo++;
-      const distFrac = Math.max(0, z.x - BEAR_X - 34) / (B.w - BEAR_X - 34);
+      const distFrac = Math.max(0, z.x - MASCOT_X - 34) / (B.w - MASCOT_X - 34);
       B.score += killPoints(B.combo, distFrac);
       sfx.kill();
       hapticKill();
       if (B.combo >= 3) sfx.combo(B.combo);
       btn.classList.add("good");
       lockOptions();
-      B.proj = { x: BEAR_X + 16, y: B.h - GROUND - 30 };
+      B.proj = { x: MASCOT_X + 16, y: B.h - GROUND - 30 };
       speak(z.w.h);
     } else {
       B.combo = 0;
@@ -638,7 +727,7 @@
   function killZombie(z) {
     const gy = B.h - GROUND;
     for (let i = 0; i < 12; i++) B.parts.push({ x: z.x, y: gy - 16, vx: (Math.random() - 0.5) * 240, vy: -Math.random() * 200, life: 0.6 });
-    z.state = "dying";
+    z.state = "happy";
     B.dyingUntil = performance.now() + 250;
     B.proj = null;
     B.resolved++;
@@ -675,11 +764,11 @@
     if (z) {
       if (z.state === "walk") {
         z.x -= B.speed * dt;
-        if (z.x <= BEAR_X + 34) bite(true);
+        if (z.x <= MASCOT_X + 34) bite(true);
       } else if (z.state === "dash") {
         z.x -= B.speed * 7 * dt;
-        if (z.x <= BEAR_X + 34) bite(false);
-      } else if (z.state === "dying" && t >= B.dyingUntil) {
+        if (z.x <= MASCOT_X + 34) bite(false);
+      } else if (z.state === "happy" && t >= B.dyingUntil) {
         scheduleNext(200);
       }
     }
@@ -701,41 +790,57 @@
   function draw(t) {
     ctx2.clearRect(0, 0, B.w, B.h);
     const gy = B.h - GROUND;
-    ctx2.strokeStyle = "#6b5a34";
+    ctx2.strokeStyle = "rgba(245,197,24,.35)";
     ctx2.lineWidth = 3;
     ctx2.beginPath();
     ctx2.moveTo(0, gy + 12);
     ctx2.lineTo(B.w, gy + 12);
     ctx2.stroke();
     ctx2.textAlign = "center";
-    ctx2.font = "36px serif";
-    ctx2.fillText("\u{1F43B}", BEAR_X, gy + 6);
-    ctx2.font = "22px serif";
-    ctx2.fillText("\u{1F36F}", 16, gy + 8);
+    const manekiImg = sprite("maneki");
+    if (manekiImg) {
+      const bob = Math.sin(t / 400) * 3;
+      ctx2.drawImage(manekiImg, MASCOT_X - 24, gy - 44 + bob, 48, 48);
+    } else {
+      ctx2.font = "36px serif";
+      ctx2.fillText("\u{1F431}", MASCOT_X, gy + 6);
+    }
+    const coinImgIdle = sprite("coin");
+    if (coinImgIdle) {
+      ctx2.drawImage(coinImgIdle, 4, gy - 22, 20, 20);
+    } else {
+      ctx2.font = "22px serif";
+      ctx2.fillText("\u{1FA99}", 16, gy + 8);
+    }
     const z = B.zombie;
     if (z) {
       const wob = Math.sin(t / 160 + z.wob) * 3;
       ctx2.font = "600 26px 'Segoe UI',sans-serif";
       const lw = Math.max(ctx2.measureText(z.w.h).width, 64) + 22;
       const cx = Math.min(Math.max(z.x, lw / 2 + 6), B.w - lw / 2 - 6);
-      ctx2.fillStyle = z.state === "dash" ? "rgba(255,214,204,.97)" : "rgba(255,240,210,.97)";
-      ctx2.strokeStyle = z.state === "dash" ? "#e05a4e" : "#ffb347";
+      ctx2.fillStyle = "rgba(58,16,16,.95)";
+      ctx2.strokeStyle = "#f5c518";
       ctx2.lineWidth = 2.5;
       roundRect(cx - lw / 2, gy - 118, lw, 52, 10);
       ctx2.fill();
       ctx2.stroke();
-      ctx2.fillStyle = "#1c241a";
+      ctx2.fillStyle = "#fff4e0";
       ctx2.fillText(z.w.h, cx, gy - 96);
       ctx2.font = "13px 'Segoe UI',sans-serif";
-      ctx2.fillStyle = "#7a5b17";
+      ctx2.fillStyle = "#f5c518";
       ctx2.fillText(z.w.p, cx, gy - 76);
-      drawZombie(ctx2, z.x, gy + 6, t, z.state);
+      drawCat(ctx2, z.x, gy + 6, t, z.state);
     }
     if (B.proj) {
-      ctx2.font = "20px serif";
-      ctx2.fillText("\u{1F36F}", B.proj.x, B.proj.y);
+      const coinImg = sprite("coin");
+      if (coinImg) {
+        ctx2.drawImage(coinImg, B.proj.x - 10, B.proj.y - 10, 20, 20);
+      } else {
+        ctx2.font = "20px serif";
+        ctx2.fillText("\u{1FA99}", B.proj.x, B.proj.y);
+      }
     }
-    ctx2.fillStyle = "#8fce58";
+    ctx2.fillStyle = "#f5c518";
     for (const p of B.parts) {
       ctx2.globalAlpha = Math.max(0, p.life / 0.6);
       ctx2.beginPath();
@@ -744,7 +849,7 @@
     }
     ctx2.globalAlpha = 1;
     if (B.flash > 0) {
-      ctx2.fillStyle = `rgba(224,90,78,${(0.38 * B.flash).toFixed(3)})`;
+      ctx2.fillStyle = `rgba(90,44,80,${(0.3 * B.flash).toFixed(3)})`;
       ctx2.fillRect(0, 0, B.w, B.h);
     }
   }
@@ -773,7 +878,7 @@
       best[key] = { score: B.score, date: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10) };
       store.set("best", best);
     }
-    $("#r-sub").innerHTML = `${acc}% accuracy \xB7 ${B.correct} kills \xB7 ${key}` + (isBest ? ` \xB7 <b style="color:var(--amber)">new best!</b>` : ` \xB7 best ${prev}`);
+    $("#r-sub").innerHTML = `${acc}% accuracy \xB7 ${B.correct} coins \xB7 ${key}` + (isBest ? ` \xB7 <b style="color:var(--gold)">new best!</b>` : ` \xB7 best ${prev}`);
     const list = $("#r-miss");
     list.innerHTML = "";
     $("#r-misshead").style.display = B.misses.length ? "block" : "none";
@@ -807,7 +912,7 @@
     const best = store.get("best", {});
     const box = $("#scorelist");
     const keys = Object.keys(best).sort((a, b) => best[b].score - best[a].score);
-    box.innerHTML = keys.length ? "" : `<div class="scorerow" style="color:var(--muted)">No scores yet \u2014 go fight some zombies!</div>`;
+    box.innerHTML = keys.length ? "" : `<div class="scorerow" style="color:var(--muted)">No scores yet \u2014 go earn some coins!</div>`;
     for (const k of keys) {
       const row = document.createElement("div");
       row.className = "scorerow";

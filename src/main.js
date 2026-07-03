@@ -3,7 +3,8 @@ import { buildPool, coveragePct, scopeKey, meaning as meaningOf } from "./pool.j
 import { pickDistractors } from "./distractors.js";
 import { killPoints } from "./scoring.js";
 import { sfx } from "./sfx.js";
-import { drawZombie } from "./zombie.js";
+import { drawCat } from "./cat.js";
+import { loadSprites, sprite } from "./sprites.js";
 import { recordAnswer, levelMastery } from "./mastery.js";
 import { initAudio, speak } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
@@ -35,6 +36,9 @@ function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.rand
 // index.json lists which words have a bundled mp3; fetch fails silently on file://
 // (keeping TTS-only), which is fine per the file:// constraint.
 fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>initAudio([]));
+
+/* ============================== sprite preload ============================== */
+loadSprites();
 
 /* ============================== screens ============================== */
 let currentScreen = "home";
@@ -134,13 +138,13 @@ $("#fc-know").onclick  = ()=>nextCard(false);
 $("#fc-again").onclick = ()=>nextCard(true);
 
 /* ============================== battle ============================== */
-/* Chinese-Zombie pattern: side view, one zombie walks in from the right toward
-   the bear; 4 meaning choices; ONE attempt per word — a wrong tap makes the
-   zombie charge and costs a heart. No retrying, so random guessing is fatal. */
+/* Lucky-cat pattern: side view, one cat walks in from the right toward
+   the mascot; 4 meaning choices; ONE attempt per word — a wrong tap makes the
+   cat wander off and costs a heart. No retrying, so random guessing is fatal. */
 const cv = $("#cv"), ctx = cv.getContext("2d");
 const B = {on:false};
 const GROUND = 30;   // px above canvas bottom
-const BEAR_X = 52;
+const MASCOT_X = 52;
 function sizeCanvas(){
   const w = cv.clientWidth, h = Math.round(Math.min(window.innerHeight*0.40, 340));
   const dpr = window.devicePixelRatio||1;
@@ -199,6 +203,12 @@ $("#hud-audio").onclick = ()=>{
   store.set("settings", settings);
   $("#hud-audio").textContent = settings.autoSpeak? "🔊":"🔇";
 };
+/* home-screen sound toggle (mirrors hud-sfx) */
+$("#home-sound").addEventListener("click", ()=>{
+  sfx.enabled = !sfx.enabled;
+  store.set("sfx", sfx.enabled);
+  $("#home-sound").textContent = sfx.enabled ? "🔔" : "🔕";
+});
 function updateHud(){
   $("#hud-lives").textContent = "❤️".repeat(B.lives) + "🖤".repeat(Math.max(0,3-B.lives));
   $("#hud-score").textContent = B.score;
@@ -246,13 +256,13 @@ function answer(btn, o){
   if(o.h === z.w.h){
     B.correct++; B.combo++;
     // farther kill = bigger bonus (replaces the old time bonus)
-    const distFrac = Math.max(0, z.x - BEAR_X - 34) / (B.w - BEAR_X - 34);
+    const distFrac = Math.max(0, z.x - MASCOT_X - 34) / (B.w - MASCOT_X - 34);
     B.score += killPoints(B.combo, distFrac);
     sfx.kill(); hapticKill(); if (B.combo >= 3) sfx.combo(B.combo);
     btn.classList.add("good");
     lockOptions();
-    B.proj = {x:BEAR_X+16, y:B.h-GROUND-30};   // honey pot flies at the zombie
-    speak(z.w.h);                              // the sound sticks with the kill
+    B.proj = {x:MASCOT_X+16, y:B.h-GROUND-30};   // coin flies at the cat
+    speak(z.w.h);                              // the sound sticks with the correct answer
   }else{
     // ONE attempt per word: wrong tap = lose a heart. Skip the charge animation and
     // advance quickly — just long enough to see the correct answer flashed green.
@@ -276,7 +286,7 @@ function scheduleNext(ms){
 function killZombie(z){
   const gy = B.h-GROUND;
   for(let i=0;i<12;i++) B.parts.push({x:z.x, y:gy-16, vx:(Math.random()-.5)*240, vy:-Math.random()*200, life:.6});
-  z.state = "dying";
+  z.state = "happy";
   B.dyingUntil = performance.now() + 250;
   B.proj = null;
   B.resolved++;
@@ -302,11 +312,11 @@ function loop(t){
   if(z){
     if(z.state==="walk"){
       z.x -= B.speed*dt;
-      if(z.x <= BEAR_X+34) bite(true);          // too slow — zombie got there
+      if(z.x <= MASCOT_X+34) bite(true);          // too slow — cat got there
     }else if(z.state==="dash"){
       z.x -= B.speed*7*dt;
-      if(z.x <= BEAR_X+34) bite(false);         // charging after a wrong answer
-    }else if(z.state==="dying" && t >= B.dyingUntil){
+      if(z.x <= MASCOT_X+34) bite(false);         // legacy: never assigned, kept for safety
+    }else if(z.state==="happy" && t >= B.dyingUntil){
       scheduleNext(200);
     }
   }
@@ -323,40 +333,61 @@ function loop(t){
 function draw(t){
   ctx.clearRect(0,0,B.w,B.h);
   const gy = B.h-GROUND;
-  // ground + bear + honey
-  ctx.strokeStyle = "#6b5a34"; ctx.lineWidth = 3;
+  // ground line — subtle gold
+  ctx.strokeStyle = "rgba(245,197,24,.35)"; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(0,gy+12); ctx.lineTo(B.w,gy+12); ctx.stroke();
   ctx.textAlign = "center";
-  ctx.font = "36px serif";
-  ctx.fillText("🐻", BEAR_X, gy+6);
-  ctx.font = "22px serif";
-  ctx.fillText("🍯", 16, gy+8);
+  // mascot (left side) — maneki sprite or cat emoji fallback
+  const manekiImg = sprite("maneki");
+  if(manekiImg){
+    const bob = Math.sin(t/400)*3;
+    ctx.drawImage(manekiImg, MASCOT_X-24, gy-44+bob, 48, 48);
+  }else{
+    ctx.font = "36px serif";
+    ctx.fillText("🐱", MASCOT_X, gy+6);
+  }
+  // idle coin icon (left of mascot) — coin sprite or emoji fallback
+  const coinImgIdle = sprite("coin");
+  if(coinImgIdle){
+    ctx.drawImage(coinImgIdle, 4, gy-22, 20, 20);
+  }else{
+    ctx.font = "22px serif";
+    ctx.fillText("🪙", 16, gy+8);
+  }
   const z = B.zombie;
   if(z){
     const wob = Math.sin(t/160 + z.wob)*3;
-    // word label above the zombie, clamped inside the canvas
+    // word banner above the cat, clamped inside the canvas
     ctx.font = "600 26px 'Segoe UI',sans-serif";
     const lw = Math.max(ctx.measureText(z.w.h).width, 64)+22;
     const cx = Math.min(Math.max(z.x, lw/2+6), B.w-lw/2-6);
-    ctx.fillStyle = z.state==="dash"? "rgba(255,214,204,.97)":"rgba(255,240,210,.97)";
-    ctx.strokeStyle = z.state==="dash"? "#e05a4e":"#ffb347";
+    ctx.fillStyle = "rgba(58,16,16,.95)";
+    ctx.strokeStyle = "#f5c518";
     ctx.lineWidth = 2.5;
     roundRect(cx-lw/2, gy-118, lw, 52, 10); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = "#1c241a";
+    ctx.fillStyle = "#fff4e0";
     ctx.fillText(z.w.h, cx, gy-96);
     ctx.font = "13px 'Segoe UI',sans-serif";
-    ctx.fillStyle = "#7a5b17";
+    ctx.fillStyle = "#f5c518";
     ctx.fillText(z.w.p, cx, gy-76);
-    // zombie
-    drawZombie(ctx, z.x, gy + 6, t, z.state);
+    // cat
+    drawCat(ctx, z.x, gy + 6, t, z.state);
   }
-  if(B.proj){ ctx.font = "20px serif"; ctx.fillText("🍯", B.proj.x, B.proj.y); }
-  // splat particles
-  ctx.fillStyle = "#8fce58";
+  // projectile — spinning coin sprite or emoji fallback
+  if(B.proj){
+    const coinImg = sprite("coin");
+    if(coinImg){
+      ctx.drawImage(coinImg, B.proj.x-10, B.proj.y-10, 20, 20);
+    }else{
+      ctx.font = "20px serif"; ctx.fillText("🪙", B.proj.x, B.proj.y);
+    }
+  }
+  // gold particles (correct answer burst)
+  ctx.fillStyle = "#f5c518";
   for(const p of B.parts){ ctx.globalAlpha = Math.max(0,p.life/0.6); ctx.beginPath(); ctx.arc(p.x,p.y,3.4,0,7); ctx.fill(); }
   ctx.globalAlpha = 1;
-  // hit flash
-  if(B.flash>0){ ctx.fillStyle = `rgba(224,90,78,${(0.38*B.flash).toFixed(3)})`; ctx.fillRect(0,0,B.w,B.h); }
+  // hit flash — softened dim-violet (cat wandered off, not combat damage)
+  if(B.flash>0){ ctx.fillStyle = `rgba(90,44,80,${(0.30*B.flash).toFixed(3)})`; ctx.fillRect(0,0,B.w,B.h); }
 }
 function roundRect(x,y,w,h,r){
   ctx.beginPath();
@@ -373,8 +404,8 @@ function endBattle(quit){
   const prev = best[key]? best[key].score : 0;
   const isBest = B.score > prev;
   if(isBest){ best[key] = {score:B.score, date:new Date().toISOString().slice(0,10)}; store.set("best", best); }
-  $("#r-sub").innerHTML = `${acc}% accuracy · ${B.correct} kills · ${key}`
-    + (isBest? ` · <b style="color:var(--amber)">new best!</b>` : ` · best ${prev}`);
+  $("#r-sub").innerHTML = `${acc}% accuracy · ${B.correct} coins · ${key}`
+    + (isBest? ` · <b style="color:var(--gold)">new best!</b>` : ` · best ${prev}`);
   const list = $("#r-miss");
   list.innerHTML = "";
   $("#r-misshead").style.display = B.misses.length? "block":"none";
@@ -402,7 +433,7 @@ function renderScores(){
   const best = store.get("best", {});
   const box = $("#scorelist");
   const keys = Object.keys(best).sort((a,b)=>best[b].score-best[a].score);
-  box.innerHTML = keys.length? "" : `<div class="scorerow" style="color:var(--muted)">No scores yet — go fight some zombies!</div>`;
+  box.innerHTML = keys.length? "" : `<div class="scorerow" style="color:var(--muted)">No scores yet — go earn some coins!</div>`;
   for(const k of keys){
     const row = document.createElement("div");
     row.className = "scorerow";
