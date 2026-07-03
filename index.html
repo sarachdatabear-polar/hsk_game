@@ -22,7 +22,7 @@
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0; background:var(--bg); color:var(--ink);
     font-family:"Segoe UI",system-ui,-apple-system,"Noto Sans","Noto Sans Thai",sans-serif;}
-  #app{max-width:520px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column;}
+  #app{max-width:520px; margin:0 auto; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column;}
   .screen{display:none; flex:1; flex-direction:column; padding:16px;}
   .screen.on{display:flex;}
   h1{font-size:28px; margin:8px 0 2px; color:var(--gold); text-align:center;
@@ -69,18 +69,21 @@
     box-shadow:inset 0 2px 0 rgba(255,255,255,.4), 0 4px 0 rgba(0,0,0,.4);
     display:flex; align-items:center; justify-content:center;}
   .icon-btn:active{transform:scale(.96);}
-  /* real gold-disc art (assets/btn-*.png) replaces the CSS disc + emoji.
-     #home-sound intentionally stays emoji so its 🔔/🔕 toggle state shows. */
+  /* real gold-disc art (assets/btn-*.png) replaces the CSS disc + emoji. */
   .icon-btn[data-go="scope-learn"],
   .icon-btn[data-go="scores"],
   .icon-btn[data-go="progress"],
-  .icon-btn[data-go="howto"]{
+  .icon-btn[data-go="howto"],
+  .icon-btn#home-sound{
     color:transparent; font-size:0; border-color:#9c6b00;
     background-size:cover; background-position:center; background-repeat:no-repeat;}
   .icon-btn[data-go="scope-learn"]{background-image:url("assets/btn-learn.png");}
   .icon-btn[data-go="scores"]{background-image:url("assets/btn-scores.png");}
   .icon-btn[data-go="progress"]{background-image:url("assets/btn-progress.png");}
   .icon-btn[data-go="howto"]{background-image:url("assets/btn-howto.png");}
+  .icon-btn#home-sound{background-image:url("assets/btn-sound.png");}
+  /* muted state: btn-sound art greys out so on/off still reads at a glance */
+  .icon-btn#home-sound.muted{filter:grayscale(1) opacity(.45);}
   /* flashcards */
   .fc-top{display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:14px;}
   .card{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;
@@ -107,7 +110,11 @@
     display:flex; align-items:center; justify-content:center;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 2px 0 rgba(0,0,0,.35);}
   #hud .combo{color:var(--crimson); font-weight:700;}
-  #cv{width:100%; border-radius:14px;
+  /* canvas fills the space between HUD and options; .cv-wrap absorbs all the
+     slack (flex:1) and centers the canvas, so leftover space splits above/below
+     instead of dumping under the options. */
+  .cv-wrap{flex:1; min-height:0; display:flex; align-items:center; justify-content:center;}
+  #cv{width:100%; max-height:100%; aspect-ratio:3/4; border-radius:14px;
     /* image layered OVER gradient: if the PNG is missing, the festive gradient still shows */
     background-image:url("assets/bg-battle.png"), linear-gradient(#2a0f2a,#4a1420 60%,#6b2a1a);
     background-size:cover; background-position:bottom; background-repeat:no-repeat;
@@ -146,6 +153,28 @@
     background-size:cover; background-position:center; background-repeat:no-repeat;
     justify-content:space-between;
   }
+  /* festive decor — swaying lantern.png corners + a soft cloud.png behind the
+     title. Applied to the bare screens (Results/Scores/Progress/How-to) only;
+     #s-home keeps its painted hero so the motif isn't doubled. z-index:0 makes
+     .festive its own stacking context, so the z-index:-1 decorations sit behind
+     the screen's content but above the page background. */
+  .screen.festive{position:relative; z-index:0;}
+  .screen.festive::before,
+  .screen.festive::after{
+    content:""; position:absolute; top:-4px; width:34px; height:51px;
+    background:url("assets/lantern.png") center/contain no-repeat;
+    transform-origin:50% 0; pointer-events:none; z-index:-1; opacity:.9;
+    animation:sway 3.2s ease-in-out infinite alternate;}
+  .screen.festive::before{left:8px;}
+  .screen.festive::after{right:8px; animation-delay:-1.6s;}
+  @keyframes sway{from{transform:rotate(-7deg);} to{transform:rotate(7deg);}}
+  @media (prefers-reduced-motion:reduce){
+    .screen.festive::before,.screen.festive::after{animation:none;}}
+  .screen.festive h2{position:relative; padding:12px 10px;}
+  .screen.festive h2::before{
+    content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+    background:url("assets/cloud.png") left center/auto 2.4em no-repeat; opacity:.3;}
+  #s-results h2::before{background-position:center;}
 </style>
 </head>
 <body>
@@ -229,12 +258,12 @@
       <button class="hud-round" id="hud-audio" title="word audio on spawn">🔊</button>
       <button class="hud-round" id="hud-quit" title="quit">✕</button>
     </div>
-    <canvas id="cv"></canvas>
+    <div class="cv-wrap"><canvas id="cv"></canvas></div>
     <div id="opts"></div>
   </div>
 
   <!-- RESULTS -->
-  <div class="screen" id="s-results">
+  <div class="screen festive" id="s-results">
     <h2 style="text-align:center">Round over</h2>
     <div class="bignum" id="r-score"></div>
     <p class="sub" id="r-sub"></p>
@@ -249,21 +278,21 @@
   </div>
 
   <!-- SCORES -->
-  <div class="screen" id="s-scores">
+  <div class="screen festive" id="s-scores">
     <button class="back" data-go="home">← Home</button>
     <h2>🏆 High scores</h2>
     <div class="scorelist" id="scorelist"></div>
   </div>
 
   <!-- PROGRESS -->
-  <div class="screen" id="s-progress">
+  <div class="screen festive" id="s-progress">
     <button class="back" data-go="home">← Home</button>
     <h2>📈 Progress</h2>
     <div class="scorelist" id="progresslist"></div>
   </div>
 
   <!-- HOW TO -->
-  <div class="screen" id="s-howto">
+  <div class="screen festive" id="s-howto">
     <button class="back" data-go="home">← Home</button>
     <h2>How to play</h2>
     <p class="howto">
