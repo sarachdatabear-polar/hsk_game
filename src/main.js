@@ -146,9 +146,11 @@ const B = {on:false};
 const GROUND = 30;   // px above canvas bottom
 const MASCOT_X = 52;
 function sizeCanvas(){
-  const w = cv.clientWidth, h = Math.round(Math.min(window.innerHeight*0.40, 340));
+  // CSS drives the box: .cv-wrap (flex:1) fills between HUD and options, and
+  // #cv fills that up to a 1:1 cap. We just read the measured size and build a
+  // crisp DPR buffer from it.
+  const w = cv.clientWidth, h = cv.clientHeight;
   const dpr = window.devicePixelRatio||1;
-  cv.style.height = h+"px";
   cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr);
   ctx.setTransform(dpr,0,0,dpr,0,0);
   B.w = w; B.h = h;
@@ -203,12 +205,13 @@ $("#hud-audio").onclick = ()=>{
   store.set("settings", settings);
   $("#hud-audio").textContent = settings.autoSpeak? "🔊":"🔇";
 };
-/* home-screen sound toggle (mirrors hud-sfx) */
+/* home-screen sound toggle (mirrors hud-sfx; btn-sound.png art greys out when muted) */
 $("#home-sound").addEventListener("click", ()=>{
   sfx.enabled = !sfx.enabled;
   store.set("sfx", sfx.enabled);
-  $("#home-sound").textContent = sfx.enabled ? "🔔" : "🔕";
+  $("#home-sound").classList.toggle("muted", !sfx.enabled);
 });
+$("#home-sound").classList.toggle("muted", !sfx.enabled);  // reflect stored state on load
 function updateHud(){
   $("#hud-lives").textContent = "❤️".repeat(B.lives) + "🖤".repeat(Math.max(0,3-B.lives));
   $("#hud-score").textContent = B.score;

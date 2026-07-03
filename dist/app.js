@@ -553,9 +553,8 @@
   var GROUND = 30;
   var MASCOT_X = 52;
   function sizeCanvas() {
-    const w = cv.clientWidth, h = Math.round(Math.min(window.innerHeight * 0.4, 340));
+    const w = cv.clientWidth, h = cv.clientHeight;
     const dpr = window.devicePixelRatio || 1;
-    cv.style.height = h + "px";
     cv.width = Math.round(w * dpr);
     cv.height = Math.round(h * dpr);
     ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -639,8 +638,9 @@
   $("#home-sound").addEventListener("click", () => {
     sfx.enabled = !sfx.enabled;
     store.set("sfx", sfx.enabled);
-    $("#home-sound").textContent = sfx.enabled ? "\u{1F514}" : "\u{1F515}";
+    $("#home-sound").classList.toggle("muted", !sfx.enabled);
   });
+  $("#home-sound").classList.toggle("muted", !sfx.enabled);
   function updateHud() {
     $("#hud-lives").textContent = "\u2764\uFE0F".repeat(B.lives) + "\u{1F5A4}".repeat(Math.max(0, 3 - B.lives));
     $("#hud-score").textContent = B.score;
