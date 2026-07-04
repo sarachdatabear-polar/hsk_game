@@ -1,6 +1,6 @@
 {
-  "appId": "com.northbear.hskzombie",
-  "appName": "HSK Zombie",
+  "appId": "com.luckycat.hsk",
+  "appName": "Lucky Cat HSK",
   "webDir": "www",
   "server": { "androidScheme": "https" },
   "backgroundColor": "#141a14",

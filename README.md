@@ -1,6 +1,6 @@
-# HSK Zombie
+# Lucky Cat HSK
 
-HSK vocabulary arcade game (Lucky Cat / NorthBear), playable in the browser as an installable PWA.
+HSK vocabulary arcade game, playable in the browser as an installable PWA.
 
 ## Play
 

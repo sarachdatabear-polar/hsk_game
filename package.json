@@ -1,8 +1,8 @@
 {
-  "name": "northbear-hsk-zombie",
+  "name": "lucky-cat-hsk",
   "version": "0.2.0",
   "private": true,
-  "description": "HSK vocabulary arcade game - NorthBear",
+  "description": "HSK vocabulary arcade game - Lucky Cat HSK",
   "scripts": {
     "test": "vitest run",
     "build": "esbuild src/main.js --bundle --format=iife --outfile=dist/app.js",
