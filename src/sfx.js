@@ -13,10 +13,59 @@ function tone(freq, dur, type = "square", vol = 0.15, when = 0) {
   o.connect(g).connect(a.destination);
   o.start(a.currentTime + when); o.stop(a.currentTime + when + dur);
 }
+
+// Data-driven sound packs — plain data so packs are unit-testable without an
+// AudioContext. kill/wrong/bite are arrays of {f,d,w,v,at} tone specs (freq,
+// dur, wave, vol, when-offset; at defaults to 0). combo keeps the original
+// combo-scaling formula (base = 700 + min(n,8)*60, second tone = base*mult)
+// but lets each pack add a pitch offset (boff) and supply {d,w,v,at} per tone.
+// `default` reproduces today's sounds exactly.
+export const PACKS = {
+  default: {
+    kill:  [{ f: 660, d: .09, w: "square",   v: .15, at: 0   },
+            { f: 880, d: .12, w: "square",   v: .15, at: .07 }],
+    wrong: [{ f: 160, d: .25, w: "sawtooth", v: .18, at: 0   }],
+    bite:  [{ f: 220, d: .12, w: "sawtooth", v: .2,  at: 0   },
+            { f: 110, d: .3,  w: "sawtooth", v: .2,  at: .1  }],
+    combo: { boff: 0, mult: 1.5,
+             tones: [{ d: .08, w: "triangle", v: .12, at: 0   },
+                     { d: .1,  w: "triangle", v: .12, at: .06 }] },
+  },
+  bells: {
+    kill:  [{ f: 392, d: .35, w: "sine",     v: .12, at: 0   },
+            { f: 494, d: .45, w: "triangle", v: .12, at: .08 }],
+    wrong: [{ f: 175, d: .4,  w: "sine",     v: .12, at: 0   }],
+    bite:  [{ f: 294, d: .4,  w: "triangle", v: .14, at: 0   },
+            { f: 147, d: .6,  w: "sine",     v: .12, at: .15 }],
+    combo: { boff: -250, mult: 1.5,
+             tones: [{ d: .4, w: "sine",     v: .1, at: 0  },
+                     { d: .5, w: "triangle", v: .1, at: .1 }] },
+  },
+  arcade: {
+    kill:  [{ f: 1200, d: .05, w: "square", v: .18, at: 0   },
+            { f: 1600, d: .07, w: "square", v: .18, at: .04 }],
+    wrong: [{ f: 300, d: .08, w: "square", v: .2,  at: 0   },
+            { f: 200, d: .1,  w: "square", v: .2,  at: .05 }],
+    bite:  [{ f: 500, d: .06, w: "square", v: .2,  at: 0   },
+            { f: 250, d: .1,  w: "square", v: .18, at: .05 }],
+    combo: { boff: 150, mult: 1.5,
+             tones: [{ d: .05, w: "square", v: .16, at: 0   },
+                     { d: .07, w: "square", v: .16, at: .03 }] },
+  },
+};
+
+function playSpecs(specs) { for (const s of specs) tone(s.f, s.d, s.w, s.v, s.at || 0); }
+
 export const sfx = {
   enabled: true,
-  kill()  { tone(660, .09); tone(880, .12, "square", .15, .07); },          // rising blip
-  wrong() { tone(160, .25, "sawtooth", .18); },                              // buzz
-  bite()  { tone(220, .12, "sawtooth", .2); tone(110, .3, "sawtooth", .2, .1); },
-  combo(n){ const base = 700 + Math.min(n, 8) * 60; tone(base, .08, "triangle", .12); tone(base * 1.5, .1, "triangle", .12, .06); }
+  pack: "default",
+  kill()  { playSpecs((PACKS[sfx.pack] || PACKS.default).kill); },          // rising blip
+  wrong() { playSpecs((PACKS[sfx.pack] || PACKS.default).wrong); },          // buzz
+  bite()  { playSpecs((PACKS[sfx.pack] || PACKS.default).bite); },
+  combo(n) {
+    const p = (PACKS[sfx.pack] || PACKS.default).combo;
+    const base = 700 + Math.min(n, 8) * 60 + p.boff;
+    const freqs = [base, base * p.mult];
+    p.tones.forEach((t, i) => tone(freqs[i], t.d, t.w, t.v, t.at || 0));
+  },
 };

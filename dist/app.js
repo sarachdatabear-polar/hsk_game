@@ -83,10 +83,43 @@
   }
 
   // src/fx.js
-  function coinBurst(x, y, boss) {
+  function coinBurst(x, y, boss, style) {
     const count = boss ? 28 : 12;
     const coins = boss ? 12 : 5;
     const vyMax = boss ? 260 : 200;
+    if (style === "sakura-fx") {
+      const specs2 = [];
+      for (let i = 0; i < count; i++) {
+        specs2.push({
+          x,
+          y,
+          vx: (Math.random() - 0.5) * 280,
+          // ±140, narrower than the default burst
+          vy: -Math.random() * vyMax,
+          life: 0.9 + Math.random() * 0.4,
+          // 0.9 - 1.3, lingers a bit
+          kind: "petal",
+          g: 120
+          // slow fall
+        });
+      }
+      return specs2;
+    }
+    if (style === "firecracker-fx") {
+      const extra = 6;
+      const specs2 = [];
+      for (let i = 0; i < count + extra; i++) {
+        specs2.push({
+          x,
+          y,
+          vx: (Math.random() - 0.5) * 480 * 1.3,
+          vy: -Math.random() * vyMax * 1.3,
+          life: 0.6 + Math.random() * 0.3,
+          kind: i < coins ? "cracker" : "spark"
+        });
+      }
+      return specs2;
+    }
     const specs = [];
     for (let i = 0; i < count; i++) {
       specs.push({
@@ -145,25 +178,90 @@
     o.start(a.currentTime + when);
     o.stop(a.currentTime + when + dur);
   }
+  var PACKS = {
+    default: {
+      kill: [
+        { f: 660, d: 0.09, w: "square", v: 0.15, at: 0 },
+        { f: 880, d: 0.12, w: "square", v: 0.15, at: 0.07 }
+      ],
+      wrong: [{ f: 160, d: 0.25, w: "sawtooth", v: 0.18, at: 0 }],
+      bite: [
+        { f: 220, d: 0.12, w: "sawtooth", v: 0.2, at: 0 },
+        { f: 110, d: 0.3, w: "sawtooth", v: 0.2, at: 0.1 }
+      ],
+      combo: {
+        boff: 0,
+        mult: 1.5,
+        tones: [
+          { d: 0.08, w: "triangle", v: 0.12, at: 0 },
+          { d: 0.1, w: "triangle", v: 0.12, at: 0.06 }
+        ]
+      }
+    },
+    bells: {
+      kill: [
+        { f: 392, d: 0.35, w: "sine", v: 0.12, at: 0 },
+        { f: 494, d: 0.45, w: "triangle", v: 0.12, at: 0.08 }
+      ],
+      wrong: [{ f: 175, d: 0.4, w: "sine", v: 0.12, at: 0 }],
+      bite: [
+        { f: 294, d: 0.4, w: "triangle", v: 0.14, at: 0 },
+        { f: 147, d: 0.6, w: "sine", v: 0.12, at: 0.15 }
+      ],
+      combo: {
+        boff: -250,
+        mult: 1.5,
+        tones: [
+          { d: 0.4, w: "sine", v: 0.1, at: 0 },
+          { d: 0.5, w: "triangle", v: 0.1, at: 0.1 }
+        ]
+      }
+    },
+    arcade: {
+      kill: [
+        { f: 1200, d: 0.05, w: "square", v: 0.18, at: 0 },
+        { f: 1600, d: 0.07, w: "square", v: 0.18, at: 0.04 }
+      ],
+      wrong: [
+        { f: 300, d: 0.08, w: "square", v: 0.2, at: 0 },
+        { f: 200, d: 0.1, w: "square", v: 0.2, at: 0.05 }
+      ],
+      bite: [
+        { f: 500, d: 0.06, w: "square", v: 0.2, at: 0 },
+        { f: 250, d: 0.1, w: "square", v: 0.18, at: 0.05 }
+      ],
+      combo: {
+        boff: 150,
+        mult: 1.5,
+        tones: [
+          { d: 0.05, w: "square", v: 0.16, at: 0 },
+          { d: 0.07, w: "square", v: 0.16, at: 0.03 }
+        ]
+      }
+    }
+  };
+  function playSpecs(specs) {
+    for (const s of specs) tone(s.f, s.d, s.w, s.v, s.at || 0);
+  }
   var sfx = {
     enabled: true,
+    pack: "default",
     kill() {
-      tone(660, 0.09);
-      tone(880, 0.12, "square", 0.15, 0.07);
+      playSpecs((PACKS[sfx.pack] || PACKS.default).kill);
     },
     // rising blip
     wrong() {
-      tone(160, 0.25, "sawtooth", 0.18);
+      playSpecs((PACKS[sfx.pack] || PACKS.default).wrong);
     },
     // buzz
     bite() {
-      tone(220, 0.12, "sawtooth", 0.2);
-      tone(110, 0.3, "sawtooth", 0.2, 0.1);
+      playSpecs((PACKS[sfx.pack] || PACKS.default).bite);
     },
     combo(n) {
-      const base2 = 700 + Math.min(n, 8) * 60;
-      tone(base2, 0.08, "triangle", 0.12);
-      tone(base2 * 1.5, 0.1, "triangle", 0.12, 0.06);
+      const p = (PACKS[sfx.pack] || PACKS.default).combo;
+      const base2 = 700 + Math.min(n, 8) * 60 + p.boff;
+      const freqs = [base2, base2 * p.mult];
+      p.tones.forEach((t, i) => tone(freqs[i], t.d, t.w, t.v, t.at || 0));
     }
   };
 
@@ -735,7 +833,16 @@
     { id: "gold", name: "Gold", price: 5e3, type: "skin" },
     { id: "market", name: "Night Market", price: 1e3, type: "backdrop" },
     { id: "temple", name: "Temple Dawn", price: 2e3, type: "backdrop" },
-    { id: "bamboo", name: "Bamboo", price: 3e3, type: "backdrop" }
+    { id: "bamboo", name: "Bamboo", price: 3e3, type: "backdrop" },
+    { id: "sakura-fx", name: "Sakura Petals", price: 2e3, type: "effect" },
+    { id: "firecracker-fx", name: "Firecrackers", price: 3500, type: "effect" },
+    { id: "bells", name: "Temple Bells", price: 2500, type: "soundpack" },
+    { id: "arcade", name: "Arcade", price: 4e3, type: "soundpack" },
+    { id: "red-lantern", name: "Red Lantern", price: 800, type: "deco" },
+    { id: "noodle-stall", name: "Noodle Stall", price: 1500, type: "deco" },
+    { id: "tea-sign", name: "Tea Sign", price: 2200, type: "deco" },
+    { id: "foo-dog", name: "Foo Dog", price: 3e3, type: "deco" },
+    { id: "golden-arch", name: "Golden Arch", price: 5e3, type: "deco" }
   ];
   var SKIN_PALETTES = {
     midnight: {
@@ -775,7 +882,7 @@
     return CATALOG.find((it) => it.id === id);
   }
   function defaultShop() {
-    return { owned: [], skin: "", backdrop: "" };
+    return { owned: [], skin: "", backdrop: "", effect: "", soundpack: "" };
   }
   function canAfford(wallet2, id) {
     const item = byId(id);
@@ -793,10 +900,40 @@
     };
   }
   function equipItem(shop, id, type) {
-    if (!id) return type === "skin" || type === "backdrop" ? { ...shop, [type]: "" } : shop;
+    if (!id) return type === "skin" || type === "backdrop" || type === "effect" || type === "soundpack" ? { ...shop, [type]: "" } : shop;
     const item = byId(id);
     if (!item || !shop.owned.includes(id)) return shop;
+    if (item.type === "deco") return shop;
     return { ...shop, [item.type]: id };
+  }
+
+  // src/street.js
+  var BUILDINGS = [
+    { lv: 5, id: "lantern-post", name: "Lantern Post" },
+    { lv: 10, id: "coin-bank", name: "Coin Bank" },
+    { lv: 20, id: "tailor", name: "Tailor Shop" },
+    { lv: 30, id: "kitten-cafe", name: "Kitten Caf\xE9" },
+    { lv: 50, id: "emperor-gate", name: "Emperor's Gate" }
+  ];
+  var DECO_IDS = ["red-lantern", "noodle-stall", "tea-sign", "foo-dog", "golden-arch"];
+  var BUILDING_SLOTS = [0.18, 0.34, 0.5, 0.66, 0.82];
+  var DECO_SLOTS = [0.1, 0.26, 0.42, 0.58, 0.74];
+  function streetPieces(level, owned) {
+    const pieces = [];
+    BUILDINGS.forEach((b, i) => {
+      if (level >= b.lv) pieces.push({ id: b.id, kind: "building", slot: BUILDING_SLOTS[i] });
+    });
+    DECO_IDS.forEach((id, i) => {
+      if (owned.includes(id)) pieces.push({ id, kind: "deco", slot: DECO_SLOTS[i] });
+    });
+    return pieces.sort((a, b) => a.slot - b.slot);
+  }
+  function streetProgress(level) {
+    const total = BUILDINGS.length;
+    const unlocked = BUILDINGS.filter((b) => b.lv <= level).length;
+    const nextB = BUILDINGS.find((b) => b.lv > level) || null;
+    const next = nextB ? { lv: nextB.lv, name: nextB.name } : null;
+    return { unlocked, total, next };
   }
 
   // src/main.js
@@ -855,6 +992,7 @@
       B.acc = acc.filter((id) => id !== "kitten");
       B.hasKitten = acc.includes("kitten");
     }
+    if (after > before) renderStreet();
     updateLevelChip();
   }
   var todayStr = () => {
@@ -905,7 +1043,7 @@
     const deck = smartDeck(masteryStore, pool, Date.now());
     const btn = $("#go-smart");
     btn.disabled = deck.length < 8;
-    btn.textContent = deck.length ? `\u{1F3AF} Smart Review \xB7 ${deck.length}` : "\u{1F3AF} Smart Review";
+    btn.textContent = !deck.length ? "\u{1F3AF} Smart Review" : deck.length < 8 ? `\u{1F3AF} Smart Review \xB7 ${deck.length}/8` : `\u{1F3AF} Smart Review \xB7 ${deck.length}`;
   }
   $("#go-smart").onclick = () => {
     const deck = smartDeck(masteryStore, pool, Date.now());
@@ -928,7 +1066,10 @@
     currentScreen = name;
     document.querySelectorAll(".screen").forEach((el) => el.classList.remove("on"));
     $("#s-" + name).classList.add("on");
-    if (name === "home") renderQuests();
+    if (name === "home") {
+      renderQuests();
+      renderStreet();
+    }
   }
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => {
     const t = b.dataset.go;
@@ -1346,7 +1487,7 @@
   }
   function killZombie(z) {
     const gy = B.h - B.L.ground;
-    B.parts.push(...coinBurst(z.x, gy - 16, !!z.boss));
+    B.parts.push(...coinBurst(z.x, gy - 16, !!z.boss, shopState.effect));
     z.state = "happy";
     B.dyingUntil = performance.now() + 250;
     B.proj = null;
@@ -1402,7 +1543,7 @@
     for (const p of B.parts) {
       p.x += p.vx * dt;
       p.y += p.vy * dt;
-      p.vy += 500 * dt;
+      p.vy += (p.g ?? 500) * dt;
       p.life -= dt;
     }
     B.parts = B.parts.filter((p) => p.life > 0);
@@ -1533,6 +1674,16 @@
         ctx2.beginPath();
         ctx2.arc(p.x, p.y, 4.2, 0, 7);
         ctx2.fill();
+      } else if (p.kind === "petal") {
+        ctx2.fillStyle = "#f6a8c8";
+        ctx2.beginPath();
+        ctx2.ellipse(p.x, p.y, 4.6, 2.6, p.x * 0.05, 0, 7);
+        ctx2.fill();
+      } else if (p.kind === "cracker") {
+        ctx2.fillStyle = "#e04040";
+        ctx2.beginPath();
+        ctx2.arc(p.x, p.y, 4.4, 0, 7);
+        ctx2.fill();
       } else {
         ctx2.fillStyle = "#f5c518";
         ctx2.beginPath();
@@ -1656,12 +1807,16 @@
     }
   }
   function renderShop() {
+    sfx.pack = shopState.soundpack || "default";
     $("#shop-wallet").innerHTML = `Wallet: <b>${wallet.toLocaleString()}</b> \u{1FA99}`;
-    const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops");
+    const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), decoBox = $("#shop-street");
     skinBox.innerHTML = "";
     bdBox.innerHTML = "";
+    fxBox.innerHTML = "";
+    sndBox.innerHTML = "";
+    decoBox.innerHTML = "";
     for (const item of CATALOG) {
-      const box = item.type === "skin" ? skinBox : bdBox;
+      const box = item.type === "skin" ? skinBox : item.type === "backdrop" ? bdBox : item.type === "effect" ? fxBox : item.type === "soundpack" ? sndBox : decoBox;
       const owned = shopState.owned.includes(item.id);
       const equipped = shopState[item.type] === item.id;
       const row = document.createElement("div");
@@ -1669,35 +1824,227 @@
       const left = document.createElement("span");
       left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${item.price.toLocaleString()} \u{1FA99}</span>`;
       const btn = document.createElement("button");
-      btn.className = "chip" + (equipped ? " on" : "");
-      if (equipped) {
-        btn.textContent = "Equipped";
-        btn.disabled = true;
-      } else if (owned) {
-        btn.textContent = "Equip";
-        btn.onclick = () => {
-          shopState = equipItem(shopState, item.id);
-          store.set("shop", shopState);
-          renderShop();
-        };
+      if (item.type === "deco") {
+        btn.className = "chip" + (owned ? " on" : "");
+        if (owned) {
+          btn.textContent = "On street \u2713";
+          btn.disabled = true;
+        } else {
+          btn.textContent = "Buy";
+          btn.disabled = !canAfford(wallet, item.id);
+          btn.onclick = () => {
+            const r = buy(wallet, shopState, item.id);
+            if (!r.ok) return;
+            wallet = r.wallet;
+            shopState = r.shop;
+            store.set("wallet", wallet);
+            store.set("shop", shopState);
+            updateWalletChip();
+            renderShop();
+            renderStreet();
+          };
+        }
       } else {
-        btn.textContent = "Buy";
-        btn.disabled = !canAfford(wallet, item.id);
-        btn.onclick = () => {
-          const r = buy(wallet, shopState, item.id);
-          if (!r.ok) return;
-          wallet = r.wallet;
-          shopState = r.shop;
-          store.set("wallet", wallet);
-          store.set("shop", shopState);
-          updateWalletChip();
-          renderShop();
-        };
+        btn.className = "chip" + (equipped ? " on" : "");
+        if (equipped) {
+          btn.textContent = "Equipped";
+          btn.disabled = true;
+        } else if (owned) {
+          btn.textContent = "Equip";
+          btn.onclick = () => {
+            shopState = equipItem(shopState, item.id);
+            store.set("shop", shopState);
+            renderShop();
+          };
+        } else {
+          btn.textContent = "Buy";
+          btn.disabled = !canAfford(wallet, item.id);
+          btn.onclick = () => {
+            const r = buy(wallet, shopState, item.id);
+            if (!r.ok) return;
+            wallet = r.wallet;
+            shopState = r.shop;
+            store.set("wallet", wallet);
+            store.set("shop", shopState);
+            updateWalletChip();
+            renderShop();
+          };
+        }
       }
       row.appendChild(left);
       row.appendChild(btn);
       box.appendChild(row);
     }
+  }
+  function renderStreet() {
+    const scv = $("#street-cv");
+    if (!scv) return;
+    const w = scv.clientWidth, h = scv.clientHeight;
+    if (!w || !h) return;
+    const dpr = window.devicePixelRatio || 1;
+    scv.width = Math.round(w * dpr);
+    scv.height = Math.round(h * dpr);
+    const sc = scv.getContext("2d");
+    sc.setTransform(dpr, 0, 0, dpr, 0, 0);
+    sc.clearRect(0, 0, w, h);
+    const sky = sc.createLinearGradient(0, 0, 0, h);
+    sky.addColorStop(0, "#1a0d2a");
+    sky.addColorStop(1, "#3a1030");
+    sc.fillStyle = sky;
+    sc.fillRect(0, 0, w, h);
+    const gy = h - 8;
+    sc.strokeStyle = "rgba(245,197,24,.5)";
+    sc.lineWidth = 2;
+    sc.beginPath();
+    sc.moveTo(0, gy);
+    sc.lineTo(w, gy);
+    sc.stroke();
+    const level = levelForXp(xp);
+    const pieces = streetPieces(level, shopState.owned);
+    for (const p of pieces) {
+      const x = p.slot * w;
+      if (p.kind === "building") drawStreetBuilding(sc, p.id, x, gy, h);
+      else drawStreetDeco(sc, p.id, x, gy, h);
+    }
+    const mImg = sprite("maneki");
+    const mp = Math.min(h * 0.62, 48);
+    if (mImg) {
+      sc.drawImage(mImg, 4, gy - mp + 4, mp, mp);
+    } else {
+      sc.textAlign = "left";
+      sc.font = `${Math.round(h * 0.42)}px serif`;
+      sc.fillText("\u{1F431}", 2, gy - 2);
+    }
+    const cap = $("#street-caption");
+    if (!cap) return;
+    const prog = streetProgress(level);
+    const nextTxt = prog.next ? `Next: Lv ${prog.next.lv} \u2014 ${prog.next.name}` : "All buildings unlocked!";
+    cap.textContent = pieces.length === 0 ? `Lucky Cat Street \u2014 grows as you learn \xB7 ${nextTxt}` : `${prog.unlocked}/${prog.total} buildings \xB7 ${nextTxt}`;
+  }
+  function drawStreetBuilding(c, id, x, gy, h) {
+    const bw = h * 0.5, bh = h * 0.62;
+    c.save();
+    c.translate(x, gy);
+    switch (id) {
+      case "lantern-post":
+        c.fillStyle = "#2e1030";
+        c.fillRect(-2, -bh, 4, bh);
+        c.fillStyle = "#f5c518";
+        c.beginPath();
+        c.arc(0, -bh, bw * 0.22, 0, Math.PI * 2);
+        c.fill();
+        break;
+      case "coin-bank":
+        c.fillStyle = "#2e1030";
+        c.fillRect(-bw / 2, -bh, bw, bh);
+        c.fillStyle = "#f5c518";
+        c.beginPath();
+        c.arc(0, -bh * 0.58, bw * 0.18, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#8a2a24";
+        c.font = `${Math.round(bw * 0.22)}px serif`;
+        c.textAlign = "center";
+        c.fillText("$", 0, -bh * 0.5);
+        break;
+      case "tailor":
+        c.fillStyle = "#2e1030";
+        c.fillRect(-bw / 2, -bh * 0.85, bw, bh * 0.85);
+        c.fillStyle = "#c1272d";
+        c.fillRect(-bw / 2 - 4, -bh * 0.85 - 8, bw + 8, 8);
+        c.fillStyle = "#f5c518";
+        c.fillRect(-bw * 0.18, -bh * 0.55, bw * 0.14, bh * 0.14);
+        c.fillRect(bw * 0.04, -bh * 0.55, bw * 0.14, bh * 0.14);
+        break;
+      case "kitten-cafe":
+        c.fillStyle = "#2e1030";
+        c.fillRect(-bw / 2, -bh * 0.75, bw, bh * 0.75);
+        c.fillStyle = "#8a2a24";
+        c.beginPath();
+        c.moveTo(-bw / 2 - 6, -bh * 0.75);
+        c.lineTo(0, -bh);
+        c.lineTo(bw / 2 + 6, -bh * 0.75);
+        c.closePath();
+        c.fill();
+        c.fillStyle = "#f5c518";
+        c.beginPath();
+        c.arc(0, -bh * 0.4, bw * 0.16, 0, Math.PI * 2);
+        c.fill();
+        break;
+      case "emperor-gate":
+        c.fillStyle = "#c1272d";
+        c.fillRect(-bw * 0.7, -bh * 1.15, bw * 0.16, bh * 1.15);
+        c.fillRect(bw * 0.54, -bh * 1.15, bw * 0.16, bh * 1.15);
+        c.fillRect(-bw * 0.7, -bh * 1.15, bw * 1.4, bh * 0.14);
+        c.fillStyle = "#f5c518";
+        c.beginPath();
+        c.arc(0, -bh * 1.08, bw * 0.12, 0, Math.PI * 2);
+        c.fill();
+        break;
+    }
+    c.restore();
+  }
+  function drawStreetDeco(c, id, x, gy, h) {
+    const s = h * 0.32;
+    c.save();
+    c.translate(x, gy);
+    switch (id) {
+      case "red-lantern":
+        c.strokeStyle = "#8a2a24";
+        c.beginPath();
+        c.moveTo(0, -s * 1.6);
+        c.lineTo(0, -s * 1.1);
+        c.stroke();
+        c.fillStyle = "#c1272d";
+        c.beginPath();
+        c.ellipse(0, -s * 0.8, s * 0.32, s * 0.42, 0, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#f5c518";
+        c.fillRect(-2, -s * 0.38, 4, s * 0.12);
+        break;
+      case "noodle-stall":
+        c.fillStyle = "#5a2c22";
+        c.fillRect(-s * 0.4, -s * 0.6, s * 0.8, s * 0.6);
+        c.fillStyle = "#f5c518";
+        c.fillRect(-s * 0.5, -s * 0.78, s, s * 0.16);
+        break;
+      case "tea-sign":
+        c.strokeStyle = "#f5c518";
+        c.beginPath();
+        c.moveTo(0, -s * 1.3);
+        c.lineTo(0, -s * 0.9);
+        c.stroke();
+        c.fillStyle = "#3a1a1a";
+        c.fillRect(-s * 0.35, -s * 1.3, s * 0.7, s * 0.32);
+        c.fillStyle = "#f5c518";
+        c.font = `${Math.round(s * 0.22)}px serif`;
+        c.textAlign = "center";
+        c.fillText("\u8336", 0, -s * 1.06);
+        break;
+      case "foo-dog":
+        c.fillStyle = "#2e1030";
+        c.beginPath();
+        c.ellipse(0, -s * 0.3, s * 0.28, s * 0.4, 0, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#f5c518";
+        c.beginPath();
+        c.arc(0, -s * 0.62, s * 0.18, 0, Math.PI * 2);
+        c.fill();
+        break;
+      case "golden-arch":
+        c.strokeStyle = "#f5c518";
+        c.lineWidth = 3;
+        c.beginPath();
+        c.arc(0, -s * 0.5, s * 0.9, Math.PI, 0);
+        c.stroke();
+        c.beginPath();
+        c.moveTo(-s * 0.9, -s * 0.5);
+        c.lineTo(-s * 0.9, 0);
+        c.moveTo(s * 0.9, -s * 0.5);
+        c.lineTo(s * 0.9, 0);
+        c.stroke();
+        break;
+    }
+    c.restore();
   }
   function renderGrowthCard() {
     const card = $("#growth-card");
@@ -1773,11 +2120,13 @@
     };
   }
   pool = buildPool(D.levels, scope);
+  sfx.pack = shopState.soundpack || "default";
   updateWalletChip();
   updateSmartBtn();
   updateStreakChip();
   updateLevelChip();
   renderQuests();
+  renderStreet();
   if (location.hash === "#debug") {
     window.__debugTarget = () => B.zombie && B.zombie.w.h;
     window.__grantXp = (n) => {

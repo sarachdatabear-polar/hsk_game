@@ -1,4 +1,14 @@
-# V2/V3 Execution Plan — living checklist
+# V2/V3/V4 Execution Plan — living checklist
+
+## V4 "Lucky Cat Street" status (deferred-items round; scope signed off 2026-07-04)
+
+Spec: [PRD-v4-street.md](PRD-v4-street.md). Hybrid street economy approved: milestone buildings free, decorations purchased.
+
+- [x] **M1 — Effect packs** (`shop.js` effect slot + Sakura/Firecracker items, `fx.js` styled bursts w/ per-spec gravity, petal/cracker draw kinds, shop Effects section) — done 2026-07-04, +14 tests.
+- [x] **M2 — Sound packs** (`shop.js` soundpack slot + Bells/Arcade items, `sfx.js` data-driven `PACKS` table — default pack byte-identical to old tones, shop Sounds section, `sfx.pack` synced at boot + renderShop) — done 2026-07-04, +8 tests.
+- [x] **M3 — Lucky Cat Street** (`src/street.js`: milestone `BUILDINGS` + deco slots, deterministic `streetPieces`/`streetProgress`; 5 deco catalog items; home `#street-cv` canvas strip + caption; redraws on boot/home/level-up/purchase; worker headless-verified 360×640 fold) — done 2026-07-04, +12 tests. Fable fix: `equipItem` now hard no-op for decos (no stray `deco` field).
+- [x] **M4 — Ship prep**: 169 tests green, build 70.8 kb, DOM-id check passed, SHELL bumped v8 → v9 (v8 came from the responsive-battle round, not v6 as planned above), USER-CHECKLIST §7 added. **NOT committed/pushed — awaiting user playtest.**
+- [ ] User playtest (USER-CHECKLIST §7) → then branch/PR ship v4.
 
 ## V3 "Lucky Cat Grows" status (reviewer-feedback round; plan approved 2026-07-04)
 
@@ -6,8 +16,8 @@
 - [x] **A1 — Daily Quests** (`src/quests.js`, 14 tests): 3 deterministic quests/day from a 6-quest pool, auto-credited coin rewards (100–250🪙), home quest panel, results toasts. Store `nbhsk.quests`.
 - [x] **A2 — Juice pack** (`src/fx.js`, 13 tests): coin-sprite kill bursts, floating ×N combo text, firework ring at every 10th combo, mascot hop on kill, "🌟 Perfect!" +25% bonus (cap 500) for miss-free rounds.
 - [x] **B — Cat growth** (`src/growth.js`, 10 tests): XP (+1 correct, +5 boss, +1 flashcard-known; store `nbhsk.xp`), quadratic level curve, milestones Lv5 scarf / Lv10 coin / Lv20 outfit / Lv30 kitten follower / Lv50 emperor drawn as canvas overlays on any skin; `#home-level` pill, growth card on Progress, level-up toast on results, `window.__grantXp` under `#debug`.
-- [x] **Ship prep**: SHELL bumped v5 → v6, 135 tests green, build 57.6 kb, DOM-id check passed. **NOT committed/pushed — awaiting user playtest.**
-- [ ] User playtest (see USER-CHECKLIST §6) → then commit & push v3.
+- [x] **Ship prep**: SHELL bumped v5 → v6, 135 tests green, build 57.6 kb, DOM-id check passed.
+- [x] User playtest approved → v3 committed & pushed (`fe9435a`, PR #5), Pages deploy green — 2026-07-04. Follow-up PR #6 (responsive battle canvas, centered prompt, screen-scaled cat) also live.
 - [ ] Deferred to v4: **Lucky Cat Street** (home-screen street meta that grows with milestones; unlocks future achievement scenes — hybrid economy decision), more shop item types (sounds/effects/decorations).
 
 ---

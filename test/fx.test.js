@@ -34,6 +34,42 @@ describe("coinBurst", () => {
     const specs = coinBurst(0, 0, true);
     for (const s of specs) expect(s.vy).toBeGreaterThanOrEqual(-260);
   });
+
+  it("default path is unchanged when style is omitted or falsy", () => {
+    const specs = coinBurst(10, 20, false, undefined);
+    expect(specs.length).toBe(12);
+    expect(specs.filter(s => s.kind === "coin").length).toBe(5);
+    expect(specs.filter(s => s.kind === "dot").length).toBe(7);
+    expect(specs.every(s => s.g === undefined)).toBe(true);
+  });
+
+  it("sakura-fx: same counts, all petal, slow-fall g, narrower vx", () => {
+    const normal = coinBurst(10, 20, false, "sakura-fx");
+    expect(normal.length).toBe(12);
+    expect(normal.every(s => s.kind === "petal")).toBe(true);
+    expect(normal.every(s => s.g === 120)).toBe(true);
+    for (const s of normal) {
+      expect(Math.abs(s.vx)).toBeLessThanOrEqual(140);
+      expect(s.life).toBeGreaterThanOrEqual(0.9);
+      expect(s.life).toBeLessThanOrEqual(1.3);
+    }
+    const boss = coinBurst(10, 20, true, "sakura-fx");
+    expect(boss.length).toBe(28);
+    expect(boss.every(s => s.kind === "petal")).toBe(true);
+  });
+
+  it("firecracker-fx: default count + 6, cracker/spark split, faster vx", () => {
+    const normal = coinBurst(10, 20, false, "firecracker-fx");
+    expect(normal.length).toBe(18);   // 12 + 6
+    expect(normal.filter(s => s.kind === "cracker").length).toBe(5);
+    expect(normal.filter(s => s.kind === "spark").length).toBe(13);
+    for (const s of normal) expect(Math.abs(s.vx)).toBeLessThanOrEqual(480 * 1.3);
+
+    const boss = coinBurst(10, 20, true, "firecracker-fx");
+    expect(boss.length).toBe(34);   // 28 + 6
+    expect(boss.filter(s => s.kind === "cracker").length).toBe(12);
+    expect(boss.filter(s => s.kind === "spark").length).toBe(22);
+  });
 });
 
 describe("comboFloater", () => {

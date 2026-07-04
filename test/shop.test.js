@@ -3,7 +3,7 @@ import { CATALOG, defaultShop, canAfford, buy, equipItem } from "../src/shop.js"
 
 describe("shop", () => {
   it("defaultShop shape", () => {
-    expect(defaultShop()).toEqual({ owned: [], skin: "", backdrop: "" });
+    expect(defaultShop()).toEqual({ owned: [], skin: "", backdrop: "", effect: "", soundpack: "" });
   });
 
   it("canAfford true/false by wallet", () => {
@@ -91,12 +91,88 @@ describe("shop", () => {
     expect(JSON.stringify(shop)).toBe(before);
   });
 
-  it("CATALOG has 4 skins and 3 backdrops with expected ids/prices", () => {
+  it("CATALOG has 4 skins, 3 backdrops, 2 effects, and 2 soundpacks with expected ids/prices", () => {
     const skins = CATALOG.filter(i => i.type === "skin");
     const backdrops = CATALOG.filter(i => i.type === "backdrop");
+    const effects = CATALOG.filter(i => i.type === "effect");
+    const soundpacks = CATALOG.filter(i => i.type === "soundpack");
     expect(skins.length).toBe(4);
     expect(backdrops.length).toBe(3);
+    expect(effects.length).toBe(2);
+    expect(soundpacks.length).toBe(2);
     expect(skins.map(i => i.id)).toEqual(["midnight", "sakura", "jade", "gold"]);
     expect(backdrops.map(i => i.id)).toEqual(["market", "temple", "bamboo"]);
+    expect(effects.map(i => i.id)).toEqual(["sakura-fx", "firecracker-fx"]);
+    expect(soundpacks.map(i => i.id)).toEqual(["bells", "arcade"]);
+  });
+
+  it("effect items are purchasable and equip into the effect slot", () => {
+    let shop = defaultShop();
+    let r = buy(2000, shop, "sakura-fx");
+    expect(r.ok).toBe(true);
+    expect(r.wallet).toBe(0);
+    expect(r.shop.owned).toEqual(["sakura-fx"]);
+    shop = r.shop;
+    shop = equipItem(shop, "sakura-fx");
+    expect(shop.effect).toBe("sakura-fx");
+  });
+
+  it("equipItem('', 'effect') clears the effect slot", () => {
+    const shop = { owned: ["sakura-fx"], skin: "", backdrop: "", effect: "sakura-fx" };
+    const s = equipItem(shop, "", "effect");
+    expect(s.effect).toBe("");
+  });
+
+  it("firecracker-fx is purchasable at its price", () => {
+    const r = buy(3500, defaultShop(), "firecracker-fx");
+    expect(r.ok).toBe(true);
+    expect(r.wallet).toBe(0);
+    expect(r.shop.owned).toEqual(["firecracker-fx"]);
+  });
+
+  it("soundpack items are purchasable and equip into the soundpack slot", () => {
+    let shop = defaultShop();
+    let r = buy(2500, shop, "bells");
+    expect(r.ok).toBe(true);
+    expect(r.wallet).toBe(0);
+    expect(r.shop.owned).toEqual(["bells"]);
+    shop = r.shop;
+    shop = equipItem(shop, "bells");
+    expect(shop.soundpack).toBe("bells");
+  });
+
+  it("arcade soundpack is purchasable at its price", () => {
+    const r = buy(4000, defaultShop(), "arcade");
+    expect(r.ok).toBe(true);
+    expect(r.wallet).toBe(0);
+    expect(r.shop.owned).toEqual(["arcade"]);
+  });
+
+  it("equipItem('', 'soundpack') clears the soundpack slot", () => {
+    const shop = { owned: ["bells"], skin: "", backdrop: "", effect: "", soundpack: "bells" };
+    const s = equipItem(shop, "", "soundpack");
+    expect(s.soundpack).toBe("");
+  });
+
+  it("CATALOG has 5 street decorations with expected ids/prices", () => {
+    const decos = CATALOG.filter(i => i.type === "deco");
+    expect(decos.length).toBe(5);
+    expect(decos.map(i => i.id)).toEqual(["red-lantern", "noodle-stall", "tea-sign", "foo-dog", "golden-arch"]);
+    expect(decos.map(i => i.price)).toEqual([800, 1500, 2200, 3000, 5000]);
+  });
+
+  it("buying a deco adds it to owned", () => {
+    const r = buy(800, defaultShop(), "red-lantern");
+    expect(r.ok).toBe(true);
+    expect(r.wallet).toBe(0);
+    expect(r.shop.owned).toEqual(["red-lantern"]);
+  });
+
+  it("equipItem is a no-op for decos even when owned — no real slot to fill", () => {
+    const shop = { owned: ["red-lantern"], skin: "", backdrop: "", effect: "", soundpack: "" };
+    const s = equipItem(shop, "red-lantern");
+    // Decos have no slot: equipItem must return the shop unchanged — same
+    // shape, no stray "deco" field.
+    expect(s).toEqual(shop);
   });
 });

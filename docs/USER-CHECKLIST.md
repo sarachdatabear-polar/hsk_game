@@ -55,6 +55,19 @@ v2 is already live (deployed 2026-07-04). v3 (quests, effects, cat growth) is bu
 - [ ] Tomorrow: quests are 3 (usually different) new ones and progress reset.
 - [ ] Happy? Say "ship v3" → commit + push + deploy.
 
+## 7. Playtest v4 "Lucky Cat Street" (local, before its deploy)
+
+v3 is live. v4 (street + effect/sound packs + decorations) is built locally and waits for your test. Open `game/index.html` directly or `npm run serve` → http://localhost:8000.
+
+- [ ] Home shows the street strip under the pills: fresh profile = cat alone + "grows as you learn · Next: Lv 5 — Lantern Post".
+- [ ] Grind-free street check: open `index.html#debug`, console `__grantXp(250)` → Lantern Post appears instantly; `__grantXp(1000)` → Coin Bank; caption counts "2/5 buildings".
+- [ ] Shop has three new sections (Effects / Sounds / Street decorations). Buy Red Lantern (800 🪙) → it's on the street the moment you return home.
+- [ ] Buy + equip Sakura Petals → kills burst into slow-falling pink petals; unequip (buy nothing) → gold coins are back. Firecrackers → louder red/spark pop.
+- [ ] Buy + equip Temple Bells → kill/wrong/bite/combo all sound softer and bell-like; Arcade → chippy retro bleeps. Default stays free.
+- [ ] Old save sanity: your existing wallet/skins/streak/level all still there after the update.
+- [ ] file:// open still works (no blank screen).
+- [ ] Happy? Say "ship v4" → commit + push + deploy.
+
 ## Decisions parked with you
 
 - When to deploy (section 2) — nothing goes live until you say so.
