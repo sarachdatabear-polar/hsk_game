@@ -1,4 +1,16 @@
-# V2 Execution Plan — living checklist
+# V2/V3 Execution Plan — living checklist
+
+## V3 "Lucky Cat Grows" status (reviewer-feedback round; plan approved 2026-07-04)
+
+- [x] **Step 0 — v2 shipped**: commit `6a3af16` pushed to main, Pages deploy green, live site confirmed serving v2.
+- [x] **A1 — Daily Quests** (`src/quests.js`, 14 tests): 3 deterministic quests/day from a 6-quest pool, auto-credited coin rewards (100–250🪙), home quest panel, results toasts. Store `nbhsk.quests`.
+- [x] **A2 — Juice pack** (`src/fx.js`, 13 tests): coin-sprite kill bursts, floating ×N combo text, firework ring at every 10th combo, mascot hop on kill, "🌟 Perfect!" +25% bonus (cap 500) for miss-free rounds.
+- [x] **B — Cat growth** (`src/growth.js`, 10 tests): XP (+1 correct, +5 boss, +1 flashcard-known; store `nbhsk.xp`), quadratic level curve, milestones Lv5 scarf / Lv10 coin / Lv20 outfit / Lv30 kitten follower / Lv50 emperor drawn as canvas overlays on any skin; `#home-level` pill, growth card on Progress, level-up toast on results, `window.__grantXp` under `#debug`.
+- [x] **Ship prep**: SHELL bumped v5 → v6, 135 tests green, build 57.6 kb, DOM-id check passed. **NOT committed/pushed — awaiting user playtest.**
+- [ ] User playtest (see USER-CHECKLIST §6) → then commit & push v3.
+- [ ] Deferred to v4: **Lucky Cat Street** (home-screen street meta that grows with milestones; unlocks future achievement scenes — hybrid economy decision), more shop item types (sounds/effects/decorations).
+
+---
 
 *Cross-session continuation doc for the v2 "Make It Stick" upgrade. Spec: [PRD-v2-upgrade.md](PRD-v2-upgrade.md). Art spec (user-facing, non-blocking): [ART-BRIEF.md](ART-BRIEF.md).*
 

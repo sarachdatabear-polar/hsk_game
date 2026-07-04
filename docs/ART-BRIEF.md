@@ -37,6 +37,18 @@ Size: 720×1280 safe-area design; will be drawn scaled. Until art exists, these 
 
 One "boss" cat: same species as the walker but ~1.5× bulkier, gold aura ring, small crown or coin necklace. Needs walk + happy variants. Placeholder: the standard cat drawn at 1.5× scale with a gold glow circle.
 
+## 3b. Cat growth accessories (v3) — priority MEDIUM
+
+The Lv1→Lv50 growth system dresses the cat as it levels; currently vector overlays, replaceable by sprite variants (either accessory-only transparent PNGs layered at the same anchor points, or full dressed-cat sheets per tier):
+
+| Unlock | Accessory |
+|--------|-----------|
+| Lv5 | Red scarf around the neck |
+| Lv10 | Gold coin charm on the chest |
+| Lv20 | Chinese outfit (red/gold vest) |
+| Lv30 | Kitten follower (mini cat trailing behind — needs its own small walk sprite, ~48×48 source) |
+| Lv50 | Emperor crown + gold halo |
+
 ## 4. Shop & UI icons — priority LOW
 
 - Shop button icon (coin purse or torii-gate shop front), ~64×64.

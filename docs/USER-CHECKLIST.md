@@ -43,6 +43,18 @@ Per [ART-BRIEF.md](ART-BRIEF.md): create or commission, then hand the PNGs to Cl
 - [ ] Install the APK on your phone; repeat the section-1 playtest.
 - [ ] Decide: Google Play update now, or wait for real artwork (section 4)?
 
+## 6. Playtest v3 "Lucky Cat Grows" (local, before its deploy)
+
+v2 is already live (deployed 2026-07-04). v3 (quests, effects, cat growth) is built locally and waits for your test:
+
+- [ ] Home shows a quest panel with 3 daily quests; completing one pays coins instantly and shows "🎯 Quest complete" on results.
+- [ ] Correct answers: coins spray from the kill, "×N 🔥" floats up at combo ≥3, firework ring at ×10, mascot hops.
+- [ ] Finish a round with zero misses → "🌟 Perfect!" banner + bonus coins.
+- [ ] Home shows "🐱 Lv N"; Progress screen has the XP bar + next milestone.
+- [ ] Milestone check without grinding: open `index.html#debug`, in the browser console run `__grantXp(250)` (→Lv5 scarf), `__grantXp(11000)` (→Lv30 kitten follows in battle), `__grantXp(20000)` (→Lv50 crown). Accessories should show on any equipped skin too.
+- [ ] Tomorrow: quests are 3 (usually different) new ones and progress reset.
+- [ ] Happy? Say "ship v3" → commit + push + deploy.
+
 ## Decisions parked with you
 
 - When to deploy (section 2) — nothing goes live until you say so.
