@@ -1,4 +1,4 @@
-# Android Build Guide — NorthBear HSK Zombie
+# Android Build Guide — Lucky Cat HSK
 
 How to build the Android app from this repo. The web game (`index.html` + `dist/app.js`
 + `data/` + `audio/`) is wrapped with Capacitor and compiled to an APK.
@@ -54,7 +54,7 @@ npx cap sync android                         # copy www/ -> android assets + plu
 
 **Manual edits to reapply after a fresh `cap add android`** (android/ is git-ignored, so these
 don't persist across a regen):
-- `android/app/build.gradle` → `versionName "1.0.0"` (Capacitor generates `"1.0"`); `versionCode 1` and `applicationId "com.northbear.hskzombie"` are already correct.
+- `android/app/build.gradle` → `versionName "1.0.0"` (Capacitor generates `"1.0"`); `versionCode 1` and `applicationId "com.luckycat.hsk"` are already correct.
 - Release signingConfig — add inside the `android { }` block of `android/app/build.gradle`:
   ```gradle
   def kp = new Properties()
@@ -80,9 +80,11 @@ The release keystore is at `android-signing/nbhsk-release.keystore` (git-ignored
 ```powershell
 $env:NBHSK_STORE_PASS = "<store pass from KEYSTORE_INFO.txt>"
 $env:NBHSK_KEY_PASS   = "<key pass from KEYSTORE_INFO.txt>"
-npm run apk:release      # -> dist-apk/HSK-Zombie-1.0.0.apk (release-signed, ~19 MB)
+npm run apk:release      # -> dist-apk/LuckyCatHSK-1.0.0.apk (release-signed, ~19 MB)
 ```
-Verify: `apksigner verify --print-certs dist-apk/HSK-Zombie-1.0.0.apk` → `CN=NorthBear`.
+Verify: `apksigner verify --print-certs dist-apk/LuckyCatHSK-1.0.0.apk` → `CN=NorthBear` (the
+signing certificate predates this rename; the cert subject doesn't need to match the app name
+and must not change without re-signing with a new keystore, which would break update continuity).
 
 Build the debug APK (no signing, for testing):
 ```powershell
@@ -102,7 +104,7 @@ Verified on AVD `nbhsk` (Pixel 6, android-34 google_apis x86_64, headless):
 ```powershell
 & "$env:ANDROID_HOME\emulator\emulator.exe" -avd nbhsk -no-window -no-audio -gpu swiftshader_indirect
 & "$env:ANDROID_HOME\platform-tools\adb.exe" install -r android\app\build\outputs\apk\debug\app-debug.apk
-& adb shell am start -n com.northbear.hskzombie/.MainActivity
+& adb shell am start -n com.luckycat.hsk/.MainActivity
 ```
 Confirmed: app launches full-screen (no browser chrome), home + scope + battle render, sprite
 zombie + bilingual options draw, SFX/audio toggles present. Hardware **back button**: sub-screen →
@@ -117,11 +119,11 @@ only; does not affect playability. Candidate future fix: set `android:statusBarC
 
 The app is distributed as a private signed APK — no Google Play, no account needed.
 
-1. Build it: `npm run apk:release` → `dist-apk/HSK-Zombie-1.0.0.apk`.
+1. Build it: `npm run apk:release` → `dist-apk/LuckyCatHSK-1.0.0.apk`.
 2. Copy that `.apk` to your phone (USB cable, Google Drive, or a messaging app to yourself).
 3. On the phone, tap the file. Android will ask to allow "Install unknown apps" for whatever app
    you opened it from (Files / Chrome / Drive) — enable it, then tap Install.
-4. Launch **HSK Zombie** from your app drawer. Works fully offline (words + 2000 audio clips are
+4. Launch **Lucky Cat HSK** from your app drawer. Works fully offline (words + 2000 audio clips are
    bundled inside the app).
 
 To update later: bump `versionCode`/`versionName` in `android/app/build.gradle`, rebuild, reinstall.

@@ -34,8 +34,8 @@ try {
   $apk = "app\build\outputs\apk\release\app-release.apk"
   if (-not (Test-Path $apk)) { throw "release APK not produced at $apk" }
   New-Item -ItemType Directory -Force "$game\dist-apk" | Out-Null
-  Copy-Item $apk "$game\dist-apk\HSK-Zombie-1.0.0.apk" -Force
-  Write-Host "Signed APK: $game\dist-apk\HSK-Zombie-1.0.0.apk"
+  Copy-Item $apk "$game\dist-apk\LuckyCatHSK-1.0.0.apk" -Force
+  Write-Host "Signed APK: $game\dist-apk\LuckyCatHSK-1.0.0.apk"
 }
 finally {
   # never leave the signing passwords on disk

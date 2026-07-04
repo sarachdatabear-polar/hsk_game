@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build NorthBear HSK Zombie game data from the product by-level CSVs.
+"""Build Lucky Cat HSK game data from the product by-level CSVs.
 
 Reads  product/by-level/HSK<n>_words-to-remember_bilingual.csv  (n = 1..6)
 Writes game/data/words.js      (window.HSK_DATA = {...}; loadable from file://)
