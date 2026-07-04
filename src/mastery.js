@@ -1,7 +1,8 @@
-export function recordAnswer(store, hanzi, correct) {
+export function recordAnswer(store, hanzi, correct, now = Date.now()) {
   const w = store[hanzi] || (store[hanzi] = { s: 0, k: 0, r: 0 });
   w.s++;
   if (correct) { w.k++; w.r++; } else { w.r = 0; }
+  w.ls = now;
 }
 
 export const wordStreak = (store, hanzi) => (store[hanzi] ? store[hanzi].r : 0);

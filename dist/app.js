@@ -48,6 +48,15 @@
     if (lang === "th") return w.t ? { main: w.t, sub: "" } : { main: w.e + " *", sub: "" };
     return { main: w.e, sub: w.t || "" };
   }
+  function normalizeLen(v) {
+    if (v === null || v === void 0 || v === "") return 20;
+    const n = Math.round(Number(v));
+    if (!Number.isFinite(n)) return 20;
+    return Math.min(500, Math.max(5, n));
+  }
+  function modeKey(mode, len) {
+    return mode === "round" && len !== 20 ? "round" + len : mode;
+  }
 
   // src/distractors.js
   function shuffle(a, rand) {
@@ -132,127 +141,150 @@
   }
 
   // src/cat.js
-  function drawCat(ctx3, x, groundY, tMs, state) {
+  var DEFAULT_PALETTE = { body: "#e07830", head: "#f09040", ear: "#f09040", inner: "#f5a0b0", leg: "#c87340" };
+  function drawCat(ctx3, x, groundY, tMs, state, palette, scale = 1) {
+    const pal = palette || DEFAULT_PALETTE;
     const ph = tMs / 220 % (Math.PI * 2);
     const bob = Math.sin(ph) * 2.5;
     const legSwing = Math.sin(ph) * 6;
     const happy = state === "happy";
+    if (scale !== 1) {
+      if (scale > 1) {
+        ctx3.fillStyle = "rgba(245,197,24,.18)";
+        ctx3.beginPath();
+        ctx3.arc(x, groundY - 28, 42, 0, Math.PI * 2);
+        ctx3.fill();
+      }
+      ctx3.save();
+      ctx3.translate(x, groundY);
+      ctx3.scale(scale, scale);
+      ctx3.translate(-x, -groundY);
+    }
+    let drawn = false;
+    const tint = pal.filter || "none";
     if (state === "walk") {
       const img = sprite("cat-walk");
       if (img) {
         const frame = Math.floor(tMs / 110) % 6;
+        ctx3.filter = tint;
         ctx3.drawImage(img, frame * 256, 0, 256, 256, x - 32, groundY - 64, 64, 64);
-        return;
+        ctx3.filter = "none";
+        drawn = true;
       }
     }
-    if (happy) {
+    if (!drawn && happy) {
       const img = sprite("cat-happy");
       if (img) {
         const frame = Math.floor(tMs / 80) % 4;
+        ctx3.filter = tint;
         ctx3.drawImage(img, frame * 256, 0, 256, 256, x - 32, groundY - 64, 64, 64);
-        return;
+        ctx3.filter = "none";
+        drawn = true;
       }
     }
-    ctx3.save();
-    ctx3.translate(x, groundY);
-    if (happy) {
-      ctx3.rotate(-0.25);
-      ctx3.globalAlpha = 0.85;
-      ctx3.fillStyle = "#f5c518";
-      const sparkOffsets = [[-18, -60], [18, -60], [0, -72], [-22, -42], [22, -42]];
-      for (const [sx, sy] of sparkOffsets) {
-        ctx3.beginPath();
-        ctx3.arc(sx, sy + bob, 2.5, 0, 7);
-        ctx3.fill();
+    if (!drawn) {
+      ctx3.save();
+      ctx3.translate(x, groundY);
+      if (happy) {
+        ctx3.rotate(-0.25);
+        ctx3.globalAlpha = 0.85;
+        ctx3.fillStyle = "#f5c518";
+        const sparkOffsets = [[-18, -60], [18, -60], [0, -72], [-22, -42], [22, -42]];
+        for (const [sx, sy] of sparkOffsets) {
+          ctx3.beginPath();
+          ctx3.arc(sx, sy + bob, 2.5, 0, 7);
+          ctx3.fill();
+        }
       }
+      ctx3.strokeStyle = pal.leg;
+      ctx3.lineWidth = 6;
+      ctx3.lineCap = "round";
+      ctx3.beginPath();
+      ctx3.moveTo(-5, -20);
+      ctx3.lineTo(-5 + legSwing * 0.4, 0);
+      ctx3.stroke();
+      ctx3.beginPath();
+      ctx3.moveTo(5, -20);
+      ctx3.lineTo(5 - legSwing * 0.4, 0);
+      ctx3.stroke();
+      ctx3.fillStyle = pal.body;
+      ctx3.fillRect(-11, -40 + bob, 22, 22);
+      ctx3.strokeStyle = pal.body;
+      ctx3.lineWidth = 5;
+      ctx3.beginPath();
+      ctx3.moveTo(-9, -34 + bob);
+      ctx3.lineTo(-24, -30 + bob + legSwing * 0.3);
+      ctx3.stroke();
+      ctx3.beginPath();
+      ctx3.moveTo(-9, -28 + bob);
+      ctx3.lineTo(-22, -24 + bob - legSwing * 0.3);
+      ctx3.stroke();
+      ctx3.fillStyle = pal.head;
+      ctx3.beginPath();
+      ctx3.arc(0, -48 + bob, 10, 0, 7);
+      ctx3.fill();
+      ctx3.fillStyle = pal.ear;
+      ctx3.beginPath();
+      ctx3.moveTo(-8, -56 + bob);
+      ctx3.lineTo(-13, -65 + bob);
+      ctx3.lineTo(-2, -58 + bob);
+      ctx3.closePath();
+      ctx3.fill();
+      ctx3.beginPath();
+      ctx3.moveTo(8, -56 + bob);
+      ctx3.lineTo(13, -65 + bob);
+      ctx3.lineTo(2, -58 + bob);
+      ctx3.closePath();
+      ctx3.fill();
+      ctx3.fillStyle = pal.inner;
+      ctx3.beginPath();
+      ctx3.moveTo(-7, -57 + bob);
+      ctx3.lineTo(-11, -63 + bob);
+      ctx3.lineTo(-3, -59 + bob);
+      ctx3.closePath();
+      ctx3.fill();
+      ctx3.beginPath();
+      ctx3.moveTo(7, -57 + bob);
+      ctx3.lineTo(11, -63 + bob);
+      ctx3.lineTo(3, -59 + bob);
+      ctx3.closePath();
+      ctx3.fill();
+      ctx3.fillStyle = "#1c1008";
+      ctx3.beginPath();
+      ctx3.arc(-4, -50 + bob, 1.8, 0, 7);
+      ctx3.fill();
+      ctx3.beginPath();
+      ctx3.arc(4, -50 + bob, 1.8, 0, 7);
+      ctx3.fill();
+      ctx3.fillStyle = "#e05a78";
+      ctx3.beginPath();
+      ctx3.arc(0, -47 + bob, 1.2, 0, 7);
+      ctx3.fill();
+      ctx3.strokeStyle = "#1c1008";
+      ctx3.lineWidth = 0.8;
+      ctx3.beginPath();
+      ctx3.moveTo(-4, -47 + bob);
+      ctx3.lineTo(-14, -45 + bob);
+      ctx3.stroke();
+      ctx3.beginPath();
+      ctx3.moveTo(-4, -47 + bob);
+      ctx3.lineTo(-14, -48 + bob);
+      ctx3.stroke();
+      ctx3.beginPath();
+      ctx3.moveTo(4, -47 + bob);
+      ctx3.lineTo(14, -45 + bob);
+      ctx3.stroke();
+      ctx3.beginPath();
+      ctx3.moveTo(4, -47 + bob);
+      ctx3.lineTo(14, -48 + bob);
+      ctx3.stroke();
+      ctx3.restore();
     }
-    ctx3.strokeStyle = "#c87340";
-    ctx3.lineWidth = 6;
-    ctx3.lineCap = "round";
-    ctx3.beginPath();
-    ctx3.moveTo(-5, -20);
-    ctx3.lineTo(-5 + legSwing * 0.4, 0);
-    ctx3.stroke();
-    ctx3.beginPath();
-    ctx3.moveTo(5, -20);
-    ctx3.lineTo(5 - legSwing * 0.4, 0);
-    ctx3.stroke();
-    ctx3.fillStyle = "#e07830";
-    ctx3.fillRect(-11, -40 + bob, 22, 22);
-    ctx3.strokeStyle = "#e07830";
-    ctx3.lineWidth = 5;
-    ctx3.beginPath();
-    ctx3.moveTo(-9, -34 + bob);
-    ctx3.lineTo(-24, -30 + bob + legSwing * 0.3);
-    ctx3.stroke();
-    ctx3.beginPath();
-    ctx3.moveTo(-9, -28 + bob);
-    ctx3.lineTo(-22, -24 + bob - legSwing * 0.3);
-    ctx3.stroke();
-    ctx3.fillStyle = "#f09040";
-    ctx3.beginPath();
-    ctx3.arc(0, -48 + bob, 10, 0, 7);
-    ctx3.fill();
-    ctx3.fillStyle = "#f09040";
-    ctx3.beginPath();
-    ctx3.moveTo(-8, -56 + bob);
-    ctx3.lineTo(-13, -65 + bob);
-    ctx3.lineTo(-2, -58 + bob);
-    ctx3.closePath();
-    ctx3.fill();
-    ctx3.beginPath();
-    ctx3.moveTo(8, -56 + bob);
-    ctx3.lineTo(13, -65 + bob);
-    ctx3.lineTo(2, -58 + bob);
-    ctx3.closePath();
-    ctx3.fill();
-    ctx3.fillStyle = "#f5a0b0";
-    ctx3.beginPath();
-    ctx3.moveTo(-7, -57 + bob);
-    ctx3.lineTo(-11, -63 + bob);
-    ctx3.lineTo(-3, -59 + bob);
-    ctx3.closePath();
-    ctx3.fill();
-    ctx3.beginPath();
-    ctx3.moveTo(7, -57 + bob);
-    ctx3.lineTo(11, -63 + bob);
-    ctx3.lineTo(3, -59 + bob);
-    ctx3.closePath();
-    ctx3.fill();
-    ctx3.fillStyle = "#1c1008";
-    ctx3.beginPath();
-    ctx3.arc(-4, -50 + bob, 1.8, 0, 7);
-    ctx3.fill();
-    ctx3.beginPath();
-    ctx3.arc(4, -50 + bob, 1.8, 0, 7);
-    ctx3.fill();
-    ctx3.fillStyle = "#e05a78";
-    ctx3.beginPath();
-    ctx3.arc(0, -47 + bob, 1.2, 0, 7);
-    ctx3.fill();
-    ctx3.strokeStyle = "#1c1008";
-    ctx3.lineWidth = 0.8;
-    ctx3.beginPath();
-    ctx3.moveTo(-4, -47 + bob);
-    ctx3.lineTo(-14, -45 + bob);
-    ctx3.stroke();
-    ctx3.beginPath();
-    ctx3.moveTo(-4, -47 + bob);
-    ctx3.lineTo(-14, -48 + bob);
-    ctx3.stroke();
-    ctx3.beginPath();
-    ctx3.moveTo(4, -47 + bob);
-    ctx3.lineTo(14, -45 + bob);
-    ctx3.stroke();
-    ctx3.beginPath();
-    ctx3.moveTo(4, -47 + bob);
-    ctx3.lineTo(14, -48 + bob);
-    ctx3.stroke();
-    ctx3.restore();
+    if (scale !== 1) ctx3.restore();
   }
 
   // src/mastery.js
-  function recordAnswer(store2, hanzi, correct) {
+  function recordAnswer(store2, hanzi, correct, now = Date.now()) {
     const w = store2[hanzi] || (store2[hanzi] = { s: 0, k: 0, r: 0 });
     w.s++;
     if (correct) {
@@ -261,6 +293,7 @@
     } else {
       w.r = 0;
     }
+    w.ls = now;
   }
   var wordStreak = (store2, hanzi) => store2[hanzi] ? store2[hanzi].r : 0;
   var isMastered = (store2, hanzi) => wordStreak(store2, hanzi) >= 3;
@@ -271,6 +304,94 @@
       if (isMastered(store2, w.h)) mastered++;
     }
     return { seen, mastered, pct: levelWords.length ? Math.round(100 * mastered / levelWords.length) : 0 };
+  }
+
+  // src/srs.js
+  var DAY = 864e5;
+  function dueInterval(streak) {
+    if (streak >= 6) return 14 * DAY;
+    if (streak === 5) return 7 * DAY;
+    if (streak === 4) return 3 * DAY;
+    return DAY;
+  }
+  var seenOf = (rec) => rec && rec.s || 0;
+  var streakOf = (rec) => rec && rec.r || 0;
+  var isWeak = (rec) => !!rec && streakOf(rec) <= 1 && seenOf(rec) >= 2;
+  var isMasteredRec = (rec) => streakOf(rec) >= 3;
+  var isDue = (rec, now) => isMasteredRec(rec) && (rec.ls == null || now - rec.ls >= dueInterval(rec.r));
+  function wordWeight(rec, now = Date.now()) {
+    if (!rec) return 1;
+    if (isWeak(rec)) return 3;
+    if (isMasteredRec(rec)) return isDue(rec, now) ? 2 : 0.3;
+    return 1;
+  }
+  function weakWords(store2, pool2) {
+    return pool2.filter((w) => isWeak(store2[w.h])).sort((a, b) => {
+      const ra = store2[a.h], rb = store2[b.h];
+      const ratioA = ra.s ? ra.k / ra.s : 0, ratioB = rb.s ? rb.k / rb.s : 0;
+      return ratioA !== ratioB ? ratioA - ratioB : rb.s - ra.s;
+    });
+  }
+  function dueWords(store2, pool2, now = Date.now()) {
+    return pool2.filter((w) => isDue(store2[w.h], now));
+  }
+  function smartDeck(store2, pool2, now = Date.now()) {
+    const weak = weakWords(store2, pool2);
+    const seen = new Set(weak.map((w) => w.h));
+    const deck = weak.slice();
+    for (const w of dueWords(store2, pool2, now)) {
+      if (!seen.has(w.h)) {
+        seen.add(w.h);
+        deck.push(w);
+      }
+    }
+    return deck;
+  }
+
+  // src/daily.js
+  var GOAL = 20;
+  var DAY_MS = 864e5;
+  function defaultDaily() {
+    return { last: "", streak: 0, today: { date: "", resolved: 0 } };
+  }
+  function isYesterday(a, b) {
+    if (!a || !b) return false;
+    const da = /* @__PURE__ */ new Date(a + "T00:00:00Z");
+    const db = /* @__PURE__ */ new Date(b + "T00:00:00Z");
+    if (isNaN(da) || isNaN(db)) return false;
+    return db.getTime() - da.getTime() === DAY_MS;
+  }
+  function noteActivity(daily2, dateStr, count) {
+    const before = daily2.today.date === dateStr ? daily2.today.resolved : 0;
+    const resolved = before + count;
+    const today = { date: dateStr, resolved };
+    let { last, streak } = daily2;
+    const crossedNow = before < GOAL && resolved >= GOAL;
+    if (crossedNow && last !== dateStr) {
+      streak = isYesterday(last, dateStr) ? streak + 1 : 1;
+      last = dateStr;
+    }
+    return { last, streak, today };
+  }
+  function streakInfo(daily2, dateStr) {
+    const todayResolved = daily2.today.date === dateStr ? daily2.today.resolved : 0;
+    const chainAlive = daily2.last === dateStr || isYesterday(daily2.last, dateStr);
+    return {
+      streak: chainAlive ? daily2.streak : 0,
+      todayResolved,
+      goal: GOAL,
+      goalMet: todayResolved >= GOAL
+    };
+  }
+
+  // src/boss.js
+  var BOSS_EVERY = 10;
+  var bossSpeedFactor = 0.85;
+  function isBossSpawn(spawnIndex) {
+    return spawnIndex > 0 && spawnIndex % BOSS_EVERY === 0;
+  }
+  function bossPoints(basePoints) {
+    return basePoints * 5;
   }
 
   // src/native.js
@@ -366,6 +487,78 @@
     }
   }
 
+  // src/shop.js
+  var CATALOG = [
+    { id: "midnight", name: "Midnight", price: 500, type: "skin" },
+    { id: "sakura", name: "Sakura", price: 1500, type: "skin" },
+    { id: "jade", name: "Jade", price: 2500, type: "skin" },
+    { id: "gold", name: "Gold", price: 5e3, type: "skin" },
+    { id: "market", name: "Night Market", price: 1e3, type: "backdrop" },
+    { id: "temple", name: "Temple Dawn", price: 2e3, type: "backdrop" },
+    { id: "bamboo", name: "Bamboo", price: 3e3, type: "backdrop" }
+  ];
+  var SKIN_PALETTES = {
+    midnight: {
+      body: "#2a2a30",
+      head: "#35353c",
+      ear: "#35353c",
+      inner: "#6a6a78",
+      leg: "#1c1c22",
+      filter: "grayscale(1) brightness(.5)"
+    },
+    sakura: {
+      body: "#f6c6d8",
+      head: "#fbdce8",
+      ear: "#fbdce8",
+      inner: "#e8608a",
+      leg: "#e0a0b8",
+      filter: "hue-rotate(300deg) saturate(.75) brightness(1.15)"
+    },
+    jade: {
+      body: "#2f9e5a",
+      head: "#3fbf70",
+      ear: "#3fbf70",
+      inner: "#eec94a",
+      leg: "#1f7040",
+      filter: "hue-rotate(85deg) saturate(.8)"
+    },
+    gold: {
+      body: "#e3a80e",
+      head: "#ffd75e",
+      ear: "#ffd75e",
+      inner: "#fff4e0",
+      leg: "#9c6b00",
+      filter: "saturate(1.6) brightness(1.25) contrast(1.05)"
+    }
+  };
+  function byId(id) {
+    return CATALOG.find((it) => it.id === id);
+  }
+  function defaultShop() {
+    return { owned: [], skin: "", backdrop: "" };
+  }
+  function canAfford(wallet2, id) {
+    const item = byId(id);
+    return !!item && wallet2 >= item.price;
+  }
+  function buy(wallet2, shop, id) {
+    const item = byId(id);
+    if (!item) return { ok: false, wallet: wallet2, shop };
+    if (shop.owned.includes(id)) return { ok: false, wallet: wallet2, shop };
+    if (wallet2 < item.price) return { ok: false, wallet: wallet2, shop };
+    return {
+      ok: true,
+      wallet: wallet2 - item.price,
+      shop: { ...shop, owned: [...shop.owned, id] }
+    };
+  }
+  function equipItem(shop, id, type) {
+    if (!id) return type === "skin" || type === "backdrop" ? { ...shop, [type]: "" } : shop;
+    const item = byId(id);
+    if (!item || !shop.owned.includes(id)) return shop;
+    return { ...shop, [item.type]: id };
+  }
+
   // src/main.js
   var D = window.HSK_DATA;
   var $ = (s) => document.querySelector(s);
@@ -386,13 +579,14 @@
     }
   };
   var scope = Object.assign(
-    { levels: [3], core: false, newOnly: false, topN: 0, lang: "both" },
+    { levels: [3], core: false, newOnly: false, topN: 0, lang: "both", sessionLen: 20 },
     store.get("scope", {})
   );
   var settings = Object.assign({ autoSpeak: true }, store.get("settings", {}));
   sfx.enabled = store.get("sfx", true);
   var pool = [];
   var learnDeck = null;
+  var lenCustomOpen = false;
   var battleDeckOverride = null;
   var lastMode = "round";
   var masteryStore = store.get("mastery", {});
@@ -400,6 +594,39 @@
     recordAnswer(masteryStore, hanzi, correct);
     store.set("mastery", masteryStore);
   }
+  var wallet = store.get("wallet", 0);
+  var shopState = Object.assign(defaultShop(), store.get("shop", {}));
+  function updateWalletChip() {
+    $("#home-wallet").textContent = "\u{1FA99} " + wallet.toLocaleString();
+  }
+  var todayStr = () => {
+    const d = /* @__PURE__ */ new Date();
+    const mm = String(d.getMonth() + 1).padStart(2, "0"), dd = String(d.getDate()).padStart(2, "0");
+    return `${d.getFullYear()}-${mm}-${dd}`;
+  };
+  var daily = Object.assign(defaultDaily(), store.get("daily", {}));
+  daily.today = Object.assign({ date: "", resolved: 0 }, daily.today);
+  function updateStreakChip() {
+    const info = streakInfo(daily, todayStr());
+    $("#home-streak").textContent = info.goalMet ? `\u{1F525} ${info.streak} \xB7 \u2705 today` : `\u{1F525} ${info.streak} \xB7 ${info.todayResolved}/${info.goal} today`;
+  }
+  function noteDaily(count) {
+    daily = noteActivity(daily, todayStr(), count);
+    store.set("daily", daily);
+    updateStreakChip();
+  }
+  function updateSmartBtn() {
+    const deck = smartDeck(masteryStore, pool, Date.now());
+    const btn = $("#go-smart");
+    btn.disabled = deck.length < 8;
+    btn.textContent = deck.length ? `\u{1F3AF} Smart Review \xB7 ${deck.length}` : "\u{1F3AF} Smart Review";
+  }
+  $("#go-smart").onclick = () => {
+    const deck = smartDeck(masteryStore, pool, Date.now());
+    if (deck.length < 8) return;
+    battleDeckOverride = deck;
+    startBattle("round");
+  };
   function shuffle2(a) {
     for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -429,6 +656,9 @@
     } else if (t === "progress") {
       renderProgress();
       show("progress");
+    } else if (t === "shop") {
+      renderShop();
+      show("shop");
     } else {
       if (t === "home") {
         stopBattle();
@@ -460,9 +690,21 @@
     pool = buildPool(D.levels, scope);
     const noThai = pool.filter((w) => !w.t).length;
     $("#readout").innerHTML = `Pool: <b>${pool.length.toLocaleString()}</b> words \xB7 ~<b>${coveragePct(pool, D.manifest, scope.levels)}%</b> of exam text` + (scope.lang !== "en" && noThai ? `<div class="warn">* ${noThai.toLocaleString()} long-tail words have no Thai yet \u2014 English shown instead.</div>` : "");
+    const len = normalizeLen(scope.sessionLen);
+    scope.sessionLen = len;
+    if (![20, 40, 100].includes(len)) lenCustomOpen = true;
+    document.querySelectorAll("#len-chips .chip").forEach((c) => {
+      const on = c.dataset.len === "custom" ? lenCustomOpen : !lenCustomOpen && +c.dataset.len === len;
+      c.classList.toggle("on", on);
+    });
+    const lenInput = $("#len-custom");
+    lenInput.hidden = !lenCustomOpen;
+    if (lenCustomOpen && document.activeElement !== lenInput) lenInput.value = len;
+    $("#go-battle").textContent = `\u{1F9E7} Battle \xB7 ${len}`;
     store.set("scope", scope);
     const startable = pool.length >= 8;
     $("#go-battle").disabled = $("#go-endless").disabled = $("#go-learn").disabled = !startable;
+    updateSmartBtn();
   }
   $("#f-core").onclick = () => {
     scope.core = !scope.core;
@@ -480,6 +722,23 @@
     scope.lang = c.dataset.lang;
     renderScope();
   });
+  document.querySelectorAll("#len-chips .chip").forEach((c) => c.onclick = () => {
+    if (c.dataset.len === "custom") {
+      lenCustomOpen = true;
+      renderScope();
+      $("#len-custom").focus();
+    } else {
+      lenCustomOpen = false;
+      scope.sessionLen = +c.dataset.len;
+      renderScope();
+    }
+  });
+  $("#len-custom").addEventListener("input", () => {
+    scope.sessionLen = normalizeLen($("#len-custom").value);
+    store.set("scope", scope);
+    $("#go-battle").textContent = `\u{1F9E7} Battle \xB7 ${scope.sessionLen}`;
+  });
+  $("#len-custom").addEventListener("change", () => renderScope());
   document.querySelectorAll("#preset-chips .chip").forEach((c) => c.onclick = () => {
     scope.levels = c.dataset.preset.split(",").map(Number);
     renderScope();
@@ -536,7 +795,10 @@
     const w = fc.deck[fc.i];
     noteAnswer(w.h, !keep);
     if (keep) fc.deck.push(w);
-    else fc.done++;
+    else {
+      fc.done++;
+      noteDaily(1);
+    }
     fc.i++;
     fc.flipped = false;
     if (fc.i >= fc.deck.length) {
@@ -566,12 +828,14 @@
   });
   function pickWord() {
     const deck = B.deck;
+    const now = Date.now();
+    const weight = (w) => (Math.sqrt(w.f) + 1) * wordWeight(masteryStore[w.h], now);
     for (let tries = 0; tries < 40; tries++) {
       let total = 0;
-      for (const w of deck) total += Math.sqrt(w.f) + 1;
+      for (const w of deck) total += weight(w);
       let r = Math.random() * total;
       for (const w of deck) {
-        r -= Math.sqrt(w.f) + 1;
+        r -= weight(w);
         if (r <= 0) {
           if (!B.recent.includes(w.h)) {
             B.recent.push(w.h);
@@ -597,7 +861,7 @@
     B.score = 0;
     B.combo = 0;
     B.lives = 3;
-    B.wordsTotal = mode === "round" ? 20 : Infinity;
+    B.wordsTotal = mode === "round" ? normalizeLen(scope.sessionLen) : Infinity;
     B.spawned = 0;
     B.resolved = 0;
     B.correct = 0;
@@ -660,6 +924,11 @@
     B.zombie = { w, x: B.w + 30, state: "walk", wob: Math.random() * 7 };
     B.spawned++;
     B.locked = false;
+    if (isBossSpawn(B.spawned)) {
+      B.zombie.boss = true;
+      B.zombie.stage = "meaning";
+      sfx.combo(5);
+    }
     if (settings.autoSpeak) speak(w.h);
     renderOptions(w);
     B.speed *= 1.03;
@@ -677,6 +946,23 @@
       box.appendChild(b);
     }
   }
+  function renderBossHanzi(word) {
+    const opts = shuffle2([word, ...pickDistractors(B.deck.length >= 8 ? B.deck : pool, word)]);
+    const box = $("#opts");
+    box.innerHTML = "";
+    const m = meaning(word, scope.lang);
+    const prompt = document.createElement("div");
+    prompt.style.cssText = "grid-column:1/-1; text-align:center; font-weight:700; color:var(--gold); padding:2px 4px 8px;";
+    prompt.textContent = `\u{1F451} Boss \xB7 pick the hanzi for: ${m.main}`;
+    box.appendChild(prompt);
+    for (const o of opts) {
+      const b = document.createElement("button");
+      b.innerHTML = o.h + `<span class="th">${o.p}</span>`;
+      b._w = o;
+      b.onclick = () => answer(b, o);
+      box.appendChild(b);
+    }
+  }
   function lockOptions() {
     B.locked = true;
     document.querySelectorAll("#opts button").forEach((b) => b.disabled = true);
@@ -689,13 +975,33 @@
   function answer(btn, o) {
     const z = B.zombie;
     if (!z || z.state !== "walk" || B.locked) return;
-    B.attempts++;
-    noteAnswer(z.w.h, o.h === z.w.h);
-    if (o.h === z.w.h) {
+    const boss = z.boss;
+    const correct = o.h === z.w.h;
+    if (!boss) {
+      B.attempts++;
+      noteAnswer(z.w.h, correct);
+    } else if (z.stage === "meaning") {
+      B.attempts++;
+    }
+    if (correct && boss && z.stage === "meaning") {
+      z.frozen = true;
+      btn.classList.add("good");
+      lockOptions();
+      setTimeout(() => {
+        if (!B.on || B.zombie !== z) return;
+        z.stage = "hanzi";
+        z.frozen = false;
+        renderBossHanzi(z.w);
+        B.locked = false;
+      }, 500);
+      updateHud();
+      return;
+    }
+    if (correct) {
       B.correct++;
       B.combo++;
       const distFrac = Math.max(0, z.x - MASCOT_X - 34) / (B.w - MASCOT_X - 34);
-      B.score += killPoints(B.combo, distFrac);
+      B.score += boss ? bossPoints(killPoints(B.combo, distFrac)) : killPoints(B.combo, distFrac);
       sfx.kill();
       hapticKill();
       if (B.combo >= 3) sfx.combo(B.combo);
@@ -703,6 +1009,7 @@
       lockOptions();
       B.proj = { x: MASCOT_X + 16, y: B.h - GROUND - 30 };
       speak(z.w.h);
+      if (boss) noteAnswer(z.w.h, true);
     } else {
       B.combo = 0;
       sfx.wrong();
@@ -712,6 +1019,7 @@
       lockOptions();
       revealCorrect(z.w);
       pushMiss(z.w);
+      if (boss) noteAnswer(z.w.h, false);
       B.lives--;
       B.flash = 1;
       B.resolved++;
@@ -726,7 +1034,8 @@
   }
   function killZombie(z) {
     const gy = B.h - GROUND;
-    for (let i = 0; i < 12; i++) B.parts.push({ x: z.x, y: gy - 16, vx: (Math.random() - 0.5) * 240, vy: -Math.random() * 200, life: 0.6 });
+    const n = z.boss ? 28 : 12;
+    for (let i = 0; i < n; i++) B.parts.push({ x: z.x, y: gy - 16, vx: (Math.random() - 0.5) * 240, vy: -Math.random() * 200, life: 0.6 });
     z.state = "happy";
     B.dyingUntil = performance.now() + 250;
     B.proj = null;
@@ -735,7 +1044,7 @@
   function bite(timedOut) {
     const z = B.zombie;
     if (timedOut) {
-      B.attempts++;
+      if (!z.boss || z.stage === "meaning") B.attempts++;
       B.combo = 0;
       noteAnswer(z.w.h, false);
       pushMiss(z.w);
@@ -763,8 +1072,10 @@
     const z = B.zombie;
     if (z) {
       if (z.state === "walk") {
-        z.x -= B.speed * dt;
-        if (z.x <= MASCOT_X + 34) bite(true);
+        if (!z.frozen) {
+          z.x -= B.speed * (z.boss ? bossSpeedFactor : 1) * dt;
+          if (z.x <= MASCOT_X + 34) bite(true);
+        }
       } else if (z.state === "dash") {
         z.x -= B.speed * 7 * dt;
         if (z.x <= MASCOT_X + 34) bite(false);
@@ -787,9 +1098,49 @@
     draw(t);
     requestAnimationFrame(loop);
   }
+  function drawBackdrop(gy) {
+    const w = B.w, h = B.h;
+    if (shopState.backdrop === "market") {
+      const g = ctx2.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, "#2a0f3a");
+      g.addColorStop(1, "#4a1030");
+      ctx2.fillStyle = g;
+      ctx2.fillRect(0, 0, w, h);
+      ctx2.fillStyle = "rgba(245,197,24,.55)";
+      const dots = [[0.15, 0.25], [0.35, 0.15], [0.6, 0.22], [0.8, 0.3], [0.5, 0.12]];
+      for (const [fx, fy] of dots) {
+        ctx2.beginPath();
+        ctx2.arc(w * fx, h * fy, 3, 0, 7);
+        ctx2.fill();
+      }
+    } else if (shopState.backdrop === "temple") {
+      const g = ctx2.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, "#3a1a10");
+      g.addColorStop(1, "#6b2a10");
+      ctx2.fillStyle = g;
+      ctx2.fillRect(0, 0, w, h);
+      ctx2.fillStyle = "rgba(20,10,10,.55)";
+      ctx2.beginPath();
+      ctx2.moveTo(w * 0.7, gy + 8);
+      ctx2.lineTo(w * 0.82, gy - 46);
+      ctx2.lineTo(w * 0.94, gy + 8);
+      ctx2.closePath();
+      ctx2.fill();
+    } else if (shopState.backdrop === "bamboo") {
+      const g = ctx2.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, "#0e2a26");
+      g.addColorStop(1, "#16332e");
+      ctx2.fillStyle = g;
+      ctx2.fillRect(0, 0, w, h);
+      ctx2.fillStyle = "rgba(20,60,45,.6)";
+      const stalks = [0.2, 0.45, 0.68, 0.88];
+      for (const fx of stalks) ctx2.fillRect(w * fx - 4, 0, 8, gy + 10);
+    }
+  }
   function draw(t) {
     ctx2.clearRect(0, 0, B.w, B.h);
     const gy = B.h - GROUND;
+    drawBackdrop(gy);
     ctx2.strokeStyle = "rgba(245,197,24,.35)";
     ctx2.lineWidth = 3;
     ctx2.beginPath();
@@ -815,8 +1166,11 @@
     const z = B.zombie;
     if (z) {
       const wob = Math.sin(t / 160 + z.wob) * 3;
+      const hideWord = z.boss && z.stage === "hanzi" && z.state === "walk";
+      const bh = hideWord ? "\uFF1F\uFF1F" : z.w.h;
+      const bp = hideWord ? "" : z.w.p;
       ctx2.font = "600 26px 'Segoe UI',sans-serif";
-      const lw = Math.max(ctx2.measureText(z.w.h).width, 64) + 22;
+      const lw = Math.max(ctx2.measureText(bh).width, 64) + 22;
       const cx = Math.min(Math.max(z.x, lw / 2 + 6), B.w - lw / 2 - 6);
       ctx2.fillStyle = "rgba(58,16,16,.95)";
       ctx2.strokeStyle = "#f5c518";
@@ -825,11 +1179,11 @@
       ctx2.fill();
       ctx2.stroke();
       ctx2.fillStyle = "#fff4e0";
-      ctx2.fillText(z.w.h, cx, gy - 96);
+      ctx2.fillText(bh, cx, gy - 96);
       ctx2.font = "13px 'Segoe UI',sans-serif";
       ctx2.fillStyle = "#f5c518";
-      ctx2.fillText(z.w.p, cx, gy - 76);
-      drawCat(ctx2, z.x, gy + 6, t, z.state);
+      ctx2.fillText(bp, cx, gy - 76);
+      drawCat(ctx2, z.x, gy + 6, t, z.state, SKIN_PALETTES[shopState.skin], z.boss ? 1.5 : 1);
     }
     if (B.proj) {
       const coinImg = sprite("coin");
@@ -864,13 +1218,19 @@
   }
   function endBattle(quit) {
     stopBattle();
+    updateSmartBtn();
     if (quit) {
       show("home");
       return;
     }
+    noteDaily(B.resolved);
+    wallet += B.score;
+    store.set("wallet", wallet);
+    updateWalletChip();
+    $("#r-wallet").textContent = `+${B.score} \u{1FA99} banked \xB7 total ${wallet.toLocaleString()}`;
     const acc = B.attempts ? Math.round(100 * B.correct / B.attempts) : 0;
     $("#r-score").textContent = B.score;
-    const key = scopeKey(scope) + "\xB7" + B.mode;
+    const key = scopeKey(scope) + "\xB7" + modeKey(B.mode, B.wordsTotal);
     const best = store.get("best", {});
     const prev = best[key] ? best[key].score : 0;
     const isBest = B.score > prev;
@@ -920,6 +1280,50 @@
       box.appendChild(row);
     }
   }
+  function renderShop() {
+    $("#shop-wallet").innerHTML = `Wallet: <b>${wallet.toLocaleString()}</b> \u{1FA99}`;
+    const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops");
+    skinBox.innerHTML = "";
+    bdBox.innerHTML = "";
+    for (const item of CATALOG) {
+      const box = item.type === "skin" ? skinBox : bdBox;
+      const owned = shopState.owned.includes(item.id);
+      const equipped = shopState[item.type] === item.id;
+      const row = document.createElement("div");
+      row.className = "scorerow";
+      const left = document.createElement("span");
+      left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${item.price.toLocaleString()} \u{1FA99}</span>`;
+      const btn = document.createElement("button");
+      btn.className = "chip" + (equipped ? " on" : "");
+      if (equipped) {
+        btn.textContent = "Equipped";
+        btn.disabled = true;
+      } else if (owned) {
+        btn.textContent = "Equip";
+        btn.onclick = () => {
+          shopState = equipItem(shopState, item.id);
+          store.set("shop", shopState);
+          renderShop();
+        };
+      } else {
+        btn.textContent = "Buy";
+        btn.disabled = !canAfford(wallet, item.id);
+        btn.onclick = () => {
+          const r = buy(wallet, shopState, item.id);
+          if (!r.ok) return;
+          wallet = r.wallet;
+          shopState = r.shop;
+          store.set("wallet", wallet);
+          store.set("shop", shopState);
+          updateWalletChip();
+          renderShop();
+        };
+      }
+      row.appendChild(left);
+      row.appendChild(btn);
+      box.appendChild(row);
+    }
+  }
   function renderProgress() {
     const box = $("#progresslist");
     box.innerHTML = "";
@@ -928,12 +1332,53 @@
       const m = levelMastery(masteryStore, words);
       const row = document.createElement("div");
       row.className = "scorerow";
-      row.innerHTML = `<span>HSK${n}</span>
-      <span><b>${m.pct}%</b> mastered \xB7 ${m.seen.toLocaleString()}/${words.length.toLocaleString()} seen</span>`;
+      row.style.flexDirection = "column";
+      row.style.alignItems = "stretch";
+      row.style.gap = "6px";
+      row.innerHTML = `<div style="display:flex; justify-content:space-between">
+        <span>HSK${n}</span>
+        <span><b>${m.pct}%</b> mastered \xB7 ${m.seen.toLocaleString()}/${words.length.toLocaleString()} seen</span>
+      </div>
+      <div class="mbar"><i style="width:${m.pct}%"></i></div>`;
       box.appendChild(row);
     }
+    renderNeedsWork();
+  }
+  function renderNeedsWork() {
+    const weak = weakWords(masteryStore, pool).slice(0, 20);
+    const list = $("#needswork-list");
+    list.innerHTML = "";
+    if (!weak.length) {
+      list.innerHTML = `<div class="missrow" style="color:var(--muted)">Nothing needs work \u2014 go play!</div>`;
+    }
+    for (const w of weak) {
+      const row = document.createElement("div");
+      row.className = "missrow";
+      row.innerHTML = `<span class="hz">${w.h}</span>
+      <span class="det"><span class="py">${w.p}</span> \u2014 ${w.e}${w.t ? " \xB7 " + w.t : ""}</span>`;
+      const sp = document.createElement("button");
+      sp.className = "sp";
+      sp.textContent = "\u{1F50A}";
+      sp.onclick = () => speak(w.h);
+      row.appendChild(sp);
+      list.appendChild(row);
+    }
+    const showBtns = weak.length >= 2;
+    $("#nw-review").style.display = showBtns ? "block" : "none";
+    $("#nw-fight").style.display = showBtns ? "block" : "none";
+    $("#nw-review").onclick = () => {
+      learnDeck = weak.slice();
+      startLearn();
+    };
+    $("#nw-fight").onclick = () => {
+      battleDeckOverride = weak.slice();
+      startBattle("round");
+    };
   }
   pool = buildPool(D.levels, scope);
+  updateWalletChip();
+  updateSmartBtn();
+  updateStreakChip();
   if (location.hash === "#debug") {
     window.__debugTarget = () => B.zombie && B.zombie.w.h;
   }

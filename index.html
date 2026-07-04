@@ -53,6 +53,7 @@
   .chip{padding:9px 14px; border-radius:999px; background:var(--chip); color:var(--ink);
     font-size:15px; font-weight:600; border:1px solid #5a2c22;}
   .chip.on{background:var(--chip-on); color:var(--chip-ink-on); border-color:var(--chip-on);}
+  .chip:disabled{opacity:.45;}
   .chip.preset{background:transparent; border-style:dashed; color:var(--muted); font-weight:500;}
   #len-custom{width:86px; padding:9px 14px; border-radius:999px; background:var(--chip);
     color:var(--ink); font-size:15px; font-weight:600; border:1px solid #5a2c22; text-align:center;}
@@ -148,6 +149,8 @@
   .scorerow{display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #4a2424; font-size:15px;}
   .scorerow:last-child{border-bottom:none;}
   .scorerow b{color:var(--gold);}
+  .mbar{height:6px; border-radius:999px; background:rgba(201,160,138,.2); overflow:hidden;}
+  .mbar i{display:block; height:100%; background:var(--gold); border-radius:999px;}
   .howto{line-height:1.55; font-size:15.5px; color:var(--ink);}
   .howto b{color:var(--gold);}
   footer{color:#a3766a; text-align:center; font-size:11.5px; padding:10px 0 16px;}
@@ -191,8 +194,14 @@
     <p class="tag">Feed the lucky cat the right meanings —<br>collect coins, learn real-exam HSK words.</p>
     <div class="menu">
       <button class="big primary" data-go="scope">🧧 Play</button>
+      <button class="big" id="go-smart">🎯 Smart Review</button>
+      <div style="text-align:center; display:flex; justify-content:center; gap:8px; flex-wrap:wrap">
+        <span class="hud-pill" id="home-wallet">🪙 0</span>
+        <span class="hud-pill" id="home-streak">🔥 0 · 0/20 today</span>
+      </div>
       <div class="icon-row">
         <button class="icon-btn" data-go="scope-learn" title="Flashcards">🃏</button>
+        <button class="icon-btn" data-go="shop" title="Lucky Shop">🛍️</button>
         <button class="icon-btn" data-go="scores" title="High scores">🏆</button>
         <button class="icon-btn" data-go="progress" title="Progress">📈</button>
         <button class="icon-btn" data-go="howto" title="How to play">❓</button>
@@ -280,6 +289,7 @@
     <h2 style="text-align:center">Round over</h2>
     <div class="bignum" id="r-score"></div>
     <p class="sub" id="r-sub"></p>
+    <p class="sub" id="r-wallet" style="color:var(--gold)"></p>
     <div class="sect" id="r-misshead">Words you missed</div>
     <div class="misslist" id="r-miss"></div>
     <div class="startrow">
@@ -302,6 +312,23 @@
     <button class="back" data-go="home">← Home</button>
     <h2>📈 Progress</h2>
     <div class="scorelist" id="progresslist"></div>
+    <div class="sect">Needs work</div>
+    <div class="misslist" id="needswork-list"></div>
+    <div class="startrow">
+      <button class="big" id="nw-review">📖 Review these</button>
+      <button class="big" id="nw-fight">⚔️ Fight these</button>
+    </div>
+  </div>
+
+  <!-- SHOP -->
+  <div class="screen festive" id="s-shop">
+    <button class="back" data-go="home">← Home</button>
+    <h2>🛍️ Lucky Shop</h2>
+    <div class="readout" id="shop-wallet"></div>
+    <div class="sect">Cat skins</div>
+    <div class="scorelist" id="shop-skins"></div>
+    <div class="sect">Battle backdrops</div>
+    <div class="scorelist" id="shop-backdrops"></div>
   </div>
 
   <!-- HOW TO -->

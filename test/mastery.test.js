@@ -30,4 +30,28 @@ describe("mastery", () => {
   it("levelMastery returns pct=0 for empty word list", () => {
     expect(levelMastery({}, [])).toEqual({ seen: 0, mastered: 0, pct: 0 });
   });
+  it("recordAnswer stamps ls (last-seen) using the provided now", () => {
+    const s = {};
+    recordAnswer(s, "水", true, 12345);
+    expect(s["水"].ls).toBe(12345);
+    recordAnswer(s, "水", true, 67890);
+    expect(s["水"].ls).toBe(67890);
+  });
+  it("recordAnswer defaults ls to Date.now() when now is omitted", () => {
+    const s = {};
+    const before = Date.now();
+    recordAnswer(s, "水", true);
+    const after = Date.now();
+    expect(s["水"].ls).toBeGreaterThanOrEqual(before);
+    expect(s["水"].ls).toBeLessThanOrEqual(after);
+  });
+  it("old v1 records without ls keep working with existing helpers", () => {
+    const s = { "水": { s: 3, k: 3, r: 3 } };  // pre-M2 shape, no ls
+    expect(wordStreak(s, "水")).toBe(3);
+    expect(isMastered(s, "水")).toBe(true);
+    expect(levelMastery(s, [{ h: "水" }])).toEqual({ seen: 1, mastered: 1, pct: 100 });
+    // recording a new answer on top of an old record adds ls without breaking counts
+    recordAnswer(s, "水", true, 999);
+    expect(s["水"]).toEqual({ s: 4, k: 4, r: 4, ls: 999 });
+  });
 });

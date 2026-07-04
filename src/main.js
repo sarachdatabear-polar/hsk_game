@@ -6,8 +6,12 @@ import { sfx } from "./sfx.js";
 import { drawCat } from "./cat.js";
 import { loadSprites, sprite } from "./sprites.js";
 import { recordAnswer, levelMastery } from "./mastery.js";
+import { wordWeight, smartDeck, weakWords } from "./srs.js";
+import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
+import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
+import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem } from "./shop.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -30,6 +34,43 @@ function noteAnswer(hanzi, correct){
   recordAnswer(masteryStore, hanzi, correct);
   store.set("mastery", masteryStore);
 }
+let wallet = store.get("wallet", 0);
+let shopState = Object.assign(defaultShop(), store.get("shop", {}));
+function updateWalletChip(){ $("#home-wallet").textContent = "🪙 "+wallet.toLocaleString(); }
+
+/* ============================== daily streak ============================== */
+// local calendar date (not UTC) — a daily habit should reset at the player's
+// own midnight, not UTC's.
+const todayStr = () => {
+  const d = new Date();
+  const mm = String(d.getMonth()+1).padStart(2,"0"), dd = String(d.getDate()).padStart(2,"0");
+  return `${d.getFullYear()}-${mm}-${dd}`;
+};
+let daily = Object.assign(defaultDaily(), store.get("daily", {}));
+daily.today = Object.assign({date:"", resolved:0}, daily.today);
+function updateStreakChip(){
+  const info = streakInfo(daily, todayStr());
+  $("#home-streak").textContent = info.goalMet
+    ? `🔥 ${info.streak} · ✅ today`
+    : `🔥 ${info.streak} · ${info.todayResolved}/${info.goal} today`;
+}
+function noteDaily(count){
+  daily = noteActivity(daily, todayStr(), count);
+  store.set("daily", daily);
+  updateStreakChip();
+}
+function updateSmartBtn(){
+  const deck = smartDeck(masteryStore, pool, Date.now());
+  const btn = $("#go-smart");
+  btn.disabled = deck.length < 8;
+  btn.textContent = deck.length ? `🎯 Smart Review · ${deck.length}` : "🎯 Smart Review";
+}
+$("#go-smart").onclick = ()=>{
+  const deck = smartDeck(masteryStore, pool, Date.now());
+  if(deck.length < 8) return;
+  battleDeckOverride = deck;
+  startBattle("round");
+};
 
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
@@ -54,6 +95,7 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
   else if(t==="scope-learn"){ renderScope(); show("scope"); }
   else if(t==="scores"){ renderScores(); show("scores"); }
   else if(t==="progress"){ renderProgress(); show("progress"); }
+  else if(t==="shop"){ renderShop(); show("shop"); }
   else { if(t==="home"){ stopBattle(); } show(t); }
 }));
 
@@ -97,6 +139,7 @@ function renderScope(){
   store.set("scope", scope);
   const startable = pool.length >= 8;
   $("#go-battle").disabled = $("#go-endless").disabled = $("#go-learn").disabled = !startable;
+  updateSmartBtn();
 }
 $("#f-core").onclick = ()=>{ scope.core = !scope.core; renderScope(); };
 $("#f-new").onclick  = ()=>{ scope.newOnly = !scope.newOnly; renderScope(); };
@@ -151,7 +194,7 @@ function nextCard(keep){
   const w = fc.deck[fc.i];
   noteAnswer(w.h, !keep);        // "know it" (keep=false) = correct; "still learning" = incorrect
   if(keep) fc.deck.push(w);      // still learning → resurfaces at the end
-  else fc.done++;
+  else { fc.done++; noteDaily(1); }   // "know it" counts toward the daily goal, one tap at a time
   fc.i++; fc.flipped = false;
   if(fc.i >= fc.deck.length){ endLearn(); return; }
   renderCard();
@@ -181,13 +224,15 @@ window.addEventListener("resize", ()=>{ if(B.on) sizeCanvas(); });
 
 function pickWord(){
   const deck = B.deck;
-  // frequency-weighted, avoiding the last few words
+  const now = Date.now();
+  const weight = w => (Math.sqrt(w.f)+1) * wordWeight(masteryStore[w.h], now);
+  // frequency-weighted (mastery-modulated), avoiding the last few words
   for(let tries=0; tries<40; tries++){
     let total = 0;
-    for(const w of deck) total += Math.sqrt(w.f)+1;
+    for(const w of deck) total += weight(w);
     let r = Math.random()*total;
     for(const w of deck){
-      r -= Math.sqrt(w.f)+1;
+      r -= weight(w);
       if(r<=0){
         if(!B.recent.includes(w.h)) { B.recent.push(w.h); if(B.recent.length>8) B.recent.shift(); return w; }
         break;
@@ -247,6 +292,10 @@ function spawnZombie(){
   const w = pickWord();
   B.zombie = {w, x: B.w+30, state:"walk", wob:Math.random()*7};
   B.spawned++; B.locked = false;
+  if(isBossSpawn(B.spawned)){
+    B.zombie.boss = true; B.zombie.stage = "meaning";
+    sfx.combo(5);   // boss-arrival sting
+  }
   if(settings.autoSpeak) speak(w.h);
   renderOptions(w);
   B.speed *= 1.03;
@@ -264,6 +313,25 @@ function renderOptions(word){
     box.appendChild(b);
   }
 }
+// Boss stage 2: reverse question — meaning shown as a prompt, pick the hanzi.
+// Reuses the same #opts grid; a prompt div spans both columns above the buttons.
+function renderBossHanzi(word){
+  const opts = shuffle([word, ...pickDistractors(B.deck.length >= 8 ? B.deck : pool, word)]);
+  const box = $("#opts");
+  box.innerHTML = "";
+  const m = meaningOf(word, scope.lang);
+  const prompt = document.createElement("div");
+  prompt.style.cssText = "grid-column:1/-1; text-align:center; font-weight:700; color:var(--gold); padding:2px 4px 8px;";
+  prompt.textContent = `👑 Boss · pick the hanzi for: ${m.main}`;
+  box.appendChild(prompt);
+  for(const o of opts){
+    const b = document.createElement("button");
+    b.innerHTML = o.h + `<span class="th">${o.p}</span>`;
+    b._w = o;
+    b.onclick = ()=>answer(b, o);
+    box.appendChild(b);
+  }
+}
 function lockOptions(){
   B.locked = true;
   document.querySelectorAll("#opts button").forEach(b=>b.disabled = true);
@@ -276,18 +344,41 @@ function revealCorrect(word){
 function answer(btn, o){
   const z = B.zombie;
   if(!z || z.state!=="walk" || B.locked) return;
-  B.attempts++;
-  noteAnswer(z.w.h, o.h === z.w.h);
-  if(o.h === z.w.h){
+  const boss = z.boss;
+  const correct = o.h === z.w.h;
+  if(!boss){
+    B.attempts++;
+    noteAnswer(z.w.h, correct);
+  }else if(z.stage === "meaning"){
+    B.attempts++;   // boss word counts as ONE attempt, taken on the first tap
+  }
+  if(correct && boss && z.stage === "meaning"){
+    // stage 1 passed: no kill yet, advance to the reverse (hanzi) question.
+    // Freeze the walk (not the render state, so the sprite keeps animating)
+    // so the brief pause can't cost a free bite.
+    z.frozen = true;
+    btn.classList.add("good");
+    lockOptions();
+    setTimeout(()=>{
+      if(!B.on || B.zombie !== z) return;   // battle moved on/ended meanwhile
+      z.stage = "hanzi"; z.frozen = false;
+      renderBossHanzi(z.w);
+      B.locked = false;
+    }, 500);
+    updateHud();
+    return;
+  }
+  if(correct){
     B.correct++; B.combo++;
     // farther kill = bigger bonus (replaces the old time bonus)
     const distFrac = Math.max(0, z.x - MASCOT_X - 34) / (B.w - MASCOT_X - 34);
-    B.score += killPoints(B.combo, distFrac);
+    B.score += boss ? bossPoints(killPoints(B.combo, distFrac)) : killPoints(B.combo, distFrac);
     sfx.kill(); hapticKill(); if (B.combo >= 3) sfx.combo(B.combo);
     btn.classList.add("good");
     lockOptions();
     B.proj = {x:MASCOT_X+16, y:B.h-GROUND-30};   // coin flies at the cat
     speak(z.w.h);                              // the sound sticks with the correct answer
+    if(boss) noteAnswer(z.w.h, true);           // both stages passed
   }else{
     // ONE attempt per word: wrong tap = lose a heart. Skip the charge animation and
     // advance quickly — just long enough to see the correct answer flashed green.
@@ -297,6 +388,7 @@ function answer(btn, o){
     lockOptions();
     revealCorrect(z.w);
     pushMiss(z.w);
+    if(boss) noteAnswer(z.w.h, false);          // any miss fails the boss word
     B.lives--; B.flash = 1; B.resolved++;
     scheduleNext(900);
   }
@@ -310,7 +402,8 @@ function scheduleNext(ms){
 }
 function killZombie(z){
   const gy = B.h-GROUND;
-  for(let i=0;i<12;i++) B.parts.push({x:z.x, y:gy-16, vx:(Math.random()-.5)*240, vy:-Math.random()*200, life:.6});
+  const n = z.boss ? 28 : 12;   // bosses pop a bigger particle burst
+  for(let i=0;i<n;i++) B.parts.push({x:z.x, y:gy-16, vx:(Math.random()-.5)*240, vy:-Math.random()*200, life:.6});
   z.state = "happy";
   B.dyingUntil = performance.now() + 250;
   B.proj = null;
@@ -318,7 +411,12 @@ function killZombie(z){
 }
 function bite(timedOut){
   const z = B.zombie;
-  if(timedOut){ B.attempts++; B.combo = 0; noteAnswer(z.w.h, false); pushMiss(z.w); revealCorrect(z.w); lockOptions(); }
+  if(timedOut){
+    // boss word already counted its one attempt on the first tap (see answer());
+    // only count here if it timed out before ever being tapped.
+    if(!z.boss || z.stage === "meaning") B.attempts++;
+    B.combo = 0; noteAnswer(z.w.h, false); pushMiss(z.w); revealCorrect(z.w); lockOptions();
+  }
   sfx.bite();
   B.lives--; B.flash = 1;
   B.resolved++;
@@ -336,8 +434,10 @@ function loop(t){
   const z = B.zombie;
   if(z){
     if(z.state==="walk"){
-      z.x -= B.speed*dt;
-      if(z.x <= MASCOT_X+34) bite(true);          // too slow — cat got there
+      if(!z.frozen){
+        z.x -= B.speed*(z.boss?bossSpeedFactor:1)*dt;
+        if(z.x <= MASCOT_X+34) bite(true);          // too slow — cat got there
+      }
     }else if(z.state==="dash"){
       z.x -= B.speed*7*dt;
       if(z.x <= MASCOT_X+34) bite(false);         // legacy: never assigned, kept for safety
@@ -355,9 +455,35 @@ function loop(t){
   draw(t);
   requestAnimationFrame(loop);
 }
+// programmatic canvas backdrops — kept dark/low-contrast so the word banner stays readable
+function drawBackdrop(gy){
+  const w = B.w, h = B.h;
+  if(shopState.backdrop==="market"){
+    const g = ctx.createLinearGradient(0,0,0,h);
+    g.addColorStop(0,"#2a0f3a"); g.addColorStop(1,"#4a1030");
+    ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+    ctx.fillStyle = "rgba(245,197,24,.55)";
+    const dots = [[.15,.25],[.35,.15],[.6,.22],[.8,.3],[.5,.12]];
+    for(const [fx,fy] of dots){ ctx.beginPath(); ctx.arc(w*fx,h*fy,3,0,7); ctx.fill(); }
+  }else if(shopState.backdrop==="temple"){
+    const g = ctx.createLinearGradient(0,0,0,h);
+    g.addColorStop(0,"#3a1a10"); g.addColorStop(1,"#6b2a10");
+    ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+    ctx.fillStyle = "rgba(20,10,10,.55)";
+    ctx.beginPath(); ctx.moveTo(w*0.7, gy+8); ctx.lineTo(w*0.82, gy-46); ctx.lineTo(w*0.94, gy+8); ctx.closePath(); ctx.fill();
+  }else if(shopState.backdrop==="bamboo"){
+    const g = ctx.createLinearGradient(0,0,0,h);
+    g.addColorStop(0,"#0e2a26"); g.addColorStop(1,"#16332e");
+    ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+    ctx.fillStyle = "rgba(20,60,45,.6)";
+    const stalks = [.2,.45,.68,.88];
+    for(const fx of stalks) ctx.fillRect(w*fx-4, 0, 8, gy+10);
+  }
+}
 function draw(t){
   ctx.clearRect(0,0,B.w,B.h);
   const gy = B.h-GROUND;
+  drawBackdrop(gy);
   // ground line — subtle gold
   ctx.strokeStyle = "rgba(245,197,24,.35)"; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(0,gy+12); ctx.lineTo(B.w,gy+12); ctx.stroke();
@@ -383,20 +509,24 @@ function draw(t){
   if(z){
     const wob = Math.sin(t/160 + z.wob)*3;
     // word banner above the cat, clamped inside the canvas
+    // boss stage 2 asks "which hanzi?", so the banner must not give it away
+    const hideWord = z.boss && z.stage === "hanzi" && z.state === "walk";
+    const bh = hideWord ? "？？" : z.w.h;
+    const bp = hideWord ? "" : z.w.p;
     ctx.font = "600 26px 'Segoe UI',sans-serif";
-    const lw = Math.max(ctx.measureText(z.w.h).width, 64)+22;
+    const lw = Math.max(ctx.measureText(bh).width, 64)+22;
     const cx = Math.min(Math.max(z.x, lw/2+6), B.w-lw/2-6);
     ctx.fillStyle = "rgba(58,16,16,.95)";
     ctx.strokeStyle = "#f5c518";
     ctx.lineWidth = 2.5;
     roundRect(cx-lw/2, gy-118, lw, 52, 10); ctx.fill(); ctx.stroke();
     ctx.fillStyle = "#fff4e0";
-    ctx.fillText(z.w.h, cx, gy-96);
+    ctx.fillText(bh, cx, gy-96);
     ctx.font = "13px 'Segoe UI',sans-serif";
     ctx.fillStyle = "#f5c518";
-    ctx.fillText(z.w.p, cx, gy-76);
-    // cat
-    drawCat(ctx, z.x, gy + 6, t, z.state);
+    ctx.fillText(bp, cx, gy-76);
+    // cat — bosses draw bigger with a gold aura (drawCat's scale param)
+    drawCat(ctx, z.x, gy + 6, t, z.state, SKIN_PALETTES[shopState.skin], z.boss ? 1.5 : 1);
   }
   // projectile — spinning coin sprite or emoji fallback
   if(B.proj){
@@ -421,7 +551,12 @@ function roundRect(x,y,w,h,r){
 }
 function endBattle(quit){
   stopBattle();
+  updateSmartBtn();
   if(quit){ show("home"); return; }
+  noteDaily(B.resolved);
+  wallet += B.score; store.set("wallet", wallet);
+  updateWalletChip();
+  $("#r-wallet").textContent = `+${B.score} 🪙 banked · total ${wallet.toLocaleString()}`;
   const acc = B.attempts? Math.round(100*B.correct/B.attempts) : 0;
   $("#r-score").textContent = B.score;
   const key = scopeKey(scope)+"·"+modeKey(B.mode, B.wordsTotal);
@@ -467,6 +602,42 @@ function renderScores(){
   }
 }
 
+/* ============================== shop ============================== */
+function renderShop(){
+  $("#shop-wallet").innerHTML = `Wallet: <b>${wallet.toLocaleString()}</b> 🪙`;
+  const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops");
+  skinBox.innerHTML = ""; bdBox.innerHTML = "";
+  for(const item of CATALOG){
+    const box = item.type==="skin" ? skinBox : bdBox;
+    const owned = shopState.owned.includes(item.id);
+    const equipped = shopState[item.type] === item.id;
+    const row = document.createElement("div");
+    row.className = "scorerow";
+    const left = document.createElement("span");
+    left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${item.price.toLocaleString()} 🪙</span>`;
+    const btn = document.createElement("button");
+    btn.className = "chip"+(equipped? " on":"");
+    if(equipped){
+      btn.textContent = "Equipped"; btn.disabled = true;
+    }else if(owned){
+      btn.textContent = "Equip";
+      btn.onclick = ()=>{ shopState = equipItem(shopState, item.id); store.set("shop", shopState); renderShop(); };
+    }else{
+      btn.textContent = "Buy";
+      btn.disabled = !canAfford(wallet, item.id);
+      btn.onclick = ()=>{
+        const r = buy(wallet, shopState, item.id);
+        if(!r.ok) return;
+        wallet = r.wallet; shopState = r.shop;
+        store.set("wallet", wallet); store.set("shop", shopState);
+        updateWalletChip(); renderShop();
+      };
+    }
+    row.appendChild(left); row.appendChild(btn);
+    box.appendChild(row);
+  }
+}
+
 /* ============================== progress ============================== */
 function renderProgress(){
   const box = $("#progresslist");
@@ -476,14 +647,45 @@ function renderProgress(){
     const m = levelMastery(masteryStore, words);
     const row = document.createElement("div");
     row.className = "scorerow";
-    row.innerHTML = `<span>HSK${n}</span>
-      <span><b>${m.pct}%</b> mastered · ${m.seen.toLocaleString()}/${words.length.toLocaleString()} seen</span>`;
+    row.style.flexDirection = "column"; row.style.alignItems = "stretch"; row.style.gap = "6px";
+    row.innerHTML = `<div style="display:flex; justify-content:space-between">
+        <span>HSK${n}</span>
+        <span><b>${m.pct}%</b> mastered · ${m.seen.toLocaleString()}/${words.length.toLocaleString()} seen</span>
+      </div>
+      <div class="mbar"><i style="width:${m.pct}%"></i></div>`;
     box.appendChild(row);
   }
+  renderNeedsWork();
+}
+function renderNeedsWork(){
+  const weak = weakWords(masteryStore, pool).slice(0, 20);
+  const list = $("#needswork-list");
+  list.innerHTML = "";
+  if(!weak.length){
+    list.innerHTML = `<div class="missrow" style="color:var(--muted)">Nothing needs work — go play!</div>`;
+  }
+  for(const w of weak){
+    const row = document.createElement("div");
+    row.className = "missrow";
+    row.innerHTML = `<span class="hz">${w.h}</span>
+      <span class="det"><span class="py">${w.p}</span> — ${w.e}${w.t? " · "+w.t:""}</span>`;
+    const sp = document.createElement("button");
+    sp.className = "sp"; sp.textContent = "🔊"; sp.onclick = ()=>speak(w.h);
+    row.appendChild(sp);
+    list.appendChild(row);
+  }
+  const showBtns = weak.length >= 2;
+  $("#nw-review").style.display = showBtns ? "block" : "none";
+  $("#nw-fight").style.display = showBtns ? "block" : "none";
+  $("#nw-review").onclick = ()=>{ learnDeck = weak.slice(); startLearn(); };
+  $("#nw-fight").onclick = ()=>{ battleDeckOverride = weak.slice(); startBattle("round"); };
 }
 
 /* ============================== boot ============================== */
 pool = buildPool(D.levels, scope);
+updateWalletChip();
+updateSmartBtn();
+updateStreakChip();
 if(location.hash === "#debug"){ window.__debugTarget = ()=> B.zombie && B.zombie.w.h; }
 initNative({ getScreen: ()=>currentScreen, goHome: ()=>{ stopBattle(); show("home"); } });
 // SW is at the app root so its scope covers the whole app; http(s) only (no-op on file://).
