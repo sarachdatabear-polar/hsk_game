@@ -9,9 +9,13 @@ const DEFAULT_PALETTE = { body: "#e07830", head: "#f09040", ear: "#f09040", inne
    palette: optional {body,head,ear,inner,leg} recolor (see shop.js SKIN_PALETTES)
    scale: optional uniform scale (default 1) around the ground-contact point
    (x, groundY) — used at 1.5 for bosses, with a gold aura behind the cat.
+   accessories: optional array of growth-milestone ids ("scarf","coin","outfit",
+   "emperor" — "kitten" is drawn by the caller as a trailing sprite, not here).
+   Drawn as vector overlays anchored to (x, groundY) so they ride along with
+   the boss scale transform and look right over both sprite and vector cat.
    All drawing is self-contained; sprite() returns null until the PNG loads,
    so the vector fallback always shows first (file:// safe). */
-export function drawCat(ctx, x, groundY, tMs, state, palette, scale = 1) {
+export function drawCat(ctx, x, groundY, tMs, state, palette, scale = 1, accessories = []) {
   const pal = palette || DEFAULT_PALETTE;
   const ph = (tMs / 220) % (Math.PI * 2);
   const bob = Math.sin(ph) * 2.5;
@@ -116,5 +120,62 @@ export function drawCat(ctx, x, groundY, tMs, state, palette, scale = 1) {
   ctx.restore();
   }
 
+  if (accessories && accessories.length) {
+    drawAccessories(ctx, x, groundY, bob, accessories, scale);
+  }
+
   if (scale !== 1) ctx.restore();
+}
+
+function roundedRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+/* Growth-milestone overlays, anchored at the cat's ground point (x, groundY)
+   in the same world space as the sprite/vector draws above (so they ride
+   along with the boss scale transform already applied by the caller).
+   "kitten" is drawn by main.js as a trailing mini cat, not here. */
+function drawAccessories(ctx, x, groundY, bob, accessories, scale) {
+  const acc = new Set(accessories);
+  const y = groundY;
+
+  if (acc.has("emperor") && scale <= 1) {
+    // subtle gold halo — skipped when the boss aura (scale>1) already drew one
+    ctx.fillStyle = "rgba(245,197,24,.12)";
+    ctx.beginPath(); ctx.arc(x, y - 40, 36, 0, Math.PI * 2); ctx.fill();
+  }
+  if (acc.has("outfit")) {
+    ctx.fillStyle = "#b3262a";
+    ctx.fillRect(x - 11, y - 40 + bob, 22, 16);
+    ctx.strokeStyle = "#f5c518"; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(x - 11, y - 32 + bob); ctx.lineTo(x + 11, y - 32 + bob); ctx.stroke();
+  }
+  if (acc.has("coin")) {
+    ctx.fillStyle = "#f5c518";
+    ctx.beginPath(); ctx.arc(x, y - 32 + bob, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#b8860b"; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.arc(x, y - 32 + bob, 5, 0, Math.PI * 2); ctx.stroke();
+  }
+  if (acc.has("scarf")) {
+    ctx.fillStyle = "#d43a2f";
+    roundedRect(ctx, x - 10, y - 48 + bob, 20, 5, 2.5); ctx.fill();
+    // small tail flap
+    ctx.beginPath();
+    ctx.moveTo(x + 8, y - 46 + bob);
+    ctx.lineTo(x + 13, y - 40 + bob);
+    ctx.lineTo(x + 6, y - 42 + bob);
+    ctx.closePath(); ctx.fill();
+  }
+  if (acc.has("emperor")) {
+    ctx.fillStyle = "#f5c518";
+    ctx.beginPath(); ctx.moveTo(x - 9, y - 58 + bob); ctx.lineTo(x - 6, y - 68 + bob); ctx.lineTo(x - 3, y - 58 + bob); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x - 3, y - 58 + bob); ctx.lineTo(x, y - 70 + bob); ctx.lineTo(x + 3, y - 58 + bob); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x + 3, y - 58 + bob); ctx.lineTo(x + 6, y - 68 + bob); ctx.lineTo(x + 9, y - 58 + bob); ctx.closePath(); ctx.fill();
+  }
 }

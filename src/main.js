@@ -2,12 +2,15 @@
 import { buildPool, coveragePct, scopeKey, meaning as meaningOf, normalizeLen, modeKey } from "./pool.js";
 import { pickDistractors } from "./distractors.js";
 import { killPoints } from "./scoring.js";
+import { coinBurst, comboFloater, fireworkRing, perfectBonus } from "./fx.js";
 import { sfx } from "./sfx.js";
 import { drawCat } from "./cat.js";
 import { loadSprites, sprite } from "./sprites.js";
 import { recordAnswer, levelMastery } from "./mastery.js";
+import { levelForXp, xpToNext, accessoriesFor, nextMilestone, MILESTONES } from "./growth.js";
 import { wordWeight, smartDeck, weakWords } from "./srs.js";
 import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
+import { defaultQuestState, noteQuestEvent, questStatus } from "./quests.js";
 import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
@@ -38,6 +41,23 @@ let wallet = store.get("wallet", 0);
 let shopState = Object.assign(defaultShop(), store.get("shop", {}));
 function updateWalletChip(){ $("#home-wallet").textContent = "🪙 "+wallet.toLocaleString(); }
 
+/* ============================== cat growth (xp/levels/accessories) ============================== */
+let xp = store.get("xp", 0);
+function updateLevelChip(){ const el = $("#home-level"); if(el) el.textContent = `🐱 Lv ${levelForXp(xp)}`; }
+function addXp(n){
+  const before = levelForXp(xp);
+  xp += n;
+  store.set("xp", xp);
+  const after = levelForXp(xp);
+  if(after > before && B.on){
+    B.levelUps = (B.levelUps||[]).concat({from:before, to:after});
+    const acc = accessoriesFor(after);
+    B.acc = acc.filter(id=>id!=="kitten");
+    B.hasKitten = acc.includes("kitten");
+  }
+  updateLevelChip();
+}
+
 /* ============================== daily streak ============================== */
 // local calendar date (not UTC) — a daily habit should reset at the player's
 // own midnight, not UTC's.
@@ -59,6 +79,32 @@ function noteDaily(count){
   store.set("daily", daily);
   updateStreakChip();
 }
+
+/* ============================== daily quests ============================== */
+let questState = Object.assign(defaultQuestState(), store.get("quests", {}));
+let questToasts = [];  // quests completed during the current battle, for the results screen
+function questEvent(eventId, n=1){
+  const r = noteQuestEvent(questState, todayStr(), eventId, n);
+  questState = r.state;
+  store.set("quests", questState);
+  if(r.earned > 0){ wallet += r.earned; store.set("wallet", wallet); updateWalletChip(); }
+  if(r.completed.length) questToasts.push(...r.completed);
+  renderQuests();
+}
+function renderQuests(){
+  const panel = $("#quest-panel");
+  if(!panel) return;
+  panel.innerHTML = "";
+  for(const q of questStatus(questState, todayStr())){
+    const row = document.createElement("div");
+    row.className = "quest-row"+(q.done? " done":"");
+    row.innerHTML = `<span class="qi">${q.done? "✅":"▫"}</span>
+      <span class="qd">${q.desc}</span>
+      <span class="qp">${q.progress}/${q.target}</span>
+      <span class="qr">+${q.reward} 🪙</span>`;
+    panel.appendChild(row);
+  }
+}
 function updateSmartBtn(){
   const deck = smartDeck(masteryStore, pool, Date.now());
   const btn = $("#go-smart");
@@ -69,6 +115,7 @@ $("#go-smart").onclick = ()=>{
   const deck = smartDeck(masteryStore, pool, Date.now());
   if(deck.length < 8) return;
   battleDeckOverride = deck;
+  questEvent("review");
   startBattle("round");
 };
 
@@ -88,6 +135,7 @@ function show(name){
   currentScreen = name;
   document.querySelectorAll(".screen").forEach(el=>el.classList.remove("on"));
   $("#s-"+name).classList.add("on");
+  if(name==="home") renderQuests();
 }
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()=>{
   const t = b.dataset.go;
@@ -194,7 +242,7 @@ function nextCard(keep){
   const w = fc.deck[fc.i];
   noteAnswer(w.h, !keep);        // "know it" (keep=false) = correct; "still learning" = incorrect
   if(keep) fc.deck.push(w);      // still learning → resurfaces at the end
-  else { fc.done++; noteDaily(1); }   // "know it" counts toward the daily goal, one tap at a time
+  else { fc.done++; noteDaily(1); questEvent("learn"); addXp(1); }   // "know it" counts toward the daily goal, one tap at a time
   fc.i++; fc.flipped = false;
   if(fc.i >= fc.deck.length){ endLearn(); return; }
   renderCard();
@@ -249,11 +297,17 @@ function startBattle(mode){
   B.deck = (battleDeckOverride && battleDeckOverride.length >= 2) ? battleDeckOverride : pool;
   battleDeckOverride = null;
   B.zombie = null; B.proj = null; B.parts = []; B.flash = 0;
+  B.floats = []; B.mascotHopUntil = 0;
   B.score = 0; B.combo = 0; B.lives = 3;
   B.wordsTotal = mode==="round"? normalizeLen(scope.sessionLen) : Infinity;
   B.spawned = 0; B.resolved = 0; B.correct = 0; B.attempts = 0;
   B.recent = []; B.misses = []; B.missSet = new Set();
   B.nextAt = 0; B.lastT = 0; B.locked = false;
+  questToasts = [];
+  B.levelUps = [];
+  const acc0 = accessoriesFor(levelForXp(xp));
+  B.acc = acc0.filter(id=>id!=="kitten");
+  B.hasKitten = acc0.includes("kitten");
   // higher scopes walk faster (difficulty by level), and speed ramps per word
   const avg = scope.levels.reduce((a,b)=>a+b,0)/scope.levels.length;
   B.speed = 30 * (1 + (avg-1)*0.10);
@@ -370,6 +424,10 @@ function answer(btn, o){
   }
   if(correct){
     B.correct++; B.combo++;
+    questEvent("correct");
+    questEvent("combo", B.combo);
+    if(boss) questEvent("boss");
+    addXp(boss ? 5 : 1);   // boss final kill is worth +5 total, not +1 then +5
     // farther kill = bigger bonus (replaces the old time bonus)
     const distFrac = Math.max(0, z.x - MASCOT_X - 34) / (B.w - MASCOT_X - 34);
     B.score += boss ? bossPoints(killPoints(B.combo, distFrac)) : killPoints(B.combo, distFrac);
@@ -379,6 +437,11 @@ function answer(btn, o){
     B.proj = {x:MASCOT_X+16, y:B.h-GROUND-30};   // coin flies at the cat
     speak(z.w.h);                              // the sound sticks with the correct answer
     if(boss) noteAnswer(z.w.h, true);           // both stages passed
+    const gy = B.h-GROUND;
+    const floater = comboFloater(z.x, gy-130, B.combo);
+    if(floater) B.floats.push(floater);
+    // milestone combo (10, 20, ...): extra sparkle on top of the usual combo sting above
+    if(B.combo>=10 && B.combo%10===0) B.parts.push(...fireworkRing(z.x, gy-16));
   }else{
     // ONE attempt per word: wrong tap = lose a heart. Skip the charge animation and
     // advance quickly — just long enough to see the correct answer flashed green.
@@ -402,12 +465,12 @@ function scheduleNext(ms){
 }
 function killZombie(z){
   const gy = B.h-GROUND;
-  const n = z.boss ? 28 : 12;   // bosses pop a bigger particle burst
-  for(let i=0;i<n;i++) B.parts.push({x:z.x, y:gy-16, vx:(Math.random()-.5)*240, vy:-Math.random()*200, life:.6});
+  B.parts.push(...coinBurst(z.x, gy-16, !!z.boss));   // bosses pop a bigger, coinier burst
   z.state = "happy";
   B.dyingUntil = performance.now() + 250;
   B.proj = null;
   B.resolved++;
+  B.mascotHopUntil = performance.now()+400;   // little victory hop for the mascot
 }
 function bite(timedOut){
   const z = B.zombie;
@@ -451,6 +514,8 @@ function loop(t){
   }
   for(const p of B.parts){ p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=500*dt; p.life-=dt; }
   B.parts = B.parts.filter(p=>p.life>0);
+  for(const f of B.floats){ f.y += f.vy*dt; f.life -= dt; }
+  B.floats = B.floats.filter(f=>f.life>0);
   B.flash = Math.max(0, B.flash-2.2*dt);
   draw(t);
   requestAnimationFrame(loop);
@@ -490,8 +555,9 @@ function draw(t){
   ctx.textAlign = "center";
   // mascot (left side) — maneki sprite or cat emoji fallback
   const manekiImg = sprite("maneki");
+  const hopping = B.mascotHopUntil && t < B.mascotHopUntil;   // little victory hop after a kill
   if(manekiImg){
-    const bob = Math.sin(t/400)*3;
+    const bob = Math.sin(t/400)*(hopping? 9:3);
     ctx.drawImage(manekiImg, MASCOT_X-24, gy-44+bob, 48, 48);
   }else{
     ctx.font = "36px serif";
@@ -525,8 +591,10 @@ function draw(t){
     ctx.font = "13px 'Segoe UI',sans-serif";
     ctx.fillStyle = "#f5c518";
     ctx.fillText(bp, cx, gy-76);
-    // cat — bosses draw bigger with a gold aura (drawCat's scale param)
-    drawCat(ctx, z.x, gy + 6, t, z.state, SKIN_PALETTES[shopState.skin], z.boss ? 1.5 : 1);
+    // cat — bosses draw bigger with a gold aura (drawCat's scale param); growth
+    // accessories ride along via the same call, kitten trails as a second mini cat
+    drawCat(ctx, z.x, gy + 6, t, z.state, SKIN_PALETTES[shopState.skin], z.boss ? 1.5 : 1, B.acc);
+    if(B.hasKitten) drawCat(ctx, z.x + 34, gy + 6, t + 250, z.state, SKIN_PALETTES[shopState.skin], 0.55, []);
   }
   // projectile — spinning coin sprite or emoji fallback
   if(B.proj){
@@ -537,10 +605,30 @@ function draw(t){
       ctx.font = "20px serif"; ctx.fillText("🪙", B.proj.x, B.proj.y);
     }
   }
-  // gold particles (correct answer burst)
-  ctx.fillStyle = "#f5c518";
-  for(const p of B.parts){ ctx.globalAlpha = Math.max(0,p.life/0.6); ctx.beginPath(); ctx.arc(p.x,p.y,3.4,0,7); ctx.fill(); }
+  // particles (kill bursts + combo fireworks) — kind picks the look
+  const coinImgP = sprite("coin");
+  for(const p of B.parts){
+    ctx.globalAlpha = Math.max(0, Math.min(1, p.life/0.6));
+    if(p.kind==="coin"){
+      if(coinImgP) ctx.drawImage(coinImgP, p.x-7, p.y-7, 14, 14);
+      else { ctx.fillStyle = "#f5c518"; ctx.beginPath(); ctx.arc(p.x,p.y,3.4,0,7); ctx.fill(); }
+    }else if(p.kind==="spark"){
+      ctx.fillStyle = "#fff4c0"; ctx.beginPath(); ctx.arc(p.x,p.y,4.2,0,7); ctx.fill();
+    }else{
+      ctx.fillStyle = "#f5c518"; ctx.beginPath(); ctx.arc(p.x,p.y,3.4,0,7); ctx.fill();
+    }
+  }
   ctx.globalAlpha = 1;
+  // combo floaters ("×N 🔥") drifting up from a kill
+  if(B.floats.length){
+    ctx.font = "700 20px 'Segoe UI',sans-serif";
+    ctx.fillStyle = "#f5c518";
+    for(const f of B.floats){
+      ctx.globalAlpha = Math.max(0, Math.min(1, f.life/0.9));
+      ctx.fillText(f.text, f.x, f.y);
+    }
+    ctx.globalAlpha = 1;
+  }
   // hit flash — softened dim-violet (cat wandered off, not combat damage)
   if(B.flash>0){ ctx.fillStyle = `rgba(90,44,80,${(0.30*B.flash).toFixed(3)})`; ctx.fillRect(0,0,B.w,B.h); }
 }
@@ -554,9 +642,35 @@ function endBattle(quit){
   updateSmartBtn();
   if(quit){ show("home"); return; }
   noteDaily(B.resolved);
-  wallet += B.score; store.set("wallet", wallet);
+  const isPerfect = B.mode==="round" && B.resolved>0 && B.misses.length===0;
+  if(isPerfect) questEvent("perfect");
+  wallet += B.score;
+  const bonus = isPerfect ? perfectBonus(B.score) : 0;
+  if(bonus) wallet += bonus;
+  store.set("wallet", wallet);
   updateWalletChip();
   $("#r-wallet").textContent = `+${B.score} 🪙 banked · total ${wallet.toLocaleString()}`;
+  const perfectEl = $("#r-perfect");
+  if(isPerfect){ perfectEl.textContent = `🌟 Perfect! +${bonus} 🪙 bonus`; perfectEl.style.display = "block"; }
+  else perfectEl.style.display = "none";
+  const lu = B.levelUps || [];
+  const luEl = $("#r-levelup");
+  if(lu.length){
+    const from = lu[0].from, to = lu[lu.length-1].to;
+    const hit = MILESTONES.filter(m => m.lv > from && m.lv <= to);
+    luEl.textContent = `🐱 Level up! Lv ${to}`+(hit.length? ` — unlocked: ${hit.map(m=>m.name).join(", ")}`:"");
+    luEl.style.display = "block";
+  }else{
+    luEl.style.display = "none";
+  }
+  const rq = $("#r-quests");
+  rq.innerHTML = "";
+  for(const q of questToasts){
+    const line = document.createElement("div");
+    line.textContent = `🎯 Quest complete: ${q.desc} +${q.reward} 🪙`;
+    rq.appendChild(line);
+  }
+  rq.style.display = questToasts.length ? "block" : "none";
   const acc = B.attempts? Math.round(100*B.correct/B.attempts) : 0;
   $("#r-score").textContent = B.score;
   const key = scopeKey(scope)+"·"+modeKey(B.mode, B.wordsTotal);
@@ -639,7 +753,27 @@ function renderShop(){
 }
 
 /* ============================== progress ============================== */
+function renderGrowthCard(){
+  const card = $("#growth-card");
+  if(!card) return;
+  const level = levelForXp(xp);
+  const prog = xpToNext(xp);
+  const pct = prog.need ? Math.round(100*prog.into/prog.need) : 100;
+  const nm = nextMilestone(level);
+  const row = document.createElement("div");
+  row.className = "scorerow";
+  row.style.flexDirection = "column"; row.style.alignItems = "stretch"; row.style.gap = "6px";
+  row.innerHTML = `<div style="display:flex; justify-content:space-between">
+      <span>🐱 Lucky Cat · Lv ${level}</span>
+      <span>${prog.into}/${prog.need} xp</span>
+    </div>
+    <div class="mbar"><i style="width:${pct}%"></i></div>
+    <div style="color:var(--muted); font-size:12.5px">${nm? `Next: Lv ${nm.lv} — ${nm.name}` : "All milestones unlocked!"}</div>`;
+  card.innerHTML = "";
+  card.appendChild(row);
+}
 function renderProgress(){
+  renderGrowthCard();
   const box = $("#progresslist");
   box.innerHTML = "";
   for(let n=1;n<=6;n++){
@@ -686,7 +820,12 @@ pool = buildPool(D.levels, scope);
 updateWalletChip();
 updateSmartBtn();
 updateStreakChip();
-if(location.hash === "#debug"){ window.__debugTarget = ()=> B.zombie && B.zombie.w.h; }
+updateLevelChip();
+renderQuests();
+if(location.hash === "#debug"){
+  window.__debugTarget = ()=> B.zombie && B.zombie.w.h;
+  window.__grantXp = n => { addXp(n); };
+}
 initNative({ getScreen: ()=>currentScreen, goHome: ()=>{ stopBattle(); show("home"); } });
 // SW is at the app root so its scope covers the whole app; http(s) only (no-op on file://).
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){

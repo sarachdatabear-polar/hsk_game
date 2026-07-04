@@ -82,6 +82,50 @@
     return Math.round((10 + distBonus) * (1 + (combo - 1) * 0.1));
   }
 
+  // src/fx.js
+  function coinBurst(x, y, boss) {
+    const count = boss ? 28 : 12;
+    const coins = boss ? 12 : 5;
+    const vyMax = boss ? 260 : 200;
+    const specs = [];
+    for (let i = 0; i < count; i++) {
+      specs.push({
+        x,
+        y,
+        vx: (Math.random() - 0.5) * 480,
+        // ±240
+        vy: -Math.random() * vyMax,
+        life: 0.6 + Math.random() * 0.3,
+        // 0.6 - 0.9
+        kind: i < coins ? "coin" : "dot"
+      });
+    }
+    return specs;
+  }
+  function comboFloater(x, y, combo) {
+    if (combo < 3) return null;
+    return { x, y, text: `\xD7${combo} \u{1F525}`, life: 0.9, vy: -60 };
+  }
+  function fireworkRing(x, y) {
+    const n = 16, speed = 170;
+    const specs = [];
+    for (let i = 0; i < n; i++) {
+      const angle = i * (Math.PI * 2 / n);
+      specs.push({
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 0.8,
+        kind: "spark"
+      });
+    }
+    return specs;
+  }
+  function perfectBonus(score) {
+    return Math.min(500, Math.round(score * 0.25));
+  }
+
   // src/sfx.js
   var ctx = null;
   function ac() {
@@ -142,7 +186,7 @@
 
   // src/cat.js
   var DEFAULT_PALETTE = { body: "#e07830", head: "#f09040", ear: "#f09040", inner: "#f5a0b0", leg: "#c87340" };
-  function drawCat(ctx3, x, groundY, tMs, state, palette, scale = 1) {
+  function drawCat(ctx3, x, groundY, tMs, state, palette, scale = 1, accessories = []) {
     const pal = palette || DEFAULT_PALETTE;
     const ph = tMs / 220 % (Math.PI * 2);
     const bob = Math.sin(ph) * 2.5;
@@ -280,7 +324,82 @@
       ctx3.stroke();
       ctx3.restore();
     }
+    if (accessories && accessories.length) {
+      drawAccessories(ctx3, x, groundY, bob, accessories, scale);
+    }
     if (scale !== 1) ctx3.restore();
+  }
+  function roundedRect(ctx3, x, y, w, h, r) {
+    ctx3.beginPath();
+    ctx3.moveTo(x + r, y);
+    ctx3.arcTo(x + w, y, x + w, y + h, r);
+    ctx3.arcTo(x + w, y + h, x, y + h, r);
+    ctx3.arcTo(x, y + h, x, y, r);
+    ctx3.arcTo(x, y, x + w, y, r);
+    ctx3.closePath();
+  }
+  function drawAccessories(ctx3, x, groundY, bob, accessories, scale) {
+    const acc = new Set(accessories);
+    const y = groundY;
+    if (acc.has("emperor") && scale <= 1) {
+      ctx3.fillStyle = "rgba(245,197,24,.12)";
+      ctx3.beginPath();
+      ctx3.arc(x, y - 40, 36, 0, Math.PI * 2);
+      ctx3.fill();
+    }
+    if (acc.has("outfit")) {
+      ctx3.fillStyle = "#b3262a";
+      ctx3.fillRect(x - 11, y - 40 + bob, 22, 16);
+      ctx3.strokeStyle = "#f5c518";
+      ctx3.lineWidth = 1.6;
+      ctx3.beginPath();
+      ctx3.moveTo(x - 11, y - 32 + bob);
+      ctx3.lineTo(x + 11, y - 32 + bob);
+      ctx3.stroke();
+    }
+    if (acc.has("coin")) {
+      ctx3.fillStyle = "#f5c518";
+      ctx3.beginPath();
+      ctx3.arc(x, y - 32 + bob, 5, 0, Math.PI * 2);
+      ctx3.fill();
+      ctx3.strokeStyle = "#b8860b";
+      ctx3.lineWidth = 1.2;
+      ctx3.beginPath();
+      ctx3.arc(x, y - 32 + bob, 5, 0, Math.PI * 2);
+      ctx3.stroke();
+    }
+    if (acc.has("scarf")) {
+      ctx3.fillStyle = "#d43a2f";
+      roundedRect(ctx3, x - 10, y - 48 + bob, 20, 5, 2.5);
+      ctx3.fill();
+      ctx3.beginPath();
+      ctx3.moveTo(x + 8, y - 46 + bob);
+      ctx3.lineTo(x + 13, y - 40 + bob);
+      ctx3.lineTo(x + 6, y - 42 + bob);
+      ctx3.closePath();
+      ctx3.fill();
+    }
+    if (acc.has("emperor")) {
+      ctx3.fillStyle = "#f5c518";
+      ctx3.beginPath();
+      ctx3.moveTo(x - 9, y - 58 + bob);
+      ctx3.lineTo(x - 6, y - 68 + bob);
+      ctx3.lineTo(x - 3, y - 58 + bob);
+      ctx3.closePath();
+      ctx3.fill();
+      ctx3.beginPath();
+      ctx3.moveTo(x - 3, y - 58 + bob);
+      ctx3.lineTo(x, y - 70 + bob);
+      ctx3.lineTo(x + 3, y - 58 + bob);
+      ctx3.closePath();
+      ctx3.fill();
+      ctx3.beginPath();
+      ctx3.moveTo(x + 3, y - 58 + bob);
+      ctx3.lineTo(x + 6, y - 68 + bob);
+      ctx3.lineTo(x + 9, y - 58 + bob);
+      ctx3.closePath();
+      ctx3.fill();
+    }
   }
 
   // src/mastery.js
@@ -304,6 +423,38 @@
       if (isMastered(store2, w.h)) mastered++;
     }
     return { seen, mastered, pct: levelWords.length ? Math.round(100 * mastered / levelWords.length) : 0 };
+  }
+
+  // src/growth.js
+  function xpForLevel(n) {
+    return 25 * (n - 1) * n / 2;
+  }
+  function levelForXp(xp2) {
+    const x = Math.max(0, xp2);
+    let n = Math.floor((1 + Math.sqrt(1 + 8 * x / 25)) / 2);
+    if (n < 1) n = 1;
+    while (xpForLevel(n + 1) <= x) n++;
+    while (n > 1 && xpForLevel(n) > x) n--;
+    return n;
+  }
+  function xpToNext(xp2) {
+    const level = levelForXp(xp2);
+    const base2 = xpForLevel(level);
+    const need = xpForLevel(level + 1) - base2;
+    return { level, into: Math.max(0, xp2) - base2, need };
+  }
+  var MILESTONES = [
+    { lv: 5, id: "scarf", name: "Red scarf" },
+    { lv: 10, id: "coin", name: "Gold coin charm" },
+    { lv: 20, id: "outfit", name: "Chinese outfit" },
+    { lv: 30, id: "kitten", name: "Kitten follower" },
+    { lv: 50, id: "emperor", name: "Emperor crown" }
+  ];
+  function accessoriesFor(level) {
+    return MILESTONES.filter((m) => m.lv <= level).map((m) => m.id);
+  }
+  function nextMilestone(level) {
+    return MILESTONES.find((m) => m.lv > level) || null;
   }
 
   // src/srs.js
@@ -382,6 +533,75 @@
       goal: GOAL,
       goalMet: todayResolved >= GOAL
     };
+  }
+
+  // src/quests.js
+  var QUEST_POOL = [
+    { id: "correct30", desc: "Answer 30 words correctly", target: 30, reward: 150 },
+    { id: "combo5", desc: "Reach a \xD75 combo", target: 5, reward: 100 },
+    { id: "boss1", desc: "Defeat a boss cat", target: 1, reward: 150 },
+    { id: "perfect1", desc: "Finish a round with no misses", target: 1, reward: 250 },
+    { id: "review1", desc: "Play a Smart Review round", target: 1, reward: 100 },
+    { id: "learn20", desc: "Mark 20 flashcards as known", target: 20, reward: 100 }
+  ];
+  var EVENT_QUEST = {
+    correct: "correct30",
+    combo: "combo5",
+    boss: "boss1",
+    perfect: "perfect1",
+    review: "review1",
+    learn: "learn20"
+  };
+  var HIGH_WATER = /* @__PURE__ */ new Set(["combo5"]);
+  function hashStr(s) {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = h * 31 + s.charCodeAt(i) | 0;
+    return Math.abs(h);
+  }
+  var STEPS = [1, 2, 4, 5];
+  function questsForDate(dateStr) {
+    const n = QUEST_POOL.length;
+    const h = hashStr(dateStr);
+    const start = h % n;
+    const step = STEPS[Math.floor(h / n) % STEPS.length];
+    const idxs = [];
+    let cur = start;
+    for (let i = 0; i < 3; i++) {
+      idxs.push(cur);
+      cur = (cur + step) % n;
+    }
+    return idxs.map((i) => QUEST_POOL[i]);
+  }
+  function defaultQuestState() {
+    return { date: "", progress: {}, done: [] };
+  }
+  function noteQuestEvent(state, dateStr, eventId, n = 1) {
+    const rollover = state.date !== dateStr;
+    let progress = rollover ? {} : { ...state.progress };
+    let done = rollover ? [] : state.done.slice();
+    let earned = 0;
+    const completed = [];
+    const questId = EVENT_QUEST[eventId];
+    const quest = questId && questsForDate(dateStr).find((q) => q.id === questId);
+    if (quest) {
+      const before = progress[quest.id] || 0;
+      const raw = HIGH_WATER.has(quest.id) ? Math.max(before, n) : before + n;
+      progress[quest.id] = Math.min(raw, quest.target);
+      if (progress[quest.id] >= quest.target && !done.includes(quest.id)) {
+        done.push(quest.id);
+        earned += quest.reward;
+        completed.push(quest);
+      }
+    }
+    return { state: { date: dateStr, progress, done }, earned, completed };
+  }
+  function questStatus(state, dateStr) {
+    const sameDay = state.date === dateStr;
+    return questsForDate(dateStr).map((q) => ({
+      ...q,
+      progress: sameDay ? state.progress[q.id] || 0 : 0,
+      done: sameDay ? state.done.includes(q.id) : false
+    }));
   }
 
   // src/boss.js
@@ -599,6 +819,24 @@
   function updateWalletChip() {
     $("#home-wallet").textContent = "\u{1FA99} " + wallet.toLocaleString();
   }
+  var xp = store.get("xp", 0);
+  function updateLevelChip() {
+    const el = $("#home-level");
+    if (el) el.textContent = `\u{1F431} Lv ${levelForXp(xp)}`;
+  }
+  function addXp(n) {
+    const before = levelForXp(xp);
+    xp += n;
+    store.set("xp", xp);
+    const after = levelForXp(xp);
+    if (after > before && B.on) {
+      B.levelUps = (B.levelUps || []).concat({ from: before, to: after });
+      const acc = accessoriesFor(after);
+      B.acc = acc.filter((id) => id !== "kitten");
+      B.hasKitten = acc.includes("kitten");
+    }
+    updateLevelChip();
+  }
   var todayStr = () => {
     const d = /* @__PURE__ */ new Date();
     const mm = String(d.getMonth() + 1).padStart(2, "0"), dd = String(d.getDate()).padStart(2, "0");
@@ -615,6 +853,34 @@
     store.set("daily", daily);
     updateStreakChip();
   }
+  var questState = Object.assign(defaultQuestState(), store.get("quests", {}));
+  var questToasts = [];
+  function questEvent(eventId, n = 1) {
+    const r = noteQuestEvent(questState, todayStr(), eventId, n);
+    questState = r.state;
+    store.set("quests", questState);
+    if (r.earned > 0) {
+      wallet += r.earned;
+      store.set("wallet", wallet);
+      updateWalletChip();
+    }
+    if (r.completed.length) questToasts.push(...r.completed);
+    renderQuests();
+  }
+  function renderQuests() {
+    const panel = $("#quest-panel");
+    if (!panel) return;
+    panel.innerHTML = "";
+    for (const q of questStatus(questState, todayStr())) {
+      const row = document.createElement("div");
+      row.className = "quest-row" + (q.done ? " done" : "");
+      row.innerHTML = `<span class="qi">${q.done ? "\u2705" : "\u25AB"}</span>
+      <span class="qd">${q.desc}</span>
+      <span class="qp">${q.progress}/${q.target}</span>
+      <span class="qr">+${q.reward} \u{1FA99}</span>`;
+      panel.appendChild(row);
+    }
+  }
   function updateSmartBtn() {
     const deck = smartDeck(masteryStore, pool, Date.now());
     const btn = $("#go-smart");
@@ -625,6 +891,7 @@
     const deck = smartDeck(masteryStore, pool, Date.now());
     if (deck.length < 8) return;
     battleDeckOverride = deck;
+    questEvent("review");
     startBattle("round");
   };
   function shuffle2(a) {
@@ -641,6 +908,7 @@
     currentScreen = name;
     document.querySelectorAll(".screen").forEach((el) => el.classList.remove("on"));
     $("#s-" + name).classList.add("on");
+    if (name === "home") renderQuests();
   }
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => {
     const t = b.dataset.go;
@@ -798,6 +1066,8 @@
     else {
       fc.done++;
       noteDaily(1);
+      questEvent("learn");
+      addXp(1);
     }
     fc.i++;
     fc.flipped = false;
@@ -858,6 +1128,8 @@
     B.proj = null;
     B.parts = [];
     B.flash = 0;
+    B.floats = [];
+    B.mascotHopUntil = 0;
     B.score = 0;
     B.combo = 0;
     B.lives = 3;
@@ -872,6 +1144,11 @@
     B.nextAt = 0;
     B.lastT = 0;
     B.locked = false;
+    questToasts = [];
+    B.levelUps = [];
+    const acc0 = accessoriesFor(levelForXp(xp));
+    B.acc = acc0.filter((id) => id !== "kitten");
+    B.hasKitten = acc0.includes("kitten");
     const avg = scope.levels.reduce((a, b) => a + b, 0) / scope.levels.length;
     B.speed = 30 * (1 + (avg - 1) * 0.1);
     show("battle");
@@ -1000,6 +1277,10 @@
     if (correct) {
       B.correct++;
       B.combo++;
+      questEvent("correct");
+      questEvent("combo", B.combo);
+      if (boss) questEvent("boss");
+      addXp(boss ? 5 : 1);
       const distFrac = Math.max(0, z.x - MASCOT_X - 34) / (B.w - MASCOT_X - 34);
       B.score += boss ? bossPoints(killPoints(B.combo, distFrac)) : killPoints(B.combo, distFrac);
       sfx.kill();
@@ -1010,6 +1291,10 @@
       B.proj = { x: MASCOT_X + 16, y: B.h - GROUND - 30 };
       speak(z.w.h);
       if (boss) noteAnswer(z.w.h, true);
+      const gy = B.h - GROUND;
+      const floater = comboFloater(z.x, gy - 130, B.combo);
+      if (floater) B.floats.push(floater);
+      if (B.combo >= 10 && B.combo % 10 === 0) B.parts.push(...fireworkRing(z.x, gy - 16));
     } else {
       B.combo = 0;
       sfx.wrong();
@@ -1034,12 +1319,12 @@
   }
   function killZombie(z) {
     const gy = B.h - GROUND;
-    const n = z.boss ? 28 : 12;
-    for (let i = 0; i < n; i++) B.parts.push({ x: z.x, y: gy - 16, vx: (Math.random() - 0.5) * 240, vy: -Math.random() * 200, life: 0.6 });
+    B.parts.push(...coinBurst(z.x, gy - 16, !!z.boss));
     z.state = "happy";
     B.dyingUntil = performance.now() + 250;
     B.proj = null;
     B.resolved++;
+    B.mascotHopUntil = performance.now() + 400;
   }
   function bite(timedOut) {
     const z = B.zombie;
@@ -1094,6 +1379,11 @@
       p.life -= dt;
     }
     B.parts = B.parts.filter((p) => p.life > 0);
+    for (const f of B.floats) {
+      f.y += f.vy * dt;
+      f.life -= dt;
+    }
+    B.floats = B.floats.filter((f) => f.life > 0);
     B.flash = Math.max(0, B.flash - 2.2 * dt);
     draw(t);
     requestAnimationFrame(loop);
@@ -1149,8 +1439,9 @@
     ctx2.stroke();
     ctx2.textAlign = "center";
     const manekiImg = sprite("maneki");
+    const hopping = B.mascotHopUntil && t < B.mascotHopUntil;
     if (manekiImg) {
-      const bob = Math.sin(t / 400) * 3;
+      const bob = Math.sin(t / 400) * (hopping ? 9 : 3);
       ctx2.drawImage(manekiImg, MASCOT_X - 24, gy - 44 + bob, 48, 48);
     } else {
       ctx2.font = "36px serif";
@@ -1183,7 +1474,8 @@
       ctx2.font = "13px 'Segoe UI',sans-serif";
       ctx2.fillStyle = "#f5c518";
       ctx2.fillText(bp, cx, gy - 76);
-      drawCat(ctx2, z.x, gy + 6, t, z.state, SKIN_PALETTES[shopState.skin], z.boss ? 1.5 : 1);
+      drawCat(ctx2, z.x, gy + 6, t, z.state, SKIN_PALETTES[shopState.skin], z.boss ? 1.5 : 1, B.acc);
+      if (B.hasKitten) drawCat(ctx2, z.x + 34, gy + 6, t + 250, z.state, SKIN_PALETTES[shopState.skin], 0.55, []);
     }
     if (B.proj) {
       const coinImg = sprite("coin");
@@ -1194,14 +1486,39 @@
         ctx2.fillText("\u{1FA99}", B.proj.x, B.proj.y);
       }
     }
-    ctx2.fillStyle = "#f5c518";
+    const coinImgP = sprite("coin");
     for (const p of B.parts) {
-      ctx2.globalAlpha = Math.max(0, p.life / 0.6);
-      ctx2.beginPath();
-      ctx2.arc(p.x, p.y, 3.4, 0, 7);
-      ctx2.fill();
+      ctx2.globalAlpha = Math.max(0, Math.min(1, p.life / 0.6));
+      if (p.kind === "coin") {
+        if (coinImgP) ctx2.drawImage(coinImgP, p.x - 7, p.y - 7, 14, 14);
+        else {
+          ctx2.fillStyle = "#f5c518";
+          ctx2.beginPath();
+          ctx2.arc(p.x, p.y, 3.4, 0, 7);
+          ctx2.fill();
+        }
+      } else if (p.kind === "spark") {
+        ctx2.fillStyle = "#fff4c0";
+        ctx2.beginPath();
+        ctx2.arc(p.x, p.y, 4.2, 0, 7);
+        ctx2.fill();
+      } else {
+        ctx2.fillStyle = "#f5c518";
+        ctx2.beginPath();
+        ctx2.arc(p.x, p.y, 3.4, 0, 7);
+        ctx2.fill();
+      }
     }
     ctx2.globalAlpha = 1;
+    if (B.floats.length) {
+      ctx2.font = "700 20px 'Segoe UI',sans-serif";
+      ctx2.fillStyle = "#f5c518";
+      for (const f of B.floats) {
+        ctx2.globalAlpha = Math.max(0, Math.min(1, f.life / 0.9));
+        ctx2.fillText(f.text, f.x, f.y);
+      }
+      ctx2.globalAlpha = 1;
+    }
     if (B.flash > 0) {
       ctx2.fillStyle = `rgba(90,44,80,${(0.3 * B.flash).toFixed(3)})`;
       ctx2.fillRect(0, 0, B.w, B.h);
@@ -1224,10 +1541,37 @@
       return;
     }
     noteDaily(B.resolved);
+    const isPerfect = B.mode === "round" && B.resolved > 0 && B.misses.length === 0;
+    if (isPerfect) questEvent("perfect");
     wallet += B.score;
+    const bonus = isPerfect ? perfectBonus(B.score) : 0;
+    if (bonus) wallet += bonus;
     store.set("wallet", wallet);
     updateWalletChip();
     $("#r-wallet").textContent = `+${B.score} \u{1FA99} banked \xB7 total ${wallet.toLocaleString()}`;
+    const perfectEl = $("#r-perfect");
+    if (isPerfect) {
+      perfectEl.textContent = `\u{1F31F} Perfect! +${bonus} \u{1FA99} bonus`;
+      perfectEl.style.display = "block";
+    } else perfectEl.style.display = "none";
+    const lu = B.levelUps || [];
+    const luEl = $("#r-levelup");
+    if (lu.length) {
+      const from = lu[0].from, to = lu[lu.length - 1].to;
+      const hit = MILESTONES.filter((m) => m.lv > from && m.lv <= to);
+      luEl.textContent = `\u{1F431} Level up! Lv ${to}` + (hit.length ? ` \u2014 unlocked: ${hit.map((m) => m.name).join(", ")}` : "");
+      luEl.style.display = "block";
+    } else {
+      luEl.style.display = "none";
+    }
+    const rq = $("#r-quests");
+    rq.innerHTML = "";
+    for (const q of questToasts) {
+      const line = document.createElement("div");
+      line.textContent = `\u{1F3AF} Quest complete: ${q.desc} +${q.reward} \u{1FA99}`;
+      rq.appendChild(line);
+    }
+    rq.style.display = questToasts.length ? "block" : "none";
     const acc = B.attempts ? Math.round(100 * B.correct / B.attempts) : 0;
     $("#r-score").textContent = B.score;
     const key = scopeKey(scope) + "\xB7" + modeKey(B.mode, B.wordsTotal);
@@ -1324,7 +1668,29 @@
       box.appendChild(row);
     }
   }
+  function renderGrowthCard() {
+    const card = $("#growth-card");
+    if (!card) return;
+    const level = levelForXp(xp);
+    const prog = xpToNext(xp);
+    const pct = prog.need ? Math.round(100 * prog.into / prog.need) : 100;
+    const nm = nextMilestone(level);
+    const row = document.createElement("div");
+    row.className = "scorerow";
+    row.style.flexDirection = "column";
+    row.style.alignItems = "stretch";
+    row.style.gap = "6px";
+    row.innerHTML = `<div style="display:flex; justify-content:space-between">
+      <span>\u{1F431} Lucky Cat \xB7 Lv ${level}</span>
+      <span>${prog.into}/${prog.need} xp</span>
+    </div>
+    <div class="mbar"><i style="width:${pct}%"></i></div>
+    <div style="color:var(--muted); font-size:12.5px">${nm ? `Next: Lv ${nm.lv} \u2014 ${nm.name}` : "All milestones unlocked!"}</div>`;
+    card.innerHTML = "";
+    card.appendChild(row);
+  }
   function renderProgress() {
+    renderGrowthCard();
     const box = $("#progresslist");
     box.innerHTML = "";
     for (let n = 1; n <= 6; n++) {
@@ -1379,8 +1745,13 @@
   updateWalletChip();
   updateSmartBtn();
   updateStreakChip();
+  updateLevelChip();
+  renderQuests();
   if (location.hash === "#debug") {
     window.__debugTarget = () => B.zombie && B.zombie.w.h;
+    window.__grantXp = (n) => {
+      addXp(n);
+    };
   }
   initNative({ getScreen: () => currentScreen, goHome: () => {
     stopBattle();
