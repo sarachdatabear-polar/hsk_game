@@ -9,6 +9,15 @@ export const CATALOG = [
   { id: "market",   name: "Night Market", price: 1000, type: "backdrop" },
   { id: "temple",   name: "Temple Dawn",  price: 2000, type: "backdrop" },
   { id: "bamboo",   name: "Bamboo",       price: 3000, type: "backdrop" },
+  { id: "sakura-fx",      name: "Sakura Petals", price: 2000, type: "effect" },
+  { id: "firecracker-fx", name: "Firecrackers",  price: 3500, type: "effect" },
+  { id: "bells",  name: "Temple Bells", price: 2500, type: "soundpack" },
+  { id: "arcade", name: "Arcade",       price: 4000, type: "soundpack" },
+  { id: "red-lantern",  name: "Red Lantern",  price: 800,  type: "deco" },
+  { id: "noodle-stall", name: "Noodle Stall",  price: 1500, type: "deco" },
+  { id: "tea-sign",     name: "Tea Sign",      price: 2200, type: "deco" },
+  { id: "foo-dog",      name: "Foo Dog",       price: 3000, type: "deco" },
+  { id: "golden-arch",  name: "Golden Arch",   price: 5000, type: "deco" },
 ];
 
 // `filter` recolors the real cat sprite (ctx.filter); the hex palette is only
@@ -27,7 +36,7 @@ export const SKIN_PALETTES = {
 function byId(id) { return CATALOG.find(it => it.id === id); }
 
 export function defaultShop() {
-  return { owned: [], skin: "", backdrop: "" };
+  return { owned: [], skin: "", backdrop: "", effect: "", soundpack: "" };
 }
 
 export function canAfford(wallet, id) {
@@ -50,8 +59,9 @@ export function buy(wallet, shop, id) {
 // type is only consulted when id is "" (clears that slot); for a real id the
 // slot is looked up from the catalog, so callers normally omit it.
 export function equipItem(shop, id, type) {
-  if (!id) return type === "skin" || type === "backdrop" ? { ...shop, [type]: "" } : shop;
+  if (!id) return type === "skin" || type === "backdrop" || type === "effect" || type === "soundpack" ? { ...shop, [type]: "" } : shop;
   const item = byId(id);
   if (!item || !shop.owned.includes(id)) return shop;
+  if (item.type === "deco") return shop;   // decos have no slot — owning one displays it
   return { ...shop, [item.type]: id };
 }

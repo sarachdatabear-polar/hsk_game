@@ -16,6 +16,7 @@ import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem } from "./shop.js";
+import { streetPieces, streetProgress } from "./street.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -56,6 +57,7 @@ function addXp(n){
     B.acc = acc.filter(id=>id!=="kitten");
     B.hasKitten = acc.includes("kitten");
   }
+  if(after > before) renderStreet();
   updateLevelChip();
 }
 
@@ -110,7 +112,11 @@ function updateSmartBtn(){
   const deck = smartDeck(masteryStore, pool, Date.now());
   const btn = $("#go-smart");
   btn.disabled = deck.length < 8;
-  btn.textContent = deck.length ? `🎯 Smart Review · ${deck.length}` : "🎯 Smart Review";
+  // below the 8-word minimum, show progress toward it ("6/8") so the disabled
+  // button reads as "not enough yet" rather than broken
+  btn.textContent = !deck.length ? "🎯 Smart Review"
+    : deck.length < 8 ? `🎯 Smart Review · ${deck.length}/8`
+    : `🎯 Smart Review · ${deck.length}`;
 }
 $("#go-smart").onclick = ()=>{
   const deck = smartDeck(masteryStore, pool, Date.now());
@@ -136,7 +142,7 @@ function show(name){
   currentScreen = name;
   document.querySelectorAll(".screen").forEach(el=>el.classList.remove("on"));
   $("#s-"+name).classList.add("on");
-  if(name==="home") renderQuests();
+  if(name==="home"){ renderQuests(); renderStreet(); }
 }
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()=>{
   const t = b.dataset.go;
@@ -476,7 +482,7 @@ function scheduleNext(ms){
 }
 function killZombie(z){
   const gy = B.h-B.L.ground;
-  B.parts.push(...coinBurst(z.x, gy-16, !!z.boss));   // bosses pop a bigger, coinier burst
+  B.parts.push(...coinBurst(z.x, gy-16, !!z.boss, shopState.effect));   // bosses pop a bigger, coinier burst; effect pack swaps the look
   z.state = "happy";
   B.dyingUntil = performance.now() + 250;
   B.proj = null;
@@ -523,7 +529,7 @@ function loop(t){
     B.proj.x += 560*B.S*dt;
     if(B.proj.x >= B.zombie.x-8) killZombie(B.zombie);
   }
-  for(const p of B.parts){ p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=500*dt; p.life-=dt; }
+  for(const p of B.parts){ p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=(p.g ?? 500)*dt; p.life-=dt; }
   B.parts = B.parts.filter(p=>p.life>0);
   for(const f of B.floats){ f.y += f.vy*dt; f.life -= dt; }
   B.floats = B.floats.filter(f=>f.life>0);
@@ -629,6 +635,10 @@ function draw(t){
       else { ctx.fillStyle = "#f5c518"; ctx.beginPath(); ctx.arc(p.x,p.y,3.4,0,7); ctx.fill(); }
     }else if(p.kind==="spark"){
       ctx.fillStyle = "#fff4c0"; ctx.beginPath(); ctx.arc(p.x,p.y,4.2,0,7); ctx.fill();
+    }else if(p.kind==="petal"){
+      ctx.fillStyle = "#f6a8c8"; ctx.beginPath(); ctx.ellipse(p.x,p.y,4.6,2.6,p.x*0.05,0,7); ctx.fill();
+    }else if(p.kind==="cracker"){
+      ctx.fillStyle = "#e04040"; ctx.beginPath(); ctx.arc(p.x,p.y,4.4,0,7); ctx.fill();
     }else{
       ctx.fillStyle = "#f5c518"; ctx.beginPath(); ctx.arc(p.x,p.y,3.4,0,7); ctx.fill();
     }
@@ -733,11 +743,12 @@ function renderScores(){
 
 /* ============================== shop ============================== */
 function renderShop(){
+  sfx.pack = shopState.soundpack || "default";  // keep sfx in sync with the equipped slot
   $("#shop-wallet").innerHTML = `Wallet: <b>${wallet.toLocaleString()}</b> 🪙`;
-  const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops");
-  skinBox.innerHTML = ""; bdBox.innerHTML = "";
+  const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), decoBox = $("#shop-street");
+  skinBox.innerHTML = ""; bdBox.innerHTML = ""; fxBox.innerHTML = ""; sndBox.innerHTML = ""; decoBox.innerHTML = "";
   for(const item of CATALOG){
-    const box = item.type==="skin" ? skinBox : bdBox;
+    const box = item.type==="skin" ? skinBox : item.type==="backdrop" ? bdBox : item.type==="effect" ? fxBox : item.type==="soundpack" ? sndBox : decoBox;
     const owned = shopState.owned.includes(item.id);
     const equipped = shopState[item.type] === item.id;
     const row = document.createElement("div");
@@ -745,26 +756,163 @@ function renderShop(){
     const left = document.createElement("span");
     left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${item.price.toLocaleString()} 🪙</span>`;
     const btn = document.createElement("button");
-    btn.className = "chip"+(equipped? " on":"");
-    if(equipped){
-      btn.textContent = "Equipped"; btn.disabled = true;
-    }else if(owned){
-      btn.textContent = "Equip";
-      btn.onclick = ()=>{ shopState = equipItem(shopState, item.id); store.set("shop", shopState); renderShop(); };
+    if(item.type === "deco"){
+      // Decos are never equipped — every owned deco just appears on the street.
+      btn.className = "chip"+(owned? " on":"");
+      if(owned){
+        btn.textContent = "On street ✓"; btn.disabled = true;
+      }else{
+        btn.textContent = "Buy";
+        btn.disabled = !canAfford(wallet, item.id);
+        btn.onclick = ()=>{
+          const r = buy(wallet, shopState, item.id);
+          if(!r.ok) return;
+          wallet = r.wallet; shopState = r.shop;
+          store.set("wallet", wallet); store.set("shop", shopState);
+          updateWalletChip(); renderShop(); renderStreet();
+        };
+      }
     }else{
-      btn.textContent = "Buy";
-      btn.disabled = !canAfford(wallet, item.id);
-      btn.onclick = ()=>{
-        const r = buy(wallet, shopState, item.id);
-        if(!r.ok) return;
-        wallet = r.wallet; shopState = r.shop;
-        store.set("wallet", wallet); store.set("shop", shopState);
-        updateWalletChip(); renderShop();
-      };
+      btn.className = "chip"+(equipped? " on":"");
+      if(equipped){
+        btn.textContent = "Equipped"; btn.disabled = true;
+      }else if(owned){
+        btn.textContent = "Equip";
+        btn.onclick = ()=>{ shopState = equipItem(shopState, item.id); store.set("shop", shopState); renderShop(); };
+      }else{
+        btn.textContent = "Buy";
+        btn.disabled = !canAfford(wallet, item.id);
+        btn.onclick = ()=>{
+          const r = buy(wallet, shopState, item.id);
+          if(!r.ok) return;
+          wallet = r.wallet; shopState = r.shop;
+          store.set("wallet", wallet); store.set("shop", shopState);
+          updateWalletChip(); renderShop();
+        };
+      }
     }
     row.appendChild(left); row.appendChild(btn);
     box.appendChild(row);
   }
+}
+
+/* ============================== Lucky Cat Street (home) ============================== */
+// Pure-derived from levelForXp(xp) + shopState.owned — no new storage. Redrawn
+// on boot, show("home"), level-up (see addXp), and any deco purchase.
+function renderStreet(){
+  const scv = $("#street-cv");
+  if(!scv) return;
+  const w = scv.clientWidth, h = scv.clientHeight;
+  if(!w || !h) return;   // hidden (display:none) — next show("home") redraws
+  const dpr = window.devicePixelRatio||1;
+  scv.width = Math.round(w*dpr); scv.height = Math.round(h*dpr);
+  const sc = scv.getContext("2d");
+  sc.setTransform(dpr,0,0,dpr,0,0);
+  sc.clearRect(0,0,w,h);
+  // night sky: dark maroon -> deep purple, consistent with the game palette
+  const sky = sc.createLinearGradient(0,0,0,h);
+  sky.addColorStop(0, "#1a0d2a"); sky.addColorStop(1, "#3a1030");
+  sc.fillStyle = sky; sc.fillRect(0,0,w,h);
+  const gy = h - 8;
+  sc.strokeStyle = "rgba(245,197,24,.5)"; sc.lineWidth = 2;
+  sc.beginPath(); sc.moveTo(0,gy); sc.lineTo(w,gy); sc.stroke();
+
+  const level = levelForXp(xp);
+  const pieces = streetPieces(level, shopState.owned);
+  for(const p of pieces){
+    const x = p.slot * w;
+    if(p.kind==="building") drawStreetBuilding(sc, p.id, x, gy, h);
+    else drawStreetDeco(sc, p.id, x, gy, h);
+  }
+
+  // mascot — maneki sprite or cat emoji fallback, always far left on the ground
+  const mImg = sprite("maneki");
+  const mp = Math.min(h*0.62, 48);
+  if(mImg){
+    sc.drawImage(mImg, 4, gy-mp+4, mp, mp);
+  }else{
+    sc.textAlign = "left";
+    sc.font = `${Math.round(h*0.42)}px serif`;
+    sc.fillText("🐱", 2, gy-2);
+  }
+
+  const cap = $("#street-caption");
+  if(!cap) return;
+  const prog = streetProgress(level);
+  const nextTxt = prog.next ? `Next: Lv ${prog.next.lv} — ${prog.next.name}` : "All buildings unlocked!";
+  cap.textContent = pieces.length===0
+    ? `Lucky Cat Street — grows as you learn · ${nextTxt}`
+    : `${prog.unlocked}/${prog.total} buildings · ${nextTxt}`;
+}
+// Each piece is a small, distinct dark-shape-with-gold/red-accent group,
+// legible at ~72-88px tall. Buildings are silhouettes with lit windows/roof;
+// decos are smaller items (lantern, awning, sign, statue, arch).
+function drawStreetBuilding(c, id, x, gy, h){
+  const bw = h*0.5, bh = h*0.62;
+  c.save(); c.translate(x, gy);
+  switch(id){
+    case "lantern-post":
+      c.fillStyle = "#2e1030"; c.fillRect(-2, -bh, 4, bh);
+      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0, -bh, bw*0.22, 0, Math.PI*2); c.fill();
+      break;
+    case "coin-bank":
+      c.fillStyle = "#2e1030"; c.fillRect(-bw/2, -bh, bw, bh);
+      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0, -bh*0.58, bw*0.18, 0, Math.PI*2); c.fill();
+      c.fillStyle = "#8a2a24"; c.font = `${Math.round(bw*0.22)}px serif`; c.textAlign = "center";
+      c.fillText("$", 0, -bh*0.5);
+      break;
+    case "tailor":
+      c.fillStyle = "#2e1030"; c.fillRect(-bw/2, -bh*0.85, bw, bh*0.85);
+      c.fillStyle = "#c1272d"; c.fillRect(-bw/2-4, -bh*0.85-8, bw+8, 8);
+      c.fillStyle = "#f5c518";
+      c.fillRect(-bw*0.18, -bh*0.55, bw*0.14, bh*0.14); c.fillRect(bw*0.04, -bh*0.55, bw*0.14, bh*0.14);
+      break;
+    case "kitten-cafe":
+      c.fillStyle = "#2e1030"; c.fillRect(-bw/2, -bh*0.75, bw, bh*0.75);
+      c.fillStyle = "#8a2a24";
+      c.beginPath(); c.moveTo(-bw/2-6,-bh*0.75); c.lineTo(0,-bh); c.lineTo(bw/2+6,-bh*0.75); c.closePath(); c.fill();
+      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-bh*0.4,bw*0.16,0,Math.PI*2); c.fill();
+      break;
+    case "emperor-gate":
+      c.fillStyle = "#c1272d";
+      c.fillRect(-bw*0.7, -bh*1.15, bw*0.16, bh*1.15);
+      c.fillRect(bw*0.54, -bh*1.15, bw*0.16, bh*1.15);
+      c.fillRect(-bw*0.7, -bh*1.15, bw*1.4, bh*0.14);
+      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-bh*1.08,bw*0.12,0,Math.PI*2); c.fill();
+      break;
+  }
+  c.restore();
+}
+function drawStreetDeco(c, id, x, gy, h){
+  const s = h*0.32;
+  c.save(); c.translate(x, gy);
+  switch(id){
+    case "red-lantern":
+      c.strokeStyle = "#8a2a24"; c.beginPath(); c.moveTo(0,-s*1.6); c.lineTo(0,-s*1.1); c.stroke();
+      c.fillStyle = "#c1272d"; c.beginPath(); c.ellipse(0,-s*0.8,s*0.32,s*0.42,0,0,Math.PI*2); c.fill();
+      c.fillStyle = "#f5c518"; c.fillRect(-2,-s*0.38,4,s*0.12);
+      break;
+    case "noodle-stall":
+      c.fillStyle = "#5a2c22"; c.fillRect(-s*0.4,-s*0.6,s*0.8,s*0.6);
+      c.fillStyle = "#f5c518"; c.fillRect(-s*0.5,-s*0.78,s,s*0.16);
+      break;
+    case "tea-sign":
+      c.strokeStyle = "#f5c518"; c.beginPath(); c.moveTo(0,-s*1.3); c.lineTo(0,-s*0.9); c.stroke();
+      c.fillStyle = "#3a1a1a"; c.fillRect(-s*0.35,-s*1.3,s*0.7,s*0.32);
+      c.fillStyle = "#f5c518"; c.font = `${Math.round(s*0.22)}px serif`; c.textAlign = "center";
+      c.fillText("茶", 0, -s*1.06);
+      break;
+    case "foo-dog":
+      c.fillStyle = "#2e1030"; c.beginPath(); c.ellipse(0,-s*0.3,s*0.28,s*0.4,0,0,Math.PI*2); c.fill();
+      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-s*0.62,s*0.18,0,Math.PI*2); c.fill();
+      break;
+    case "golden-arch":
+      c.strokeStyle = "#f5c518"; c.lineWidth = 3;
+      c.beginPath(); c.arc(0,-s*0.5, s*0.9, Math.PI, 0); c.stroke();
+      c.beginPath(); c.moveTo(-s*0.9,-s*0.5); c.lineTo(-s*0.9,0); c.moveTo(s*0.9,-s*0.5); c.lineTo(s*0.9,0); c.stroke();
+      break;
+  }
+  c.restore();
 }
 
 /* ============================== progress ============================== */
@@ -832,11 +980,13 @@ function renderNeedsWork(){
 
 /* ============================== boot ============================== */
 pool = buildPool(D.levels, scope);
+sfx.pack = shopState.soundpack || "default";
 updateWalletChip();
 updateSmartBtn();
 updateStreakChip();
 updateLevelChip();
 renderQuests();
+renderStreet();
 if(location.hash === "#debug"){
   window.__debugTarget = ()=> B.zombie && B.zombie.w.h;
   window.__grantXp = n => { addXp(n); };

@@ -6,10 +6,43 @@
 // Gold-coin burst on a kill. Counts and the coin/dot split are deterministic
 // (tests assert on them); only the velocities are randomized, mirroring the
 // original inline burst in killZombie.
-export function coinBurst(x, y, boss) {
+// `style` selects an equipped effect pack (shop item id); omitted/falsy keeps
+// the original gold-coin look exactly as before these packs existed.
+export function coinBurst(x, y, boss, style) {
   const count = boss ? 28 : 12;
   const coins = boss ? 12 : 5;
   const vyMax = boss ? 260 : 200;
+
+  if (style === "sakura-fx") {
+    const specs = [];
+    for (let i = 0; i < count; i++) {
+      specs.push({
+        x, y,
+        vx: (Math.random() - 0.5) * 280,   // ±140, narrower than the default burst
+        vy: -Math.random() * vyMax,
+        life: 0.9 + Math.random() * 0.4,   // 0.9 - 1.3, lingers a bit
+        kind: "petal",
+        g: 120                              // slow fall
+      });
+    }
+    return specs;
+  }
+
+  if (style === "firecracker-fx") {
+    const extra = 6;
+    const specs = [];
+    for (let i = 0; i < count + extra; i++) {
+      specs.push({
+        x, y,
+        vx: (Math.random() - 0.5) * 480 * 1.3,
+        vy: -Math.random() * vyMax * 1.3,
+        life: 0.6 + Math.random() * 0.3,
+        kind: i < coins ? "cracker" : "spark"
+      });
+    }
+    return specs;
+  }
+
   const specs = [];
   for (let i = 0; i < count; i++) {
     specs.push({
