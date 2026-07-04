@@ -186,19 +186,19 @@
 
   // src/cat.js
   var DEFAULT_PALETTE = { body: "#e07830", head: "#f09040", ear: "#f09040", inner: "#f5a0b0", leg: "#c87340" };
-  function drawCat(ctx3, x, groundY, tMs, state, palette, scale = 1, accessories = []) {
+  function drawCat(ctx3, x, groundY, tMs, state, palette, scale = 1, accessories = [], boss = false) {
     const pal = palette || DEFAULT_PALETTE;
     const ph = tMs / 220 % (Math.PI * 2);
     const bob = Math.sin(ph) * 2.5;
     const legSwing = Math.sin(ph) * 6;
     const happy = state === "happy";
+    if (boss) {
+      ctx3.fillStyle = "rgba(245,197,24,.18)";
+      ctx3.beginPath();
+      ctx3.arc(x, groundY - 28 * (scale / 1.5), 42 * (scale / 1.5), 0, Math.PI * 2);
+      ctx3.fill();
+    }
     if (scale !== 1) {
-      if (scale > 1) {
-        ctx3.fillStyle = "rgba(245,197,24,.18)";
-        ctx3.beginPath();
-        ctx3.arc(x, groundY - 28, 42, 0, Math.PI * 2);
-        ctx3.fill();
-      }
       ctx3.save();
       ctx3.translate(x, groundY);
       ctx3.scale(scale, scale);
@@ -325,7 +325,7 @@
       ctx3.restore();
     }
     if (accessories && accessories.length) {
-      drawAccessories(ctx3, x, groundY, bob, accessories, scale);
+      drawAccessories(ctx3, x, groundY, bob, accessories, boss);
     }
     if (scale !== 1) ctx3.restore();
   }
@@ -338,10 +338,10 @@
     ctx3.arcTo(x, y, x + w, y, r);
     ctx3.closePath();
   }
-  function drawAccessories(ctx3, x, groundY, bob, accessories, scale) {
+  function drawAccessories(ctx3, x, groundY, bob, accessories, boss) {
     const acc = new Set(accessories);
     const y = groundY;
-    if (acc.has("emperor") && scale <= 1) {
+    if (acc.has("emperor") && !boss) {
       ctx3.fillStyle = "rgba(245,197,24,.12)";
       ctx3.beginPath();
       ctx3.arc(x, y - 40, 36, 0, Math.PI * 2);
@@ -400,6 +400,26 @@
       ctx3.closePath();
       ctx3.fill();
     }
+  }
+
+  // src/layout.js
+  function uiScale(w, h) {
+    const s = Math.min(h / 480, w / 380);
+    return Math.max(0.7, Math.min(1.8, s));
+  }
+  function layout(w, h) {
+    const S = uiScale(w, h);
+    return {
+      S,
+      ground: 30 * S,
+      mascotX: 52 * S,
+      catHalf: 34 * S,
+      hanziPx: 44 * S,
+      pinyinPx: 18 * S,
+      floaterPx: 20 * S,
+      mascotPx: 48 * S,
+      coinPx: 20 * S
+    };
   }
 
   // src/mastery.js
@@ -1082,8 +1102,6 @@
   var cv = $("#cv");
   var ctx2 = cv.getContext("2d");
   var B = { on: false };
-  var GROUND = 30;
-  var MASCOT_X = 52;
   function sizeCanvas() {
     const w = cv.clientWidth, h = cv.clientHeight;
     const dpr = window.devicePixelRatio || 1;
@@ -1092,7 +1110,14 @@
     ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
     B.w = w;
     B.h = h;
+    B.S = uiScale(w, h);
+    B.L = layout(w, h);
+    if (B.speedBase) B.speed = B.speedBase * (B.w / 380);
   }
+  var cvRO = new ResizeObserver(() => {
+    if (B.on) sizeCanvas();
+  });
+  cvRO.observe(cv);
   window.addEventListener("resize", () => {
     if (B.on) sizeCanvas();
   });
@@ -1150,7 +1175,7 @@
     B.acc = acc0.filter((id) => id !== "kitten");
     B.hasKitten = acc0.includes("kitten");
     const avg = scope.levels.reduce((a, b) => a + b, 0) / scope.levels.length;
-    B.speed = 30 * (1 + (avg - 1) * 0.1);
+    B.speedBase = 30 * (1 + (avg - 1) * 0.1);
     show("battle");
     keepAwake(true);
     sizeCanvas();
@@ -1198,7 +1223,7 @@
   }
   function spawnZombie() {
     const w = pickWord();
-    B.zombie = { w, x: B.w + 30, state: "walk", wob: Math.random() * 7 };
+    B.zombie = { w, x: B.w + 30, state: "walk" };
     B.spawned++;
     B.locked = false;
     if (isBossSpawn(B.spawned)) {
@@ -1208,7 +1233,8 @@
     }
     if (settings.autoSpeak) speak(w.h);
     renderOptions(w);
-    B.speed *= 1.03;
+    B.speedBase *= 1.03;
+    B.speed = B.speedBase * (B.w / 380);
   }
   function renderOptions(word) {
     const opts = shuffle2([word, ...pickDistractors(B.deck.length >= 8 ? B.deck : pool, word)]);
@@ -1281,17 +1307,18 @@
       questEvent("combo", B.combo);
       if (boss) questEvent("boss");
       addXp(boss ? 5 : 1);
-      const distFrac = Math.max(0, z.x - MASCOT_X - 34) / (B.w - MASCOT_X - 34);
+      const biteX = B.L.mascotX + B.L.catHalf;
+      const distFrac = Math.max(0, z.x - biteX) / (B.w - biteX);
       B.score += boss ? bossPoints(killPoints(B.combo, distFrac)) : killPoints(B.combo, distFrac);
       sfx.kill();
       hapticKill();
       if (B.combo >= 3) sfx.combo(B.combo);
       btn.classList.add("good");
       lockOptions();
-      B.proj = { x: MASCOT_X + 16, y: B.h - GROUND - 30 };
+      B.proj = { x: B.L.mascotX + 16 * B.S, y: B.h - B.L.ground - 30 * B.S };
       speak(z.w.h);
       if (boss) noteAnswer(z.w.h, true);
-      const gy = B.h - GROUND;
+      const gy = B.h - B.L.ground;
       const floater = comboFloater(z.x, gy - 130, B.combo);
       if (floater) B.floats.push(floater);
       if (B.combo >= 10 && B.combo % 10 === 0) B.parts.push(...fireworkRing(z.x, gy - 16));
@@ -1318,7 +1345,7 @@
     B.nextAt = performance.now() + ms;
   }
   function killZombie(z) {
-    const gy = B.h - GROUND;
+    const gy = B.h - B.L.ground;
     B.parts.push(...coinBurst(z.x, gy - 16, !!z.boss));
     z.state = "happy";
     B.dyingUntil = performance.now() + 250;
@@ -1359,17 +1386,17 @@
       if (z.state === "walk") {
         if (!z.frozen) {
           z.x -= B.speed * (z.boss ? bossSpeedFactor : 1) * dt;
-          if (z.x <= MASCOT_X + 34) bite(true);
+          if (z.x <= B.L.mascotX + B.L.catHalf) bite(true);
         }
       } else if (z.state === "dash") {
         z.x -= B.speed * 7 * dt;
-        if (z.x <= MASCOT_X + 34) bite(false);
+        if (z.x <= B.L.mascotX + B.L.catHalf) bite(false);
       } else if (z.state === "happy" && t >= B.dyingUntil) {
         scheduleNext(200);
       }
     }
     if (B.proj && B.zombie) {
-      B.proj.x += 560 * dt;
+      B.proj.x += 560 * B.S * dt;
       if (B.proj.x >= B.zombie.x - 8) killZombie(B.zombie);
     }
     for (const p of B.parts) {
@@ -1429,7 +1456,7 @@
   }
   function draw(t) {
     ctx2.clearRect(0, 0, B.w, B.h);
-    const gy = B.h - GROUND;
+    const gy = B.h - B.L.ground;
     drawBackdrop(gy);
     ctx2.strokeStyle = "rgba(245,197,24,.35)";
     ctx2.lineWidth = 3;
@@ -1440,49 +1467,53 @@
     ctx2.textAlign = "center";
     const manekiImg = sprite("maneki");
     const hopping = B.mascotHopUntil && t < B.mascotHopUntil;
+    const mp = B.L.mascotPx;
     if (manekiImg) {
       const bob = Math.sin(t / 400) * (hopping ? 9 : 3);
-      ctx2.drawImage(manekiImg, MASCOT_X - 24, gy - 44 + bob, 48, 48);
+      ctx2.drawImage(manekiImg, B.L.mascotX - mp / 2, gy - mp + 4 * B.S + bob, mp, mp);
     } else {
-      ctx2.font = "36px serif";
-      ctx2.fillText("\u{1F431}", MASCOT_X, gy + 6);
+      ctx2.font = `${Math.round(36 * B.S)}px serif`;
+      ctx2.fillText("\u{1F431}", B.L.mascotX, gy + 6 * B.S);
     }
     const coinImgIdle = sprite("coin");
     if (coinImgIdle) {
-      ctx2.drawImage(coinImgIdle, 4, gy - 22, 20, 20);
+      ctx2.drawImage(coinImgIdle, 4 * B.S, gy - 22 * B.S, B.L.coinPx, B.L.coinPx);
     } else {
-      ctx2.font = "22px serif";
-      ctx2.fillText("\u{1FA99}", 16, gy + 8);
+      ctx2.font = `${Math.round(22 * B.S)}px serif`;
+      ctx2.fillText("\u{1FA99}", 16 * B.S, gy + 8 * B.S);
     }
     const z = B.zombie;
     if (z) {
-      const wob = Math.sin(t / 160 + z.wob) * 3;
       const hideWord = z.boss && z.stage === "hanzi" && z.state === "walk";
       const bh = hideWord ? "\uFF1F\uFF1F" : z.w.h;
       const bp = hideWord ? "" : z.w.p;
-      ctx2.font = "600 26px 'Segoe UI',sans-serif";
-      const lw = Math.max(ctx2.measureText(bh).width, 64) + 22;
-      const cx = Math.min(Math.max(z.x, lw / 2 + 6), B.w - lw / 2 - 6);
-      ctx2.fillStyle = "rgba(58,16,16,.95)";
+      const wy = Math.round(B.h * 0.38);
+      ctx2.font = `600 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
+      const lw = Math.max(ctx2.measureText(bh).width, 64 * B.S) + 28 * B.S;
+      const lh = (bp ? 78 : 58) * B.S;
+      ctx2.fillStyle = "rgba(58,16,16,.82)";
       ctx2.strokeStyle = "#f5c518";
       ctx2.lineWidth = 2.5;
-      roundRect(cx - lw / 2, gy - 118, lw, 52, 10);
+      roundRect(B.w / 2 - lw / 2, wy - lh / 2, lw, lh, 12 * B.S);
       ctx2.fill();
       ctx2.stroke();
       ctx2.fillStyle = "#fff4e0";
-      ctx2.fillText(bh, cx, gy - 96);
-      ctx2.font = "13px 'Segoe UI',sans-serif";
-      ctx2.fillStyle = "#f5c518";
-      ctx2.fillText(bp, cx, gy - 76);
-      drawCat(ctx2, z.x, gy + 6, t, z.state, SKIN_PALETTES[shopState.skin], z.boss ? 1.5 : 1, B.acc);
-      if (B.hasKitten) drawCat(ctx2, z.x + 34, gy + 6, t + 250, z.state, SKIN_PALETTES[shopState.skin], 0.55, []);
+      ctx2.fillText(bh, B.w / 2, wy + (bp ? -4 * B.S : B.L.hanziPx * 0.35));
+      if (bp) {
+        ctx2.font = `${Math.round(B.L.pinyinPx)}px 'Segoe UI',sans-serif`;
+        ctx2.fillStyle = "#f5c518";
+        ctx2.fillText(bp, B.w / 2, wy + 24 * B.S);
+      }
+      drawCat(ctx2, z.x, gy + 6 * B.S, t, z.state, SKIN_PALETTES[shopState.skin], z.boss ? 1.5 * B.S : B.S, B.acc, !!z.boss);
+      if (B.hasKitten) drawCat(ctx2, z.x + B.L.catHalf, gy + 6 * B.S, t + 250, z.state, SKIN_PALETTES[shopState.skin], 0.55 * B.S, [], false);
     }
     if (B.proj) {
       const coinImg = sprite("coin");
+      const pc = B.L.coinPx;
       if (coinImg) {
-        ctx2.drawImage(coinImg, B.proj.x - 10, B.proj.y - 10, 20, 20);
+        ctx2.drawImage(coinImg, B.proj.x - pc / 2, B.proj.y - pc / 2, pc, pc);
       } else {
-        ctx2.font = "20px serif";
+        ctx2.font = `${Math.round(20 * B.S)}px serif`;
         ctx2.fillText("\u{1FA99}", B.proj.x, B.proj.y);
       }
     }
@@ -1511,7 +1542,7 @@
     }
     ctx2.globalAlpha = 1;
     if (B.floats.length) {
-      ctx2.font = "700 20px 'Segoe UI',sans-serif";
+      ctx2.font = `700 ${Math.round(B.L.floaterPx)}px 'Segoe UI',sans-serif`;
       ctx2.fillStyle = "#f5c518";
       for (const f of B.floats) {
         ctx2.globalAlpha = Math.max(0, Math.min(1, f.life / 0.9));
@@ -1757,8 +1788,16 @@
     stopBattle();
     show("home");
   } });
+  var devHost = location.hostname === "localhost" || location.hostname === "127.0.0.1";
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-    navigator.serviceWorker.register("sw.js").catch(() => {
-    });
+    if (devHost) {
+      navigator.serviceWorker.getRegistrations().then((rs) => rs.forEach((r) => r.unregister())).catch(() => {
+      });
+      if (window.caches) caches.keys().then((ks) => ks.forEach((k) => caches.delete(k))).catch(() => {
+      });
+    } else {
+      navigator.serviceWorker.register("sw.js").catch(() => {
+      });
+    }
   }
 })();

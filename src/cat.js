@@ -8,27 +8,34 @@ const DEFAULT_PALETTE = { body: "#e07830", head: "#f09040", ear: "#f09040", inne
    state: "walk" | "happy"
    palette: optional {body,head,ear,inner,leg} recolor (see shop.js SKIN_PALETTES)
    scale: optional uniform scale (default 1) around the ground-contact point
-   (x, groundY) — used at 1.5 for bosses, with a gold aura behind the cat.
+   (x, groundY) — bosses draw at 1.5x, but now that scale also carries the
+   screen-size factor (see layout.js), a normal cat can exceed 1 on big
+   screens too, so the gold aura is gated on the explicit `boss` flag instead
+   of `scale > 1`.
    accessories: optional array of growth-milestone ids ("scarf","coin","outfit",
    "emperor" — "kitten" is drawn by the caller as a trailing sprite, not here).
    Drawn as vector overlays anchored to (x, groundY) so they ride along with
    the boss scale transform and look right over both sprite and vector cat.
+   boss: whether this is the boss cat (drives the gold aura only).
    All drawing is self-contained; sprite() returns null until the PNG loads,
    so the vector fallback always shows first (file:// safe). */
-export function drawCat(ctx, x, groundY, tMs, state, palette, scale = 1, accessories = []) {
+export function drawCat(ctx, x, groundY, tMs, state, palette, scale = 1, accessories = [], boss = false) {
   const pal = palette || DEFAULT_PALETTE;
   const ph = (tMs / 220) % (Math.PI * 2);
   const bob = Math.sin(ph) * 2.5;
   const legSwing = Math.sin(ph) * 6;
   const happy = state === "happy";
 
+  if (boss) {
+    // gold aura behind the boss cat — drawn in unscaled world space so it
+    // doesn't stretch, before the scale transform below. Radius/offset are
+    // expressed relative to the historical 1.5x boss scale so it looks the
+    // same as before at any screen size (42 = 28*1.5, groundY-28 likewise).
+    ctx.fillStyle = "rgba(245,197,24,.18)";
+    ctx.beginPath(); ctx.arc(x, groundY - 28 * (scale / 1.5), 42 * (scale / 1.5), 0, Math.PI * 2); ctx.fill();
+  }
+
   if (scale !== 1) {
-    if (scale > 1) {
-      // gold aura behind an enlarged (boss) cat — drawn in unscaled world
-      // space so it doesn't stretch, before the scale transform below.
-      ctx.fillStyle = "rgba(245,197,24,.18)";
-      ctx.beginPath(); ctx.arc(x, groundY - 28, 42, 0, Math.PI * 2); ctx.fill();
-    }
     ctx.save();
     ctx.translate(x, groundY);
     ctx.scale(scale, scale);
@@ -121,7 +128,7 @@ export function drawCat(ctx, x, groundY, tMs, state, palette, scale = 1, accesso
   }
 
   if (accessories && accessories.length) {
-    drawAccessories(ctx, x, groundY, bob, accessories, scale);
+    drawAccessories(ctx, x, groundY, bob, accessories, boss);
   }
 
   if (scale !== 1) ctx.restore();
@@ -141,12 +148,12 @@ function roundedRect(ctx, x, y, w, h, r) {
    in the same world space as the sprite/vector draws above (so they ride
    along with the boss scale transform already applied by the caller).
    "kitten" is drawn by main.js as a trailing mini cat, not here. */
-function drawAccessories(ctx, x, groundY, bob, accessories, scale) {
+function drawAccessories(ctx, x, groundY, bob, accessories, boss) {
   const acc = new Set(accessories);
   const y = groundY;
 
-  if (acc.has("emperor") && scale <= 1) {
-    // subtle gold halo — skipped when the boss aura (scale>1) already drew one
+  if (acc.has("emperor") && !boss) {
+    // subtle gold halo — skipped when the boss aura already drew one
     ctx.fillStyle = "rgba(245,197,24,.12)";
     ctx.beginPath(); ctx.arc(x, y - 40, 36, 0, Math.PI * 2); ctx.fill();
   }
