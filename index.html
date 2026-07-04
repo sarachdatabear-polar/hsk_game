@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#1a0d0d">
 <link rel="icon" href="data:,">
 <link rel="manifest" href="pwa/manifest.webmanifest">
@@ -22,7 +22,8 @@
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0; background:var(--bg); color:var(--ink);
     font-family:"Segoe UI",system-ui,-apple-system,"Noto Sans","Noto Sans Thai",sans-serif;}
-  #app{max-width:520px; margin:0 auto; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column;}
+  #app{max-width:520px; margin:0 auto; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
   .screen{display:none; flex:1; flex-direction:column; padding:16px;}
   .screen.on{display:flex;}
   h1{font-size:28px; margin:8px 0 2px; color:var(--gold); text-align:center;
@@ -117,10 +118,11 @@
     box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 2px 0 rgba(0,0,0,.35);}
   #hud .combo{color:var(--crimson); font-weight:700;}
   /* canvas fills the space between HUD and options; .cv-wrap absorbs all the
-     slack (flex:1) and centers the canvas, so leftover space splits above/below
-     instead of dumping under the options. */
+     slack (flex:1) and centers the canvas. #cv fills that box exactly (no forced
+     aspect-ratio) — the draw loop reads clientWidth/Height and scales everything
+     off the measured size (see layout.js), so any ratio the flex box gives it works. */
   .cv-wrap{flex:1; min-height:0; display:flex; align-items:center; justify-content:center;}
-  #cv{width:100%; max-height:100%; aspect-ratio:3/4; border-radius:14px;
+  #cv{width:100%; height:100%; border-radius:14px;
     /* image layered OVER gradient: if the PNG is missing, the festive gradient still shows */
     background-image:url("assets/bg-battle.png"), linear-gradient(#2a0f2a,#4a1420 60%,#6b2a1a);
     background-size:cover; background-position:bottom; background-repeat:no-repeat;
