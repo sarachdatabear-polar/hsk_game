@@ -7,8 +7,9 @@ Spec: [PRD-v4-street.md](PRD-v4-street.md). Hybrid street economy approved: mile
 - [x] **M1 — Effect packs** (`shop.js` effect slot + Sakura/Firecracker items, `fx.js` styled bursts w/ per-spec gravity, petal/cracker draw kinds, shop Effects section) — done 2026-07-04, +14 tests.
 - [x] **M2 — Sound packs** (`shop.js` soundpack slot + Bells/Arcade items, `sfx.js` data-driven `PACKS` table — default pack byte-identical to old tones, shop Sounds section, `sfx.pack` synced at boot + renderShop) — done 2026-07-04, +8 tests.
 - [x] **M3 — Lucky Cat Street** (`src/street.js`: milestone `BUILDINGS` + deco slots, deterministic `streetPieces`/`streetProgress`; 5 deco catalog items; home `#street-cv` canvas strip + caption; redraws on boot/home/level-up/purchase; worker headless-verified 360×640 fold) — done 2026-07-04, +12 tests. Fable fix: `equipItem` now hard no-op for decos (no stray `deco` field).
-- [x] **M4 — Ship prep**: 169 tests green, build 70.8 kb, DOM-id check passed, SHELL bumped v8 → v9 (v8 came from the responsive-battle round, not v6 as planned above), USER-CHECKLIST §7 added. **NOT committed/pushed — awaiting user playtest.**
-- [ ] User playtest (USER-CHECKLIST §7) → then branch/PR ship v4.
+- [x] **M4 — Ship prep**: 169 tests green, build 70.9 kb, DOM-id check passed, SHELL bumped v8 → v9 (v8 came from the responsive-battle round, not v6 as planned above), USER-CHECKLIST §7 added. Playtest fix rode along: Smart Review shows "n/8" below the 8-word minimum.
+- [x] **Shipped**: user approved after playtest → commit `fbfd792`, PR #7 merged (`dd32f4e`), Pages deploy green — 2026-07-04.
+- [ ] v5 candidates: interactive street / achievement scenes (still deferred), real art per ART-BRIEF.
 
 ## V3 "Lucky Cat Grows" status (reviewer-feedback round; plan approved 2026-07-04)
 

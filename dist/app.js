@@ -1556,44 +1556,68 @@
     draw(t);
     requestAnimationFrame(loop);
   }
-  function drawBackdrop(gy) {
-    const w = B.w, h = B.h;
-    if (shopState.backdrop === "market") {
-      const g = ctx2.createLinearGradient(0, 0, 0, h);
-      g.addColorStop(0, "#2a0f3a");
-      g.addColorStop(1, "#4a1030");
-      ctx2.fillStyle = g;
-      ctx2.fillRect(0, 0, w, h);
-      ctx2.fillStyle = "rgba(245,197,24,.55)";
-      const dots = [[0.15, 0.25], [0.35, 0.15], [0.6, 0.22], [0.8, 0.3], [0.5, 0.12]];
-      for (const [fx, fy] of dots) {
-        ctx2.beginPath();
-        ctx2.arc(w * fx, h * fy, 3, 0, 7);
-        ctx2.fill();
+  function paintBackdrop(c, w, h, gy, style) {
+    if (style === "market") {
+      const g = c.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, "#24123c");
+      g.addColorStop(0.58, "#3d1432");
+      g.addColorStop(1, "#5a1d22");
+      c.fillStyle = g;
+      c.fillRect(0, 0, w, h);
+      c.strokeStyle = "rgba(193,39,45,.65)";
+      c.lineWidth = Math.max(1.5, w * 5e-3);
+      c.beginPath();
+      c.moveTo(0, h * 0.22);
+      c.quadraticCurveTo(w * 0.5, h * 0.06, w, h * 0.2);
+      c.stroke();
+      for (const [fx, fy, r] of [[0.14, 0.25, 5], [0.33, 0.16, 4], [0.58, 0.23, 5], [0.79, 0.29, 4], [0.5, 0.12, 3]]) {
+        c.fillStyle = "rgba(245,197,24,.72)";
+        c.beginPath();
+        c.ellipse(w * fx, h * fy, r, r * 1.25, 0, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "rgba(193,39,45,.8)";
+        c.fillRect(w * fx - r * 0.55, h * fy - r * 0.95, r * 1.1, r * 0.25);
       }
-    } else if (shopState.backdrop === "temple") {
-      const g = ctx2.createLinearGradient(0, 0, 0, h);
-      g.addColorStop(0, "#3a1a10");
-      g.addColorStop(1, "#6b2a10");
-      ctx2.fillStyle = g;
-      ctx2.fillRect(0, 0, w, h);
-      ctx2.fillStyle = "rgba(20,10,10,.55)";
-      ctx2.beginPath();
-      ctx2.moveTo(w * 0.7, gy + 8);
-      ctx2.lineTo(w * 0.82, gy - 46);
-      ctx2.lineTo(w * 0.94, gy + 8);
-      ctx2.closePath();
-      ctx2.fill();
-    } else if (shopState.backdrop === "bamboo") {
-      const g = ctx2.createLinearGradient(0, 0, 0, h);
-      g.addColorStop(0, "#0e2a26");
-      g.addColorStop(1, "#16332e");
-      ctx2.fillStyle = g;
-      ctx2.fillRect(0, 0, w, h);
-      ctx2.fillStyle = "rgba(20,60,45,.6)";
-      const stalks = [0.2, 0.45, 0.68, 0.88];
-      for (const fx of stalks) ctx2.fillRect(w * fx - 4, 0, 8, gy + 10);
+    } else if (style === "temple") {
+      const g = c.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, "#271415");
+      g.addColorStop(0.52, "#5b2412");
+      g.addColorStop(1, "#8b3d18");
+      c.fillStyle = g;
+      c.fillRect(0, 0, w, h);
+      c.fillStyle = "rgba(255,214,95,.25)";
+      c.beginPath();
+      c.arc(w * 0.22, h * 0.38, w * 0.18, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "rgba(20,10,10,.62)";
+      drawPagodaSilhouette(c, w * 0.75, gy + 8, Math.min(w, h) * 0.55);
+    } else if (style === "bamboo") {
+      const g = c.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, "#0d2928");
+      g.addColorStop(0.62, "#14362f");
+      g.addColorStop(1, "#203a28");
+      c.fillStyle = g;
+      c.fillRect(0, 0, w, h);
+      c.fillStyle = "rgba(190,230,190,.09)";
+      c.fillRect(0, h * 0.45, w, h * 0.2);
+      const stalks = [0.16, 0.31, 0.46, 0.63, 0.78, 0.9];
+      for (const fx of stalks) {
+        const sw = Math.max(4, w * 0.012);
+        c.fillStyle = "rgba(20,80,52,.64)";
+        c.fillRect(w * fx - sw / 2, 0, sw, gy + 10);
+        c.strokeStyle = "rgba(245,197,24,.18)";
+        c.lineWidth = 1;
+        for (let y = h * 0.16; y < gy; y += h * 0.18) {
+          c.beginPath();
+          c.moveTo(w * fx - sw / 2, y);
+          c.lineTo(w * fx + sw / 2, y);
+          c.stroke();
+        }
+      }
     }
+  }
+  function drawBackdrop(gy) {
+    paintBackdrop(ctx2, B.w, B.h, gy, shopState.backdrop);
   }
   function draw(t) {
     ctx2.clearRect(0, 0, B.w, B.h);
@@ -1715,6 +1739,31 @@
     ctx2.arcTo(x, y, x + w, y, r);
     ctx2.closePath();
   }
+  function roundRectOn(c, x, y, w, h, r) {
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+  }
+  function drawPagodaSilhouette(c, x, baseY, s) {
+    c.save();
+    c.translate(x, baseY);
+    for (let i = 0; i < 3; i++) {
+      const y = -s * (0.18 + i * 0.19), w = s * (0.46 - i * 0.09), h = s * 0.12;
+      c.fillRect(-w * 0.32, y, w * 0.64, h);
+      c.beginPath();
+      c.moveTo(-w * 0.58, y);
+      c.lineTo(0, y - h * 0.72);
+      c.lineTo(w * 0.58, y);
+      c.closePath();
+      c.fill();
+    }
+    c.fillRect(-s * 0.11, -s * 0.18, s * 0.22, s * 0.18);
+    c.restore();
+  }
   function endBattle(quit) {
     stopBattle();
     updateSmartBtn();
@@ -1820,9 +1869,17 @@
       const owned = shopState.owned.includes(item.id);
       const equipped = shopState[item.type] === item.id;
       const row = document.createElement("div");
-      row.className = "scorerow";
+      row.className = "scorerow shoprow";
       const left = document.createElement("span");
       left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${item.price.toLocaleString()} \u{1FA99}</span>`;
+      left.className = "shop-left";
+      const preview = document.createElement("canvas");
+      preview.className = "shop-preview";
+      preview.setAttribute("aria-hidden", "true");
+      const copy = document.createElement("span");
+      copy.className = "shop-copy";
+      copy.innerHTML = `<b>${item.name}</b><small>${item.price.toLocaleString()} coins</small>`;
+      left.replaceChildren(preview, copy);
       const btn = document.createElement("button");
       if (item.type === "deco") {
         btn.className = "chip" + (owned ? " on" : "");
@@ -1874,6 +1931,91 @@
       row.appendChild(left);
       row.appendChild(btn);
       box.appendChild(row);
+      renderShopPreview(preview, item);
+    }
+  }
+  function renderShopPreview(canvas, item) {
+    const w = 60, h = 44;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    canvas.style.width = w + "px";
+    canvas.style.height = h + "px";
+    const c = canvas.getContext("2d");
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.clearRect(0, 0, w, h);
+    const bg = c.createLinearGradient(0, 0, 0, h);
+    bg.addColorStop(0, "rgba(255,232,150,.16)");
+    bg.addColorStop(1, "rgba(58,16,16,.72)");
+    c.fillStyle = bg;
+    roundRectOn(c, 0, 0, w, h, 10);
+    c.fill();
+    c.strokeStyle = "rgba(245,197,24,.28)";
+    c.lineWidth = 1;
+    roundRectOn(c, 0.5, 0.5, w - 1, h - 1, 10);
+    c.stroke();
+    if (item.type === "skin") {
+      drawCat(c, w * 0.5, h + 8, 0, "walk", SKIN_PALETTES[item.id], 0.64, [], false);
+    } else if (item.type === "backdrop") {
+      paintBackdrop(c, w, h, h - 7, item.id);
+      c.strokeStyle = "rgba(245,197,24,.55)";
+      c.lineWidth = 1;
+      c.beginPath();
+      c.moveTo(0, h - 8);
+      c.lineTo(w, h - 8);
+      c.stroke();
+    } else if (item.type === "effect") {
+      if (item.id === "sakura-fx") {
+        c.fillStyle = "#f6a8c8";
+        for (const [x, y, r] of [[18, 15, 0], [31, 24, 0.9], [43, 13, -0.5], [24, 31, 0.4]]) {
+          c.beginPath();
+          c.ellipse(x, y, 5, 2.6, r, 0, Math.PI * 2);
+          c.fill();
+        }
+      } else {
+        c.fillStyle = "#e04040";
+        c.beginPath();
+        c.arc(24, 22, 8, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#fff4c0";
+        for (const [x, y] of [[15, 12], [38, 13], [42, 30], [18, 32], [31, 21]]) {
+          c.beginPath();
+          c.arc(x, y, 2.8, 0, Math.PI * 2);
+          c.fill();
+        }
+      }
+    } else if (item.type === "soundpack") {
+      c.strokeStyle = item.id === "bells" ? "#f5c518" : "#7fd7ff";
+      c.lineWidth = 2.5;
+      c.lineCap = "round";
+      if (item.id === "bells") {
+        c.fillStyle = "#f5c518";
+        c.beginPath();
+        c.arc(30, 19, 10, Math.PI, 0);
+        c.lineTo(42, 30);
+        c.lineTo(18, 30);
+        c.closePath();
+        c.fill();
+        c.fillStyle = "#3a2200";
+        c.beginPath();
+        c.arc(30, 30, 2.6, 0, Math.PI * 2);
+        c.fill();
+      } else {
+        c.beginPath();
+        c.moveTo(16, 29);
+        c.lineTo(16, 14);
+        c.lineTo(39, 10);
+        c.lineTo(39, 25);
+        c.stroke();
+        c.beginPath();
+        c.arc(14, 31, 4, 0, Math.PI * 2);
+        c.stroke();
+        c.beginPath();
+        c.arc(37, 27, 4, 0, Math.PI * 2);
+        c.stroke();
+      }
+    } else {
+      drawStreetDeco(c, item.id, w * 0.5, h - 5, h);
     }
   }
   function renderStreet() {
@@ -1887,20 +2029,11 @@
     const sc = scv.getContext("2d");
     sc.setTransform(dpr, 0, 0, dpr, 0, 0);
     sc.clearRect(0, 0, w, h);
-    const sky = sc.createLinearGradient(0, 0, 0, h);
-    sky.addColorStop(0, "#1a0d2a");
-    sky.addColorStop(1, "#3a1030");
-    sc.fillStyle = sky;
-    sc.fillRect(0, 0, w, h);
-    const gy = h - 8;
-    sc.strokeStyle = "rgba(245,197,24,.5)";
-    sc.lineWidth = 2;
-    sc.beginPath();
-    sc.moveTo(0, gy);
-    sc.lineTo(w, gy);
-    sc.stroke();
+    paintStreetBase(sc, w, h);
+    const gy = h - 10;
     const level = levelForXp(xp);
     const pieces = streetPieces(level, shopState.owned);
+    drawStreetPads(sc, w, gy, h, pieces);
     for (const p of pieces) {
       const x = p.slot * w;
       if (p.kind === "building") drawStreetBuilding(sc, p.id, x, gy, h);
@@ -1921,43 +2054,135 @@
     const nextTxt = prog.next ? `Next: Lv ${prog.next.lv} \u2014 ${prog.next.name}` : "All buildings unlocked!";
     cap.textContent = pieces.length === 0 ? `Lucky Cat Street \u2014 grows as you learn \xB7 ${nextTxt}` : `${prog.unlocked}/${prog.total} buildings \xB7 ${nextTxt}`;
   }
+  function paintStreetBase(c, w, h) {
+    const sky = c.createLinearGradient(0, 0, 0, h);
+    sky.addColorStop(0, "#160b2a");
+    sky.addColorStop(0.58, "#2a1232");
+    sky.addColorStop(1, "#5a1d18");
+    c.fillStyle = sky;
+    c.fillRect(0, 0, w, h);
+    c.fillStyle = "rgba(255,231,144,.86)";
+    c.beginPath();
+    c.arc(w * 0.82, h * 0.24, h * 0.12, 0, Math.PI * 2);
+    c.fill();
+    c.fillStyle = "rgba(245,197,24,.7)";
+    for (const [fx, fy, r] of [[0.16, 0.18, 1.2], [0.31, 0.28, 1], [0.46, 0.16, 1.4], [0.66, 0.3, 1.1], [0.92, 0.42, 1]]) {
+      c.beginPath();
+      c.arc(w * fx, h * fy, r, 0, Math.PI * 2);
+      c.fill();
+    }
+    c.fillStyle = "rgba(18,12,24,.58)";
+    c.beginPath();
+    c.moveTo(0, h * 0.58);
+    c.lineTo(w * 0.16, h * 0.42);
+    c.lineTo(w * 0.3, h * 0.57);
+    c.lineTo(w * 0.48, h * 0.37);
+    c.lineTo(w * 0.72, h * 0.58);
+    c.lineTo(w, h * 0.43);
+    c.lineTo(w, h);
+    c.lineTo(0, h);
+    c.closePath();
+    c.fill();
+    c.fillStyle = "rgba(92,31,24,.9)";
+    c.fillRect(0, h * 0.64, w, h * 0.36);
+    c.strokeStyle = "rgba(245,197,24,.24)";
+    c.lineWidth = 1;
+    for (let y = h * 0.7; y < h; y += h * 0.12) {
+      c.beginPath();
+      c.moveTo(0, y);
+      c.lineTo(w, y);
+      c.stroke();
+    }
+    for (let x = -w * 0.1; x < w; x += w * 0.14) {
+      c.beginPath();
+      c.moveTo(x, h);
+      c.lineTo(x + w * 0.07, h * 0.66);
+      c.stroke();
+    }
+    c.strokeStyle = "rgba(245,197,24,.55)";
+    c.lineWidth = 2;
+    c.beginPath();
+    c.moveTo(0, h - 10);
+    c.lineTo(w, h - 10);
+    c.stroke();
+    c.fillStyle = "rgba(245,197,24,.12)";
+    c.fillRect(0, h * 0.62, w, h * 0.05);
+  }
+  function drawStreetPads(c, w, gy, h, pieces) {
+    const occupied = new Set(pieces.map((p) => p.slot.toFixed(2)));
+    const slots = [0.18, 0.34, 0.5, 0.66, 0.82, 0.1, 0.26, 0.42, 0.58, 0.74];
+    for (const slot of slots) {
+      if (occupied.has(slot.toFixed(2))) continue;
+      const x = slot * w, pw = h * 0.34;
+      c.fillStyle = "rgba(255,214,95,.08)";
+      c.beginPath();
+      c.ellipse(x, gy + 1, pw, h * 0.055, 0, 0, Math.PI * 2);
+      c.fill();
+      c.strokeStyle = "rgba(245,197,24,.16)";
+      c.lineWidth = 1;
+      c.beginPath();
+      c.ellipse(x, gy + 1, pw, h * 0.055, 0, 0, Math.PI * 2);
+      c.stroke();
+    }
+  }
   function drawStreetBuilding(c, id, x, gy, h) {
-    const bw = h * 0.5, bh = h * 0.62;
+    const bw = h * 0.54, bh = h * 0.62;
     c.save();
     c.translate(x, gy);
+    c.shadowColor = "rgba(245,197,24,.32)";
+    c.shadowBlur = 6;
     switch (id) {
       case "lantern-post":
         c.fillStyle = "#2e1030";
-        c.fillRect(-2, -bh, 4, bh);
-        c.fillStyle = "#f5c518";
-        c.beginPath();
-        c.arc(0, -bh, bw * 0.22, 0, Math.PI * 2);
+        roundRectOn(c, -3, -bh, 6, bh, 2);
         c.fill();
+        c.strokeStyle = "#f5c518";
+        c.lineWidth = 1.6;
+        c.beginPath();
+        c.moveTo(0, -bh);
+        c.quadraticCurveTo(bw * 0.26, -bh * 1.06, bw * 0.42, -bh * 0.86);
+        c.stroke();
+        c.fillStyle = "#c1272d";
+        c.beginPath();
+        c.ellipse(bw * 0.43, -bh * 0.74, bw * 0.18, bw * 0.23, 0, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#f5c518";
+        c.fillRect(bw * 0.34, -bh * 0.98, bw * 0.18, 3);
+        c.fillRect(bw * 0.36, -bh * 0.52, bw * 0.14, 3);
         break;
       case "coin-bank":
         c.fillStyle = "#2e1030";
-        c.fillRect(-bw / 2, -bh, bw, bh);
-        c.fillStyle = "#f5c518";
-        c.beginPath();
-        c.arc(0, -bh * 0.58, bw * 0.18, 0, Math.PI * 2);
+        roundRectOn(c, -bw / 2, -bh, bw, bh, 4);
         c.fill();
         c.fillStyle = "#8a2a24";
-        c.font = `${Math.round(bw * 0.22)}px serif`;
+        c.fillRect(-bw * 0.55, -bh, bw * 1.1, bh * 0.16);
+        c.fillStyle = "#f5c518";
+        c.beginPath();
+        c.arc(0, -bh * 0.58, bw * 0.2, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#8a2a24";
+        c.font = `700 ${Math.round(bw * 0.22)}px serif`;
         c.textAlign = "center";
         c.fillText("$", 0, -bh * 0.5);
+        c.fillStyle = "rgba(255,244,224,.72)";
+        c.fillRect(-bw * 0.34, -bh * 0.28, bw * 0.68, bh * 0.05);
         break;
       case "tailor":
         c.fillStyle = "#2e1030";
-        c.fillRect(-bw / 2, -bh * 0.85, bw, bh * 0.85);
+        roundRectOn(c, -bw / 2, -bh * 0.85, bw, bh * 0.85, 4);
+        c.fill();
         c.fillStyle = "#c1272d";
-        c.fillRect(-bw / 2 - 4, -bh * 0.85 - 8, bw + 8, 8);
+        c.fillRect(-bw / 2 - 5, -bh * 0.85 - 9, bw + 10, 9);
+        c.fillStyle = "rgba(255,244,224,.18)";
+        c.fillRect(-bw * 0.42, -bh * 0.79, bw * 0.84, bh * 0.13);
         c.fillStyle = "#f5c518";
         c.fillRect(-bw * 0.18, -bh * 0.55, bw * 0.14, bh * 0.14);
         c.fillRect(bw * 0.04, -bh * 0.55, bw * 0.14, bh * 0.14);
         break;
       case "kitten-cafe":
         c.fillStyle = "#2e1030";
-        c.fillRect(-bw / 2, -bh * 0.75, bw, bh * 0.75);
+        roundRectOn(c, -bw / 2, -bh * 0.75, bw, bh * 0.75, 4);
+        c.fill();
         c.fillStyle = "#8a2a24";
         c.beginPath();
         c.moveTo(-bw / 2 - 6, -bh * 0.75);
@@ -1969,12 +2194,21 @@
         c.beginPath();
         c.arc(0, -bh * 0.4, bw * 0.16, 0, Math.PI * 2);
         c.fill();
+        c.fillStyle = "#1a0d0d";
+        c.beginPath();
+        c.arc(-bw * 0.05, -bh * 0.43, bw * 0.03, 0, Math.PI * 2);
+        c.fill();
+        c.beginPath();
+        c.arc(bw * 0.05, -bh * 0.43, bw * 0.03, 0, Math.PI * 2);
+        c.fill();
         break;
       case "emperor-gate":
         c.fillStyle = "#c1272d";
         c.fillRect(-bw * 0.7, -bh * 1.15, bw * 0.16, bh * 1.15);
         c.fillRect(bw * 0.54, -bh * 1.15, bw * 0.16, bh * 1.15);
         c.fillRect(-bw * 0.7, -bh * 1.15, bw * 1.4, bh * 0.14);
+        c.fillStyle = "#8a2a24";
+        c.fillRect(-bw * 0.82, -bh * 1.28, bw * 1.64, bh * 0.13);
         c.fillStyle = "#f5c518";
         c.beginPath();
         c.arc(0, -bh * 1.08, bw * 0.12, 0, Math.PI * 2);
@@ -1987,9 +2221,12 @@
     const s = h * 0.32;
     c.save();
     c.translate(x, gy);
+    c.shadowColor = "rgba(245,197,24,.28)";
+    c.shadowBlur = 5;
     switch (id) {
       case "red-lantern":
         c.strokeStyle = "#8a2a24";
+        c.lineWidth = 1.5;
         c.beginPath();
         c.moveTo(0, -s * 1.6);
         c.lineTo(0, -s * 1.1);
@@ -2003,31 +2240,45 @@
         break;
       case "noodle-stall":
         c.fillStyle = "#5a2c22";
-        c.fillRect(-s * 0.4, -s * 0.6, s * 0.8, s * 0.6);
+        roundRectOn(c, -s * 0.48, -s * 0.62, s * 0.96, s * 0.62, 3);
+        c.fill();
+        c.fillStyle = "#c1272d";
+        c.fillRect(-s * 0.56, -s * 0.84, s * 1.12, s * 0.18);
         c.fillStyle = "#f5c518";
-        c.fillRect(-s * 0.5, -s * 0.78, s, s * 0.16);
+        c.fillRect(-s * 0.56, -s * 0.84, s * 0.18, s * 0.18);
+        c.fillRect(-s * 0.1, -s * 0.84, s * 0.18, s * 0.18);
+        c.fillRect(s * 0.36, -s * 0.84, s * 0.2, s * 0.18);
         break;
       case "tea-sign":
         c.strokeStyle = "#f5c518";
+        c.lineWidth = 1.5;
         c.beginPath();
         c.moveTo(0, -s * 1.3);
         c.lineTo(0, -s * 0.9);
         c.stroke();
         c.fillStyle = "#3a1a1a";
-        c.fillRect(-s * 0.35, -s * 1.3, s * 0.7, s * 0.32);
+        roundRectOn(c, -s * 0.38, -s * 1.3, s * 0.76, s * 0.32, 3);
+        c.fill();
         c.fillStyle = "#f5c518";
-        c.font = `${Math.round(s * 0.22)}px serif`;
+        c.font = `700 ${Math.round(s * 0.22)}px serif`;
         c.textAlign = "center";
-        c.fillText("\u8336", 0, -s * 1.06);
+        c.fillText("tea", 0, -s * 1.06);
         break;
       case "foo-dog":
         c.fillStyle = "#2e1030";
         c.beginPath();
-        c.ellipse(0, -s * 0.3, s * 0.28, s * 0.4, 0, 0, Math.PI * 2);
+        c.ellipse(0, -s * 0.3, s * 0.32, s * 0.4, 0, 0, Math.PI * 2);
         c.fill();
         c.fillStyle = "#f5c518";
         c.beginPath();
         c.arc(0, -s * 0.62, s * 0.18, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#1a0d0d";
+        c.beginPath();
+        c.arc(-s * 0.05, -s * 0.65, s * 0.025, 0, Math.PI * 2);
+        c.fill();
+        c.beginPath();
+        c.arc(s * 0.05, -s * 0.65, s * 0.025, 0, Math.PI * 2);
         c.fill();
         break;
       case "golden-arch":
@@ -2042,6 +2293,10 @@
         c.moveTo(s * 0.9, -s * 0.5);
         c.lineTo(s * 0.9, 0);
         c.stroke();
+        c.fillStyle = "rgba(255,244,224,.35)";
+        c.beginPath();
+        c.arc(0, -s * 0.93, s * 0.13, 0, Math.PI * 2);
+        c.fill();
         break;
     }
     c.restore();
