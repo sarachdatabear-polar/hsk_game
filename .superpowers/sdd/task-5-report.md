@@ -46,3 +46,24 @@ Self-review
 - Edit scope stayed within the assigned files only.
 - The new test is intentionally narrow and limited to the `required_icons` contract, without adding the deferred Task 3+4 coverage.
 - The shell cache bump matches the user-facing shell/art changes the reviewer called out.
+
+---
+
+Fix report (review follow-up):
+
+What I changed
+- Tightened `test/asset-manifest.test.js` so each required icon must match a real `<symbol ... id="...">` entry in `assets/ui-icons.svg`, not just any substring containing the ID.
+
+Commands run and outputs
+- `npm test -- test/asset-manifest.test.js`
+  - Passed: 1 file, 1 test.
+- `npm test`
+  - Passed: 18 files, 170 tests.
+
+Files changed
+- `test/asset-manifest.test.js`
+- `.superpowers/sdd/task-5-report.md`
+
+Self-review
+- The assertion now checks the actual SVG symbol tag shape required by Task 5.
+- No runtime files were changed.

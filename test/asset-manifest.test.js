@@ -12,7 +12,10 @@ const uiIconsSvg = readFileSync(
 describe("asset manifest", () => {
   it("includes every required icon id in assets/ui-icons.svg", () => {
     const missingIcons = manifest.required_icons.filter(
-      iconId => !uiIconsSvg.includes(`id="${iconId}"`)
+      iconId =>
+        !new RegExp(`<symbol\\b[^>]*\\bid="${iconId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`).test(
+          uiIconsSvg
+        )
     );
 
     expect(missingIcons).toEqual([]);
