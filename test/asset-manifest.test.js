@@ -16,23 +16,9 @@ const pngRuntimeNames = manifest.assets
   .filter(asset => asset.file.endsWith(".png"))
   .map(asset => asset.file.replace(/\.png$/, ""));
 
-const requiredPrecacheFiles = [
-  "assets/cat-portrait.png",
-  "assets/bg-results.png",
-  "assets/ui-panel.png",
-  "assets/ui-word-plaque.png",
-  "assets/ui-button-primary.png",
-  "assets/ui-button-secondary.png",
-  "assets/ui-button-neutral.png",
-  "assets/ui-badge.png",
-  "assets/ui-progress-track.png",
-  "assets/ui-progress-fill.png",
-  "assets/fx-correct.png",
-  "assets/fx-wrong.png",
-  "assets/fx-critical.png",
-  "assets/fx-level-up.png",
-  "assets/fx-new-best.png",
-];
+const requiredPrecacheFiles = manifest.assets
+  .filter(asset => asset.priority === "P0")
+  .map(asset => `assets/${asset.file}`);
 
 describe("asset manifest", () => {
   it("uses only known asset statuses", () => {
