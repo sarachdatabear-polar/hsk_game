@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { coinBurst, comboFloater, fireworkRing, perfectBonus } from "../src/fx.js";
+import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus } from "../src/fx.js";
 
 function allFinite(specs, keys) {
   return specs.every(s => keys.every(k => Number.isFinite(s[k])));
@@ -110,6 +110,14 @@ describe("fireworkRing", () => {
     const specs = fireworkRing(9, 3);
     expect(allFinite(specs, ["x", "y", "vx", "vy", "life"])).toBe(true);
     expect(specs.every(s => s.x === 9 && s.y === 3)).toBe(true);
+  });
+});
+
+describe("feedbackEffect", () => {
+  it("describes production feedback effect sprites", () => {
+    expect(feedbackEffect("correct", 10, 20)).toMatchObject({ kind: "correct", x: 10, y: 20, sprite: "fx-correct" });
+    expect(feedbackEffect("wrong", 10, 20)).toMatchObject({ kind: "wrong", sprite: "fx-wrong" });
+    expect(feedbackEffect("critical", 10, 20)).toMatchObject({ kind: "critical", sprite: "fx-critical" });
   });
 });
 

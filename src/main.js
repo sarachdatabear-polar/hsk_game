@@ -2,7 +2,7 @@
 import { buildPool, coveragePct, scopeKey, meaning as meaningOf, normalizeLen, modeKey } from "./pool.js";
 import { pickDistractors } from "./distractors.js";
 import { killPoints } from "./scoring.js";
-import { coinBurst, comboFloater, fireworkRing, perfectBonus } from "./fx.js";
+import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus } from "./fx.js";
 import { sfx } from "./sfx.js";
 import { drawCat } from "./cat.js";
 import { uiScale, layout } from "./layout.js";
@@ -464,7 +464,7 @@ function answer(btn, o){
     speak(z.w.h);                              // the sound sticks with the correct answer
     if(boss) noteAnswer(z.w.h, true);           // both stages passed
     const gy = B.h-B.L.ground;
-    B.feedback = {type:"correct", x:z.x, y:gy-42*B.S, until:performance.now()+620};
+    B.feedback = {...feedbackEffect("correct", z.x, gy-42*B.S), until:performance.now()+620};
     const floater = comboFloater(z.x, gy-130, B.combo);
     if(floater) B.floats.push(floater);
     // milestone combo (10, 20, ...): extra sparkle on top of the usual combo sting above
@@ -482,7 +482,7 @@ function answer(btn, o){
     B.lives--; B.flash = 1; B.screenShake = 1; B.resolved++;
     z.state = "wrong";
     z.wrongUntil = performance.now() + 560;
-    B.feedback = {type:"wrong", x:z.x, y:B.h-B.L.ground-44*B.S, until:performance.now()+560};
+    B.feedback = {...feedbackEffect("wrong", z.x, B.h-B.L.ground-44*B.S), until:performance.now()+560};
   }
   updateHud();
 }
@@ -769,13 +769,18 @@ function drawWordPlate(hanzi, pinyin, level, boss, t){
 function drawFeedbackLayer(t){
   const fb = B.feedback;
   if(!fb) return;
-  const total = fb.type === "correct" ? 620 : 560;
+  const kind = fb.kind || fb.type;
+  const total = kind === "critical" ? 750 : kind === "correct" ? 620 : 560;
   const left = fb.until - performance.now();
   if(left <= 0){ B.feedback = null; return; }
   const p = 1 - left / total;
   ctx.save();
   ctx.globalAlpha = Math.max(0, 1-p);
-  if(fb.type === "correct"){
+  const fxImg = fb.sprite ? sprite(fb.sprite) : null;
+  if(fxImg){
+    const size = (kind === "critical" ? 96 : 72) * B.S;
+    ctx.drawImage(fxImg, fb.x - size/2, fb.y - size/2, size, size);
+  }else if(kind === "correct"){
     ctx.strokeStyle = "rgba(245,197,24,.86)";
     ctx.lineWidth = Math.max(2, 4*B.S*(1-p));
     ctx.beginPath(); ctx.arc(fb.x, fb.y, (18 + 44*p)*B.S, 0, Math.PI*2); ctx.stroke();
