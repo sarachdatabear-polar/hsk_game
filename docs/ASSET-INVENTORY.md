@@ -58,3 +58,35 @@ Only change a manifest status to `approved` after checking:
 - No incorrect Chinese characters appear in backgrounds.
 - No dynamic text is baked into art.
 - Asset is readable at 360 x 640, 390 x 844, and 412 x 915.
+
+## Task 9 Approved-Art Gate
+
+Validation date: 2026-07-05.
+
+No approved production-art batch has been supplied in this worktree yet. Existing
+runtime files such as `cat-walk.png`, `cat-happy.png`, `bg-home.png`,
+`bg-battle.png`, `bg-market.png`, `maneki.png`, and `ui-icons.svg` remain
+candidate or generated runtime assets, not approved final production art.
+
+The following required runtime files from `assets/asset-manifest.json` are still
+missing from `assets/`:
+
+- `cat-portrait.png`
+- `bg-results.png`
+- `ui-panel.png`
+- `ui-word-plaque.png`
+- `ui-button-primary.png`
+- `ui-button-secondary.png`
+- `ui-button-neutral.png`
+- `ui-badge.png`
+- `ui-progress-track.png`
+- `ui-progress-fill.png`
+- `fx-correct.png`
+- `fx-wrong.png`
+- `fx-critical.png`
+- `fx-level-up.png`
+- `fx-new-best.png`
+
+Because the approval files are absent, `assets/asset-manifest.json` intentionally
+keeps all production-art statuses at `planned`. This preserves the PRD boundary:
+do not mark generated placeholders as `approved` or `integrated`.
