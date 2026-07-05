@@ -68,3 +68,23 @@ DONE
 - The fix stays inside the assigned write scope.
 - No JS or gameplay logic changed.
 - The panel hooks now survive later selector styling, and the optional image vars no longer suppress the no-art gradient/solid fallbacks.
+
+---
+
+## Review Fix Addendum 2
+
+### Status
+- Fixed the remaining hook-wiping color shorthands in `index.html`.
+- Bumped `SHELL` in `sw.js` from `nbhsk-shell-v16` to `nbhsk-shell-v17` so installed clients refresh the corrected shell CSS.
+
+### What Changed
+- Replaced `.chip.on` `background:` with `background-color:` so the optional `.chip` background-image hook stays intact.
+- Replaced `.know` and `.learn2` `background:` shorthands with `background-color:` only.
+- Kept the existing text and border colors unchanged.
+- Used existing semantic token aliases for the solid fills instead of introducing new literal shell colors.
+
+### Commands To Run
+- `rg -n "background:" index.html`
+- `rg -n "font-size:|width:|min-width:|height:" index.html`
+- `npm run build`
+- `npm test`
