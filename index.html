@@ -34,10 +34,6 @@
   button{font:inherit; border:none; border-radius:12px; cursor:pointer;}
   .asset-icon{width:1.15em; height:1.15em; display:inline-block; vertical-align:-.18em; color:currentColor; flex:0 0 auto;}
   .icon-text{display:inline-flex; align-items:center; justify-content:center; gap:8px;}
-  .pill-icon{width:18px; height:18px; display:inline-block; background:center/contain no-repeat; flex:0 0 auto;}
-  .pill-icon.coin{background-image:url("assets/coin.png");}
-  .pill-icon.cat{background-image:url("assets/maneki.png");}
-  .pill-icon.streak{color:#b3262a;}
   /* glossy pill buttons */
   .big{padding:16px; font-size:18px; font-weight:600; border-radius:999px;
     background:var(--panel); color:var(--ink);
@@ -241,9 +237,9 @@
       <button class="big primary" data-go="scope"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span>Play</span></span></button>
       <button class="big" id="go-smart"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#target"></use></svg><span>Smart Review</span></span></button>
       <div style="text-align:center; display:flex; justify-content:center; gap:8px; flex-wrap:wrap">
-        <span class="hud-pill" id="home-wallet"><span class="pill-icon coin"></span><span>0</span></span>
+        <span class="hud-pill" id="home-wallet"><svg class="asset-icon"><use href="assets/ui-icons.svg#coin"></use></svg><span>0</span></span>
         <span class="hud-pill" id="home-streak"><svg class="asset-icon"><use href="assets/ui-icons.svg#streak"></use></svg><span>0 · 0/20 today</span></span>
-        <span class="hud-pill" id="home-level"><span class="pill-icon cat"></span><span>Lv 1</span></span>
+        <span class="hud-pill" id="home-level"><svg class="asset-icon"><use href="assets/ui-icons.svg#paw"></use></svg><span>Lv 1</span></span>
       </div>
       <canvas id="street-cv"></canvas>
       <div id="street-caption"></div>
@@ -323,7 +319,7 @@
   <div class="screen" id="s-battle">
     <div id="hud">
       <span class="hud-pill" id="hud-lives"></span>
-      <span class="hud-pill"><span class="pill-icon coin"></span><b id="hud-score">0</b> <span class="combo" id="hud-combo"></span></span>
+      <span class="hud-pill"><svg class="asset-icon"><use href="assets/ui-icons.svg#coin"></use></svg><b id="hud-score">0</b> <span class="combo" id="hud-combo"></span></span>
       <span class="hud-pill" id="hud-left"></span>
       <button class="hud-round" id="hud-sfx" title="sound effects" aria-label="sound effects"></button>
       <button class="hud-round" id="hud-audio" title="word audio on spawn" aria-label="word audio on spawn"></button>

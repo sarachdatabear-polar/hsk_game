@@ -1022,15 +1022,14 @@
     return { unlocked, total, next };
   }
 
-  // src/main.js
-  var D = window.HSK_DATA;
-  var $ = (s) => document.querySelector(s);
+  // src/icons.js
+  var ICON_HREF = "assets/ui-icons.svg";
   function iconSvg(id) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.classList.add("asset-icon");
     svg.setAttribute("aria-hidden", "true");
     const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
-    use.setAttribute("href", `assets/ui-icons.svg#${id}`);
+    use.setAttribute("href", `${ICON_HREF}#${id}`);
     svg.appendChild(use);
     return svg;
   }
@@ -1047,13 +1046,13 @@
   function setIconOnly(el, icon) {
     el.replaceChildren(iconSvg(icon));
   }
-  function setPill(el, iconClass, text) {
-    const icon = document.createElement("span");
-    icon.className = "pill-icon " + iconClass;
-    const label = document.createElement("span");
-    label.textContent = text;
-    el.replaceChildren(icon, label);
+  function setPill(el, icon, text) {
+    el.replaceChildren(iconSvg(icon), document.createTextNode(` ${text}`));
   }
+
+  // src/main.js
+  var D = window.HSK_DATA;
+  var $ = (s) => document.querySelector(s);
   var store = {
     get(k, d) {
       try {
@@ -1094,7 +1093,7 @@
   var xp = store.get("xp", 0);
   function updateLevelChip() {
     const el = $("#home-level");
-    if (el) setPill(el, "cat", `Lv ${levelForXp(xp)}`);
+    if (el) setPill(el, "paw", `Lv ${levelForXp(xp)}`);
   }
   function addXp(n) {
     const before = levelForXp(xp);

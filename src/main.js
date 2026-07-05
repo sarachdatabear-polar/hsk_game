@@ -17,39 +17,11 @@ import { initAudio, speak } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem } from "./shop.js";
 import { streetPieces, streetProgress } from "./street.js";
+import { iconSvg, setIconLabel, setIconOnly, setPill } from "./icons.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
 const $ = s => document.querySelector(s);
-function iconSvg(id){
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.classList.add("asset-icon");
-  svg.setAttribute("aria-hidden", "true");
-  const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
-  use.setAttribute("href", `assets/ui-icons.svg#${id}`);
-  svg.appendChild(use);
-  return svg;
-}
-function setIconLabel(el, icon, label){
-  el.replaceChildren();
-  const wrap = document.createElement("span");
-  wrap.className = "icon-text";
-  if(icon) wrap.appendChild(iconSvg(icon));
-  const text = document.createElement("span");
-  text.textContent = label;
-  wrap.appendChild(text);
-  el.appendChild(wrap);
-}
-function setIconOnly(el, icon){
-  el.replaceChildren(iconSvg(icon));
-}
-function setPill(el, iconClass, text){
-  const icon = document.createElement("span");
-  icon.className = "pill-icon " + iconClass;
-  const label = document.createElement("span");
-  label.textContent = text;
-  el.replaceChildren(icon, label);
-}
 const store = {
   get(k, d){ try{ const v = localStorage.getItem("nbhsk."+k); return v===null? d : JSON.parse(v);}catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem("nbhsk."+k, JSON.stringify(v)); }catch(e){} }
@@ -74,7 +46,7 @@ function updateWalletChip(){ setPill($("#home-wallet"), "coin", wallet.toLocaleS
 
 /* ============================== cat growth (xp/levels/accessories) ============================== */
 let xp = store.get("xp", 0);
-function updateLevelChip(){ const el = $("#home-level"); if(el) setPill(el, "cat", `Lv ${levelForXp(xp)}`); }
+function updateLevelChip(){ const el = $("#home-level"); if(el) setPill(el, "paw", `Lv ${levelForXp(xp)}`); }
 function addXp(n){
   const before = levelForXp(xp);
   xp += n;
