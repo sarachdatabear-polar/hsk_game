@@ -21,6 +21,35 @@ import { streetPieces, streetProgress } from "./street.js";
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
 const $ = s => document.querySelector(s);
+function iconSvg(id){
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.classList.add("asset-icon");
+  svg.setAttribute("aria-hidden", "true");
+  const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+  use.setAttribute("href", `assets/ui-icons.svg#${id}`);
+  svg.appendChild(use);
+  return svg;
+}
+function setIconLabel(el, icon, label){
+  el.replaceChildren();
+  const wrap = document.createElement("span");
+  wrap.className = "icon-text";
+  if(icon) wrap.appendChild(iconSvg(icon));
+  const text = document.createElement("span");
+  text.textContent = label;
+  wrap.appendChild(text);
+  el.appendChild(wrap);
+}
+function setIconOnly(el, icon){
+  el.replaceChildren(iconSvg(icon));
+}
+function setPill(el, iconClass, text){
+  const icon = document.createElement("span");
+  icon.className = "pill-icon " + iconClass;
+  const label = document.createElement("span");
+  label.textContent = text;
+  el.replaceChildren(icon, label);
+}
 const store = {
   get(k, d){ try{ const v = localStorage.getItem("nbhsk."+k); return v===null? d : JSON.parse(v);}catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem("nbhsk."+k, JSON.stringify(v)); }catch(e){} }
@@ -41,11 +70,11 @@ function noteAnswer(hanzi, correct){
 }
 let wallet = store.get("wallet", 0);
 let shopState = Object.assign(defaultShop(), store.get("shop", {}));
-function updateWalletChip(){ $("#home-wallet").textContent = "🪙 "+wallet.toLocaleString(); }
+function updateWalletChip(){ setPill($("#home-wallet"), "coin", wallet.toLocaleString()); }
 
 /* ============================== cat growth (xp/levels/accessories) ============================== */
 let xp = store.get("xp", 0);
-function updateLevelChip(){ const el = $("#home-level"); if(el) el.textContent = `🐱 Lv ${levelForXp(xp)}`; }
+function updateLevelChip(){ const el = $("#home-level"); if(el) setPill(el, "cat", `Lv ${levelForXp(xp)}`); }
 function addXp(n){
   const before = levelForXp(xp);
   xp += n;
@@ -73,9 +102,10 @@ let daily = Object.assign(defaultDaily(), store.get("daily", {}));
 daily.today = Object.assign({date:"", resolved:0}, daily.today);
 function updateStreakChip(){
   const info = streakInfo(daily, todayStr());
-  $("#home-streak").textContent = info.goalMet
-    ? `🔥 ${info.streak} · ✅ today`
-    : `🔥 ${info.streak} · ${info.todayResolved}/${info.goal} today`;
+  const el = $("#home-streak");
+  el.replaceChildren(iconSvg("streak"), document.createTextNode(info.goalMet
+    ? ` ${info.streak} · complete today`
+    : ` ${info.streak} · ${info.todayResolved}/${info.goal} today`));
 }
 function noteDaily(count){
   daily = noteActivity(daily, todayStr(), count);
@@ -101,10 +131,10 @@ function renderQuests(){
   for(const q of questStatus(questState, todayStr())){
     const row = document.createElement("div");
     row.className = "quest-row"+(q.done? " done":"");
-    row.innerHTML = `<span class="qi">${q.done? "✅":"▫"}</span>
+    row.innerHTML = `<span class="qi">${q.done? "Done":"Open"}</span>
       <span class="qd">${q.desc}</span>
       <span class="qp">${q.progress}/${q.target}</span>
-      <span class="qr">+${q.reward} 🪙</span>`;
+      <span class="qr">+${q.reward} coins</span>`;
     panel.appendChild(row);
   }
 }
@@ -114,9 +144,9 @@ function updateSmartBtn(){
   btn.disabled = deck.length < 8;
   // below the 8-word minimum, show progress toward it ("6/8") so the disabled
   // button reads as "not enough yet" rather than broken
-  btn.textContent = !deck.length ? "🎯 Smart Review"
-    : deck.length < 8 ? `🎯 Smart Review · ${deck.length}/8`
-    : `🎯 Smart Review · ${deck.length}`;
+  setIconLabel(btn, "target", !deck.length ? "Smart Review"
+    : deck.length < 8 ? `Smart Review · ${deck.length}/8`
+    : `Smart Review · ${deck.length}`);
 }
 $("#go-smart").onclick = ()=>{
   const deck = smartDeck(masteryStore, pool, Date.now());
@@ -190,7 +220,7 @@ function renderScope(){
   const lenInput = $("#len-custom");
   lenInput.hidden = !lenCustomOpen;
   if(lenCustomOpen && document.activeElement !== lenInput) lenInput.value = len;
-  $("#go-battle").textContent = `🧧 Battle · ${len}`;
+  setIconLabel($("#go-battle"), "play", `Battle · ${len}`);
   store.set("scope", scope);
   const startable = pool.length >= 8;
   $("#go-battle").disabled = $("#go-endless").disabled = $("#go-learn").disabled = !startable;
@@ -207,7 +237,7 @@ document.querySelectorAll("#len-chips .chip").forEach(c=>c.onclick = ()=>{
 $("#len-custom").addEventListener("input", ()=>{
   scope.sessionLen = normalizeLen($("#len-custom").value);
   store.set("scope", scope);
-  $("#go-battle").textContent = `🧧 Battle · ${scope.sessionLen}`;
+  setIconLabel($("#go-battle"), "play", `Battle · ${scope.sessionLen}`);
 });
 $("#len-custom").addEventListener("change", ()=>renderScope());  // blur/Enter: snap display to normalized value
 document.querySelectorAll("#preset-chips .chip").forEach(c=>c.onclick = ()=>{
@@ -333,26 +363,33 @@ function startBattle(mode){
 }
 function stopBattle(){ B.on = false; keepAwake(false); if(window.speechSynthesis) speechSynthesis.cancel(); }
 $("#hud-quit").onclick = ()=>{ endBattle(true); };
-$("#hud-sfx").onclick = ()=>{ sfx.enabled = !sfx.enabled; store.set("sfx", sfx.enabled); $("#hud-sfx").textContent = sfx.enabled ? "🔔" : "🔕"; };
+$("#hud-sfx").onclick = ()=>{ sfx.enabled = !sfx.enabled; store.set("sfx", sfx.enabled); setIconOnly($("#hud-sfx"), sfx.enabled ? "bell" : "bell-off"); };
 $("#hud-audio").onclick = ()=>{
   settings.autoSpeak = !settings.autoSpeak;
   store.set("settings", settings);
-  $("#hud-audio").textContent = settings.autoSpeak? "🔊":"🔇";
+  setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
 };
 /* home-screen sound toggle (mirrors hud-sfx; btn-sound.png art greys out when muted) */
 $("#home-sound").addEventListener("click", ()=>{
   sfx.enabled = !sfx.enabled;
   store.set("sfx", sfx.enabled);
   $("#home-sound").classList.toggle("muted", !sfx.enabled);
+  updateHud();
 });
-$("#home-sound").classList.toggle("muted", !sfx.enabled);  // reflect stored state on load
+$("#home-sound").classList.toggle("muted", !sfx.enabled);
 function updateHud(){
-  $("#hud-lives").textContent = "❤️".repeat(B.lives) + "🖤".repeat(Math.max(0,3-B.lives));
+  const lives = $("#hud-lives");
+  lives.replaceChildren();
+  for(let i=0;i<3;i++){
+    const h = iconSvg("heart");
+    h.classList.add("life-icon", i < B.lives ? "full" : "empty");
+    lives.appendChild(h);
+  }
   $("#hud-score").textContent = B.score;
-  $("#hud-combo").textContent = B.combo>=2? "×"+B.combo+" 🔥":"";
-  $("#hud-left").textContent = B.mode==="round"? (B.wordsTotal-B.resolved)+" left":"∞";
-  $("#hud-sfx").textContent = sfx.enabled ? "🔔" : "🔕";
-  $("#hud-audio").textContent = settings.autoSpeak? "🔊":"🔇";
+  $("#hud-combo").textContent = B.combo>=2? "x"+B.combo:"";
+  $("#hud-left").textContent = B.mode==="round"? (B.wordsTotal-B.resolved)+" left":"endless";
+  setIconOnly($("#hud-sfx"), sfx.enabled ? "bell" : "bell-off");
+  setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
 }
 function pushMiss(w){ if(!B.missSet.has(w.h)){ B.missSet.add(w.h); B.misses.push(w); } }
 function spawnZombie(){
@@ -392,7 +429,7 @@ function renderBossHanzi(word){
   const m = meaningOf(word, scope.lang);
   const prompt = document.createElement("div");
   prompt.style.cssText = "grid-column:1/-1; text-align:center; font-weight:700; color:var(--gold); padding:2px 4px 8px;";
-  prompt.textContent = `👑 Boss · pick the hanzi for: ${m.main}`;
+  prompt.textContent = `Boss · pick the hanzi for: ${m.main}`;
   box.appendChild(prompt);
   for(const o of opts){
     const b = document.createElement("button");
@@ -594,16 +631,14 @@ function draw(t){
     const bob = Math.sin(t/400)*(hopping? 9:3);
     ctx.drawImage(manekiImg, B.L.mascotX-mp/2, gy-mp+4*B.S+bob, mp, mp);
   }else{
-    ctx.font = `${Math.round(36*B.S)}px serif`;
-    ctx.fillText("🐱", B.L.mascotX, gy+6*B.S);
+    drawCat(ctx, B.L.mascotX, gy + 6*B.S, t, "happy", null, .72*B.S, [], false);
   }
   // idle coin icon (left of mascot) — coin sprite or emoji fallback
   const coinImgIdle = sprite("coin");
   if(coinImgIdle){
     ctx.drawImage(coinImgIdle, 4*B.S, gy-22*B.S, B.L.coinPx, B.L.coinPx);
   }else{
-    ctx.font = `${Math.round(22*B.S)}px serif`;
-    ctx.fillText("🪙", 16*B.S, gy+8*B.S);
+    drawCoinMark(ctx, 16*B.S, gy-10*B.S, 9*B.S);
   }
   const z = B.zombie;
   if(z){
@@ -639,7 +674,7 @@ function draw(t){
     if(coinImg){
       ctx.drawImage(coinImg, B.proj.x-pc/2, B.proj.y-pc/2, pc, pc);
     }else{
-      ctx.font = `${Math.round(20*B.S)}px serif`; ctx.fillText("🪙", B.proj.x, B.proj.y);
+      drawCoinMark(ctx, B.proj.x, B.proj.y, pc*.45);
     }
   }
   // particles (kill bursts + combo fireworks) — kind picks the look
@@ -660,7 +695,7 @@ function draw(t){
     }
   }
   ctx.globalAlpha = 1;
-  // combo floaters ("×N 🔥") drifting up from a kill
+  // combo floaters drifting up from a kill
   if(B.floats.length){
     ctx.font = `700 ${Math.round(B.L.floaterPx)}px 'Segoe UI',sans-serif`;
     ctx.fillStyle = "#f5c518";
@@ -682,6 +717,16 @@ function roundRectOn(c,x,y,w,h,r){
   c.beginPath();
   c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
   c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath();
+}
+function drawCoinMark(c, x, y, r){
+  c.save();
+  const g = c.createRadialGradient(x-r*.35,y-r*.35,r*.2,x,y,r);
+  g.addColorStop(0,"#fff1a6"); g.addColorStop(.58,"#f5c518"); g.addColorStop(1,"#a86d00");
+  c.fillStyle = g; c.beginPath(); c.arc(x,y,r,0,Math.PI*2); c.fill();
+  c.strokeStyle = "#5a3c00"; c.lineWidth = Math.max(1,r*.16); c.stroke();
+  c.strokeStyle = "rgba(90,60,0,.65)"; c.lineWidth = Math.max(1,r*.12);
+  c.beginPath(); c.arc(x,y,r*.48,0,Math.PI*2); c.stroke();
+  c.restore();
 }
 function drawPagodaSilhouette(c, x, baseY, s){
   c.save(); c.translate(x, baseY);
@@ -705,16 +750,16 @@ function endBattle(quit){
   if(bonus) wallet += bonus;
   store.set("wallet", wallet);
   updateWalletChip();
-  $("#r-wallet").textContent = `+${B.score} 🪙 banked · total ${wallet.toLocaleString()}`;
+  $("#r-wallet").textContent = `+${B.score} coins banked · total ${wallet.toLocaleString()}`;
   const perfectEl = $("#r-perfect");
-  if(isPerfect){ perfectEl.textContent = `🌟 Perfect! +${bonus} 🪙 bonus`; perfectEl.style.display = "block"; }
+  if(isPerfect){ perfectEl.textContent = `Perfect round! +${bonus} coin bonus`; perfectEl.style.display = "block"; }
   else perfectEl.style.display = "none";
   const lu = B.levelUps || [];
   const luEl = $("#r-levelup");
   if(lu.length){
     const from = lu[0].from, to = lu[lu.length-1].to;
     const hit = MILESTONES.filter(m => m.lv > from && m.lv <= to);
-    luEl.textContent = `🐱 Level up! Lv ${to}`+(hit.length? ` — unlocked: ${hit.map(m=>m.name).join(", ")}`:"");
+    luEl.textContent = `Level up! Lv ${to}`+(hit.length? ` — unlocked: ${hit.map(m=>m.name).join(", ")}`:"");
     luEl.style.display = "block";
   }else{
     luEl.style.display = "none";
@@ -723,7 +768,7 @@ function endBattle(quit){
   rq.innerHTML = "";
   for(const q of questToasts){
     const line = document.createElement("div");
-    line.textContent = `🎯 Quest complete: ${q.desc} +${q.reward} 🪙`;
+    line.textContent = `Quest complete: ${q.desc} +${q.reward} coins`;
     rq.appendChild(line);
   }
   rq.style.display = questToasts.length ? "block" : "none";
@@ -746,7 +791,7 @@ function endBattle(quit){
     row.innerHTML = `<span class="hz">${w.h}</span>
       <span class="det"><span class="py">${w.p}</span> — ${w.e}${w.t? " · "+w.t:""}</span>`;
     const sp = document.createElement("button");
-    sp.className = "sp"; sp.textContent = "🔊"; sp.onclick = ()=>speak(w.h);
+    sp.className = "sp"; sp.setAttribute("aria-label", "Play audio"); sp.replaceChildren(iconSvg("sound")); sp.onclick = ()=>speak(w.h);
     row.appendChild(sp);
     list.appendChild(row);
   }
@@ -775,7 +820,7 @@ function renderScores(){
 /* ============================== shop ============================== */
 function renderShop(){
   sfx.pack = shopState.soundpack || "default";  // keep sfx in sync with the equipped slot
-  $("#shop-wallet").innerHTML = `Wallet: <b>${wallet.toLocaleString()}</b> 🪙`;
+  $("#shop-wallet").innerHTML = `Wallet: <b>${wallet.toLocaleString()}</b> coins`;
   const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), decoBox = $("#shop-street");
   skinBox.innerHTML = ""; bdBox.innerHTML = ""; fxBox.innerHTML = ""; sndBox.innerHTML = ""; decoBox.innerHTML = "";
   for(const item of CATALOG){
@@ -785,7 +830,7 @@ function renderShop(){
     const row = document.createElement("div");
     row.className = "scorerow shoprow";
     const left = document.createElement("span");
-    left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${item.price.toLocaleString()} 🪙</span>`;
+    left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${item.price.toLocaleString()} coins</span>`;
     left.className = "shop-left";
     const preview = document.createElement("canvas");
     preview.className = "shop-preview";
@@ -799,7 +844,7 @@ function renderShop(){
       // Decos are never equipped — every owned deco just appears on the street.
       btn.className = "chip"+(owned? " on":"");
       if(owned){
-        btn.textContent = "On street ✓"; btn.disabled = true;
+        btn.textContent = "On street"; btn.disabled = true;
       }else{
         btn.textContent = "Buy";
         btn.disabled = !canAfford(wallet, item.id);
@@ -913,7 +958,7 @@ function renderStreet(){
   }else{
     sc.textAlign = "left";
     sc.font = `${Math.round(h*0.42)}px serif`;
-    sc.fillText("🐱", 2, gy-2);
+    drawCat(sc, 22, gy + 8, 0, "happy", null, .58, [], false);
   }
 
   const cap = $("#street-caption");
@@ -1122,7 +1167,7 @@ function renderGrowthCard(){
   row.className = "scorerow";
   row.style.flexDirection = "column"; row.style.alignItems = "stretch"; row.style.gap = "6px";
   row.innerHTML = `<div style="display:flex; justify-content:space-between">
-      <span>🐱 Lucky Cat · Lv ${level}</span>
+      <span>Lucky Cat · Lv ${level}</span>
       <span>${prog.into}/${prog.need} xp</span>
     </div>
     <div class="mbar"><i style="width:${pct}%"></i></div>
@@ -1162,7 +1207,7 @@ function renderNeedsWork(){
     row.innerHTML = `<span class="hz">${w.h}</span>
       <span class="det"><span class="py">${w.p}</span> — ${w.e}${w.t? " · "+w.t:""}</span>`;
     const sp = document.createElement("button");
-    sp.className = "sp"; sp.textContent = "🔊"; sp.onclick = ()=>speak(w.h);
+    sp.className = "sp"; sp.setAttribute("aria-label", "Play audio"); sp.replaceChildren(iconSvg("sound")); sp.onclick = ()=>speak(w.h);
     row.appendChild(sp);
     list.appendChild(row);
   }

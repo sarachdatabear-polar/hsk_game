@@ -32,6 +32,12 @@
   .tag{color:var(--muted); text-align:center; margin:0 0 20px; font-size:14px;}
   .menu{display:flex; flex-direction:column; gap:12px; margin-top:8px;}
   button{font:inherit; border:none; border-radius:12px; cursor:pointer;}
+  .asset-icon{width:1.15em; height:1.15em; display:inline-block; vertical-align:-.18em; color:currentColor; flex:0 0 auto;}
+  .icon-text{display:inline-flex; align-items:center; justify-content:center; gap:8px;}
+  .pill-icon{width:18px; height:18px; display:inline-block; background:center/contain no-repeat; flex:0 0 auto;}
+  .pill-icon.coin{background-image:url("assets/coin.png");}
+  .pill-icon.cat{background-image:url("assets/maneki.png");}
+  .pill-icon.streak{color:#b3262a;}
   /* glossy pill buttons */
   .big{padding:16px; font-size:18px; font-weight:600; border-radius:999px;
     background:var(--panel); color:var(--ink);
@@ -84,6 +90,7 @@
   .icon-btn:active{transform:scale(.96);}
   /* real gold-disc art (assets/btn-*.png) replaces the CSS disc + emoji. */
   .icon-btn[data-go="scope-learn"],
+  .icon-btn[data-go="shop"],
   .icon-btn[data-go="scores"],
   .icon-btn[data-go="progress"],
   .icon-btn[data-go="howto"],
@@ -91,6 +98,7 @@
     color:transparent; font-size:0; border-color:#9c6b00;
     background-size:cover; background-position:center; background-repeat:no-repeat;}
   .icon-btn[data-go="scope-learn"]{background-image:url("assets/btn-learn.png");}
+  .icon-btn[data-go="shop"]{background-image:url("assets/btn-shop.svg");}
   .icon-btn[data-go="scores"]{background-image:url("assets/btn-scores.png");}
   .icon-btn[data-go="progress"]{background-image:url("assets/btn-progress.png");}
   .icon-btn[data-go="howto"]{background-image:url("assets/btn-howto.png");}
@@ -112,7 +120,8 @@
   .fc-btns .big{flex:1; font-size:16px; padding:14px 6px;}
   .know{background:#1e5c3a; color:#d8f5c8; border-color:#3fae6a;}
   .learn2{background:#5a3c2c; color:#ffe0c2; border-color:#c1272d;}
-  .spk{background:var(--panel); color:var(--gold); font-size:22px; padding:10px 16px; border-radius:12px; border:1px solid #5a2c22;}
+  .spk{background:var(--panel); color:var(--gold); font-size:22px; padding:10px 16px; border-radius:12px; border:1px solid #5a2c22;
+    display:inline-flex; align-items:center; justify-content:center;}
   /* battle */
   #hud{display:flex; justify-content:space-between; align-items:center; font-size:15px; padding:2px 2px 8px; gap:6px; flex-wrap:wrap;}
   .hud-pill{display:inline-flex; align-items:center; gap:4px; background:linear-gradient(180deg,#ffd75e,#e3a80e);
@@ -123,6 +132,8 @@
     display:flex; align-items:center; justify-content:center;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 2px 0 rgba(0,0,0,.35);}
   #hud .combo{color:var(--crimson); font-weight:700;}
+  .life-icon{width:18px; height:18px; color:#e8443f; filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));}
+  .life-icon.empty{color:#6a3a3a; opacity:.65;}
   /* canvas fills the space between HUD and options; .cv-wrap absorbs all the
      slack (flex:1) and centers the canvas. #cv fills that box exactly (no forced
      aspect-ratio) — the draw loop reads clientWidth/Height and scales everything
@@ -226,23 +237,23 @@
     <h1>Lucky Cat HSK <span class="sub-cn">招财猫</span></h1>
     <p class="tag">Feed the lucky cat the right meanings —<br>collect coins, learn real-exam HSK words.</p>
     <div class="menu">
-      <button class="big primary" data-go="scope">🧧 Play</button>
-      <button class="big" id="go-smart">🎯 Smart Review</button>
+      <button class="big primary" data-go="scope"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span>Play</span></span></button>
+      <button class="big" id="go-smart"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#target"></use></svg><span>Smart Review</span></span></button>
       <div style="text-align:center; display:flex; justify-content:center; gap:8px; flex-wrap:wrap">
-        <span class="hud-pill" id="home-wallet">🪙 0</span>
-        <span class="hud-pill" id="home-streak">🔥 0 · 0/20 today</span>
-        <span class="hud-pill" id="home-level">🐱 Lv 1</span>
+        <span class="hud-pill" id="home-wallet"><span class="pill-icon coin"></span><span>0</span></span>
+        <span class="hud-pill" id="home-streak"><svg class="asset-icon"><use href="assets/ui-icons.svg#streak"></use></svg><span>0 · 0/20 today</span></span>
+        <span class="hud-pill" id="home-level"><span class="pill-icon cat"></span><span>Lv 1</span></span>
       </div>
       <canvas id="street-cv"></canvas>
       <div id="street-caption"></div>
       <div id="quest-panel"></div>
       <div class="icon-row">
-        <button class="icon-btn" data-go="scope-learn" title="Flashcards">🃏</button>
-        <button class="icon-btn" data-go="shop" title="Lucky Shop">🛍️</button>
-        <button class="icon-btn" data-go="scores" title="High scores">🏆</button>
-        <button class="icon-btn" data-go="progress" title="Progress">📈</button>
-        <button class="icon-btn" data-go="howto" title="How to play">❓</button>
-        <button class="icon-btn" id="home-sound" title="Sound effects">🔔</button>
+        <button class="icon-btn" data-go="scope-learn" title="Flashcards" aria-label="Flashcards"></button>
+        <button class="icon-btn" data-go="shop" title="Lucky Shop" aria-label="Lucky Shop"></button>
+        <button class="icon-btn" data-go="scores" title="High scores" aria-label="High scores"></button>
+        <button class="icon-btn" data-go="progress" title="Progress" aria-label="Progress"></button>
+        <button class="icon-btn" data-go="howto" title="How to play" aria-label="How to play"></button>
+        <button class="icon-btn" id="home-sound" title="Sound effects" aria-label="Sound effects"></button>
       </div>
     </div>
     <footer>Lucky Cat · HSK 1–6 · built from real exam data</footer>
@@ -282,28 +293,28 @@
       <button class="chip" data-len="20">20</button>
       <button class="chip" data-len="40">40</button>
       <button class="chip" data-len="100">100</button>
-      <button class="chip" data-len="custom">✏️ Custom</button>
+      <button class="chip" data-len="custom"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#pencil"></use></svg><span>Custom</span></span></button>
       <input id="len-custom" type="number" inputmode="numeric" min="5" max="500" placeholder="5–500" hidden>
     </div>
     <div class="readout" id="readout"></div>
     <div class="startrow">
-      <button class="big primary" id="go-battle">🧧 Battle · 20</button>
-      <button class="big" id="go-endless">♾️ Endless</button>
-      <button class="big" id="go-learn">🃏 Cards</button>
+      <button class="big primary" id="go-battle"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span>Battle · 20</span></span></button>
+      <button class="big" id="go-endless"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#infinity"></use></svg><span>Endless</span></span></button>
+      <button class="big" id="go-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#cards"></use></svg><span>Cards</span></span></button>
     </div>
   </div>
 
   <!-- LEARN -->
   <div class="screen" id="s-learn">
     <div class="fc-top">
-      <button class="back" style="margin:0" data-go="home">✕ Exit</button>
+      <button class="back" style="margin:0" data-go="home">Exit</button>
       <span id="fc-count"></span>
     </div>
     <div class="card" id="fc-card"></div>
     <div class="fc-btns">
-      <button class="big learn2" id="fc-again">🔄 Still learning</button>
-      <button class="spk" id="fc-spk">🔊</button>
-      <button class="big know" id="fc-know">✔ Know it</button>
+      <button class="big learn2" id="fc-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#repeat"></use></svg><span>Still learning</span></span></button>
+      <button class="spk" id="fc-spk" aria-label="Play audio"><svg class="asset-icon"><use href="assets/ui-icons.svg#sound"></use></svg></button>
+      <button class="big know" id="fc-know"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#check"></use></svg><span>Know it</span></span></button>
     </div>
   </div>
 
@@ -311,11 +322,11 @@
   <div class="screen" id="s-battle">
     <div id="hud">
       <span class="hud-pill" id="hud-lives"></span>
-      <span class="hud-pill">🪙 <b id="hud-score">0</b> <span class="combo" id="hud-combo"></span></span>
+      <span class="hud-pill"><span class="pill-icon coin"></span><b id="hud-score">0</b> <span class="combo" id="hud-combo"></span></span>
       <span class="hud-pill" id="hud-left"></span>
-      <button class="hud-round" id="hud-sfx" title="sound effects">🔔</button>
-      <button class="hud-round" id="hud-audio" title="word audio on spawn">🔊</button>
-      <button class="hud-round" id="hud-quit" title="quit">✕</button>
+      <button class="hud-round" id="hud-sfx" title="sound effects" aria-label="sound effects"></button>
+      <button class="hud-round" id="hud-audio" title="word audio on spawn" aria-label="word audio on spawn"></button>
+      <button class="hud-round" id="hud-quit" title="quit" aria-label="quit"><svg class="asset-icon"><use href="assets/ui-icons.svg#close"></use></svg></button>
     </div>
     <div class="cv-wrap"><canvas id="cv"></canvas></div>
     <div id="opts"></div>
@@ -333,38 +344,38 @@
     <div class="sect" id="r-misshead">Words you missed</div>
     <div class="misslist" id="r-miss"></div>
     <div class="startrow">
-      <button class="big" id="r-review">🃏 Review misses</button>
-      <button class="big" id="r-fight-miss">🧧 Fight misses</button>
-      <button class="big primary" id="r-again">🧧 Play again</button>
+      <button class="big" id="r-review"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#cards"></use></svg><span>Review misses</span></span></button>
+      <button class="big" id="r-fight-miss"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#fight"></use></svg><span>Fight misses</span></span></button>
+      <button class="big primary" id="r-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span>Play again</span></span></button>
     </div>
-    <button class="big" style="margin-top:10px" data-go="home">🏠 Home</button>
+    <button class="big" style="margin-top:10px" data-go="home">Home</button>
   </div>
 
   <!-- SCORES -->
   <div class="screen festive" id="s-scores">
     <button class="back" data-go="home">← Home</button>
-    <h2>🏆 High scores</h2>
+    <h2>High scores</h2>
     <div class="scorelist" id="scorelist"></div>
   </div>
 
   <!-- PROGRESS -->
   <div class="screen festive" id="s-progress">
     <button class="back" data-go="home">← Home</button>
-    <h2>📈 Progress</h2>
+    <h2>Progress</h2>
     <div class="scorelist" id="growth-card"></div>
     <div class="scorelist" id="progresslist"></div>
     <div class="sect">Needs work</div>
     <div class="misslist" id="needswork-list"></div>
     <div class="startrow">
-      <button class="big" id="nw-review">📖 Review these</button>
-      <button class="big" id="nw-fight">⚔️ Fight these</button>
+      <button class="big" id="nw-review"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#cards"></use></svg><span>Review these</span></span></button>
+      <button class="big" id="nw-fight"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#fight"></use></svg><span>Fight these</span></span></button>
     </div>
   </div>
 
   <!-- SHOP -->
   <div class="screen festive" id="s-shop">
     <button class="back" data-go="home">← Home</button>
-    <h2>🛍️ Lucky Shop</h2>
+    <h2>Lucky Shop</h2>
     <div class="readout" id="shop-wallet"></div>
     <div class="sect">Cat skins</div>
     <div class="scorelist" id="shop-skins"></div>
@@ -383,16 +394,16 @@
     <button class="back" data-go="home">← Home</button>
     <h2>How to play</h2>
     <p class="howto">
-      A lucky cat 🐱 strolls in from the right carrying a <b>Chinese word</b> (with pinyin) on a flag.<br><br>
-      🧧 Tap the <b>correct meaning</b> and the cat cheers, flips a gold coin 🪙, and you score!
+      A lucky cat strolls in from the right carrying a <b>Chinese word</b> (with pinyin) on a flag.<br><br>
+      Tap the <b>correct meaning</b> and the cat cheers, flips a gold coin, and you score!
       The farther away the cat still is, the bigger the bonus — and streaks multiply your score.<br><br>
-      ☝️ <b>You get one shot per word.</b> A wrong tap costs a heart ❤️ — no second guesses.
+      <b>You get one shot per word.</b> A wrong tap costs a heart — no second guesses.
       The correct answer flashes green so you learn it for next time.<br><br>
-      🐌 Too slow counts too: if the cat wanders all the way across without an answer,
+      Too slow counts too: if the cat wanders all the way across without an answer,
       that costs a heart. Three hearts and the round is over.<br><br>
-      🔊 Every word shows <b>pinyin</b> and can be <b>heard aloud</b> — during the game,
+      Every word shows <b>pinyin</b> and can be <b>heard aloud</b> — during the game,
       in flashcards, and in the missed-words review.<br><br>
-      🃏 <b>Learn mode</b> drills the same word pool as flashcards first, so you can
+      <b>Learn mode</b> drills the same word pool as flashcards first, so you can
       study, then play.
     </p>
   </div>

@@ -80,10 +80,10 @@ describe("comboFloater", () => {
   });
   it("formats the combo text and rises with a fixed life at combo >= 3", () => {
     const f = comboFloater(10, 20, 3);
-    expect(f).toEqual({ x: 10, y: 20, text: "×3 🔥", life: 0.9, vy: -60 });
+    expect(f).toEqual({ x: 10, y: 20, text: "x3", life: 0.9, vy: -60 });
   });
   it("formats larger combos", () => {
-    expect(comboFloater(0, 0, 15).text).toBe("×15 🔥");
+    expect(comboFloater(0, 0, 15).text).toBe("x15");
   });
 });
 

@@ -1,14 +1,14 @@
-# Art Brief — NorthBear HSK Zombie v2
+# Art Brief - NorthBear HSK Zombie v2
 
-*Draft spec of artwork to create or commission. **Nothing here blocks the v2 build** — every item ships first as programmatic canvas art (palette swaps, gradients); real art drops in later by replacing sprites, same as the existing `maneki`/`coin` sprite-with-fallback pattern in `sprites.js`.*
+*Draft spec of artwork to create or commission. **Nothing here blocks the v2 build** - every item ships first as programmatic canvas art (palette swaps, gradients); real art drops in later by replacing sprites, same as the existing `maneki`/`coin` sprite-with-fallback pattern in `sprites.js`.*
 
 ## Style anchors
 
-- Match the existing look: warm dark-red background, gold (`#f5c518`) accents, chunky rounded shapes, all-ages lucky-cat theme (no gore — "zombies" are cats that wander off).
-- Mobile-first: assets are seen at ~48–80 px on a phone canvas. Bold silhouettes, minimal interior detail.
-- Format: PNG with transparency, 2× resolution (e.g. 96×96 for a 48 px draw), flat or softly shaded.
+- Match the existing look: warm dark-red background, gold (`#f5c518`) accents, chunky rounded shapes, all-ages lucky-cat theme (no gore - "zombies" are cats that wander off).
+- Mobile-first: assets are seen at ~48-80 px on a phone canvas. Bold silhouettes, minimal interior detail.
+- Format: PNG with transparency, 2x resolution (e.g. 96x96 for a 48 px draw), flat or softly shaded.
 
-## 1. Cat skins (shop unlockables) — priority HIGH
+## 1. Cat skins (shop unlockables) - priority HIGH
 
 Walking cat in the same pose set the current `cat.js` draws (walk bob + happy). Four skins, each needed in **walk** and **happy** variants (or a single body sprite the code can bob):
 
@@ -19,9 +19,9 @@ Walking cat in the same pose set the current `cat.js` draws (walk bob + happy). 
 | Jade | pale-green body, gold bell collar | mid |
 | Gold | all-gold, shimmering (slightly emissive) | premium |
 
-Sizes: 96×96 px source, drawn at ~48 px. Until art exists, `cat.js` renders these as palette recolors.
+Sizes: 96x96 px source, drawn at ~48 px. Until art exists, `cat.js` renders these as palette recolors.
 
-## 2. Battle backdrops — priority HIGH
+## 2. Battle backdrops - priority HIGH
 
 Full-canvas background scenes, portrait-friendly, must not fight with the word banner (keep the upper two-thirds low-contrast/dark):
 
@@ -31,34 +31,34 @@ Full-canvas background scenes, portrait-friendly, must not fight with the word b
 | Temple Dawn | pagoda silhouette, warm orange gradient horizon |
 | Bamboo | dark bamboo stalks, mist, teal-green tint |
 
-Size: 720×1280 safe-area design; will be drawn scaled. Until art exists, these are canvas gradient + simple-shape scenes.
+Size: 720x1280 safe-area design; will be drawn scaled. Until art exists, these are canvas gradient + simple-shape scenes.
 
-## 3. Boss cat — priority MEDIUM
+## 3. Boss cat - priority MEDIUM
 
-One "boss" cat: same species as the walker but ~1.5× bulkier, gold aura ring, small crown or coin necklace. Needs walk + happy variants. Placeholder: the standard cat drawn at 1.5× scale with a gold glow circle.
+One "boss" cat: same species as the walker but ~1.5x bulkier, gold aura ring, small crown or coin necklace. Needs walk + happy variants. Placeholder: the standard cat drawn at 1.5x scale with a gold glow circle.
 
-## 3b. Cat growth accessories (v3) — priority MEDIUM
+## 3b. Cat growth accessories (v3) - priority MEDIUM
 
-The Lv1→Lv50 growth system dresses the cat as it levels; currently vector overlays, replaceable by sprite variants (either accessory-only transparent PNGs layered at the same anchor points, or full dressed-cat sheets per tier):
+The Lv1->Lv50 growth system dresses the cat as it levels; currently vector overlays, replaceable by sprite variants (either accessory-only transparent PNGs layered at the same anchor points, or full dressed-cat sheets per tier):
 
 | Unlock | Accessory |
 |--------|-----------|
 | Lv5 | Red scarf around the neck |
 | Lv10 | Gold coin charm on the chest |
 | Lv20 | Chinese outfit (red/gold vest) |
-| Lv30 | Kitten follower (mini cat trailing behind — needs its own small walk sprite, ~48×48 source) |
+| Lv30 | Kitten follower (mini cat trailing behind - needs its own small walk sprite, ~48x48 source) |
 | Lv50 | Emperor crown + gold halo |
 
-## 4. Shop & UI icons — priority LOW
+## 4. Shop & UI icons - priority LOW
 
-- Shop button icon (coin purse or torii-gate shop front), ~64×64.
-- Streak flame icon (currently the 🔥 emoji), ~48×48.
+- Shop button icon (coin purse or torii-gate shop front), ~64x64.
+- Streak flame icon, ~48x48.
 - Coin re-use: the existing `coin` sprite is fine everywhere.
 
 ## 5. Nice-to-have / later
 
 - Mascot (maneki) celebration pose for "new best!" on results.
-- Shop item thumbnails (auto-croppable from the skin sprites — no separate art needed if skins exist).
+- Shop item thumbnails (auto-croppable from the skin sprites - no separate art needed if skins exist).
 - App-store screenshots frame/template once v2 ships.
 
 ## Delivery & integration

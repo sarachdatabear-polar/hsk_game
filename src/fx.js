@@ -56,11 +56,11 @@ export function coinBurst(x, y, boss, style) {
   return specs;
 }
 
-// Combo counter floater ("×N 🔥") shown above the mascot on a correct
+// Combo counter floater shown above the mascot on a correct
 // answer; no floater below a 3-combo (matches the HUD's own combo threshold).
 export function comboFloater(x, y, combo) {
   if (combo < 3) return null;
-  return { x, y, text: `×${combo} 🔥`, life: 0.9, vy: -60 };
+  return { x, y, text: `x${combo}`, life: 0.9, vy: -60 };
 }
 
 // 16-point spark ring, evenly spaced, fired every 10th combo (10, 20, ...).

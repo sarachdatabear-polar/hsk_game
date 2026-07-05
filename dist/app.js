@@ -137,7 +137,7 @@
   }
   function comboFloater(x, y, combo) {
     if (combo < 3) return null;
-    return { x, y, text: `\xD7${combo} \u{1F525}`, life: 0.9, vy: -60 };
+    return { x, y, text: `x${combo}`, life: 0.9, vy: -60 };
   }
   function fireworkRing(x, y) {
     const n = 16, speed = 170;
@@ -939,6 +939,35 @@
   // src/main.js
   var D = window.HSK_DATA;
   var $ = (s) => document.querySelector(s);
+  function iconSvg(id) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.classList.add("asset-icon");
+    svg.setAttribute("aria-hidden", "true");
+    const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+    use.setAttribute("href", `assets/ui-icons.svg#${id}`);
+    svg.appendChild(use);
+    return svg;
+  }
+  function setIconLabel(el, icon, label) {
+    el.replaceChildren();
+    const wrap = document.createElement("span");
+    wrap.className = "icon-text";
+    if (icon) wrap.appendChild(iconSvg(icon));
+    const text = document.createElement("span");
+    text.textContent = label;
+    wrap.appendChild(text);
+    el.appendChild(wrap);
+  }
+  function setIconOnly(el, icon) {
+    el.replaceChildren(iconSvg(icon));
+  }
+  function setPill(el, iconClass, text) {
+    const icon = document.createElement("span");
+    icon.className = "pill-icon " + iconClass;
+    const label = document.createElement("span");
+    label.textContent = text;
+    el.replaceChildren(icon, label);
+  }
   var store = {
     get(k, d) {
       try {
@@ -974,12 +1003,12 @@
   var wallet = store.get("wallet", 0);
   var shopState = Object.assign(defaultShop(), store.get("shop", {}));
   function updateWalletChip() {
-    $("#home-wallet").textContent = "\u{1FA99} " + wallet.toLocaleString();
+    setPill($("#home-wallet"), "coin", wallet.toLocaleString());
   }
   var xp = store.get("xp", 0);
   function updateLevelChip() {
     const el = $("#home-level");
-    if (el) el.textContent = `\u{1F431} Lv ${levelForXp(xp)}`;
+    if (el) setPill(el, "cat", `Lv ${levelForXp(xp)}`);
   }
   function addXp(n) {
     const before = levelForXp(xp);
@@ -1004,7 +1033,8 @@
   daily.today = Object.assign({ date: "", resolved: 0 }, daily.today);
   function updateStreakChip() {
     const info = streakInfo(daily, todayStr());
-    $("#home-streak").textContent = info.goalMet ? `\u{1F525} ${info.streak} \xB7 \u2705 today` : `\u{1F525} ${info.streak} \xB7 ${info.todayResolved}/${info.goal} today`;
+    const el = $("#home-streak");
+    el.replaceChildren(iconSvg("streak"), document.createTextNode(info.goalMet ? ` ${info.streak} \xB7 complete today` : ` ${info.streak} \xB7 ${info.todayResolved}/${info.goal} today`));
   }
   function noteDaily(count) {
     daily = noteActivity(daily, todayStr(), count);
@@ -1032,10 +1062,10 @@
     for (const q of questStatus(questState, todayStr())) {
       const row = document.createElement("div");
       row.className = "quest-row" + (q.done ? " done" : "");
-      row.innerHTML = `<span class="qi">${q.done ? "\u2705" : "\u25AB"}</span>
+      row.innerHTML = `<span class="qi">${q.done ? "Done" : "Open"}</span>
       <span class="qd">${q.desc}</span>
       <span class="qp">${q.progress}/${q.target}</span>
-      <span class="qr">+${q.reward} \u{1FA99}</span>`;
+      <span class="qr">+${q.reward} coins</span>`;
       panel.appendChild(row);
     }
   }
@@ -1043,7 +1073,7 @@
     const deck = smartDeck(masteryStore, pool, Date.now());
     const btn = $("#go-smart");
     btn.disabled = deck.length < 8;
-    btn.textContent = !deck.length ? "\u{1F3AF} Smart Review" : deck.length < 8 ? `\u{1F3AF} Smart Review \xB7 ${deck.length}/8` : `\u{1F3AF} Smart Review \xB7 ${deck.length}`;
+    setIconLabel(btn, "target", !deck.length ? "Smart Review" : deck.length < 8 ? `Smart Review \xB7 ${deck.length}/8` : `Smart Review \xB7 ${deck.length}`);
   }
   $("#go-smart").onclick = () => {
     const deck = smartDeck(masteryStore, pool, Date.now());
@@ -1129,7 +1159,7 @@
     const lenInput = $("#len-custom");
     lenInput.hidden = !lenCustomOpen;
     if (lenCustomOpen && document.activeElement !== lenInput) lenInput.value = len;
-    $("#go-battle").textContent = `\u{1F9E7} Battle \xB7 ${len}`;
+    setIconLabel($("#go-battle"), "play", `Battle \xB7 ${len}`);
     store.set("scope", scope);
     const startable = pool.length >= 8;
     $("#go-battle").disabled = $("#go-endless").disabled = $("#go-learn").disabled = !startable;
@@ -1165,7 +1195,7 @@
   $("#len-custom").addEventListener("input", () => {
     scope.sessionLen = normalizeLen($("#len-custom").value);
     store.set("scope", scope);
-    $("#go-battle").textContent = `\u{1F9E7} Battle \xB7 ${scope.sessionLen}`;
+    setIconLabel($("#go-battle"), "play", `Battle \xB7 ${scope.sessionLen}`);
   });
   $("#len-custom").addEventListener("change", () => renderScope());
   document.querySelectorAll("#preset-chips .chip").forEach((c) => c.onclick = () => {
@@ -1335,26 +1365,33 @@
   $("#hud-sfx").onclick = () => {
     sfx.enabled = !sfx.enabled;
     store.set("sfx", sfx.enabled);
-    $("#hud-sfx").textContent = sfx.enabled ? "\u{1F514}" : "\u{1F515}";
+    setIconOnly($("#hud-sfx"), sfx.enabled ? "bell" : "bell-off");
   };
   $("#hud-audio").onclick = () => {
     settings.autoSpeak = !settings.autoSpeak;
     store.set("settings", settings);
-    $("#hud-audio").textContent = settings.autoSpeak ? "\u{1F50A}" : "\u{1F507}";
+    setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
   };
   $("#home-sound").addEventListener("click", () => {
     sfx.enabled = !sfx.enabled;
     store.set("sfx", sfx.enabled);
     $("#home-sound").classList.toggle("muted", !sfx.enabled);
+    updateHud();
   });
   $("#home-sound").classList.toggle("muted", !sfx.enabled);
   function updateHud() {
-    $("#hud-lives").textContent = "\u2764\uFE0F".repeat(B.lives) + "\u{1F5A4}".repeat(Math.max(0, 3 - B.lives));
+    const lives = $("#hud-lives");
+    lives.replaceChildren();
+    for (let i = 0; i < 3; i++) {
+      const h = iconSvg("heart");
+      h.classList.add("life-icon", i < B.lives ? "full" : "empty");
+      lives.appendChild(h);
+    }
     $("#hud-score").textContent = B.score;
-    $("#hud-combo").textContent = B.combo >= 2 ? "\xD7" + B.combo + " \u{1F525}" : "";
-    $("#hud-left").textContent = B.mode === "round" ? B.wordsTotal - B.resolved + " left" : "\u221E";
-    $("#hud-sfx").textContent = sfx.enabled ? "\u{1F514}" : "\u{1F515}";
-    $("#hud-audio").textContent = settings.autoSpeak ? "\u{1F50A}" : "\u{1F507}";
+    $("#hud-combo").textContent = B.combo >= 2 ? "x" + B.combo : "";
+    $("#hud-left").textContent = B.mode === "round" ? B.wordsTotal - B.resolved + " left" : "endless";
+    setIconOnly($("#hud-sfx"), sfx.enabled ? "bell" : "bell-off");
+    setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
   }
   function pushMiss(w) {
     if (!B.missSet.has(w.h)) {
@@ -1397,7 +1434,7 @@
     const m = meaning(word, scope.lang);
     const prompt = document.createElement("div");
     prompt.style.cssText = "grid-column:1/-1; text-align:center; font-weight:700; color:var(--gold); padding:2px 4px 8px;";
-    prompt.textContent = `\u{1F451} Boss \xB7 pick the hanzi for: ${m.main}`;
+    prompt.textContent = `Boss \xB7 pick the hanzi for: ${m.main}`;
     box.appendChild(prompt);
     for (const o of opts) {
       const b = document.createElement("button");
@@ -1637,15 +1674,13 @@
       const bob = Math.sin(t / 400) * (hopping ? 9 : 3);
       ctx2.drawImage(manekiImg, B.L.mascotX - mp / 2, gy - mp + 4 * B.S + bob, mp, mp);
     } else {
-      ctx2.font = `${Math.round(36 * B.S)}px serif`;
-      ctx2.fillText("\u{1F431}", B.L.mascotX, gy + 6 * B.S);
+      drawCat(ctx2, B.L.mascotX, gy + 6 * B.S, t, "happy", null, 0.72 * B.S, [], false);
     }
     const coinImgIdle = sprite("coin");
     if (coinImgIdle) {
       ctx2.drawImage(coinImgIdle, 4 * B.S, gy - 22 * B.S, B.L.coinPx, B.L.coinPx);
     } else {
-      ctx2.font = `${Math.round(22 * B.S)}px serif`;
-      ctx2.fillText("\u{1FA99}", 16 * B.S, gy + 8 * B.S);
+      drawCoinMark(ctx2, 16 * B.S, gy - 10 * B.S, 9 * B.S);
     }
     const z = B.zombie;
     if (z) {
@@ -1678,8 +1713,7 @@
       if (coinImg) {
         ctx2.drawImage(coinImg, B.proj.x - pc / 2, B.proj.y - pc / 2, pc, pc);
       } else {
-        ctx2.font = `${Math.round(20 * B.S)}px serif`;
-        ctx2.fillText("\u{1FA99}", B.proj.x, B.proj.y);
+        drawCoinMark(ctx2, B.proj.x, B.proj.y, pc * 0.45);
       }
     }
     const coinImgP = sprite("coin");
@@ -1748,6 +1782,26 @@
     c.arcTo(x, y, x + w, y, r);
     c.closePath();
   }
+  function drawCoinMark(c, x, y, r) {
+    c.save();
+    const g = c.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.2, x, y, r);
+    g.addColorStop(0, "#fff1a6");
+    g.addColorStop(0.58, "#f5c518");
+    g.addColorStop(1, "#a86d00");
+    c.fillStyle = g;
+    c.beginPath();
+    c.arc(x, y, r, 0, Math.PI * 2);
+    c.fill();
+    c.strokeStyle = "#5a3c00";
+    c.lineWidth = Math.max(1, r * 0.16);
+    c.stroke();
+    c.strokeStyle = "rgba(90,60,0,.65)";
+    c.lineWidth = Math.max(1, r * 0.12);
+    c.beginPath();
+    c.arc(x, y, r * 0.48, 0, Math.PI * 2);
+    c.stroke();
+    c.restore();
+  }
   function drawPagodaSilhouette(c, x, baseY, s) {
     c.save();
     c.translate(x, baseY);
@@ -1779,10 +1833,10 @@
     if (bonus) wallet += bonus;
     store.set("wallet", wallet);
     updateWalletChip();
-    $("#r-wallet").textContent = `+${B.score} \u{1FA99} banked \xB7 total ${wallet.toLocaleString()}`;
+    $("#r-wallet").textContent = `+${B.score} coins banked \xB7 total ${wallet.toLocaleString()}`;
     const perfectEl = $("#r-perfect");
     if (isPerfect) {
-      perfectEl.textContent = `\u{1F31F} Perfect! +${bonus} \u{1FA99} bonus`;
+      perfectEl.textContent = `Perfect round! +${bonus} coin bonus`;
       perfectEl.style.display = "block";
     } else perfectEl.style.display = "none";
     const lu = B.levelUps || [];
@@ -1790,7 +1844,7 @@
     if (lu.length) {
       const from = lu[0].from, to = lu[lu.length - 1].to;
       const hit = MILESTONES.filter((m) => m.lv > from && m.lv <= to);
-      luEl.textContent = `\u{1F431} Level up! Lv ${to}` + (hit.length ? ` \u2014 unlocked: ${hit.map((m) => m.name).join(", ")}` : "");
+      luEl.textContent = `Level up! Lv ${to}` + (hit.length ? ` \u2014 unlocked: ${hit.map((m) => m.name).join(", ")}` : "");
       luEl.style.display = "block";
     } else {
       luEl.style.display = "none";
@@ -1799,7 +1853,7 @@
     rq.innerHTML = "";
     for (const q of questToasts) {
       const line = document.createElement("div");
-      line.textContent = `\u{1F3AF} Quest complete: ${q.desc} +${q.reward} \u{1FA99}`;
+      line.textContent = `Quest complete: ${q.desc} +${q.reward} coins`;
       rq.appendChild(line);
     }
     rq.style.display = questToasts.length ? "block" : "none";
@@ -1825,7 +1879,8 @@
       <span class="det"><span class="py">${w.p}</span> \u2014 ${w.e}${w.t ? " \xB7 " + w.t : ""}</span>`;
       const sp = document.createElement("button");
       sp.className = "sp";
-      sp.textContent = "\u{1F50A}";
+      sp.setAttribute("aria-label", "Play audio");
+      sp.replaceChildren(iconSvg("sound"));
       sp.onclick = () => speak(w.h);
       row.appendChild(sp);
       list.appendChild(row);
@@ -1857,7 +1912,7 @@
   }
   function renderShop() {
     sfx.pack = shopState.soundpack || "default";
-    $("#shop-wallet").innerHTML = `Wallet: <b>${wallet.toLocaleString()}</b> \u{1FA99}`;
+    $("#shop-wallet").innerHTML = `Wallet: <b>${wallet.toLocaleString()}</b> coins`;
     const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), decoBox = $("#shop-street");
     skinBox.innerHTML = "";
     bdBox.innerHTML = "";
@@ -1871,7 +1926,7 @@
       const row = document.createElement("div");
       row.className = "scorerow shoprow";
       const left = document.createElement("span");
-      left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${item.price.toLocaleString()} \u{1FA99}</span>`;
+      left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${item.price.toLocaleString()} coins</span>`;
       left.className = "shop-left";
       const preview = document.createElement("canvas");
       preview.className = "shop-preview";
@@ -1884,7 +1939,7 @@
       if (item.type === "deco") {
         btn.className = "chip" + (owned ? " on" : "");
         if (owned) {
-          btn.textContent = "On street \u2713";
+          btn.textContent = "On street";
           btn.disabled = true;
         } else {
           btn.textContent = "Buy";
@@ -2046,7 +2101,7 @@
     } else {
       sc.textAlign = "left";
       sc.font = `${Math.round(h * 0.42)}px serif`;
-      sc.fillText("\u{1F431}", 2, gy - 2);
+      drawCat(sc, 22, gy + 8, 0, "happy", null, 0.58, [], false);
     }
     const cap = $("#street-caption");
     if (!cap) return;
@@ -2314,7 +2369,7 @@
     row.style.alignItems = "stretch";
     row.style.gap = "6px";
     row.innerHTML = `<div style="display:flex; justify-content:space-between">
-      <span>\u{1F431} Lucky Cat \xB7 Lv ${level}</span>
+      <span>Lucky Cat \xB7 Lv ${level}</span>
       <span>${prog.into}/${prog.need} xp</span>
     </div>
     <div class="mbar"><i style="width:${pct}%"></i></div>
@@ -2357,7 +2412,8 @@
       <span class="det"><span class="py">${w.p}</span> \u2014 ${w.e}${w.t ? " \xB7 " + w.t : ""}</span>`;
       const sp = document.createElement("button");
       sp.className = "sp";
-      sp.textContent = "\u{1F50A}";
+      sp.setAttribute("aria-label", "Play audio");
+      sp.replaceChildren(iconSvg("sound"));
       sp.onclick = () => speak(w.h);
       row.appendChild(sp);
       list.appendChild(row);
