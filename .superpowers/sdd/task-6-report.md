@@ -32,3 +32,39 @@ DONE
 
 ## Commit
 - Pending at report-write time; commit created after verification.
+
+---
+
+## Review Fix Addendum
+
+### Status
+- Fixed the post-review CSS hook regressions in `index.html`.
+- Bumped `SHELL` in `sw.js` from `nbhsk-shell-v15` to `nbhsk-shell-v16` so installed clients pick up the corrected shell CSS.
+
+### What Changed
+- Removed the root `--ui-*-image:none` declarations. That lets the existing `var(--prop, gradient)` and `var(--prop, none)` fallbacks behave correctly when optional art hooks are not supplied.
+- Replaced the `background:` shorthands that were clearing panel hook layers on:
+  - `.readout`
+  - `#opts button`
+  - `#opts button.good`
+  - `#opts button.bad`
+  - `.misslist`
+- Kept the current no-art visual fallback by preserving the same base colors through `background-color`.
+
+### Commands And Output
+- `rg -n "font-size:|width:|min-width:|height:" index.html`
+  - Completed. No new production-art fixed widths wider than 360px were introduced by this fix.
+- `npm run build`
+  - PASS
+- `npm test`
+  - PASS (`18` files, `173` tests)
+
+### Files Changed
+- `index.html`
+- `sw.js`
+- `.superpowers/sdd/task-6-report.md`
+
+### Self-Review
+- The fix stays inside the assigned write scope.
+- No JS or gameplay logic changed.
+- The panel hooks now survive later selector styling, and the optional image vars no longer suppress the no-art gradient/solid fallbacks.
