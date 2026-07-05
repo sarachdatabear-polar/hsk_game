@@ -9,3 +9,4 @@ www/
 dist-apk/
 __pycache__/
 *.pyc
+.worktrees/
