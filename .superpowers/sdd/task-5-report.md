@@ -18,3 +18,31 @@ Commit:
 
 Concerns:
 - None.
+
+---
+
+Fix report (post-review):
+
+What I changed
+- Bumped the service worker shell cache key in `sw.js` from `nbhsk-shell-v12` to `nbhsk-shell-v13` so the updated app shell assets invalidate correctly.
+- Added `test/asset-manifest.test.js` to verify every ID listed in `assets/asset-manifest.json` `required_icons` exists as a real `id="..."` symbol in `assets/ui-icons.svg`.
+- Used the new test to cover the reviewer verification gap for the full icon-ID set.
+
+Commands run and outputs
+- `npm test -- test/asset-manifest.test.js`
+  - Before the fix: failed with `No test files found, exiting with code 1`.
+  - After the fix: passed, `1 file, 1 test`.
+- `npm test`
+  - Passed for the full suite, including `test/asset-manifest.test.js`.
+- `npm run build`
+  - Skipped. This fix only changes `sw.js`, a test file, and the task report; no `src/` files changed, so `dist/app.js` was not expected to change.
+
+Files changed
+- `sw.js`
+- `test/asset-manifest.test.js`
+- `.superpowers/sdd/task-5-report.md`
+
+Self-review
+- Edit scope stayed within the assigned files only.
+- The new test is intentionally narrow and limited to the `required_icons` contract, without adding the deferred Task 3+4 coverage.
+- The shell cache bump matches the user-facing shell/art changes the reviewer called out.
