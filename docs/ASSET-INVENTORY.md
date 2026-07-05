@@ -59,7 +59,7 @@ Only change a manifest status to `approved` after checking:
 - No dynamic text is baked into art.
 - Asset is readable at 360 x 640, 390 x 844, and 412 x 915.
 
-## Task 9 Approved-Art Gate
+## Task 9 Blocker: Approved Art Batch Absent
 
 Validation date: 2026-07-05.
 
@@ -68,25 +68,31 @@ runtime files such as `cat-walk.png`, `cat-happy.png`, `bg-home.png`,
 `bg-battle.png`, `bg-market.png`, `maneki.png`, and `ui-icons.svg` remain
 candidate or generated runtime assets, not approved final production art.
 
-The following required runtime files from `assets/asset-manifest.json` are still
-missing from `assets/`:
+The following P0 files from `assets/asset-manifest.json` are still missing from
+`assets/`, so the approved-art integration task is blocked:
 
 - `cat-portrait.png`
-- `bg-results.png`
 - `ui-panel.png`
 - `ui-word-plaque.png`
 - `ui-button-primary.png`
 - `ui-button-secondary.png`
 - `ui-button-neutral.png`
-- `ui-badge.png`
-- `ui-progress-track.png`
-- `ui-progress-fill.png`
 - `fx-correct.png`
 - `fx-wrong.png`
 - `fx-critical.png`
+
+The following P1 files are also absent and remain later-slice art gaps:
+
+- `bg-results.png`
+- `ui-badge.png`
+- `ui-progress-track.png`
+- `ui-progress-fill.png`
 - `fx-level-up.png`
 - `fx-new-best.png`
 
 Because the approval files are absent, `assets/asset-manifest.json` intentionally
 keeps all production-art statuses at `planned`. This preserves the PRD boundary:
 do not mark generated placeholders as `approved` or `integrated`.
+
+Task 9 should resume only after approved runtime files are supplied in `assets/`
+with the exact manifest filenames.
