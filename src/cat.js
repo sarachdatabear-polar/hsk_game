@@ -25,6 +25,7 @@ export function drawCat(ctx, x, groundY, tMs, state, palette, scale = 1, accesso
   const bob = Math.sin(ph) * 2.5;
   const legSwing = Math.sin(ph) * 6;
   const happy = state === "happy";
+  const wrong = state === "wrong";
 
   if (boss) {
     // gold aura behind the boss cat — drawn in unscaled world space so it
@@ -42,13 +43,17 @@ export function drawCat(ctx, x, groundY, tMs, state, palette, scale = 1, accesso
     ctx.translate(-x, -groundY);
   }
 
-  /* --- try sprite sheet first; equipped skins recolor it with ctx.filter
-     (pal.filter), so the real art is kept for every skin. The vector path
-     below only covers the pre-load frames / missing PNGs. --- */
+  /* --- try sprite sheets first. Purchased skins and bosses have their own
+     PNG sheets; filters are only a fallback while those sheets load/miss. --- */
   let drawn = false;
-  const tint = pal.filter || "none";
-  if (state === "walk") {
-    const img = sprite("cat-walk");
+  const baseSprite = boss ? "cat-boss" : pal.sprite || "cat";
+  if (state === "walk" || wrong) {
+    let img = sprite(`${baseSprite}-walk`);
+    let tint = "none";
+    if (!img) {
+      img = sprite("cat-walk");
+      tint = pal.filter || "none";
+    }
     if (img) {
       const frame = Math.floor(tMs / 110) % 6;
       ctx.filter = tint;
@@ -58,7 +63,12 @@ export function drawCat(ctx, x, groundY, tMs, state, palette, scale = 1, accesso
     }
   }
   if (!drawn && happy) {
-    const img = sprite("cat-happy");
+    let img = sprite(`${baseSprite}-happy`);
+    let tint = "none";
+    if (!img) {
+      img = sprite("cat-happy");
+      tint = pal.filter || "none";
+    }
     if (img) {
       const frame = Math.floor(tMs / 80) % 4;
       ctx.filter = tint;
@@ -80,6 +90,22 @@ export function drawCat(ctx, x, groundY, tMs, state, palette, scale = 1, accesso
     const sparkOffsets = [[-18, -60], [18, -60], [0, -72], [-22, -42], [22, -42]];
     for (const [sx, sy] of sparkOffsets) {
       ctx.beginPath(); ctx.arc(sx, sy + bob, 2.5, 0, 7); ctx.fill();
+    }
+  } else if (wrong) {
+    ctx.rotate(0.2);
+    ctx.translate(0, 3);
+    ctx.globalAlpha = 0.96;
+    ctx.strokeStyle = "rgba(255,244,224,.82)";
+    ctx.lineWidth = 1.4;
+    for (const [sx, sy, a] of [[-20, -62, -0.5], [18, -66, 0.35], [2, -75, 0.05]]) {
+      ctx.save();
+      ctx.translate(sx, sy + bob);
+      ctx.rotate(a);
+      ctx.beginPath();
+      ctx.moveTo(-3, 0); ctx.lineTo(3, 0);
+      ctx.moveTo(0, -3); ctx.lineTo(0, 3);
+      ctx.stroke();
+      ctx.restore();
     }
   }
 
@@ -112,8 +138,14 @@ export function drawCat(ctx, x, groundY, tMs, state, palette, scale = 1, accesso
 
   // eye + nose
   ctx.fillStyle = "#1c1008";
-  ctx.beginPath(); ctx.arc(-4, -50 + bob, 1.8, 0, 7); ctx.fill();
-  ctx.beginPath(); ctx.arc(4, -50 + bob, 1.8, 0, 7); ctx.fill();
+  if (wrong) {
+    ctx.strokeStyle = "#1c1008"; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(-6, -52 + bob); ctx.lineTo(-2, -48 + bob); ctx.moveTo(-2, -52 + bob); ctx.lineTo(-6, -48 + bob); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(2, -52 + bob); ctx.lineTo(6, -48 + bob); ctx.moveTo(6, -52 + bob); ctx.lineTo(2, -48 + bob); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.arc(-4, -50 + bob, 1.8, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(4, -50 + bob, 1.8, 0, 7); ctx.fill();
+  }
   ctx.fillStyle = "#e05a78";
   ctx.beginPath(); ctx.arc(0, -47 + bob, 1.2, 0, 7); ctx.fill();
 
@@ -125,6 +157,23 @@ export function drawCat(ctx, x, groundY, tMs, state, palette, scale = 1, accesso
   ctx.beginPath(); ctx.moveTo(4, -47 + bob);  ctx.lineTo(14, -48 + bob);  ctx.stroke();
 
   ctx.restore();
+  }
+
+  if (wrong && drawn) {
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,244,224,.82)";
+    ctx.lineWidth = Math.max(1, 1.4 * scale);
+    for (const [sx, sy, a] of [[-18, -58, -0.5], [18, -62, 0.35], [1, -72, 0.05]]) {
+      ctx.save();
+      ctx.translate(x + sx, groundY + sy + bob);
+      ctx.rotate(a);
+      ctx.beginPath();
+      ctx.moveTo(-3, 0); ctx.lineTo(3, 0);
+      ctx.moveTo(0, -3); ctx.lineTo(0, 3);
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.restore();
   }
 
   if (accessories && accessories.length) {

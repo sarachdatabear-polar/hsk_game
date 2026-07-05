@@ -23,13 +23,13 @@ export const CATALOG = [
 // `filter` recolors the real cat sprite (ctx.filter); the hex palette is only
 // the vector-fallback look used before the PNG finishes loading.
 export const SKIN_PALETTES = {
-  midnight: { body: "#2a2a30", head: "#35353c", ear: "#35353c", inner: "#6a6a78", leg: "#1c1c22",
+  midnight: { sprite: "cat-midnight", body: "#2a2a30", head: "#35353c", ear: "#35353c", inner: "#6a6a78", leg: "#1c1c22",
               filter: "grayscale(1) brightness(.5)" },
-  sakura:   { body: "#f6c6d8", head: "#fbdce8", ear: "#fbdce8", inner: "#e8608a", leg: "#e0a0b8",
+  sakura:   { sprite: "cat-sakura", body: "#f6c6d8", head: "#fbdce8", ear: "#fbdce8", inner: "#e8608a", leg: "#e0a0b8",
               filter: "hue-rotate(300deg) saturate(.75) brightness(1.15)" },
-  jade:     { body: "#2f9e5a", head: "#3fbf70", ear: "#3fbf70", inner: "#eec94a", leg: "#1f7040",
+  jade:     { sprite: "cat-jade", body: "#2f9e5a", head: "#3fbf70", ear: "#3fbf70", inner: "#eec94a", leg: "#1f7040",
               filter: "hue-rotate(85deg) saturate(.8)" },
-  gold:     { body: "#e3a80e", head: "#ffd75e", ear: "#ffd75e", inner: "#fff4e0", leg: "#9c6b00",
+  gold:     { sprite: "cat-gold", body: "#e3a80e", head: "#ffd75e", ear: "#ffd75e", inner: "#fff4e0", leg: "#9c6b00",
               filter: "saturate(1.6) brightness(1.25) contrast(1.05)" },
 };
 

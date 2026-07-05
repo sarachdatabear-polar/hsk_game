@@ -1,6 +1,6 @@
 # Art Brief - NorthBear HSK Zombie v2
 
-*Draft spec of artwork to create or commission. **Nothing here blocks the v2 build** - every item ships first as programmatic canvas art (palette swaps, gradients); real art drops in later by replacing sprites, same as the existing `maneki`/`coin` sprite-with-fallback pattern in `sprites.js`.*
+*Artwork spec and implementation notes. **Nothing here blocks the v2 build** - the shop now has real generated PNG unlock assets with canvas/vector fallbacks, and higher-fidelity painted assets can replace the same filenames later.*
 
 ## Style anchors
 
@@ -19,7 +19,9 @@ Walking cat in the same pose set the current `cat.js` draws (walk bob + happy). 
 | Jade | pale-green body, gold bell collar | mid |
 | Gold | all-gold, shimmering (slightly emissive) | premium |
 
-Sizes: 96x96 px source, drawn at ~48 px. Until art exists, `cat.js` renders these as palette recolors.
+Implemented as 6-frame walk and 4-frame happy PNG sheets in `game/assets/`:
+`cat-midnight-*`, `cat-sakura-*`, `cat-jade-*`, and `cat-gold-*`. `cat.js`
+uses these sheets first and falls back to filtered base art if a sheet is still loading.
 
 ## 2. Battle backdrops - priority HIGH
 
@@ -31,11 +33,14 @@ Full-canvas background scenes, portrait-friendly, must not fight with the word b
 | Temple Dawn | pagoda silhouette, warm orange gradient horizon |
 | Bamboo | dark bamboo stalks, mist, teal-green tint |
 
-Size: 720x1280 safe-area design; will be drawn scaled. Until art exists, these are canvas gradient + simple-shape scenes.
+Implemented as `bg-market.png`, `bg-temple.png`, and `bg-bamboo.png` in
+`game/assets/`. The canvas-drawn versions remain as first-load/missing-asset fallbacks.
 
 ## 3. Boss cat - priority MEDIUM
 
-One "boss" cat: same species as the walker but ~1.5x bulkier, gold aura ring, small crown or coin necklace. Needs walk + happy variants. Placeholder: the standard cat drawn at 1.5x scale with a gold glow circle.
+One "boss" cat: same species as the walker but ~1.5x bulkier, gold aura ring,
+small crown or coin necklace. Implemented as `cat-boss-walk.png` and
+`cat-boss-happy.png`, with the gold aura still drawn in canvas.
 
 ## 3b. Cat growth accessories (v3) - priority MEDIUM
 
@@ -63,4 +68,7 @@ The Lv1->Lv50 growth system dresses the cat as it levels; currently vector overl
 
 ## Delivery & integration
 
-Drop PNGs into `game/assets/` named `cat-<skin>.png`, `bg-<name>.png`, `cat-boss.png`, register them in `sprites.js`'s manifest, and the existing sprite-or-fallback pattern picks them up. No code redesign needed.
+Drop replacement PNGs into `game/assets/` using the existing names
+(`cat-<skin>-walk.png`, `cat-<skin>-happy.png`, `bg-<name>.png`,
+`cat-boss-walk.png`, `cat-boss-happy.png`), then register any new names in
+`sprites.js`. No code redesign needed for same-name replacements.

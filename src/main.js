@@ -336,7 +336,7 @@ function startBattle(mode){
   // distractors fall back to the full pool for small decks, so 2 is safe.
   B.deck = (battleDeckOverride && battleDeckOverride.length >= 2) ? battleDeckOverride : pool;
   battleDeckOverride = null;
-  B.zombie = null; B.proj = null; B.parts = []; B.flash = 0;
+  B.zombie = null; B.proj = null; B.parts = []; B.flash = 0; B.screenShake = 0; B.feedback = null;
   B.floats = []; B.mascotHopUntil = 0;
   B.score = 0; B.combo = 0; B.lives = 3;
   B.wordsTotal = mode==="round"? normalizeLen(scope.sessionLen) : Infinity;
@@ -492,6 +492,7 @@ function answer(btn, o){
     speak(z.w.h);                              // the sound sticks with the correct answer
     if(boss) noteAnswer(z.w.h, true);           // both stages passed
     const gy = B.h-B.L.ground;
+    B.feedback = {type:"correct", x:z.x, y:gy-42*B.S, until:performance.now()+620};
     const floater = comboFloater(z.x, gy-130, B.combo);
     if(floater) B.floats.push(floater);
     // milestone combo (10, 20, ...): extra sparkle on top of the usual combo sting above
@@ -506,8 +507,10 @@ function answer(btn, o){
     revealCorrect(z.w);
     pushMiss(z.w);
     if(boss) noteAnswer(z.w.h, false);          // any miss fails the boss word
-    B.lives--; B.flash = 1; B.resolved++;
-    scheduleNext(900);
+    B.lives--; B.flash = 1; B.screenShake = 1; B.resolved++;
+    z.state = "wrong";
+    z.wrongUntil = performance.now() + 560;
+    B.feedback = {type:"wrong", x:z.x, y:B.h-B.L.ground-44*B.S, until:performance.now()+560};
   }
   updateHud();
 }
@@ -560,6 +563,9 @@ function loop(t){
       if(z.x <= B.L.mascotX+B.L.catHalf) bite(false);         // legacy: never assigned, kept for safety
     }else if(z.state==="happy" && t >= B.dyingUntil){
       scheduleNext(200);
+    }else if(z.state==="wrong"){
+      z.x += 24*B.S*dt;
+      if(t >= z.wrongUntil) scheduleNext(350);
     }
   }
   if(B.proj && B.zombie){
@@ -571,29 +577,52 @@ function loop(t){
   for(const f of B.floats){ f.y += f.vy*dt; f.life -= dt; }
   B.floats = B.floats.filter(f=>f.life>0);
   B.flash = Math.max(0, B.flash-2.2*dt);
+  B.screenShake = Math.max(0, (B.screenShake || 0)-4*dt);
   draw(t);
   requestAnimationFrame(loop);
 }
 // programmatic canvas backdrops — kept dark/low-contrast so the word banner stays readable
-function paintBackdrop(c, w, h, gy, style){
+function paintBackdrop(c, w, h, gy, style, t=0){
+  const pulse = t / 1000;
   if(style==="market"){
     const g = c.createLinearGradient(0,0,0,h);
     g.addColorStop(0,"#24123c"); g.addColorStop(.58,"#3d1432"); g.addColorStop(1,"#5a1d22");
     c.fillStyle = g; c.fillRect(0,0,w,h);
+    c.fillStyle = "rgba(10,6,18,.24)";
+    c.fillRect(0, 0, w, gy);
+    c.fillStyle = "rgba(18,8,18,.55)";
+    for(const [fx, bw, bh] of [[.08,.2,.24],[.34,.16,.18],[.62,.22,.22],[.86,.18,.2]]){
+      c.fillRect(w*fx-bw*w/2, gy-bh*h, bw*w, bh*h);
+      c.fillStyle = "rgba(245,197,24,.16)";
+      for(let i=0;i<3;i++) c.fillRect(w*fx-bw*w*.34+i*bw*w*.22, gy-bh*h+12, 5, 7);
+      c.fillStyle = "rgba(18,8,18,.55)";
+    }
     c.strokeStyle = "rgba(193,39,45,.65)"; c.lineWidth = Math.max(1.5, w*.005);
     c.beginPath(); c.moveTo(0,h*.22); c.quadraticCurveTo(w*.5,h*.06,w,h*.2); c.stroke();
     for(const [fx,fy,r] of [[.14,.25,5],[.33,.16,4],[.58,.23,5],[.79,.29,4],[.5,.12,3]]){
-      c.fillStyle = "rgba(245,197,24,.72)";
-      c.beginPath(); c.ellipse(w*fx,h*fy,r,r*1.25,0,0,Math.PI*2); c.fill();
+      const glow = .62 + Math.sin(pulse*2 + fx*8) * .16;
+      c.fillStyle = `rgba(245,197,24,${glow.toFixed(3)})`;
+      c.beginPath(); c.ellipse(w*fx,h*fy + Math.sin(pulse + fx*9)*2,r,r*1.25,0,0,Math.PI*2); c.fill();
       c.fillStyle = "rgba(193,39,45,.8)";
       c.fillRect(w*fx-r*.55,h*fy-r*.95,r*1.1,r*.25);
+    }
+    c.fillStyle = "rgba(245,197,24,.09)";
+    for(let i=0;i<14;i++){
+      const x = (w*((i*.137 + pulse*.018)%1));
+      const y = h*(.18 + ((i*.193 + pulse*.03)%1)*.62);
+      c.beginPath(); c.arc(x,y,1.2+(i%3)*.55,0,Math.PI*2); c.fill();
     }
   }else if(style==="temple"){
     const g = c.createLinearGradient(0,0,0,h);
     g.addColorStop(0,"#271415"); g.addColorStop(.52,"#5b2412"); g.addColorStop(1,"#8b3d18");
     c.fillStyle = g; c.fillRect(0,0,w,h);
-    c.fillStyle = "rgba(255,214,95,.25)";
-    c.beginPath(); c.arc(w*.22,h*.38,w*.18,0,Math.PI*2); c.fill();
+    const sunY = h*(.4 + Math.sin(pulse*.25)*.015);
+    c.fillStyle = "rgba(255,214,95,.18)";
+    c.beginPath(); c.arc(w*.22,sunY,w*.22,0,Math.PI*2); c.fill();
+    c.fillStyle = "rgba(255,214,95,.32)";
+    c.beginPath(); c.arc(w*.22,sunY,w*.16,0,Math.PI*2); c.fill();
+    c.fillStyle = "rgba(255,244,224,.06)";
+    for(let y=h*.28;y<gy;y+=h*.09) c.fillRect(0, y + Math.sin(pulse+y*.01)*2, w, 2);
     c.fillStyle = "rgba(20,10,10,.62)";
     drawPagodaSilhouette(c, w*.75, gy+8, Math.min(w,h)*.55);
   }else if(style==="bamboo"){
@@ -605,25 +634,45 @@ function paintBackdrop(c, w, h, gy, style){
     const stalks = [.16,.31,.46,.63,.78,.9];
     for(const fx of stalks){
       const sw = Math.max(4,w*.012);
+      const sway = Math.sin(pulse*.8 + fx*6) * w*.006;
       c.fillStyle = "rgba(20,80,52,.64)";
-      c.fillRect(w*fx-sw/2, 0, sw, gy+10);
+      c.fillRect(w*fx-sw/2+sway, 0, sw, gy+10);
       c.strokeStyle = "rgba(245,197,24,.18)"; c.lineWidth = 1;
-      for(let y=h*.16; y<gy; y+=h*.18){ c.beginPath(); c.moveTo(w*fx-sw/2,y); c.lineTo(w*fx+sw/2,y); c.stroke(); }
+      for(let y=h*.16; y<gy; y+=h*.18){ c.beginPath(); c.moveTo(w*fx-sw/2+sway,y); c.lineTo(w*fx+sw/2+sway,y); c.stroke(); }
     }
+    c.fillStyle = "rgba(210,240,220,.075)";
+    for(let i=0;i<5;i++){
+      const y = h*(.28+i*.1);
+      c.fillRect(((pulse*18+i*w*.27)%(w*1.35))-w*.35, y, w*.55, 8);
+    }
+  }else{
+    const g = c.createLinearGradient(0,0,0,h);
+    g.addColorStop(0,"#2a0f2a"); g.addColorStop(.6,"#4a1420"); g.addColorStop(1,"#6b2a1a");
+    c.fillStyle = g; c.fillRect(0,0,w,h);
   }
 }
 function drawBackdrop(gy){
-  paintBackdrop(ctx, B.w, B.h, gy, shopState.backdrop);
+  if(!shopState.backdrop) return;
+  const img = sprite(`bg-${shopState.backdrop}`);
+  if(img) drawCoverImage(ctx, img, 0, 0, B.w, B.h);
+  else paintBackdrop(ctx, B.w, B.h, gy, shopState.backdrop, performance.now());
 }
 function draw(t){
   ctx.clearRect(0,0,B.w,B.h);
   const gy = B.h - B.L.ground;
+  const shake = B.screenShake > 0
+    ? Math.sin(t * 0.08) * 5 * B.S * B.screenShake
+    : 0;
+  if(shake){
+    ctx.save();
+    ctx.translate(shake, 0);
+  }
   drawBackdrop(gy);
   // ground line — subtle gold
   ctx.strokeStyle = "rgba(245,197,24,.35)"; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(0,gy+12); ctx.lineTo(B.w,gy+12); ctx.stroke();
   ctx.textAlign = "center";
-  // mascot (left side) — maneki sprite or cat emoji fallback
+  // mascot (left side) - maneki sprite or vector fallback
   const manekiImg = sprite("maneki");
   const hopping = B.mascotHopUntil && t < B.mascotHopUntil;   // little victory hop after a kill
   const mp = B.L.mascotPx;
@@ -633,7 +682,7 @@ function draw(t){
   }else{
     drawCat(ctx, B.L.mascotX, gy + 6*B.S, t, "happy", null, .72*B.S, [], false);
   }
-  // idle coin icon (left of mascot) — coin sprite or emoji fallback
+  // idle coin icon (left of mascot) - coin sprite or vector fallback
   const coinImgIdle = sprite("coin");
   if(coinImgIdle){
     ctx.drawImage(coinImgIdle, 4*B.S, gy-22*B.S, B.L.coinPx, B.L.coinPx);
@@ -647,27 +696,14 @@ function draw(t){
     const hideWord = z.boss && z.stage === "hanzi" && z.state === "walk";
     const bh = hideWord ? "？？" : z.w.h;
     const bp = hideWord ? "" : z.w.p;
-    const wy = Math.round(B.h * 0.38);          // sky-area center anchor
-    ctx.font = `600 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
-    const lw = Math.max(ctx.measureText(bh).width, 64*B.S) + 28*B.S;
-    const lh = (bp ? 78 : 58) * B.S;            // taller plate when pinyin shown
-    ctx.fillStyle = "rgba(58,16,16,.82)";
-    ctx.strokeStyle = "#f5c518"; ctx.lineWidth = 2.5;
-    roundRect(B.w/2 - lw/2, wy - lh/2, lw, lh, 12*B.S); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = "#fff4e0";
-    ctx.fillText(bh, B.w/2, wy + (bp ? -4*B.S : B.L.hanziPx*0.35));
-    if(bp){
-      ctx.font = `${Math.round(B.L.pinyinPx)}px 'Segoe UI',sans-serif`;
-      ctx.fillStyle = "#f5c518";
-      ctx.fillText(bp, B.w/2, wy + 24*B.S);
-    }
+    drawWordPlate(hideWord ? "??" : bh, bp, z.w.lv, z.boss, t);
     // cat — bosses draw bigger with a gold aura (boss param, not scale — see
     // cat.js); growth accessories ride along via the same call, kitten trails
     // as a second mini cat
     drawCat(ctx, z.x, gy + 6*B.S, t, z.state, SKIN_PALETTES[shopState.skin], z.boss ? 1.5*B.S : B.S, B.acc, !!z.boss);
     if(B.hasKitten) drawCat(ctx, z.x + B.L.catHalf, gy + 6*B.S, t + 250, z.state, SKIN_PALETTES[shopState.skin], 0.55*B.S, [], false);
   }
-  // projectile — spinning coin sprite or emoji fallback
+  // projectile - spinning coin sprite or vector fallback
   if(B.proj){
     const coinImg = sprite("coin");
     const pc = B.L.coinPx;
@@ -706,7 +742,82 @@ function draw(t){
     ctx.globalAlpha = 1;
   }
   // hit flash — softened dim-violet (cat wandered off, not combat damage)
+  drawFeedbackLayer(t);
   if(B.flash>0){ ctx.fillStyle = `rgba(90,44,80,${(0.30*B.flash).toFixed(3)})`; ctx.fillRect(0,0,B.w,B.h); }
+  if(shake) ctx.restore();
+}
+function drawWordPlate(hanzi, pinyin, level, boss, t){
+  const wy = Math.round(B.h * 0.36);
+  ctx.save();
+  ctx.font = `700 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
+  const textW = Math.max(ctx.measureText(hanzi).width, 74*B.S);
+  const lw = Math.min(B.w - 24*B.S, textW + 48*B.S);
+  const lh = (pinyin ? 86 : 64) * B.S;
+  const x = B.w/2 - lw/2, y = wy - lh/2;
+  ctx.shadowColor = "rgba(0,0,0,.45)";
+  ctx.shadowBlur = 14*B.S;
+  ctx.shadowOffsetY = 5*B.S;
+  const lacquer = ctx.createLinearGradient(0,y,0,y+lh);
+  lacquer.addColorStop(0,"rgba(93,30,28,.94)");
+  lacquer.addColorStop(.52,"rgba(48,14,18,.94)");
+  lacquer.addColorStop(1,"rgba(28,8,12,.96)");
+  ctx.fillStyle = lacquer;
+  roundRect(x,y,lw,lh,14*B.S); ctx.fill();
+  ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+  ctx.strokeStyle = boss ? "#fff1a6" : "#f5c518";
+  ctx.lineWidth = 2.4*B.S;
+  roundRect(x+1*B.S,y+1*B.S,lw-2*B.S,lh-2*B.S,13*B.S); ctx.stroke();
+  ctx.strokeStyle = "rgba(255,244,224,.2)";
+  ctx.lineWidth = 1;
+  roundRect(x+7*B.S,y+7*B.S,lw-14*B.S,lh-14*B.S,9*B.S); ctx.stroke();
+  const glintX = x + ((t/22) % (lw + 80*B.S)) - 40*B.S;
+  const glint = ctx.createLinearGradient(glintX-20*B.S,y,glintX+20*B.S,y+lh);
+  glint.addColorStop(0,"rgba(255,255,255,0)");
+  glint.addColorStop(.5,"rgba(255,244,224,.12)");
+  glint.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.fillStyle = glint;
+  roundRect(x,y,lw,lh,14*B.S); ctx.fill();
+  ctx.fillStyle = boss ? "#fff1a6" : "#fff4e0";
+  ctx.textAlign = "center";
+  ctx.fillText(hanzi, B.w/2, wy + (pinyin ? -5*B.S : B.L.hanziPx*.34));
+  if(pinyin){
+    ctx.font = `600 ${Math.round(B.L.pinyinPx)}px 'Segoe UI',sans-serif`;
+    ctx.fillStyle = "#f5c518";
+    ctx.fillText(pinyin, B.w/2, wy + 28*B.S);
+  }
+  if(level){
+    ctx.font = `700 ${Math.round(10*B.S)}px 'Segoe UI',sans-serif`;
+    ctx.fillStyle = "rgba(245,197,24,.9)";
+    ctx.textAlign = "left";
+    ctx.fillText(`HSK ${level}`, x+12*B.S, y+17*B.S);
+  }
+  ctx.restore();
+}
+function drawFeedbackLayer(t){
+  const fb = B.feedback;
+  if(!fb) return;
+  const total = fb.type === "correct" ? 620 : 560;
+  const left = fb.until - performance.now();
+  if(left <= 0){ B.feedback = null; return; }
+  const p = 1 - left / total;
+  ctx.save();
+  ctx.globalAlpha = Math.max(0, 1-p);
+  if(fb.type === "correct"){
+    ctx.strokeStyle = "rgba(245,197,24,.86)";
+    ctx.lineWidth = Math.max(2, 4*B.S*(1-p));
+    ctx.beginPath(); ctx.arc(fb.x, fb.y, (18 + 44*p)*B.S, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle = "rgba(255,244,224,.95)";
+    for(let i=0;i<10;i++){
+      const a = i*Math.PI*2/10 + t*.004;
+      const r = (14 + 42*p)*B.S;
+      ctx.beginPath(); ctx.arc(fb.x+Math.cos(a)*r, fb.y+Math.sin(a)*r, 2.2*B.S, 0, Math.PI*2); ctx.fill();
+    }
+  }else{
+    ctx.strokeStyle = "rgba(255,100,110,.65)";
+    ctx.lineWidth = 3*B.S;
+    ctx.beginPath(); ctx.arc(fb.x, fb.y, (18 + 26*p)*B.S, Math.PI*.15, Math.PI*1.85); ctx.stroke();
+  }
+  ctx.restore();
 }
 function roundRect(x,y,w,h,r){
   ctx.beginPath();
@@ -717,6 +828,13 @@ function roundRectOn(c,x,y,w,h,r){
   c.beginPath();
   c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
   c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath();
+}
+function drawCoverImage(c, img, x, y, w, h){
+  const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+  const sw = w / scale, sh = h / scale;
+  const sx = (img.naturalWidth - sw) / 2;
+  const sy = (img.naturalHeight - sh) / 2;
+  c.drawImage(img, sx, sy, sw, sh, x, y, w, h);
 }
 function drawCoinMark(c, x, y, r){
   c.save();
@@ -835,6 +953,7 @@ function renderShop(){
     const preview = document.createElement("canvas");
     preview.className = "shop-preview";
     preview.setAttribute("aria-hidden", "true");
+    preview._shopItem = item;
     const copy = document.createElement("span");
     copy.className = "shop-copy";
     copy.innerHTML = `<b>${item.name}</b><small>${item.price.toLocaleString()} coins</small>`;
@@ -877,12 +996,27 @@ function renderShop(){
     }
     row.appendChild(left); row.appendChild(btn);
     box.appendChild(row);
-    renderShopPreview(preview, item);
+    renderShopPreview(preview, item, performance.now());
   }
+  startShopPreviewLoop();
 }
 
-function renderShopPreview(canvas, item){
-  const w = 60, h = 44;
+let shopPreviewRaf = 0;
+function startShopPreviewLoop(){
+  if(shopPreviewRaf) return;
+  const tick = t => {
+    shopPreviewRaf = 0;
+    if(currentScreen !== "shop") return;
+    document.querySelectorAll(".shop-preview").forEach(canvas => {
+      if(canvas._shopItem) renderShopPreview(canvas, canvas._shopItem, t);
+    });
+    shopPreviewRaf = requestAnimationFrame(tick);
+  };
+  shopPreviewRaf = requestAnimationFrame(tick);
+}
+
+function renderShopPreview(canvas, item, t=0){
+  const w = 96, h = 64;
   const dpr = window.devicePixelRatio || 1;
   canvas.width = Math.round(w*dpr); canvas.height = Math.round(h*dpr);
   canvas.style.width = w+"px"; canvas.style.height = h+"px";
@@ -894,9 +1028,11 @@ function renderShopPreview(canvas, item){
   c.fillStyle = bg; roundRectOn(c,0,0,w,h,10); c.fill();
   c.strokeStyle = "rgba(245,197,24,.28)"; c.lineWidth = 1; roundRectOn(c,.5,.5,w-1,h-1,10); c.stroke();
   if(item.type==="skin"){
-    drawCat(c, w*.5, h+8, 0, "walk", SKIN_PALETTES[item.id], .64, [], false);
+    drawCat(c, w*.52, h+6, t, "walk", SKIN_PALETTES[item.id], .72, [], false);
   }else if(item.type==="backdrop"){
-    paintBackdrop(c, w, h, h-7, item.id);
+    const img = sprite(`bg-${item.id}`);
+    if(img) drawCoverImage(c, img, 0, 0, w, h);
+    else paintBackdrop(c, w, h, h-7, item.id, t);
     c.strokeStyle = "rgba(245,197,24,.55)"; c.lineWidth = 1;
     c.beginPath(); c.moveTo(0,h-8); c.lineTo(w,h-8); c.stroke();
   }else if(item.type==="effect"){
@@ -950,7 +1086,7 @@ function renderStreet(){
     else drawStreetDeco(sc, p.id, x, gy, h);
   }
 
-  // mascot — maneki sprite or cat emoji fallback, always far left on the ground
+  // mascot - maneki sprite or vector fallback, always far left on the ground
   const mImg = sprite("maneki");
   const mp = Math.min(h*0.62, 48);
   if(mImg){
