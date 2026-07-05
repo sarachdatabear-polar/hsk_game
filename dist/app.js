@@ -1805,10 +1805,11 @@
     }
   }
   function drawBackdrop(gy) {
-    if (!shopState.backdrop) return;
-    const img = sprite(`bg-${shopState.backdrop}`);
+    const selected = shopState.backdrop ? `bg-${shopState.backdrop}` : "bg-battle";
+    const img = sprite(selected);
     if (img) drawCoverImage(ctx2, img, 0, 0, B.w, B.h);
-    else paintBackdrop(ctx2, B.w, B.h, gy, shopState.backdrop, performance.now());
+    else if (shopState.backdrop) paintBackdrop(ctx2, B.w, B.h, gy, shopState.backdrop, performance.now());
+    else paintBackdrop(ctx2, B.w, B.h, gy, "", performance.now());
   }
   function draw(t) {
     ctx2.clearRect(0, 0, B.w, B.h);

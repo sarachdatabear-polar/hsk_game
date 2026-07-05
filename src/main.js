@@ -624,10 +624,11 @@ function paintBackdrop(c, w, h, gy, style, t=0){
   }
 }
 function drawBackdrop(gy){
-  if(!shopState.backdrop) return;
-  const img = sprite(`bg-${shopState.backdrop}`);
+  const selected = shopState.backdrop ? `bg-${shopState.backdrop}` : "bg-battle";
+  const img = sprite(selected);
   if(img) drawCoverImage(ctx, img, 0, 0, B.w, B.h);
-  else paintBackdrop(ctx, B.w, B.h, gy, shopState.backdrop, performance.now());
+  else if(shopState.backdrop) paintBackdrop(ctx, B.w, B.h, gy, shopState.backdrop, performance.now());
+  else paintBackdrop(ctx, B.w, B.h, gy, "", performance.now());
 }
 function draw(t){
   ctx.clearRect(0,0,B.w,B.h);
