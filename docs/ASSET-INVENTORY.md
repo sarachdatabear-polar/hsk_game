@@ -1,0 +1,55 @@
+# Production Art Asset Inventory
+
+## Status Terms
+
+- `planned`: Required by the PRD but not yet supplied or accepted.
+- `concept`: Draft exists outside runtime.
+- `review`: Candidate runtime file exists and is awaiting art review.
+- `approved`: Candidate passed art review but is not wired everywhere.
+- `integrated`: Approved asset is loaded by runtime code, staged into `www/`, and covered by validation.
+- `rejected`: Candidate exists but must not ship.
+
+## Current Runtime References
+
+| Area | File | Current references | Migration action |
+|---|---|---:|---|
+| Sprite preload | `src/sprites.js` | Cat sheets, shop skins, boss sheets, backdrops, `maneki`, `coin` | Replace hardcoded list with exported registry that covers manifest-backed PNGs. |
+| Cat render | `src/cat.js` | `cat-walk`, `cat-happy`, skin sheets, boss sheets | Keep fallback vector cat; integrate approved base cat sheets first. |
+| Battle canvas | `src/main.js` | `bg-${shopState.backdrop}`, `maneki`, `coin`, canvas effects | Add default `bg-battle`, optional `bg-market`, and effect sprite fallbacks. |
+| Shop preview | `src/main.js` | Skin sheets, backdrop images, canvas preview art | Use same registry and preserve canvas fallback previews. |
+| Home CSS | `index.html` | `bg-home.png`, generated `btn-*.png`, `coin.png`, `maneki.png`, `ui-icons.svg` | Move toward tokenized CSS and shared SVG icon mechanism. |
+| PWA shell | `sw.js` | Current static art list | Keep tolerant precache and add manifest-backed shell assets after approval. |
+| Staging | `scripts/stage-www.js` | Copies full `assets/` folder | No change unless validation becomes part of staging. |
+
+## P0 Runtime Art Required
+
+| File | Required dimensions | Current status | Notes |
+|---|---:|---|---|
+| `cat-walk.png` | 1536 x 256, 6 frames | review | Must be transparent and baseline-stable. |
+| `cat-happy.png` | 1024 x 256, 4 frames | review | Must read as happy when sampled as stills. |
+| `maneki.png` | 512 x 512 minimum | review | Home/street mascot. |
+| `cat-portrait.png` | 512 x 512 | planned | Needed for home/profile/shop portrait polish. |
+| `bg-home.png` | 1080 x 1920 | review | No baked UI or text. |
+| `bg-battle.png` | 1024 x 512 | review | Quiet center for Hanzi. |
+| `bg-market.png` | 1024 x 512 | review | Night Market premium scene. |
+| `ui-panel.png` | 9-slice friendly | planned | Main panel treatment. |
+| `ui-word-plaque.png` | 9-slice friendly | planned | Battle vocabulary plaque treatment. |
+| `ui-button-primary.png` | scalable frame | planned | Red/gold button frame. |
+| `ui-button-secondary.png` | scalable frame | planned | Jade/dark button frame. |
+| `ui-button-neutral.png` | scalable frame | planned | Neutral button frame. |
+| `fx-correct.png` | effect atlas | planned | Correct feedback, non-color-only. |
+| `fx-wrong.png` | effect atlas | planned | Wrong feedback, non-color-only. |
+| `fx-critical.png` | effect atlas | planned | Critical feedback. |
+| `ui-icons.svg` | SVG symbol sprite | review | Must include every icon in `required_icons`. |
+
+## Approval Gate
+
+Only change a manifest status to `approved` after checking:
+
+- Cat proportions and lighting match the reference.
+- Transparent edges have no white halo.
+- Sprite baselines and centers do not drift.
+- Background centers stay low contrast behind vocabulary.
+- No incorrect Chinese characters appear in backgrounds.
+- No dynamic text is baked into art.
+- Asset is readable at 360 x 640, 390 x 844, and 412 x 915.
