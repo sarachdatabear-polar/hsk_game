@@ -310,16 +310,16 @@
   ];
   function loadSprites() {
     for (const name of SPRITE_NAMES) {
-      const img = new Image();
-      img.src = "assets/" + name + ".png";
-      REGISTRY[name] = img;
+      const img2 = new Image();
+      img2.src = "assets/" + name + ".png";
+      REGISTRY[name] = img2;
     }
   }
   function sprite(name) {
-    const img = REGISTRY[name];
-    if (!img) return null;
-    if (!img.complete || !img.naturalWidth) return null;
-    return img;
+    const img2 = REGISTRY[name];
+    if (!img2) return null;
+    if (!img2.complete || !img2.naturalWidth) return null;
+    return img2;
   }
 
   // src/cat.js
@@ -346,31 +346,31 @@
     let drawn = false;
     const baseSprite = boss ? "cat-boss" : pal.sprite || "cat";
     if (state === "walk" || wrong) {
-      let img = sprite(`${baseSprite}-walk`);
+      let img2 = sprite(`${baseSprite}-walk`);
       let tint = "none";
-      if (!img) {
-        img = sprite("cat-walk");
+      if (!img2) {
+        img2 = sprite("cat-walk");
         tint = pal.filter || "none";
       }
-      if (img) {
+      if (img2) {
         const frame = Math.floor(tMs / 110) % 6;
         ctx3.filter = tint;
-        ctx3.drawImage(img, frame * 256, 0, 256, 256, x - 32, groundY - 64, 64, 64);
+        ctx3.drawImage(img2, frame * 256, 0, 256, 256, x - 32, groundY - 64, 64, 64);
         ctx3.filter = "none";
         drawn = true;
       }
     }
     if (!drawn && happy) {
-      let img = sprite(`${baseSprite}-happy`);
+      let img2 = sprite(`${baseSprite}-happy`);
       let tint = "none";
-      if (!img) {
-        img = sprite("cat-happy");
+      if (!img2) {
+        img2 = sprite("cat-happy");
         tint = pal.filter || "none";
       }
-      if (img) {
+      if (img2) {
         const frame = Math.floor(tMs / 80) % 4;
         ctx3.filter = tint;
-        ctx3.drawImage(img, frame * 256, 0, 256, 256, x - 32, groundY - 64, 64, 64);
+        ctx3.drawImage(img2, frame * 256, 0, 256, 256, x - 32, groundY - 64, 64, 64);
         ctx3.filter = "none";
         drawn = true;
       }
@@ -623,6 +623,143 @@
       coinPx: 20 * S
     };
   }
+
+  // assets/asset-manifest.json
+  var asset_manifest_default = {
+    project: "Lucky Cat HSK",
+    milestone: "Education-First Visual Redesign v1",
+    theme: "Lucky Cat Learning Journey",
+    version: 2,
+    status_values: ["planned", "concept", "review", "approved", "integrated", "rejected"],
+    types: ["sprite-sheet", "character", "background", "ui-surface", "icon-sprite", "effect"],
+    assets: [
+      { id: "cat-walk", file: "cat-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat" },
+      { id: "cat-happy", file: "cat-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat" },
+      { id: "cat-study", file: "cat-study.png", type: "character", status: "planned", priority: "P0", w: 512, h: 512, anchor: "center", fallback: "canvas:drawCat" },
+      { id: "cat-guide", file: "cat-guide.png", type: "character", status: "planned", priority: "P1", w: 512, h: 512, anchor: "center", fallback: "canvas:drawCat" },
+      { id: "cat-celebrate", file: "cat-celebrate.png", type: "character", status: "planned", priority: "P1", w: 512, h: 512, anchor: "center", fallback: "canvas:drawCat" },
+      { id: "cat-thinking", file: "cat-thinking.png", type: "character", status: "planned", priority: "P1", w: 512, h: 512, anchor: "center", fallback: "canvas:drawCat" },
+      { id: "cat-portrait", file: "cat-portrait.png", type: "character", status: "planned", priority: "P0", w: 512, h: 512, anchor: "center", fallback: "canvas:drawCat" },
+      { id: "maneki", file: "maneki.png", type: "character", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:maneki-vector" },
+      { id: "bg-home", file: "bg-home.png", type: "background", status: "planned", priority: "P0", w: 1080, h: 1920, fallback: "css:#s-home" },
+      { id: "bg-quest", file: "bg-quest.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "css:#s-battle" },
+      { id: "bg-flashcards", file: "bg-flashcards.png", type: "background", status: "planned", priority: "P0", w: 1080, h: 1920, fallback: "css:#s-learn" },
+      { id: "bg-results", file: "bg-results.png", type: "background", status: "planned", priority: "P1", w: 1080, h: 1920, fallback: "css:.screen.festive" },
+      { id: "bg-progress", file: "bg-progress.png", type: "background", status: "planned", priority: "P1", w: 1080, h: 1920, fallback: "css:#s-progress" },
+      { id: "bg-collection", file: "bg-collection.png", type: "background", status: "planned", priority: "P2", w: 1080, h: 1920, fallback: "css:#s-shop" },
+      { id: "ui-card-paper", file: "ui-card-paper.png", type: "ui-surface", status: "planned", priority: "P0", w: null, h: null, slice: null, fallback: "css:.card,.word-card,.flash-card" },
+      { id: "ui-card-soft", file: "ui-card-soft.png", type: "ui-surface", status: "planned", priority: "P0", w: null, h: null, slice: null, fallback: "css:.readout" },
+      { id: "ui-button-primary", file: "ui-button-primary.png", type: "ui-surface", status: "planned", priority: "P0", w: null, h: null, slice: null, states: ["default", "pressed", "disabled"], fallback: "css:.big.primary" },
+      { id: "ui-button-secondary", file: "ui-button-secondary.png", type: "ui-surface", status: "planned", priority: "P0", w: null, h: null, slice: null, states: ["default", "pressed", "disabled"], fallback: "css:.big" },
+      { id: "ui-button-neutral", file: "ui-button-neutral.png", type: "ui-surface", status: "planned", priority: "P0", w: null, h: null, slice: null, states: ["default", "pressed", "disabled"], fallback: "css:#opts button" },
+      { id: "ui-tab", file: "ui-tab.png", type: "ui-surface", status: "planned", priority: "P1", w: null, h: null, slice: null, fallback: "css:.chip" },
+      { id: "ui-badge-mastery", file: "ui-badge-mastery.png", type: "ui-surface", status: "planned", priority: "P1", w: null, h: null, slice: null, fallback: "css:.hud-round" },
+      { id: "ui-progress-track", file: "ui-progress-track.png", type: "ui-surface", status: "planned", priority: "P0", w: null, h: null, slice: null, fallback: "css:.mbar" },
+      { id: "ui-progress-fill", file: "ui-progress-fill.png", type: "ui-surface", status: "planned", priority: "P0", w: null, h: null, slice: null, fallback: "css:.mbar i" },
+      { id: "ui-stamp-correct", file: "ui-stamp-correct.png", type: "ui-surface", status: "planned", priority: "P1", w: null, h: null, slice: null, fallback: "canvas:feedbackEffect" },
+      { id: "ui-divider", file: "ui-divider.png", type: "ui-surface", status: "planned", priority: "P2", w: null, h: null, slice: null, fallback: "css:.sect" },
+      { id: "ui-icons", file: "ui-icons.svg", type: "icon-sprite", status: "integrated", priority: "P0", w: null, h: null, fallback: "svg:inline" },
+      { id: "fx-correct", file: "fx-correct.png", type: "effect", status: "planned", priority: "P0", w: null, h: null, anchor: "center", fallback: "canvas:coinBurst" },
+      { id: "fx-perfect", file: "fx-perfect.png", type: "effect", status: "planned", priority: "P0", w: null, h: null, anchor: "center", fallback: "canvas:perfectBonus" },
+      { id: "fx-retry", file: "fx-retry.png", type: "effect", status: "planned", priority: "P0", w: null, h: null, anchor: "center", fallback: "canvas:feedbackEffect" },
+      { id: "fx-mastery", file: "fx-mastery.png", type: "effect", status: "planned", priority: "P1", w: null, h: null, anchor: "center", fallback: "canvas:fireworkRing" },
+      { id: "fx-level-up", file: "fx-level-up.png", type: "effect", status: "planned", priority: "P1", w: null, h: null, anchor: "center", fallback: "canvas:fireworkRing" },
+      { id: "fx-daily-goal", file: "fx-daily-goal.png", type: "effect", status: "planned", priority: "P1", w: null, h: null, anchor: "center", fallback: "canvas:comboFloater" }
+    ],
+    required_icons: [
+      "home",
+      "flashcards",
+      "audio",
+      "muted",
+      "progress",
+      "streak",
+      "pencil",
+      "check",
+      "back",
+      "close",
+      "pause",
+      "play"
+    ],
+    planned_icons: [
+      "learn",
+      "quest",
+      "review",
+      "collection",
+      "settings",
+      "calendar",
+      "focus-heart",
+      "star",
+      "mastery",
+      "book",
+      "headphones",
+      "retry",
+      "next",
+      "previous",
+      "secondary-coin"
+    ]
+  };
+
+  // src/assets.js
+  var LOADABLE = /* @__PURE__ */ new Set(["approved", "integrated"]);
+  var FRAME_TYPES = /* @__PURE__ */ new Set(["ui-surface", "ui-frame"]);
+  function createAssets(m, opts = {}) {
+    const makeImage = opts.makeImage || (() => typeof Image === "undefined" ? null : new Image());
+    const rootEl = () => opts.root || (typeof document === "undefined" ? null : document.documentElement);
+    const REGISTRY3 = {};
+    for (const asset of m.assets) REGISTRY3[asset.id] = asset;
+    const images = /* @__PURE__ */ new Map();
+    const frames = /* @__PURE__ */ new Map();
+    const key = (id, state) => state === "default" ? id : `${id}:${state}`;
+    const stateFile = (asset, state) => state === "default" ? asset.file : asset.file.replace(/\.png$/, `-${state}.png`);
+    function frameShorthand(asset, state) {
+      if (!Array.isArray(asset.slice) || asset.slice.length !== 4) return null;
+      const scale = asset.scale || 1;
+      const widths = asset.slice.map((n) => `${Math.round(n / scale)}px`).join(" ");
+      return `url("assets/${stateFile(asset, state)}") ${asset.slice.join(" ")} fill / ${widths} stretch`;
+    }
+    function load(id, state = "default") {
+      const asset = REGISTRY3[id];
+      if (!asset || !asset.file.endsWith(".png") || !LOADABLE.has(asset.status)) return;
+      const imageKey = key(id, state);
+      if (images.has(imageKey)) return;
+      const image = makeImage();
+      if (!image) return;
+      image.onload = () => {
+        if (!FRAME_TYPES.has(asset.type)) return;
+        const css = frameShorthand(asset, state);
+        if (!css) return;
+        frames.set(imageKey, css);
+        const el = rootEl();
+        if (el) el.style.setProperty(`--f-${imageKey.replace(":", "-")}`, css);
+      };
+      image.src = `assets/${stateFile(asset, state)}`;
+      images.set(imageKey, image);
+    }
+    function preload2() {
+      for (const asset of m.assets) {
+        if (asset.priority !== "P0") continue;
+        load(asset.id);
+        for (const state of asset.states || []) {
+          if (state !== "default") load(asset.id, state);
+        }
+      }
+    }
+    function img2(id) {
+      if (!REGISTRY3[id]) return null;
+      load(id);
+      const image = images.get(id);
+      return image && image.complete && image.naturalWidth ? image : null;
+    }
+    function frameCSS2(id, state = "default") {
+      return frames.get(key(id, state)) || "none";
+    }
+    return { REGISTRY: REGISTRY3, preload: preload2, frameCSS: frameCSS2, img: img2 };
+  }
+  var assets = createAssets(asset_manifest_default);
+  var REGISTRY2 = assets.REGISTRY;
+  var preload = assets.preload;
+  var frameCSS = assets.frameCSS;
+  var img = assets.img;
 
   // src/mastery.js
   function recordAnswer(store2, hanzi, correct, now = Date.now()) {
@@ -1198,6 +1335,7 @@
   }
   fetch("audio/index.json").then((r) => r.json()).then((ix) => initAudio(ix)).catch(() => initAudio([]));
   loadSprites();
+  preload();
   var currentScreen = "home";
   function show(name) {
     currentScreen = name;
@@ -1811,8 +1949,8 @@
   }
   function drawBackdrop(gy) {
     const selected = shopState.backdrop ? `bg-${shopState.backdrop}` : "bg-battle";
-    const img = sprite(selected);
-    if (img) drawCoverImage(ctx2, img, 0, 0, B.w, B.h);
+    const img2 = sprite(selected);
+    if (img2) drawCoverImage(ctx2, img2, 0, 0, B.w, B.h);
     else if (shopState.backdrop) paintBackdrop(ctx2, B.w, B.h, gy, shopState.backdrop, performance.now());
     else paintBackdrop(ctx2, B.w, B.h, gy, "", performance.now());
   }
@@ -2025,12 +2163,12 @@
     c.arcTo(x, y, x + w, y, r);
     c.closePath();
   }
-  function drawCoverImage(c, img, x, y, w, h) {
-    const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+  function drawCoverImage(c, img2, x, y, w, h) {
+    const scale = Math.max(w / img2.naturalWidth, h / img2.naturalHeight);
     const sw = w / scale, sh = h / scale;
-    const sx = (img.naturalWidth - sw) / 2;
-    const sy = (img.naturalHeight - sh) / 2;
-    c.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+    const sx = (img2.naturalWidth - sw) / 2;
+    const sy = (img2.naturalHeight - sh) / 2;
+    c.drawImage(img2, sx, sy, sw, sh, x, y, w, h);
   }
   function drawCoinMark(c, x, y, r) {
     c.save();
@@ -2277,8 +2415,8 @@
     if (item.type === "skin") {
       drawCat(c, w * 0.52, h + 6, t, "walk", SKIN_PALETTES[item.id], 0.72, [], false);
     } else if (item.type === "backdrop") {
-      const img = sprite(`bg-${item.id}`);
-      if (img) drawCoverImage(c, img, 0, 0, w, h);
+      const img2 = sprite(`bg-${item.id}`);
+      if (img2) drawCoverImage(c, img2, 0, 0, w, h);
       else paintBackdrop(c, w, h, h - 7, item.id, t);
       c.strokeStyle = "rgba(245,197,24,.55)";
       c.lineWidth = 1;

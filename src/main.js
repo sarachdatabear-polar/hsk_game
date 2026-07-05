@@ -7,6 +7,7 @@ import { sfx } from "./sfx.js";
 import { drawCat } from "./cat.js";
 import { uiScale, layout } from "./layout.js";
 import { loadSprites, sprite } from "./sprites.js";
+import { preload as preloadAssets } from "./assets.js";
 import { recordAnswer, levelMastery } from "./mastery.js";
 import { levelForXp, xpToNext, accessoriesFor, nextMilestone, MILESTONES } from "./growth.js";
 import { wordWeight, smartDeck, weakWords } from "./srs.js";
@@ -137,6 +138,7 @@ fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>in
 
 /* ============================== sprite preload ============================== */
 loadSprites();
+preloadAssets();
 
 /* ============================== screens ============================== */
 let currentScreen = "home";
