@@ -2,7 +2,7 @@
 // A worker registered from pwa/ would be scoped to /pwa/ and could not serve the
 // app shell offline, since static hosts (GitHub Pages) don't send
 // Service-Worker-Allowed to widen scope. Paths below are root-relative.
-const SHELL = "nbhsk-shell-v12";
+const SHELL = "nbhsk-shell-v19";
 const AUDIO = "nbhsk-audio-v1";
 const PRECACHE = [
   "index.html", "dist/app.js", "data/words.js", "audio/index.json",
@@ -34,9 +34,24 @@ const PRECACHE = [
   "assets/cat-gold-happy.png",
   "assets/cat-boss-walk.png",
   "assets/cat-boss-happy.png",
+  "assets/cat-portrait.png",
   "assets/bg-market.png",
+  "assets/bg-results.png",
   "assets/bg-temple.png",
   "assets/bg-bamboo.png",
+  "assets/ui-panel.png",
+  "assets/ui-word-plaque.png",
+  "assets/ui-button-primary.png",
+  "assets/ui-button-secondary.png",
+  "assets/ui-button-neutral.png",
+  "assets/ui-badge.png",
+  "assets/ui-progress-track.png",
+  "assets/ui-progress-fill.png",
+  "assets/fx-correct.png",
+  "assets/fx-wrong.png",
+  "assets/fx-critical.png",
+  "assets/fx-level-up.png",
+  "assets/fx-new-best.png",
   "assets/fonts/title.woff2"
 ];
 

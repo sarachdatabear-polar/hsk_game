@@ -1,0 +1,213 @@
+{
+  "project": "Lucky Cat HSK",
+  "milestone": "Production Art Vertical Slice v1",
+  "version": 1,
+  "status_values": [
+    "planned",
+    "concept",
+    "review",
+    "approved",
+    "integrated",
+    "rejected"
+  ],
+  "assets": [
+    {
+      "id": "cat-base-walk",
+      "file": "cat-walk.png",
+      "type": "sprite-sheet",
+      "status": "planned",
+      "width": 1536,
+      "height": 256,
+      "frames": 6,
+      "frameWidth": 256,
+      "frameHeight": 256,
+      "priority": "P0"
+    },
+    {
+      "id": "cat-base-happy",
+      "file": "cat-happy.png",
+      "type": "sprite-sheet",
+      "status": "planned",
+      "width": 1024,
+      "height": 256,
+      "frames": 4,
+      "frameWidth": 256,
+      "frameHeight": 256,
+      "priority": "P0"
+    },
+    {
+      "id": "maneki-home",
+      "file": "maneki.png",
+      "type": "character",
+      "status": "planned",
+      "width": 512,
+      "height": 512,
+      "priority": "P0"
+    },
+    {
+      "id": "cat-portrait",
+      "file": "cat-portrait.png",
+      "type": "character",
+      "status": "planned",
+      "width": 512,
+      "height": 512,
+      "priority": "P0"
+    },
+    {
+      "id": "bg-home",
+      "file": "bg-home.png",
+      "type": "background",
+      "status": "planned",
+      "width": 1080,
+      "height": 1920,
+      "priority": "P0"
+    },
+    {
+      "id": "bg-battle",
+      "file": "bg-battle.png",
+      "type": "background",
+      "status": "planned",
+      "width": 1024,
+      "height": 512,
+      "priority": "P0"
+    },
+    {
+      "id": "bg-market",
+      "file": "bg-market.png",
+      "type": "background",
+      "status": "planned",
+      "width": 1024,
+      "height": 512,
+      "priority": "P0"
+    },
+    {
+      "id": "bg-results",
+      "file": "bg-results.png",
+      "type": "background",
+      "status": "planned",
+      "width": 1080,
+      "height": 1920,
+      "priority": "P1"
+    },
+    {
+      "id": "ui-panel",
+      "file": "ui-panel.png",
+      "type": "ui-frame",
+      "status": "planned",
+      "priority": "P0"
+    },
+    {
+      "id": "ui-word-plaque",
+      "file": "ui-word-plaque.png",
+      "type": "ui-frame",
+      "status": "planned",
+      "priority": "P0"
+    },
+    {
+      "id": "ui-button-primary",
+      "file": "ui-button-primary.png",
+      "type": "ui-frame",
+      "status": "planned",
+      "priority": "P0"
+    },
+    {
+      "id": "ui-button-secondary",
+      "file": "ui-button-secondary.png",
+      "type": "ui-frame",
+      "status": "planned",
+      "priority": "P0"
+    },
+    {
+      "id": "ui-button-neutral",
+      "file": "ui-button-neutral.png",
+      "type": "ui-frame",
+      "status": "planned",
+      "priority": "P0"
+    },
+    {
+      "id": "ui-badge",
+      "file": "ui-badge.png",
+      "type": "ui-frame",
+      "status": "planned",
+      "priority": "P1"
+    },
+    {
+      "id": "ui-progress-track",
+      "file": "ui-progress-track.png",
+      "type": "ui-frame",
+      "status": "planned",
+      "priority": "P1"
+    },
+    {
+      "id": "ui-progress-fill",
+      "file": "ui-progress-fill.png",
+      "type": "ui-frame",
+      "status": "planned",
+      "priority": "P1"
+    },
+    {
+      "id": "fx-correct",
+      "file": "fx-correct.png",
+      "type": "effect-atlas",
+      "status": "planned",
+      "priority": "P0"
+    },
+    {
+      "id": "fx-wrong",
+      "file": "fx-wrong.png",
+      "type": "effect-atlas",
+      "status": "planned",
+      "priority": "P0"
+    },
+    {
+      "id": "fx-critical",
+      "file": "fx-critical.png",
+      "type": "effect-atlas",
+      "status": "planned",
+      "priority": "P0"
+    },
+    {
+      "id": "fx-level-up",
+      "file": "fx-level-up.png",
+      "type": "effect-atlas",
+      "status": "planned",
+      "priority": "P1"
+    },
+    {
+      "id": "fx-new-best",
+      "file": "fx-new-best.png",
+      "type": "effect-atlas",
+      "status": "planned",
+      "priority": "P1"
+    },
+    {
+      "id": "ui-icons",
+      "file": "ui-icons.svg",
+      "type": "icon-sprite",
+      "status": "planned",
+      "priority": "P0"
+    }
+  ],
+  "required_icons": [
+    "heart",
+    "heart-empty",
+    "coin",
+    "diamond",
+    "audio",
+    "muted",
+    "pause",
+    "close",
+    "back",
+    "home",
+    "shop",
+    "street",
+    "progress",
+    "quests",
+    "flashcards",
+    "battle",
+    "check",
+    "wrong",
+    "paw",
+    "streak"
+  ]
+}

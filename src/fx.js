@@ -80,6 +80,12 @@ export function fireworkRing(x, y) {
   return specs;
 }
 
+export function feedbackEffect(kind, x, y) {
+  if (kind === "wrong") return { kind: "wrong", x, y, life: 0.55, sprite: "fx-wrong" };
+  if (kind === "critical") return { kind: "critical", x, y, life: 0.75, sprite: "fx-critical" };
+  return { kind: "correct", x, y, life: 0.6, sprite: "fx-correct" };
+}
+
 // Wallet bonus for a miss-free round, capped so it stays a nice-to-have.
 export function perfectBonus(score) {
   return Math.min(500, Math.round(score * 0.25));

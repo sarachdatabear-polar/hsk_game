@@ -2,7 +2,7 @@
 import { buildPool, coveragePct, scopeKey, meaning as meaningOf, normalizeLen, modeKey } from "./pool.js";
 import { pickDistractors } from "./distractors.js";
 import { killPoints } from "./scoring.js";
-import { coinBurst, comboFloater, fireworkRing, perfectBonus } from "./fx.js";
+import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus } from "./fx.js";
 import { sfx } from "./sfx.js";
 import { drawCat } from "./cat.js";
 import { uiScale, layout } from "./layout.js";
@@ -17,39 +17,11 @@ import { initAudio, speak } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem } from "./shop.js";
 import { streetPieces, streetProgress } from "./street.js";
+import { iconSvg, setIconLabel, setIconOnly, setPill } from "./icons.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
 const $ = s => document.querySelector(s);
-function iconSvg(id){
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.classList.add("asset-icon");
-  svg.setAttribute("aria-hidden", "true");
-  const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
-  use.setAttribute("href", `assets/ui-icons.svg#${id}`);
-  svg.appendChild(use);
-  return svg;
-}
-function setIconLabel(el, icon, label){
-  el.replaceChildren();
-  const wrap = document.createElement("span");
-  wrap.className = "icon-text";
-  if(icon) wrap.appendChild(iconSvg(icon));
-  const text = document.createElement("span");
-  text.textContent = label;
-  wrap.appendChild(text);
-  el.appendChild(wrap);
-}
-function setIconOnly(el, icon){
-  el.replaceChildren(iconSvg(icon));
-}
-function setPill(el, iconClass, text){
-  const icon = document.createElement("span");
-  icon.className = "pill-icon " + iconClass;
-  const label = document.createElement("span");
-  label.textContent = text;
-  el.replaceChildren(icon, label);
-}
 const store = {
   get(k, d){ try{ const v = localStorage.getItem("nbhsk."+k); return v===null? d : JSON.parse(v);}catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem("nbhsk."+k, JSON.stringify(v)); }catch(e){} }
@@ -74,7 +46,7 @@ function updateWalletChip(){ setPill($("#home-wallet"), "coin", wallet.toLocaleS
 
 /* ============================== cat growth (xp/levels/accessories) ============================== */
 let xp = store.get("xp", 0);
-function updateLevelChip(){ const el = $("#home-level"); if(el) setPill(el, "cat", `Lv ${levelForXp(xp)}`); }
+function updateLevelChip(){ const el = $("#home-level"); if(el) setPill(el, "paw", `Lv ${levelForXp(xp)}`); }
 function addXp(n){
   const before = levelForXp(xp);
   xp += n;
@@ -492,7 +464,7 @@ function answer(btn, o){
     speak(z.w.h);                              // the sound sticks with the correct answer
     if(boss) noteAnswer(z.w.h, true);           // both stages passed
     const gy = B.h-B.L.ground;
-    B.feedback = {type:"correct", x:z.x, y:gy-42*B.S, until:performance.now()+620};
+    B.feedback = {...feedbackEffect("correct", z.x, gy-42*B.S), until:performance.now()+620};
     const floater = comboFloater(z.x, gy-130, B.combo);
     if(floater) B.floats.push(floater);
     // milestone combo (10, 20, ...): extra sparkle on top of the usual combo sting above
@@ -510,7 +482,7 @@ function answer(btn, o){
     B.lives--; B.flash = 1; B.screenShake = 1; B.resolved++;
     z.state = "wrong";
     z.wrongUntil = performance.now() + 560;
-    B.feedback = {type:"wrong", x:z.x, y:B.h-B.L.ground-44*B.S, until:performance.now()+560};
+    B.feedback = {...feedbackEffect("wrong", z.x, B.h-B.L.ground-44*B.S), until:performance.now()+560};
   }
   updateHud();
 }
@@ -652,10 +624,11 @@ function paintBackdrop(c, w, h, gy, style, t=0){
   }
 }
 function drawBackdrop(gy){
-  if(!shopState.backdrop) return;
-  const img = sprite(`bg-${shopState.backdrop}`);
+  const selected = shopState.backdrop ? `bg-${shopState.backdrop}` : "bg-battle";
+  const img = sprite(selected);
   if(img) drawCoverImage(ctx, img, 0, 0, B.w, B.h);
-  else paintBackdrop(ctx, B.w, B.h, gy, shopState.backdrop, performance.now());
+  else if(shopState.backdrop) paintBackdrop(ctx, B.w, B.h, gy, shopState.backdrop, performance.now());
+  else paintBackdrop(ctx, B.w, B.h, gy, "", performance.now());
 }
 function draw(t){
   ctx.clearRect(0,0,B.w,B.h);
@@ -796,13 +769,18 @@ function drawWordPlate(hanzi, pinyin, level, boss, t){
 function drawFeedbackLayer(t){
   const fb = B.feedback;
   if(!fb) return;
-  const total = fb.type === "correct" ? 620 : 560;
+  const kind = fb.kind || fb.type;
+  const total = kind === "critical" ? 750 : kind === "correct" ? 620 : 560;
   const left = fb.until - performance.now();
   if(left <= 0){ B.feedback = null; return; }
   const p = 1 - left / total;
   ctx.save();
   ctx.globalAlpha = Math.max(0, 1-p);
-  if(fb.type === "correct"){
+  const fxImg = fb.sprite ? sprite(fb.sprite) : null;
+  if(fxImg){
+    const size = (kind === "critical" ? 96 : 72) * B.S;
+    ctx.drawImage(fxImg, fb.x - size/2, fb.y - size/2, size, size);
+  }else if(kind === "correct"){
     ctx.strokeStyle = "rgba(245,197,24,.86)";
     ctx.lineWidth = Math.max(2, 4*B.S*(1-p));
     ctx.beginPath(); ctx.arc(fb.x, fb.y, (18 + 44*p)*B.S, 0, Math.PI*2); ctx.stroke();

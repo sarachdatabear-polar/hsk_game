@@ -155,6 +155,11 @@
     }
     return specs;
   }
+  function feedbackEffect(kind, x, y) {
+    if (kind === "wrong") return { kind: "wrong", x, y, life: 0.55, sprite: "fx-wrong" };
+    if (kind === "critical") return { kind: "critical", x, y, life: 0.75, sprite: "fx-critical" };
+    return { kind: "correct", x, y, life: 0.6, sprite: "fx-correct" };
+  }
   function perfectBonus(score) {
     return Math.min(500, Math.round(score * 0.25));
   }
@@ -267,27 +272,44 @@
 
   // src/sprites.js
   var REGISTRY = {};
+  var SPRITE_NAMES = [
+    "cat-walk",
+    "cat-happy",
+    "cat-midnight-walk",
+    "cat-midnight-happy",
+    "cat-sakura-walk",
+    "cat-sakura-happy",
+    "cat-jade-walk",
+    "cat-jade-happy",
+    "cat-gold-walk",
+    "cat-gold-happy",
+    "cat-boss-walk",
+    "cat-boss-happy",
+    "cat-portrait",
+    "maneki",
+    "coin",
+    "bg-home",
+    "bg-battle",
+    "bg-market",
+    "bg-results",
+    "bg-temple",
+    "bg-bamboo",
+    "ui-panel",
+    "ui-word-plaque",
+    "ui-button-primary",
+    "ui-button-secondary",
+    "ui-button-neutral",
+    "ui-badge",
+    "ui-progress-track",
+    "ui-progress-fill",
+    "fx-correct",
+    "fx-wrong",
+    "fx-critical",
+    "fx-level-up",
+    "fx-new-best"
+  ];
   function loadSprites() {
-    const NAMES = [
-      "cat-walk",
-      "cat-happy",
-      "cat-midnight-walk",
-      "cat-midnight-happy",
-      "cat-sakura-walk",
-      "cat-sakura-happy",
-      "cat-jade-walk",
-      "cat-jade-happy",
-      "cat-gold-walk",
-      "cat-gold-happy",
-      "cat-boss-walk",
-      "cat-boss-happy",
-      "bg-market",
-      "bg-temple",
-      "bg-bamboo",
-      "maneki",
-      "coin"
-    ];
-    for (const name of NAMES) {
+    for (const name of SPRITE_NAMES) {
       const img = new Image();
       img.src = "assets/" + name + ".png";
       REGISTRY[name] = img;
@@ -1022,15 +1044,14 @@
     return { unlocked, total, next };
   }
 
-  // src/main.js
-  var D = window.HSK_DATA;
-  var $ = (s) => document.querySelector(s);
+  // src/icons.js
+  var ICON_HREF = "assets/ui-icons.svg";
   function iconSvg(id) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.classList.add("asset-icon");
     svg.setAttribute("aria-hidden", "true");
     const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
-    use.setAttribute("href", `assets/ui-icons.svg#${id}`);
+    use.setAttribute("href", `${ICON_HREF}#${id}`);
     svg.appendChild(use);
     return svg;
   }
@@ -1047,13 +1068,13 @@
   function setIconOnly(el, icon) {
     el.replaceChildren(iconSvg(icon));
   }
-  function setPill(el, iconClass, text) {
-    const icon = document.createElement("span");
-    icon.className = "pill-icon " + iconClass;
-    const label = document.createElement("span");
-    label.textContent = text;
-    el.replaceChildren(icon, label);
+  function setPill(el, icon, text) {
+    el.replaceChildren(iconSvg(icon), document.createTextNode(` ${text}`));
   }
+
+  // src/main.js
+  var D = window.HSK_DATA;
+  var $ = (s) => document.querySelector(s);
   var store = {
     get(k, d) {
       try {
@@ -1094,7 +1115,7 @@
   var xp = store.get("xp", 0);
   function updateLevelChip() {
     const el = $("#home-level");
-    if (el) setPill(el, "cat", `Lv ${levelForXp(xp)}`);
+    if (el) setPill(el, "paw", `Lv ${levelForXp(xp)}`);
   }
   function addXp(n) {
     const before = levelForXp(xp);
@@ -1585,7 +1606,7 @@
       speak(z.w.h);
       if (boss) noteAnswer(z.w.h, true);
       const gy = B.h - B.L.ground;
-      B.feedback = { type: "correct", x: z.x, y: gy - 42 * B.S, until: performance.now() + 620 };
+      B.feedback = { ...feedbackEffect("correct", z.x, gy - 42 * B.S), until: performance.now() + 620 };
       const floater = comboFloater(z.x, gy - 130, B.combo);
       if (floater) B.floats.push(floater);
       if (B.combo >= 10 && B.combo % 10 === 0) B.parts.push(...fireworkRing(z.x, gy - 16));
@@ -1605,7 +1626,7 @@
       B.resolved++;
       z.state = "wrong";
       z.wrongUntil = performance.now() + 560;
-      B.feedback = { type: "wrong", x: z.x, y: B.h - B.L.ground - 44 * B.S, until: performance.now() + 560 };
+      B.feedback = { ...feedbackEffect("wrong", z.x, B.h - B.L.ground - 44 * B.S), until: performance.now() + 560 };
     }
     updateHud();
   }
@@ -1789,10 +1810,11 @@
     }
   }
   function drawBackdrop(gy) {
-    if (!shopState.backdrop) return;
-    const img = sprite(`bg-${shopState.backdrop}`);
+    const selected = shopState.backdrop ? `bg-${shopState.backdrop}` : "bg-battle";
+    const img = sprite(selected);
     if (img) drawCoverImage(ctx2, img, 0, 0, B.w, B.h);
-    else paintBackdrop(ctx2, B.w, B.h, gy, shopState.backdrop, performance.now());
+    else if (shopState.backdrop) paintBackdrop(ctx2, B.w, B.h, gy, shopState.backdrop, performance.now());
+    else paintBackdrop(ctx2, B.w, B.h, gy, "", performance.now());
   }
   function draw(t) {
     ctx2.clearRect(0, 0, B.w, B.h);
@@ -1948,7 +1970,8 @@
   function drawFeedbackLayer(t) {
     const fb = B.feedback;
     if (!fb) return;
-    const total = fb.type === "correct" ? 620 : 560;
+    const kind = fb.kind || fb.type;
+    const total = kind === "critical" ? 750 : kind === "correct" ? 620 : 560;
     const left = fb.until - performance.now();
     if (left <= 0) {
       B.feedback = null;
@@ -1957,7 +1980,11 @@
     const p = 1 - left / total;
     ctx2.save();
     ctx2.globalAlpha = Math.max(0, 1 - p);
-    if (fb.type === "correct") {
+    const fxImg = fb.sprite ? sprite(fb.sprite) : null;
+    if (fxImg) {
+      const size = (kind === "critical" ? 96 : 72) * B.S;
+      ctx2.drawImage(fxImg, fb.x - size / 2, fb.y - size / 2, size, size);
+    } else if (kind === "correct") {
       ctx2.strokeStyle = "rgba(245,197,24,.86)";
       ctx2.lineWidth = Math.max(2, 4 * B.S * (1 - p));
       ctx2.beginPath();

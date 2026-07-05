@@ -1,6 +1,49 @@
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="audio" viewBox="0 0 24 24">
+    <use href="#sound"/>
+  </symbol>
+  <symbol id="back" viewBox="0 0 24 24">
+    <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="battle" viewBox="0 0 24 24">
+    <use href="#fight"/>
+  </symbol>
+  <symbol id="coin" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/>
+    <circle cx="12" cy="12" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M12 8.5v7M9.5 10.5h5M9.5 13.5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="diamond" viewBox="0 0 24 24">
+    <path d="M12 4l6.5 7L12 20 5.5 11z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M8 4h8M5.5 11h13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="flashcards" viewBox="0 0 24 24">
+    <use href="#cards"/>
+  </symbol>
   <symbol id="play" viewBox="0 0 24 24">
     <path fill="currentColor" d="M8 5v14l11-7z"/>
+  </symbol>
+  <symbol id="pause" viewBox="0 0 24 24">
+    <rect x="7" y="5" width="4" height="14" rx="1.5" fill="currentColor"/>
+    <rect x="13" y="5" width="4" height="14" rx="1.5" fill="currentColor"/>
+  </symbol>
+  <symbol id="paw" viewBox="0 0 24 24">
+    <ellipse cx="8" cy="8.25" rx="2" ry="2.75" fill="currentColor"/>
+    <ellipse cx="12" cy="6.75" rx="2" ry="3" fill="currentColor"/>
+    <ellipse cx="16" cy="8.25" rx="2" ry="2.75" fill="currentColor"/>
+    <ellipse cx="18.25" cy="11.75" rx="1.75" ry="2.4" fill="currentColor"/>
+    <path d="M12 19c3.4 0 5.5-1.5 5.5-3.9 0-1.7-1.2-3.4-3-4.3-.7-.3-1.5-.5-2.5-.5s-1.8.2-2.5.5c-1.8.9-3 2.6-3 4.3C6.5 17.5 8.6 19 12 19z" fill="currentColor"/>
+  </symbol>
+  <symbol id="progress" viewBox="0 0 24 24">
+    <use href="#chart"/>
+  </symbol>
+  <symbol id="quests" viewBox="0 0 24 24">
+    <path d="M7 5h10a2 2 0 0 1 2 2v12l-3-2-3 2-3-2-3 2V7a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M9 9h6M9 12h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <path d="M9 15l1.8 1.8L15 12.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="wrong" viewBox="0 0 24 24">
+    <path d="M7 7l10 10M17 7L7 17" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
   </symbol>
   <symbol id="target" viewBox="0 0 24 24">
     <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
@@ -16,6 +59,15 @@
     <path d="M6 9h12l-1 11H7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
     <path d="M8 9a4 4 0 0 1 8 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
     <path d="M9 14h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="home" viewBox="0 0 24 24">
+    <path d="M5 10.5L12 5l7 5.5V19H5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M10 19v-5h4v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="street" viewBox="0 0 24 24">
+    <path d="M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <path d="M8 18v-6h8v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M7 12l5-4 5 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
   </symbol>
   <symbol id="chart" viewBox="0 0 24 24">
     <path d="M4 19h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -71,5 +123,8 @@
   </symbol>
   <symbol id="heart" viewBox="0 0 24 24">
     <path d="M12 20s-7-4.5-9-9a4.4 4.4 0 0 1 7-5 4.4 4.4 0 0 1 7 5c-2 4.5-9 9-9 9z" fill="currentColor"/>
+  </symbol>
+  <symbol id="heart-empty" viewBox="0 0 24 24">
+    <path d="M12 20s-7-4.5-9-9a4.4 4.4 0 0 1 7-5 4.4 4.4 0 0 1 7 5c-2 4.5-9 9-9 9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
   </symbol>
 </svg>
