@@ -11,14 +11,19 @@
 
 ## Current Runtime References
 
+The table below lists the live callers and precache sources found by repo scan.
+Generated assets are called out explicitly so shipped art dependencies are visible
+to reviewers, not implied by a generic asset glob.
+
 | Area | File | Current references | Migration action |
 |---|---|---:|---|
-| Sprite preload | `src/sprites.js` | Cat sheets, shop skins, boss sheets, backdrops, `maneki`, `coin` | Replace hardcoded list with exported registry that covers manifest-backed PNGs. |
-| Cat render | `src/cat.js` | `cat-walk`, `cat-happy`, skin sheets, boss sheets | Keep fallback vector cat; integrate approved base cat sheets first. |
-| Battle canvas | `src/main.js` | `bg-${shopState.backdrop}`, `maneki`, `coin`, canvas effects | Add default `bg-battle`, optional `bg-market`, and effect sprite fallbacks. |
-| Shop preview | `src/main.js` | Skin sheets, backdrop images, canvas preview art | Use same registry and preserve canvas fallback previews. |
-| Home CSS | `index.html` | `bg-home.png`, generated `btn-*.png`, `coin.png`, `maneki.png`, `ui-icons.svg` | Move toward tokenized CSS and shared SVG icon mechanism. |
-| PWA shell | `sw.js` | Current static art list | Keep tolerant precache and add manifest-backed shell assets after approval. |
+| Sprite preload | `src/sprites.js` | `cat-walk.png`, `cat-happy.png`, `cat-midnight-*`, `cat-sakura-*`, `cat-jade-*`, `cat-gold-*`, `cat-boss-*`, `bg-*.png`, `maneki.png`, `coin.png` | Replace hardcoded list with exported registry that covers manifest-backed PNGs. |
+| Cat render | `src/cat.js` | `cat-walk.png`, `cat-happy.png`, seasonal cat sheets, boss sheets, fallback vector cat | Keep fallback vector cat; integrate approved base cat sheets first. |
+| Battle canvas | `src/main.js` | `bg-${shopState.backdrop}`, `bg-battle.png`, `bg-market.png`, `bg-temple.png`, `bg-bamboo.png`, `maneki.png`, `coin.png`, canvas effects | Add default `bg-battle`, optional `bg-market`, and effect sprite fallbacks. |
+| Shop preview | `src/main.js` | Seasonal cat sheets, backdrop images, canvas preview art | Use same registry and preserve canvas fallback previews. |
+| Home CSS | `index.html` | `bg-home.png`, `lantern.png`, `cloud.png`, generated `btn-*.png`, `btn-shop.svg`, `coin.png`, `maneki.png`, `ui-icons.svg` | Move toward tokenized CSS and shared SVG icon mechanism. |
+| PWA shell | `sw.js` | Current static art list, including `lantern.png`, `cloud.png`, generated button art, seasonal cat sheets, `bg-temple.png`, `bg-bamboo.png`, and `fonts/title.woff2` | Keep tolerant precache and add manifest-backed shell assets after approval. |
+| Shop asset generation | `scripts/generate-shop-assets.mjs` | Generates the premium `btn-*.png` and related shop button art in `assets/` | Keep generation source tracked so shipped UI art can be reproduced and reviewed. |
 | Staging | `scripts/stage-www.js` | Copies full `assets/` folder | No change unless validation becomes part of staging. |
 
 ## P0 Runtime Art Required
