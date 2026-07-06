@@ -74,10 +74,6 @@
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
   .screen{display:none; flex:1; flex-direction:column; padding:16px;}
   .screen.on{display:flex;}
-  h1{font-size:28px; margin:8px 0 2px; color:var(--gold); text-align:center;
-    font-family:'LuckyTitle',"Segoe UI",sans-serif; text-shadow:0 2px 8px rgba(0,0,0,.6);}
-  h1 .sub-cn{display:block; font-size:22px; letter-spacing:.15em; opacity:.85;}
-  .tag{color:var(--muted); text-align:center; margin:0 0 20px; font-size:14px;}
   .menu{display:flex; flex-direction:column; gap:12px; margin-top:8px;}
   button{font:inherit; border:none; border-radius:12px; cursor:pointer;}
   .asset-icon{width:1.15em; height:1.15em; display:inline-block; vertical-align:-.18em; color:currentColor; flex:0 0 auto;}
@@ -165,27 +161,6 @@
     box-shadow:inset 0 0 18px rgba(245,197,24,.12), 0 3px 10px rgba(0,0,0,.28);}
   #street-caption{color:#f0cda4; font-size:12px; text-align:center; margin:4px 0 0;
     text-shadow:0 1px 2px rgba(0,0,0,.75);}
-  /* icon row for home screen */
-  .icon-row{display:flex; justify-content:center; gap:14px; margin-top:12px; flex-wrap:wrap;}
-  .icon-btn{
-    width:64px; height:64px; border-radius:50%; font-size:26px; line-height:1;
-    background:var(--panel-wash);
-    border:1px solid var(--edu-gray); color:var(--edu-ink);
-    box-shadow:0 3px 10px rgba(36,52,71,.12);
-    display:flex; align-items:center; justify-content:center;}
-  .icon-btn:active{transform:scale(.96);}
-  .icon-btn{border-image:var(--f-ui-icon-tile, none);}
-  :root.has-ui-icon-tile .icon-btn{background:none; border-color:transparent; border-radius:16px;
-    color:#F7EFD9; box-shadow:0 3px 8px rgba(30,90,62,.28);}
-  .icon-btn[data-go="scope-learn"],
-  .icon-btn[data-go="shop"],
-  .icon-btn[data-go="scores"],
-  .icon-btn[data-go="progress"],
-  .icon-btn[data-go="howto"],
-  .icon-btn#home-sound{
-    border-color:var(--edu-gray);}
-  /* muted state dims the sound control so on/off still reads at a glance */
-  .icon-btn#home-sound.muted{filter:grayscale(1) opacity(.45);}
   #more-sound.muted{filter:grayscale(1) opacity(.6);}
   /* bottom nav (M2) — deep-teal bar, last child of #app, safe-area padding
      already reserved by #app itself so the bar sits flush above it. */
@@ -227,7 +202,6 @@
   .hud-pill{display:inline-flex; align-items:center; gap:4px; background:var(--panel-wash);
     color:var(--edu-ink); border-radius:999px; padding:4px 10px; border:1px solid var(--edu-gray); font-weight:700; font-size:14px;
     box-shadow:0 2px 6px rgba(36,52,71,.08);}
-  #home-wallet{color:var(--muted); font-size:13px;}
   .hud-round{width:44px; height:44px; border-radius:50%; background:var(--panel-wash);
     color:var(--edu-ink); border:1px solid var(--edu-gray); border-image:var(--f-ui-badge-mastery, none); font-size:18px; cursor:pointer;
     display:flex; align-items:center; justify-content:center;
@@ -304,7 +278,6 @@
     box-shadow:0 0 10px rgba(127,201,74,.5);}
   .howto{line-height:1.55; font-size:15.5px; color:var(--ink);}
   .howto b{color:var(--gold);}
-  footer{color:#a3766a; text-align:center; font-size:11.5px; padding:10px 0 16px;}
   /* production screen backgrounds */
   #s-home,
   #s-learn,
@@ -332,11 +305,91 @@
     background-image:linear-gradient(rgba(255,248,232,.78),rgba(255,248,232,.92)), url("assets/bg-collection.png"), linear-gradient(#FFF8E8,#FDEFD2);
   }
 
-  /* home hero background */
+  /* home hero background — cream wash strongest at top (status/brand) and
+     bottom (streak/CTA) thirds, clearest through the middle so the hero cat
+     reads against the painted scene (M3, visual PRD §6.1). */
   #s-home{
-    background-image:linear-gradient(rgba(255,248,232,.58),rgba(255,248,232,.86)), url("assets/bg-home.png"), linear-gradient(#FFF8E8,#FDEFD2);
-    justify-content:space-between;
+    background-image:
+      linear-gradient(to bottom,
+        rgba(251,245,232,.94) 0%, rgba(251,245,232,.55) 16%, rgba(251,245,232,0) 32%,
+        rgba(251,245,232,0) 58%, rgba(251,245,232,.55) 74%, rgba(251,245,232,.94) 100%),
+      url("assets/bg-home.png"), linear-gradient(#FFF8E8,#FDEFD2);
+    overflow:hidden;
   }
+
+  /* M3 — home screen rebuild: status strip, brand title, hero, streak card,
+     primary CTA + scope chip, secondary row. Cream/wood tactile forms, warm
+     palette (--lc-*), no pure black/white (visual PRD §4). */
+  .home-status{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:2px;}
+  .status-cap{display:flex; align-items:center; gap:8px; min-height:44px; padding:4px 14px 4px 4px;
+    border-radius:999px; box-shadow:inset 0 1px 0 rgba(255,255,255,.45), 0 3px 8px rgba(31,77,74,.28);}
+  .level-cap{background-color:var(--lc-sky); border:2px solid var(--lc-teal); color:var(--lc-teal);}
+  .level-avatar{width:34px; height:34px; border-radius:50%; border:2px solid var(--lc-cream);
+    background:var(--lc-cream); object-fit:cover; flex:0 0 auto;}
+  .level-info{display:flex; flex-direction:column; gap:3px; min-width:66px;}
+  .level-text{font-weight:800; font-size:13px; line-height:1;}
+  .xp-bar{height:5px; width:66px;}
+  .xp-bar i{background-image:linear-gradient(180deg,#FFE9B0,var(--lc-sun) 60%,var(--lc-brown));}
+  .status-right{display:flex; align-items:center; gap:8px;}
+  .wallet-cap{background-color:var(--lc-teal); border:2px solid var(--lc-brown); color:var(--lc-cream);
+    font-weight:700; font-size:14px;}
+  .wallet-cap .asset-icon{color:var(--lc-sun);}
+  .gear-btn{width:44px; height:44px; min-width:44px; border-radius:50%; background-color:var(--lc-teal);
+    color:var(--lc-cream); border:2px solid var(--lc-sun); display:flex; align-items:center; justify-content:center;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.3), 0 3px 8px rgba(31,77,74,.32);}
+  .gear-btn:active{transform:scale(.94);}
+  .gear-btn .asset-icon{width:20px; height:20px;}
+
+  .brand-title{text-align:center; margin:6px 0 2px; line-height:1.05;}
+  .brand-sub{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800; font-size:clamp(15px,4.6vw,21px);
+    color:var(--lc-sun); letter-spacing:.08em; text-shadow:0 2px 3px rgba(46,42,36,.4);}
+  .brand-cn{font-size:12px; font-weight:400; color:var(--lc-cream); opacity:.7; letter-spacing:.05em; margin-left:6px;}
+  .brand-main{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800;
+    font-size:clamp(44px,15vw,62px); color:var(--lc-cream);
+    text-shadow:0 3px 0 var(--lc-brown), 0 6px 12px rgba(46,42,36,.4);
+    display:flex; align-items:center; justify-content:center; gap:8px;}
+  .brand-paw{width:.45em; height:.45em; color:var(--lc-sun); filter:drop-shadow(0 2px 0 var(--lc-brown));}
+
+  .home-hero{flex:1 1 auto; min-height:120px; display:flex; align-items:flex-end; justify-content:center;
+    padding-bottom:4px;}
+  .hero-cat{width:38%; max-width:220px; min-width:120px; height:auto;
+    filter:drop-shadow(0 10px 14px rgba(46,42,36,.35));}
+
+  .streak-card{background-color:var(--lc-cream); border:2px solid var(--lc-brown); border-radius:14px;
+    padding:10px 14px; margin:6px 0; box-shadow:0 3px 8px rgba(46,42,36,.2);}
+  .streak-row{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;}
+  .streak-left{display:flex; align-items:center; gap:6px; color:var(--lc-brown); font-weight:700; font-size:13.5px;}
+  .streak-left .asset-icon{color:var(--lc-coral);}
+  .streak-days{display:flex; align-items:center; gap:5px; font-weight:800; color:var(--lc-ink); font-size:14.5px;}
+  .streak-check{display:none; color:var(--lc-success); font-weight:900;}
+  .streak-card.goal-met .streak-check{display:inline;}
+  .streak-bar{height:8px;}
+  .streak-bar i{background-image:linear-gradient(90deg, var(--lc-success), var(--lc-sun));}
+
+  .home-cta{display:flex; align-items:stretch; gap:10px; margin:8px 0 2px;}
+  .start-btn{flex:1 1 62%; font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800;
+    font-size:21px; letter-spacing:.05em; color:var(--lc-brown);
+    background-color:var(--lc-sun);
+    background-image:linear-gradient(180deg,#FFE59B,var(--lc-sun) 55%,#D99A2E);
+    border:3px solid var(--lc-brown); border-radius:18px; padding:12px 8px; min-height:56px;
+    box-shadow:0 4px 0 #B97A1E, 0 8px 14px rgba(46,42,36,.32);}
+  .start-btn:active{transform:translateY(2px); box-shadow:0 2px 0 #B97A1E, 0 4px 8px rgba(46,42,36,.32);}
+  .start-btn:disabled{background:var(--lc-gray); background-image:none; color:#6d6862;
+    border-color:#8b8681; box-shadow:none; opacity:.75;}
+  .scope-chip-btn{flex:1 1 38%; background-color:var(--lc-cream); border:2px solid var(--lc-brown);
+    border-radius:14px; color:var(--lc-ink); font-size:12px; font-weight:700; padding:6px 8px;
+    min-height:56px; line-height:1.3;}
+  .scope-chip-btn:active{transform:scale(.97);}
+  .start-hint{color:var(--lc-brown); font-size:12px; text-align:center; margin:2px 0 4px;}
+
+  .home-secondary-row{display:flex; gap:8px; margin-top:4px;}
+  .sec-btn{flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
+    background-color:var(--lc-cream); border:2px solid var(--lc-sand); border-radius:14px;
+    color:var(--lc-ink); font-size:12px; font-weight:700; padding:10px 4px; min-height:56px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.6), 0 2px 6px rgba(46,42,36,.16);}
+  .sec-btn .asset-icon{width:19px; height:19px; color:var(--lc-teal); flex:0 0 auto;}
+  .sec-btn:active{transform:scale(.96);}
+  .sec-btn:disabled{opacity:.5;}
   /* festive decor — swaying lantern.png corners + a soft cloud.png behind the
      title. Applied to the bare screens (Results/Scores/Progress/How-to) only;
      #s-home keeps its painted hero so the motif isn't doubled. z-index:0 makes
@@ -367,25 +420,50 @@
 <body>
 <div id="app">
 
-  <!-- HOME -->
+  <!-- HOME (M3 rebuild — visual PRD §6.1) -->
   <div class="screen on" id="s-home">
-    <h1>Lucky Cat HSK <span class="sub-cn">招财猫</span></h1>
-    <p class="tag"><span data-i18n="home.tagline1">Match each word to its meaning —</span><br><span data-i18n="home.tagline">master real-exam HSK vocabulary.</span></p>
-    <div class="menu">
-      <button class="big primary" data-go="scope"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#learn"></use></svg><span data-i18n="home.learn">Learn</span></span></button>
-      <button class="big" id="go-smart"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#target"></use></svg><span data-i18n="home.smart">Smart Review</span></span></button>
-      <div style="text-align:center; display:flex; justify-content:center; gap:8px; flex-wrap:wrap">
-        <span class="hud-pill" id="home-streak"><svg class="asset-icon"><use href="assets/ui-icons.svg#streak"></use></svg><span>0 · 0/20 today</span></span>
-        <span class="hud-pill" id="home-level"><svg class="asset-icon"><use href="assets/ui-icons.svg#paw"></use></svg><span>Lv 1</span></span>
-        <span class="hud-pill" id="home-wallet"><svg class="asset-icon"><use href="assets/ui-icons.svg#secondary-coin"></use></svg><span>0</span></span>
+    <div class="home-status">
+      <div class="status-cap level-cap" id="home-level">
+        <img class="level-avatar" src="assets/cat-portrait.png" alt="" aria-hidden="true">
+        <div class="level-info">
+          <span class="level-text">Lv 1</span>
+          <div class="mbar xp-bar"><i style="width:0%"></i></div>
+        </div>
       </div>
-      <div class="icon-row">
-        <button class="icon-btn" data-go="scope-learn" title="Flashcards" data-i18n-title="home.flashcards" aria-label="Flashcards"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg></button>
-        <button class="icon-btn" data-go="shop" title="Collection" data-i18n-title="home.collection" aria-label="Collection"><svg class="asset-icon"><use href="assets/ui-icons.svg#collection"></use></svg></button>
-        <button class="icon-btn" id="home-sound" title="Sound effects" data-i18n-title="home.sound" aria-label="Sound effects"><svg class="asset-icon"><use href="assets/ui-icons.svg#audio"></use></svg></button>
+      <div class="status-right">
+        <span class="status-cap wallet-cap" id="home-wallet"><svg class="asset-icon"><use href="assets/ui-icons.svg#secondary-coin"></use></svg><span>0</span></span>
+        <button class="gear-btn" data-go="more" title="Settings" data-i18n-title="home.settings" aria-label="Settings"><svg class="asset-icon"><use href="assets/ui-icons.svg#settings"></use></svg></button>
       </div>
     </div>
-    <footer>Lucky Cat · HSK 1–6 · built from real exam data</footer>
+
+    <div class="brand-title">
+      <div class="brand-sub">LUCKY CAT<span class="brand-cn">招财猫</span></div>
+      <div class="brand-main">HSK<svg class="asset-icon brand-paw"><use href="assets/ui-icons.svg#paw"></use></svg></div>
+    </div>
+
+    <div class="home-hero">
+      <img class="hero-cat" src="assets/cat-study.png" alt="">
+    </div>
+
+    <div class="streak-card" id="home-streak">
+      <div class="streak-row">
+        <span class="streak-left"><svg class="asset-icon"><use href="assets/ui-icons.svg#streak"></use></svg><span class="streak-title" data-i18n="home.streakTitle">Study Streak</span></span>
+        <span class="streak-days"><span class="streak-count">0</span><span class="streak-check" aria-hidden="true">✓</span></span>
+      </div>
+      <div class="mbar streak-bar"><i style="width:0%"></i></div>
+    </div>
+
+    <div class="home-cta">
+      <button class="start-btn" id="home-start" data-i18n="home.start">START</button>
+      <button class="scope-chip-btn" id="home-scope-chip" data-go="scope"></button>
+    </div>
+    <p class="start-hint" id="home-start-hint" data-i18n="home.startHint" hidden></p>
+
+    <div class="home-secondary-row">
+      <button class="sec-btn" data-go="scope-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg><span data-i18n="home.flashcards">Flashcards</span></span></button>
+      <button class="sec-btn" id="go-smart"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#target"></use></svg><span data-i18n="home.smart">Smart Review</span></span></button>
+      <button class="sec-btn" data-go="shop"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#shop"></use></svg><span data-i18n="home.shop">Shop</span></span></button>
+    </div>
   </div>
 
   <!-- STREET -->

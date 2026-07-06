@@ -16,7 +16,7 @@ describe("i18n engine", () => {
   it("returns the string for the current locale", () => {
     setLocale("th");
     expect(getLocale()).toBe("th");
-    expect(t("home.learn")).toBe(STRINGS.th["home.learn"]);
+    expect(t("home.flashcards")).toBe(STRINGS.th["home.flashcards"]);
   });
 
   it("falls back to English when a key is missing in Thai", () => {

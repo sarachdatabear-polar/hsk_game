@@ -1,5 +1,5 @@
 "use strict";
-import { buildPool, coveragePct, scopeKey, meaning as meaningOf, normalizeLen, modeKey } from "./pool.js";
+import { buildPool, coveragePct, scopeKey, meaning as meaningOf, normalizeLen, modeKey, scopeSummary } from "./pool.js";
 import { pickDistractors } from "./distractors.js";
 import { killPoints } from "./scoring.js";
 import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus } from "./fx.js";
@@ -54,7 +54,19 @@ function updateWalletChip(){ setPill($("#home-wallet"), "secondary-coin", wallet
 
 /* ============================== cat growth (xp/levels/accessories) ============================== */
 let xp = store.get("xp", 0);
-function updateLevelChip(){ const el = $("#home-level"); if(el) setPill(el, "paw", `Lv ${levelForXp(xp)}`); }
+// #home-level is the whole status capsule (avatar + level text + XP bar, M3);
+// fill its children directly rather than replacing them like setPill does.
+function updateLevelChip(){
+  const el = $("#home-level");
+  if(!el) return;
+  const lv = levelForXp(xp);
+  const prog = xpToNext(xp);
+  const pct = prog.need ? Math.round(100*prog.into/prog.need) : 100;
+  const txt = el.querySelector(".level-text");
+  const bar = el.querySelector(".xp-bar i");
+  if(txt) txt.textContent = `Lv ${lv}`;
+  if(bar) bar.style.width = pct + "%";
+}
 function addXp(n){
   const before = levelForXp(xp);
   xp += n;
@@ -80,12 +92,20 @@ const todayStr = () => {
 };
 let daily = Object.assign(defaultDaily(), store.get("daily", {}));
 daily.today = Object.assign({date:"", resolved:0}, daily.today);
+// #home-streak is the cream streak plaque (M3): fire icon + title, day count +
+// a ✓ that only shows once today's goal is met, and a green→gold bar for
+// today's progress toward that goal. Fill children in place, like updateLevelChip.
 function updateStreakChip(){
-  const info = streakInfo(daily, todayStr());
   const el = $("#home-streak");
-  el.replaceChildren(iconSvg("streak"), document.createTextNode(info.goalMet
-    ? ` ${info.streak} · complete today`
-    : ` ${info.streak} · ${info.todayResolved}/${info.goal} today`));
+  if(!el) return;
+  const info = streakInfo(daily, todayStr());
+  const title = el.querySelector(".streak-title");
+  const count = el.querySelector(".streak-count");
+  const bar = el.querySelector(".streak-bar i");
+  if(title) title.textContent = t("home.streakTitle");
+  if(count) count.textContent = t("home.streakDays", { n: info.streak });
+  if(bar) bar.style.width = Math.min(100, Math.round(100*info.todayResolved/info.goal)) + "%";
+  el.classList.toggle("goal-met", info.goalMet);
 }
 function noteDaily(count){
   daily = noteActivity(daily, todayStr(), count);
@@ -136,6 +156,35 @@ $("#go-smart").onclick = ()=>{
   startBattle("round");
 };
 
+/* ============================== home screen (M3) ============================== */
+// Builds the scope chip's label from pool.js's pure scopeSummary() — localizes
+// the filter words here so scopeSummary itself stays i18n-free.
+function scopeChipLabel(){
+  const s = scopeSummary(scope);
+  const bits = [s.levelLabel];
+  if(s.core) bits.push(t("scope.highYield"));
+  if(s.newOnly) bits.push(t("scope.newOnly"));
+  bits.push(t("home.scopeWords", { n: s.sessionLen }));
+  return bits.join(" · ");
+}
+// Refreshes every home-screen dynamic bit: called at boot and every time we
+// navigate back to home (show("home")), so a scope change made on the scope
+// screen (which rebuilds `pool`) is reflected the moment the player returns.
+function renderHome(){
+  updateLevelChip();
+  updateWalletChip();
+  updateStreakChip();
+  updateSmartBtn();
+  const startable = pool.length >= 8;
+  const startBtn = $("#home-start");
+  const hint = $("#home-start-hint");
+  if(startBtn) startBtn.disabled = !startable;
+  if(hint) hint.hidden = startable;
+  const chip = $("#home-scope-chip");
+  if(chip) chip.textContent = scopeChipLabel();
+}
+$("#home-start").onclick = ()=>{ if(pool.length >= 8) startBattle("round"); };
+
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
 /* ============================== audio (pre-recorded mp3 first, Web Speech fallback) ============================== */
@@ -178,6 +227,7 @@ function show(name){
   document.querySelectorAll(".screen").forEach(el=>el.classList.remove("on"));
   $("#s-"+name).classList.add("on");
   updateNav(name);
+  if(name==="home"){ renderHome(); }
   if(name==="street"){ renderStreet(); }
   if(name==="quests"){ renderQuests(); }
 }
@@ -394,10 +444,10 @@ $("#hud-pinyin").onclick = ()=>{
   store.set("settings", settings);
   setIconOnly($("#hud-pinyin"), settings.showPinyin ? "pinyin" : "pinyin-off");
 };
-/* home-screen + More-screen sound toggles mirror hud-sfx; both dim when muted
-   and stay in sync with each other (same nbhsk.sfx store key). */
+/* More-screen sound toggle mirrors hud-sfx (dims when muted); both stay in
+   sync via the same nbhsk.sfx store key. The old home-screen sound icon was
+   removed in M3 — #more-sound is now the single toggle outside battle. */
 function syncSoundToggles(){
-  $("#home-sound").classList.toggle("muted", !sfx.enabled);
   $("#more-sound").classList.toggle("muted", !sfx.enabled);
 }
 function toggleSfx(){
@@ -406,7 +456,6 @@ function toggleSfx(){
   syncSoundToggles();
   updateHud();
 }
-$("#home-sound").addEventListener("click", toggleSfx);
 $("#more-sound").addEventListener("click", toggleSfx);
 syncSoundToggles();
 function updateHud(){
@@ -1435,10 +1484,7 @@ pool = buildPool(D.levels, scope);
 applyStaticI18n();
 syncUiLangChips();
 sfx.pack = shopState.soundpack || "default";
-updateWalletChip();
-updateSmartBtn();
-updateStreakChip();
-updateLevelChip();
+renderHome();
 renderQuests();
 renderStreet();
 updateNav(currentScreen);

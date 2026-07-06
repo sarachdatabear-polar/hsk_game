@@ -8,16 +8,19 @@
 export const STRINGS = {
   en: {
     // home
-    "home.tagline1": "Match each word to its meaning —",
-    "home.tagline": "master real-exam HSK vocabulary.",
-    "home.learn": "Learn",
     "home.smart": "Smart Review",
     "home.flashcards": "Flashcards",
-    "home.collection": "Collection",
+    "home.shop": "Shop",
     "home.best": "Best Sessions",
     "home.progress": "Progress",
     "home.howto": "How to play",
     "home.sound": "Sound effects",
+    "home.settings": "Settings",
+    "home.streakTitle": "Study Streak",
+    "home.streakDays": "{n} days",
+    "home.start": "START",
+    "home.startHint": "Need at least 8 words in scope to start — widen it below.",
+    "home.scopeWords": "{n} words",
     // bottom nav (M2)
     "nav.home": "Home",
     "nav.street": "Street",
@@ -109,16 +112,19 @@ export const STRINGS = {
   },
   th: {
     // home
-    "home.tagline1": "จับคู่คำศัพท์กับความหมาย —",
-    "home.tagline": "เรียนรู้คำศัพท์ HSK จากข้อสอบจริง",
-    "home.learn": "เรียน",
     "home.smart": "ทบทวนอัจฉริยะ",
     "home.flashcards": "บัตรคำ",
-    "home.collection": "คอลเลกชัน",
+    "home.shop": "ร้านค้า",
     "home.best": "สถิติดีที่สุด",
     "home.progress": "ความคืบหน้า",
     "home.howto": "วิธีเล่น",
     "home.sound": "เสียงประกอบ",
+    "home.settings": "ตั้งค่า",
+    "home.streakTitle": "เรียนต่อเนื่อง",
+    "home.streakDays": "{n} วัน",
+    "home.start": "เริ่ม",
+    "home.startHint": "ต้องมีคำอย่างน้อย 8 คำในขอบเขตจึงจะเริ่มได้ — ขยายขอบเขตด้านล่าง",
+    "home.scopeWords": "{n} คำ",
     // bottom nav (M2)
     "nav.home": "หน้าหลัก",
     "nav.street": "ถนน",

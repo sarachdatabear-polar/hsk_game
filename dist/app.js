@@ -57,6 +57,22 @@
   function modeKey(mode, len) {
     return mode === "round" && len !== 20 ? "round" + len : mode;
   }
+  function scopeSummary(scope2) {
+    const levels = [...scope2.levels].sort((a, b) => a - b);
+    let levelLabel = "";
+    if (levels.length === 1) {
+      levelLabel = "HSK" + levels[0];
+    } else if (levels.length > 1) {
+      const isRun = levels.every((n, i) => i === 0 || n === levels[i - 1] + 1);
+      levelLabel = isRun ? `HSK${levels[0]}\u2013${levels[levels.length - 1]}` : "HSK" + levels.join("+");
+    }
+    return {
+      levelLabel,
+      core: !!scope2.core,
+      newOnly: !!scope2.newOnly,
+      sessionLen: normalizeLen(scope2.sessionLen)
+    };
+  }
 
   // src/distractors.js
   function shuffle(a, rand) {
@@ -1267,16 +1283,19 @@
   var STRINGS = {
     en: {
       // home
-      "home.tagline1": "Match each word to its meaning \u2014",
-      "home.tagline": "master real-exam HSK vocabulary.",
-      "home.learn": "Learn",
       "home.smart": "Smart Review",
       "home.flashcards": "Flashcards",
-      "home.collection": "Collection",
+      "home.shop": "Shop",
       "home.best": "Best Sessions",
       "home.progress": "Progress",
       "home.howto": "How to play",
       "home.sound": "Sound effects",
+      "home.settings": "Settings",
+      "home.streakTitle": "Study Streak",
+      "home.streakDays": "{n} days",
+      "home.start": "START",
+      "home.startHint": "Need at least 8 words in scope to start \u2014 widen it below.",
+      "home.scopeWords": "{n} words",
       // bottom nav (M2)
       "nav.home": "Home",
       "nav.street": "Street",
@@ -1368,16 +1387,19 @@
     },
     th: {
       // home
-      "home.tagline1": "\u0E08\u0E31\u0E1A\u0E04\u0E39\u0E48\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E01\u0E31\u0E1A\u0E04\u0E27\u0E32\u0E21\u0E2B\u0E21\u0E32\u0E22 \u2014",
-      "home.tagline": "\u0E40\u0E23\u0E35\u0E22\u0E19\u0E23\u0E39\u0E49\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C HSK \u0E08\u0E32\u0E01\u0E02\u0E49\u0E2D\u0E2A\u0E2D\u0E1A\u0E08\u0E23\u0E34\u0E07",
-      "home.learn": "\u0E40\u0E23\u0E35\u0E22\u0E19",
       "home.smart": "\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E2D\u0E31\u0E08\u0E09\u0E23\u0E34\u0E22\u0E30",
       "home.flashcards": "\u0E1A\u0E31\u0E15\u0E23\u0E04\u0E33",
-      "home.collection": "\u0E04\u0E2D\u0E25\u0E40\u0E25\u0E01\u0E0A\u0E31\u0E19",
+      "home.shop": "\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32",
       "home.best": "\u0E2A\u0E16\u0E34\u0E15\u0E34\u0E14\u0E35\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14",
       "home.progress": "\u0E04\u0E27\u0E32\u0E21\u0E04\u0E37\u0E1A\u0E2B\u0E19\u0E49\u0E32",
       "home.howto": "\u0E27\u0E34\u0E18\u0E35\u0E40\u0E25\u0E48\u0E19",
       "home.sound": "\u0E40\u0E2A\u0E35\u0E22\u0E07\u0E1B\u0E23\u0E30\u0E01\u0E2D\u0E1A",
+      "home.settings": "\u0E15\u0E31\u0E49\u0E07\u0E04\u0E48\u0E32",
+      "home.streakTitle": "\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07",
+      "home.streakDays": "{n} \u0E27\u0E31\u0E19",
+      "home.start": "\u0E40\u0E23\u0E34\u0E48\u0E21",
+      "home.startHint": "\u0E15\u0E49\u0E2D\u0E07\u0E21\u0E35\u0E04\u0E33\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E19\u0E49\u0E2D\u0E22 8 \u0E04\u0E33\u0E43\u0E19\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E08\u0E36\u0E07\u0E08\u0E30\u0E40\u0E23\u0E34\u0E48\u0E21\u0E44\u0E14\u0E49 \u2014 \u0E02\u0E22\u0E32\u0E22\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E14\u0E49\u0E32\u0E19\u0E25\u0E48\u0E32\u0E07",
+      "home.scopeWords": "{n} \u0E04\u0E33",
       // bottom nav (M2)
       "nav.home": "\u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
       "nav.street": "\u0E16\u0E19\u0E19",
@@ -1551,7 +1573,14 @@
   var xp = store.get("xp", 0);
   function updateLevelChip() {
     const el = $("#home-level");
-    if (el) setPill(el, "paw", `Lv ${levelForXp(xp)}`);
+    if (!el) return;
+    const lv = levelForXp(xp);
+    const prog = xpToNext(xp);
+    const pct = prog.need ? Math.round(100 * prog.into / prog.need) : 100;
+    const txt = el.querySelector(".level-text");
+    const bar = el.querySelector(".xp-bar i");
+    if (txt) txt.textContent = `Lv ${lv}`;
+    if (bar) bar.style.width = pct + "%";
   }
   function addXp(n) {
     const before = levelForXp(xp);
@@ -1575,9 +1604,16 @@
   var daily = Object.assign(defaultDaily(), store.get("daily", {}));
   daily.today = Object.assign({ date: "", resolved: 0 }, daily.today);
   function updateStreakChip() {
-    const info = streakInfo(daily, todayStr());
     const el = $("#home-streak");
-    el.replaceChildren(iconSvg("streak"), document.createTextNode(info.goalMet ? ` ${info.streak} \xB7 complete today` : ` ${info.streak} \xB7 ${info.todayResolved}/${info.goal} today`));
+    if (!el) return;
+    const info = streakInfo(daily, todayStr());
+    const title = el.querySelector(".streak-title");
+    const count = el.querySelector(".streak-count");
+    const bar = el.querySelector(".streak-bar i");
+    if (title) title.textContent = t("home.streakTitle");
+    if (count) count.textContent = t("home.streakDays", { n: info.streak });
+    if (bar) bar.style.width = Math.min(100, Math.round(100 * info.todayResolved / info.goal)) + "%";
+    el.classList.toggle("goal-met", info.goalMet);
   }
   function noteDaily(count) {
     daily = noteActivity(daily, todayStr(), count);
@@ -1625,6 +1661,30 @@
     questEvent("review");
     startBattle("round");
   };
+  function scopeChipLabel() {
+    const s = scopeSummary(scope);
+    const bits = [s.levelLabel];
+    if (s.core) bits.push(t("scope.highYield"));
+    if (s.newOnly) bits.push(t("scope.newOnly"));
+    bits.push(t("home.scopeWords", { n: s.sessionLen }));
+    return bits.join(" \xB7 ");
+  }
+  function renderHome() {
+    updateLevelChip();
+    updateWalletChip();
+    updateStreakChip();
+    updateSmartBtn();
+    const startable = pool.length >= 8;
+    const startBtn = $("#home-start");
+    const hint = $("#home-start-hint");
+    if (startBtn) startBtn.disabled = !startable;
+    if (hint) hint.hidden = startable;
+    const chip = $("#home-scope-chip");
+    if (chip) chip.textContent = scopeChipLabel();
+  }
+  $("#home-start").onclick = () => {
+    if (pool.length >= 8) startBattle("round");
+  };
   function shuffle2(a) {
     for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -1667,6 +1727,9 @@
     document.querySelectorAll(".screen").forEach((el) => el.classList.remove("on"));
     $("#s-" + name).classList.add("on");
     updateNav(name);
+    if (name === "home") {
+      renderHome();
+    }
     if (name === "street") {
       renderStreet();
     }
@@ -1964,7 +2027,6 @@
     setIconOnly($("#hud-pinyin"), settings.showPinyin ? "pinyin" : "pinyin-off");
   };
   function syncSoundToggles() {
-    $("#home-sound").classList.toggle("muted", !sfx.enabled);
     $("#more-sound").classList.toggle("muted", !sfx.enabled);
   }
   function toggleSfx() {
@@ -1973,7 +2035,6 @@
     syncSoundToggles();
     updateHud();
   }
-  $("#home-sound").addEventListener("click", toggleSfx);
   $("#more-sound").addEventListener("click", toggleSfx);
   syncSoundToggles();
   function updateHud() {
@@ -3225,10 +3286,7 @@
   applyStaticI18n();
   syncUiLangChips();
   sfx.pack = shopState.soundpack || "default";
-  updateWalletChip();
-  updateSmartBtn();
-  updateStreakChip();
-  updateLevelChip();
+  renderHome();
   renderQuests();
   renderStreet();
   updateNav(currentScreen);
