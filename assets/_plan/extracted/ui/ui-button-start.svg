@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="98" viewBox="0 0 380 98">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FBD35C"/>
+      <stop offset="0.45" stop-color="#F5C243"/>
+      <stop offset="1" stop-color="#E8AC2E"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#D89B26"/>
+      <stop offset="1" stop-color="#B87F1A"/>
+    </linearGradient>
+    <filter id="drop" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#5a4010" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <!-- outer rim -->
+  <rect x="3" y="3" width="374" height="88" rx="18" fill="url(#rim)" filter="url(#drop)"/>
+  <!-- gold face -->
+  <rect x="7" y="7" width="366" height="80" rx="14" fill="url(#gold)"/>
+  <!-- top sheen -->
+  <rect x="12" y="11" width="356" height="26" rx="12" fill="#FFFFFF" opacity="0.22"/>
+  <!-- inset frame line with notched corners (style-bible plaque detail) -->
+  <path d="M 30 20 H 350 M 30 74 H 350 M 20 30 V 64 M 360 30 V 64
+           M 30 20 Q 20 20 20 30 M 350 20 Q 360 20 360 30
+           M 30 74 Q 20 74 20 64 M 350 74 Q 360 74 360 64"
+        fill="none" stroke="#C08A1E" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="190" y="62" text-anchor="middle"
+        font-family="'Baloo 2','Fredoka','Nunito',system-ui,sans-serif"
+        font-size="38" font-weight="800" fill="#3A2E1A" letter-spacing="6">START</text>
+</svg>

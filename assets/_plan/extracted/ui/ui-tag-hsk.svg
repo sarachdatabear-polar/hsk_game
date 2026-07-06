@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="64" viewBox="0 0 150 64">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#43A374"/><stop offset="1" stop-color="#256A49"/></linearGradient></defs>
+<rect x="2" y="2" width="146" height="60" rx="14" fill="url(#g)" stroke="#1E5A3E" stroke-width="3"/>
+<rect x="7" y="6" width="136" height="16" rx="8" fill="#FFFFFF" opacity="0.2"/>
+<text x="75.0" y="43.0" text-anchor="middle" font-family="'Baloo 2','Fredoka','Nunito',system-ui,sans-serif" font-size="30" font-weight="800" fill="#FFFFFF">HSK 2</text>
+</svg>
