@@ -30,7 +30,7 @@ const store = {
 };
 const scope = Object.assign({levels:[3], core:false, newOnly:false, topN:0, lang:"both", sessionLen:20},
                             store.get("scope", {}));
-let settings = Object.assign({autoSpeak:true}, store.get("settings", {}));
+let settings = Object.assign({autoSpeak:true, showPinyin:true}, store.get("settings", {}));
 // UI language: persisted choice wins, else device language. i18n.js is pure,
 // so persistence lives here (nbhsk.locale), like every other nbhsk.* key.
 setLocale(store.get("locale", detectLocale()));
@@ -371,6 +371,13 @@ $("#hud-audio").onclick = ()=>{
   store.set("settings", settings);
   setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
 };
+/* pinyin toggle: hides the romanization on the battle word plate (quiz mode) so
+   advanced learners test pure character recall. Persisted like autoSpeak. */
+$("#hud-pinyin").onclick = ()=>{
+  settings.showPinyin = !settings.showPinyin;
+  store.set("settings", settings);
+  setIconOnly($("#hud-pinyin"), settings.showPinyin ? "pinyin" : "pinyin-off");
+};
 /* home-screen sound toggle mirrors hud-sfx; the button dims when muted. */
 $("#home-sound").addEventListener("click", ()=>{
   sfx.enabled = !sfx.enabled;
@@ -392,6 +399,7 @@ function updateHud(){
   $("#hud-left").textContent = B.mode==="round"? (B.wordsTotal-B.resolved)+" left":"endless";
   setIconOnly($("#hud-sfx"), sfx.enabled ? "bell" : "bell-off");
   setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
+  setIconOnly($("#hud-pinyin"), settings.showPinyin ? "pinyin" : "pinyin-off");
 }
 function pushMiss(w){ if(!B.missSet.has(w.h)){ B.missSet.add(w.h); B.misses.push(w); } }
 function spawnZombie(){
@@ -491,7 +499,7 @@ function answer(btn, o){
     btn.classList.add("good");
     lockOptions();
     B.proj = {x:B.L.mascotX+16*B.S, y:B.h-B.L.ground-30*B.S};   // coin flies at the cat
-    speak(z.w.h);                              // the sound sticks with the correct answer
+    // (word audio fires once, on spawn — no replay on the answer tap)
     if(boss) noteAnswer(z.w.h, true);           // both stages passed
     const gy = B.h-B.L.ground;
     B.feedback = {...feedbackEffect("correct", z.x, gy-42*B.S), until:performance.now()+620};
@@ -698,7 +706,8 @@ function draw(t){
     // boss stage 2 asks "which hanzi?", so the plate must not give it away
     const hideWord = z.boss && z.stage === "hanzi" && z.state === "walk";
     const bh = hideWord ? "？？" : z.w.h;
-    const bp = hideWord ? "" : z.w.p;
+    // pinyin off when: boss reverse-question hides it, OR the player toggled it off
+    const bp = (hideWord || !settings.showPinyin) ? "" : z.w.p;
     drawWordPlate(hideWord ? "??" : bh, bp, z.w.lv, z.boss, t);
     // cat — bosses draw bigger with a gold aura (boss param, not scale — see
     // cat.js); growth accessories ride along via the same call, kitten trails
