@@ -7,6 +7,7 @@ import { sfx } from "./sfx.js";
 import { drawCat } from "./cat.js";
 import { uiScale, layout } from "./layout.js";
 import { loadSprites, sprite } from "./sprites.js";
+import { preload as preloadAssets } from "./assets.js";
 import { recordAnswer, levelMastery } from "./mastery.js";
 import { levelForXp, xpToNext, accessoriesFor, nextMilestone, MILESTONES } from "./growth.js";
 import { wordWeight, smartDeck, weakWords } from "./srs.js";
@@ -18,6 +19,7 @@ import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem } from "./shop.js";
 import { streetPieces, streetProgress } from "./street.js";
 import { iconSvg, setIconLabel, setIconOnly, setPill } from "./icons.js";
+import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -29,6 +31,9 @@ const store = {
 const scope = Object.assign({levels:[3], core:false, newOnly:false, topN:0, lang:"both", sessionLen:20},
                             store.get("scope", {}));
 let settings = Object.assign({autoSpeak:true}, store.get("settings", {}));
+// UI language: persisted choice wins, else device language. i18n.js is pure,
+// so persistence lives here (nbhsk.locale), like every other nbhsk.* key.
+setLocale(store.get("locale", detectLocale()));
 sfx.enabled = store.get("sfx", true);
 let pool = [];            // current merged word pool
 let learnDeck = null;     // override deck for "review misses"
@@ -42,7 +47,7 @@ function noteAnswer(hanzi, correct){
 }
 let wallet = store.get("wallet", 0);
 let shopState = Object.assign(defaultShop(), store.get("shop", {}));
-function updateWalletChip(){ setPill($("#home-wallet"), "coin", wallet.toLocaleString()); }
+function updateWalletChip(){ setPill($("#home-wallet"), "secondary-coin", wallet.toLocaleString()); }
 
 /* ============================== cat growth (xp/levels/accessories) ============================== */
 let xp = store.get("xp", 0);
@@ -103,10 +108,10 @@ function renderQuests(){
   for(const q of questStatus(questState, todayStr())){
     const row = document.createElement("div");
     row.className = "quest-row"+(q.done? " done":"");
-    row.innerHTML = `<span class="qi">${q.done? "Done":"Open"}</span>
-      <span class="qd">${q.desc}</span>
+    row.innerHTML = `<span class="qi">${q.done? t("quest.status.done") : t("quest.status.open")}</span>
+      <span class="qd">${t("quest."+q.id)}</span>
       <span class="qp">${q.progress}/${q.target}</span>
-      <span class="qr">+${q.reward} coins</span>`;
+      <span class="qr">${t("quest.reward", { reward: q.reward })}</span>`;
     panel.appendChild(row);
   }
 }
@@ -116,9 +121,9 @@ function updateSmartBtn(){
   btn.disabled = deck.length < 8;
   // below the 8-word minimum, show progress toward it ("6/8") so the disabled
   // button reads as "not enough yet" rather than broken
-  setIconLabel(btn, "target", !deck.length ? "Smart Review"
-    : deck.length < 8 ? `Smart Review · ${deck.length}/8`
-    : `Smart Review · ${deck.length}`);
+  setIconLabel(btn, "target", !deck.length ? t("scope.smartReview")
+    : deck.length < 8 ? t("scope.smartReviewProgress", { have: deck.length })
+    : t("scope.smartReviewReady", { n: deck.length }));
 }
 $("#go-smart").onclick = ()=>{
   const deck = smartDeck(masteryStore, pool, Date.now());
@@ -137,6 +142,20 @@ fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>in
 
 /* ============================== sprite preload ============================== */
 loadSprites();
+preloadAssets();
+
+/* ============================== i18n DOM binding ============================== */
+// Localizes any static markup annotated with data-i18n* attributes. Dynamic
+// strings (built in JS) call t() directly at render time.
+function applyStaticI18n(root = document){
+  root.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.getAttribute("data-i18n")); });
+  root.querySelectorAll("[data-i18n-title]").forEach(el => {
+    const v = t(el.getAttribute("data-i18n-title"));
+    el.title = v; el.setAttribute("aria-label", v);
+  });
+  root.querySelectorAll("[data-i18n-ph]").forEach(el => { el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph"))); });
+  document.documentElement.lang = getLocale();
+}
 
 /* ============================== screens ============================== */
 let currentScreen = "home";
@@ -180,8 +199,8 @@ function renderScope(){
   pool = buildPool(D.levels, scope);
   const noThai = pool.filter(w=>!w.t).length;
   $("#readout").innerHTML =
-    `Pool: <b>${pool.length.toLocaleString()}</b> words · ~<b>${coveragePct(pool, D.manifest, scope.levels)}%</b> of exam text`
-    +(scope.lang!=="en" && noThai? `<div class="warn">* ${noThai.toLocaleString()} long-tail words have no Thai yet — English shown instead.</div>`:"");
+    t("scope.readout", { count: pool.length.toLocaleString(), pct: coveragePct(pool, D.manifest, scope.levels) })
+    + (scope.lang !== "en" && noThai ? `<div class="warn">${t("scope.readoutNoThai", { n: noThai.toLocaleString() })}</div>` : "");
   const len = normalizeLen(scope.sessionLen);
   scope.sessionLen = len;
   if(![20,40,100].includes(len)) lenCustomOpen = true;
@@ -192,7 +211,7 @@ function renderScope(){
   const lenInput = $("#len-custom");
   lenInput.hidden = !lenCustomOpen;
   if(lenCustomOpen && document.activeElement !== lenInput) lenInput.value = len;
-  setIconLabel($("#go-battle"), "play", `Battle · ${len}`);
+  setIconLabel($("#go-battle"), "quest", t("scope.wordQuest", { n: len }));
   store.set("scope", scope);
   const startable = pool.length >= 8;
   $("#go-battle").disabled = $("#go-endless").disabled = $("#go-learn").disabled = !startable;
@@ -202,6 +221,17 @@ $("#f-core").onclick = ()=>{ scope.core = !scope.core; renderScope(); };
 $("#f-new").onclick  = ()=>{ scope.newOnly = !scope.newOnly; renderScope(); };
 document.querySelectorAll("#topn-chips .chip").forEach(c=>c.onclick = ()=>{ scope.topN = +c.dataset.n; renderScope(); });
 document.querySelectorAll("#lang-chips .chip").forEach(c=>c.onclick = ()=>{ scope.lang = c.dataset.lang; renderScope(); });
+function setUiLocale(l){
+  setLocale(l);
+  store.set("locale", getLocale());
+  applyStaticI18n();
+  syncUiLangChips();
+  renderScope();   // refresh dynamic scope labels (Word Quest · N, readout, Smart Review)
+}
+function syncUiLangChips(){
+  document.querySelectorAll("#ui-lang-chips .chip").forEach(c => c.classList.toggle("on", c.dataset.uilang === getLocale()));
+}
+document.querySelectorAll("#ui-lang-chips .chip").forEach(c => c.onclick = () => setUiLocale(c.dataset.uilang));
 document.querySelectorAll("#len-chips .chip").forEach(c=>c.onclick = ()=>{
   if(c.dataset.len==="custom"){ lenCustomOpen = true; renderScope(); $("#len-custom").focus(); }
   else { lenCustomOpen = false; scope.sessionLen = +c.dataset.len; renderScope(); }
@@ -209,7 +239,7 @@ document.querySelectorAll("#len-chips .chip").forEach(c=>c.onclick = ()=>{
 $("#len-custom").addEventListener("input", ()=>{
   scope.sessionLen = normalizeLen($("#len-custom").value);
   store.set("scope", scope);
-  setIconLabel($("#go-battle"), "play", `Battle · ${scope.sessionLen}`);
+  setIconLabel($("#go-battle"), "quest", t("scope.wordQuest", { n: scope.sessionLen }));
 });
 $("#len-custom").addEventListener("change", ()=>renderScope());  // blur/Enter: snap display to normalized value
 document.querySelectorAll("#preset-chips .chip").forEach(c=>c.onclick = ()=>{
@@ -233,7 +263,7 @@ function endLearn(){ show(fc.fromMisses ? "results" : "home"); }
 function renderCard(){
   const w = fc.deck[fc.i];
   if(!w){ endLearn(); return; }
-  $("#fc-count").textContent = `${fc.done} done · ${fc.deck.length - fc.i} left`;
+  $("#fc-count").textContent = t("learn.count", { done: fc.done, left: fc.deck.length - fc.i });
   const c = $("#fc-card");
   if(!fc.flipped){
     c.innerHTML = `<div class="hz">${w.h}</div><div class="py">${w.p}</div>
@@ -341,7 +371,7 @@ $("#hud-audio").onclick = ()=>{
   store.set("settings", settings);
   setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
 };
-/* home-screen sound toggle (mirrors hud-sfx; btn-sound.png art greys out when muted) */
+/* home-screen sound toggle mirrors hud-sfx; the button dims when muted. */
 $("#home-sound").addEventListener("click", ()=>{
   sfx.enabled = !sfx.enabled;
   store.set("sfx", sfx.enabled);
@@ -401,7 +431,7 @@ function renderBossHanzi(word){
   const m = meaningOf(word, scope.lang);
   const prompt = document.createElement("div");
   prompt.style.cssText = "grid-column:1/-1; text-align:center; font-weight:700; color:var(--gold); padding:2px 4px 8px;";
-  prompt.textContent = `Boss · pick the hanzi for: ${m.main}`;
+  prompt.textContent = `Review Challenge · pick the hanzi for: ${m.main}`;
   box.appendChild(prompt);
   for(const o of opts){
     const b = document.createElement("button");
@@ -624,7 +654,7 @@ function paintBackdrop(c, w, h, gy, style, t=0){
   }
 }
 function drawBackdrop(gy){
-  const selected = shopState.backdrop ? `bg-${shopState.backdrop}` : "bg-battle";
+  const selected = shopState.backdrop ? `bg-${shopState.backdrop}` : "bg-quest";
   const img = sprite(selected);
   if(img) drawCoverImage(ctx, img, 0, 0, B.w, B.h);
   else if(shopState.backdrop) paintBackdrop(ctx, B.w, B.h, gy, shopState.backdrop, performance.now());
@@ -727,42 +757,57 @@ function drawWordPlate(hanzi, pinyin, level, boss, t){
   const lw = Math.min(B.w - 24*B.S, textW + 48*B.S);
   const lh = (pinyin ? 86 : 64) * B.S;
   const x = B.w/2 - lw/2, y = wy - lh/2;
-  ctx.shadowColor = "rgba(0,0,0,.45)";
-  ctx.shadowBlur = 14*B.S;
-  ctx.shadowOffsetY = 5*B.S;
-  const lacquer = ctx.createLinearGradient(0,y,0,y+lh);
-  lacquer.addColorStop(0,"rgba(93,30,28,.94)");
-  lacquer.addColorStop(.52,"rgba(48,14,18,.94)");
-  lacquer.addColorStop(1,"rgba(28,8,12,.96)");
-  ctx.fillStyle = lacquer;
+  // cream paper plaque (education-first reference): matte paper, warm-brown
+  // border, corner ticks — hanzi/pinyin stay dynamic text, never baked art
+  ctx.shadowColor = "rgba(60,40,20,.32)";
+  ctx.shadowBlur = 12*B.S;
+  ctx.shadowOffsetY = 4*B.S;
+  const paper = ctx.createLinearGradient(0,y,0,y+lh);
+  paper.addColorStop(0,"rgba(253,246,227,.97)");
+  paper.addColorStop(1,"rgba(243,230,198,.97)");
+  ctx.fillStyle = paper;
   roundRect(x,y,lw,lh,14*B.S); ctx.fill();
   ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-  ctx.strokeStyle = boss ? "#fff1a6" : "#f5c518";
-  ctx.lineWidth = 2.4*B.S;
-  roundRect(x+1*B.S,y+1*B.S,lw-2*B.S,lh-2*B.S,13*B.S); ctx.stroke();
-  ctx.strokeStyle = "rgba(255,244,224,.2)";
-  ctx.lineWidth = 1;
-  roundRect(x+7*B.S,y+7*B.S,lw-14*B.S,lh-14*B.S,9*B.S); ctx.stroke();
-  const glintX = x + ((t/22) % (lw + 80*B.S)) - 40*B.S;
-  const glint = ctx.createLinearGradient(glintX-20*B.S,y,glintX+20*B.S,y+lh);
-  glint.addColorStop(0,"rgba(255,255,255,0)");
-  glint.addColorStop(.5,"rgba(255,244,224,.12)");
-  glint.addColorStop(1,"rgba(255,255,255,0)");
-  ctx.fillStyle = glint;
-  roundRect(x,y,lw,lh,14*B.S); ctx.fill();
-  ctx.fillStyle = boss ? "#fff1a6" : "#fff4e0";
+  ctx.strokeStyle = boss ? "#D8A93A" : "#B98F55";
+  ctx.lineWidth = 2.6*B.S;
+  roundRect(x+1.3*B.S,y+1.3*B.S,lw-2.6*B.S,lh-2.6*B.S,13*B.S); ctx.stroke();
+  ctx.strokeStyle = "rgba(231,211,166,.9)";
+  ctx.lineWidth = 1.2*B.S;
+  roundRect(x+6*B.S,y+6*B.S,lw-12*B.S,lh-12*B.S,9*B.S); ctx.stroke();
+  // corner ticks
+  ctx.strokeStyle = "#C29B5F";
+  ctx.lineWidth = 1.8*B.S;
+  ctx.lineCap = "round";
+  const tk = 5*B.S, ti = 10*B.S;
+  ctx.beginPath();
+  ctx.moveTo(x+ti, y+ti+tk); ctx.lineTo(x+ti, y+ti); ctx.lineTo(x+ti+tk, y+ti);
+  ctx.moveTo(x+lw-ti-tk, y+ti); ctx.lineTo(x+lw-ti, y+ti); ctx.lineTo(x+lw-ti, y+ti+tk);
+  ctx.moveTo(x+ti, y+lh-ti-tk); ctx.lineTo(x+ti, y+lh-ti); ctx.lineTo(x+ti+tk, y+lh-ti);
+  ctx.moveTo(x+lw-ti-tk, y+lh-ti); ctx.lineTo(x+lw-ti, y+lh-ti); ctx.lineTo(x+lw-ti, y+lh-ti-tk);
+  ctx.stroke();
+  ctx.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
   ctx.textAlign = "center";
+  ctx.font = `700 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
   ctx.fillText(hanzi, B.w/2, wy + (pinyin ? -5*B.S : B.L.hanziPx*.34));
   if(pinyin){
     ctx.font = `600 ${Math.round(B.L.pinyinPx)}px 'Segoe UI',sans-serif`;
-    ctx.fillStyle = "#f5c518";
+    ctx.fillStyle = "#8C5F2A";
     ctx.fillText(pinyin, B.w/2, wy + 28*B.S);
   }
   if(level){
+    // dark-green level tag (reference TAG)
     ctx.font = `700 ${Math.round(10*B.S)}px 'Segoe UI',sans-serif`;
-    ctx.fillStyle = "rgba(245,197,24,.9)";
+    const tagText = `HSK ${level}`;
+    const tw = ctx.measureText(tagText).width + 12*B.S;
+    const th = 16*B.S;
+    ctx.fillStyle = "#2F6B4F";
+    roundRect(x+8*B.S, y-th*.45, tw, th, th/2); ctx.fill();
+    ctx.strokeStyle = "#1E4634";
+    ctx.lineWidth = 1.2*B.S;
+    roundRect(x+8*B.S, y-th*.45, tw, th, th/2); ctx.stroke();
+    ctx.fillStyle = "#F2EDDE";
     ctx.textAlign = "left";
-    ctx.fillText(`HSK ${level}`, x+12*B.S, y+17*B.S);
+    ctx.fillText(tagText, x+14*B.S, y-th*.45 + th*.7);
   }
   ctx.restore();
 }
@@ -846,16 +891,18 @@ function endBattle(quit){
   if(bonus) wallet += bonus;
   store.set("wallet", wallet);
   updateWalletChip();
-  $("#r-wallet").textContent = `+${B.score} coins banked · total ${wallet.toLocaleString()}`;
+  $("#r-wallet").textContent = t("results.banked", { score: B.score, total: wallet.toLocaleString() });
   const perfectEl = $("#r-perfect");
-  if(isPerfect){ perfectEl.textContent = `Perfect round! +${bonus} coin bonus`; perfectEl.style.display = "block"; }
+  if(isPerfect){ perfectEl.textContent = t("results.perfect", { bonus }); perfectEl.style.display = "block"; }
   else perfectEl.style.display = "none";
   const lu = B.levelUps || [];
   const luEl = $("#r-levelup");
   if(lu.length){
     const from = lu[0].from, to = lu[lu.length-1].to;
     const hit = MILESTONES.filter(m => m.lv > from && m.lv <= to);
-    luEl.textContent = `Level up! Lv ${to}`+(hit.length? ` — unlocked: ${hit.map(m=>m.name).join(", ")}`:"");
+    luEl.textContent = hit.length
+      ? t("results.levelUpUnlocked", { lv: to, items: hit.map(m=>m.name).join(", ") })
+      : t("results.levelUp", { lv: to });
     luEl.style.display = "block";
   }else{
     luEl.style.display = "none";
@@ -864,7 +911,7 @@ function endBattle(quit){
   rq.innerHTML = "";
   for(const q of questToasts){
     const line = document.createElement("div");
-    line.textContent = `Quest complete: ${q.desc} +${q.reward} coins`;
+    line.textContent = t("results.questComplete", { desc: t("quest."+q.id), reward: q.reward });
     rq.appendChild(line);
   }
   rq.style.display = questToasts.length ? "block" : "none";
@@ -875,8 +922,8 @@ function endBattle(quit){
   const prev = best[key]? best[key].score : 0;
   const isBest = B.score > prev;
   if(isBest){ best[key] = {score:B.score, date:new Date().toISOString().slice(0,10)}; store.set("best", best); }
-  $("#r-sub").innerHTML = `${acc}% accuracy · ${B.correct} coins · ${key}`
-    + (isBest? ` · <b style="color:var(--gold)">new best!</b>` : ` · best ${prev}`);
+  $("#r-sub").innerHTML = t("results.sub", { acc, words: B.correct, key })
+    + (isBest ? ` · <b style="color:var(--gold)">${t("results.bestTag")}</b>` : ` · ${t("results.bestPrev", { prev })}`);
   const list = $("#r-miss");
   list.innerHTML = "";
   $("#r-misshead").style.display = B.misses.length? "block":"none";
@@ -904,7 +951,7 @@ function renderScores(){
   const best = store.get("best", {});
   const box = $("#scorelist");
   const keys = Object.keys(best).sort((a,b)=>best[b].score-best[a].score);
-  box.innerHTML = keys.length? "" : `<div class="scorerow" style="color:var(--muted)">No scores yet — go earn some coins!</div>`;
+  box.innerHTML = keys.length ? "" : `<div class="scorerow" style="color:var(--muted)">${t("scores.empty")}</div>`;
   for(const k of keys){
     const row = document.createElement("div");
     row.className = "scorerow";
@@ -916,7 +963,7 @@ function renderScores(){
 /* ============================== shop ============================== */
 function renderShop(){
   sfx.pack = shopState.soundpack || "default";  // keep sfx in sync with the equipped slot
-  $("#shop-wallet").innerHTML = `Wallet: <b>${wallet.toLocaleString()}</b> coins`;
+  $("#shop-wallet").innerHTML = t("shop.wallet", { coins: wallet.toLocaleString() });
   const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), decoBox = $("#shop-street");
   skinBox.innerHTML = ""; bdBox.innerHTML = ""; fxBox.innerHTML = ""; sndBox.innerHTML = ""; decoBox.innerHTML = "";
   for(const item of CATALOG){
@@ -926,7 +973,7 @@ function renderShop(){
     const row = document.createElement("div");
     row.className = "scorerow shoprow";
     const left = document.createElement("span");
-    left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${item.price.toLocaleString()} coins</span>`;
+    left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${t("shop.coins", { coins: item.price.toLocaleString() })}</span>`;
     left.className = "shop-left";
     const preview = document.createElement("canvas");
     preview.className = "shop-preview";
@@ -934,16 +981,16 @@ function renderShop(){
     preview._shopItem = item;
     const copy = document.createElement("span");
     copy.className = "shop-copy";
-    copy.innerHTML = `<b>${item.name}</b><small>${item.price.toLocaleString()} coins</small>`;
+    copy.innerHTML = `<b>${item.name}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
     left.replaceChildren(preview, copy);
     const btn = document.createElement("button");
     if(item.type === "deco"){
       // Decos are never equipped — every owned deco just appears on the street.
       btn.className = "chip"+(owned? " on":"");
       if(owned){
-        btn.textContent = "On street"; btn.disabled = true;
+        btn.textContent = t("shop.onStreet"); btn.disabled = true;
       }else{
-        btn.textContent = "Buy";
+        btn.textContent = t("shop.buy");
         btn.disabled = !canAfford(wallet, item.id);
         btn.onclick = ()=>{
           const r = buy(wallet, shopState, item.id);
@@ -956,12 +1003,12 @@ function renderShop(){
     }else{
       btn.className = "chip"+(equipped? " on":"");
       if(equipped){
-        btn.textContent = "Equipped"; btn.disabled = true;
+        btn.textContent = t("shop.equipped"); btn.disabled = true;
       }else if(owned){
-        btn.textContent = "Equip";
+        btn.textContent = t("shop.equip");
         btn.onclick = ()=>{ shopState = equipItem(shopState, item.id); store.set("shop", shopState); renderShop(); };
       }else{
-        btn.textContent = "Buy";
+        btn.textContent = t("shop.buy");
         btn.disabled = !canAfford(wallet, item.id);
         btn.onclick = ()=>{
           const r = buy(wallet, shopState, item.id);
@@ -1313,7 +1360,7 @@ function renderNeedsWork(){
   const list = $("#needswork-list");
   list.innerHTML = "";
   if(!weak.length){
-    list.innerHTML = `<div class="missrow" style="color:var(--muted)">Nothing needs work — go play!</div>`;
+    list.innerHTML = `<div class="missrow" style="color:var(--muted)">${t("progress.nothing")}</div>`;
   }
   for(const w of weak){
     const row = document.createElement("div");
@@ -1334,6 +1381,8 @@ function renderNeedsWork(){
 
 /* ============================== boot ============================== */
 pool = buildPool(D.levels, scope);
+applyStaticI18n();
+syncUiLangChips();
 sfx.pack = shopState.soundpack || "default";
 updateWalletChip();
 updateSmartBtn();

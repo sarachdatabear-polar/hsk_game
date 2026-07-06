@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 88" width="300" height="88">
+  <title>PRIMARY button frame — coral red CTA per spec §6.3, label stays dynamic</title>
+  <defs>
+    <linearGradient id="bp" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#EE6D62"/><stop offset="1" stop-color="#D64A3F"/>
+    </linearGradient>
+  </defs>
+  <rect x="1.5" y="9.5" width="297" height="77" rx="21" fill="#A03328"/>
+  <rect x="1.5" y="1.5" width="297" height="77" rx="21" fill="url(#bp)" stroke="#B23A31" stroke-width="3"/>
+  <rect x="8" y="8" width="284" height="64" rx="16" fill="none" stroke="#FFE3C2" stroke-width="2.5" opacity=".55"/>
+  <path d="M22 14 q128 -9 256 0 l0 10 q-128 -8 -256 0 z" fill="#FFFFFF" opacity=".16"/>
+</svg>

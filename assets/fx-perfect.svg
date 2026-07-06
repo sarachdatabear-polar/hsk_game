@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <title>PERFECT — sun/jade star burst with paper rays (spec §8.2, no typography)</title>
+  <defs>
+    <linearGradient id="pfstar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F9D97E"/><stop offset="1" stop-color="#F0BC3F"/>
+    </linearGradient>
+  </defs>
+  <rect x="5" y="5" width="110" height="110" rx="26" fill="#FBF3DC" stroke="#E2CFA3" stroke-width="3"/>
+  <rect x="10.5" y="10.5" width="99" height="99" rx="21" fill="none" stroke="#FFFDF2" stroke-width="2.5"/>
+  <!-- paper rays -->
+  <g fill="#F5C85B" opacity=".55">
+    <rect x="57.5" y="12" width="5" height="12" rx="2.5"/>
+    <rect x="57.5" y="96" width="5" height="12" rx="2.5"/>
+    <rect x="12" y="57.5" width="12" height="5" rx="2.5"/>
+    <rect x="96" y="57.5" width="12" height="5" rx="2.5"/>
+  </g>
+  <g fill="#4FAE8A" opacity=".5">
+    <rect x="24" y="24" width="11" height="5" rx="2.5" transform="rotate(45 29.5 26.5)"/>
+    <rect x="85" y="24" width="11" height="5" rx="2.5" transform="rotate(-45 90.5 26.5)"/>
+    <rect x="24" y="91" width="11" height="5" rx="2.5" transform="rotate(-45 29.5 93.5)"/>
+    <rect x="85" y="91" width="11" height="5" rx="2.5" transform="rotate(45 90.5 93.5)"/>
+  </g>
+  <!-- main star -->
+  <path d="M60 22 69.5 43.5 93 46 75.5 62 80.5 85.5 60 73.5 39.5 85.5 44.5 62 27 46 50.5 43.5z"
+        fill="url(#pfstar)" stroke="#8A5C14" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M55 34 60 45 55 49 51 44z" fill="#FFF6D8" opacity=".85"/>
+  <!-- jade companion stars -->
+  <path d="M30 34 32.5 39.5 38 42 32.5 44.5 30 50 27.5 44.5 22 42 27.5 39.5z" fill="#4FAE8A" stroke="#2F7F5C" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M92 74 94 78.5 98.5 80.5 94 82.5 92 87 90 82.5 85.5 80.5 90 78.5z" fill="#4FAE8A" stroke="#2F7F5C" stroke-width="1.4" stroke-linejoin="round"/>
+  <!-- tiny bookmarks -->
+  <path d="M88 30h8a1.5 1.5 0 0 1 1.5 1.5V44l-5.5 -3.8L86.5 44V31.5A1.5 1.5 0 0 1 88 30z" fill="#E65A4F" stroke="#93321F" stroke-width="1.6" stroke-linejoin="round" transform="rotate(14 92 37)"/>
+  <path d="M24 76h8a1.5 1.5 0 0 1 1.5 1.5V90l-5.5 -3.8L22.5 90V77.5A1.5 1.5 0 0 1 24 76z" fill="#E65A4F" stroke="#93321F" stroke-width="1.6" stroke-linejoin="round" transform="rotate(-12 28 83)"/>
+</svg>

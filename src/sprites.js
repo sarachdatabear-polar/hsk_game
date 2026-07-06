@@ -14,20 +14,19 @@ export const SPRITE_NAMES = [
   "cat-jade-walk", "cat-jade-happy",
   "cat-gold-walk", "cat-gold-happy",
   "cat-boss-walk", "cat-boss-happy",
-  "cat-portrait",
   "maneki", "coin",
-  "bg-home", "bg-battle", "bg-market", "bg-results",
+  "bg-home", "bg-quest", "bg-battle", "bg-market",
   "bg-temple", "bg-bamboo",
-  "ui-panel", "ui-word-plaque",
-  "ui-button-primary", "ui-button-secondary", "ui-button-neutral",
-  "ui-badge", "ui-progress-track", "ui-progress-fill",
-  "fx-correct", "fx-wrong", "fx-critical", "fx-level-up", "fx-new-best",
+  "fx-correct", "fx-wrong", "fx-critical", "fx-level-up",
 ];
+
+// Effect stamps ship as SVG (crisp at any canvas scale); everything else is PNG.
+const SVG_SPRITES = new Set(["fx-correct", "fx-wrong", "fx-critical", "fx-level-up"]);
 
 export function loadSprites() {
   for (const name of SPRITE_NAMES) {
     const img = new Image();
-    img.src = "assets/" + name + ".png";
+    img.src = "assets/" + name + (SVG_SPRITES.has(name) ? ".svg" : ".png");
     REGISTRY[name] = img;
   }
 }
