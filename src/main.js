@@ -21,6 +21,7 @@ import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem } from "
 import { streetPieces, streetProgress } from "./street.js";
 import { iconSvg, setIconLabel, setIconOnly, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
+import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -144,6 +145,9 @@ fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>in
 /* ============================== sprite preload ============================== */
 loadSprites();
 preloadAssets();
+
+/* ============================== font preload (guarded, non-blocking) ============================== */
+if (document.fonts && document.fonts.load) { document.fonts.load("900 40px 'LC Hanzi'").catch(()=>{}); }
 
 /* ============================== i18n DOM binding ============================== */
 // Localizes any static markup annotated with data-i18n* attributes. Dynamic
@@ -749,7 +753,7 @@ function draw(t){
   ctx.globalAlpha = 1;
   // combo floaters drifting up from a kill
   if(B.floats.length){
-    ctx.font = `700 ${Math.round(B.L.floaterPx)}px 'Segoe UI',sans-serif`;
+    ctx.font = fontString(700, B.L.floaterPx, LATIN_STACK);
     ctx.fillStyle = "#f5c518";
     for(const f of B.floats){
       ctx.globalAlpha = Math.max(0, Math.min(1, f.life/0.9));
@@ -765,7 +769,7 @@ function draw(t){
 function drawWordPlate(hanzi, pinyin, level, boss, t){
   const wy = Math.round(B.h * 0.36);
   ctx.save();
-  ctx.font = `700 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
+  ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK);
   const textW = Math.max(ctx.measureText(hanzi).width, 74*B.S);
   const lw = Math.min(B.w - 24*B.S, textW + 48*B.S);
   const lh = (pinyin ? 86 : 64) * B.S;
@@ -809,16 +813,16 @@ function drawWordPlate(hanzi, pinyin, level, boss, t){
   }
   ctx.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
   ctx.textAlign = "center";
-  ctx.font = `700 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
+  ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK);
   ctx.fillText(hanzi, B.w/2, wy + (pinyin ? -5*B.S : B.L.hanziPx*.34));
   if(pinyin){
-    ctx.font = `600 ${Math.round(B.L.pinyinPx)}px 'Segoe UI',sans-serif`;
+    ctx.font = fontString(600, B.L.pinyinPx, LATIN_STACK);
     ctx.fillStyle = "#8C5F2A";
     ctx.fillText(pinyin, B.w/2, wy + 28*B.S);
   }
   if(level){
     // dark-green level tag (reference TAG)
-    ctx.font = `700 ${Math.round(10*B.S)}px 'Segoe UI',sans-serif`;
+    ctx.font = fontString(700, 10*B.S, LATIN_STACK);
     const tagText = `HSK ${level}`;
     const tw = ctx.measureText(tagText).width + 12*B.S;
     const th = 16*B.S;

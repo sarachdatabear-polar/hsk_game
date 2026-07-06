@@ -1464,6 +1464,13 @@
     return s;
   }
 
+  // src/fonts.js
+  var HANZI_STACK = "'LC Hanzi','Noto Serif SC','Segoe UI',serif";
+  var LATIN_STACK = "'LC Latin','LC Thai','Segoe UI',sans-serif";
+  function fontString(weight, px, stack) {
+    return `${weight} ${Math.round(px)}px ${stack}`;
+  }
+
   // src/main.js
   var D = window.HSK_DATA;
   var $ = (s) => document.querySelector(s);
@@ -1592,6 +1599,10 @@
   fetch("audio/index.json").then((r) => r.json()).then((ix) => initAudio(ix)).catch(() => initAudio([]));
   loadSprites();
   preload();
+  if (document.fonts && document.fonts.load) {
+    document.fonts.load("900 40px 'LC Hanzi'").catch(() => {
+    });
+  }
   function applyStaticI18n(root = document) {
     root.querySelectorAll("[data-i18n]").forEach((el) => {
       el.textContent = t(el.getAttribute("data-i18n"));
@@ -2327,7 +2338,7 @@
     }
     ctx2.globalAlpha = 1;
     if (B.floats.length) {
-      ctx2.font = `700 ${Math.round(B.L.floaterPx)}px 'Segoe UI',sans-serif`;
+      ctx2.font = fontString(700, B.L.floaterPx, LATIN_STACK);
       ctx2.fillStyle = "#f5c518";
       for (const f of B.floats) {
         ctx2.globalAlpha = Math.max(0, Math.min(1, f.life / 0.9));
@@ -2345,7 +2356,7 @@
   function drawWordPlate(hanzi, pinyin, level, boss, t2) {
     const wy = Math.round(B.h * 0.36);
     ctx2.save();
-    ctx2.font = `700 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
+    ctx2.font = fontString(700, B.L.hanziPx, HANZI_STACK);
     const textW = Math.max(ctx2.measureText(hanzi).width, 74 * B.S);
     const lw = Math.min(B.w - 24 * B.S, textW + 48 * B.S);
     const lh = (pinyin ? 86 : 64) * B.S;
@@ -2397,15 +2408,15 @@
     }
     ctx2.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
     ctx2.textAlign = "center";
-    ctx2.font = `700 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
+    ctx2.font = fontString(700, B.L.hanziPx, HANZI_STACK);
     ctx2.fillText(hanzi, B.w / 2, wy + (pinyin ? -5 * B.S : B.L.hanziPx * 0.34));
     if (pinyin) {
-      ctx2.font = `600 ${Math.round(B.L.pinyinPx)}px 'Segoe UI',sans-serif`;
+      ctx2.font = fontString(600, B.L.pinyinPx, LATIN_STACK);
       ctx2.fillStyle = "#8C5F2A";
       ctx2.fillText(pinyin, B.w / 2, wy + 28 * B.S);
     }
     if (level) {
-      ctx2.font = `700 ${Math.round(10 * B.S)}px 'Segoe UI',sans-serif`;
+      ctx2.font = fontString(700, 10 * B.S, LATIN_STACK);
       const tagText = `HSK ${level}`;
       const tw = ctx2.measureText(tagText).width + 12 * B.S;
       const th = 16 * B.S;

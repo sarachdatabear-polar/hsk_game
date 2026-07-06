@@ -13,6 +13,24 @@
     src:url('assets/fonts/title.woff2') format('woff2');
     font-display:swap;
   }
+  @font-face{
+    font-family:'LC Hanzi';
+    src:url('assets/fonts/lc-hanzi.woff2') format('woff2');
+    font-weight:900;
+    font-display:swap;
+  }
+  @font-face{
+    font-family:'LC Thai';
+    src:url('assets/fonts/lc-thai.woff2') format('woff2');
+    font-weight:600;
+    font-display:swap;
+  }
+  @font-face{
+    font-family:'LC Latin';
+    src:url('assets/fonts/lc-latin.woff2') format('woff2');
+    font-weight:600;
+    font-display:swap;
+  }
   :root{
     --lc-lacquer:#A51F24;
     --lc-crimson:#4A1015;
@@ -21,8 +39,10 @@
     --lc-jade:#2F9B72;
     --lc-night:#101B2B;
     --lc-paper:#F4E2BE;
-    --lc-ink:#24150E;
-    --lc-cream:#FFF4E0;
+    /* renamed from --lc-ink/--lc-cream: those names are claimed by the Visual
+       Slice v1 palette below (different values) — kept for existing usages */
+    --lc-ink-legacy:#24150E;
+    --lc-cream-legacy:#FFF4E0;
     --lc-tan:#C9A58A;
     --lc-shadow:rgba(18,8,6,.42);
     /* Education-first palette: Lucky Cat Learning Journey */
@@ -42,10 +62,14 @@
     --amber:var(--gold); --green:var(--jade);
     --red:var(--edu-coral); --chip:#EFE7D4; --chip-on:var(--edu-sky); --chip-ink-on:#08324a;
     --panel-border:var(--edu-gray); --panel-wash:#FFFDF6;
+    /* Visual Slice v1 palette (PRD §4.1) — additive tokens, not yet wired into screens */
+    --lc-green:#32775E; --lc-sky:#5DAADD; --lc-sun:#F2BC57; --lc-coral:#E69777;
+    --lc-brown:#846043; --lc-gray:#B2AEA9; --lc-cream:#FBF5E8; --lc-teal:#1F4D4A;
+    --lc-success:#28723B; --lc-error:#C95A41; --lc-sand:#EAC796; --lc-ink:#2E2A24;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0; background:var(--bg); color:var(--ink);
-    font-family:"Segoe UI",system-ui,-apple-system,"Noto Sans","Noto Sans Thai",sans-serif;}
+    font-family:'LC Latin','LC Thai',"Segoe UI",system-ui,-apple-system,"Noto Sans","Noto Sans Thai",sans-serif;}
   #app{max-width:520px; margin:0 auto; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
   .screen{display:none; flex:1; flex-direction:column; padding:16px;}
@@ -183,7 +207,7 @@
   .fc-btns{display:flex; gap:10px;}
   .fc-btns .big{flex:1; font-size:16px; padding:14px 6px;}
   .know{background-color:var(--jade); color:#0d2200; border-color:var(--lc-jade);}
-  .learn2{background-color:var(--crimson); color:var(--lc-cream); border-color:var(--lc-lacquer);}
+  .learn2{background-color:var(--crimson); color:var(--lc-cream-legacy); border-color:var(--lc-lacquer);}
   .spk{color:var(--edu-sky); font-size:22px; padding:10px 16px; border-radius:12px; border:1px solid var(--panel-border);
     min-width:44px; min-height:44px;
     display:inline-flex; align-items:center; justify-content:center;}
@@ -261,7 +285,7 @@
   .quest-row{border-image:var(--f-ui-card-paper, none);}
   #r-quests{color:var(--gold); font-size:14px; text-align:center; margin:0 0 8px;}
   #r-quests div{margin:2px 0;}
-  #r-perfect{color:var(--lc-ink); background:linear-gradient(var(--lc-cream),var(--lc-gold)); border:1px solid var(--lc-dark-gold);
+  #r-perfect{color:var(--lc-ink-legacy); background:linear-gradient(var(--lc-cream-legacy),var(--lc-gold)); border:1px solid var(--lc-dark-gold);
     border-radius:10px; font-weight:800; font-size:15px; text-align:center; padding:7px 10px; margin:0 0 10px;
     box-shadow:0 0 10px rgba(245,197,24,.5);}
   #r-levelup{color:#0d2200; background:linear-gradient(#c8f5a0,var(--lc-jade)); border:1px solid var(--lc-jade);
