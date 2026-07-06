@@ -1433,7 +1433,7 @@
     { levels: [3], core: false, newOnly: false, topN: 0, lang: "both", sessionLen: 20 },
     store.get("scope", {})
   );
-  var settings = Object.assign({ autoSpeak: true }, store.get("settings", {}));
+  var settings = Object.assign({ autoSpeak: true, showPinyin: true }, store.get("settings", {}));
   setLocale(store.get("locale", detectLocale()));
   sfx.enabled = store.get("sfx", true);
   var pool = [];
@@ -1846,6 +1846,11 @@
     store.set("settings", settings);
     setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
   };
+  $("#hud-pinyin").onclick = () => {
+    settings.showPinyin = !settings.showPinyin;
+    store.set("settings", settings);
+    setIconOnly($("#hud-pinyin"), settings.showPinyin ? "pinyin" : "pinyin-off");
+  };
   $("#home-sound").addEventListener("click", () => {
     sfx.enabled = !sfx.enabled;
     store.set("sfx", sfx.enabled);
@@ -1866,6 +1871,7 @@
     $("#hud-left").textContent = B.mode === "round" ? B.wordsTotal - B.resolved + " left" : "endless";
     setIconOnly($("#hud-sfx"), sfx.enabled ? "bell" : "bell-off");
     setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
+    setIconOnly($("#hud-pinyin"), settings.showPinyin ? "pinyin" : "pinyin-off");
   }
   function pushMiss(w) {
     if (!B.missSet.has(w.h)) {
@@ -1968,7 +1974,6 @@
       btn.classList.add("good");
       lockOptions();
       B.proj = { x: B.L.mascotX + 16 * B.S, y: B.h - B.L.ground - 30 * B.S };
-      speak(z.w.h);
       if (boss) noteAnswer(z.w.h, true);
       const gy = B.h - B.L.ground;
       B.feedback = { ...feedbackEffect("correct", z.x, gy - 42 * B.S), until: performance.now() + 620 };
@@ -2216,7 +2221,7 @@
     if (z) {
       const hideWord = z.boss && z.stage === "hanzi" && z.state === "walk";
       const bh = hideWord ? "\uFF1F\uFF1F" : z.w.h;
-      const bp = hideWord ? "" : z.w.p;
+      const bp = hideWord || !settings.showPinyin ? "" : z.w.p;
       drawWordPlate(hideWord ? "??" : bh, bp, z.w.lv, z.boss, t2);
       drawCat(ctx2, z.x, gy + 6 * B.S, t2, z.state, SKIN_PALETTES[shopState.skin], z.boss ? 1.5 * B.S : B.S, B.acc, !!z.boss);
       if (B.hasKitten) drawCat(ctx2, z.x + B.L.catHalf, gy + 6 * B.S, t2 + 250, z.state, SKIN_PALETTES[shopState.skin], 0.55 * B.S, [], false);

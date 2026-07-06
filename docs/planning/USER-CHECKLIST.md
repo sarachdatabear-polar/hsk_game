@@ -32,6 +32,13 @@ Open `game/index.html` directly (or `npm run serve` → http://localhost:8000).
 
 Per [ART-BRIEF.md](../art/ART-BRIEF.md): create or commission, then hand the PNGs to Claude to wire in.
 
+## 5. Playtest — pinyin toggle + one-shot audio (2026-07-06)
+
+- [ ] In a battle, tap the new **pinyin** button in the top bar (next to the sound buttons) → the pinyin line under the word disappears and the word card re-centers with no clipping. Tap again → it returns.
+- [ ] Quit to home, start a new battle → your pinyin on/off choice stuck.
+- [ ] Flashcards still show pinyin on both faces (the toggle is battle-only, on purpose).
+- [ ] Each word is spoken **once**, when it walks in — no second playback when you tap the correct answer.
+
 - [ ] 4 cat skins (Midnight / Sakura / Jade / Gold) — priority HIGH
 - [ ] 3 battle backdrops (Night Market / Temple Dawn / Bamboo) — priority HIGH
 - [ ] Boss cat sprite — MEDIUM

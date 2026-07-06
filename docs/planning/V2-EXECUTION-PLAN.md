@@ -1,5 +1,14 @@
 # V2/V3/V4 Execution Plan — living checklist
 
+## Pinyin toggle + one-shot audio (small round; 2026-07-06)
+
+Spec: [PRD-pinyin-toggle-and-audio.md](../prd/PRD-pinyin-toggle-and-audio.md).
+
+- [x] Battle `#hud-pinyin` toggle (`settings.showPinyin`, default on) hides pinyin on the word plate only — flashcards unchanged. Wiring-only, 199 tests green, build clean, DOM-id check passed.
+- [x] Word audio fires once on spawn — removed the answer-tap replay (`speak(z.w.h)`).
+- [ ] Ship: committed on `feat/education-first-phase-a` → rides into **PR #10**; goes live when #10 merges to main. `sw.js` SHELL already at v24 (covers this change).
+
+
 ## V4 "Lucky Cat Street" status (deferred-items round; scope signed off 2026-07-04)
 
 Spec: [PRD-v4-street.md](../prd/PRD-v4-street.md). Hybrid street economy approved: milestone buildings free, decorations purchased.
