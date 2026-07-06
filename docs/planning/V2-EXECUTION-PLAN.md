@@ -2,7 +2,7 @@
 
 ## V4 "Lucky Cat Street" status (deferred-items round; scope signed off 2026-07-04)
 
-Spec: [PRD-v4-street.md](PRD-v4-street.md). Hybrid street economy approved: milestone buildings free, decorations purchased.
+Spec: [PRD-v4-street.md](../prd/PRD-v4-street.md). Hybrid street economy approved: milestone buildings free, decorations purchased.
 
 - [x] **M1 — Effect packs** (`shop.js` effect slot + Sakura/Firecracker items, `fx.js` styled bursts w/ per-spec gravity, petal/cracker draw kinds, shop Effects section) — done 2026-07-04, +14 tests.
 - [x] **M2 — Sound packs** (`shop.js` soundpack slot + Bells/Arcade items, `sfx.js` data-driven `PACKS` table — default pack byte-identical to old tones, shop Sounds section, `sfx.pack` synced at boot + renderShop) — done 2026-07-04, +8 tests.
@@ -23,7 +23,7 @@ Spec: [PRD-v4-street.md](PRD-v4-street.md). Hybrid street economy approved: mile
 
 ---
 
-*Cross-session continuation doc for the v2 "Make It Stick" upgrade. Spec: [PRD-v2-upgrade.md](PRD-v2-upgrade.md). Art spec (user-facing, non-blocking): [ART-BRIEF.md](ART-BRIEF.md).*
+*Cross-session continuation doc for the v2 "Make It Stick" upgrade. Spec: [PRD-v2-upgrade.md](../prd/PRD-v2-upgrade.md). Art spec (user-facing, non-blocking): [ART-BRIEF.md](../art/ART-BRIEF.md).*
 
 **Workflow:** Fable leads (plan/review), Sonnet worker subagents implement one milestone at a time, sequentially (milestones all touch `main.js`/`index.html` — do NOT parallelize). After each milestone: `npm test` green + `npm run build` clean before starting the next.
 
@@ -37,7 +37,7 @@ Spec: [PRD-v4-street.md](PRD-v4-street.md). Hybrid street economy approved: mile
 - [x] **M4 — Daily streak + Progress v2** — done 2026-07-04 (`src/daily.js`, 19 tests; `#home-streak` chip, 20/day goal; mastery bars + "Needs work" list with Review/Fight)
 - [x] **M5 — Ship prep** — done 2026-07-04: `sw.js` SHELL bumped v4 → v5; full regression green (98 tests, build 45 kb); DOM-id wiring check passed. **NOT yet committed/pushed** — user decides when to commit in `game/` repo and push to deploy (GitHub Pages runs on push to main).
 - [ ] Manual device smoke (user): buy/equip a skin, hit a boss on spawn 10, check streak chip next day, file:// open.
-- [ ] Optional later: real art per [ART-BRIEF.md](ART-BRIEF.md) → drop PNGs in `assets/`, register in `sprites.js`. `npm run cap:sync` + `apk:release` for the Android build once web version is confirmed.
+- [ ] Optional later: real art per [ART-BRIEF.md](../art/ART-BRIEF.md) → drop PNGs in `assets/`, register in `sprites.js`. `npm run cap:sync` + `apk:release` for the Android build once web version is confirmed.
 
 ## Key invariants (check on every milestone review)
 

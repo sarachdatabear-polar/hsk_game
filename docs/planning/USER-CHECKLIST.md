@@ -1,6 +1,6 @@
 # Your Checklist — v2 launch (things only you can do)
 
-*Track your part here — tick boxes as you go. Claude's technical status lives in [V2-EXECUTION-PLAN.md](V2-EXECUTION-PLAN.md); the art spec is [ART-BRIEF.md](ART-BRIEF.md).*
+*Track your part here — tick boxes as you go. Claude's technical status lives in [V2-EXECUTION-PLAN.md](V2-EXECUTION-PLAN.md); the art spec is [ART-BRIEF.md](../art/ART-BRIEF.md).*
 
 > **Why local ≠ GitHub right now:** the v2 upgrade (wallet/shop, smart review, bosses, daily streak) exists only in your local working folder — it was never committed or pushed. GitHub Pages still serves the last push from 2026-07-03 (v1 + session-length picker). They will match again after step 2 below.
 
@@ -30,7 +30,7 @@ Open `game/index.html` directly (or `npm run serve` → http://localhost:8000).
 
 ## 4. Artwork (optional, whenever you want — game works without it)
 
-Per [ART-BRIEF.md](ART-BRIEF.md): create or commission, then hand the PNGs to Claude to wire in.
+Per [ART-BRIEF.md](../art/ART-BRIEF.md): create or commission, then hand the PNGs to Claude to wire in.
 
 - [ ] 4 cat skins (Midnight / Sakura / Jade / Gold) — priority HIGH
 - [ ] 3 battle backdrops (Night Market / Temple Dawn / Bamboo) — priority HIGH
