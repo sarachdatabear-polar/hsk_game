@@ -1,7 +1,7 @@
 "use strict";
 // UI localization. Pure: no DOM, no localStorage (caller owns persistence,
 // like shop.js/quests.js). String tables are bundled — file://- and offline-safe.
-// Keys are dotted by screen: home.*, scope.*, learn.*, battle.*, results.*,
+// Keys are dotted by screen: home.*, scope.*, learn.*, results.*,
 // quest.*, scores.*, progress.*, shop.*, howto.*, common.*.
 
 export const STRINGS = {

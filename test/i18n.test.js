@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { STRINGS, detectLocale, setLocale, getLocale, t } from "../src/i18n.js";
+import { QUEST_POOL } from "../src/quests.js";
 
 describe("i18n engine", () => {
   beforeEach(() => setLocale("en"));
@@ -44,6 +45,19 @@ describe("i18n engine", () => {
 
   it("has a Thai translation for every English key", () => {
     const missing = Object.keys(STRINGS.en).filter(k => !(k in STRINGS.th));
+    expect(missing).toEqual([]);
+  });
+
+  it("keeps {placeholder} sets identical between English and Thai", () => {
+    const tokens = s => (s.match(/\{\w+\}/g) || []).sort().join(",");
+    const mismatched = Object.keys(STRINGS.en)
+      .filter(k => k in STRINGS.th)
+      .filter(k => tokens(STRINGS.en[k]) !== tokens(STRINGS.th[k]));
+    expect(mismatched).toEqual([]);
+  });
+
+  it("has a quest.<id> key for every quest in QUEST_POOL", () => {
+    const missing = QUEST_POOL.map(q => "quest." + q.id).filter(k => !(k in STRINGS.en));
     expect(missing).toEqual([]);
   });
 });

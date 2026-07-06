@@ -2,6 +2,7 @@
 // pass a "YYYY-MM-DD" date string (local time, see main.js's todayStr()).
 "use strict";
 
+// NOTE: the UI renders t("quest.<id>") from src/i18n.js, not `desc` — add a catalog key for any new quest.
 export const QUEST_POOL = [
   { id: "correct30", desc: "Answer 30 words correctly",      target: 30, reward: 150 },
   { id: "combo5",    desc: "Reach a ×5 learning streak", target: 5,  reward: 100 },
