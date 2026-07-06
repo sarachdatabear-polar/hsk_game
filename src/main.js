@@ -43,7 +43,7 @@ function noteAnswer(hanzi, correct){
 }
 let wallet = store.get("wallet", 0);
 let shopState = Object.assign(defaultShop(), store.get("shop", {}));
-function updateWalletChip(){ setPill($("#home-wallet"), "coin", wallet.toLocaleString()); }
+function updateWalletChip(){ setPill($("#home-wallet"), "secondary-coin", wallet.toLocaleString()); }
 
 /* ============================== cat growth (xp/levels/accessories) ============================== */
 let xp = store.get("xp", 0);
@@ -194,7 +194,7 @@ function renderScope(){
   const lenInput = $("#len-custom");
   lenInput.hidden = !lenCustomOpen;
   if(lenCustomOpen && document.activeElement !== lenInput) lenInput.value = len;
-  setIconLabel($("#go-battle"), "play", `Battle · ${len}`);
+  setIconLabel($("#go-battle"), "quest", `Word Quest · ${len}`);
   store.set("scope", scope);
   const startable = pool.length >= 8;
   $("#go-battle").disabled = $("#go-endless").disabled = $("#go-learn").disabled = !startable;
@@ -211,7 +211,7 @@ document.querySelectorAll("#len-chips .chip").forEach(c=>c.onclick = ()=>{
 $("#len-custom").addEventListener("input", ()=>{
   scope.sessionLen = normalizeLen($("#len-custom").value);
   store.set("scope", scope);
-  setIconLabel($("#go-battle"), "play", `Battle · ${scope.sessionLen}`);
+  setIconLabel($("#go-battle"), "quest", `Word Quest · ${scope.sessionLen}`);
 });
 $("#len-custom").addEventListener("change", ()=>renderScope());  // blur/Enter: snap display to normalized value
 document.querySelectorAll("#preset-chips .chip").forEach(c=>c.onclick = ()=>{
@@ -343,7 +343,7 @@ $("#hud-audio").onclick = ()=>{
   store.set("settings", settings);
   setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
 };
-/* home-screen sound toggle (mirrors hud-sfx; btn-sound.png art greys out when muted) */
+/* home-screen sound toggle mirrors hud-sfx; the button dims when muted. */
 $("#home-sound").addEventListener("click", ()=>{
   sfx.enabled = !sfx.enabled;
   store.set("sfx", sfx.enabled);
@@ -403,7 +403,7 @@ function renderBossHanzi(word){
   const m = meaningOf(word, scope.lang);
   const prompt = document.createElement("div");
   prompt.style.cssText = "grid-column:1/-1; text-align:center; font-weight:700; color:var(--gold); padding:2px 4px 8px;";
-  prompt.textContent = `Boss · pick the hanzi for: ${m.main}`;
+  prompt.textContent = `Review Challenge · pick the hanzi for: ${m.main}`;
   box.appendChild(prompt);
   for(const o of opts){
     const b = document.createElement("button");
@@ -877,8 +877,8 @@ function endBattle(quit){
   const prev = best[key]? best[key].score : 0;
   const isBest = B.score > prev;
   if(isBest){ best[key] = {score:B.score, date:new Date().toISOString().slice(0,10)}; store.set("best", best); }
-  $("#r-sub").innerHTML = `${acc}% accuracy · ${B.correct} coins · ${key}`
-    + (isBest? ` · <b style="color:var(--gold)">new best!</b>` : ` · best ${prev}`);
+  $("#r-sub").innerHTML = `${acc}% accuracy · ${B.correct} words · ${key}`
+    + (isBest? ` · <b style="color:var(--gold)">Best session!</b>` : ` · best ${prev}`);
   const list = $("#r-miss");
   list.innerHTML = "";
   $("#r-misshead").style.display = B.misses.length? "block":"none";
@@ -906,7 +906,7 @@ function renderScores(){
   const best = store.get("best", {});
   const box = $("#scorelist");
   const keys = Object.keys(best).sort((a,b)=>best[b].score-best[a].score);
-  box.innerHTML = keys.length? "" : `<div class="scorerow" style="color:var(--muted)">No scores yet — go earn some coins!</div>`;
+  box.innerHTML = keys.length? "" : `<div class="scorerow" style="color:var(--muted)">No sessions yet — complete a Word Quest.</div>`;
   for(const k of keys){
     const row = document.createElement("div");
     row.className = "scorerow";

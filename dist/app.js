@@ -678,9 +678,7 @@
       "back",
       "close",
       "pause",
-      "play"
-    ],
-    planned_icons: [
+      "play",
       "learn",
       "quest",
       "review",
@@ -696,7 +694,8 @@
       "next",
       "previous",
       "secondary-coin"
-    ]
+    ],
+    planned_icons: []
   };
 
   // src/assets.js
@@ -897,8 +896,8 @@
   // src/quests.js
   var QUEST_POOL = [
     { id: "correct30", desc: "Answer 30 words correctly", target: 30, reward: 150 },
-    { id: "combo5", desc: "Reach a \xD75 combo", target: 5, reward: 100 },
-    { id: "boss1", desc: "Defeat a boss cat", target: 1, reward: 150 },
+    { id: "combo5", desc: "Reach a \xD75 learning streak", target: 5, reward: 100 },
+    { id: "boss1", desc: "Complete a Review Challenge", target: 1, reward: 150 },
     { id: "perfect1", desc: "Finish a round with no misses", target: 1, reward: 250 },
     { id: "review1", desc: "Play a Smart Review round", target: 1, reward: 100 },
     { id: "learn20", desc: "Mark 20 flashcards as known", target: 20, reward: 100 }
@@ -1247,7 +1246,7 @@
   var wallet = store.get("wallet", 0);
   var shopState = Object.assign(defaultShop(), store.get("shop", {}));
   function updateWalletChip() {
-    setPill($("#home-wallet"), "coin", wallet.toLocaleString());
+    setPill($("#home-wallet"), "secondary-coin", wallet.toLocaleString());
   }
   var xp = store.get("xp", 0);
   function updateLevelChip() {
@@ -1404,7 +1403,7 @@
     const lenInput = $("#len-custom");
     lenInput.hidden = !lenCustomOpen;
     if (lenCustomOpen && document.activeElement !== lenInput) lenInput.value = len;
-    setIconLabel($("#go-battle"), "play", `Battle \xB7 ${len}`);
+    setIconLabel($("#go-battle"), "quest", `Word Quest \xB7 ${len}`);
     store.set("scope", scope);
     const startable = pool.length >= 8;
     $("#go-battle").disabled = $("#go-endless").disabled = $("#go-learn").disabled = !startable;
@@ -1440,7 +1439,7 @@
   $("#len-custom").addEventListener("input", () => {
     scope.sessionLen = normalizeLen($("#len-custom").value);
     store.set("scope", scope);
-    setIconLabel($("#go-battle"), "play", `Battle \xB7 ${scope.sessionLen}`);
+    setIconLabel($("#go-battle"), "quest", `Word Quest \xB7 ${scope.sessionLen}`);
   });
   $("#len-custom").addEventListener("change", () => renderScope());
   document.querySelectorAll("#preset-chips .chip").forEach((c) => c.onclick = () => {
@@ -1681,7 +1680,7 @@
     const m = meaning(word, scope.lang);
     const prompt = document.createElement("div");
     prompt.style.cssText = "grid-column:1/-1; text-align:center; font-weight:700; color:var(--gold); padding:2px 4px 8px;";
-    prompt.textContent = `Boss \xB7 pick the hanzi for: ${m.main}`;
+    prompt.textContent = `Review Challenge \xB7 pick the hanzi for: ${m.main}`;
     box.appendChild(prompt);
     for (const o of opts) {
       const b = document.createElement("button");
@@ -2255,7 +2254,7 @@
       best[key] = { score: B.score, date: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10) };
       store.set("best", best);
     }
-    $("#r-sub").innerHTML = `${acc}% accuracy \xB7 ${B.correct} coins \xB7 ${key}` + (isBest ? ` \xB7 <b style="color:var(--gold)">new best!</b>` : ` \xB7 best ${prev}`);
+    $("#r-sub").innerHTML = `${acc}% accuracy \xB7 ${B.correct} words \xB7 ${key}` + (isBest ? ` \xB7 <b style="color:var(--gold)">Best session!</b>` : ` \xB7 best ${prev}`);
     const list = $("#r-miss");
     list.innerHTML = "";
     $("#r-misshead").style.display = B.misses.length ? "block" : "none";
@@ -2290,7 +2289,7 @@
     const best = store.get("best", {});
     const box = $("#scorelist");
     const keys = Object.keys(best).sort((a, b) => best[b].score - best[a].score);
-    box.innerHTML = keys.length ? "" : `<div class="scorerow" style="color:var(--muted)">No scores yet \u2014 go earn some coins!</div>`;
+    box.innerHTML = keys.length ? "" : `<div class="scorerow" style="color:var(--muted)">No sessions yet \u2014 complete a Word Quest.</div>`;
     for (const k of keys) {
       const row = document.createElement("div");
       row.className = "scorerow";

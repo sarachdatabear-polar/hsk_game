@@ -45,11 +45,10 @@
   ],
   "required_icons": [
     "home", "flashcards", "audio", "muted", "progress", "streak",
-    "pencil", "check", "back", "close", "pause", "play"
-  ],
-  "planned_icons": [
+    "pencil", "check", "back", "close", "pause", "play",
     "learn", "quest", "review", "collection", "settings", "calendar",
     "focus-heart", "star", "mastery", "book", "headphones", "retry",
     "next", "previous", "secondary-coin"
-  ]
+  ],
+  "planned_icons": []
 }
