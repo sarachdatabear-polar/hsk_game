@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 88" width="300" height="88">
+  <title>PRIMARY button frame — green, full-bleed, label stays dynamic</title>
+  <defs>
+    <linearGradient id="bp" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#63A75F"/><stop offset="1" stop-color="#41803F"/>
+    </linearGradient>
+  </defs>
+  <rect x="1.5" y="9.5" width="297" height="77" rx="21" fill="#274F28"/>
+  <rect x="1.5" y="1.5" width="297" height="77" rx="21" fill="url(#bp)" stroke="#1F421F" stroke-width="3"/>
+  <rect x="8" y="8" width="284" height="64" rx="16" fill="none" stroke="#D8E8B8" stroke-width="2.5" opacity=".55"/>
+  <path d="M22 14 q128 -9 256 0 l0 10 q-128 -8 -256 0 z" fill="#FFFFFF" opacity=".14"/>
+</svg>

@@ -21,7 +21,7 @@ export function createAssets(m, opts = {}) {
 
   const key = (id, state) => (state === "default" ? id : `${id}:${state}`);
   const stateFile = (asset, state) =>
-    state === "default" ? asset.file : asset.file.replace(/\.png$/, `-${state}.png`);
+    state === "default" ? asset.file : asset.file.replace(/(\.png|\.svg)$/, `-${state}$1`);
 
   function frameShorthand(asset, state) {
     if (!Array.isArray(asset.slice) || asset.slice.length !== 4) return null;
@@ -32,7 +32,8 @@ export function createAssets(m, opts = {}) {
 
   function load(id, state = "default") {
     const asset = REGISTRY[id];
-    if (!asset || !asset.file.endsWith(".png") || !LOADABLE.has(asset.status)) return;
+    if (!asset || !/\.(png|svg)$/.test(asset.file) || !LOADABLE.has(asset.status)) return;
+    if (asset.file === "ui-icons.svg") return; // icon sprite is <use>-referenced, not an image
 
     const imageKey = key(id, state);
     if (images.has(imageKey)) return;
@@ -47,7 +48,13 @@ export function createAssets(m, opts = {}) {
 
       frames.set(imageKey, css);
       const el = rootEl();
-      if (el) el.style.setProperty(`--f-${imageKey.replace(":", "-")}`, css);
+      if (el) {
+        el.style.setProperty(`--f-${imageKey.replace(":", "-")}`, css);
+        // lets CSS neutralize the fallback background/border once the frame
+        // is live (border-image ignores border-radius, so pill backgrounds
+        // would otherwise peek out around the frame's corners)
+        if (el.classList) el.classList.add(`has-${imageKey.replace(":", "-")}`);
+      }
     };
     image.src = `assets/${stateFile(asset, state)}`;
     images.set(imageKey, image);

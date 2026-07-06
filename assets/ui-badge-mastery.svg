@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <title>Paw badge — cream coin with green paw (matches reference BADGE)</title>
+  <defs>
+    <linearGradient id="bgp" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5EB273"/><stop offset="1" stop-color="#2F7F4C"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="52" fill="#FBF3DC" stroke="#C9A265" stroke-width="4"/>
+  <circle cx="60" cy="60" r="44" fill="none" stroke="#E8D8AE" stroke-width="2.5"/>
+  <g transform="translate(60 63) scale(0.8) translate(-60 -62)">
+    <g stroke="#23653C" stroke-width="3.5" stroke-linejoin="round">
+      <ellipse cx="39.5" cy="50" rx="8.5" ry="11" transform="rotate(-18 39.5 50)" fill="url(#bgp)"/>
+      <ellipse cx="60" cy="44" rx="9" ry="11.5" fill="url(#bgp)"/>
+      <ellipse cx="80.5" cy="50" rx="8.5" ry="11" transform="rotate(18 80.5 50)" fill="url(#bgp)"/>
+      <path d="M60 61c13.5 0 23 8 23 17.5 0 9.5 -10 14.5 -23 14.5s-23 -5 -23 -14.5c0 -9.5 9.5 -17.5 23 -17.5z" fill="url(#bgp)"/>
+    </g>
+    <path d="M45.5 70c3 -4.5 8 -7 13 -7.4" stroke="#C4E9CE" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

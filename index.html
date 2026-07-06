@@ -77,6 +77,12 @@
     box-shadow:0 3px 8px rgba(36,52,71,.10);}
   .big:active{transform:scale(.98);}
   .big.primary:active{border-image:var(--f-ui-button-primary-pressed, var(--f-ui-button-primary, none));}
+  /* once a production frame is loaded, drop the fallback pill chrome so it
+     cannot peek around the frame (border-image ignores border-radius) */
+  :root.has-ui-button-secondary .big{background:none; border-color:transparent; border-radius:22px;
+    box-shadow:0 4px 9px rgba(60,42,22,.20);}
+  :root.has-ui-button-primary .big.primary{background:none; border-color:transparent; border-radius:22px;
+    box-shadow:0 4px 9px rgba(60,42,22,.22);}
   .back{align-self:flex-start; background:none; color:var(--edu-sky); font-size:15px; padding:6px 2px; margin-bottom:6px;
     min-height:44px; display:inline-flex; align-items:center;}
   h2{font-size:20px; margin:4px 0 14px; color:var(--gold);}

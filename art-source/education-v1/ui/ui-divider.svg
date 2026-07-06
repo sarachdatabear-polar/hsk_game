@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 24" width="240" height="24">
+  <title>Section divider — warm rule with paw center</title>
+  <path d="M10 12h88" fill="none" stroke="#C9A265" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M230 12h-88" fill="none" stroke="#C9A265" stroke-width="2.5" stroke-linecap="round"/>
+  <g transform="translate(120 13) scale(0.16) translate(-60 -62)">
+    <g fill="#3E9463">
+      <ellipse cx="39.5" cy="50" rx="8.5" ry="11" transform="rotate(-18 39.5 50)"/>
+      <ellipse cx="60" cy="44" rx="9" ry="11.5"/>
+      <ellipse cx="80.5" cy="50" rx="8.5" ry="11" transform="rotate(18 80.5 50)"/>
+      <path d="M60 61c13.5 0 23 8 23 17.5 0 9.5 -10 14.5 -23 14.5s-23 -5 -23 -14.5c0 -9.5 9.5 -17.5 23 -17.5z"/>
+    </g>
+  </g>
+</svg>

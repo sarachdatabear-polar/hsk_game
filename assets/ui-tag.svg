@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 56" width="140" height="56">
+  <title>Level tag frame — dark green pill; "HSK n" text stays dynamic</title>
+  <rect x="4" y="8" width="132" height="46" rx="14" fill="#1E4634" opacity=".5"/>
+  <rect x="4" y="4" width="132" height="46" rx="14" fill="#2F6B4F" stroke="#1E4634" stroke-width="3"/>
+  <rect x="9" y="9" width="122" height="36" rx="10" fill="none" stroke="#7FAE93" stroke-width="2" opacity=".55"/>
+</svg>

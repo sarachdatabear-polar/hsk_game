@@ -2,7 +2,7 @@
 // A worker registered from pwa/ would be scoped to /pwa/ and could not serve the
 // app shell offline, since static hosts (GitHub Pages) don't send
 // Service-Worker-Allowed to widen scope. Paths below are root-relative.
-const SHELL = "nbhsk-shell-v20";
+const SHELL = "nbhsk-shell-v21";
 const AUDIO = "nbhsk-audio-v1";
 const PRECACHE = [
   "index.html", "dist/app.js", "data/words.js", "audio/index.json",
@@ -42,28 +42,25 @@ const PRECACHE = [
   "assets/bg-results.png",
   "assets/bg-temple.png",
   "assets/bg-bamboo.png",
-  "assets/ui-panel.png",
-  "assets/ui-word-plaque.png",
-  "assets/ui-button-primary.png",
-  "assets/ui-button-secondary.png",
-  "assets/ui-button-neutral.png",
-  "assets/ui-badge.png",
-  "assets/ui-progress-track.png",
-  "assets/ui-progress-fill.png",
-  "assets/ui-card-paper.png",
+  "assets/ui-button-primary.svg",
+  "assets/ui-button-secondary.svg",
+  "assets/ui-button-neutral.svg",
+  "assets/ui-card-paper.svg",
   "assets/ui-card-soft.png",
-  "assets/ui-button-primary-pressed.png",
-  "assets/ui-button-primary-disabled.png",
-  "assets/ui-button-secondary-pressed.png",
-  "assets/ui-button-secondary-disabled.png",
-  "assets/ui-button-neutral-pressed.png",
-  "assets/ui-button-neutral-disabled.png",
-  "assets/fx-correct.png",
-  "assets/fx-perfect.png",
-  "assets/fx-retry.png",
-  "assets/fx-wrong.png",
-  "assets/fx-critical.png",
-  "assets/fx-level-up.png",
+  "assets/ui-tag.svg",
+  "assets/ui-badge-mastery.svg",
+  "assets/ui-progress-track.svg",
+  "assets/ui-progress-fill.svg",
+  "assets/ui-stamp-correct.svg",
+  "assets/ui-divider.svg",
+  "assets/fx-correct.svg",
+  "assets/fx-wrong.svg",
+  "assets/fx-critical.svg",
+  "assets/fx-perfect.svg",
+  "assets/fx-retry.svg",
+  "assets/fx-mastery.svg",
+  "assets/fx-level-up.svg",
+  "assets/fx-daily-goal.svg",
   "assets/fx-new-best.png",
   "assets/fonts/title.woff2"
 ];

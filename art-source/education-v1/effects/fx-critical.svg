@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <title>CRITICAL — golden comic burst (matches REFERENCE-production-target)</title>
+  <defs>
+    <linearGradient id="cb" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F8D468"/><stop offset="1" stop-color="#EBA92E"/>
+    </linearGradient>
+  </defs>
+  <rect x="5" y="5" width="110" height="110" rx="26" fill="#FBF3DC" stroke="#E2CFA3" stroke-width="3"/>
+  <rect x="10.5" y="10.5" width="99" height="99" rx="21" fill="none" stroke="#FFFDF2" stroke-width="2.5"/>
+  <g stroke="#B47C1C" stroke-width="2" opacity=".55">
+    <path d="M60 8v8M60 104v8M12 58h8M100 58h8M25 23l6 6M89 93l6 6M95 23l-6 6M31 93l-6 6"/>
+  </g>
+  <path d="M60 14 67.3 31 82 19.9 79.8 38.2 98.1 36 87 50.8 104 58 87 65.3 98.1 80 79.8 77.8 82 96.1 67.3 85 60 102 52.7 85 38 96.1 40.2 77.8 21.9 80 33 65.3 16 58 33 50.8 21.9 36 40.2 38.2 38 19.9 52.7 31z"
+        fill="url(#cb)" stroke="#8A5A14" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M60 14 67.3 31 82 19.9 79.8 38.2 98.1 36 87 50.8 104 58 87 65.3 98.1 80 79.8 77.8 82 96.1 67.3 85 60 102 52.7 85 38 96.1 40.2 77.8 21.9 80 33 65.3 16 58 33 50.8 21.9 36 40.2 38.2 38 19.9 52.7 31z"
+        transform="translate(60 58) scale(0.68) translate(-60 -58)"
+        fill="#FFF6D8" stroke="#E5B94A" stroke-width="2" stroke-linejoin="round"/>
+  <text x="60" y="64" text-anchor="middle" transform="rotate(-7 60 58)"
+        font-family="'Arial Black','Arial',sans-serif" font-size="15.5" font-weight="900"
+        letter-spacing="0.3" fill="#F0AC1F" stroke="#7C4E0C" stroke-width="3"
+        paint-order="stroke" stroke-linejoin="round">CRITICAL!</text>
+  <g fill="#F2BE3F" stroke="#8A5A14" stroke-width="1.4" stroke-linejoin="round">
+    <path d="M22 20q1.6 5 7 7q-5.4 2 -7 7q-1.6 -5 -7 -7q5.4 -2 7 -7z"/>
+    <path d="M99 90q1.3 4 5.5 5.5q-4.2 1.5 -5.5 5.5q-1.3 -4 -5.5 -5.5q4.2 -1.5 5.5 -5.5z"/>
+  </g>
+</svg>

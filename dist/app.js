@@ -285,33 +285,23 @@
     "cat-gold-happy",
     "cat-boss-walk",
     "cat-boss-happy",
-    "cat-portrait",
     "maneki",
     "coin",
     "bg-home",
     "bg-battle",
     "bg-market",
-    "bg-results",
     "bg-temple",
     "bg-bamboo",
-    "ui-panel",
-    "ui-word-plaque",
-    "ui-button-primary",
-    "ui-button-secondary",
-    "ui-button-neutral",
-    "ui-badge",
-    "ui-progress-track",
-    "ui-progress-fill",
     "fx-correct",
     "fx-wrong",
     "fx-critical",
-    "fx-level-up",
-    "fx-new-best"
+    "fx-level-up"
   ];
+  var SVG_SPRITES = /* @__PURE__ */ new Set(["fx-correct", "fx-wrong", "fx-critical", "fx-level-up"]);
   function loadSprites() {
     for (const name of SPRITE_NAMES) {
       const img2 = new Image();
-      img2.src = "assets/" + name + ".png";
+      img2.src = "assets/" + name + (SVG_SPRITES.has(name) ? ".svg" : ".png");
       REGISTRY[name] = img2;
     }
   }
@@ -647,24 +637,27 @@
       { id: "bg-results", file: "bg-results.png", type: "background", status: "planned", priority: "P1", w: 1080, h: 1920, fallback: "css:.screen.festive" },
       { id: "bg-progress", file: "bg-progress.png", type: "background", status: "planned", priority: "P1", w: 1080, h: 1920, fallback: "css:#s-progress" },
       { id: "bg-collection", file: "bg-collection.png", type: "background", status: "planned", priority: "P2", w: 1080, h: 1920, fallback: "css:#s-shop" },
-      { id: "ui-card-paper", file: "ui-card-paper.png", type: "ui-surface", status: "planned", priority: "P0", w: null, h: null, slice: null, fallback: "css:.card,.word-card,.flash-card" },
+      { id: "ui-card-paper", file: "ui-card-paper.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 360, h: 240, slice: [36, 36, 36, 36], scale: 2, fallback: "css:.card,.word-card,.flash-card" },
       { id: "ui-card-soft", file: "ui-card-soft.png", type: "ui-surface", status: "planned", priority: "P0", w: null, h: null, slice: null, fallback: "css:.readout" },
-      { id: "ui-button-primary", file: "ui-button-primary.png", type: "ui-surface", status: "planned", priority: "P0", w: null, h: null, slice: null, states: ["default", "pressed", "disabled"], fallback: "css:.big.primary" },
-      { id: "ui-button-secondary", file: "ui-button-secondary.png", type: "ui-surface", status: "planned", priority: "P0", w: null, h: null, slice: null, states: ["default", "pressed", "disabled"], fallback: "css:.big" },
-      { id: "ui-button-neutral", file: "ui-button-neutral.png", type: "ui-surface", status: "planned", priority: "P0", w: null, h: null, slice: null, states: ["default", "pressed", "disabled"], fallback: "css:#opts button" },
+      { id: "ui-button-primary", file: "ui-button-primary.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 300, h: 88, slice: [26, 26, 34, 26], scale: 2, fallback: "css:.big.primary" },
+      { id: "ui-button-secondary", file: "ui-button-secondary.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 300, h: 88, slice: [26, 26, 34, 26], scale: 2, fallback: "css:.big" },
+      { id: "ui-button-neutral", file: "ui-button-neutral.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 300, h: 88, slice: [26, 26, 34, 26], scale: 2, fallback: "css:#opts button" },
       { id: "ui-tab", file: "ui-tab.png", type: "ui-surface", status: "planned", priority: "P1", w: null, h: null, slice: null, fallback: "css:.chip" },
-      { id: "ui-badge-mastery", file: "ui-badge-mastery.png", type: "ui-surface", status: "planned", priority: "P1", w: null, h: null, slice: null, fallback: "css:.hud-round" },
-      { id: "ui-progress-track", file: "ui-progress-track.png", type: "ui-surface", status: "planned", priority: "P0", w: null, h: null, slice: null, fallback: "css:.mbar" },
-      { id: "ui-progress-fill", file: "ui-progress-fill.png", type: "ui-surface", status: "planned", priority: "P0", w: null, h: null, slice: null, fallback: "css:.mbar i" },
-      { id: "ui-stamp-correct", file: "ui-stamp-correct.png", type: "ui-surface", status: "planned", priority: "P1", w: null, h: null, slice: null, fallback: "canvas:feedbackEffect" },
-      { id: "ui-divider", file: "ui-divider.png", type: "ui-surface", status: "planned", priority: "P2", w: null, h: null, slice: null, fallback: "css:.sect" },
+      { id: "ui-tag", file: "ui-tag.svg", type: "ui-surface", status: "approved", priority: "P1", w: 140, h: 56, slice: null, fallback: "css:.chip.active" },
+      { id: "ui-badge-mastery", file: "ui-badge-mastery.svg", type: "ui-surface", status: "approved", priority: "P1", w: 120, h: 120, slice: null, fallback: "css:.hud-round" },
+      { id: "ui-progress-track", file: "ui-progress-track.svg", type: "ui-surface", status: "approved", priority: "P0", w: 320, h: 48, slice: null, fallback: "css:.mbar" },
+      { id: "ui-progress-fill", file: "ui-progress-fill.svg", type: "ui-surface", status: "approved", priority: "P0", w: 320, h: 48, slice: null, fallback: "css:.mbar i" },
+      { id: "ui-stamp-correct", file: "ui-stamp-correct.svg", type: "ui-surface", status: "approved", priority: "P1", w: 120, h: 120, slice: null, fallback: "canvas:feedbackEffect" },
+      { id: "ui-divider", file: "ui-divider.svg", type: "ui-surface", status: "approved", priority: "P2", w: 240, h: 24, slice: null, fallback: "css:.sect" },
       { id: "ui-icons", file: "ui-icons.svg", type: "icon-sprite", status: "integrated", priority: "P0", w: null, h: null, fallback: "svg:inline" },
-      { id: "fx-correct", file: "fx-correct.png", type: "effect", status: "planned", priority: "P0", w: null, h: null, anchor: "center", fallback: "canvas:coinBurst" },
-      { id: "fx-perfect", file: "fx-perfect.png", type: "effect", status: "planned", priority: "P0", w: null, h: null, anchor: "center", fallback: "canvas:perfectBonus" },
-      { id: "fx-retry", file: "fx-retry.png", type: "effect", status: "planned", priority: "P0", w: null, h: null, anchor: "center", fallback: "canvas:feedbackEffect" },
-      { id: "fx-mastery", file: "fx-mastery.png", type: "effect", status: "planned", priority: "P1", w: null, h: null, anchor: "center", fallback: "canvas:fireworkRing" },
-      { id: "fx-level-up", file: "fx-level-up.png", type: "effect", status: "planned", priority: "P1", w: null, h: null, anchor: "center", fallback: "canvas:fireworkRing" },
-      { id: "fx-daily-goal", file: "fx-daily-goal.png", type: "effect", status: "planned", priority: "P1", w: null, h: null, anchor: "center", fallback: "canvas:comboFloater" }
+      { id: "fx-correct", file: "fx-correct.svg", type: "effect", status: "integrated", priority: "P0", w: 120, h: 120, anchor: "center", fallback: "canvas:coinBurst" },
+      { id: "fx-wrong", file: "fx-wrong.svg", type: "effect", status: "integrated", priority: "P0", w: 120, h: 120, anchor: "center", fallback: "canvas:feedbackEffect" },
+      { id: "fx-critical", file: "fx-critical.svg", type: "effect", status: "integrated", priority: "P0", w: 120, h: 120, anchor: "center", fallback: "canvas:feedbackEffect" },
+      { id: "fx-perfect", file: "fx-perfect.svg", type: "effect", status: "approved", priority: "P0", w: 120, h: 120, anchor: "center", fallback: "canvas:perfectBonus" },
+      { id: "fx-retry", file: "fx-retry.svg", type: "effect", status: "approved", priority: "P0", w: 120, h: 120, anchor: "center", fallback: "canvas:feedbackEffect" },
+      { id: "fx-mastery", file: "fx-mastery.svg", type: "effect", status: "approved", priority: "P1", w: 120, h: 120, anchor: "center", fallback: "canvas:fireworkRing" },
+      { id: "fx-level-up", file: "fx-level-up.svg", type: "effect", status: "integrated", priority: "P1", w: 120, h: 120, anchor: "center", fallback: "canvas:fireworkRing" },
+      { id: "fx-daily-goal", file: "fx-daily-goal.svg", type: "effect", status: "approved", priority: "P1", w: 120, h: 120, anchor: "center", fallback: "canvas:comboFloater" }
     ],
     required_icons: [
       "home",
@@ -709,7 +702,7 @@
     const images = /* @__PURE__ */ new Map();
     const frames = /* @__PURE__ */ new Map();
     const key = (id, state) => state === "default" ? id : `${id}:${state}`;
-    const stateFile = (asset, state) => state === "default" ? asset.file : asset.file.replace(/\.png$/, `-${state}.png`);
+    const stateFile = (asset, state) => state === "default" ? asset.file : asset.file.replace(/(\.png|\.svg)$/, `-${state}$1`);
     function frameShorthand(asset, state) {
       if (!Array.isArray(asset.slice) || asset.slice.length !== 4) return null;
       const scale = asset.scale || 1;
@@ -718,7 +711,8 @@
     }
     function load(id, state = "default") {
       const asset = REGISTRY3[id];
-      if (!asset || !asset.file.endsWith(".png") || !LOADABLE.has(asset.status)) return;
+      if (!asset || !/\.(png|svg)$/.test(asset.file) || !LOADABLE.has(asset.status)) return;
+      if (asset.file === "ui-icons.svg") return;
       const imageKey = key(id, state);
       if (images.has(imageKey)) return;
       const image = makeImage();
@@ -729,7 +723,10 @@
         if (!css) return;
         frames.set(imageKey, css);
         const el = rootEl();
-        if (el) el.style.setProperty(`--f-${imageKey.replace(":", "-")}`, css);
+        if (el) {
+          el.style.setProperty(`--f-${imageKey.replace(":", "-")}`, css);
+          if (el.classList) el.classList.add(`has-${imageKey.replace(":", "-")}`);
+        }
       };
       image.src = `assets/${stateFile(asset, state)}`;
       images.set(imageKey, image);
@@ -2060,47 +2057,67 @@
     const lw = Math.min(B.w - 24 * B.S, textW + 48 * B.S);
     const lh = (pinyin ? 86 : 64) * B.S;
     const x = B.w / 2 - lw / 2, y = wy - lh / 2;
-    ctx2.shadowColor = "rgba(0,0,0,.45)";
-    ctx2.shadowBlur = 14 * B.S;
-    ctx2.shadowOffsetY = 5 * B.S;
-    const lacquer = ctx2.createLinearGradient(0, y, 0, y + lh);
-    lacquer.addColorStop(0, "rgba(93,30,28,.94)");
-    lacquer.addColorStop(0.52, "rgba(48,14,18,.94)");
-    lacquer.addColorStop(1, "rgba(28,8,12,.96)");
-    ctx2.fillStyle = lacquer;
+    ctx2.shadowColor = "rgba(60,40,20,.32)";
+    ctx2.shadowBlur = 12 * B.S;
+    ctx2.shadowOffsetY = 4 * B.S;
+    const paper = ctx2.createLinearGradient(0, y, 0, y + lh);
+    paper.addColorStop(0, "rgba(253,246,227,.97)");
+    paper.addColorStop(1, "rgba(243,230,198,.97)");
+    ctx2.fillStyle = paper;
     roundRect(x, y, lw, lh, 14 * B.S);
     ctx2.fill();
     ctx2.shadowBlur = 0;
     ctx2.shadowOffsetY = 0;
-    ctx2.strokeStyle = boss ? "#fff1a6" : "#f5c518";
-    ctx2.lineWidth = 2.4 * B.S;
-    roundRect(x + 1 * B.S, y + 1 * B.S, lw - 2 * B.S, lh - 2 * B.S, 13 * B.S);
+    ctx2.strokeStyle = boss ? "#D8A93A" : "#B98F55";
+    ctx2.lineWidth = 2.6 * B.S;
+    roundRect(x + 1.3 * B.S, y + 1.3 * B.S, lw - 2.6 * B.S, lh - 2.6 * B.S, 13 * B.S);
     ctx2.stroke();
-    ctx2.strokeStyle = "rgba(255,244,224,.2)";
-    ctx2.lineWidth = 1;
-    roundRect(x + 7 * B.S, y + 7 * B.S, lw - 14 * B.S, lh - 14 * B.S, 9 * B.S);
+    ctx2.strokeStyle = "rgba(231,211,166,.9)";
+    ctx2.lineWidth = 1.2 * B.S;
+    roundRect(x + 6 * B.S, y + 6 * B.S, lw - 12 * B.S, lh - 12 * B.S, 9 * B.S);
     ctx2.stroke();
-    const glintX = x + t / 22 % (lw + 80 * B.S) - 40 * B.S;
-    const glint = ctx2.createLinearGradient(glintX - 20 * B.S, y, glintX + 20 * B.S, y + lh);
-    glint.addColorStop(0, "rgba(255,255,255,0)");
-    glint.addColorStop(0.5, "rgba(255,244,224,.12)");
-    glint.addColorStop(1, "rgba(255,255,255,0)");
-    ctx2.fillStyle = glint;
-    roundRect(x, y, lw, lh, 14 * B.S);
-    ctx2.fill();
-    ctx2.fillStyle = boss ? "#fff1a6" : "#fff4e0";
+    ctx2.strokeStyle = "#C29B5F";
+    ctx2.lineWidth = 1.8 * B.S;
+    ctx2.lineCap = "round";
+    const tk = 5 * B.S, ti = 10 * B.S;
+    ctx2.beginPath();
+    ctx2.moveTo(x + ti, y + ti + tk);
+    ctx2.lineTo(x + ti, y + ti);
+    ctx2.lineTo(x + ti + tk, y + ti);
+    ctx2.moveTo(x + lw - ti - tk, y + ti);
+    ctx2.lineTo(x + lw - ti, y + ti);
+    ctx2.lineTo(x + lw - ti, y + ti + tk);
+    ctx2.moveTo(x + ti, y + lh - ti - tk);
+    ctx2.lineTo(x + ti, y + lh - ti);
+    ctx2.lineTo(x + ti + tk, y + lh - ti);
+    ctx2.moveTo(x + lw - ti - tk, y + lh - ti);
+    ctx2.lineTo(x + lw - ti, y + lh - ti);
+    ctx2.lineTo(x + lw - ti, y + lh - ti - tk);
+    ctx2.stroke();
+    ctx2.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
     ctx2.textAlign = "center";
+    ctx2.font = `700 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
     ctx2.fillText(hanzi, B.w / 2, wy + (pinyin ? -5 * B.S : B.L.hanziPx * 0.34));
     if (pinyin) {
       ctx2.font = `600 ${Math.round(B.L.pinyinPx)}px 'Segoe UI',sans-serif`;
-      ctx2.fillStyle = "#f5c518";
+      ctx2.fillStyle = "#8C5F2A";
       ctx2.fillText(pinyin, B.w / 2, wy + 28 * B.S);
     }
     if (level) {
       ctx2.font = `700 ${Math.round(10 * B.S)}px 'Segoe UI',sans-serif`;
-      ctx2.fillStyle = "rgba(245,197,24,.9)";
+      const tagText = `HSK ${level}`;
+      const tw = ctx2.measureText(tagText).width + 12 * B.S;
+      const th = 16 * B.S;
+      ctx2.fillStyle = "#2F6B4F";
+      roundRect(x + 8 * B.S, y - th * 0.45, tw, th, th / 2);
+      ctx2.fill();
+      ctx2.strokeStyle = "#1E4634";
+      ctx2.lineWidth = 1.2 * B.S;
+      roundRect(x + 8 * B.S, y - th * 0.45, tw, th, th / 2);
+      ctx2.stroke();
+      ctx2.fillStyle = "#F2EDDE";
       ctx2.textAlign = "left";
-      ctx2.fillText(`HSK ${level}`, x + 12 * B.S, y + 17 * B.S);
+      ctx2.fillText(tagText, x + 14 * B.S, y - th * 0.45 + th * 0.7);
     }
     ctx2.restore();
   }

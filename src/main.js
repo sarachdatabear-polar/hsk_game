@@ -729,42 +729,57 @@ function drawWordPlate(hanzi, pinyin, level, boss, t){
   const lw = Math.min(B.w - 24*B.S, textW + 48*B.S);
   const lh = (pinyin ? 86 : 64) * B.S;
   const x = B.w/2 - lw/2, y = wy - lh/2;
-  ctx.shadowColor = "rgba(0,0,0,.45)";
-  ctx.shadowBlur = 14*B.S;
-  ctx.shadowOffsetY = 5*B.S;
-  const lacquer = ctx.createLinearGradient(0,y,0,y+lh);
-  lacquer.addColorStop(0,"rgba(93,30,28,.94)");
-  lacquer.addColorStop(.52,"rgba(48,14,18,.94)");
-  lacquer.addColorStop(1,"rgba(28,8,12,.96)");
-  ctx.fillStyle = lacquer;
+  // cream paper plaque (education-first reference): matte paper, warm-brown
+  // border, corner ticks — hanzi/pinyin stay dynamic text, never baked art
+  ctx.shadowColor = "rgba(60,40,20,.32)";
+  ctx.shadowBlur = 12*B.S;
+  ctx.shadowOffsetY = 4*B.S;
+  const paper = ctx.createLinearGradient(0,y,0,y+lh);
+  paper.addColorStop(0,"rgba(253,246,227,.97)");
+  paper.addColorStop(1,"rgba(243,230,198,.97)");
+  ctx.fillStyle = paper;
   roundRect(x,y,lw,lh,14*B.S); ctx.fill();
   ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-  ctx.strokeStyle = boss ? "#fff1a6" : "#f5c518";
-  ctx.lineWidth = 2.4*B.S;
-  roundRect(x+1*B.S,y+1*B.S,lw-2*B.S,lh-2*B.S,13*B.S); ctx.stroke();
-  ctx.strokeStyle = "rgba(255,244,224,.2)";
-  ctx.lineWidth = 1;
-  roundRect(x+7*B.S,y+7*B.S,lw-14*B.S,lh-14*B.S,9*B.S); ctx.stroke();
-  const glintX = x + ((t/22) % (lw + 80*B.S)) - 40*B.S;
-  const glint = ctx.createLinearGradient(glintX-20*B.S,y,glintX+20*B.S,y+lh);
-  glint.addColorStop(0,"rgba(255,255,255,0)");
-  glint.addColorStop(.5,"rgba(255,244,224,.12)");
-  glint.addColorStop(1,"rgba(255,255,255,0)");
-  ctx.fillStyle = glint;
-  roundRect(x,y,lw,lh,14*B.S); ctx.fill();
-  ctx.fillStyle = boss ? "#fff1a6" : "#fff4e0";
+  ctx.strokeStyle = boss ? "#D8A93A" : "#B98F55";
+  ctx.lineWidth = 2.6*B.S;
+  roundRect(x+1.3*B.S,y+1.3*B.S,lw-2.6*B.S,lh-2.6*B.S,13*B.S); ctx.stroke();
+  ctx.strokeStyle = "rgba(231,211,166,.9)";
+  ctx.lineWidth = 1.2*B.S;
+  roundRect(x+6*B.S,y+6*B.S,lw-12*B.S,lh-12*B.S,9*B.S); ctx.stroke();
+  // corner ticks
+  ctx.strokeStyle = "#C29B5F";
+  ctx.lineWidth = 1.8*B.S;
+  ctx.lineCap = "round";
+  const tk = 5*B.S, ti = 10*B.S;
+  ctx.beginPath();
+  ctx.moveTo(x+ti, y+ti+tk); ctx.lineTo(x+ti, y+ti); ctx.lineTo(x+ti+tk, y+ti);
+  ctx.moveTo(x+lw-ti-tk, y+ti); ctx.lineTo(x+lw-ti, y+ti); ctx.lineTo(x+lw-ti, y+ti+tk);
+  ctx.moveTo(x+ti, y+lh-ti-tk); ctx.lineTo(x+ti, y+lh-ti); ctx.lineTo(x+ti+tk, y+lh-ti);
+  ctx.moveTo(x+lw-ti-tk, y+lh-ti); ctx.lineTo(x+lw-ti, y+lh-ti); ctx.lineTo(x+lw-ti, y+lh-ti-tk);
+  ctx.stroke();
+  ctx.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
   ctx.textAlign = "center";
+  ctx.font = `700 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
   ctx.fillText(hanzi, B.w/2, wy + (pinyin ? -5*B.S : B.L.hanziPx*.34));
   if(pinyin){
     ctx.font = `600 ${Math.round(B.L.pinyinPx)}px 'Segoe UI',sans-serif`;
-    ctx.fillStyle = "#f5c518";
+    ctx.fillStyle = "#8C5F2A";
     ctx.fillText(pinyin, B.w/2, wy + 28*B.S);
   }
   if(level){
+    // dark-green level tag (reference TAG)
     ctx.font = `700 ${Math.round(10*B.S)}px 'Segoe UI',sans-serif`;
-    ctx.fillStyle = "rgba(245,197,24,.9)";
+    const tagText = `HSK ${level}`;
+    const tw = ctx.measureText(tagText).width + 12*B.S;
+    const th = 16*B.S;
+    ctx.fillStyle = "#2F6B4F";
+    roundRect(x+8*B.S, y-th*.45, tw, th, th/2); ctx.fill();
+    ctx.strokeStyle = "#1E4634";
+    ctx.lineWidth = 1.2*B.S;
+    roundRect(x+8*B.S, y-th*.45, tw, th, th/2); ctx.stroke();
+    ctx.fillStyle = "#F2EDDE";
     ctx.textAlign = "left";
-    ctx.fillText(`HSK ${level}`, x+12*B.S, y+17*B.S);
+    ctx.fillText(tagText, x+14*B.S, y-th*.45 + th*.7);
   }
   ctx.restore();
 }

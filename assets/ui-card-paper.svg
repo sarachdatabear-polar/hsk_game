@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" width="360" height="240">
+  <title>Word plaque — cream paper, corner ticks; vocabulary stays dynamic</title>
+  <rect x="6" y="10" width="348" height="226" rx="18" fill="#B98F55" opacity=".45"/>
+  <rect x="4" y="4" width="352" height="228" rx="18" fill="#F9EFD8" stroke="#B98F55" stroke-width="4"/>
+  <rect x="12" y="12" width="336" height="212" rx="12" fill="none" stroke="#E7D3A6" stroke-width="2"/>
+  <g stroke="#C29B5F" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M22 30v-8h8M338 22h-8v8M22 210v8h8M338 218h-8v-8"/>
+  </g>
+  <g fill="#E9DCBC" opacity=".7">
+    <circle cx="52" cy="196" r="1.6"/><circle cx="300" cy="44" r="1.6"/>
+    <circle cx="318" cy="188" r="1.3"/><circle cx="44" cy="52" r="1.3"/>
+  </g>
+</svg>
