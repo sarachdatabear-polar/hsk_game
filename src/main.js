@@ -5,6 +5,7 @@ import { killPoints } from "./scoring.js";
 import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus } from "./fx.js";
 import { sfx } from "./sfx.js";
 import { drawCat } from "./cat.js";
+import { drawRaccoon, drawHpBar, RACCOON_HEIGHT } from "./raccoon.js";
 import { uiScale, layout } from "./layout.js";
 import { loadSprites, sprite } from "./sprites.js";
 import { nineSliceRects } from "./nineslice.js";
@@ -530,7 +531,9 @@ $("#pause-quit").onclick = ()=>{ $("#pause-overlay").classList.remove("on"); end
 function pushMiss(w){ if(!B.missSet.has(w.h)){ B.missSet.add(w.h); B.misses.push(w); } }
 function spawnZombie(){
   const w = pickWord();
-  B.zombie = {w, x: B.w+30, state:"walk"};
+  // hp is cosmetic-only (drives the floating HP bar): 1 = full, drops to 0.5
+  // once a boss's first stage is passed, animates to 0 on the kill.
+  B.zombie = {w, x: B.w+30, state:"walk", hp: 1};
   B.spawned++; B.locked = false;
   if(isBossSpawn(B.spawned)){
     B.zombie.boss = true; B.zombie.stage = "meaning";
@@ -602,6 +605,7 @@ function answer(btn, o){
     // Freeze the walk (not the render state, so the sprite keeps animating)
     // so the brief pause can't cost a free bite.
     z.frozen = true;
+    z.hp = 0.5;   // cosmetic HP bar: half-depleted after stage 1 (meaning)
     btn.classList.add("good");
     lockOptions();
     setTimeout(()=>{
@@ -665,6 +669,7 @@ function killZombie(z){
   const gy = B.h-B.L.ground;
   B.parts.push(...coinBurst(z.x, gy-16, !!z.boss, shopState.effect));   // bosses pop a bigger, coinier burst; effect pack swaps the look
   z.state = "happy";
+  z.hpAtKill = z.hp;   // draw() lerps hp -> 0 over the happy/dying window from this
   B.dyingUntil = performance.now() + 250;
   B.proj = null;
   B.resolved++;
@@ -822,17 +827,16 @@ function draw(t){
   ctx.strokeStyle = "rgba(245,197,24,.35)"; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(0,gy+12); ctx.lineTo(B.w,gy+12); ctx.stroke();
   ctx.textAlign = "center";
-  // mascot (left side) - maneki sprite or vector fallback
-  const manekiImg = sprite("maneki");
+  // player cat (left side, was the maneki) — shop skin + growth accessories +
+  // kitten companion now live here instead of on the walker (M5 role swap).
+  // "happy" during the post-kill victory hop, otherwise a walk-in-place idle
+  // (drawCat has no dedicated idle state; "walk" just bobs/steps in place
+  // since x never changes here).
   const hopping = B.mascotHopUntil && t < B.mascotHopUntil;   // little victory hop after a kill
-  const mp = B.L.mascotPx;
-  if(manekiImg){
-    const bob = Math.sin(t/400)*(hopping? 9:3);
-    ctx.drawImage(manekiImg, B.L.mascotX-mp/2, gy-mp+4*B.S+bob, mp, mp);
-  }else{
-    drawCat(ctx, B.L.mascotX, gy + 6*B.S, t, "happy", null, .72*B.S, [], false);
-  }
-  // idle coin icon (left of mascot) - coin sprite or vector fallback
+  const playerState = hopping ? "happy" : "walk";
+  drawCat(ctx, B.L.mascotX, gy + 6*B.S, t, playerState, SKIN_PALETTES[shopState.skin], .9*B.S, B.acc, false);
+  if(B.hasKitten) drawCat(ctx, B.L.mascotX - B.L.catHalf, gy + 6*B.S, t + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.S, [], false);
+  // idle coin icon (left of the player) - coin sprite or vector fallback
   const coinImgIdle = sprite("coin");
   if(coinImgIdle){
     ctx.drawImage(coinImgIdle, 4*B.S, gy-22*B.S, B.L.coinPx, B.L.coinPx);
@@ -841,18 +845,27 @@ function draw(t){
   }
   const z = B.zombie;
   if(z){
-    // word + pinyin, fixed at the center of the sky area (not following the cat)
+    // word + pinyin, fixed at the center of the sky area (not following the raccoon)
     // boss stage 2 asks "which hanzi?", so the plate must not give it away
     const hideWord = z.boss && z.stage === "hanzi" && z.state === "walk";
     const bh = hideWord ? "？？" : z.w.h;
     // pinyin off when: boss reverse-question hides it, OR the player toggled it off
     const bp = (hideWord || !settings.showPinyin) ? "" : z.w.p;
     drawWordPlate(hideWord ? "??" : bh, bp, z.w.lv, z.boss, t);
-    // cat — bosses draw bigger with a gold aura (boss param, not scale — see
-    // cat.js); growth accessories ride along via the same call, kitten trails
-    // as a second mini cat
-    drawCat(ctx, z.x, gy + 6*B.S, t, z.state, SKIN_PALETTES[shopState.skin], z.boss ? 1.5*B.S : B.S, B.acc, !!z.boss);
-    if(B.hasKitten) drawCat(ctx, z.x + B.L.catHalf, gy + 6*B.S, t + 250, z.state, SKIN_PALETTES[shopState.skin], 0.55*B.S, [], false);
+    // raccoon enemy (was the cat walker) — bosses draw bigger with a gold
+    // aura (boss param, not scale — see raccoon.js); no skins/accessories/
+    // kitten on it, those moved to the player above.
+    const rScale = z.boss ? 1.5*B.S : B.S;
+    drawRaccoon(ctx, z.x, gy + 6*B.S, t, z.state, rScale, !!z.boss);
+    // floating HP bar above its head — cosmetic only. Animates hp -> 0 over
+    // the happy/dying window (killZombie snapshots hpAtKill); wrong/timeout
+    // never touch hp (the raccoon "wins" that word, no damage).
+    let hpFrac = z.hp;
+    if(z.state === "happy" && B.dyingUntil){
+      const remain = Math.max(0, B.dyingUntil - t);
+      hpFrac = (z.hpAtKill ?? z.hp) * (remain/250);
+    }
+    drawHpBar(ctx, z.x, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.S, hpFrac, B.S);
   }
   // projectile - spinning coin sprite or vector fallback
   if(B.proj){

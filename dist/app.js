@@ -627,6 +627,215 @@
     }
   }
 
+  // src/raccoon.js
+  var FUR = "#A39D93";
+  var FUR_DARK = "#6B655D";
+  var OUTFIT = "#3A3F47";
+  var OUTLINE = "#846043";
+  var HEADBAND = "#7A94A8";
+  var HEADBAND_BOSS = "#54677A";
+  var NOSE = "#E88FA0";
+  var EYE_LIGHT = "#F5F1E8";
+  var INK = "#3A2E1D";
+  var RACCOON_HEIGHT = 74;
+  function raccoonBob(tMs, state) {
+    if (state === "happy") {
+      const settle = Math.min(1, tMs / 600);
+      const wobble = Math.sin(tMs / 90) * 1.4 * (1 - settle);
+      return { bob: 8 * settle + wobble, legSwing: 0 };
+    }
+    if (state === "wrong") {
+      const ph2 = tMs / 150 % (Math.PI * 2);
+      const hop = Math.abs(Math.sin(ph2)) * 4.5;
+      return { bob: -hop, legSwing: Math.sin(ph2) * 4 };
+    }
+    const ph = tMs / 220 % (Math.PI * 2);
+    return { bob: Math.sin(ph) * 2.5, legSwing: Math.sin(ph) * 6 };
+  }
+  function drawRaccoon(ctx3, x, groundY, tMs, state, scale = 1, boss = false) {
+    const { bob, legSwing } = raccoonBob(tMs, state);
+    const happy = state === "happy";
+    const wrong = state === "wrong";
+    if (boss) {
+      ctx3.save();
+      ctx3.fillStyle = "rgba(245,197,24,.18)";
+      ctx3.beginPath();
+      ctx3.arc(x, groundY - 28 * (scale / 1.5), 42 * (scale / 1.5), 0, Math.PI * 2);
+      ctx3.fill();
+      ctx3.restore();
+    }
+    ctx3.save();
+    if (scale !== 1) {
+      ctx3.translate(x, groundY);
+      ctx3.scale(scale, scale);
+      ctx3.translate(-x, -groundY);
+    }
+    ctx3.save();
+    ctx3.translate(x, groundY);
+    if (happy) {
+      ctx3.rotate(0.18);
+    } else if (wrong) {
+      ctx3.rotate(-0.08);
+    }
+    const headband = boss ? HEADBAND_BOSS : HEADBAND;
+    ctx3.strokeStyle = FUR_DARK;
+    ctx3.lineWidth = 7;
+    ctx3.lineCap = "round";
+    ctx3.beginPath();
+    ctx3.moveTo(8, -18 + bob);
+    ctx3.quadraticCurveTo(25, -34 + bob, 15, -58 + bob);
+    ctx3.stroke();
+    ctx3.strokeStyle = "#E4DFD4";
+    ctx3.lineWidth = 2.6;
+    for (const p of [[10.5, -24], [16, -34], [18.5, -45]]) {
+      ctx3.beginPath();
+      ctx3.moveTo(p[0] - 2.6, p[1] + 1.6 + bob);
+      ctx3.lineTo(p[0] + 2.6, p[1] - 1.6 + bob);
+      ctx3.stroke();
+    }
+    ctx3.strokeStyle = FUR_DARK;
+    ctx3.lineWidth = 6;
+    ctx3.lineCap = "round";
+    ctx3.beginPath();
+    ctx3.moveTo(-5, -20);
+    ctx3.lineTo(-5 - legSwing * 0.4, 0);
+    ctx3.stroke();
+    ctx3.beginPath();
+    ctx3.moveTo(5, -20);
+    ctx3.lineTo(5 + legSwing * 0.4, 0);
+    ctx3.stroke();
+    ctx3.fillStyle = OUTFIT;
+    ctx3.fillRect(-11, -40 + bob, 22, 22);
+    ctx3.strokeStyle = OUTLINE;
+    ctx3.lineWidth = 1.4;
+    ctx3.strokeRect(-11, -40 + bob, 22, 22);
+    ctx3.strokeStyle = OUTLINE;
+    ctx3.lineWidth = 3;
+    ctx3.lineCap = "round";
+    ctx3.beginPath();
+    ctx3.moveTo(-7, -41 + bob);
+    ctx3.lineTo(9, -18 + bob);
+    ctx3.stroke();
+    ctx3.strokeStyle = FUR;
+    ctx3.lineWidth = 5;
+    ctx3.lineCap = "round";
+    ctx3.beginPath();
+    ctx3.moveTo(-9, -34 + bob);
+    ctx3.lineTo(-15, -26 + bob + legSwing * 0.2);
+    ctx3.stroke();
+    ctx3.beginPath();
+    ctx3.moveTo(9, -34 + bob);
+    ctx3.lineTo(15, -26 + bob - legSwing * 0.2);
+    ctx3.stroke();
+    ctx3.fillStyle = FUR;
+    ctx3.beginPath();
+    ctx3.arc(0, -49 + bob, 11, 0, Math.PI * 2);
+    ctx3.fill();
+    ctx3.fillStyle = FUR_DARK;
+    ctx3.beginPath();
+    ctx3.moveTo(-9, -57 + bob);
+    ctx3.lineTo(-13, -66 + bob);
+    ctx3.lineTo(-3, -59 + bob);
+    ctx3.closePath();
+    ctx3.fill();
+    ctx3.beginPath();
+    ctx3.moveTo(9, -57 + bob);
+    ctx3.lineTo(13, -66 + bob);
+    ctx3.lineTo(3, -59 + bob);
+    ctx3.closePath();
+    ctx3.fill();
+    ctx3.fillStyle = headband;
+    ctx3.fillRect(-11, -55 + bob, 22, 5);
+    ctx3.beginPath();
+    ctx3.moveTo(11, -55 + bob);
+    ctx3.lineTo(17, -51 + bob);
+    ctx3.lineTo(11, -50 + bob);
+    ctx3.closePath();
+    ctx3.fill();
+    ctx3.beginPath();
+    ctx3.moveTo(11, -52 + bob);
+    ctx3.lineTo(16, -47 + bob);
+    ctx3.lineTo(10, -47 + bob);
+    ctx3.closePath();
+    ctx3.fill();
+    ctx3.fillStyle = FUR_DARK;
+    ctx3.beginPath();
+    ctx3.ellipse(-4, -50 + bob, 3.6, 2.6, -0.15, 0, Math.PI * 2);
+    ctx3.fill();
+    ctx3.beginPath();
+    ctx3.ellipse(4, -50 + bob, 3.6, 2.6, 0.15, 0, Math.PI * 2);
+    ctx3.fill();
+    if (happy) {
+      ctx3.strokeStyle = EYE_LIGHT;
+      ctx3.lineWidth = 1.4;
+      ctx3.lineCap = "round";
+      ctx3.beginPath();
+      ctx3.arc(-4, -49 + bob, 2, Math.PI * 0.15, Math.PI * 0.85);
+      ctx3.stroke();
+      ctx3.beginPath();
+      ctx3.arc(4, -49 + bob, 2, Math.PI * 0.15, Math.PI * 0.85);
+      ctx3.stroke();
+    } else {
+      ctx3.fillStyle = EYE_LIGHT;
+      ctx3.beginPath();
+      ctx3.ellipse(-4, -50 + bob, 2, 1.5, 0, 0, Math.PI * 2);
+      ctx3.fill();
+      ctx3.beginPath();
+      ctx3.ellipse(4, -50 + bob, 2, 1.5, 0, 0, Math.PI * 2);
+      ctx3.fill();
+      ctx3.fillStyle = INK;
+      if (wrong) {
+        ctx3.fillRect(-5.4, -50 + bob, 2.8, 1.1);
+        ctx3.fillRect(2.6, -50 + bob, 2.8, 1.1);
+      } else {
+        ctx3.beginPath();
+        ctx3.arc(-4, -50 + bob, 1, 0, Math.PI * 2);
+        ctx3.fill();
+        ctx3.beginPath();
+        ctx3.arc(4, -50 + bob, 1, 0, Math.PI * 2);
+        ctx3.fill();
+      }
+    }
+    ctx3.fillStyle = NOSE;
+    ctx3.beginPath();
+    ctx3.arc(0, -46 + bob, 1.4, 0, Math.PI * 2);
+    ctx3.fill();
+    ctx3.restore();
+    ctx3.restore();
+  }
+  function roundedRect2(ctx3, x, y, w, h, r) {
+    r = Math.max(0, Math.min(r, w / 2, h / 2));
+    ctx3.beginPath();
+    ctx3.moveTo(x + r, y);
+    ctx3.arcTo(x + w, y, x + w, y + h, r);
+    ctx3.arcTo(x + w, y + h, x, y + h, r);
+    ctx3.arcTo(x, y + h, x, y, r);
+    ctx3.arcTo(x, y, x + w, y, r);
+    ctx3.closePath();
+  }
+  function drawHpBar(ctx3, x, y, w, frac, scale = 1) {
+    const f = Math.max(0, Math.min(1, frac));
+    const h = 6 * scale;
+    const bw = Math.max(1, 1.2 * scale);
+    ctx3.save();
+    ctx3.fillStyle = "#FBF5E8";
+    roundedRect2(ctx3, x - w / 2, y, w, h, h / 2);
+    ctx3.fill();
+    ctx3.strokeStyle = "#846043";
+    ctx3.lineWidth = bw;
+    roundedRect2(ctx3, x - w / 2, y, w, h, h / 2);
+    ctx3.stroke();
+    if (f > 0) {
+      const pad = Math.min(scale, w / 2, h / 2);
+      const innerW = Math.max(0, (w - pad * 2) * f);
+      const innerH = Math.max(0, h - pad * 2);
+      ctx3.fillStyle = "#28723B";
+      roundedRect2(ctx3, x - w / 2 + pad, y + pad, innerW, innerH, innerH / 2);
+      ctx3.fill();
+    }
+    ctx3.restore();
+  }
+
   // src/layout.js
   function uiScale(w, h) {
     const s = Math.min(h / 480, w / 380);
@@ -2146,7 +2355,7 @@
   }
   function spawnZombie() {
     const w = pickWord();
-    B.zombie = { w, x: B.w + 30, state: "walk" };
+    B.zombie = { w, x: B.w + 30, state: "walk", hp: 1 };
     B.spawned++;
     B.locked = false;
     if (isBossSpawn(B.spawned)) {
@@ -2213,6 +2422,7 @@
     }
     if (correct && boss && z.stage === "meaning") {
       z.frozen = true;
+      z.hp = 0.5;
       btn.classList.add("good");
       lockOptions();
       setTimeout(() => {
@@ -2279,6 +2489,7 @@
     const gy = B.h - B.L.ground;
     B.parts.push(...coinBurst(z.x, gy - 16, !!z.boss, shopState.effect));
     z.state = "happy";
+    z.hpAtKill = z.hp;
     B.dyingUntil = performance.now() + 250;
     B.proj = null;
     B.resolved++;
@@ -2477,15 +2688,10 @@
     ctx2.lineTo(B.w, gy + 12);
     ctx2.stroke();
     ctx2.textAlign = "center";
-    const manekiImg = sprite("maneki");
     const hopping = B.mascotHopUntil && t2 < B.mascotHopUntil;
-    const mp = B.L.mascotPx;
-    if (manekiImg) {
-      const bob = Math.sin(t2 / 400) * (hopping ? 9 : 3);
-      ctx2.drawImage(manekiImg, B.L.mascotX - mp / 2, gy - mp + 4 * B.S + bob, mp, mp);
-    } else {
-      drawCat(ctx2, B.L.mascotX, gy + 6 * B.S, t2, "happy", null, 0.72 * B.S, [], false);
-    }
+    const playerState = hopping ? "happy" : "walk";
+    drawCat(ctx2, B.L.mascotX, gy + 6 * B.S, t2, playerState, SKIN_PALETTES[shopState.skin], 0.9 * B.S, B.acc, false);
+    if (B.hasKitten) drawCat(ctx2, B.L.mascotX - B.L.catHalf, gy + 6 * B.S, t2 + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5 * B.S, [], false);
     const coinImgIdle = sprite("coin");
     if (coinImgIdle) {
       ctx2.drawImage(coinImgIdle, 4 * B.S, gy - 22 * B.S, B.L.coinPx, B.L.coinPx);
@@ -2498,8 +2704,14 @@
       const bh = hideWord ? "\uFF1F\uFF1F" : z.w.h;
       const bp = hideWord || !settings.showPinyin ? "" : z.w.p;
       drawWordPlate(hideWord ? "??" : bh, bp, z.w.lv, z.boss, t2);
-      drawCat(ctx2, z.x, gy + 6 * B.S, t2, z.state, SKIN_PALETTES[shopState.skin], z.boss ? 1.5 * B.S : B.S, B.acc, !!z.boss);
-      if (B.hasKitten) drawCat(ctx2, z.x + B.L.catHalf, gy + 6 * B.S, t2 + 250, z.state, SKIN_PALETTES[shopState.skin], 0.55 * B.S, [], false);
+      const rScale = z.boss ? 1.5 * B.S : B.S;
+      drawRaccoon(ctx2, z.x, gy + 6 * B.S, t2, z.state, rScale, !!z.boss);
+      let hpFrac = z.hp;
+      if (z.state === "happy" && B.dyingUntil) {
+        const remain = Math.max(0, B.dyingUntil - t2);
+        hpFrac = (z.hpAtKill ?? z.hp) * (remain / 250);
+      }
+      drawHpBar(ctx2, z.x, gy + 6 * B.S - RACCOON_HEIGHT * rScale, 46 * B.S, hpFrac, B.S);
     }
     if (B.proj) {
       const coinImg = sprite("coin");
