@@ -1,10 +1,11 @@
 "use strict";
-import { buildPool, coveragePct, scopeKey, meaning as meaningOf, normalizeLen, modeKey } from "./pool.js";
+import { buildPool, coveragePct, scopeKey, meaning as meaningOf, normalizeLen, modeKey, scopeSummary } from "./pool.js";
 import { pickDistractors } from "./distractors.js";
 import { killPoints } from "./scoring.js";
 import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus } from "./fx.js";
 import { sfx } from "./sfx.js";
 import { drawCat } from "./cat.js";
+import { drawRaccoon, drawHpBar, RACCOON_HEIGHT } from "./raccoon.js";
 import { uiScale, layout } from "./layout.js";
 import { loadSprites, sprite } from "./sprites.js";
 import { nineSliceRects } from "./nineslice.js";
@@ -19,12 +20,21 @@ import { initAudio, speak } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem } from "./shop.js";
 import { streetPieces, streetProgress } from "./street.js";
-import { iconSvg, setIconLabel, setIconOnly, setPill } from "./icons.js";
+import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
+import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
+import { navVisibleOn, activeTabFor } from "./nav.js";
+import { roundLabel, comboMultiplier, comboFires } from "./hud.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
 const $ = s => document.querySelector(s);
+// Accessibility (§11): read once at boot. When set, feedback-stamp effects
+// (drawFeedbackLayer) get half the on-screen duration and the hit-flash
+// screen shake is skipped outright (see the wrong-answer branch in answer()).
+const REDUCED_MOTION = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+function fxDuration(ms){ return REDUCED_MOTION ? Math.round(ms/2) : ms; }
+function fxUntil(ms){ return performance.now() + fxDuration(ms); }
 const store = {
   get(k, d){ try{ const v = localStorage.getItem("nbhsk."+k); return v===null? d : JSON.parse(v);}catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem("nbhsk."+k, JSON.stringify(v)); }catch(e){} }
@@ -52,7 +62,19 @@ function updateWalletChip(){ setPill($("#home-wallet"), "secondary-coin", wallet
 
 /* ============================== cat growth (xp/levels/accessories) ============================== */
 let xp = store.get("xp", 0);
-function updateLevelChip(){ const el = $("#home-level"); if(el) setPill(el, "paw", `Lv ${levelForXp(xp)}`); }
+// #home-level is the whole status capsule (avatar + level text + XP bar, M3);
+// fill its children directly rather than replacing them like setPill does.
+function updateLevelChip(){
+  const el = $("#home-level");
+  if(!el) return;
+  const lv = levelForXp(xp);
+  const prog = xpToNext(xp);
+  const pct = prog.need ? Math.round(100*prog.into/prog.need) : 100;
+  const txt = el.querySelector(".level-text");
+  const bar = el.querySelector(".xp-bar i");
+  if(txt) txt.textContent = `Lv ${lv}`;
+  if(bar) bar.style.width = pct + "%";
+}
 function addXp(n){
   const before = levelForXp(xp);
   xp += n;
@@ -78,12 +100,20 @@ const todayStr = () => {
 };
 let daily = Object.assign(defaultDaily(), store.get("daily", {}));
 daily.today = Object.assign({date:"", resolved:0}, daily.today);
+// #home-streak is the cream streak plaque (M3): fire icon + title, day count +
+// a ✓ that only shows once today's goal is met, and a green→gold bar for
+// today's progress toward that goal. Fill children in place, like updateLevelChip.
 function updateStreakChip(){
-  const info = streakInfo(daily, todayStr());
   const el = $("#home-streak");
-  el.replaceChildren(iconSvg("streak"), document.createTextNode(info.goalMet
-    ? ` ${info.streak} · complete today`
-    : ` ${info.streak} · ${info.todayResolved}/${info.goal} today`));
+  if(!el) return;
+  const info = streakInfo(daily, todayStr());
+  const title = el.querySelector(".streak-title");
+  const count = el.querySelector(".streak-count");
+  const bar = el.querySelector(".streak-bar i");
+  if(title) title.textContent = t("home.streakTitle");
+  if(count) count.textContent = t("home.streakDays", { n: info.streak });
+  if(bar) bar.style.width = Math.min(100, Math.round(100*info.todayResolved/info.goal)) + "%";
+  el.classList.toggle("goal-met", info.goalMet);
 }
 function noteDaily(count){
   daily = noteActivity(daily, todayStr(), count);
@@ -134,6 +164,35 @@ $("#go-smart").onclick = ()=>{
   startBattle("round");
 };
 
+/* ============================== home screen (M3) ============================== */
+// Builds the scope chip's label from pool.js's pure scopeSummary() — localizes
+// the filter words here so scopeSummary itself stays i18n-free.
+function scopeChipLabel(){
+  const s = scopeSummary(scope);
+  const bits = [s.levelLabel];
+  if(s.core) bits.push(t("scope.highYield"));
+  if(s.newOnly) bits.push(t("scope.newOnly"));
+  bits.push(t("home.scopeWords", { n: s.sessionLen }));
+  return bits.join(" · ");
+}
+// Refreshes every home-screen dynamic bit: called at boot and every time we
+// navigate back to home (show("home")), so a scope change made on the scope
+// screen (which rebuilds `pool`) is reflected the moment the player returns.
+function renderHome(){
+  updateLevelChip();
+  updateWalletChip();
+  updateStreakChip();
+  updateSmartBtn();
+  const startable = pool.length >= 8;
+  const startBtn = $("#home-start");
+  const hint = $("#home-start-hint");
+  if(startBtn) startBtn.disabled = !startable;
+  if(hint) hint.hidden = startable;
+  const chip = $("#home-scope-chip");
+  if(chip) chip.textContent = scopeChipLabel();
+}
+$("#home-start").onclick = ()=>{ if(pool.length >= 8) startBattle("round"); };
+
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
 /* ============================== audio (pre-recorded mp3 first, Web Speech fallback) ============================== */
@@ -144,6 +203,9 @@ fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>in
 /* ============================== sprite preload ============================== */
 loadSprites();
 preloadAssets();
+
+/* ============================== font preload (guarded, non-blocking) ============================== */
+if (document.fonts && document.fonts.load) { document.fonts.load("900 40px 'LC Hanzi'").catch(()=>{}); }
 
 /* ============================== i18n DOM binding ============================== */
 // Localizes any static markup annotated with data-i18n* attributes. Dynamic
@@ -160,11 +222,22 @@ function applyStaticI18n(root = document){
 
 /* ============================== screens ============================== */
 let currentScreen = "home";
+function updateNav(name){
+  const nav = $("#bottom-nav");
+  if(!nav) return;
+  const visible = navVisibleOn(name);
+  nav.style.display = visible ? "flex" : "none";
+  const active = activeTabFor(name);
+  nav.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.tab===active));
+}
 function show(name){
   currentScreen = name;
   document.querySelectorAll(".screen").forEach(el=>el.classList.remove("on"));
   $("#s-"+name).classList.add("on");
-  if(name==="home"){ renderQuests(); renderStreet(); }
+  updateNav(name);
+  if(name==="home"){ renderHome(); }
+  if(name==="street"){ renderStreet(); }
+  if(name==="quests"){ renderQuests(); }
 }
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()=>{
   const t = b.dataset.go;
@@ -313,6 +386,27 @@ const cvRO = new ResizeObserver(()=>{ if(B.on) sizeCanvas(); });
 cvRO.observe(cv);
 window.addEventListener("resize", ()=>{ if(B.on) sizeCanvas(); });
 
+// Plaque speaker affordance (M6, §11 accessibility): the plaque itself is the
+// tap target (not just a small icon) — B.plaqueRect is set every draw() frame
+// from drawWordPlate(); null whenever no word is on screen. Mouse/touch via
+// click, keyboard via Enter/Space on the now-focusable canvas (tabindex below).
+function replayCurrentWord(){
+  if(B.paused || !B.zombie) return;
+  speak(B.zombie.w.h);
+}
+cv.addEventListener("click", e=>{
+  const r = B.plaqueRect;
+  if(!r) return;
+  const box = cv.getBoundingClientRect();
+  const x = e.clientX - box.left, y = e.clientY - box.top;
+  if(x>=r.x && x<=r.x+r.w && y>=r.y && y<=r.y+r.h) replayCurrentWord();
+});
+cv.addEventListener("keydown", e=>{
+  if(e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+  e.preventDefault();
+  replayCurrentWord();
+});
+
 function pickWord(){
   const deck = B.deck;
   const now = Date.now();
@@ -345,7 +439,9 @@ function startBattle(mode){
   B.wordsTotal = mode==="round"? normalizeLen(scope.sessionLen) : Infinity;
   B.spawned = 0; B.resolved = 0; B.correct = 0; B.attempts = 0;
   B.recent = []; B.misses = []; B.missSet = new Set();
-  B.nextAt = 0; B.lastT = 0; B.locked = false;
+  B.nextAt = 0; B.lastT = 0; B.locked = false; B.bossStageAt = 0;
+  B.paused = false; B.pausedAt = 0;
+  $("#pause-overlay").classList.remove("on");
   questToasts = [];
   B.levelUps = [];
   const acc0 = accessoriesFor(levelForXp(xp));
@@ -365,29 +461,23 @@ function startBattle(mode){
   requestAnimationFrame(loop);
 }
 function stopBattle(){ B.on = false; keepAwake(false); if(window.speechSynthesis) speechSynthesis.cancel(); }
-$("#hud-quit").onclick = ()=>{ endBattle(true); };
-$("#hud-sfx").onclick = ()=>{ sfx.enabled = !sfx.enabled; store.set("sfx", sfx.enabled); setIconOnly($("#hud-sfx"), sfx.enabled ? "bell" : "bell-off"); };
-$("#hud-audio").onclick = ()=>{
-  settings.autoSpeak = !settings.autoSpeak;
-  store.set("settings", settings);
-  setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
-};
-/* pinyin toggle: hides the romanization on the battle word plate (quiz mode) so
-   advanced learners test pure character recall. Persisted like autoSpeak. */
-$("#hud-pinyin").onclick = ()=>{
-  settings.showPinyin = !settings.showPinyin;
-  store.set("settings", settings);
-  setIconOnly($("#hud-pinyin"), settings.showPinyin ? "pinyin" : "pinyin-off");
-};
-/* home-screen sound toggle mirrors hud-sfx; the button dims when muted. */
-$("#home-sound").addEventListener("click", ()=>{
+/* More-screen sound toggle mirrors the old hud-sfx (dims when muted); both stay
+   in sync via the same nbhsk.sfx store key. The old home-screen sound icon was
+   removed in M3 — #more-sound is now the single toggle outside battle. The
+   sfx row inside the pause overlay (below) reuses this same function. */
+function syncSoundToggles(){
+  $("#more-sound").classList.toggle("muted", !sfx.enabled);
+}
+function toggleSfx(){
   sfx.enabled = !sfx.enabled;
   store.set("sfx", sfx.enabled);
-  $("#home-sound").classList.toggle("muted", !sfx.enabled);
+  syncSoundToggles();
   updateHud();
-});
-$("#home-sound").classList.toggle("muted", !sfx.enabled);
+}
+$("#more-sound").addEventListener("click", toggleSfx);
+syncSoundToggles();
 function updateHud(){
+  if(!B.on) return;   // toggleSfx can fire from the More screen, outside battle
   const lives = $("#hud-lives");
   lives.replaceChildren();
   for(let i=0;i<3;i++){
@@ -396,16 +486,102 @@ function updateHud(){
     lives.appendChild(h);
   }
   $("#hud-score").textContent = B.score;
-  $("#hud-combo").textContent = B.combo>=2? "x"+B.combo:"";
-  $("#hud-left").textContent = B.mode==="round"? (B.wordsTotal-B.resolved)+" left":"endless";
-  setIconOnly($("#hud-sfx"), sfx.enabled ? "bell" : "bell-off");
-  setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
-  setIconOnly($("#hud-pinyin"), settings.showPinyin ? "pinyin" : "pinyin-off");
+  $("#hud-round").textContent = t("battle.round", { label: roundLabel(B.mode, B.spawned, B.wordsTotal) });
+  updateComboStrip();
 }
+// Combo strip (M6, §6.2 item 5): COMBO N · fire row · xN badge. Replaces the
+// old #hud-combo pill inside the score chip. Hidden entirely below a 2-combo
+// so a fresh round (or one after a miss) doesn't show empty chrome.
+function updateComboStrip(){
+  const strip = $("#combo-strip");
+  if(!strip) return;
+  const show = B.combo >= 2;
+  strip.classList.toggle("hidden", !show);
+  if(!show) return;
+  $("#combo-count").textContent = B.combo;
+  $("#combo-badge").textContent = comboMultiplier(B.combo);
+  const lit = comboFires(B.combo);
+  const fires = $("#combo-fires");
+  fires.replaceChildren();
+  for(let i=0;i<6;i++){
+    const f = iconSvg("streak");
+    f.classList.add("combo-fire", i < lit ? "lit" : "unlit");
+    fires.appendChild(f);
+  }
+}
+/* ============================== pause overlay (M4) ==============================
+   B.paused freezes the rAF loop's motion/spawn/expiry logic (loop() below) and
+   blocks answer() taps, but keeps requestAnimationFrame alive so resuming is a
+   plain unpause rather than a re-bootstrap. Every absolute performance.now()
+   deadline the battle loop reads must be shifted forward by the pause duration
+   on resume, or it "expires" while the player was looking at the overlay:
+   B.nextAt, B.dyingUntil, B.mascotHopUntil, B.feedback.until, B.zombie.wrongUntil. */
+const PAUSE_TOGGLES = [
+  { icon:"bell", iconOff:"bell-off", labelKey:"home.sound", isOn:()=>sfx.enabled, toggle:()=>toggleSfx() },
+  { icon:"sound", iconOff:"muted", labelKey:"battle.wordAudio", isOn:()=>settings.autoSpeak,
+    toggle:()=>{ settings.autoSpeak = !settings.autoSpeak; store.set("settings", settings); } },
+  { icon:"pinyin", iconOff:"pinyin-off", labelKey:"battle.pinyin", isOn:()=>settings.showPinyin,
+    toggle:()=>{ settings.showPinyin = !settings.showPinyin; store.set("settings", settings); } },
+];
+function renderPauseToggles(){
+  const box = $("#pause-toggles");
+  box.innerHTML = "";
+  for(const cfg of PAUSE_TOGGLES){
+    const on = cfg.isOn();
+    const btn = document.createElement("button");
+    btn.className = "pause-toggle"+(on? " on":"");
+    const left = document.createElement("span");
+    left.className = "icon-text";
+    left.appendChild(iconSvg(on? cfg.icon : cfg.iconOff));
+    const label = document.createElement("span");
+    label.textContent = t(cfg.labelKey);
+    left.appendChild(label);
+    const state = document.createElement("span");
+    state.className = "pt-state";
+    state.textContent = on ? t("battle.on") : t("battle.off");
+    btn.appendChild(left);
+    btn.appendChild(state);
+    // state changes (e.g. muting sfx) don't need the deadline shift below —
+    // only the pause/resume clock does — so just re-render in place.
+    btn.onclick = ()=>{ cfg.toggle(); renderPauseToggles(); };
+    box.appendChild(btn);
+  }
+}
+function pauseBattle(){
+  if(!B.on || B.paused) return;
+  B.paused = true;
+  B.pausedAt = performance.now();
+  keepAwake(false);   // nothing moves while paused — let the screen sleep
+  renderPauseToggles();
+  $("#pause-overlay").classList.add("on");
+}
+function resumeBattle(){
+  if(!B.on || !B.paused) return;
+  const shift = performance.now() - B.pausedAt;
+  B.nextAt += shift;
+  if(B.dyingUntil) B.dyingUntil += shift;
+  if(B.mascotHopUntil) B.mascotHopUntil += shift;
+  if(B.feedback) B.feedback.until += shift;
+  if(B.zombie && B.zombie.wrongUntil) B.zombie.wrongUntil += shift;
+  if(B.bossStageAt) B.bossStageAt += shift;
+  B.paused = false;
+  keepAwake(true);
+  $("#pause-overlay").classList.remove("on");
+}
+// Auto-pause (never auto-resume) when the tab/app is backgrounded, so a word's
+// timer can't silently expire while the player isn't looking.
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden && B.on && !B.paused) pauseBattle();
+});
+$("#hud-pause").onclick = ()=> pauseBattle();
+$("#pause-resume").onclick = ()=> resumeBattle();
+$("#pause-quit").onclick = ()=>{ $("#pause-overlay").classList.remove("on"); endBattle(true); };
 function pushMiss(w){ if(!B.missSet.has(w.h)){ B.missSet.add(w.h); B.misses.push(w); } }
 function spawnZombie(){
   const w = pickWord();
-  B.zombie = {w, x: B.w+30, state:"walk"};
+  // hp is cosmetic-only (drives the floating HP bar): 1 = full, drops to 0.5
+  // once a boss's first stage is passed, animates to 0 on the kill.
+  B.zombie = {w, x: B.w+30, state:"walk", hp: 1};
   B.spawned++; B.locked = false;
   if(isBossSpawn(B.spawned)){
     B.zombie.boss = true; B.zombie.stage = "meaning";
@@ -413,6 +589,7 @@ function spawnZombie(){
   }
   if(settings.autoSpeak) speak(w.h);
   renderOptions(w);
+  updateHud();   // round capsule tracks B.spawned — refresh as each word enters
   // per-word ramp on the unscaled base, then re-derive the screen-scaled
   // speed (a plain B.speed *= 1.03 would be wiped by the next resize)
   B.speedBase *= 1.03;
@@ -439,8 +616,8 @@ function renderBossHanzi(word){
   box.innerHTML = "";
   const m = meaningOf(word, scope.lang);
   const prompt = document.createElement("div");
-  prompt.style.cssText = "grid-column:1/-1; text-align:center; font-weight:700; color:var(--gold); padding:2px 4px 8px;";
-  prompt.textContent = `Review Challenge · pick the hanzi for: ${m.main}`;
+  prompt.className = "boss-prompt";
+  prompt.textContent = t("battle.bossPrompt", { meaning: m.main });
   box.appendChild(prompt);
   for(const o of opts){
     const b = document.createElement("button");
@@ -460,6 +637,7 @@ function revealCorrect(word){
   });
 }
 function answer(btn, o){
+  if(B.paused) return;   // overlay is up — ignore any tap that leaks through
   const z = B.zombie;
   if(!z || z.state!=="walk" || B.locked) return;
   const boss = z.boss;
@@ -475,17 +653,20 @@ function answer(btn, o){
     // Freeze the walk (not the render state, so the sprite keeps animating)
     // so the brief pause can't cost a free bite.
     z.frozen = true;
+    z.hp = 0.5;   // cosmetic HP bar: half-depleted after stage 1 (meaning)
     btn.classList.add("good");
     lockOptions();
-    setTimeout(()=>{
-      if(!B.on || B.zombie !== z) return;   // battle moved on/ended meanwhile
-      z.stage = "hanzi"; z.frozen = false;
-      renderBossHanzi(z.w);
-      B.locked = false;
-    }, 500);
+    // Deadline checked in loop() rather than a raw setTimeout, so a pause
+    // mid-transition doesn't fire it behind the overlay — resumeBattle()
+    // shifts it forward like every other absolute performance.now() deadline.
+    B.bossStageAt = performance.now() + 500;
     updateHud();
     return;
   }
+  // Every other branch below is a final resolution of this word (correct kill,
+  // wrong tap, or — via bite() — a timeout): reveal the translation on the
+  // plaque from here on (drawWordPlate reads z.revealed, not the answer state).
+  z.revealed = true;
   if(correct){
     B.correct++; B.combo++;
     questEvent("correct");
@@ -503,13 +684,15 @@ function answer(btn, o){
     // (word audio fires once, on spawn — no replay on the answer tap)
     if(boss) noteAnswer(z.w.h, true);           // both stages passed
     const gy = B.h-B.L.ground;
-    B.feedback = {...feedbackEffect("correct", z.x, gy-42*B.S), until:performance.now()+620};
+    B.feedback = {...feedbackEffect("correct", z.x, gy-42*B.S), until:fxUntil(620)};
     const floater = comboFloater(z.x, gy-130, B.combo);
     if(floater) B.floats.push(floater);
-    // milestone combo (10, 20, ...): extra sparkle + blue streak orb replaces the plain stamp
+    // milestone combo (10, 20, ...): fireworks + a CRITICAL! comic burst
+    // (fx-critical sprite + bold lettering, drawn in drawFeedbackLayer)
+    // replaces the plain correct stamp for this kill.
     if(B.combo>=10 && B.combo%10===0){
       B.parts.push(...fireworkRing(z.x, gy-16));
-      B.feedback = {...feedbackEffect("streak", z.x, gy-42*B.S), until:performance.now()+750};
+      B.feedback = {...feedbackEffect("critical", z.x, gy-42*B.S), until:fxUntil(750)};
     }
   }else{
     // ONE attempt per word: wrong tap = lose a heart. Skip the charge animation and
@@ -521,10 +704,10 @@ function answer(btn, o){
     revealCorrect(z.w);
     pushMiss(z.w);
     if(boss) noteAnswer(z.w.h, false);          // any miss fails the boss word
-    B.lives--; B.flash = 1; B.screenShake = 1; B.resolved++;
+    B.lives--; B.flash = 1; B.screenShake = REDUCED_MOTION ? 0 : 1; B.resolved++;
     z.state = "wrong";
     z.wrongUntil = performance.now() + 560;
-    B.feedback = {...feedbackEffect("wrong", z.x, B.h-B.L.ground-44*B.S), until:performance.now()+560};
+    B.feedback = {...feedbackEffect("wrong", z.x, B.h-B.L.ground-44*B.S), until:fxUntil(560)};
   }
   updateHud();
 }
@@ -538,6 +721,7 @@ function killZombie(z){
   const gy = B.h-B.L.ground;
   B.parts.push(...coinBurst(z.x, gy-16, !!z.boss, shopState.effect));   // bosses pop a bigger, coinier burst; effect pack swaps the look
   z.state = "happy";
+  z.hpAtKill = z.hp;   // draw() lerps hp -> 0 over the happy/dying window from this
   B.dyingUntil = performance.now() + 250;
   B.proj = null;
   B.resolved++;
@@ -550,6 +734,7 @@ function bite(timedOut){
     // only count here if it timed out before ever being tapped.
     if(!z.boss || z.stage === "meaning") B.attempts++;
     B.combo = 0; noteAnswer(z.w.h, false); pushMiss(z.w); revealCorrect(z.w); lockOptions();
+    z.revealed = true;   // timeout resolves the word too — fill the plaque's translation line
   }
   sfx.bite();
   B.lives--; B.flash = 1;
@@ -559,7 +744,26 @@ function bite(timedOut){
 }
 function loop(t){
   if(!B.on) return;
+  if(B.paused){
+    // frozen: keep the rAF alive (resume is a plain unpause, no re-bootstrap)
+    // but advance nothing — no motion, no spawns, no expiry, no redraw (the
+    // last frame stays under the overlay). B.lastT tracks t so dt stays sane.
+    B.lastT = t;
+    requestAnimationFrame(loop);
+    return;
+  }
   const dt = Math.min(0.05, (t-(B.lastT||t))/1000); B.lastT = t;
+  // boss stage 1 (meaning) -> stage 2 (hanzi) transition, deadline-based so a
+  // pause mid-transition can't fire it behind the overlay (see answer()).
+  if(B.bossStageAt && t >= B.bossStageAt){
+    B.bossStageAt = 0;
+    const bz = B.zombie;
+    if(bz && bz.frozen && bz.stage === "meaning"){
+      bz.stage = "hanzi"; bz.frozen = false;
+      renderBossHanzi(bz.w);
+      B.locked = false;
+    }
+  }
   // next word (or end of round) once the field is clear
   if(!B.zombie && t >= B.nextAt){
     if(B.lives>0 && B.spawned<B.wordsTotal) spawnZombie();
@@ -687,17 +891,16 @@ function draw(t){
   ctx.strokeStyle = "rgba(245,197,24,.35)"; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(0,gy+12); ctx.lineTo(B.w,gy+12); ctx.stroke();
   ctx.textAlign = "center";
-  // mascot (left side) - maneki sprite or vector fallback
-  const manekiImg = sprite("maneki");
+  // player cat (left side, was the maneki) — shop skin + growth accessories +
+  // kitten companion now live here instead of on the walker (M5 role swap).
+  // "happy" during the post-kill victory hop, otherwise a walk-in-place idle
+  // (drawCat has no dedicated idle state; "walk" just bobs/steps in place
+  // since x never changes here).
   const hopping = B.mascotHopUntil && t < B.mascotHopUntil;   // little victory hop after a kill
-  const mp = B.L.mascotPx;
-  if(manekiImg){
-    const bob = Math.sin(t/400)*(hopping? 9:3);
-    ctx.drawImage(manekiImg, B.L.mascotX-mp/2, gy-mp+4*B.S+bob, mp, mp);
-  }else{
-    drawCat(ctx, B.L.mascotX, gy + 6*B.S, t, "happy", null, .72*B.S, [], false);
-  }
-  // idle coin icon (left of mascot) - coin sprite or vector fallback
+  const playerState = hopping ? "happy" : "walk";
+  drawCat(ctx, B.L.mascotX, gy + 6*B.S, t, playerState, SKIN_PALETTES[shopState.skin], .9*B.S, B.acc, false);
+  if(B.hasKitten) drawCat(ctx, B.L.mascotX - B.L.catHalf, gy + 6*B.S, t + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.S, [], false);
+  // idle coin icon (left of the player) - coin sprite or vector fallback
   const coinImgIdle = sprite("coin");
   if(coinImgIdle){
     ctx.drawImage(coinImgIdle, 4*B.S, gy-22*B.S, B.L.coinPx, B.L.coinPx);
@@ -706,18 +909,27 @@ function draw(t){
   }
   const z = B.zombie;
   if(z){
-    // word + pinyin, fixed at the center of the sky area (not following the cat)
-    // boss stage 2 asks "which hanzi?", so the plate must not give it away
+    // word + pinyin + (post-reveal) translation, fixed at the center of the
+    // sky area (not following the raccoon). Boss stage 2 asks "which hanzi?",
+    // so the plate must not give it away while the raccoon is still walking.
     const hideWord = z.boss && z.stage === "hanzi" && z.state === "walk";
-    const bh = hideWord ? "？？" : z.w.h;
-    // pinyin off when: boss reverse-question hides it, OR the player toggled it off
-    const bp = (hideWord || !settings.showPinyin) ? "" : z.w.p;
-    drawWordPlate(hideWord ? "??" : bh, bp, z.w.lv, z.boss, t);
-    // cat — bosses draw bigger with a gold aura (boss param, not scale — see
-    // cat.js); growth accessories ride along via the same call, kitten trails
-    // as a second mini cat
-    drawCat(ctx, z.x, gy + 6*B.S, t, z.state, SKIN_PALETTES[shopState.skin], z.boss ? 1.5*B.S : B.S, B.acc, !!z.boss);
-    if(B.hasKitten) drawCat(ctx, z.x + B.L.catHalf, gy + 6*B.S, t + 250, z.state, SKIN_PALETTES[shopState.skin], 0.55*B.S, [], false);
+    drawWordPlate(z, hideWord, t);
+    // raccoon enemy (was the cat walker) — bosses draw bigger with a gold
+    // aura (boss param, not scale — see raccoon.js); no skins/accessories/
+    // kitten on it, those moved to the player above.
+    const rScale = z.boss ? 1.5*B.S : B.S;
+    drawRaccoon(ctx, z.x, gy + 6*B.S, t, z.state, rScale, !!z.boss);
+    // floating HP bar above its head — cosmetic only. Animates hp -> 0 over
+    // the happy/dying window (killZombie snapshots hpAtKill); wrong/timeout
+    // never touch hp (the raccoon "wins" that word, no damage).
+    let hpFrac = z.hp;
+    if(z.state === "happy" && B.dyingUntil){
+      const remain = Math.max(0, B.dyingUntil - t);
+      hpFrac = (z.hpAtKill ?? z.hp) * (remain/250);
+    }
+    drawHpBar(ctx, z.x, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.S, hpFrac, B.S);
+  }else{
+    B.plaqueRect = null;   // no word on screen — the canvas click/keydown handlers no-op
   }
   // projectile - spinning coin sprite or vector fallback
   if(B.proj){
@@ -749,7 +961,7 @@ function draw(t){
   ctx.globalAlpha = 1;
   // combo floaters drifting up from a kill
   if(B.floats.length){
-    ctx.font = `700 ${Math.round(B.L.floaterPx)}px 'Segoe UI',sans-serif`;
+    ctx.font = fontString(700, B.L.floaterPx, LATIN_STACK);
     ctx.fillStyle = "#f5c518";
     for(const f of B.floats){
       ctx.globalAlpha = Math.max(0, Math.min(1, f.life/0.9));
@@ -762,13 +974,34 @@ function draw(t){
   if(B.flash>0){ ctx.fillStyle = `rgba(90,44,80,${(0.30*B.flash).toFixed(3)})`; ctx.fillRect(0,0,B.w,B.h); }
   if(shake) ctx.restore();
 }
-function drawWordPlate(hanzi, pinyin, level, boss, t){
+// z: the current walker (B.zombie) — carries the target word (z.w), boss
+// flags, and z.revealed (set in answer()/bite() once the word is resolved).
+// hideWord: true only mid boss-reverse-question (stage 2, still walking) —
+// the caller (draw()) already knows this from z.boss/z.stage/z.state.
+// Order per PRD §4.3/§6.2: pinyin (small, above) -> Hanzi (large) ->
+// translation (reserved space always; filled in only once z.revealed).
+function drawWordPlate(z, hideWord, t){
+  const w = z.w, boss = z.boss, level = w.lv;
+  const hanzi = hideWord ? "？？" : w.h;
+  // pinyin off when: boss reverse-question hides it, OR the player toggled it off
+  const pinyin = (hideWord || !settings.showPinyin) ? "" : w.p;
+  const revealed = !!z.revealed;
+  const showSub = scope.lang === "both";   // meaningOf() only returns a .sub in "both" mode
+
   const wy = Math.round(B.h * 0.36);
   ctx.save();
-  ctx.font = `700 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
+  ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK);
   const textW = Math.max(ctx.measureText(hanzi).width, 74*B.S);
-  const lw = Math.min(B.w - 24*B.S, textW + 48*B.S);
-  const lh = (pinyin ? 86 : 64) * B.S;
+  const spkR = 12*B.S;
+  const lw = Math.min(B.w - 24*B.S, textW + 56*B.S + spkR*2.2);
+  // Stacked rows, top to bottom: pinyin (if shown) -> Hanzi -> translation.
+  // The translation row's height is reserved unconditionally (same whether
+  // revealed or not) so the plaque never resizes/jumps at reveal time.
+  const padV = 10*B.S;
+  const pinyinH = pinyin ? 22*B.S : 0;
+  const hanziH = B.L.hanziPx * 1.05;
+  const transH = (showSub ? 40 : 24) * B.S;
+  const lh = padV*2 + pinyinH + hanziH + transH;
   const x = B.w/2 - lw/2, y = wy - lh/2;
   const plaqueImg = sprite("ui-word-plaque");
   if(plaqueImg){
@@ -807,18 +1040,48 @@ function drawWordPlate(hanzi, pinyin, level, boss, t){
     ctx.moveTo(x+lw-ti-tk, y+lh-ti); ctx.lineTo(x+lw-ti, y+lh-ti); ctx.lineTo(x+lw-ti, y+lh-ti-tk);
     ctx.stroke();
   }
-  ctx.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
   ctx.textAlign = "center";
-  ctx.font = `700 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
-  ctx.fillText(hanzi, B.w/2, wy + (pinyin ? -5*B.S : B.L.hanziPx*.34));
+  ctx.textBaseline = "middle";
+  let cy = y + padV;
   if(pinyin){
-    ctx.font = `600 ${Math.round(B.L.pinyinPx)}px 'Segoe UI',sans-serif`;
+    ctx.font = fontString(600, B.L.pinyinPx, LATIN_STACK);
     ctx.fillStyle = "#8C5F2A";
-    ctx.fillText(pinyin, B.w/2, wy + 28*B.S);
+    ctx.fillText(pinyin, B.w/2, cy + pinyinH/2);
+    cy += pinyinH;
   }
+  ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK);
+  ctx.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
+  ctx.fillText(hanzi, B.w/2, cy + hanziH/2);
+  cy += hanziH;
+  // translation row: filled in once the word is resolved (revealed), a faint
+  // dashed placeholder otherwise — the row's own space is already reserved
+  // above regardless of reveal state, so nothing shifts when it fills in.
+  const midY = cy + (showSub ? transH*0.32 : transH/2);
+  if(revealed){
+    const m = meaningOf(w, scope.lang);
+    ctx.font = fontString(700, 15*B.S, LATIN_STACK);
+    ctx.fillStyle = "#2F6B4F";
+    ctx.fillText(m.main, B.w/2, midY);
+    if(showSub && m.sub){
+      ctx.font = fontString(600, 13*B.S, LATIN_STACK);
+      ctx.fillStyle = "#5C7A68";
+      ctx.fillText(m.sub, B.w/2, cy + transH*0.74);
+    }
+  }else{
+    ctx.strokeStyle = "rgba(140,95,42,.32)";
+    ctx.lineWidth = Math.max(1.4, 2*B.S);
+    ctx.setLineDash([4*B.S, 4*B.S]);
+    ctx.beginPath(); ctx.moveTo(B.w/2-44*B.S, midY); ctx.lineTo(B.w/2+44*B.S, midY); ctx.stroke();
+    if(showSub){
+      const y2 = cy + transH*0.74;
+      ctx.beginPath(); ctx.moveTo(B.w/2-30*B.S, y2); ctx.lineTo(B.w/2+30*B.S, y2); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }
+  ctx.textBaseline = "alphabetic";
   if(level){
     // dark-green level tag (reference TAG)
-    ctx.font = `700 ${Math.round(10*B.S)}px 'Segoe UI',sans-serif`;
+    ctx.font = fontString(700, 10*B.S, LATIN_STACK);
     const tagText = `HSK ${level}`;
     const tw = ctx.measureText(tagText).width + 12*B.S;
     const th = 16*B.S;
@@ -831,13 +1094,36 @@ function drawWordPlate(hanzi, pinyin, level, boss, t){
     ctx.textAlign = "left";
     ctx.fillText(tagText, x+14*B.S, y-th*.45 + th*.7);
   }
+  // speaker icon, right edge of the plaque, vertically centered — also the
+  // visual affordance for the click/keyboard hit-test set up on #cv below.
+  drawSpeakerIcon(ctx, x + lw - spkR - 10*B.S, y + lh/2, spkR, boss ? "#7A4E0C" : "#8C5F2A");
+  B.plaqueRect = {x, y, w: lw, h: lh};
   ctx.restore();
+}
+function drawSpeakerIcon(c, cx, cy, r, color){
+  c.save();
+  c.translate(cx, cy);
+  c.fillStyle = color;
+  c.beginPath();
+  c.moveTo(-r*0.9, -r*0.35); c.lineTo(-r*0.3, -r*0.35);
+  c.lineTo(r*0.35, -r*0.85); c.lineTo(r*0.35, r*0.85);
+  c.lineTo(-r*0.3, r*0.35); c.lineTo(-r*0.9, r*0.35);
+  c.closePath(); c.fill();
+  c.strokeStyle = color;
+  c.lineWidth = Math.max(1.2, r*0.16);
+  c.lineCap = "round";
+  c.beginPath(); c.arc(r*0.05, 0, r*0.62, -Math.PI*0.32, Math.PI*0.32); c.stroke();
+  c.beginPath(); c.arc(r*0.05, 0, r*0.98, -Math.PI*0.34, Math.PI*0.34); c.stroke();
+  c.restore();
 }
 function drawFeedbackLayer(t){
   const fb = B.feedback;
   if(!fb) return;
   const kind = fb.kind || fb.type;
-  const total = (kind === "critical" || kind === "streak") ? 750 : kind === "correct" ? 620 : 560;
+  // fxDuration() mirrors the halving already applied to fb.until at creation
+  // (fxUntil()) — total must track it 1:1 or the fade fraction below (p) goes
+  // out of sync with reduced motion and the stamp appears to freeze/cut off.
+  const total = fxDuration((kind === "critical" || kind === "streak") ? 750 : kind === "correct" ? 620 : 560);
   const left = fb.until - performance.now();
   if(left <= 0){ B.feedback = null; return; }
   const p = 1 - left / total;
@@ -847,7 +1133,7 @@ function drawFeedbackLayer(t){
   // sprite hasn't loaded (file:// first-frame, offline) — stamp/vector remains
   const orbImg = fb.orb ? sprite(fb.orb) : null;
   if(orbImg){
-    const os = (kind === "streak" ? 110 : 84) * B.S * (0.6 + 0.5 * Math.min(1, p * 2.4));
+    const os = ((kind === "streak" || kind === "critical") ? 110 : 84) * B.S * (0.6 + 0.5 * Math.min(1, p * 2.4));
     ctx.drawImage(orbImg, fb.x - os/2, fb.y - os/2, os, os);
   }
   const fxImg = fb.sprite ? sprite(fb.sprite) : null;
@@ -868,6 +1154,29 @@ function drawFeedbackLayer(t){
     ctx.strokeStyle = "rgba(255,100,110,.65)";
     ctx.lineWidth = 3*B.S;
     ctx.beginPath(); ctx.arc(fb.x, fb.y, (18 + 26*p)*B.S, Math.PI*.15, Math.PI*1.85); ctx.stroke();
+  }
+  if(kind === "critical"){
+    // comic-burst lettering (§7.4): scales in fast over the burst's first
+    // ~15%, then just rides the layer's overall fade (globalAlpha above).
+    // fb.x is the kill's x (can sit near the canvas edge — e.g. a boss word
+    // resolved right after its stage-2 question renders, before the raccoon
+    // has walked in far) — clamp so the ~9-character label can't run off
+    // either edge, unlike the compact icon/orb it's stamped over.
+    const tx = Math.min(Math.max(fb.x, 74*B.S), B.w - 74*B.S);
+    const scale = 0.55 + 0.45 * Math.min(1, p * 6);
+    ctx.save();
+    ctx.translate(tx, fb.y);
+    ctx.scale(scale, scale);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = fontString(800, 22*B.S, LATIN_STACK);
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "#FBF5E8";
+    ctx.lineWidth = 4*B.S;
+    ctx.strokeText("CRITICAL!", 0, 0);
+    ctx.fillStyle = "#7A4E0C";
+    ctx.fillText("CRITICAL!", 0, 0);
+    ctx.restore();
   }
   ctx.restore();
 }
@@ -1413,12 +1722,10 @@ pool = buildPool(D.levels, scope);
 applyStaticI18n();
 syncUiLangChips();
 sfx.pack = shopState.soundpack || "default";
-updateWalletChip();
-updateSmartBtn();
-updateStreakChip();
-updateLevelChip();
+renderHome();
 renderQuests();
 renderStreet();
+updateNav(currentScreen);
 if(location.hash === "#debug"){
   window.__debugTarget = ()=> B.zombie && B.zombie.w.h;
   window.__grantXp = n => { addXp(n); };

@@ -57,6 +57,22 @@
   function modeKey(mode, len) {
     return mode === "round" && len !== 20 ? "round" + len : mode;
   }
+  function scopeSummary(scope2) {
+    const levels = [...scope2.levels].sort((a, b) => a - b);
+    let levelLabel = "";
+    if (levels.length === 1) {
+      levelLabel = "HSK" + levels[0];
+    } else if (levels.length > 1) {
+      const isRun = levels.every((n, i) => i === 0 || n === levels[i - 1] + 1);
+      levelLabel = isRun ? `HSK${levels[0]}\u2013${levels[levels.length - 1]}` : "HSK" + levels.join("+");
+    }
+    return {
+      levelLabel,
+      core: !!scope2.core,
+      newOnly: !!scope2.newOnly,
+      sessionLen: normalizeLen(scope2.sessionLen)
+    };
+  }
 
   // src/distractors.js
   function shuffle(a, rand) {
@@ -611,6 +627,215 @@
     }
   }
 
+  // src/raccoon.js
+  var FUR = "#A39D93";
+  var FUR_DARK = "#6B655D";
+  var OUTFIT = "#3A3F47";
+  var OUTLINE = "#846043";
+  var HEADBAND = "#7A94A8";
+  var HEADBAND_BOSS = "#54677A";
+  var NOSE = "#E88FA0";
+  var EYE_LIGHT = "#F5F1E8";
+  var INK = "#3A2E1D";
+  var RACCOON_HEIGHT = 74;
+  function raccoonBob(tMs, state) {
+    if (state === "happy") {
+      const settle = Math.min(1, tMs / 600);
+      const wobble = Math.sin(tMs / 90) * 1.4 * (1 - settle);
+      return { bob: 8 * settle + wobble, legSwing: 0 };
+    }
+    if (state === "wrong") {
+      const ph2 = tMs / 150 % (Math.PI * 2);
+      const hop = Math.abs(Math.sin(ph2)) * 4.5;
+      return { bob: -hop, legSwing: Math.sin(ph2) * 4 };
+    }
+    const ph = tMs / 220 % (Math.PI * 2);
+    return { bob: Math.sin(ph) * 2.5, legSwing: Math.sin(ph) * 6 };
+  }
+  function drawRaccoon(ctx3, x, groundY, tMs, state, scale = 1, boss = false) {
+    const { bob, legSwing } = raccoonBob(tMs, state);
+    const happy = state === "happy";
+    const wrong = state === "wrong";
+    if (boss) {
+      ctx3.save();
+      ctx3.fillStyle = "rgba(245,197,24,.18)";
+      ctx3.beginPath();
+      ctx3.arc(x, groundY - 28 * (scale / 1.5), 42 * (scale / 1.5), 0, Math.PI * 2);
+      ctx3.fill();
+      ctx3.restore();
+    }
+    ctx3.save();
+    if (scale !== 1) {
+      ctx3.translate(x, groundY);
+      ctx3.scale(scale, scale);
+      ctx3.translate(-x, -groundY);
+    }
+    ctx3.save();
+    ctx3.translate(x, groundY);
+    if (happy) {
+      ctx3.rotate(0.18);
+    } else if (wrong) {
+      ctx3.rotate(-0.08);
+    }
+    const headband = boss ? HEADBAND_BOSS : HEADBAND;
+    ctx3.strokeStyle = FUR_DARK;
+    ctx3.lineWidth = 7;
+    ctx3.lineCap = "round";
+    ctx3.beginPath();
+    ctx3.moveTo(8, -18 + bob);
+    ctx3.quadraticCurveTo(25, -34 + bob, 15, -58 + bob);
+    ctx3.stroke();
+    ctx3.strokeStyle = "#E4DFD4";
+    ctx3.lineWidth = 2.6;
+    for (const p of [[10.5, -24], [16, -34], [18.5, -45]]) {
+      ctx3.beginPath();
+      ctx3.moveTo(p[0] - 2.6, p[1] + 1.6 + bob);
+      ctx3.lineTo(p[0] + 2.6, p[1] - 1.6 + bob);
+      ctx3.stroke();
+    }
+    ctx3.strokeStyle = FUR_DARK;
+    ctx3.lineWidth = 6;
+    ctx3.lineCap = "round";
+    ctx3.beginPath();
+    ctx3.moveTo(-5, -20);
+    ctx3.lineTo(-5 - legSwing * 0.4, 0);
+    ctx3.stroke();
+    ctx3.beginPath();
+    ctx3.moveTo(5, -20);
+    ctx3.lineTo(5 + legSwing * 0.4, 0);
+    ctx3.stroke();
+    ctx3.fillStyle = OUTFIT;
+    ctx3.fillRect(-11, -40 + bob, 22, 22);
+    ctx3.strokeStyle = OUTLINE;
+    ctx3.lineWidth = 1.4;
+    ctx3.strokeRect(-11, -40 + bob, 22, 22);
+    ctx3.strokeStyle = OUTLINE;
+    ctx3.lineWidth = 3;
+    ctx3.lineCap = "round";
+    ctx3.beginPath();
+    ctx3.moveTo(-7, -41 + bob);
+    ctx3.lineTo(9, -18 + bob);
+    ctx3.stroke();
+    ctx3.strokeStyle = FUR;
+    ctx3.lineWidth = 5;
+    ctx3.lineCap = "round";
+    ctx3.beginPath();
+    ctx3.moveTo(-9, -34 + bob);
+    ctx3.lineTo(-15, -26 + bob + legSwing * 0.2);
+    ctx3.stroke();
+    ctx3.beginPath();
+    ctx3.moveTo(9, -34 + bob);
+    ctx3.lineTo(15, -26 + bob - legSwing * 0.2);
+    ctx3.stroke();
+    ctx3.fillStyle = FUR;
+    ctx3.beginPath();
+    ctx3.arc(0, -49 + bob, 11, 0, Math.PI * 2);
+    ctx3.fill();
+    ctx3.fillStyle = FUR_DARK;
+    ctx3.beginPath();
+    ctx3.moveTo(-9, -57 + bob);
+    ctx3.lineTo(-13, -66 + bob);
+    ctx3.lineTo(-3, -59 + bob);
+    ctx3.closePath();
+    ctx3.fill();
+    ctx3.beginPath();
+    ctx3.moveTo(9, -57 + bob);
+    ctx3.lineTo(13, -66 + bob);
+    ctx3.lineTo(3, -59 + bob);
+    ctx3.closePath();
+    ctx3.fill();
+    ctx3.fillStyle = headband;
+    ctx3.fillRect(-11, -55 + bob, 22, 5);
+    ctx3.beginPath();
+    ctx3.moveTo(11, -55 + bob);
+    ctx3.lineTo(17, -51 + bob);
+    ctx3.lineTo(11, -50 + bob);
+    ctx3.closePath();
+    ctx3.fill();
+    ctx3.beginPath();
+    ctx3.moveTo(11, -52 + bob);
+    ctx3.lineTo(16, -47 + bob);
+    ctx3.lineTo(10, -47 + bob);
+    ctx3.closePath();
+    ctx3.fill();
+    ctx3.fillStyle = FUR_DARK;
+    ctx3.beginPath();
+    ctx3.ellipse(-4, -50 + bob, 3.6, 2.6, -0.15, 0, Math.PI * 2);
+    ctx3.fill();
+    ctx3.beginPath();
+    ctx3.ellipse(4, -50 + bob, 3.6, 2.6, 0.15, 0, Math.PI * 2);
+    ctx3.fill();
+    if (happy) {
+      ctx3.strokeStyle = EYE_LIGHT;
+      ctx3.lineWidth = 1.4;
+      ctx3.lineCap = "round";
+      ctx3.beginPath();
+      ctx3.arc(-4, -49 + bob, 2, Math.PI * 0.15, Math.PI * 0.85);
+      ctx3.stroke();
+      ctx3.beginPath();
+      ctx3.arc(4, -49 + bob, 2, Math.PI * 0.15, Math.PI * 0.85);
+      ctx3.stroke();
+    } else {
+      ctx3.fillStyle = EYE_LIGHT;
+      ctx3.beginPath();
+      ctx3.ellipse(-4, -50 + bob, 2, 1.5, 0, 0, Math.PI * 2);
+      ctx3.fill();
+      ctx3.beginPath();
+      ctx3.ellipse(4, -50 + bob, 2, 1.5, 0, 0, Math.PI * 2);
+      ctx3.fill();
+      ctx3.fillStyle = INK;
+      if (wrong) {
+        ctx3.fillRect(-5.4, -50 + bob, 2.8, 1.1);
+        ctx3.fillRect(2.6, -50 + bob, 2.8, 1.1);
+      } else {
+        ctx3.beginPath();
+        ctx3.arc(-4, -50 + bob, 1, 0, Math.PI * 2);
+        ctx3.fill();
+        ctx3.beginPath();
+        ctx3.arc(4, -50 + bob, 1, 0, Math.PI * 2);
+        ctx3.fill();
+      }
+    }
+    ctx3.fillStyle = NOSE;
+    ctx3.beginPath();
+    ctx3.arc(0, -46 + bob, 1.4, 0, Math.PI * 2);
+    ctx3.fill();
+    ctx3.restore();
+    ctx3.restore();
+  }
+  function roundedRect2(ctx3, x, y, w, h, r) {
+    r = Math.max(0, Math.min(r, w / 2, h / 2));
+    ctx3.beginPath();
+    ctx3.moveTo(x + r, y);
+    ctx3.arcTo(x + w, y, x + w, y + h, r);
+    ctx3.arcTo(x + w, y + h, x, y + h, r);
+    ctx3.arcTo(x, y + h, x, y, r);
+    ctx3.arcTo(x, y, x + w, y, r);
+    ctx3.closePath();
+  }
+  function drawHpBar(ctx3, x, y, w, frac, scale = 1) {
+    const f = Math.max(0, Math.min(1, frac));
+    const h = 6 * scale;
+    const bw = Math.max(1, 1.2 * scale);
+    ctx3.save();
+    ctx3.fillStyle = "#FBF5E8";
+    roundedRect2(ctx3, x - w / 2, y, w, h, h / 2);
+    ctx3.fill();
+    ctx3.strokeStyle = "#846043";
+    ctx3.lineWidth = bw;
+    roundedRect2(ctx3, x - w / 2, y, w, h, h / 2);
+    ctx3.stroke();
+    if (f > 0) {
+      const pad = Math.min(scale, w / 2, h / 2);
+      const innerW = Math.max(0, (w - pad * 2) * f);
+      const innerH = Math.max(0, h - pad * 2);
+      ctx3.fillStyle = "#28723B";
+      roundedRect2(ctx3, x - w / 2 + pad, y + pad, innerW, innerH, innerH / 2);
+      ctx3.fill();
+    }
+    ctx3.restore();
+  }
+
   // src/layout.js
   function uiScale(w, h) {
     const s = Math.min(h / 480, w / 380);
@@ -623,7 +848,11 @@
       ground: 30 * S,
       mascotX: 52 * S,
       catHalf: 34 * S,
-      hanziPx: 44 * S,
+      // 60 (not 44): at a 390 CSS-px-wide viewport the battle canvas measures
+      // ~366px after screen padding, giving S ~0.96 (width-bound, see uiScale) —
+      // 44*0.96 ~ 42px fails the PRD §10 "Hanzi >= 56 CSS px at 390-wide" floor;
+      // 60*0.96 ~ 58px clears it.
+      hanziPx: 60 * S,
       pinyinPx: 18 * S,
       floaterPx: 20 * S,
       mascotPx: 48 * S,
@@ -741,7 +970,10 @@
       "retry",
       "next",
       "previous",
-      "secondary-coin"
+      "secondary-coin",
+      "street",
+      "quests",
+      "more"
     ],
     planned_icons: []
   };
@@ -1253,9 +1485,6 @@
     wrap.appendChild(text);
     el.appendChild(wrap);
   }
-  function setIconOnly(el, icon) {
-    el.replaceChildren(iconSvg(icon));
-  }
   function setPill(el, icon, text) {
     el.replaceChildren(iconSvg(icon), document.createTextNode(` ${text}`));
   }
@@ -1264,16 +1493,27 @@
   var STRINGS = {
     en: {
       // home
-      "home.tagline1": "Match each word to its meaning \u2014",
-      "home.tagline": "master real-exam HSK vocabulary.",
-      "home.learn": "Learn",
       "home.smart": "Smart Review",
       "home.flashcards": "Flashcards",
-      "home.collection": "Collection",
+      "home.shop": "Shop",
       "home.best": "Best Sessions",
       "home.progress": "Progress",
       "home.howto": "How to play",
       "home.sound": "Sound effects",
+      "home.settings": "Settings",
+      "home.streakTitle": "Study Streak",
+      "home.streakDays": "{n} days",
+      "home.start": "START",
+      "home.startHint": "Need at least 8 words in scope to start \u2014 widen it below.",
+      "home.scopeWords": "{n} words",
+      // bottom nav (M2)
+      "nav.home": "Home",
+      "nav.street": "Street",
+      "nav.progress": "Progress",
+      "nav.quests": "Quests",
+      "nav.more": "More",
+      "street.title": "Lucky Cat Street",
+      "quests.title": "Daily Quests",
       // scope
       "scope.title": "Choose your words",
       "scope.levels": "Levels",
@@ -1350,22 +1590,46 @@
       // howto
       "howto.title": "How to play",
       "howto.oneShot": "You get one shot per word.",
+      // battle HUD + pause overlay (M4)
+      "battle.round": "Round {label}",
+      "battle.pause": "Pause",
+      "battle.paused": "Paused",
+      "battle.resume": "Resume",
+      "battle.quit": "Quit",
+      "battle.wordAudio": "Word audio",
+      "battle.pinyin": "Pinyin",
+      "battle.on": "On",
+      "battle.off": "Off",
+      "battle.canvasLabel": "Battle scene. Press Enter or Space to replay the word's audio.",
+      "battle.bossPrompt": "Review Challenge \xB7 pick the hanzi for: {meaning}",
       // common
       "common.back": "\u2190 Home",
+      "common.backMore": "\u2190 More",
       "common.language": "Language"
     },
     th: {
       // home
-      "home.tagline1": "\u0E08\u0E31\u0E1A\u0E04\u0E39\u0E48\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E01\u0E31\u0E1A\u0E04\u0E27\u0E32\u0E21\u0E2B\u0E21\u0E32\u0E22 \u2014",
-      "home.tagline": "\u0E40\u0E23\u0E35\u0E22\u0E19\u0E23\u0E39\u0E49\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C HSK \u0E08\u0E32\u0E01\u0E02\u0E49\u0E2D\u0E2A\u0E2D\u0E1A\u0E08\u0E23\u0E34\u0E07",
-      "home.learn": "\u0E40\u0E23\u0E35\u0E22\u0E19",
       "home.smart": "\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E2D\u0E31\u0E08\u0E09\u0E23\u0E34\u0E22\u0E30",
       "home.flashcards": "\u0E1A\u0E31\u0E15\u0E23\u0E04\u0E33",
-      "home.collection": "\u0E04\u0E2D\u0E25\u0E40\u0E25\u0E01\u0E0A\u0E31\u0E19",
+      "home.shop": "\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32",
       "home.best": "\u0E2A\u0E16\u0E34\u0E15\u0E34\u0E14\u0E35\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14",
       "home.progress": "\u0E04\u0E27\u0E32\u0E21\u0E04\u0E37\u0E1A\u0E2B\u0E19\u0E49\u0E32",
       "home.howto": "\u0E27\u0E34\u0E18\u0E35\u0E40\u0E25\u0E48\u0E19",
       "home.sound": "\u0E40\u0E2A\u0E35\u0E22\u0E07\u0E1B\u0E23\u0E30\u0E01\u0E2D\u0E1A",
+      "home.settings": "\u0E15\u0E31\u0E49\u0E07\u0E04\u0E48\u0E32",
+      "home.streakTitle": "\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07",
+      "home.streakDays": "{n} \u0E27\u0E31\u0E19",
+      "home.start": "\u0E40\u0E23\u0E34\u0E48\u0E21",
+      "home.startHint": "\u0E15\u0E49\u0E2D\u0E07\u0E21\u0E35\u0E04\u0E33\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E19\u0E49\u0E2D\u0E22 8 \u0E04\u0E33\u0E43\u0E19\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E08\u0E36\u0E07\u0E08\u0E30\u0E40\u0E23\u0E34\u0E48\u0E21\u0E44\u0E14\u0E49 \u2014 \u0E02\u0E22\u0E32\u0E22\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E14\u0E49\u0E32\u0E19\u0E25\u0E48\u0E32\u0E07",
+      "home.scopeWords": "{n} \u0E04\u0E33",
+      // bottom nav (M2)
+      "nav.home": "\u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
+      "nav.street": "\u0E16\u0E19\u0E19",
+      "nav.progress": "\u0E04\u0E27\u0E32\u0E21\u0E04\u0E37\u0E1A\u0E2B\u0E19\u0E49\u0E32",
+      "nav.quests": "\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C",
+      "nav.more": "\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
+      "street.title": "\u0E16\u0E19\u0E19\u0E19\u0E33\u0E42\u0E0A\u0E04",
+      "quests.title": "\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C\u0E1B\u0E23\u0E30\u0E08\u0E33\u0E27\u0E31\u0E19",
       // scope
       "scope.title": "\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C",
       "scope.levels": "\u0E23\u0E30\u0E14\u0E31\u0E1A",
@@ -1442,8 +1706,21 @@
       // howto
       "howto.title": "\u0E27\u0E34\u0E18\u0E35\u0E40\u0E25\u0E48\u0E19",
       "howto.oneShot": "\u0E15\u0E2D\u0E1A\u0E44\u0E14\u0E49\u0E04\u0E23\u0E31\u0E49\u0E07\u0E40\u0E14\u0E35\u0E22\u0E27\u0E15\u0E48\u0E2D\u0E04\u0E33",
+      // battle HUD + pause overlay (M4)
+      "battle.round": "\u0E23\u0E2D\u0E1A {label}",
+      "battle.pause": "\u0E2B\u0E22\u0E38\u0E14\u0E0A\u0E31\u0E48\u0E27\u0E04\u0E23\u0E32\u0E27",
+      "battle.paused": "\u0E2B\u0E22\u0E38\u0E14\u0E0A\u0E31\u0E48\u0E27\u0E04\u0E23\u0E32\u0E27",
+      "battle.resume": "\u0E40\u0E25\u0E48\u0E19\u0E15\u0E48\u0E2D",
+      "battle.quit": "\u0E2D\u0E2D\u0E01",
+      "battle.wordAudio": "\u0E40\u0E2A\u0E35\u0E22\u0E07\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C",
+      "battle.pinyin": "\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19",
+      "battle.on": "\u0E40\u0E1B\u0E34\u0E14",
+      "battle.off": "\u0E1B\u0E34\u0E14",
+      "battle.canvasLabel": "\u0E09\u0E32\u0E01\u0E15\u0E48\u0E2D\u0E2A\u0E39\u0E49 \u0E01\u0E14 Enter \u0E2B\u0E23\u0E37\u0E2D Space \u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E1F\u0E31\u0E07\u0E40\u0E2A\u0E35\u0E22\u0E07\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07",
+      "battle.bossPrompt": "\u0E14\u0E48\u0E32\u0E19\u0E17\u0E1A\u0E17\u0E27\u0E19 \xB7 \u0E40\u0E25\u0E37\u0E2D\u0E01\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E08\u0E35\u0E19\u0E02\u0E2D\u0E07\u0E04\u0E33\u0E27\u0E48\u0E32: {meaning}",
       // common
       "common.back": "\u2190 \u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
+      "common.backMore": "\u2190 \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
       "common.language": "\u0E20\u0E32\u0E29\u0E32"
     }
   };
@@ -1464,9 +1741,53 @@
     return s;
   }
 
+  // src/fonts.js
+  var HANZI_STACK = "'LC Hanzi','Noto Serif SC','Segoe UI',serif";
+  var LATIN_STACK = "'LC Latin','LC Thai','Segoe UI',sans-serif";
+  function fontString(weight, px, stack) {
+    return `${weight} ${Math.round(px)}px ${stack}`;
+  }
+
+  // src/nav.js
+  var TABS = ["home", "street", "progress", "quests", "more"];
+  var MORE_SUBSCREENS = ["scores", "howto"];
+  var NAV_VISIBLE = /* @__PURE__ */ new Set([...TABS, ...MORE_SUBSCREENS, "shop"]);
+  function navVisibleOn(screen) {
+    return NAV_VISIBLE.has(screen);
+  }
+  function activeTabFor(screen) {
+    if (!navVisibleOn(screen)) return null;
+    if (TABS.includes(screen)) return screen;
+    if (MORE_SUBSCREENS.includes(screen)) return "more";
+    if (screen === "shop") return "home";
+    return null;
+  }
+
+  // src/hud.js
+  function roundLabel(mode, spawned, total) {
+    if (mode === "endless") {
+      return `${Math.max(0, spawned)} \xB7 \u221E`;
+    }
+    const current2 = Math.min(Math.max(1, spawned), total);
+    return `${current2}/${total}`;
+  }
+  function comboMultiplier(combo) {
+    return combo >= 2 ? `x${combo}` : "";
+  }
+  function comboFires(combo) {
+    return Math.max(0, Math.min(6, combo));
+  }
+
   // src/main.js
   var D = window.HSK_DATA;
   var $ = (s) => document.querySelector(s);
+  var REDUCED_MOTION = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function fxDuration(ms) {
+    return REDUCED_MOTION ? Math.round(ms / 2) : ms;
+  }
+  function fxUntil(ms) {
+    return performance.now() + fxDuration(ms);
+  }
   var store = {
     get(k, d) {
       try {
@@ -1508,7 +1829,14 @@
   var xp = store.get("xp", 0);
   function updateLevelChip() {
     const el = $("#home-level");
-    if (el) setPill(el, "paw", `Lv ${levelForXp(xp)}`);
+    if (!el) return;
+    const lv = levelForXp(xp);
+    const prog = xpToNext(xp);
+    const pct = prog.need ? Math.round(100 * prog.into / prog.need) : 100;
+    const txt = el.querySelector(".level-text");
+    const bar = el.querySelector(".xp-bar i");
+    if (txt) txt.textContent = `Lv ${lv}`;
+    if (bar) bar.style.width = pct + "%";
   }
   function addXp(n) {
     const before = levelForXp(xp);
@@ -1532,9 +1860,16 @@
   var daily = Object.assign(defaultDaily(), store.get("daily", {}));
   daily.today = Object.assign({ date: "", resolved: 0 }, daily.today);
   function updateStreakChip() {
-    const info = streakInfo(daily, todayStr());
     const el = $("#home-streak");
-    el.replaceChildren(iconSvg("streak"), document.createTextNode(info.goalMet ? ` ${info.streak} \xB7 complete today` : ` ${info.streak} \xB7 ${info.todayResolved}/${info.goal} today`));
+    if (!el) return;
+    const info = streakInfo(daily, todayStr());
+    const title = el.querySelector(".streak-title");
+    const count = el.querySelector(".streak-count");
+    const bar = el.querySelector(".streak-bar i");
+    if (title) title.textContent = t("home.streakTitle");
+    if (count) count.textContent = t("home.streakDays", { n: info.streak });
+    if (bar) bar.style.width = Math.min(100, Math.round(100 * info.todayResolved / info.goal)) + "%";
+    el.classList.toggle("goal-met", info.goalMet);
   }
   function noteDaily(count) {
     daily = noteActivity(daily, todayStr(), count);
@@ -1582,6 +1917,30 @@
     questEvent("review");
     startBattle("round");
   };
+  function scopeChipLabel() {
+    const s = scopeSummary(scope);
+    const bits = [s.levelLabel];
+    if (s.core) bits.push(t("scope.highYield"));
+    if (s.newOnly) bits.push(t("scope.newOnly"));
+    bits.push(t("home.scopeWords", { n: s.sessionLen }));
+    return bits.join(" \xB7 ");
+  }
+  function renderHome() {
+    updateLevelChip();
+    updateWalletChip();
+    updateStreakChip();
+    updateSmartBtn();
+    const startable = pool.length >= 8;
+    const startBtn = $("#home-start");
+    const hint = $("#home-start-hint");
+    if (startBtn) startBtn.disabled = !startable;
+    if (hint) hint.hidden = startable;
+    const chip = $("#home-scope-chip");
+    if (chip) chip.textContent = scopeChipLabel();
+  }
+  $("#home-start").onclick = () => {
+    if (pool.length >= 8) startBattle("round");
+  };
   function shuffle2(a) {
     for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -1592,6 +1951,10 @@
   fetch("audio/index.json").then((r) => r.json()).then((ix) => initAudio(ix)).catch(() => initAudio([]));
   loadSprites();
   preload();
+  if (document.fonts && document.fonts.load) {
+    document.fonts.load("900 40px 'LC Hanzi'").catch(() => {
+    });
+  }
   function applyStaticI18n(root = document) {
     root.querySelectorAll("[data-i18n]").forEach((el) => {
       el.textContent = t(el.getAttribute("data-i18n"));
@@ -1607,13 +1970,27 @@
     document.documentElement.lang = getLocale();
   }
   var currentScreen = "home";
+  function updateNav(name) {
+    const nav = $("#bottom-nav");
+    if (!nav) return;
+    const visible = navVisibleOn(name);
+    nav.style.display = visible ? "flex" : "none";
+    const active = activeTabFor(name);
+    nav.querySelectorAll(".nav-btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === active));
+  }
   function show(name) {
     currentScreen = name;
     document.querySelectorAll(".screen").forEach((el) => el.classList.remove("on"));
     $("#s-" + name).classList.add("on");
+    updateNav(name);
     if (name === "home") {
-      renderQuests();
+      renderHome();
+    }
+    if (name === "street") {
       renderStreet();
+    }
+    if (name === "quests") {
+      renderQuests();
     }
   }
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => {
@@ -1818,6 +2195,22 @@
   window.addEventListener("resize", () => {
     if (B.on) sizeCanvas();
   });
+  function replayCurrentWord() {
+    if (B.paused || !B.zombie) return;
+    speak(B.zombie.w.h);
+  }
+  cv.addEventListener("click", (e) => {
+    const r = B.plaqueRect;
+    if (!r) return;
+    const box = cv.getBoundingClientRect();
+    const x = e.clientX - box.left, y = e.clientY - box.top;
+    if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) replayCurrentWord();
+  });
+  cv.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+    e.preventDefault();
+    replayCurrentWord();
+  });
   function pickWord() {
     const deck = B.deck;
     const now = Date.now();
@@ -1868,6 +2261,10 @@
     B.nextAt = 0;
     B.lastT = 0;
     B.locked = false;
+    B.bossStageAt = 0;
+    B.paused = false;
+    B.pausedAt = 0;
+    $("#pause-overlay").classList.remove("on");
     questToasts = [];
     B.levelUps = [];
     const acc0 = accessoriesFor(levelForXp(xp));
@@ -1887,32 +2284,19 @@
     keepAwake(false);
     if (window.speechSynthesis) speechSynthesis.cancel();
   }
-  $("#hud-quit").onclick = () => {
-    endBattle(true);
-  };
-  $("#hud-sfx").onclick = () => {
+  function syncSoundToggles() {
+    $("#more-sound").classList.toggle("muted", !sfx.enabled);
+  }
+  function toggleSfx() {
     sfx.enabled = !sfx.enabled;
     store.set("sfx", sfx.enabled);
-    setIconOnly($("#hud-sfx"), sfx.enabled ? "bell" : "bell-off");
-  };
-  $("#hud-audio").onclick = () => {
-    settings.autoSpeak = !settings.autoSpeak;
-    store.set("settings", settings);
-    setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
-  };
-  $("#hud-pinyin").onclick = () => {
-    settings.showPinyin = !settings.showPinyin;
-    store.set("settings", settings);
-    setIconOnly($("#hud-pinyin"), settings.showPinyin ? "pinyin" : "pinyin-off");
-  };
-  $("#home-sound").addEventListener("click", () => {
-    sfx.enabled = !sfx.enabled;
-    store.set("sfx", sfx.enabled);
-    $("#home-sound").classList.toggle("muted", !sfx.enabled);
+    syncSoundToggles();
     updateHud();
-  });
-  $("#home-sound").classList.toggle("muted", !sfx.enabled);
+  }
+  $("#more-sound").addEventListener("click", toggleSfx);
+  syncSoundToggles();
   function updateHud() {
+    if (!B.on) return;
     const lives = $("#hud-lives");
     lives.replaceChildren();
     for (let i = 0; i < 3; i++) {
@@ -1921,12 +2305,104 @@
       lives.appendChild(h);
     }
     $("#hud-score").textContent = B.score;
-    $("#hud-combo").textContent = B.combo >= 2 ? "x" + B.combo : "";
-    $("#hud-left").textContent = B.mode === "round" ? B.wordsTotal - B.resolved + " left" : "endless";
-    setIconOnly($("#hud-sfx"), sfx.enabled ? "bell" : "bell-off");
-    setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
-    setIconOnly($("#hud-pinyin"), settings.showPinyin ? "pinyin" : "pinyin-off");
+    $("#hud-round").textContent = t("battle.round", { label: roundLabel(B.mode, B.spawned, B.wordsTotal) });
+    updateComboStrip();
   }
+  function updateComboStrip() {
+    const strip = $("#combo-strip");
+    if (!strip) return;
+    const show2 = B.combo >= 2;
+    strip.classList.toggle("hidden", !show2);
+    if (!show2) return;
+    $("#combo-count").textContent = B.combo;
+    $("#combo-badge").textContent = comboMultiplier(B.combo);
+    const lit = comboFires(B.combo);
+    const fires = $("#combo-fires");
+    fires.replaceChildren();
+    for (let i = 0; i < 6; i++) {
+      const f = iconSvg("streak");
+      f.classList.add("combo-fire", i < lit ? "lit" : "unlit");
+      fires.appendChild(f);
+    }
+  }
+  var PAUSE_TOGGLES = [
+    { icon: "bell", iconOff: "bell-off", labelKey: "home.sound", isOn: () => sfx.enabled, toggle: () => toggleSfx() },
+    {
+      icon: "sound",
+      iconOff: "muted",
+      labelKey: "battle.wordAudio",
+      isOn: () => settings.autoSpeak,
+      toggle: () => {
+        settings.autoSpeak = !settings.autoSpeak;
+        store.set("settings", settings);
+      }
+    },
+    {
+      icon: "pinyin",
+      iconOff: "pinyin-off",
+      labelKey: "battle.pinyin",
+      isOn: () => settings.showPinyin,
+      toggle: () => {
+        settings.showPinyin = !settings.showPinyin;
+        store.set("settings", settings);
+      }
+    }
+  ];
+  function renderPauseToggles() {
+    const box = $("#pause-toggles");
+    box.innerHTML = "";
+    for (const cfg of PAUSE_TOGGLES) {
+      const on = cfg.isOn();
+      const btn = document.createElement("button");
+      btn.className = "pause-toggle" + (on ? " on" : "");
+      const left = document.createElement("span");
+      left.className = "icon-text";
+      left.appendChild(iconSvg(on ? cfg.icon : cfg.iconOff));
+      const label = document.createElement("span");
+      label.textContent = t(cfg.labelKey);
+      left.appendChild(label);
+      const state = document.createElement("span");
+      state.className = "pt-state";
+      state.textContent = on ? t("battle.on") : t("battle.off");
+      btn.appendChild(left);
+      btn.appendChild(state);
+      btn.onclick = () => {
+        cfg.toggle();
+        renderPauseToggles();
+      };
+      box.appendChild(btn);
+    }
+  }
+  function pauseBattle() {
+    if (!B.on || B.paused) return;
+    B.paused = true;
+    B.pausedAt = performance.now();
+    keepAwake(false);
+    renderPauseToggles();
+    $("#pause-overlay").classList.add("on");
+  }
+  function resumeBattle() {
+    if (!B.on || !B.paused) return;
+    const shift = performance.now() - B.pausedAt;
+    B.nextAt += shift;
+    if (B.dyingUntil) B.dyingUntil += shift;
+    if (B.mascotHopUntil) B.mascotHopUntil += shift;
+    if (B.feedback) B.feedback.until += shift;
+    if (B.zombie && B.zombie.wrongUntil) B.zombie.wrongUntil += shift;
+    if (B.bossStageAt) B.bossStageAt += shift;
+    B.paused = false;
+    keepAwake(true);
+    $("#pause-overlay").classList.remove("on");
+  }
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && B.on && !B.paused) pauseBattle();
+  });
+  $("#hud-pause").onclick = () => pauseBattle();
+  $("#pause-resume").onclick = () => resumeBattle();
+  $("#pause-quit").onclick = () => {
+    $("#pause-overlay").classList.remove("on");
+    endBattle(true);
+  };
   function pushMiss(w) {
     if (!B.missSet.has(w.h)) {
       B.missSet.add(w.h);
@@ -1935,7 +2411,7 @@
   }
   function spawnZombie() {
     const w = pickWord();
-    B.zombie = { w, x: B.w + 30, state: "walk" };
+    B.zombie = { w, x: B.w + 30, state: "walk", hp: 1 };
     B.spawned++;
     B.locked = false;
     if (isBossSpawn(B.spawned)) {
@@ -1945,6 +2421,7 @@
     }
     if (settings.autoSpeak) speak(w.h);
     renderOptions(w);
+    updateHud();
     B.speedBase *= 1.03;
     B.speed = B.speedBase * (B.w / 380);
   }
@@ -1967,8 +2444,8 @@
     box.innerHTML = "";
     const m = meaning(word, scope.lang);
     const prompt = document.createElement("div");
-    prompt.style.cssText = "grid-column:1/-1; text-align:center; font-weight:700; color:var(--gold); padding:2px 4px 8px;";
-    prompt.textContent = `Review Challenge \xB7 pick the hanzi for: ${m.main}`;
+    prompt.className = "boss-prompt";
+    prompt.textContent = t("battle.bossPrompt", { meaning: m.main });
     box.appendChild(prompt);
     for (const o of opts) {
       const b = document.createElement("button");
@@ -1988,6 +2465,7 @@
     });
   }
   function answer(btn, o) {
+    if (B.paused) return;
     const z = B.zombie;
     if (!z || z.state !== "walk" || B.locked) return;
     const boss = z.boss;
@@ -2000,18 +2478,14 @@
     }
     if (correct && boss && z.stage === "meaning") {
       z.frozen = true;
+      z.hp = 0.5;
       btn.classList.add("good");
       lockOptions();
-      setTimeout(() => {
-        if (!B.on || B.zombie !== z) return;
-        z.stage = "hanzi";
-        z.frozen = false;
-        renderBossHanzi(z.w);
-        B.locked = false;
-      }, 500);
+      B.bossStageAt = performance.now() + 500;
       updateHud();
       return;
     }
+    z.revealed = true;
     if (correct) {
       B.correct++;
       B.combo++;
@@ -2030,12 +2504,12 @@
       B.proj = { x: B.L.mascotX + 16 * B.S, y: B.h - B.L.ground - 30 * B.S };
       if (boss) noteAnswer(z.w.h, true);
       const gy = B.h - B.L.ground;
-      B.feedback = { ...feedbackEffect("correct", z.x, gy - 42 * B.S), until: performance.now() + 620 };
+      B.feedback = { ...feedbackEffect("correct", z.x, gy - 42 * B.S), until: fxUntil(620) };
       const floater = comboFloater(z.x, gy - 130, B.combo);
       if (floater) B.floats.push(floater);
       if (B.combo >= 10 && B.combo % 10 === 0) {
         B.parts.push(...fireworkRing(z.x, gy - 16));
-        B.feedback = { ...feedbackEffect("streak", z.x, gy - 42 * B.S), until: performance.now() + 750 };
+        B.feedback = { ...feedbackEffect("critical", z.x, gy - 42 * B.S), until: fxUntil(750) };
       }
     } else {
       B.combo = 0;
@@ -2049,11 +2523,11 @@
       if (boss) noteAnswer(z.w.h, false);
       B.lives--;
       B.flash = 1;
-      B.screenShake = 1;
+      B.screenShake = REDUCED_MOTION ? 0 : 1;
       B.resolved++;
       z.state = "wrong";
       z.wrongUntil = performance.now() + 560;
-      B.feedback = { ...feedbackEffect("wrong", z.x, B.h - B.L.ground - 44 * B.S), until: performance.now() + 560 };
+      B.feedback = { ...feedbackEffect("wrong", z.x, B.h - B.L.ground - 44 * B.S), until: fxUntil(560) };
     }
     updateHud();
   }
@@ -2066,6 +2540,7 @@
     const gy = B.h - B.L.ground;
     B.parts.push(...coinBurst(z.x, gy - 16, !!z.boss, shopState.effect));
     z.state = "happy";
+    z.hpAtKill = z.hp;
     B.dyingUntil = performance.now() + 250;
     B.proj = null;
     B.resolved++;
@@ -2080,6 +2555,7 @@
       pushMiss(z.w);
       revealCorrect(z.w);
       lockOptions();
+      z.revealed = true;
     }
     sfx.bite();
     B.lives--;
@@ -2090,8 +2566,23 @@
   }
   function loop(t2) {
     if (!B.on) return;
+    if (B.paused) {
+      B.lastT = t2;
+      requestAnimationFrame(loop);
+      return;
+    }
     const dt = Math.min(0.05, (t2 - (B.lastT || t2)) / 1e3);
     B.lastT = t2;
+    if (B.bossStageAt && t2 >= B.bossStageAt) {
+      B.bossStageAt = 0;
+      const bz = B.zombie;
+      if (bz && bz.frozen && bz.stage === "meaning") {
+        bz.stage = "hanzi";
+        bz.frozen = false;
+        renderBossHanzi(bz.w);
+        B.locked = false;
+      }
+    }
     if (!B.zombie && t2 >= B.nextAt) {
       if (B.lives > 0 && B.spawned < B.wordsTotal) spawnZombie();
       else {
@@ -2259,15 +2750,10 @@
     ctx2.lineTo(B.w, gy + 12);
     ctx2.stroke();
     ctx2.textAlign = "center";
-    const manekiImg = sprite("maneki");
     const hopping = B.mascotHopUntil && t2 < B.mascotHopUntil;
-    const mp = B.L.mascotPx;
-    if (manekiImg) {
-      const bob = Math.sin(t2 / 400) * (hopping ? 9 : 3);
-      ctx2.drawImage(manekiImg, B.L.mascotX - mp / 2, gy - mp + 4 * B.S + bob, mp, mp);
-    } else {
-      drawCat(ctx2, B.L.mascotX, gy + 6 * B.S, t2, "happy", null, 0.72 * B.S, [], false);
-    }
+    const playerState = hopping ? "happy" : "walk";
+    drawCat(ctx2, B.L.mascotX, gy + 6 * B.S, t2, playerState, SKIN_PALETTES[shopState.skin], 0.9 * B.S, B.acc, false);
+    if (B.hasKitten) drawCat(ctx2, B.L.mascotX - B.L.catHalf, gy + 6 * B.S, t2 + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5 * B.S, [], false);
     const coinImgIdle = sprite("coin");
     if (coinImgIdle) {
       ctx2.drawImage(coinImgIdle, 4 * B.S, gy - 22 * B.S, B.L.coinPx, B.L.coinPx);
@@ -2277,11 +2763,17 @@
     const z = B.zombie;
     if (z) {
       const hideWord = z.boss && z.stage === "hanzi" && z.state === "walk";
-      const bh = hideWord ? "\uFF1F\uFF1F" : z.w.h;
-      const bp = hideWord || !settings.showPinyin ? "" : z.w.p;
-      drawWordPlate(hideWord ? "??" : bh, bp, z.w.lv, z.boss, t2);
-      drawCat(ctx2, z.x, gy + 6 * B.S, t2, z.state, SKIN_PALETTES[shopState.skin], z.boss ? 1.5 * B.S : B.S, B.acc, !!z.boss);
-      if (B.hasKitten) drawCat(ctx2, z.x + B.L.catHalf, gy + 6 * B.S, t2 + 250, z.state, SKIN_PALETTES[shopState.skin], 0.55 * B.S, [], false);
+      drawWordPlate(z, hideWord, t2);
+      const rScale = z.boss ? 1.5 * B.S : B.S;
+      drawRaccoon(ctx2, z.x, gy + 6 * B.S, t2, z.state, rScale, !!z.boss);
+      let hpFrac = z.hp;
+      if (z.state === "happy" && B.dyingUntil) {
+        const remain = Math.max(0, B.dyingUntil - t2);
+        hpFrac = (z.hpAtKill ?? z.hp) * (remain / 250);
+      }
+      drawHpBar(ctx2, z.x, gy + 6 * B.S - RACCOON_HEIGHT * rScale, 46 * B.S, hpFrac, B.S);
+    } else {
+      B.plaqueRect = null;
     }
     if (B.proj) {
       const coinImg = sprite("coin");
@@ -2327,7 +2819,7 @@
     }
     ctx2.globalAlpha = 1;
     if (B.floats.length) {
-      ctx2.font = `700 ${Math.round(B.L.floaterPx)}px 'Segoe UI',sans-serif`;
+      ctx2.font = fontString(700, B.L.floaterPx, LATIN_STACK);
       ctx2.fillStyle = "#f5c518";
       for (const f of B.floats) {
         ctx2.globalAlpha = Math.max(0, Math.min(1, f.life / 0.9));
@@ -2342,13 +2834,23 @@
     }
     if (shake) ctx2.restore();
   }
-  function drawWordPlate(hanzi, pinyin, level, boss, t2) {
+  function drawWordPlate(z, hideWord, t2) {
+    const w = z.w, boss = z.boss, level = w.lv;
+    const hanzi = hideWord ? "\uFF1F\uFF1F" : w.h;
+    const pinyin = hideWord || !settings.showPinyin ? "" : w.p;
+    const revealed = !!z.revealed;
+    const showSub = scope.lang === "both";
     const wy = Math.round(B.h * 0.36);
     ctx2.save();
-    ctx2.font = `700 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
+    ctx2.font = fontString(700, B.L.hanziPx, HANZI_STACK);
     const textW = Math.max(ctx2.measureText(hanzi).width, 74 * B.S);
-    const lw = Math.min(B.w - 24 * B.S, textW + 48 * B.S);
-    const lh = (pinyin ? 86 : 64) * B.S;
+    const spkR = 12 * B.S;
+    const lw = Math.min(B.w - 24 * B.S, textW + 56 * B.S + spkR * 2.2);
+    const padV = 10 * B.S;
+    const pinyinH = pinyin ? 22 * B.S : 0;
+    const hanziH = B.L.hanziPx * 1.05;
+    const transH = (showSub ? 40 : 24) * B.S;
+    const lh = padV * 2 + pinyinH + hanziH + transH;
     const x = B.w / 2 - lw / 2, y = wy - lh / 2;
     const plaqueImg = sprite("ui-word-plaque");
     if (plaqueImg) {
@@ -2395,17 +2897,50 @@
       ctx2.lineTo(x + lw - ti, y + lh - ti - tk);
       ctx2.stroke();
     }
-    ctx2.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
     ctx2.textAlign = "center";
-    ctx2.font = `700 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
-    ctx2.fillText(hanzi, B.w / 2, wy + (pinyin ? -5 * B.S : B.L.hanziPx * 0.34));
+    ctx2.textBaseline = "middle";
+    let cy = y + padV;
     if (pinyin) {
-      ctx2.font = `600 ${Math.round(B.L.pinyinPx)}px 'Segoe UI',sans-serif`;
+      ctx2.font = fontString(600, B.L.pinyinPx, LATIN_STACK);
       ctx2.fillStyle = "#8C5F2A";
-      ctx2.fillText(pinyin, B.w / 2, wy + 28 * B.S);
+      ctx2.fillText(pinyin, B.w / 2, cy + pinyinH / 2);
+      cy += pinyinH;
     }
+    ctx2.font = fontString(700, B.L.hanziPx, HANZI_STACK);
+    ctx2.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
+    ctx2.fillText(hanzi, B.w / 2, cy + hanziH / 2);
+    cy += hanziH;
+    const midY = cy + (showSub ? transH * 0.32 : transH / 2);
+    if (revealed) {
+      const m = meaning(w, scope.lang);
+      ctx2.font = fontString(700, 15 * B.S, LATIN_STACK);
+      ctx2.fillStyle = "#2F6B4F";
+      ctx2.fillText(m.main, B.w / 2, midY);
+      if (showSub && m.sub) {
+        ctx2.font = fontString(600, 13 * B.S, LATIN_STACK);
+        ctx2.fillStyle = "#5C7A68";
+        ctx2.fillText(m.sub, B.w / 2, cy + transH * 0.74);
+      }
+    } else {
+      ctx2.strokeStyle = "rgba(140,95,42,.32)";
+      ctx2.lineWidth = Math.max(1.4, 2 * B.S);
+      ctx2.setLineDash([4 * B.S, 4 * B.S]);
+      ctx2.beginPath();
+      ctx2.moveTo(B.w / 2 - 44 * B.S, midY);
+      ctx2.lineTo(B.w / 2 + 44 * B.S, midY);
+      ctx2.stroke();
+      if (showSub) {
+        const y2 = cy + transH * 0.74;
+        ctx2.beginPath();
+        ctx2.moveTo(B.w / 2 - 30 * B.S, y2);
+        ctx2.lineTo(B.w / 2 + 30 * B.S, y2);
+        ctx2.stroke();
+      }
+      ctx2.setLineDash([]);
+    }
+    ctx2.textBaseline = "alphabetic";
     if (level) {
-      ctx2.font = `700 ${Math.round(10 * B.S)}px 'Segoe UI',sans-serif`;
+      ctx2.font = fontString(700, 10 * B.S, LATIN_STACK);
       const tagText = `HSK ${level}`;
       const tw = ctx2.measureText(tagText).width + 12 * B.S;
       const th = 16 * B.S;
@@ -2420,13 +2955,39 @@
       ctx2.textAlign = "left";
       ctx2.fillText(tagText, x + 14 * B.S, y - th * 0.45 + th * 0.7);
     }
+    drawSpeakerIcon(ctx2, x + lw - spkR - 10 * B.S, y + lh / 2, spkR, boss ? "#7A4E0C" : "#8C5F2A");
+    B.plaqueRect = { x, y, w: lw, h: lh };
     ctx2.restore();
+  }
+  function drawSpeakerIcon(c, cx, cy, r, color) {
+    c.save();
+    c.translate(cx, cy);
+    c.fillStyle = color;
+    c.beginPath();
+    c.moveTo(-r * 0.9, -r * 0.35);
+    c.lineTo(-r * 0.3, -r * 0.35);
+    c.lineTo(r * 0.35, -r * 0.85);
+    c.lineTo(r * 0.35, r * 0.85);
+    c.lineTo(-r * 0.3, r * 0.35);
+    c.lineTo(-r * 0.9, r * 0.35);
+    c.closePath();
+    c.fill();
+    c.strokeStyle = color;
+    c.lineWidth = Math.max(1.2, r * 0.16);
+    c.lineCap = "round";
+    c.beginPath();
+    c.arc(r * 0.05, 0, r * 0.62, -Math.PI * 0.32, Math.PI * 0.32);
+    c.stroke();
+    c.beginPath();
+    c.arc(r * 0.05, 0, r * 0.98, -Math.PI * 0.34, Math.PI * 0.34);
+    c.stroke();
+    c.restore();
   }
   function drawFeedbackLayer(t2) {
     const fb = B.feedback;
     if (!fb) return;
     const kind = fb.kind || fb.type;
-    const total = kind === "critical" || kind === "streak" ? 750 : kind === "correct" ? 620 : 560;
+    const total = fxDuration(kind === "critical" || kind === "streak" ? 750 : kind === "correct" ? 620 : 560);
     const left = fb.until - performance.now();
     if (left <= 0) {
       B.feedback = null;
@@ -2437,7 +2998,7 @@
     ctx2.globalAlpha = Math.max(0, 1 - p);
     const orbImg = fb.orb ? sprite(fb.orb) : null;
     if (orbImg) {
-      const os = (kind === "streak" ? 110 : 84) * B.S * (0.6 + 0.5 * Math.min(1, p * 2.4));
+      const os = (kind === "streak" || kind === "critical" ? 110 : 84) * B.S * (0.6 + 0.5 * Math.min(1, p * 2.4));
       ctx2.drawImage(orbImg, fb.x - os / 2, fb.y - os / 2, os, os);
     }
     const fxImg = fb.sprite ? sprite(fb.sprite) : null;
@@ -2464,6 +3025,23 @@
       ctx2.beginPath();
       ctx2.arc(fb.x, fb.y, (18 + 26 * p) * B.S, Math.PI * 0.15, Math.PI * 1.85);
       ctx2.stroke();
+    }
+    if (kind === "critical") {
+      const tx = Math.min(Math.max(fb.x, 74 * B.S), B.w - 74 * B.S);
+      const scale = 0.55 + 0.45 * Math.min(1, p * 6);
+      ctx2.save();
+      ctx2.translate(tx, fb.y);
+      ctx2.scale(scale, scale);
+      ctx2.textAlign = "center";
+      ctx2.textBaseline = "middle";
+      ctx2.font = fontString(800, 22 * B.S, LATIN_STACK);
+      ctx2.lineJoin = "round";
+      ctx2.strokeStyle = "#FBF5E8";
+      ctx2.lineWidth = 4 * B.S;
+      ctx2.strokeText("CRITICAL!", 0, 0);
+      ctx2.fillStyle = "#7A4E0C";
+      ctx2.fillText("CRITICAL!", 0, 0);
+      ctx2.restore();
     }
     ctx2.restore();
   }
@@ -3161,12 +3739,10 @@
   applyStaticI18n();
   syncUiLangChips();
   sfx.pack = shopState.soundpack || "default";
-  updateWalletChip();
-  updateSmartBtn();
-  updateStreakChip();
-  updateLevelChip();
+  renderHome();
   renderQuests();
   renderStreet();
+  updateNav(currentScreen);
   if (location.hash === "#debug") {
     window.__debugTarget = () => B.zombie && B.zombie.w.h;
     window.__grantXp = (n) => {

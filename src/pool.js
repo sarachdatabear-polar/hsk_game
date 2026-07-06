@@ -55,3 +55,26 @@ export function normalizeLen(v) {
 export function modeKey(mode, len) {
   return (mode === "round" && len !== 20) ? "round" + len : mode;
 }
+
+// Human-readable summary of the current scope, for the home screen's scope
+// chip (M3). Returns structured parts rather than a finished string so
+// main.js can localize the filter labels via t() — this module stays
+// dependency-free of i18n, like the rest of pool.js.
+export function scopeSummary(scope) {
+  const levels = [...scope.levels].sort((a, b) => a - b);
+  let levelLabel = "";
+  if (levels.length === 1) {
+    levelLabel = "HSK" + levels[0];
+  } else if (levels.length > 1) {
+    const isRun = levels.every((n, i) => i === 0 || n === levels[i - 1] + 1);
+    levelLabel = isRun
+      ? `HSK${levels[0]}–${levels[levels.length - 1]}`
+      : "HSK" + levels.join("+");
+  }
+  return {
+    levelLabel,
+    core: !!scope.core,
+    newOnly: !!scope.newOnly,
+    sessionLen: normalizeLen(scope.sessionLen),
+  };
+}

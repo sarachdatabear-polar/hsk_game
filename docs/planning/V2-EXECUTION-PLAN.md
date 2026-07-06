@@ -1,5 +1,47 @@
 # V2/V3/V4 Execution Plan — living checklist
 
+## Visual Slice v1 — PRD-exact Home + Battle rebuild (2026-07-06)
+
+Spec: [PRD-visual-slice-v1.md](../prd/PRD-visual-slice-v1.md) (built against the
+visual-exact PRD [Lucky_Cat_HSK_PRD_Visual_Spec_v1.0.md](../art/Lucky_Cat_HSK_PRD_Visual_Spec_v1.0.md)).
+Branch `feat/prd-visual-slice-v1` → PR to `development`.
+
+- [x] **M1 — Tokens + fonts**: 12 `--lc-*` palette tokens; `scripts/build_fonts.py`
+  subsets/bundles LC Hanzi (Noto Serif SC ⊆ words.json, 539 KB) + LC Thai + LC
+  Latin (Fredoka); canvas battle text via `src/fonts.js`. +5 tests (236).
+- [x] **M2 — Bottom nav**: 5-tab deep-teal nav (Home/Street/Progress/Quests/More);
+  street canvas + quest panel promoted to own screens; UI-language chips → More;
+  pure `src/nav.js`. +8 tests (244).
+- [x] **M3 — Home rebuild**: status strip (avatar/Lv/XP + coins + gear), LUCKY CAT
+  · HSK brand title, cat-study hero on bg-home, streak plaque w/ daily-goal bar,
+  instant START + scope chip (`scopeSummary` in pool.js), secondary row. +5 (249).
+- [x] **M4 — Battle HUD + pause**: hearts · Round X/Y capsule · score · pause;
+  overlay hosts sfx/word-audio/pinyin toggles + Resume/Quit; pause freezes rAF
+  and shifts all absolute deadlines on resume; auto-pause on tab hide.
+  `src/hud.js` roundLabel. +8 (257).
+- [x] **M5 — Role swap**: player cat (skin/accessories/kitten) stationary left;
+  enemy = code-drawn cute raccoon ninja (`src/raccoon.js`) with cosmetic HP bar
+  (50% after boss stage 1, drains on defeat); zombie.js deleted. +6 (263).
+- [x] **M6 — Plaque + grid + combo**: pinyin above hanzi, reserved translation
+  line revealed on resolve, plaque speaker tap/keyboard replay, hanziPx 44→60
+  (≥56px floor), strict 2×2 sand tactile grid with ✓/✕ reveal affixes, combo
+  strip (COMBO n/fires/xN), CRITICAL! burst at combo-10s, reduced-motion,
+  boss stage timer folded into pause deadlines. Boss prompt localized (lead
+  fix). +5 (268).
+- [x] Regression: 268 tests green, build clean (138 kb), DOM-id check passed,
+  headless visual pass at 390×844 + 360×640 (home/battle/reveal/pause/street/
+  more; zero console errors).
+- [x] Art prompt pack for replacement backgrounds + optional raccoon sheets:
+  [GENERATION-PROMPTS-visual-slice.md](../art/GENERATION-PROMPTS-visual-slice.md)
+  (drop-in filenames: bg-home.png 1080×1920, bg-battle.png 1024×512).
+- [ ] Ship: SHELL bump rides the release to `main`, not this dev PR (branching
+  model: PR → development; deploy happens on development → main release).
+- [ ] User playtest (see USER-CHECKLIST §9).
+
+Known follow-ups: shop tab highlights Home in nav (spec'd, revisit if odd in
+play); street screen inherits legacy festive styling (restyle round later);
+kitten companion crowds the idle coin icon at 360px; `B.L.mascotPx` now unused.
+
 ## Pinyin toggle + one-shot audio (small round; 2026-07-06)
 
 Spec: [PRD-pinyin-toggle-and-audio.md](../prd/PRD-pinyin-toggle-and-audio.md).

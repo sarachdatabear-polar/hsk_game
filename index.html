@@ -13,6 +13,24 @@
     src:url('assets/fonts/title.woff2') format('woff2');
     font-display:swap;
   }
+  @font-face{
+    font-family:'LC Hanzi';
+    src:url('assets/fonts/lc-hanzi.woff2') format('woff2');
+    font-weight:900;
+    font-display:swap;
+  }
+  @font-face{
+    font-family:'LC Thai';
+    src:url('assets/fonts/lc-thai.woff2') format('woff2');
+    font-weight:600;
+    font-display:swap;
+  }
+  @font-face{
+    font-family:'LC Latin';
+    src:url('assets/fonts/lc-latin.woff2') format('woff2');
+    font-weight:600;
+    font-display:swap;
+  }
   :root{
     --lc-lacquer:#A51F24;
     --lc-crimson:#4A1015;
@@ -21,8 +39,10 @@
     --lc-jade:#2F9B72;
     --lc-night:#101B2B;
     --lc-paper:#F4E2BE;
-    --lc-ink:#24150E;
-    --lc-cream:#FFF4E0;
+    /* renamed from --lc-ink/--lc-cream: those names are claimed by the Visual
+       Slice v1 palette below (different values) — kept for existing usages */
+    --lc-ink-legacy:#24150E;
+    --lc-cream-legacy:#FFF4E0;
     --lc-tan:#C9A58A;
     --lc-shadow:rgba(18,8,6,.42);
     /* Education-first palette: Lucky Cat Learning Journey */
@@ -42,18 +62,18 @@
     --amber:var(--gold); --green:var(--jade);
     --red:var(--edu-coral); --chip:#EFE7D4; --chip-on:var(--edu-sky); --chip-ink-on:#08324a;
     --panel-border:var(--edu-gray); --panel-wash:#FFFDF6;
+    /* Visual Slice v1 palette (PRD §4.1) — additive tokens, not yet wired into screens */
+    --lc-green:#32775E; --lc-sky:#5DAADD; --lc-sun:#F2BC57; --lc-coral:#E69777;
+    --lc-brown:#846043; --lc-gray:#B2AEA9; --lc-cream:#FBF5E8; --lc-teal:#1F4D4A;
+    --lc-success:#28723B; --lc-error:#C95A41; --lc-sand:#EAC796; --lc-ink:#2E2A24;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0; background:var(--bg); color:var(--ink);
-    font-family:"Segoe UI",system-ui,-apple-system,"Noto Sans","Noto Sans Thai",sans-serif;}
+    font-family:'LC Latin','LC Thai',"Segoe UI",system-ui,-apple-system,"Noto Sans","Noto Sans Thai",sans-serif;}
   #app{max-width:520px; margin:0 auto; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
   .screen{display:none; flex:1; flex-direction:column; padding:16px;}
   .screen.on{display:flex;}
-  h1{font-size:28px; margin:8px 0 2px; color:var(--gold); text-align:center;
-    font-family:'LuckyTitle',"Segoe UI",sans-serif; text-shadow:0 2px 8px rgba(0,0,0,.6);}
-  h1 .sub-cn{display:block; font-size:22px; letter-spacing:.15em; opacity:.85;}
-  .tag{color:var(--muted); text-align:center; margin:0 0 20px; font-size:14px;}
   .menu{display:flex; flex-direction:column; gap:12px; margin-top:8px;}
   button{font:inherit; border:none; border-radius:12px; cursor:pointer;}
   .asset-icon{width:1.15em; height:1.15em; display:inline-block; vertical-align:-.18em; color:currentColor; flex:0 0 auto;}
@@ -135,33 +155,23 @@
   .readout .warn{color:var(--muted); font-size:12.5px; margin-top:4px;}
   .startrow{display:flex; gap:10px; margin-top:14px;}
   .startrow .big{flex:1; padding:14px 6px; font-size:16px;}
-  /* Lucky Cat Street — home-screen strip; DPR-crisp buffer sized by main.js */
-  #street-cv{width:100%; height:96px; display:block; border-radius:12px;
+  /* Lucky Cat Street — own screen (M2); DPR-crisp buffer sized by main.js */
+  #street-cv{width:100%; height:min(40vh,320px); display:block; border-radius:12px;
     border:1px solid rgba(245,197,24,.4);
     box-shadow:inset 0 0 18px rgba(245,197,24,.12), 0 3px 10px rgba(0,0,0,.28);}
   #street-caption{color:#f0cda4; font-size:12px; text-align:center; margin:4px 0 0;
     text-shadow:0 1px 2px rgba(0,0,0,.75);}
-  /* icon row for home screen */
-  .icon-row{display:flex; justify-content:center; gap:14px; margin-top:12px; flex-wrap:wrap;}
-  .icon-btn{
-    width:64px; height:64px; border-radius:50%; font-size:26px; line-height:1;
-    background:var(--panel-wash);
-    border:1px solid var(--edu-gray); color:var(--edu-ink);
-    box-shadow:0 3px 10px rgba(36,52,71,.12);
-    display:flex; align-items:center; justify-content:center;}
-  .icon-btn:active{transform:scale(.96);}
-  .icon-btn{border-image:var(--f-ui-icon-tile, none);}
-  :root.has-ui-icon-tile .icon-btn{background:none; border-color:transparent; border-radius:16px;
-    color:#F7EFD9; box-shadow:0 3px 8px rgba(30,90,62,.28);}
-  .icon-btn[data-go="scope-learn"],
-  .icon-btn[data-go="shop"],
-  .icon-btn[data-go="scores"],
-  .icon-btn[data-go="progress"],
-  .icon-btn[data-go="howto"],
-  .icon-btn#home-sound{
-    border-color:var(--edu-gray);}
-  /* muted state dims the sound control so on/off still reads at a glance */
-  .icon-btn#home-sound.muted{filter:grayscale(1) opacity(.45);}
+  #more-sound.muted{filter:grayscale(1) opacity(.6);}
+  /* bottom nav (M2) — deep-teal bar, last child of #app, safe-area padding
+     already reserved by #app itself so the bar sits flush above it. */
+  #bottom-nav{display:flex; gap:4px; margin-top:10px; padding:6px 4px;
+    background-color:var(--lc-teal); border-radius:18px;
+    box-shadow:0 -2px 10px rgba(0,0,0,.2);}
+  .nav-btn{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:2px; min-height:48px; padding:5px 2px; background:none; color:var(--lc-gray);
+    font-size:11px; font-weight:600; border-radius:14px;}
+  .nav-btn .asset-icon{width:21px; height:21px;}
+  .nav-btn.active{background-color:var(--lc-sun); color:var(--lc-teal);}
   /* flashcards */
   .fc-top{display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:14px;}
   .word-card,
@@ -183,23 +193,59 @@
   .fc-btns{display:flex; gap:10px;}
   .fc-btns .big{flex:1; font-size:16px; padding:14px 6px;}
   .know{background-color:var(--jade); color:#0d2200; border-color:var(--lc-jade);}
-  .learn2{background-color:var(--crimson); color:var(--lc-cream); border-color:var(--lc-lacquer);}
+  .learn2{background-color:var(--crimson); color:var(--lc-cream-legacy); border-color:var(--lc-lacquer);}
   .spk{color:var(--edu-sky); font-size:22px; padding:10px 16px; border-radius:12px; border:1px solid var(--panel-border);
     min-width:44px; min-height:44px;
     display:inline-flex; align-items:center; justify-content:center;}
-  /* battle */
-  #hud{display:flex; justify-content:space-between; align-items:center; font-size:15px; padding:2px 2px 8px; gap:6px; flex-wrap:wrap;}
-  .hud-pill{display:inline-flex; align-items:center; gap:4px; background:var(--panel-wash);
+  /* battle (M4 — minimal HUD: hearts · round capsule · coins · pause) */
+  #hud{display:flex; justify-content:space-between; align-items:center; font-size:15px; padding:2px 2px 8px; gap:6px; flex-wrap:nowrap;}
+  .hud-pill{display:inline-flex; align-items:center; gap:4px; background:var(--panel-wash); min-width:0;
     color:var(--edu-ink); border-radius:999px; padding:4px 10px; border:1px solid var(--edu-gray); font-weight:700; font-size:14px;
-    box-shadow:0 2px 6px rgba(36,52,71,.08);}
-  #home-wallet{color:var(--muted); font-size:13px;}
-  .hud-round{width:44px; height:44px; border-radius:50%; background:var(--panel-wash);
+    box-shadow:0 2px 6px rgba(36,52,71,.08); white-space:nowrap;}
+  /* round-counter capsule: blue per PRD §6.2 (Round X/Y). Ink text on the sky
+     fill is ~5.6:1 contrast (teal text would be only ~3.7:1 — below 4.5:1). */
+  .hud-round-pill{background-color:var(--lc-sky); border-color:var(--lc-teal); color:var(--lc-ink); font-weight:800;}
+  .hud-round{width:44px; height:44px; min-width:44px; border-radius:50%; background:var(--panel-wash);
     color:var(--edu-ink); border:1px solid var(--edu-gray); border-image:var(--f-ui-badge-mastery, none); font-size:18px; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto;
     box-shadow:0 2px 6px rgba(36,52,71,.08);}
-  #hud .combo{color:var(--edu-jade); font-weight:700;}
+  .hud-round:active{transform:scale(.94);}
   .life-icon{width:18px; height:18px; color:var(--edu-coral); filter:drop-shadow(0 1px 1px rgba(0,0,0,.2));}
   .life-icon.empty{color:#6a3a3a; opacity:.65;}
+  /* pause overlay — cream plaque on a dim scrim, covers #s-battle only (nav is
+     hidden during battle anyway). Mirrors the .screen.on show/hide convention. */
+  #s-battle{position:relative;}
+  .pause-overlay{display:none; position:absolute; inset:0; z-index:20;
+    align-items:center; justify-content:center; padding:20px;
+    background:rgba(20,26,20,.6);}
+  .pause-overlay.on{display:flex;}
+  .pause-panel{width:min(320px,88vw); background-color:var(--lc-cream); border:3px solid var(--lc-brown);
+    border-radius:20px; padding:20px 18px; display:flex; flex-direction:column; gap:12px;
+    box-shadow:0 12px 28px rgba(0,0,0,.4);}
+  .pause-title{margin:0; text-align:center; font-family:'LC Latin',"Segoe UI",sans-serif;
+    font-weight:800; font-size:20px; color:var(--lc-ink);}
+  .pause-resume{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800; font-size:19px;
+    color:var(--lc-brown); background-color:var(--lc-sun);
+    background-image:linear-gradient(180deg,#FFE59B,var(--lc-sun) 55%,#D99A2E);
+    border:3px solid var(--lc-brown); border-radius:16px; padding:12px 8px; min-height:52px;
+    box-shadow:0 4px 0 #B97A1E, 0 8px 14px rgba(46,42,36,.32);}
+  .pause-resume:active{transform:translateY(2px); box-shadow:0 2px 0 #B97A1E, 0 4px 8px rgba(46,42,36,.32);}
+  .pause-toggles{display:flex; flex-direction:column; gap:8px;}
+  .pause-toggle{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background-color:var(--lc-sand); border:2px solid var(--lc-brown); border-radius:14px;
+    padding:10px 14px; min-height:44px; color:var(--lc-ink); font-weight:700; font-size:14px;}
+  .pause-toggle:active{transform:scale(.98);}
+  .pause-toggle .icon-text{display:flex; align-items:center; gap:8px;}
+  .pause-toggle .asset-icon{width:19px; height:19px; color:var(--lc-teal); flex:0 0 auto;}
+  .pause-toggle .pt-state{font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
+    padding:3px 9px; border-radius:999px; background-color:var(--lc-gray); color:#3d3a35; flex:0 0 auto;}
+  .pause-toggle.on .pt-state{background-color:var(--lc-success); color:var(--lc-cream);}
+  /* darker shade of --lc-error so the cream label clears 4.5:1 (the raw token
+     only reaches ~3.8:1 with small text) */
+  .pause-quit{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:700; font-size:14px; color:var(--lc-cream);
+    background-color:#B04A33; border:2px solid #8A2F20; border-radius:14px;
+    padding:10px 8px; min-height:46px;}
+  .pause-quit:active{transform:scale(.97);}
   /* canvas fills the space between HUD and options; .cv-wrap absorbs all the
      slack (flex:1) and centers the canvas. #cv fills that box exactly (no forced
      aspect-ratio) — the draw loop reads clientWidth/Height and scales everything
@@ -211,15 +257,52 @@
     background-size:cover; background-position:bottom; background-repeat:no-repeat;
     border:1px solid var(--panel-border); display:block; touch-action:none;
     box-shadow:0 10px 22px rgba(0,0,0,.25), inset 0 0 18px rgba(245,197,24,.08);}
-  #opts{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;}
-  #opts button{padding:13px 8px; font-size:15.5px; line-height:1.3; background-color:var(--edu-paper);
-    color:var(--edu-ink); border:1px solid var(--edu-gray); border-image:var(--f-ui-button-neutral, none); border-radius:12px; min-height:62px;
+  /* keyboard-focusable (M6, §11): Enter/Space replays the current word's audio,
+     same target the plaque click hit-test uses (see main.js replayCurrentWord). */
+  #cv:focus{outline:3px solid var(--lc-sun); outline-offset:2px;}
+  #cv:focus:not(:focus-visible){outline:none;}
+  /* combo strip (M6, §6.2 item 5): thin bar between the canvas and the answer
+     grid; .hidden zero-states it below a 2-combo (updateComboStrip in main.js). */
+  #combo-strip{display:flex; align-items:center; justify-content:space-between; gap:8px;
+    margin-top:8px; padding:6px 12px; min-height:30px;
+    background-color:var(--lc-cream); border:1.5px solid var(--lc-brown); border-radius:14px;}
+  #combo-strip.hidden{visibility:hidden;}
+  .combo-strip-label{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800; font-size:12.5px;
+    letter-spacing:.04em; color:var(--lc-brown); white-space:nowrap;}
+  .combo-strip-label b{font-size:14px; color:var(--lc-ink);}
+  .combo-strip-fires{display:flex; align-items:center; gap:3px;}
+  .combo-fire{width:15px; height:15px; color:var(--lc-gray); opacity:.4;}
+  .combo-fire.lit{color:var(--lc-sun); opacity:1; filter:drop-shadow(0 0 2px rgba(242,188,87,.55));}
+  .combo-strip-badge{display:inline-flex; align-items:center; justify-content:center; min-width:28px; height:24px;
+    padding:0 6px; border-radius:50%; background-color:var(--lc-sun); color:var(--lc-teal);
+    font-weight:800; font-size:12.5px; border:1.5px solid var(--lc-brown);}
+  /* answer grid (M6, §6.2 item 4 + §7.2): strict 2x2, equal-size cells at any
+     row count (grid-auto-rows keeps the boss reverse-question's 3rd prompt
+     row the same height as the two button rows below it). */
+  #opts{display:grid; grid-template-columns:1fr 1fr; grid-auto-rows:1fr; gap:10px; margin-top:10px;}
+  #opts button{padding:12px 10px; font-size:20px; font-weight:700; line-height:1.25; text-align:center;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background-color:var(--lc-sand); color:var(--lc-ink);
+    border:2px solid var(--lc-brown); border-image:var(--f-ui-button-neutral, none); border-radius:14px; min-height:68px;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.45), inset 0 -3px 0 rgba(120,80,40,.28), 0 2px 6px rgba(36,26,16,.18);
     overflow-wrap:anywhere;}
-  #opts button .th{display:block; color:var(--jade); font-size:14.5px;}
-  #opts button.good{background-color:var(--edu-jade); color:#0d2b20;}
-  #opts button.good .th{color:#0d2200;}
-  #opts button.bad{background-color:var(--red); color:#fff;}
-  #opts button:disabled{opacity:.55; border-image:var(--f-ui-button-neutral-disabled, var(--f-ui-button-neutral, none));}
+  #opts button .th{display:block; color:var(--lc-brown); font-size:15px; font-weight:600; margin-top:2px;}
+  /* reveal states never rely on color alone (§11): a ✓/✕ affix rides along
+     with the green/coral fill + the game's existing sound/haptic/motion. */
+  #opts button.good{background-color:var(--lc-success); color:var(--lc-cream); border-color:#173F22;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.3), inset 0 -3px 0 rgba(0,0,0,.22), 0 2px 6px rgba(0,0,0,.2);}
+  #opts button.good .th{color:var(--lc-cream);}
+  #opts button.good::before{content:"✓"; font-size:22px; font-weight:800; line-height:1;}
+  #opts button.bad{background-color:var(--lc-error); color:var(--lc-cream); border-color:#6E2A18;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.28), inset 0 -3px 0 rgba(0,0,0,.22), 0 2px 6px rgba(0,0,0,.2);}
+  #opts button.bad .th{color:var(--lc-cream);}
+  #opts button.bad::before{content:"✕"; font-size:22px; font-weight:800; line-height:1;}
+  #opts button:disabled{opacity:.5; border-image:var(--f-ui-button-neutral-disabled, var(--f-ui-button-neutral, none));}
+  #opts button:disabled.good, #opts button:disabled.bad{opacity:1;}
+  /* boss stage-2 reverse-question banner (spans both columns, row 1) */
+  .boss-prompt{grid-column:1/-1; text-align:center; font-weight:800; font-size:14px;
+    color:var(--lc-brown); background-color:var(--lc-cream); border:1.5px solid var(--lc-brown);
+    border-radius:10px; padding:8px 10px;}
   /* results */
   .bignum{font-size:52px; text-align:center; color:var(--gold); font-weight:800; margin:6px 0;
     font-family:'LuckyTitle',"Segoe UI",sans-serif;}
@@ -261,7 +344,7 @@
   .quest-row{border-image:var(--f-ui-card-paper, none);}
   #r-quests{color:var(--gold); font-size:14px; text-align:center; margin:0 0 8px;}
   #r-quests div{margin:2px 0;}
-  #r-perfect{color:var(--lc-ink); background:linear-gradient(var(--lc-cream),var(--lc-gold)); border:1px solid var(--lc-dark-gold);
+  #r-perfect{color:var(--lc-ink-legacy); background:linear-gradient(var(--lc-cream-legacy),var(--lc-gold)); border:1px solid var(--lc-dark-gold);
     border-radius:10px; font-weight:800; font-size:15px; text-align:center; padding:7px 10px; margin:0 0 10px;
     box-shadow:0 0 10px rgba(245,197,24,.5);}
   #r-levelup{color:#0d2200; background:linear-gradient(#c8f5a0,var(--lc-jade)); border:1px solid var(--lc-jade);
@@ -269,7 +352,6 @@
     box-shadow:0 0 10px rgba(127,201,74,.5);}
   .howto{line-height:1.55; font-size:15.5px; color:var(--ink);}
   .howto b{color:var(--gold);}
-  footer{color:#a3766a; text-align:center; font-size:11.5px; padding:10px 0 16px;}
   /* production screen backgrounds */
   #s-home,
   #s-learn,
@@ -297,11 +379,91 @@
     background-image:linear-gradient(rgba(255,248,232,.78),rgba(255,248,232,.92)), url("assets/bg-collection.png"), linear-gradient(#FFF8E8,#FDEFD2);
   }
 
-  /* home hero background */
+  /* home hero background — cream wash strongest at top (status/brand) and
+     bottom (streak/CTA) thirds, clearest through the middle so the hero cat
+     reads against the painted scene (M3, visual PRD §6.1). */
   #s-home{
-    background-image:linear-gradient(rgba(255,248,232,.58),rgba(255,248,232,.86)), url("assets/bg-home.png"), linear-gradient(#FFF8E8,#FDEFD2);
-    justify-content:space-between;
+    background-image:
+      linear-gradient(to bottom,
+        rgba(251,245,232,.94) 0%, rgba(251,245,232,.55) 16%, rgba(251,245,232,0) 32%,
+        rgba(251,245,232,0) 58%, rgba(251,245,232,.55) 74%, rgba(251,245,232,.94) 100%),
+      url("assets/bg-home.png"), linear-gradient(#FFF8E8,#FDEFD2);
+    overflow:hidden;
   }
+
+  /* M3 — home screen rebuild: status strip, brand title, hero, streak card,
+     primary CTA + scope chip, secondary row. Cream/wood tactile forms, warm
+     palette (--lc-*), no pure black/white (visual PRD §4). */
+  .home-status{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:2px;}
+  .status-cap{display:flex; align-items:center; gap:8px; min-height:44px; padding:4px 14px 4px 4px;
+    border-radius:999px; box-shadow:inset 0 1px 0 rgba(255,255,255,.45), 0 3px 8px rgba(31,77,74,.28);}
+  .level-cap{background-color:var(--lc-sky); border:2px solid var(--lc-teal); color:var(--lc-teal);}
+  .level-avatar{width:34px; height:34px; border-radius:50%; border:2px solid var(--lc-cream);
+    background:var(--lc-cream); object-fit:cover; flex:0 0 auto;}
+  .level-info{display:flex; flex-direction:column; gap:3px; min-width:66px;}
+  .level-text{font-weight:800; font-size:13px; line-height:1;}
+  .xp-bar{height:5px; width:66px;}
+  .xp-bar i{background-image:linear-gradient(180deg,#FFE9B0,var(--lc-sun) 60%,var(--lc-brown));}
+  .status-right{display:flex; align-items:center; gap:8px;}
+  .wallet-cap{background-color:var(--lc-teal); border:2px solid var(--lc-brown); color:var(--lc-cream);
+    font-weight:700; font-size:14px;}
+  .wallet-cap .asset-icon{color:var(--lc-sun);}
+  .gear-btn{width:44px; height:44px; min-width:44px; border-radius:50%; background-color:var(--lc-teal);
+    color:var(--lc-cream); border:2px solid var(--lc-sun); display:flex; align-items:center; justify-content:center;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.3), 0 3px 8px rgba(31,77,74,.32);}
+  .gear-btn:active{transform:scale(.94);}
+  .gear-btn .asset-icon{width:20px; height:20px;}
+
+  .brand-title{text-align:center; margin:6px 0 2px; line-height:1.05;}
+  .brand-sub{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800; font-size:clamp(15px,4.6vw,21px);
+    color:var(--lc-sun); letter-spacing:.08em; text-shadow:0 2px 3px rgba(46,42,36,.4);}
+  .brand-cn{font-size:12px; font-weight:400; color:var(--lc-cream); opacity:.7; letter-spacing:.05em; margin-left:6px;}
+  .brand-main{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800;
+    font-size:clamp(44px,15vw,62px); color:var(--lc-cream);
+    text-shadow:0 3px 0 var(--lc-brown), 0 6px 12px rgba(46,42,36,.4);
+    display:flex; align-items:center; justify-content:center; gap:8px;}
+  .brand-paw{width:.45em; height:.45em; color:var(--lc-sun); filter:drop-shadow(0 2px 0 var(--lc-brown));}
+
+  .home-hero{flex:1 1 auto; min-height:120px; display:flex; align-items:flex-end; justify-content:center;
+    padding-bottom:4px;}
+  .hero-cat{width:38%; max-width:220px; min-width:120px; height:auto;
+    filter:drop-shadow(0 10px 14px rgba(46,42,36,.35));}
+
+  .streak-card{background-color:var(--lc-cream); border:2px solid var(--lc-brown); border-radius:14px;
+    padding:10px 14px; margin:6px 0; box-shadow:0 3px 8px rgba(46,42,36,.2);}
+  .streak-row{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;}
+  .streak-left{display:flex; align-items:center; gap:6px; color:var(--lc-brown); font-weight:700; font-size:13.5px;}
+  .streak-left .asset-icon{color:var(--lc-coral);}
+  .streak-days{display:flex; align-items:center; gap:5px; font-weight:800; color:var(--lc-ink); font-size:14.5px;}
+  .streak-check{display:none; color:var(--lc-success); font-weight:900;}
+  .streak-card.goal-met .streak-check{display:inline;}
+  .streak-bar{height:8px;}
+  .streak-bar i{background-image:linear-gradient(90deg, var(--lc-success), var(--lc-sun));}
+
+  .home-cta{display:flex; align-items:stretch; gap:10px; margin:8px 0 2px;}
+  .start-btn{flex:1 1 62%; font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800;
+    font-size:21px; letter-spacing:.05em; color:var(--lc-brown);
+    background-color:var(--lc-sun);
+    background-image:linear-gradient(180deg,#FFE59B,var(--lc-sun) 55%,#D99A2E);
+    border:3px solid var(--lc-brown); border-radius:18px; padding:12px 8px; min-height:56px;
+    box-shadow:0 4px 0 #B97A1E, 0 8px 14px rgba(46,42,36,.32);}
+  .start-btn:active{transform:translateY(2px); box-shadow:0 2px 0 #B97A1E, 0 4px 8px rgba(46,42,36,.32);}
+  .start-btn:disabled{background:var(--lc-gray); background-image:none; color:#6d6862;
+    border-color:#8b8681; box-shadow:none; opacity:.75;}
+  .scope-chip-btn{flex:1 1 38%; background-color:var(--lc-cream); border:2px solid var(--lc-brown);
+    border-radius:14px; color:var(--lc-ink); font-size:12px; font-weight:700; padding:6px 8px;
+    min-height:56px; line-height:1.3;}
+  .scope-chip-btn:active{transform:scale(.97);}
+  .start-hint{color:var(--lc-brown); font-size:12px; text-align:center; margin:2px 0 4px;}
+
+  .home-secondary-row{display:flex; gap:8px; margin-top:4px;}
+  .sec-btn{flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
+    background-color:var(--lc-cream); border:2px solid var(--lc-sand); border-radius:14px;
+    color:var(--lc-ink); font-size:12px; font-weight:700; padding:10px 4px; min-height:56px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.6), 0 2px 6px rgba(46,42,36,.16);}
+  .sec-btn .asset-icon{width:19px; height:19px; color:var(--lc-teal); flex:0 0 auto;}
+  .sec-btn:active{transform:scale(.96);}
+  .sec-btn:disabled{opacity:.5;}
   /* festive decor — swaying lantern.png corners + a soft cloud.png behind the
      title. Applied to the bare screens (Results/Scores/Progress/How-to) only;
      #s-home keeps its painted hero so the motif isn't doubled. z-index:0 makes
@@ -332,31 +494,78 @@
 <body>
 <div id="app">
 
-  <!-- HOME -->
+  <!-- HOME (M3 rebuild — visual PRD §6.1) -->
   <div class="screen on" id="s-home">
-    <h1>Lucky Cat HSK <span class="sub-cn">招财猫</span></h1>
-    <p class="tag"><span data-i18n="home.tagline1">Match each word to its meaning —</span><br><span data-i18n="home.tagline">master real-exam HSK vocabulary.</span></p>
-    <div class="menu">
-      <button class="big primary" data-go="scope"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#learn"></use></svg><span data-i18n="home.learn">Learn</span></span></button>
-      <button class="big" id="go-smart"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#target"></use></svg><span data-i18n="home.smart">Smart Review</span></span></button>
-      <div style="text-align:center; display:flex; justify-content:center; gap:8px; flex-wrap:wrap">
-        <span class="hud-pill" id="home-streak"><svg class="asset-icon"><use href="assets/ui-icons.svg#streak"></use></svg><span>0 · 0/20 today</span></span>
-        <span class="hud-pill" id="home-level"><svg class="asset-icon"><use href="assets/ui-icons.svg#paw"></use></svg><span>Lv 1</span></span>
-        <span class="hud-pill" id="home-wallet"><svg class="asset-icon"><use href="assets/ui-icons.svg#secondary-coin"></use></svg><span>0</span></span>
+    <div class="home-status">
+      <div class="status-cap level-cap" id="home-level">
+        <img class="level-avatar" src="assets/cat-portrait.png" alt="" aria-hidden="true">
+        <div class="level-info">
+          <span class="level-text">Lv 1</span>
+          <div class="mbar xp-bar"><i style="width:0%"></i></div>
+        </div>
       </div>
-      <canvas id="street-cv"></canvas>
-      <div id="street-caption"></div>
-      <div id="quest-panel"></div>
-      <div class="icon-row">
-        <button class="icon-btn" data-go="scope-learn" title="Flashcards" data-i18n-title="home.flashcards" aria-label="Flashcards"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg></button>
-        <button class="icon-btn" data-go="shop" title="Collection" data-i18n-title="home.collection" aria-label="Collection"><svg class="asset-icon"><use href="assets/ui-icons.svg#collection"></use></svg></button>
-        <button class="icon-btn" data-go="scores" title="Best Sessions" data-i18n-title="home.best" aria-label="Best Sessions"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg></button>
-        <button class="icon-btn" data-go="progress" title="Progress" data-i18n-title="home.progress" aria-label="Progress"><svg class="asset-icon"><use href="assets/ui-icons.svg#progress"></use></svg></button>
-        <button class="icon-btn" data-go="howto" title="How to play" data-i18n-title="home.howto" aria-label="How to play"><svg class="asset-icon"><use href="assets/ui-icons.svg#help"></use></svg></button>
-        <button class="icon-btn" id="home-sound" title="Sound effects" data-i18n-title="home.sound" aria-label="Sound effects"><svg class="asset-icon"><use href="assets/ui-icons.svg#audio"></use></svg></button>
+      <div class="status-right">
+        <span class="status-cap wallet-cap" id="home-wallet"><svg class="asset-icon"><use href="assets/ui-icons.svg#secondary-coin"></use></svg><span>0</span></span>
+        <button class="gear-btn" data-go="more" title="Settings" data-i18n-title="home.settings" aria-label="Settings"><svg class="asset-icon"><use href="assets/ui-icons.svg#settings"></use></svg></button>
       </div>
     </div>
-    <footer>Lucky Cat · HSK 1–6 · built from real exam data</footer>
+
+    <div class="brand-title">
+      <div class="brand-sub">LUCKY CAT<span class="brand-cn">招财猫</span></div>
+      <div class="brand-main">HSK<svg class="asset-icon brand-paw"><use href="assets/ui-icons.svg#paw"></use></svg></div>
+    </div>
+
+    <div class="home-hero">
+      <img class="hero-cat" src="assets/cat-study.png" alt="">
+    </div>
+
+    <div class="streak-card" id="home-streak">
+      <div class="streak-row">
+        <span class="streak-left"><svg class="asset-icon"><use href="assets/ui-icons.svg#streak"></use></svg><span class="streak-title" data-i18n="home.streakTitle">Study Streak</span></span>
+        <span class="streak-days"><span class="streak-count">0</span><span class="streak-check" aria-hidden="true">✓</span></span>
+      </div>
+      <div class="mbar streak-bar"><i style="width:0%"></i></div>
+    </div>
+
+    <div class="home-cta">
+      <button class="start-btn" id="home-start" data-i18n="home.start">START</button>
+      <button class="scope-chip-btn" id="home-scope-chip" data-go="scope"></button>
+    </div>
+    <p class="start-hint" id="home-start-hint" data-i18n="home.startHint" hidden></p>
+
+    <div class="home-secondary-row">
+      <button class="sec-btn" data-go="scope-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg><span data-i18n="home.flashcards">Flashcards</span></span></button>
+      <button class="sec-btn" id="go-smart"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#target"></use></svg><span data-i18n="home.smart">Smart Review</span></span></button>
+      <button class="sec-btn" data-go="shop"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#shop"></use></svg><span data-i18n="home.shop">Shop</span></span></button>
+    </div>
+  </div>
+
+  <!-- STREET -->
+  <div class="screen festive" id="s-street">
+    <h2 data-i18n="street.title">Lucky Cat Street</h2>
+    <canvas id="street-cv"></canvas>
+    <div id="street-caption"></div>
+  </div>
+
+  <!-- QUESTS -->
+  <div class="screen festive" id="s-quests">
+    <h2 data-i18n="quests.title">Daily Quests</h2>
+    <div id="quest-panel"></div>
+  </div>
+
+  <!-- MORE -->
+  <div class="screen festive" id="s-more">
+    <h2 data-i18n="nav.more">More</h2>
+    <div class="menu">
+      <button class="big" data-go="scores"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="home.best">Best Sessions</span></span></button>
+      <button class="big" data-go="howto"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#help"></use></svg><span data-i18n="home.howto">How to play</span></span></button>
+      <button class="big" id="more-sound"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#audio"></use></svg><span data-i18n="home.sound">Sound effects</span></span></button>
+    </div>
+    <div class="sect" data-i18n="common.language">Language</div>
+    <div class="chips" id="ui-lang-chips">
+      <button class="chip" data-uilang="en">English</button>
+      <button class="chip" data-uilang="th">ไทย</button>
+    </div>
   </div>
 
   <!-- SCOPE -->
@@ -388,11 +597,6 @@
       <button class="chip" data-lang="en" data-i18n="scope.english">English</button>
       <button class="chip on" data-lang="both" data-i18n="scope.both">Both</button>
     </div>
-    <div class="sect" data-i18n="common.language">Language</div>
-    <div class="chips" id="ui-lang-chips">
-      <button class="chip" data-uilang="en">English</button>
-      <button class="chip" data-uilang="th">ไทย</button>
-    </div>
     <div class="sect" data-i18n="scope.sessionLen">Session length</div>
     <div class="chips" id="len-chips">
       <button class="chip" data-len="20">20</button>
@@ -423,19 +627,40 @@
     </div>
   </div>
 
-  <!-- BATTLE -->
+  <!-- BATTLE (M4 rebuild — visual PRD §6.2 item 1: minimal HUD + pause overlay) -->
   <div class="screen" id="s-battle">
     <div id="hud">
       <span class="hud-pill" id="hud-lives"></span>
-      <span class="hud-pill"><svg class="asset-icon"><use href="assets/ui-icons.svg#secondary-coin"></use></svg><b id="hud-score">0</b> <span class="combo" id="hud-combo"></span></span>
-      <span class="hud-pill" id="hud-left"></span>
-      <button class="hud-round" id="hud-sfx" title="sound effects" aria-label="sound effects"></button>
-      <button class="hud-round" id="hud-audio" title="word audio on spawn" aria-label="word audio on spawn"></button>
-      <button class="hud-round" id="hud-pinyin" title="show pinyin" aria-label="show pinyin"></button>
-      <button class="hud-round" id="hud-quit" title="quit" aria-label="quit"><svg class="asset-icon"><use href="assets/ui-icons.svg#close"></use></svg></button>
+      <span class="hud-pill hud-round-pill" id="hud-round"></span>
+      <span class="hud-pill"><svg class="asset-icon"><use href="assets/ui-icons.svg#secondary-coin"></use></svg><b id="hud-score">0</b></span>
+      <button class="hud-round" id="hud-pause" title="Pause" aria-label="Pause" data-i18n-title="battle.pause"><svg class="asset-icon"><use href="assets/ui-icons.svg#pause"></use></svg></button>
     </div>
-    <div class="cv-wrap"><canvas id="cv"></canvas></div>
+    <div class="cv-wrap"><canvas id="cv" tabindex="0" role="img" data-i18n-title="battle.canvasLabel"></canvas></div>
+    <!-- combo strip (M6, §6.2 item 5): COMBO N · fire row · xN badge. Hidden
+         (via .hidden) below a 2-combo by updateComboStrip() in main.js. -->
+    <div id="combo-strip" class="hidden">
+      <span class="combo-strip-label">COMBO <b id="combo-count">0</b></span>
+      <span class="combo-strip-fires" id="combo-fires"></span>
+      <span class="combo-strip-badge" id="combo-badge"></span>
+    </div>
     <div id="opts"></div>
+
+    <!-- Pause overlay: hidden by default (no .on class); covers the whole
+         battle screen (#s-battle is position:relative). Toggle rows are
+         rendered by renderPauseToggles() in main.js so icon/label/state stay
+         in sync with the store without duplicating markup per language. -->
+    <div class="pause-overlay" id="pause-overlay">
+      <div class="pause-panel">
+        <h3 class="pause-title" data-i18n="battle.paused">Paused</h3>
+        <button class="pause-resume" id="pause-resume">
+          <span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span data-i18n="battle.resume">Resume</span></span>
+        </button>
+        <div class="pause-toggles" id="pause-toggles"></div>
+        <button class="pause-quit" id="pause-quit">
+          <span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#close"></use></svg><span data-i18n="battle.quit">Quit</span></span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- RESULTS -->
@@ -459,7 +684,7 @@
 
   <!-- SCORES -->
   <div class="screen festive" id="s-scores">
-    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
+    <button class="back" data-go="more" data-i18n="common.backMore">← More</button>
     <h2 data-i18n="scores.title">Best Sessions</h2>
     <div class="scorelist" id="scorelist"></div>
   </div>
@@ -497,7 +722,7 @@
 
   <!-- HOW TO -->
   <div class="screen festive" id="s-howto">
-    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
+    <button class="back" data-go="more" data-i18n="common.backMore">← More</button>
     <h2 data-i18n="howto.title">How to play</h2>
     <p class="howto">
       A lucky cat strolls in from the right carrying a <b>Chinese word</b> (with pinyin) on a flag.<br><br>
@@ -513,6 +738,15 @@
       study, then play.
     </p>
   </div>
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottom-nav">
+    <button class="nav-btn" data-go="home" data-tab="home"><svg class="asset-icon"><use href="assets/ui-icons.svg#home"></use></svg><span data-i18n="nav.home">Home</span></button>
+    <button class="nav-btn" data-go="street" data-tab="street"><svg class="asset-icon"><use href="assets/ui-icons.svg#street"></use></svg><span data-i18n="nav.street">Street</span></button>
+    <button class="nav-btn" data-go="progress" data-tab="progress"><svg class="asset-icon"><use href="assets/ui-icons.svg#progress"></use></svg><span data-i18n="nav.progress">Progress</span></button>
+    <button class="nav-btn" data-go="quests" data-tab="quests"><svg class="asset-icon"><use href="assets/ui-icons.svg#quests"></use></svg><span data-i18n="nav.quests">Quests</span></button>
+    <button class="nav-btn" data-go="more" data-tab="more"><svg class="asset-icon"><use href="assets/ui-icons.svg#more"></use></svg><span data-i18n="nav.more">More</span></button>
+  </nav>
 </div>
 
 <script src="data/words.js"></script>

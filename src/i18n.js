@@ -2,21 +2,34 @@
 // UI localization. Pure: no DOM, no localStorage (caller owns persistence,
 // like shop.js/quests.js). String tables are bundled — file://- and offline-safe.
 // Keys are dotted by screen: home.*, scope.*, learn.*, results.*,
-// quest.*, scores.*, progress.*, shop.*, howto.*, common.*.
+// quest.*, scores.*, progress.*, shop.*, howto.*, common.*,
+// nav.* (bottom-nav tab labels), street.*, quests.* (M2 screen promotions),
+// battle.* (M4 HUD round capsule + pause overlay).
 
 export const STRINGS = {
   en: {
     // home
-    "home.tagline1": "Match each word to its meaning —",
-    "home.tagline": "master real-exam HSK vocabulary.",
-    "home.learn": "Learn",
     "home.smart": "Smart Review",
     "home.flashcards": "Flashcards",
-    "home.collection": "Collection",
+    "home.shop": "Shop",
     "home.best": "Best Sessions",
     "home.progress": "Progress",
     "home.howto": "How to play",
     "home.sound": "Sound effects",
+    "home.settings": "Settings",
+    "home.streakTitle": "Study Streak",
+    "home.streakDays": "{n} days",
+    "home.start": "START",
+    "home.startHint": "Need at least 8 words in scope to start — widen it below.",
+    "home.scopeWords": "{n} words",
+    // bottom nav (M2)
+    "nav.home": "Home",
+    "nav.street": "Street",
+    "nav.progress": "Progress",
+    "nav.quests": "Quests",
+    "nav.more": "More",
+    "street.title": "Lucky Cat Street",
+    "quests.title": "Daily Quests",
     // scope
     "scope.title": "Choose your words",
     "scope.levels": "Levels",
@@ -93,22 +106,46 @@ export const STRINGS = {
     // howto
     "howto.title": "How to play",
     "howto.oneShot": "You get one shot per word.",
+    // battle HUD + pause overlay (M4)
+    "battle.round": "Round {label}",
+    "battle.pause": "Pause",
+    "battle.paused": "Paused",
+    "battle.resume": "Resume",
+    "battle.quit": "Quit",
+    "battle.wordAudio": "Word audio",
+    "battle.pinyin": "Pinyin",
+    "battle.on": "On",
+    "battle.off": "Off",
+    "battle.canvasLabel": "Battle scene. Press Enter or Space to replay the word's audio.",
+    "battle.bossPrompt": "Review Challenge · pick the hanzi for: {meaning}",
     // common
     "common.back": "← Home",
+    "common.backMore": "← More",
     "common.language": "Language",
   },
   th: {
     // home
-    "home.tagline1": "จับคู่คำศัพท์กับความหมาย —",
-    "home.tagline": "เรียนรู้คำศัพท์ HSK จากข้อสอบจริง",
-    "home.learn": "เรียน",
     "home.smart": "ทบทวนอัจฉริยะ",
     "home.flashcards": "บัตรคำ",
-    "home.collection": "คอลเลกชัน",
+    "home.shop": "ร้านค้า",
     "home.best": "สถิติดีที่สุด",
     "home.progress": "ความคืบหน้า",
     "home.howto": "วิธีเล่น",
     "home.sound": "เสียงประกอบ",
+    "home.settings": "ตั้งค่า",
+    "home.streakTitle": "เรียนต่อเนื่อง",
+    "home.streakDays": "{n} วัน",
+    "home.start": "เริ่ม",
+    "home.startHint": "ต้องมีคำอย่างน้อย 8 คำในขอบเขตจึงจะเริ่มได้ — ขยายขอบเขตด้านล่าง",
+    "home.scopeWords": "{n} คำ",
+    // bottom nav (M2)
+    "nav.home": "หน้าหลัก",
+    "nav.street": "ถนน",
+    "nav.progress": "ความคืบหน้า",
+    "nav.quests": "เควสต์",
+    "nav.more": "เพิ่มเติม",
+    "street.title": "ถนนนำโชค",
+    "quests.title": "เควสต์ประจำวัน",
     // scope
     "scope.title": "เลือกคำศัพท์",
     "scope.levels": "ระดับ",
@@ -185,8 +222,21 @@ export const STRINGS = {
     // howto
     "howto.title": "วิธีเล่น",
     "howto.oneShot": "ตอบได้ครั้งเดียวต่อคำ",
+    // battle HUD + pause overlay (M4)
+    "battle.round": "รอบ {label}",
+    "battle.pause": "หยุดชั่วคราว",
+    "battle.paused": "หยุดชั่วคราว",
+    "battle.resume": "เล่นต่อ",
+    "battle.quit": "ออก",
+    "battle.wordAudio": "เสียงคำศัพท์",
+    "battle.pinyin": "พินอิน",
+    "battle.on": "เปิด",
+    "battle.off": "ปิด",
+    "battle.canvasLabel": "ฉากต่อสู้ กด Enter หรือ Space เพื่อฟังเสียงคำศัพท์อีกครั้ง",
+    "battle.bossPrompt": "ด่านทบทวน · เลือกตัวอักษรจีนของคำว่า: {meaning}",
     // common
     "common.back": "← หน้าหลัก",
+    "common.backMore": "← เพิ่มเติม",
     "common.language": "ภาษา",
   },
 };
