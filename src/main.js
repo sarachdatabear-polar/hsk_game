@@ -19,10 +19,11 @@ import { initAudio, speak } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem } from "./shop.js";
 import { streetPieces, streetProgress } from "./street.js";
-import { iconSvg, setIconLabel, setIconOnly, setPill } from "./icons.js";
+import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
 import { navVisibleOn, activeTabFor } from "./nav.js";
+import { roundLabel } from "./hud.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -411,6 +412,8 @@ function startBattle(mode){
   B.spawned = 0; B.resolved = 0; B.correct = 0; B.attempts = 0;
   B.recent = []; B.misses = []; B.missSet = new Set();
   B.nextAt = 0; B.lastT = 0; B.locked = false;
+  B.paused = false; B.pausedAt = 0;
+  $("#pause-overlay").classList.remove("on");
   questToasts = [];
   B.levelUps = [];
   const acc0 = accessoriesFor(levelForXp(xp));
@@ -430,23 +433,10 @@ function startBattle(mode){
   requestAnimationFrame(loop);
 }
 function stopBattle(){ B.on = false; keepAwake(false); if(window.speechSynthesis) speechSynthesis.cancel(); }
-$("#hud-quit").onclick = ()=>{ endBattle(true); };
-$("#hud-sfx").onclick = ()=>{ sfx.enabled = !sfx.enabled; store.set("sfx", sfx.enabled); setIconOnly($("#hud-sfx"), sfx.enabled ? "bell" : "bell-off"); };
-$("#hud-audio").onclick = ()=>{
-  settings.autoSpeak = !settings.autoSpeak;
-  store.set("settings", settings);
-  setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
-};
-/* pinyin toggle: hides the romanization on the battle word plate (quiz mode) so
-   advanced learners test pure character recall. Persisted like autoSpeak. */
-$("#hud-pinyin").onclick = ()=>{
-  settings.showPinyin = !settings.showPinyin;
-  store.set("settings", settings);
-  setIconOnly($("#hud-pinyin"), settings.showPinyin ? "pinyin" : "pinyin-off");
-};
-/* More-screen sound toggle mirrors hud-sfx (dims when muted); both stay in
-   sync via the same nbhsk.sfx store key. The old home-screen sound icon was
-   removed in M3 — #more-sound is now the single toggle outside battle. */
+/* More-screen sound toggle mirrors the old hud-sfx (dims when muted); both stay
+   in sync via the same nbhsk.sfx store key. The old home-screen sound icon was
+   removed in M3 — #more-sound is now the single toggle outside battle. The
+   sfx row inside the pause overlay (below) reuses this same function. */
 function syncSoundToggles(){
   $("#more-sound").classList.toggle("muted", !sfx.enabled);
 }
@@ -459,6 +449,7 @@ function toggleSfx(){
 $("#more-sound").addEventListener("click", toggleSfx);
 syncSoundToggles();
 function updateHud(){
+  if(!B.on) return;   // toggleSfx can fire from the More screen, outside battle
   const lives = $("#hud-lives");
   lives.replaceChildren();
   for(let i=0;i<3;i++){
@@ -468,11 +459,74 @@ function updateHud(){
   }
   $("#hud-score").textContent = B.score;
   $("#hud-combo").textContent = B.combo>=2? "x"+B.combo:"";
-  $("#hud-left").textContent = B.mode==="round"? (B.wordsTotal-B.resolved)+" left":"endless";
-  setIconOnly($("#hud-sfx"), sfx.enabled ? "bell" : "bell-off");
-  setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
-  setIconOnly($("#hud-pinyin"), settings.showPinyin ? "pinyin" : "pinyin-off");
+  $("#hud-round").textContent = t("battle.round", { label: roundLabel(B.mode, B.spawned, B.wordsTotal) });
 }
+/* ============================== pause overlay (M4) ==============================
+   B.paused freezes the rAF loop's motion/spawn/expiry logic (loop() below) and
+   blocks answer() taps, but keeps requestAnimationFrame alive so resuming is a
+   plain unpause rather than a re-bootstrap. Every absolute performance.now()
+   deadline the battle loop reads must be shifted forward by the pause duration
+   on resume, or it "expires" while the player was looking at the overlay:
+   B.nextAt, B.dyingUntil, B.mascotHopUntil, B.feedback.until, B.zombie.wrongUntil. */
+const PAUSE_TOGGLES = [
+  { icon:"bell", iconOff:"bell-off", labelKey:"home.sound", isOn:()=>sfx.enabled, toggle:()=>toggleSfx() },
+  { icon:"sound", iconOff:"muted", labelKey:"battle.wordAudio", isOn:()=>settings.autoSpeak,
+    toggle:()=>{ settings.autoSpeak = !settings.autoSpeak; store.set("settings", settings); } },
+  { icon:"pinyin", iconOff:"pinyin-off", labelKey:"battle.pinyin", isOn:()=>settings.showPinyin,
+    toggle:()=>{ settings.showPinyin = !settings.showPinyin; store.set("settings", settings); } },
+];
+function renderPauseToggles(){
+  const box = $("#pause-toggles");
+  box.innerHTML = "";
+  for(const cfg of PAUSE_TOGGLES){
+    const on = cfg.isOn();
+    const btn = document.createElement("button");
+    btn.className = "pause-toggle"+(on? " on":"");
+    const left = document.createElement("span");
+    left.className = "icon-text";
+    left.appendChild(iconSvg(on? cfg.icon : cfg.iconOff));
+    const label = document.createElement("span");
+    label.textContent = t(cfg.labelKey);
+    left.appendChild(label);
+    const state = document.createElement("span");
+    state.className = "pt-state";
+    state.textContent = on ? t("battle.on") : t("battle.off");
+    btn.appendChild(left);
+    btn.appendChild(state);
+    // state changes (e.g. muting sfx) don't need the deadline shift below —
+    // only the pause/resume clock does — so just re-render in place.
+    btn.onclick = ()=>{ cfg.toggle(); renderPauseToggles(); };
+    box.appendChild(btn);
+  }
+}
+function pauseBattle(){
+  if(!B.on || B.paused) return;
+  B.paused = true;
+  B.pausedAt = performance.now();
+  keepAwake(false);   // nothing moves while paused — let the screen sleep
+  renderPauseToggles();
+  $("#pause-overlay").classList.add("on");
+}
+function resumeBattle(){
+  if(!B.on || !B.paused) return;
+  const shift = performance.now() - B.pausedAt;
+  B.nextAt += shift;
+  if(B.dyingUntil) B.dyingUntil += shift;
+  if(B.mascotHopUntil) B.mascotHopUntil += shift;
+  if(B.feedback) B.feedback.until += shift;
+  if(B.zombie && B.zombie.wrongUntil) B.zombie.wrongUntil += shift;
+  B.paused = false;
+  keepAwake(true);
+  $("#pause-overlay").classList.remove("on");
+}
+// Auto-pause (never auto-resume) when the tab/app is backgrounded, so a word's
+// timer can't silently expire while the player isn't looking.
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden && B.on && !B.paused) pauseBattle();
+});
+$("#hud-pause").onclick = ()=> pauseBattle();
+$("#pause-resume").onclick = ()=> resumeBattle();
+$("#pause-quit").onclick = ()=>{ $("#pause-overlay").classList.remove("on"); endBattle(true); };
 function pushMiss(w){ if(!B.missSet.has(w.h)){ B.missSet.add(w.h); B.misses.push(w); } }
 function spawnZombie(){
   const w = pickWord();
@@ -484,6 +538,7 @@ function spawnZombie(){
   }
   if(settings.autoSpeak) speak(w.h);
   renderOptions(w);
+  updateHud();   // round capsule tracks B.spawned — refresh as each word enters
   // per-word ramp on the unscaled base, then re-derive the screen-scaled
   // speed (a plain B.speed *= 1.03 would be wiped by the next resize)
   B.speedBase *= 1.03;
@@ -531,6 +586,7 @@ function revealCorrect(word){
   });
 }
 function answer(btn, o){
+  if(B.paused) return;   // overlay is up — ignore any tap that leaks through
   const z = B.zombie;
   if(!z || z.state!=="walk" || B.locked) return;
   const boss = z.boss;
@@ -630,6 +686,14 @@ function bite(timedOut){
 }
 function loop(t){
   if(!B.on) return;
+  if(B.paused){
+    // frozen: keep the rAF alive (resume is a plain unpause, no re-bootstrap)
+    // but advance nothing — no motion, no spawns, no expiry, no redraw (the
+    // last frame stays under the overlay). B.lastT tracks t so dt stays sane.
+    B.lastT = t;
+    requestAnimationFrame(loop);
+    return;
+  }
   const dt = Math.min(0.05, (t-(B.lastT||t))/1000); B.lastT = t;
   // next word (or end of round) once the field is clear
   if(!B.zombie && t >= B.nextAt){

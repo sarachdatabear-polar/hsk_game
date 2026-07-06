@@ -1272,9 +1272,6 @@
     wrap.appendChild(text);
     el.appendChild(wrap);
   }
-  function setIconOnly(el, icon) {
-    el.replaceChildren(iconSvg(icon));
-  }
   function setPill(el, icon, text) {
     el.replaceChildren(iconSvg(icon), document.createTextNode(` ${text}`));
   }
@@ -1380,6 +1377,16 @@
       // howto
       "howto.title": "How to play",
       "howto.oneShot": "You get one shot per word.",
+      // battle HUD + pause overlay (M4)
+      "battle.round": "Round {label}",
+      "battle.pause": "Pause",
+      "battle.paused": "Paused",
+      "battle.resume": "Resume",
+      "battle.quit": "Quit",
+      "battle.wordAudio": "Word audio",
+      "battle.pinyin": "Pinyin",
+      "battle.on": "On",
+      "battle.off": "Off",
       // common
       "common.back": "\u2190 Home",
       "common.backMore": "\u2190 More",
@@ -1484,6 +1491,16 @@
       // howto
       "howto.title": "\u0E27\u0E34\u0E18\u0E35\u0E40\u0E25\u0E48\u0E19",
       "howto.oneShot": "\u0E15\u0E2D\u0E1A\u0E44\u0E14\u0E49\u0E04\u0E23\u0E31\u0E49\u0E07\u0E40\u0E14\u0E35\u0E22\u0E27\u0E15\u0E48\u0E2D\u0E04\u0E33",
+      // battle HUD + pause overlay (M4)
+      "battle.round": "\u0E23\u0E2D\u0E1A {label}",
+      "battle.pause": "\u0E2B\u0E22\u0E38\u0E14\u0E0A\u0E31\u0E48\u0E27\u0E04\u0E23\u0E32\u0E27",
+      "battle.paused": "\u0E2B\u0E22\u0E38\u0E14\u0E0A\u0E31\u0E48\u0E27\u0E04\u0E23\u0E32\u0E27",
+      "battle.resume": "\u0E40\u0E25\u0E48\u0E19\u0E15\u0E48\u0E2D",
+      "battle.quit": "\u0E2D\u0E2D\u0E01",
+      "battle.wordAudio": "\u0E40\u0E2A\u0E35\u0E22\u0E07\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C",
+      "battle.pinyin": "\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19",
+      "battle.on": "\u0E40\u0E1B\u0E34\u0E14",
+      "battle.off": "\u0E1B\u0E34\u0E14",
       // common
       "common.back": "\u2190 \u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
       "common.backMore": "\u2190 \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
@@ -1527,6 +1544,15 @@
     if (MORE_SUBSCREENS.includes(screen)) return "more";
     if (screen === "shop") return "home";
     return null;
+  }
+
+  // src/hud.js
+  function roundLabel(mode, spawned, total) {
+    if (mode === "endless") {
+      return `${Math.max(0, spawned)} \xB7 \u221E`;
+    }
+    const current2 = Math.min(Math.max(1, spawned), total);
+    return `${current2}/${total}`;
   }
 
   // src/main.js
@@ -1989,6 +2015,9 @@
     B.nextAt = 0;
     B.lastT = 0;
     B.locked = false;
+    B.paused = false;
+    B.pausedAt = 0;
+    $("#pause-overlay").classList.remove("on");
     questToasts = [];
     B.levelUps = [];
     const acc0 = accessoriesFor(levelForXp(xp));
@@ -2008,24 +2037,6 @@
     keepAwake(false);
     if (window.speechSynthesis) speechSynthesis.cancel();
   }
-  $("#hud-quit").onclick = () => {
-    endBattle(true);
-  };
-  $("#hud-sfx").onclick = () => {
-    sfx.enabled = !sfx.enabled;
-    store.set("sfx", sfx.enabled);
-    setIconOnly($("#hud-sfx"), sfx.enabled ? "bell" : "bell-off");
-  };
-  $("#hud-audio").onclick = () => {
-    settings.autoSpeak = !settings.autoSpeak;
-    store.set("settings", settings);
-    setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
-  };
-  $("#hud-pinyin").onclick = () => {
-    settings.showPinyin = !settings.showPinyin;
-    store.set("settings", settings);
-    setIconOnly($("#hud-pinyin"), settings.showPinyin ? "pinyin" : "pinyin-off");
-  };
   function syncSoundToggles() {
     $("#more-sound").classList.toggle("muted", !sfx.enabled);
   }
@@ -2038,6 +2049,7 @@
   $("#more-sound").addEventListener("click", toggleSfx);
   syncSoundToggles();
   function updateHud() {
+    if (!B.on) return;
     const lives = $("#hud-lives");
     lives.replaceChildren();
     for (let i = 0; i < 3; i++) {
@@ -2047,11 +2059,85 @@
     }
     $("#hud-score").textContent = B.score;
     $("#hud-combo").textContent = B.combo >= 2 ? "x" + B.combo : "";
-    $("#hud-left").textContent = B.mode === "round" ? B.wordsTotal - B.resolved + " left" : "endless";
-    setIconOnly($("#hud-sfx"), sfx.enabled ? "bell" : "bell-off");
-    setIconOnly($("#hud-audio"), settings.autoSpeak ? "sound" : "muted");
-    setIconOnly($("#hud-pinyin"), settings.showPinyin ? "pinyin" : "pinyin-off");
+    $("#hud-round").textContent = t("battle.round", { label: roundLabel(B.mode, B.spawned, B.wordsTotal) });
   }
+  var PAUSE_TOGGLES = [
+    { icon: "bell", iconOff: "bell-off", labelKey: "home.sound", isOn: () => sfx.enabled, toggle: () => toggleSfx() },
+    {
+      icon: "sound",
+      iconOff: "muted",
+      labelKey: "battle.wordAudio",
+      isOn: () => settings.autoSpeak,
+      toggle: () => {
+        settings.autoSpeak = !settings.autoSpeak;
+        store.set("settings", settings);
+      }
+    },
+    {
+      icon: "pinyin",
+      iconOff: "pinyin-off",
+      labelKey: "battle.pinyin",
+      isOn: () => settings.showPinyin,
+      toggle: () => {
+        settings.showPinyin = !settings.showPinyin;
+        store.set("settings", settings);
+      }
+    }
+  ];
+  function renderPauseToggles() {
+    const box = $("#pause-toggles");
+    box.innerHTML = "";
+    for (const cfg of PAUSE_TOGGLES) {
+      const on = cfg.isOn();
+      const btn = document.createElement("button");
+      btn.className = "pause-toggle" + (on ? " on" : "");
+      const left = document.createElement("span");
+      left.className = "icon-text";
+      left.appendChild(iconSvg(on ? cfg.icon : cfg.iconOff));
+      const label = document.createElement("span");
+      label.textContent = t(cfg.labelKey);
+      left.appendChild(label);
+      const state = document.createElement("span");
+      state.className = "pt-state";
+      state.textContent = on ? t("battle.on") : t("battle.off");
+      btn.appendChild(left);
+      btn.appendChild(state);
+      btn.onclick = () => {
+        cfg.toggle();
+        renderPauseToggles();
+      };
+      box.appendChild(btn);
+    }
+  }
+  function pauseBattle() {
+    if (!B.on || B.paused) return;
+    B.paused = true;
+    B.pausedAt = performance.now();
+    keepAwake(false);
+    renderPauseToggles();
+    $("#pause-overlay").classList.add("on");
+  }
+  function resumeBattle() {
+    if (!B.on || !B.paused) return;
+    const shift = performance.now() - B.pausedAt;
+    B.nextAt += shift;
+    if (B.dyingUntil) B.dyingUntil += shift;
+    if (B.mascotHopUntil) B.mascotHopUntil += shift;
+    if (B.feedback) B.feedback.until += shift;
+    if (B.zombie && B.zombie.wrongUntil) B.zombie.wrongUntil += shift;
+    B.paused = false;
+    keepAwake(true);
+    $("#pause-overlay").classList.remove("on");
+  }
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && B.on && !B.paused) pauseBattle();
+  });
+  $("#hud-pause").onclick = () => pauseBattle();
+  $("#pause-resume").onclick = () => resumeBattle();
+  $("#pause-quit").onclick = () => {
+    $("#pause-overlay").classList.remove("on");
+    endBattle(true);
+  };
   function pushMiss(w) {
     if (!B.missSet.has(w.h)) {
       B.missSet.add(w.h);
@@ -2070,6 +2156,7 @@
     }
     if (settings.autoSpeak) speak(w.h);
     renderOptions(w);
+    updateHud();
     B.speedBase *= 1.03;
     B.speed = B.speedBase * (B.w / 380);
   }
@@ -2113,6 +2200,7 @@
     });
   }
   function answer(btn, o) {
+    if (B.paused) return;
     const z = B.zombie;
     if (!z || z.state !== "walk" || B.locked) return;
     const boss = z.boss;
@@ -2215,6 +2303,11 @@
   }
   function loop(t2) {
     if (!B.on) return;
+    if (B.paused) {
+      B.lastT = t2;
+      requestAnimationFrame(loop);
+      return;
+    }
     const dt = Math.min(0.05, (t2 - (B.lastT || t2)) / 1e3);
     B.lastT = t2;
     if (!B.zombie && t2 >= B.nextAt) {

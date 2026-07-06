@@ -3,7 +3,8 @@
 // like shop.js/quests.js). String tables are bundled — file://- and offline-safe.
 // Keys are dotted by screen: home.*, scope.*, learn.*, results.*,
 // quest.*, scores.*, progress.*, shop.*, howto.*, common.*,
-// nav.* (bottom-nav tab labels), street.*, quests.* (M2 screen promotions).
+// nav.* (bottom-nav tab labels), street.*, quests.* (M2 screen promotions),
+// battle.* (M4 HUD round capsule + pause overlay).
 
 export const STRINGS = {
   en: {
@@ -105,6 +106,16 @@ export const STRINGS = {
     // howto
     "howto.title": "How to play",
     "howto.oneShot": "You get one shot per word.",
+    // battle HUD + pause overlay (M4)
+    "battle.round": "Round {label}",
+    "battle.pause": "Pause",
+    "battle.paused": "Paused",
+    "battle.resume": "Resume",
+    "battle.quit": "Quit",
+    "battle.wordAudio": "Word audio",
+    "battle.pinyin": "Pinyin",
+    "battle.on": "On",
+    "battle.off": "Off",
     // common
     "common.back": "← Home",
     "common.backMore": "← More",
@@ -209,6 +220,16 @@ export const STRINGS = {
     // howto
     "howto.title": "วิธีเล่น",
     "howto.oneShot": "ตอบได้ครั้งเดียวต่อคำ",
+    // battle HUD + pause overlay (M4)
+    "battle.round": "รอบ {label}",
+    "battle.pause": "หยุดชั่วคราว",
+    "battle.paused": "หยุดชั่วคราว",
+    "battle.resume": "เล่นต่อ",
+    "battle.quit": "ออก",
+    "battle.wordAudio": "เสียงคำศัพท์",
+    "battle.pinyin": "พินอิน",
+    "battle.on": "เปิด",
+    "battle.off": "ปิด",
     // common
     "common.back": "← หน้าหลัก",
     "common.backMore": "← เพิ่มเติม",
