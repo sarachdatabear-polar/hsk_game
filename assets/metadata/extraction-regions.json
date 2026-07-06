@@ -1,0 +1,362 @@
+{
+  "cat-walk-01": {
+    "x": 21,
+    "y": 1462,
+    "width": 58,
+    "height": 70
+  },
+  "cat-walk-02": {
+    "x": 89,
+    "y": 1461,
+    "width": 56,
+    "height": 70
+  },
+  "cat-walk-03": {
+    "x": 151,
+    "y": 1462,
+    "width": 56,
+    "height": 69
+  },
+  "cat-walk-04": {
+    "x": 208,
+    "y": 1462,
+    "width": 55,
+    "height": 69
+  },
+  "cat-walk-05": {
+    "x": 263,
+    "y": 1462,
+    "width": 54,
+    "height": 69
+  },
+  "cat-happy-01": {
+    "x": 340,
+    "y": 1463,
+    "width": 53,
+    "height": 69
+  },
+  "cat-happy-02": {
+    "x": 396,
+    "y": 1462,
+    "width": 47,
+    "height": 70
+  },
+  "cat-happy-03": {
+    "x": 444,
+    "y": 1462,
+    "width": 45,
+    "height": 70
+  },
+  "cat-happy-04": {
+    "x": 492,
+    "y": 1463,
+    "width": 44,
+    "height": 69
+  },
+  "maneki": {
+    "x": 579,
+    "y": 1460,
+    "width": 83,
+    "height": 69
+  },
+  "cat-portrait": {
+    "x": 710,
+    "y": 1461,
+    "width": 114,
+    "height": 68
+  },
+  "bg-home": {
+    "x": 14,
+    "y": 1560,
+    "width": 181,
+    "height": 54
+  },
+  "bg-battle": {
+    "x": 267,
+    "y": 795,
+    "width": 294,
+    "height": 174
+  },
+  "bg-market": {
+    "x": 431,
+    "y": 1560,
+    "width": 229,
+    "height": 54
+  },
+  "bg-night-market-small": {
+    "x": 238,
+    "y": 1053,
+    "width": 51,
+    "height": 114
+  },
+  "bg-bamboo-small": {
+    "x": 292,
+    "y": 1053,
+    "width": 53,
+    "height": 114
+  },
+  "bg-temple-small": {
+    "x": 349,
+    "y": 1053,
+    "width": 51,
+    "height": 114
+  },
+  "ui-panel": {
+    "x": 696,
+    "y": 1560,
+    "width": 122,
+    "height": 56
+  },
+  "ui-word-plaque": {
+    "x": 687,
+    "y": 829,
+    "width": 153,
+    "height": 93
+  },
+  "ui-button-primary": {
+    "x": 157,
+    "y": 1655,
+    "width": 108,
+    "height": 52
+  },
+  "ui-button-secondary": {
+    "x": 665,
+    "y": 784,
+    "width": 88,
+    "height": 35
+  },
+  "ui-button-disabled": {
+    "x": 762,
+    "y": 784,
+    "width": 82,
+    "height": 35
+  },
+  "ui-tag-hsk2": {
+    "x": 573,
+    "y": 935,
+    "width": 60,
+    "height": 31
+  },
+  "ui-badge-paw": {
+    "x": 652,
+    "y": 933,
+    "width": 32,
+    "height": 34
+  },
+  "ui-progress-bar": {
+    "x": 702,
+    "y": 943,
+    "width": 139,
+    "height": 24
+  },
+  "fx-correct": {
+    "x": 306,
+    "y": 1649,
+    "width": 62,
+    "height": 64
+  },
+  "fx-wrong": {
+    "x": 417,
+    "y": 1649,
+    "width": 62,
+    "height": 64
+  },
+  "fx-critical": {
+    "x": 512,
+    "y": 1648,
+    "width": 88,
+    "height": 72
+  },
+  "fx-orb-green": {
+    "x": 413,
+    "y": 1059,
+    "width": 38,
+    "height": 38
+  },
+  "fx-orb-red": {
+    "x": 453,
+    "y": 1059,
+    "width": 38,
+    "height": 38
+  },
+  "fx-orb-blue": {
+    "x": 413,
+    "y": 1109,
+    "width": 38,
+    "height": 38
+  },
+  "fx-orb-gold": {
+    "x": 453,
+    "y": 1109,
+    "width": 38,
+    "height": 38
+  },
+  "cat-skin-midnight": {
+    "x": 15,
+    "y": 1051,
+    "width": 51,
+    "height": 64
+  },
+  "cat-skin-sakura": {
+    "x": 71,
+    "y": 1051,
+    "width": 51,
+    "height": 64
+  },
+  "cat-skin-jade": {
+    "x": 15,
+    "y": 1114,
+    "width": 51,
+    "height": 64
+  },
+  "cat-skin-gold": {
+    "x": 71,
+    "y": 1114,
+    "width": 51,
+    "height": 64
+  },
+  "boss-cat": {
+    "x": 134,
+    "y": 1042,
+    "width": 96,
+    "height": 127
+  },
+  "prop-torii-lanterns": {
+    "x": 504,
+    "y": 1053,
+    "width": 78,
+    "height": 62
+  },
+  "prop-tree": {
+    "x": 584,
+    "y": 1039,
+    "width": 50,
+    "height": 71
+  },
+  "prop-bench": {
+    "x": 502,
+    "y": 1121,
+    "width": 76,
+    "height": 38
+  },
+  "prop-planter": {
+    "x": 573,
+    "y": 1110,
+    "width": 54,
+    "height": 61
+  },
+  "prop-fountain": {
+    "x": 612,
+    "y": 1110,
+    "width": 60,
+    "height": 68
+  },
+  "shop-scroll": {
+    "x": 642,
+    "y": 1059,
+    "width": 48,
+    "height": 47
+  },
+  "shop-chest": {
+    "x": 690,
+    "y": 1058,
+    "width": 43,
+    "height": 43
+  },
+  "shop-card-market": {
+    "x": 644,
+    "y": 1108,
+    "width": 42,
+    "height": 45
+  },
+  "shop-card-temple": {
+    "x": 691,
+    "y": 1108,
+    "width": 45,
+    "height": 58
+  },
+  "icon-heart": {
+    "x": 623,
+    "y": 1653,
+    "width": 27,
+    "height": 25
+  },
+  "icon-coin": {
+    "x": 657,
+    "y": 1653,
+    "width": 24,
+    "height": 25
+  },
+  "icon-volume": {
+    "x": 689,
+    "y": 1653,
+    "width": 24,
+    "height": 24
+  },
+  "icon-pause": {
+    "x": 727,
+    "y": 1653,
+    "width": 19,
+    "height": 24
+  },
+  "icon-play": {
+    "x": 759,
+    "y": 1654,
+    "width": 19,
+    "height": 23
+  },
+  "icon-gamepad": {
+    "x": 789,
+    "y": 1653,
+    "width": 24,
+    "height": 25
+  },
+  "icon-upload": {
+    "x": 822,
+    "y": 1652,
+    "width": 18,
+    "height": 26
+  },
+  "icon-back": {
+    "x": 625,
+    "y": 1689,
+    "width": 23,
+    "height": 23
+  },
+  "icon-card": {
+    "x": 658,
+    "y": 1688,
+    "width": 22,
+    "height": 25
+  },
+  "icon-home": {
+    "x": 690,
+    "y": 1690,
+    "width": 22,
+    "height": 21
+  },
+  "icon-book": {
+    "x": 725,
+    "y": 1691,
+    "width": 21,
+    "height": 20
+  },
+  "icon-players": {
+    "x": 758,
+    "y": 1690,
+    "width": 22,
+    "height": 22
+  },
+  "icon-settings": {
+    "x": 790,
+    "y": 1690,
+    "width": 22,
+    "height": 23
+  },
+  "icon-download": {
+    "x": 822,
+    "y": 1690,
+    "width": 20,
+    "height": 23
+  }
+}

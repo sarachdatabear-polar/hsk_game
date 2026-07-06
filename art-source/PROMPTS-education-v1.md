@@ -19,11 +19,17 @@ into `art-source/education-v1/` → only then promote to `assets/`.**
 
 ## Shared style block (prepend to every prompt)
 
-> Soft storybook children's-education illustration, clean cel shading, medium-weight warm
-> brown (#7A5A44) outlines, rounded friendly shapes, low visual noise. Palette: warm paper
-> #FFF8E8, coral red #E65A4F, soft jade #4FAE8A, sky blue #6EB6E8, sun yellow #F5C85B,
-> ink navy #243447, leaf green #78B86B. Gold only as a tiny accent. Soft upper-left
-> daylight.
+> **Warmth Pass v2** (see `ART-DIRECTION-warmth-pass-v2.md`) — cozy painterly storybook,
+> education-first. Guardrails unchanged: no gold-coin/gambling (Shared negative block).
+
+> Cozy painterly storybook children's-education illustration: soft cel shading with gentle
+> brushy texture and subtle gradient depth, medium-weight warm-brown (#7A5A44) outlines,
+> rounded friendly shapes, low visual noise. Warm golden-hour study-room light — soft
+> upper-left key, gentle warm rim light, cozy amber ambient glow, faint dust motes/bokeh.
+> Palette (warm, slightly richer saturation): warm paper #FFF8E8, coral red #E65A4F, soft
+> jade #4FAE8A, sky blue #6EB6E8, sun yellow #F5C85B, ink navy #243447, leaf green #78B86B,
+> warm-brown outlines #7A5A44; amber/lantern glow as ambient warmth only; gold strictly a
+> tiny accent. Charming, huggable lucky-cat character appeal; inviting, lived-in feel.
 
 ## Shared negative block
 

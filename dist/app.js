@@ -266,7 +266,7 @@
       const p = (PACKS[sfx.pack] || PACKS.default).combo;
       const base2 = 700 + Math.min(n, 8) * 60 + p.boff;
       const freqs = [base2, base2 * p.mult];
-      p.tones.forEach((t, i) => tone(freqs[i], t.d, t.w, t.v, t.at || 0));
+      p.tones.forEach((t2, i) => tone(freqs[i], t2.d, t2.w, t2.v, t2.at || 0));
     }
   };
 
@@ -288,6 +288,7 @@
     "maneki",
     "coin",
     "bg-home",
+    "bg-quest",
     "bg-battle",
     "bg-market",
     "bg-temple",
@@ -623,26 +624,26 @@
     status_values: ["planned", "concept", "review", "approved", "integrated", "rejected"],
     types: ["sprite-sheet", "character", "background", "ui-surface", "icon-sprite", "effect"],
     assets: [
-      { id: "cat-walk", file: "cat-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat" },
-      { id: "cat-happy", file: "cat-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat" },
-      { id: "cat-study", file: "cat-study.png", type: "character", status: "planned", priority: "P0", w: 512, h: 512, anchor: "center", fallback: "canvas:drawCat" },
-      { id: "cat-guide", file: "cat-guide.png", type: "character", status: "planned", priority: "P1", w: 512, h: 512, anchor: "center", fallback: "canvas:drawCat" },
-      { id: "cat-celebrate", file: "cat-celebrate.png", type: "character", status: "planned", priority: "P1", w: 512, h: 512, anchor: "center", fallback: "canvas:drawCat" },
-      { id: "cat-thinking", file: "cat-thinking.png", type: "character", status: "planned", priority: "P1", w: 512, h: 512, anchor: "center", fallback: "canvas:drawCat" },
-      { id: "cat-portrait", file: "cat-portrait.png", type: "character", status: "planned", priority: "P0", w: 512, h: 512, anchor: "center", fallback: "canvas:drawCat" },
-      { id: "maneki", file: "maneki.png", type: "character", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:maneki-vector" },
-      { id: "bg-home", file: "bg-home.png", type: "background", status: "planned", priority: "P0", w: 1080, h: 1920, fallback: "css:#s-home" },
-      { id: "bg-quest", file: "bg-quest.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "css:#s-battle" },
-      { id: "bg-flashcards", file: "bg-flashcards.png", type: "background", status: "planned", priority: "P0", w: 1080, h: 1920, fallback: "css:#s-learn" },
-      { id: "bg-results", file: "bg-results.png", type: "background", status: "planned", priority: "P1", w: 1080, h: 1920, fallback: "css:.screen.festive" },
-      { id: "bg-progress", file: "bg-progress.png", type: "background", status: "planned", priority: "P1", w: 1080, h: 1920, fallback: "css:#s-progress" },
-      { id: "bg-collection", file: "bg-collection.png", type: "background", status: "planned", priority: "P2", w: 1080, h: 1920, fallback: "css:#s-shop" },
+      { id: "cat-walk", file: "cat-walk.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat" },
+      { id: "cat-happy", file: "cat-happy.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat" },
+      { id: "cat-study", file: "cat-study.png", type: "character", status: "integrated", priority: "P0", w: 512, h: 512, anchor: "center", fallback: "canvas:drawCat" },
+      { id: "cat-guide", file: "cat-guide.png", type: "character", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "center", fallback: "canvas:drawCat" },
+      { id: "cat-celebrate", file: "cat-celebrate.png", type: "character", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "center", fallback: "canvas:drawCat" },
+      { id: "cat-thinking", file: "cat-thinking.png", type: "character", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "center", fallback: "canvas:drawCat" },
+      { id: "cat-portrait", file: "cat-portrait.png", type: "character", status: "integrated", priority: "P0", w: 512, h: 512, anchor: "center", fallback: "canvas:drawCat" },
+      { id: "maneki", file: "maneki.png", type: "character", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:maneki-vector" },
+      { id: "bg-home", file: "bg-home.png", type: "background", status: "integrated", priority: "P0", w: 1080, h: 1920, fallback: "css:#s-home" },
+      { id: "bg-quest", file: "bg-quest.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "css:#s-battle" },
+      { id: "bg-flashcards", file: "bg-flashcards.png", type: "background", status: "integrated", priority: "P0", w: 1080, h: 1920, fallback: "css:#s-learn" },
+      { id: "bg-results", file: "bg-results.png", type: "background", status: "integrated", priority: "P1", w: 1080, h: 1920, fallback: "css:.screen.festive" },
+      { id: "bg-progress", file: "bg-progress.png", type: "background", status: "integrated", priority: "P1", w: 1080, h: 1920, fallback: "css:#s-progress" },
+      { id: "bg-collection", file: "bg-collection.png", type: "background", status: "integrated", priority: "P2", w: 1080, h: 1920, fallback: "css:#s-shop" },
       { id: "ui-card-paper", file: "ui-card-paper.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 360, h: 240, slice: [36, 36, 36, 36], scale: 2, fallback: "css:.card,.word-card,.flash-card" },
-      { id: "ui-card-soft", file: "ui-card-soft.png", type: "ui-surface", status: "planned", priority: "P0", w: null, h: null, slice: null, fallback: "css:.readout" },
+      { id: "ui-card-soft", file: "ui-card-soft.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 360, h: 220, slice: [32, 32, 32, 32], scale: 2, fallback: "css:.readout" },
       { id: "ui-button-primary", file: "ui-button-primary.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 300, h: 88, slice: [26, 26, 34, 26], scale: 2, fallback: "css:.big.primary" },
       { id: "ui-button-secondary", file: "ui-button-secondary.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 300, h: 88, slice: [26, 26, 34, 26], scale: 2, fallback: "css:.big" },
       { id: "ui-button-neutral", file: "ui-button-neutral.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 300, h: 88, slice: [26, 26, 34, 26], scale: 2, fallback: "css:#opts button" },
-      { id: "ui-tab", file: "ui-tab.png", type: "ui-surface", status: "planned", priority: "P1", w: null, h: null, slice: null, fallback: "css:.chip" },
+      { id: "ui-tab", file: "ui-tab.svg", type: "ui-surface", status: "integrated", priority: "P1", w: 180, h: 72, slice: [22, 24, 20, 24], scale: 2, fallback: "css:.chip" },
       { id: "ui-tag", file: "ui-tag.svg", type: "ui-surface", status: "approved", priority: "P1", w: 140, h: 56, slice: null, fallback: "css:.chip.active" },
       { id: "ui-badge-mastery", file: "ui-badge-mastery.svg", type: "ui-surface", status: "approved", priority: "P1", w: 120, h: 120, slice: null, fallback: "css:.hud-round" },
       { id: "ui-progress-track", file: "ui-progress-track.svg", type: "ui-surface", status: "approved", priority: "P0", w: 320, h: 48, slice: null, fallback: "css:.mbar" },
@@ -1205,6 +1206,210 @@
     el.replaceChildren(iconSvg(icon), document.createTextNode(` ${text}`));
   }
 
+  // src/i18n.js
+  var STRINGS = {
+    en: {
+      // home
+      "home.tagline1": "Match each word to its meaning \u2014",
+      "home.tagline": "master real-exam HSK vocabulary.",
+      "home.learn": "Learn",
+      "home.smart": "Smart Review",
+      "home.flashcards": "Flashcards",
+      "home.collection": "Collection",
+      "home.best": "Best Sessions",
+      "home.progress": "Progress",
+      "home.howto": "How to play",
+      "home.sound": "Sound effects",
+      // scope
+      "scope.title": "Choose your words",
+      "scope.levels": "Levels",
+      "scope.filters": "Filters",
+      "scope.highYield": "High-yield only",
+      "scope.newOnly": "New words only",
+      "scope.topN": "Top-N by frequency",
+      "scope.all": "All",
+      "scope.meaningLang": "Meaning language",
+      "scope.english": "English",
+      "scope.both": "Both",
+      "scope.sessionLen": "Session length",
+      "scope.custom": "Custom",
+      "scope.customPh": "5\u2013500",
+      "scope.endless": "Endless",
+      "scope.cards": "Cards",
+      "scope.wordQuest": "Word Quest \xB7 {n}",
+      "scope.smartReview": "Smart Review",
+      "scope.smartReviewProgress": "Smart Review \xB7 {have}/8",
+      "scope.smartReviewReady": "Smart Review \xB7 {n}",
+      "scope.readout": "Pool: <b>{count}</b> words \xB7 ~<b>{pct}%</b> of exam text",
+      "scope.readoutNoThai": "* {n} long-tail words have no Thai yet \u2014 English shown instead.",
+      // learn / flashcards
+      "learn.exit": "Exit",
+      "learn.stillLearning": "Still learning",
+      "learn.knowIt": "Know it",
+      "learn.count": "{done} done \xB7 {left} left",
+      // results
+      "results.roundOver": "Round over",
+      "results.missed": "Words you missed",
+      "results.reviewWords": "Review Words",
+      "results.practiceMissed": "Practice Missed Words",
+      "results.playAgain": "Play again",
+      "results.home": "Home",
+      "results.banked": "+{score} coins banked \xB7 total {total}",
+      "results.perfect": "Perfect round! +{bonus} coin bonus",
+      "results.levelUp": "Level up! Lv {lv}",
+      "results.levelUpUnlocked": "Level up! Lv {lv} \u2014 unlocked: {items}",
+      "results.sub": "{acc}% accuracy \xB7 {words} words \xB7 {key}",
+      "results.bestTag": "Best session!",
+      "results.bestPrev": "best {prev}",
+      "results.questComplete": "Quest complete: {desc} +{reward} coins",
+      // quests (keyed by quest id from quests.js QUEST_POOL)
+      "quest.status.done": "Done",
+      "quest.status.open": "Open",
+      "quest.reward": "+{reward} coins",
+      "quest.correct30": "Answer 30 words correctly",
+      "quest.combo5": "Reach a \xD75 learning streak",
+      "quest.boss1": "Complete a Review Challenge",
+      "quest.perfect1": "Finish a round with no misses",
+      "quest.review1": "Play a Smart Review round",
+      "quest.learn20": "Mark 20 flashcards as known",
+      // scores / progress
+      "scores.title": "Best Sessions",
+      "scores.empty": "No sessions yet \u2014 complete a Word Quest.",
+      "progress.title": "Progress",
+      "progress.needsWork": "Needs work",
+      "progress.reviewThese": "Review these",
+      "progress.practiceThese": "Practice These",
+      "progress.nothing": "Nothing needs work \u2014 go play!",
+      // shop / collection
+      "shop.title": "Collection",
+      "shop.skins": "Cat skins",
+      "shop.backdrops": "Quest backdrops",
+      "shop.effects": "Effects",
+      "shop.sounds": "Sounds",
+      "shop.street": "Street decorations",
+      "shop.wallet": "Wallet: <b>{coins}</b> coins",
+      "shop.buy": "Buy",
+      "shop.equip": "Equip",
+      "shop.equipped": "Equipped",
+      "shop.onStreet": "On street",
+      "shop.coins": "{coins} coins",
+      // howto
+      "howto.title": "How to play",
+      "howto.oneShot": "You get one shot per word.",
+      // common
+      "common.back": "\u2190 Home",
+      "common.language": "Language"
+    },
+    th: {
+      // home
+      "home.tagline1": "\u0E08\u0E31\u0E1A\u0E04\u0E39\u0E48\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E01\u0E31\u0E1A\u0E04\u0E27\u0E32\u0E21\u0E2B\u0E21\u0E32\u0E22 \u2014",
+      "home.tagline": "\u0E40\u0E23\u0E35\u0E22\u0E19\u0E23\u0E39\u0E49\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C HSK \u0E08\u0E32\u0E01\u0E02\u0E49\u0E2D\u0E2A\u0E2D\u0E1A\u0E08\u0E23\u0E34\u0E07",
+      "home.learn": "\u0E40\u0E23\u0E35\u0E22\u0E19",
+      "home.smart": "\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E2D\u0E31\u0E08\u0E09\u0E23\u0E34\u0E22\u0E30",
+      "home.flashcards": "\u0E1A\u0E31\u0E15\u0E23\u0E04\u0E33",
+      "home.collection": "\u0E04\u0E2D\u0E25\u0E40\u0E25\u0E01\u0E0A\u0E31\u0E19",
+      "home.best": "\u0E2A\u0E16\u0E34\u0E15\u0E34\u0E14\u0E35\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14",
+      "home.progress": "\u0E04\u0E27\u0E32\u0E21\u0E04\u0E37\u0E1A\u0E2B\u0E19\u0E49\u0E32",
+      "home.howto": "\u0E27\u0E34\u0E18\u0E35\u0E40\u0E25\u0E48\u0E19",
+      "home.sound": "\u0E40\u0E2A\u0E35\u0E22\u0E07\u0E1B\u0E23\u0E30\u0E01\u0E2D\u0E1A",
+      // scope
+      "scope.title": "\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C",
+      "scope.levels": "\u0E23\u0E30\u0E14\u0E31\u0E1A",
+      "scope.filters": "\u0E15\u0E31\u0E27\u0E01\u0E23\u0E2D\u0E07",
+      "scope.highYield": "\u0E40\u0E09\u0E1E\u0E32\u0E30\u0E04\u0E33\u0E2D\u0E2D\u0E01\u0E1A\u0E48\u0E2D\u0E22",
+      "scope.newOnly": "\u0E40\u0E09\u0E1E\u0E32\u0E30\u0E04\u0E33\u0E43\u0E2B\u0E21\u0E48",
+      "scope.topN": "\u0E08\u0E31\u0E14\u0E2D\u0E31\u0E19\u0E14\u0E31\u0E1A\u0E15\u0E32\u0E21\u0E04\u0E27\u0E32\u0E21\u0E16\u0E35\u0E48",
+      "scope.all": "\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14",
+      "scope.meaningLang": "\u0E20\u0E32\u0E29\u0E32\u0E02\u0E2D\u0E07\u0E04\u0E27\u0E32\u0E21\u0E2B\u0E21\u0E32\u0E22",
+      "scope.english": "\u0E2D\u0E31\u0E07\u0E01\u0E24\u0E29",
+      "scope.both": "\u0E17\u0E31\u0E49\u0E07\u0E2A\u0E2D\u0E07",
+      "scope.sessionLen": "\u0E08\u0E33\u0E19\u0E27\u0E19\u0E04\u0E33\u0E15\u0E48\u0E2D\u0E23\u0E2D\u0E1A",
+      "scope.custom": "\u0E01\u0E33\u0E2B\u0E19\u0E14\u0E40\u0E2D\u0E07",
+      "scope.customPh": "5\u2013500",
+      "scope.endless": "\u0E44\u0E21\u0E48\u0E08\u0E33\u0E01\u0E31\u0E14",
+      "scope.cards": "\u0E1A\u0E31\u0E15\u0E23\u0E04\u0E33",
+      "scope.wordQuest": "\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C \xB7 {n}",
+      "scope.smartReview": "\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E2D\u0E31\u0E08\u0E09\u0E23\u0E34\u0E22\u0E30",
+      "scope.smartReviewProgress": "\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E2D\u0E31\u0E08\u0E09\u0E23\u0E34\u0E22\u0E30 \xB7 {have}/8",
+      "scope.smartReviewReady": "\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E2D\u0E31\u0E08\u0E09\u0E23\u0E34\u0E22\u0E30 \xB7 {n}",
+      "scope.readout": "\u0E04\u0E25\u0E31\u0E07\u0E04\u0E33: <b>{count}</b> \u0E04\u0E33 \xB7 ~<b>{pct}%</b> \u0E02\u0E2D\u0E07\u0E02\u0E49\u0E2D\u0E2A\u0E2D\u0E1A",
+      "scope.readoutNoThai": "* \u0E21\u0E35 {n} \u0E04\u0E33\u0E17\u0E35\u0E48\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E20\u0E32\u0E29\u0E32\u0E44\u0E17\u0E22 \u2014 \u0E41\u0E2A\u0E14\u0E07\u0E20\u0E32\u0E29\u0E32\u0E2D\u0E31\u0E07\u0E01\u0E24\u0E29\u0E41\u0E17\u0E19",
+      // learn / flashcards
+      "learn.exit": "\u0E2D\u0E2D\u0E01",
+      "learn.stillLearning": "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E41\u0E21\u0E48\u0E19",
+      "learn.knowIt": "\u0E23\u0E39\u0E49\u0E41\u0E25\u0E49\u0E27",
+      "learn.count": "\u0E17\u0E33\u0E41\u0E25\u0E49\u0E27 {done} \xB7 \u0E40\u0E2B\u0E25\u0E37\u0E2D {left}",
+      // results
+      "results.roundOver": "\u0E08\u0E1A\u0E23\u0E2D\u0E1A",
+      "results.missed": "\u0E04\u0E33\u0E17\u0E35\u0E48\u0E15\u0E2D\u0E1A\u0E1C\u0E34\u0E14",
+      "results.reviewWords": "\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E04\u0E33",
+      "results.practiceMissed": "\u0E1D\u0E36\u0E01\u0E04\u0E33\u0E17\u0E35\u0E48\u0E1C\u0E34\u0E14",
+      "results.playAgain": "\u0E40\u0E25\u0E48\u0E19\u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07",
+      "results.home": "\u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
+      "results.banked": "+{score} \u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D \xB7 \u0E23\u0E27\u0E21 {total}",
+      "results.perfect": "\u0E23\u0E2D\u0E1A\u0E2A\u0E21\u0E1A\u0E39\u0E23\u0E13\u0E4C\u0E41\u0E1A\u0E1A! \u0E42\u0E1A\u0E19\u0E31\u0E2A +{bonus} \u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D",
+      "results.levelUp": "\u0E40\u0E25\u0E37\u0E48\u0E2D\u0E19\u0E23\u0E30\u0E14\u0E31\u0E1A! Lv {lv}",
+      "results.levelUpUnlocked": "\u0E40\u0E25\u0E37\u0E48\u0E2D\u0E19\u0E23\u0E30\u0E14\u0E31\u0E1A! Lv {lv} \u2014 \u0E1B\u0E25\u0E14\u0E25\u0E47\u0E2D\u0E01: {items}",
+      "results.sub": "\u0E41\u0E21\u0E48\u0E19\u0E22\u0E33 {acc}% \xB7 {words} \u0E04\u0E33 \xB7 {key}",
+      "results.bestTag": "\u0E2A\u0E16\u0E34\u0E15\u0E34\u0E43\u0E2B\u0E21\u0E48!",
+      "results.bestPrev": "\u0E14\u0E35\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14 {prev}",
+      "results.questComplete": "\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08: {desc} +{reward} \u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D",
+      // quests
+      "quest.status.done": "\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08",
+      "quest.status.open": "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E40\u0E2A\u0E23\u0E47\u0E08",
+      "quest.reward": "+{reward} \u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D",
+      "quest.correct30": "\u0E15\u0E2D\u0E1A\u0E16\u0E39\u0E01 30 \u0E04\u0E33",
+      "quest.combo5": "\u0E17\u0E33\u0E04\u0E2D\u0E21\u0E42\u0E1A\u0E40\u0E23\u0E35\u0E22\u0E19\u0E23\u0E39\u0E49 \xD75",
+      "quest.boss1": "\u0E1C\u0E48\u0E32\u0E19\u0E14\u0E48\u0E32\u0E19\u0E17\u0E1A\u0E17\u0E27\u0E19",
+      "quest.perfect1": "\u0E08\u0E1A\u0E23\u0E2D\u0E1A\u0E42\u0E14\u0E22\u0E44\u0E21\u0E48\u0E15\u0E2D\u0E1A\u0E1C\u0E34\u0E14",
+      "quest.review1": "\u0E40\u0E25\u0E48\u0E19\u0E23\u0E2D\u0E1A\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E2D\u0E31\u0E08\u0E09\u0E23\u0E34\u0E22\u0E30",
+      "quest.learn20": "\u0E17\u0E33\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E2B\u0E21\u0E32\u0E22\u0E23\u0E39\u0E49\u0E41\u0E25\u0E49\u0E27 20 \u0E1A\u0E31\u0E15\u0E23",
+      // scores / progress
+      "scores.title": "\u0E2A\u0E16\u0E34\u0E15\u0E34\u0E14\u0E35\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14",
+      "scores.empty": "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E2A\u0E16\u0E34\u0E15\u0E34 \u2014 \u0E40\u0E25\u0E48\u0E19\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E01\u0E48\u0E2D\u0E19",
+      "progress.title": "\u0E04\u0E27\u0E32\u0E21\u0E04\u0E37\u0E1A\u0E2B\u0E19\u0E49\u0E32",
+      "progress.needsWork": "\u0E15\u0E49\u0E2D\u0E07\u0E1D\u0E36\u0E01\u0E40\u0E1E\u0E34\u0E48\u0E21",
+      "progress.reviewThese": "\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E04\u0E33\u0E40\u0E2B\u0E25\u0E48\u0E32\u0E19\u0E35\u0E49",
+      "progress.practiceThese": "\u0E1D\u0E36\u0E01\u0E04\u0E33\u0E40\u0E2B\u0E25\u0E48\u0E32\u0E19\u0E35\u0E49",
+      "progress.nothing": "\u0E44\u0E21\u0E48\u0E21\u0E35\u0E04\u0E33\u0E17\u0E35\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E1D\u0E36\u0E01 \u2014 \u0E44\u0E1B\u0E40\u0E25\u0E48\u0E19\u0E01\u0E31\u0E19\u0E40\u0E25\u0E22!",
+      // shop / collection
+      "shop.title": "\u0E04\u0E2D\u0E25\u0E40\u0E25\u0E01\u0E0A\u0E31\u0E19",
+      "shop.skins": "\u0E2A\u0E01\u0E34\u0E19\u0E41\u0E21\u0E27",
+      "shop.backdrops": "\u0E09\u0E32\u0E01\u0E2B\u0E25\u0E31\u0E07",
+      "shop.effects": "\u0E40\u0E2D\u0E1F\u0E40\u0E1F\u0E01\u0E15\u0E4C",
+      "shop.sounds": "\u0E40\u0E2A\u0E35\u0E22\u0E07",
+      "shop.street": "\u0E02\u0E2D\u0E07\u0E15\u0E01\u0E41\u0E15\u0E48\u0E07\u0E16\u0E19\u0E19",
+      "shop.wallet": "\u0E01\u0E23\u0E30\u0E40\u0E1B\u0E4B\u0E32\u0E40\u0E07\u0E34\u0E19: <b>{coins}</b> \u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D",
+      "shop.buy": "\u0E0B\u0E37\u0E49\u0E2D",
+      "shop.equip": "\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19",
+      "shop.equipped": "\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19\u0E2D\u0E22\u0E39\u0E48",
+      "shop.onStreet": "\u0E2D\u0E22\u0E39\u0E48\u0E1A\u0E19\u0E16\u0E19\u0E19",
+      "shop.coins": "{coins} \u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D",
+      // howto
+      "howto.title": "\u0E27\u0E34\u0E18\u0E35\u0E40\u0E25\u0E48\u0E19",
+      "howto.oneShot": "\u0E15\u0E2D\u0E1A\u0E44\u0E14\u0E49\u0E04\u0E23\u0E31\u0E49\u0E07\u0E40\u0E14\u0E35\u0E22\u0E27\u0E15\u0E48\u0E2D\u0E04\u0E33",
+      // common
+      "common.back": "\u2190 \u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
+      "common.language": "\u0E20\u0E32\u0E29\u0E32"
+    }
+  };
+  var locale = "en";
+  function detectLocale(nav = typeof navigator !== "undefined" ? navigator : {}) {
+    return /^th/i.test(nav && nav.language ? nav.language : "") ? "th" : "en";
+  }
+  function setLocale(l) {
+    if (STRINGS[l]) locale = l;
+  }
+  function getLocale() {
+    return locale;
+  }
+  function t(key, params) {
+    const table = STRINGS[locale] || STRINGS.en;
+    let s = key in table ? table[key] : key in STRINGS.en ? STRINGS.en[key] : key;
+    if (params) for (const k in params) s = s.split(`{${k}}`).join(String(params[k]));
+    return s;
+  }
+
   // src/main.js
   var D = window.HSK_DATA;
   var $ = (s) => document.querySelector(s);
@@ -1229,6 +1434,7 @@
     store.get("scope", {})
   );
   var settings = Object.assign({ autoSpeak: true }, store.get("settings", {}));
+  setLocale(store.get("locale", detectLocale()));
   sfx.enabled = store.get("sfx", true);
   var pool = [];
   var learnDeck = null;
@@ -1302,10 +1508,10 @@
     for (const q of questStatus(questState, todayStr())) {
       const row = document.createElement("div");
       row.className = "quest-row" + (q.done ? " done" : "");
-      row.innerHTML = `<span class="qi">${q.done ? "Done" : "Open"}</span>
-      <span class="qd">${q.desc}</span>
+      row.innerHTML = `<span class="qi">${q.done ? t("quest.status.done") : t("quest.status.open")}</span>
+      <span class="qd">${t("quest." + q.id)}</span>
       <span class="qp">${q.progress}/${q.target}</span>
-      <span class="qr">+${q.reward} coins</span>`;
+      <span class="qr">${t("quest.reward", { reward: q.reward })}</span>`;
       panel.appendChild(row);
     }
   }
@@ -1313,7 +1519,7 @@
     const deck = smartDeck(masteryStore, pool, Date.now());
     const btn = $("#go-smart");
     btn.disabled = deck.length < 8;
-    setIconLabel(btn, "target", !deck.length ? "Smart Review" : deck.length < 8 ? `Smart Review \xB7 ${deck.length}/8` : `Smart Review \xB7 ${deck.length}`);
+    setIconLabel(btn, "target", !deck.length ? t("scope.smartReview") : deck.length < 8 ? t("scope.smartReviewProgress", { have: deck.length }) : t("scope.smartReviewReady", { n: deck.length }));
   }
   $("#go-smart").onclick = () => {
     const deck = smartDeck(masteryStore, pool, Date.now());
@@ -1332,6 +1538,20 @@
   fetch("audio/index.json").then((r) => r.json()).then((ix) => initAudio(ix)).catch(() => initAudio([]));
   loadSprites();
   preload();
+  function applyStaticI18n(root = document) {
+    root.querySelectorAll("[data-i18n]").forEach((el) => {
+      el.textContent = t(el.getAttribute("data-i18n"));
+    });
+    root.querySelectorAll("[data-i18n-title]").forEach((el) => {
+      const v = t(el.getAttribute("data-i18n-title"));
+      el.title = v;
+      el.setAttribute("aria-label", v);
+    });
+    root.querySelectorAll("[data-i18n-ph]").forEach((el) => {
+      el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph")));
+    });
+    document.documentElement.lang = getLocale();
+  }
   var currentScreen = "home";
   function show(name) {
     currentScreen = name;
@@ -1343,27 +1563,27 @@
     }
   }
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => {
-    const t = b.dataset.go;
-    if (t === "scope") {
+    const t2 = b.dataset.go;
+    if (t2 === "scope") {
       renderScope();
       show("scope");
-    } else if (t === "scope-learn") {
+    } else if (t2 === "scope-learn") {
       renderScope();
       show("scope");
-    } else if (t === "scores") {
+    } else if (t2 === "scores") {
       renderScores();
       show("scores");
-    } else if (t === "progress") {
+    } else if (t2 === "progress") {
       renderProgress();
       show("progress");
-    } else if (t === "shop") {
+    } else if (t2 === "shop") {
       renderShop();
       show("shop");
     } else {
-      if (t === "home") {
+      if (t2 === "home") {
         stopBattle();
       }
-      show(t);
+      show(t2);
     }
   }));
   function renderScope() {
@@ -1389,7 +1609,7 @@
     document.querySelectorAll("#lang-chips .chip").forEach((c) => c.classList.toggle("on", c.dataset.lang === scope.lang));
     pool = buildPool(D.levels, scope);
     const noThai = pool.filter((w) => !w.t).length;
-    $("#readout").innerHTML = `Pool: <b>${pool.length.toLocaleString()}</b> words \xB7 ~<b>${coveragePct(pool, D.manifest, scope.levels)}%</b> of exam text` + (scope.lang !== "en" && noThai ? `<div class="warn">* ${noThai.toLocaleString()} long-tail words have no Thai yet \u2014 English shown instead.</div>` : "");
+    $("#readout").innerHTML = t("scope.readout", { count: pool.length.toLocaleString(), pct: coveragePct(pool, D.manifest, scope.levels) }) + (scope.lang !== "en" && noThai ? `<div class="warn">${t("scope.readoutNoThai", { n: noThai.toLocaleString() })}</div>` : "");
     const len = normalizeLen(scope.sessionLen);
     scope.sessionLen = len;
     if (![20, 40, 100].includes(len)) lenCustomOpen = true;
@@ -1400,7 +1620,7 @@
     const lenInput = $("#len-custom");
     lenInput.hidden = !lenCustomOpen;
     if (lenCustomOpen && document.activeElement !== lenInput) lenInput.value = len;
-    setIconLabel($("#go-battle"), "quest", `Word Quest \xB7 ${len}`);
+    setIconLabel($("#go-battle"), "quest", t("scope.wordQuest", { n: len }));
     store.set("scope", scope);
     const startable = pool.length >= 8;
     $("#go-battle").disabled = $("#go-endless").disabled = $("#go-learn").disabled = !startable;
@@ -1422,6 +1642,17 @@
     scope.lang = c.dataset.lang;
     renderScope();
   });
+  function setUiLocale(l) {
+    setLocale(l);
+    store.set("locale", getLocale());
+    applyStaticI18n();
+    syncUiLangChips();
+    renderScope();
+  }
+  function syncUiLangChips() {
+    document.querySelectorAll("#ui-lang-chips .chip").forEach((c) => c.classList.toggle("on", c.dataset.uilang === getLocale()));
+  }
+  document.querySelectorAll("#ui-lang-chips .chip").forEach((c) => c.onclick = () => setUiLocale(c.dataset.uilang));
   document.querySelectorAll("#len-chips .chip").forEach((c) => c.onclick = () => {
     if (c.dataset.len === "custom") {
       lenCustomOpen = true;
@@ -1436,7 +1667,7 @@
   $("#len-custom").addEventListener("input", () => {
     scope.sessionLen = normalizeLen($("#len-custom").value);
     store.set("scope", scope);
-    setIconLabel($("#go-battle"), "quest", `Word Quest \xB7 ${scope.sessionLen}`);
+    setIconLabel($("#go-battle"), "quest", t("scope.wordQuest", { n: scope.sessionLen }));
   });
   $("#len-custom").addEventListener("change", () => renderScope());
   document.querySelectorAll("#preset-chips .chip").forEach((c) => c.onclick = () => {
@@ -1470,7 +1701,7 @@
       endLearn();
       return;
     }
-    $("#fc-count").textContent = `${fc.done} done \xB7 ${fc.deck.length - fc.i} left`;
+    $("#fc-count").textContent = t("learn.count", { done: fc.done, left: fc.deck.length - fc.i });
     const c = $("#fc-card");
     if (!fc.flipped) {
       c.innerHTML = `<div class="hz">${w.h}</div><div class="py">${w.p}</div>
@@ -1795,11 +2026,11 @@
     scheduleNext(1500);
     updateHud();
   }
-  function loop(t) {
+  function loop(t2) {
     if (!B.on) return;
-    const dt = Math.min(0.05, (t - (B.lastT || t)) / 1e3);
-    B.lastT = t;
-    if (!B.zombie && t >= B.nextAt) {
+    const dt = Math.min(0.05, (t2 - (B.lastT || t2)) / 1e3);
+    B.lastT = t2;
+    if (!B.zombie && t2 >= B.nextAt) {
       if (B.lives > 0 && B.spawned < B.wordsTotal) spawnZombie();
       else {
         endBattle(false);
@@ -1816,11 +2047,11 @@
       } else if (z.state === "dash") {
         z.x -= B.speed * 7 * dt;
         if (z.x <= B.L.mascotX + B.L.catHalf) bite(false);
-      } else if (z.state === "happy" && t >= B.dyingUntil) {
+      } else if (z.state === "happy" && t2 >= B.dyingUntil) {
         scheduleNext(200);
       } else if (z.state === "wrong") {
         z.x += 24 * B.S * dt;
-        if (t >= z.wrongUntil) scheduleNext(350);
+        if (t2 >= z.wrongUntil) scheduleNext(350);
       }
     }
     if (B.proj && B.zombie) {
@@ -1841,11 +2072,11 @@
     B.floats = B.floats.filter((f) => f.life > 0);
     B.flash = Math.max(0, B.flash - 2.2 * dt);
     B.screenShake = Math.max(0, (B.screenShake || 0) - 4 * dt);
-    draw(t);
+    draw(t2);
     requestAnimationFrame(loop);
   }
-  function paintBackdrop(c, w, h, gy, style, t = 0) {
-    const pulse = t / 1e3;
+  function paintBackdrop(c, w, h, gy, style, t2 = 0) {
+    const pulse = t2 / 1e3;
     if (style === "market") {
       const g = c.createLinearGradient(0, 0, 0, h);
       g.addColorStop(0, "#24123c");
@@ -1944,16 +2175,16 @@
     }
   }
   function drawBackdrop(gy) {
-    const selected = shopState.backdrop ? `bg-${shopState.backdrop}` : "bg-battle";
+    const selected = shopState.backdrop ? `bg-${shopState.backdrop}` : "bg-quest";
     const img2 = sprite(selected);
     if (img2) drawCoverImage(ctx2, img2, 0, 0, B.w, B.h);
     else if (shopState.backdrop) paintBackdrop(ctx2, B.w, B.h, gy, shopState.backdrop, performance.now());
     else paintBackdrop(ctx2, B.w, B.h, gy, "", performance.now());
   }
-  function draw(t) {
+  function draw(t2) {
     ctx2.clearRect(0, 0, B.w, B.h);
     const gy = B.h - B.L.ground;
-    const shake = B.screenShake > 0 ? Math.sin(t * 0.08) * 5 * B.S * B.screenShake : 0;
+    const shake = B.screenShake > 0 ? Math.sin(t2 * 0.08) * 5 * B.S * B.screenShake : 0;
     if (shake) {
       ctx2.save();
       ctx2.translate(shake, 0);
@@ -1967,13 +2198,13 @@
     ctx2.stroke();
     ctx2.textAlign = "center";
     const manekiImg = sprite("maneki");
-    const hopping = B.mascotHopUntil && t < B.mascotHopUntil;
+    const hopping = B.mascotHopUntil && t2 < B.mascotHopUntil;
     const mp = B.L.mascotPx;
     if (manekiImg) {
-      const bob = Math.sin(t / 400) * (hopping ? 9 : 3);
+      const bob = Math.sin(t2 / 400) * (hopping ? 9 : 3);
       ctx2.drawImage(manekiImg, B.L.mascotX - mp / 2, gy - mp + 4 * B.S + bob, mp, mp);
     } else {
-      drawCat(ctx2, B.L.mascotX, gy + 6 * B.S, t, "happy", null, 0.72 * B.S, [], false);
+      drawCat(ctx2, B.L.mascotX, gy + 6 * B.S, t2, "happy", null, 0.72 * B.S, [], false);
     }
     const coinImgIdle = sprite("coin");
     if (coinImgIdle) {
@@ -1986,9 +2217,9 @@
       const hideWord = z.boss && z.stage === "hanzi" && z.state === "walk";
       const bh = hideWord ? "\uFF1F\uFF1F" : z.w.h;
       const bp = hideWord ? "" : z.w.p;
-      drawWordPlate(hideWord ? "??" : bh, bp, z.w.lv, z.boss, t);
-      drawCat(ctx2, z.x, gy + 6 * B.S, t, z.state, SKIN_PALETTES[shopState.skin], z.boss ? 1.5 * B.S : B.S, B.acc, !!z.boss);
-      if (B.hasKitten) drawCat(ctx2, z.x + B.L.catHalf, gy + 6 * B.S, t + 250, z.state, SKIN_PALETTES[shopState.skin], 0.55 * B.S, [], false);
+      drawWordPlate(hideWord ? "??" : bh, bp, z.w.lv, z.boss, t2);
+      drawCat(ctx2, z.x, gy + 6 * B.S, t2, z.state, SKIN_PALETTES[shopState.skin], z.boss ? 1.5 * B.S : B.S, B.acc, !!z.boss);
+      if (B.hasKitten) drawCat(ctx2, z.x + B.L.catHalf, gy + 6 * B.S, t2 + 250, z.state, SKIN_PALETTES[shopState.skin], 0.55 * B.S, [], false);
     }
     if (B.proj) {
       const coinImg = sprite("coin");
@@ -2042,14 +2273,14 @@
       }
       ctx2.globalAlpha = 1;
     }
-    drawFeedbackLayer(t);
+    drawFeedbackLayer(t2);
     if (B.flash > 0) {
       ctx2.fillStyle = `rgba(90,44,80,${(0.3 * B.flash).toFixed(3)})`;
       ctx2.fillRect(0, 0, B.w, B.h);
     }
     if (shake) ctx2.restore();
   }
-  function drawWordPlate(hanzi, pinyin, level, boss, t) {
+  function drawWordPlate(hanzi, pinyin, level, boss, t2) {
     const wy = Math.round(B.h * 0.36);
     ctx2.save();
     ctx2.font = `700 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
@@ -2121,7 +2352,7 @@
     }
     ctx2.restore();
   }
-  function drawFeedbackLayer(t) {
+  function drawFeedbackLayer(t2) {
     const fb = B.feedback;
     if (!fb) return;
     const kind = fb.kind || fb.type;
@@ -2146,7 +2377,7 @@
       ctx2.stroke();
       ctx2.fillStyle = "rgba(255,244,224,.95)";
       for (let i = 0; i < 10; i++) {
-        const a = i * Math.PI * 2 / 10 + t * 4e-3;
+        const a = i * Math.PI * 2 / 10 + t2 * 4e-3;
         const r = (14 + 42 * p) * B.S;
         ctx2.beginPath();
         ctx2.arc(fb.x + Math.cos(a) * r, fb.y + Math.sin(a) * r, 2.2 * B.S, 0, Math.PI * 2);
@@ -2237,10 +2468,10 @@
     if (bonus) wallet += bonus;
     store.set("wallet", wallet);
     updateWalletChip();
-    $("#r-wallet").textContent = `+${B.score} coins banked \xB7 total ${wallet.toLocaleString()}`;
+    $("#r-wallet").textContent = t("results.banked", { score: B.score, total: wallet.toLocaleString() });
     const perfectEl = $("#r-perfect");
     if (isPerfect) {
-      perfectEl.textContent = `Perfect round! +${bonus} coin bonus`;
+      perfectEl.textContent = t("results.perfect", { bonus });
       perfectEl.style.display = "block";
     } else perfectEl.style.display = "none";
     const lu = B.levelUps || [];
@@ -2248,7 +2479,7 @@
     if (lu.length) {
       const from = lu[0].from, to = lu[lu.length - 1].to;
       const hit = MILESTONES.filter((m) => m.lv > from && m.lv <= to);
-      luEl.textContent = `Level up! Lv ${to}` + (hit.length ? ` \u2014 unlocked: ${hit.map((m) => m.name).join(", ")}` : "");
+      luEl.textContent = hit.length ? t("results.levelUpUnlocked", { lv: to, items: hit.map((m) => m.name).join(", ") }) : t("results.levelUp", { lv: to });
       luEl.style.display = "block";
     } else {
       luEl.style.display = "none";
@@ -2257,7 +2488,7 @@
     rq.innerHTML = "";
     for (const q of questToasts) {
       const line = document.createElement("div");
-      line.textContent = `Quest complete: ${q.desc} +${q.reward} coins`;
+      line.textContent = t("results.questComplete", { desc: t("quest." + q.id), reward: q.reward });
       rq.appendChild(line);
     }
     rq.style.display = questToasts.length ? "block" : "none";
@@ -2271,7 +2502,7 @@
       best[key] = { score: B.score, date: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10) };
       store.set("best", best);
     }
-    $("#r-sub").innerHTML = `${acc}% accuracy \xB7 ${B.correct} words \xB7 ${key}` + (isBest ? ` \xB7 <b style="color:var(--gold)">Best session!</b>` : ` \xB7 best ${prev}`);
+    $("#r-sub").innerHTML = t("results.sub", { acc, words: B.correct, key }) + (isBest ? ` \xB7 <b style="color:var(--gold)">${t("results.bestTag")}</b>` : ` \xB7 ${t("results.bestPrev", { prev })}`);
     const list = $("#r-miss");
     list.innerHTML = "";
     $("#r-misshead").style.display = B.misses.length ? "block" : "none";
@@ -2306,7 +2537,7 @@
     const best = store.get("best", {});
     const box = $("#scorelist");
     const keys = Object.keys(best).sort((a, b) => best[b].score - best[a].score);
-    box.innerHTML = keys.length ? "" : `<div class="scorerow" style="color:var(--muted)">No sessions yet \u2014 complete a Word Quest.</div>`;
+    box.innerHTML = keys.length ? "" : `<div class="scorerow" style="color:var(--muted)">${t("scores.empty")}</div>`;
     for (const k of keys) {
       const row = document.createElement("div");
       row.className = "scorerow";
@@ -2316,7 +2547,7 @@
   }
   function renderShop() {
     sfx.pack = shopState.soundpack || "default";
-    $("#shop-wallet").innerHTML = `Wallet: <b>${wallet.toLocaleString()}</b> coins`;
+    $("#shop-wallet").innerHTML = t("shop.wallet", { coins: wallet.toLocaleString() });
     const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), decoBox = $("#shop-street");
     skinBox.innerHTML = "";
     bdBox.innerHTML = "";
@@ -2330,7 +2561,7 @@
       const row = document.createElement("div");
       row.className = "scorerow shoprow";
       const left = document.createElement("span");
-      left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${item.price.toLocaleString()} coins</span>`;
+      left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${t("shop.coins", { coins: item.price.toLocaleString() })}</span>`;
       left.className = "shop-left";
       const preview = document.createElement("canvas");
       preview.className = "shop-preview";
@@ -2338,16 +2569,16 @@
       preview._shopItem = item;
       const copy = document.createElement("span");
       copy.className = "shop-copy";
-      copy.innerHTML = `<b>${item.name}</b><small>${item.price.toLocaleString()} coins</small>`;
+      copy.innerHTML = `<b>${item.name}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
       left.replaceChildren(preview, copy);
       const btn = document.createElement("button");
       if (item.type === "deco") {
         btn.className = "chip" + (owned ? " on" : "");
         if (owned) {
-          btn.textContent = "On street";
+          btn.textContent = t("shop.onStreet");
           btn.disabled = true;
         } else {
-          btn.textContent = "Buy";
+          btn.textContent = t("shop.buy");
           btn.disabled = !canAfford(wallet, item.id);
           btn.onclick = () => {
             const r = buy(wallet, shopState, item.id);
@@ -2364,17 +2595,17 @@
       } else {
         btn.className = "chip" + (equipped ? " on" : "");
         if (equipped) {
-          btn.textContent = "Equipped";
+          btn.textContent = t("shop.equipped");
           btn.disabled = true;
         } else if (owned) {
-          btn.textContent = "Equip";
+          btn.textContent = t("shop.equip");
           btn.onclick = () => {
             shopState = equipItem(shopState, item.id);
             store.set("shop", shopState);
             renderShop();
           };
         } else {
-          btn.textContent = "Buy";
+          btn.textContent = t("shop.buy");
           btn.disabled = !canAfford(wallet, item.id);
           btn.onclick = () => {
             const r = buy(wallet, shopState, item.id);
@@ -2398,17 +2629,17 @@
   var shopPreviewRaf = 0;
   function startShopPreviewLoop() {
     if (shopPreviewRaf) return;
-    const tick = (t) => {
+    const tick = (t2) => {
       shopPreviewRaf = 0;
       if (currentScreen !== "shop") return;
       document.querySelectorAll(".shop-preview").forEach((canvas) => {
-        if (canvas._shopItem) renderShopPreview(canvas, canvas._shopItem, t);
+        if (canvas._shopItem) renderShopPreview(canvas, canvas._shopItem, t2);
       });
       shopPreviewRaf = requestAnimationFrame(tick);
     };
     shopPreviewRaf = requestAnimationFrame(tick);
   }
-  function renderShopPreview(canvas, item, t = 0) {
+  function renderShopPreview(canvas, item, t2 = 0) {
     const w = 96, h = 64;
     const dpr = window.devicePixelRatio || 1;
     canvas.width = Math.round(w * dpr);
@@ -2429,11 +2660,11 @@
     roundRectOn(c, 0.5, 0.5, w - 1, h - 1, 10);
     c.stroke();
     if (item.type === "skin") {
-      drawCat(c, w * 0.52, h + 6, t, "walk", SKIN_PALETTES[item.id], 0.72, [], false);
+      drawCat(c, w * 0.52, h + 6, t2, "walk", SKIN_PALETTES[item.id], 0.72, [], false);
     } else if (item.type === "backdrop") {
       const img2 = sprite(`bg-${item.id}`);
       if (img2) drawCoverImage(c, img2, 0, 0, w, h);
-      else paintBackdrop(c, w, h, h - 7, item.id, t);
+      else paintBackdrop(c, w, h, h - 7, item.id, t2);
       c.strokeStyle = "rgba(245,197,24,.55)";
       c.lineWidth = 1;
       c.beginPath();
@@ -2824,7 +3055,7 @@
     const list = $("#needswork-list");
     list.innerHTML = "";
     if (!weak.length) {
-      list.innerHTML = `<div class="missrow" style="color:var(--muted)">Nothing needs work \u2014 go play!</div>`;
+      list.innerHTML = `<div class="missrow" style="color:var(--muted)">${t("progress.nothing")}</div>`;
     }
     for (const w of weak) {
       const row = document.createElement("div");
@@ -2852,6 +3083,8 @@
     };
   }
   pool = buildPool(D.levels, scope);
+  applyStaticI18n();
+  syncUiLangChips();
   sfx.pack = shopState.soundpack || "default";
   updateWalletChip();
   updateSmartBtn();

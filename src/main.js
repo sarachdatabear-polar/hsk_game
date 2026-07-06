@@ -654,7 +654,7 @@ function paintBackdrop(c, w, h, gy, style, t=0){
   }
 }
 function drawBackdrop(gy){
-  const selected = shopState.backdrop ? `bg-${shopState.backdrop}` : "bg-battle";
+  const selected = shopState.backdrop ? `bg-${shopState.backdrop}` : "bg-quest";
   const img = sprite(selected);
   if(img) drawCoverImage(ctx, img, 0, 0, B.w, B.h);
   else if(shopState.backdrop) paintBackdrop(ctx, B.w, B.h, gy, shopState.backdrop, performance.now());

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 72" width="180" height="72">
+  <title>Notebook tab frame; label stays dynamic</title>
+  <path d="M18 69c-8 0-14-6-14-14V24C4 13 13 4 24 4h80c8 0 15 4 19 11l7 12c3 5 8 8 14 8h12c11 0 20 9 20 20v14H18Z" fill="#7A5A44" opacity=".22"/>
+  <path d="M18 64c-8 0-14-6-14-14V21C4 11 12 3 22 3h78c8 0 15 4 19 11l7 12c3 5 8 8 14 8h14c10 0 18 8 18 18v12H18Z" fill="#FFF8E8" stroke="#B98F55" stroke-width="3"/>
+  <path d="M16 55V23c0-4 3-8 8-8h72c5 0 9 3 12 8l6 10c5 8 13 13 22 13h19" fill="none" stroke="#E7D3A6" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M136 3v20l7-4 7 4V3" fill="#4FAE8A" stroke="#2F6B4F" stroke-width="2"/>
+</svg>
