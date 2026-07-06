@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 88" width="300" height="88">
-  <title>SECONDARY button frame — steel blue, full-bleed, label stays dynamic</title>
+  <title>SECONDARY button frame — sky blue per spec §6.4, label stays dynamic</title>
   <defs>
     <linearGradient id="bs" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#6FA3C8"/><stop offset="1" stop-color="#41729B"/>
+      <stop offset="0" stop-color="#84C0EA"/><stop offset="1" stop-color="#5193C4"/>
     </linearGradient>
   </defs>
-  <rect x="1.5" y="9.5" width="297" height="77" rx="21" fill="#28465F"/>
-  <rect x="1.5" y="1.5" width="297" height="77" rx="21" fill="url(#bs)" stroke="#22405A" stroke-width="3"/>
-  <rect x="8" y="8" width="284" height="64" rx="16" fill="none" stroke="#CFE4F2" stroke-width="2.5" opacity=".55"/>
-  <path d="M22 14 q128 -9 256 0 l0 10 q-128 -8 -256 0 z" fill="#FFFFFF" opacity=".14"/>
+  <rect x="1.5" y="9.5" width="297" height="77" rx="21" fill="#2F6089"/>
+  <rect x="1.5" y="1.5" width="297" height="77" rx="21" fill="url(#bs)" stroke="#3E7BA6" stroke-width="3"/>
+  <rect x="8" y="8" width="284" height="64" rx="16" fill="none" stroke="#E2F2FC" stroke-width="2.5" opacity=".6"/>
+  <path d="M22 14 q128 -9 256 0 l0 10 q-128 -8 -256 0 z" fill="#FFFFFF" opacity=".16"/>
 </svg>
