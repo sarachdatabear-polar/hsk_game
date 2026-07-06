@@ -1,12 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
-  <title>WRONG (runtime key) — supportive retry ripple per spec §8.3</title>
-  <rect x="5" y="5" width="110" height="110" rx="26" fill="#FBF3DC" stroke="#E2CFA3" stroke-width="3"/>
-  <rect x="10.5" y="10.5" width="99" height="99" rx="21" fill="none" stroke="#FFFDF2" stroke-width="2.5"/>
-  <circle cx="60" cy="60" r="34" fill="#E65A4F" opacity=".12"/>
-  <circle cx="60" cy="60" r="34" fill="none" stroke="#E65A4F" stroke-width="3" opacity=".45"/>
-  <circle cx="60" cy="60" r="42" fill="none" stroke="#E88A7D" stroke-width="2.5" stroke-dasharray="10 7" stroke-linecap="round" opacity=".6"/>
-  <path d="M78 46a24 24 0 1 0 6 16" fill="none" stroke="#E65A4F" stroke-width="8" stroke-linecap="round"/>
-  <path d="M78 46 76 33M78 46 65 43" fill="none" stroke="#E65A4F" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="86" y="78" width="10" height="7" rx="2" fill="#FFF8E8" stroke="#C9A265" stroke-width="1.5" transform="rotate(18 91 81.5)"/>
-  <rect x="24" y="30" width="9" height="6" rx="2" fill="#FFF8E8" stroke="#C9A265" stroke-width="1.5" transform="rotate(-14 28.5 33)"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="440" viewBox="0 0 420 440">
+<defs>
+  <radialGradient id="cream" cx="0.42" cy="0.32" r="0.9">
+    <stop offset="0" stop-color="#F8EFC8"/><stop offset="1" stop-color="#E8D79F"/>
+  </radialGradient>
+  <radialGradient id="bean" cx="0.4" cy="0.3" r="0.95">
+    <stop offset="0" stop-color="#D96A4A"/><stop offset="1" stop-color="#A84329"/>
+  </radialGradient>
+  <filter id="d" x="-15%" y="-15%" width="130%" height="135%">
+    <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#4A2A1E" flood-opacity="0.35"/>
+  </filter>
+</defs>
+<g transform="translate(210,252) scale(1.28)">
+  <g fill="#4A2A1E" stroke="#4A2A1E" stroke-width="12" stroke-linejoin="round" filter="url(#d)"><ellipse cx="0" cy="26" rx="86" ry="66"/>
+<ellipse cx="-88" cy="-30" rx="30" ry="40" transform="rotate(-22 -88 -30)"/>
+<ellipse cx="-32" cy="-66" rx="30" ry="42"/>
+<ellipse cx="32" cy="-66" rx="30" ry="42"/>
+<ellipse cx="88" cy="-30" rx="30" ry="40" transform="rotate(22 88 -30)"/></g>
+  <g fill="url(#cream)"><ellipse cx="0" cy="26" rx="86" ry="66"/>
+<ellipse cx="-88" cy="-30" rx="30" ry="40" transform="rotate(-22 -88 -30)"/>
+<ellipse cx="-32" cy="-66" rx="30" ry="42"/>
+<ellipse cx="32" cy="-66" rx="30" ry="42"/>
+<ellipse cx="88" cy="-30" rx="30" ry="40" transform="rotate(22 88 -30)"/></g>
+  <g fill="url(#bean)">
+<ellipse cx="-88" cy="-32" rx="17" ry="25" transform="rotate(-22 -88 -32)"/>
+<ellipse cx="-32" cy="-68" rx="17" ry="27"/>
+<ellipse cx="32" cy="-68" rx="17" ry="27"/>
+<ellipse cx="88" cy="-32" rx="17" ry="25" transform="rotate(22 88 -32)"/>
+</g>
+<path fill="url(#bean)" d="M0,2 C26,2 46,18 46,38 C46,60 26,72 0,72 C-26,72 -46,60 -46,38 C-46,18 -26,2 0,2 Z"/>
+<ellipse cx="-12" cy="16" rx="11" ry="7" fill="#FFFFFF" opacity="0.3"/>
+</g>
+<path transform="translate(74,66) scale(1.6)" fill="#D96A4A" opacity="1" d="M0,-10 C1,-3 3,-1 10,0 C3,1 1,3 0,10 C-1,3 -3,1 -10,0 C-3,-1 -1,-3 0,-10 Z"/>
+<path transform="translate(204,30) scale(2.4)" fill="#D96A4A" opacity="1" d="M0,-10 C1,-3 3,-1 10,0 C3,1 1,3 0,10 C-1,3 -3,1 -10,0 C-3,-1 -1,-3 0,-10 Z"/>
+<path transform="translate(336,62) scale(1.3)" fill="#D96A4A" opacity="0.9" d="M0,-10 C1,-3 3,-1 10,0 C3,1 1,3 0,10 C-1,3 -3,1 -10,0 C-3,-1 -1,-3 0,-10 Z"/>
+<path transform="translate(376,148) scale(1.0)" fill="#D96A4A" opacity="0.7" d="M0,-10 C1,-3 3,-1 10,0 C3,1 1,3 0,10 C-1,3 -3,1 -10,0 C-3,-1 -1,-3 0,-10 Z"/>
+<path transform="translate(44,156) scale(0.9)" fill="#D96A4A" opacity="0.7" d="M0,-10 C1,-3 3,-1 10,0 C3,1 1,3 0,10 C-1,3 -3,1 -10,0 C-3,-1 -1,-3 0,-10 Z"/>
 </svg>
