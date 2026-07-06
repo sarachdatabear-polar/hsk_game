@@ -221,6 +221,17 @@ $("#f-core").onclick = ()=>{ scope.core = !scope.core; renderScope(); };
 $("#f-new").onclick  = ()=>{ scope.newOnly = !scope.newOnly; renderScope(); };
 document.querySelectorAll("#topn-chips .chip").forEach(c=>c.onclick = ()=>{ scope.topN = +c.dataset.n; renderScope(); });
 document.querySelectorAll("#lang-chips .chip").forEach(c=>c.onclick = ()=>{ scope.lang = c.dataset.lang; renderScope(); });
+function setUiLocale(l){
+  setLocale(l);
+  store.set("locale", getLocale());
+  applyStaticI18n();
+  syncUiLangChips();
+  renderScope();   // refresh dynamic scope labels (Word Quest · N, readout, Smart Review)
+}
+function syncUiLangChips(){
+  document.querySelectorAll("#ui-lang-chips .chip").forEach(c => c.classList.toggle("on", c.dataset.uilang === getLocale()));
+}
+document.querySelectorAll("#ui-lang-chips .chip").forEach(c => c.onclick = () => setUiLocale(c.dataset.uilang));
 document.querySelectorAll("#len-chips .chip").forEach(c=>c.onclick = ()=>{
   if(c.dataset.len==="custom"){ lenCustomOpen = true; renderScope(); $("#len-custom").focus(); }
   else { lenCustomOpen = false; scope.sessionLen = +c.dataset.len; renderScope(); }
@@ -1369,6 +1380,7 @@ function renderNeedsWork(){
 /* ============================== boot ============================== */
 pool = buildPool(D.levels, scope);
 applyStaticI18n();
+syncUiLangChips();
 sfx.pack = shopState.soundpack || "default";
 updateWalletChip();
 updateSmartBtn();
