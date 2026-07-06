@@ -108,10 +108,10 @@ function renderQuests(){
   for(const q of questStatus(questState, todayStr())){
     const row = document.createElement("div");
     row.className = "quest-row"+(q.done? " done":"");
-    row.innerHTML = `<span class="qi">${q.done? "Done":"Open"}</span>
-      <span class="qd">${q.desc}</span>
+    row.innerHTML = `<span class="qi">${q.done? t("quest.status.done") : t("quest.status.open")}</span>
+      <span class="qd">${t("quest."+q.id)}</span>
       <span class="qp">${q.progress}/${q.target}</span>
-      <span class="qr">+${q.reward} coins</span>`;
+      <span class="qr">${t("quest.reward", { reward: q.reward })}</span>`;
     panel.appendChild(row);
   }
 }
@@ -121,9 +121,9 @@ function updateSmartBtn(){
   btn.disabled = deck.length < 8;
   // below the 8-word minimum, show progress toward it ("6/8") so the disabled
   // button reads as "not enough yet" rather than broken
-  setIconLabel(btn, "target", !deck.length ? "Smart Review"
-    : deck.length < 8 ? `Smart Review · ${deck.length}/8`
-    : `Smart Review · ${deck.length}`);
+  setIconLabel(btn, "target", !deck.length ? t("scope.smartReview")
+    : deck.length < 8 ? t("scope.smartReviewProgress", { have: deck.length })
+    : t("scope.smartReviewReady", { n: deck.length }));
 }
 $("#go-smart").onclick = ()=>{
   const deck = smartDeck(masteryStore, pool, Date.now());
@@ -199,8 +199,8 @@ function renderScope(){
   pool = buildPool(D.levels, scope);
   const noThai = pool.filter(w=>!w.t).length;
   $("#readout").innerHTML =
-    `Pool: <b>${pool.length.toLocaleString()}</b> words · ~<b>${coveragePct(pool, D.manifest, scope.levels)}%</b> of exam text`
-    +(scope.lang!=="en" && noThai? `<div class="warn">* ${noThai.toLocaleString()} long-tail words have no Thai yet — English shown instead.</div>`:"");
+    t("scope.readout", { count: pool.length.toLocaleString(), pct: coveragePct(pool, D.manifest, scope.levels) })
+    + (scope.lang !== "en" && noThai ? `<div class="warn">${t("scope.readoutNoThai", { n: noThai.toLocaleString() })}</div>` : "");
   const len = normalizeLen(scope.sessionLen);
   scope.sessionLen = len;
   if(![20,40,100].includes(len)) lenCustomOpen = true;
@@ -211,7 +211,7 @@ function renderScope(){
   const lenInput = $("#len-custom");
   lenInput.hidden = !lenCustomOpen;
   if(lenCustomOpen && document.activeElement !== lenInput) lenInput.value = len;
-  setIconLabel($("#go-battle"), "quest", `Word Quest · ${len}`);
+  setIconLabel($("#go-battle"), "quest", t("scope.wordQuest", { n: len }));
   store.set("scope", scope);
   const startable = pool.length >= 8;
   $("#go-battle").disabled = $("#go-endless").disabled = $("#go-learn").disabled = !startable;
@@ -239,7 +239,7 @@ document.querySelectorAll("#len-chips .chip").forEach(c=>c.onclick = ()=>{
 $("#len-custom").addEventListener("input", ()=>{
   scope.sessionLen = normalizeLen($("#len-custom").value);
   store.set("scope", scope);
-  setIconLabel($("#go-battle"), "quest", `Word Quest · ${scope.sessionLen}`);
+  setIconLabel($("#go-battle"), "quest", t("scope.wordQuest", { n: scope.sessionLen }));
 });
 $("#len-custom").addEventListener("change", ()=>renderScope());  // blur/Enter: snap display to normalized value
 document.querySelectorAll("#preset-chips .chip").forEach(c=>c.onclick = ()=>{
@@ -263,7 +263,7 @@ function endLearn(){ show(fc.fromMisses ? "results" : "home"); }
 function renderCard(){
   const w = fc.deck[fc.i];
   if(!w){ endLearn(); return; }
-  $("#fc-count").textContent = `${fc.done} done · ${fc.deck.length - fc.i} left`;
+  $("#fc-count").textContent = t("learn.count", { done: fc.done, left: fc.deck.length - fc.i });
   const c = $("#fc-card");
   if(!fc.flipped){
     c.innerHTML = `<div class="hz">${w.h}</div><div class="py">${w.p}</div>
@@ -891,16 +891,18 @@ function endBattle(quit){
   if(bonus) wallet += bonus;
   store.set("wallet", wallet);
   updateWalletChip();
-  $("#r-wallet").textContent = `+${B.score} coins banked · total ${wallet.toLocaleString()}`;
+  $("#r-wallet").textContent = t("results.banked", { score: B.score, total: wallet.toLocaleString() });
   const perfectEl = $("#r-perfect");
-  if(isPerfect){ perfectEl.textContent = `Perfect round! +${bonus} coin bonus`; perfectEl.style.display = "block"; }
+  if(isPerfect){ perfectEl.textContent = t("results.perfect", { bonus }); perfectEl.style.display = "block"; }
   else perfectEl.style.display = "none";
   const lu = B.levelUps || [];
   const luEl = $("#r-levelup");
   if(lu.length){
     const from = lu[0].from, to = lu[lu.length-1].to;
     const hit = MILESTONES.filter(m => m.lv > from && m.lv <= to);
-    luEl.textContent = `Level up! Lv ${to}`+(hit.length? ` — unlocked: ${hit.map(m=>m.name).join(", ")}`:"");
+    luEl.textContent = hit.length
+      ? t("results.levelUpUnlocked", { lv: to, items: hit.map(m=>m.name).join(", ") })
+      : t("results.levelUp", { lv: to });
     luEl.style.display = "block";
   }else{
     luEl.style.display = "none";
@@ -909,7 +911,7 @@ function endBattle(quit){
   rq.innerHTML = "";
   for(const q of questToasts){
     const line = document.createElement("div");
-    line.textContent = `Quest complete: ${q.desc} +${q.reward} coins`;
+    line.textContent = t("results.questComplete", { desc: t("quest."+q.id), reward: q.reward });
     rq.appendChild(line);
   }
   rq.style.display = questToasts.length ? "block" : "none";
@@ -920,8 +922,8 @@ function endBattle(quit){
   const prev = best[key]? best[key].score : 0;
   const isBest = B.score > prev;
   if(isBest){ best[key] = {score:B.score, date:new Date().toISOString().slice(0,10)}; store.set("best", best); }
-  $("#r-sub").innerHTML = `${acc}% accuracy · ${B.correct} words · ${key}`
-    + (isBest? ` · <b style="color:var(--gold)">Best session!</b>` : ` · best ${prev}`);
+  $("#r-sub").innerHTML = t("results.sub", { acc, words: B.correct, key })
+    + (isBest ? ` · <b style="color:var(--gold)">${t("results.bestTag")}</b>` : ` · ${t("results.bestPrev", { prev })}`);
   const list = $("#r-miss");
   list.innerHTML = "";
   $("#r-misshead").style.display = B.misses.length? "block":"none";
@@ -949,7 +951,7 @@ function renderScores(){
   const best = store.get("best", {});
   const box = $("#scorelist");
   const keys = Object.keys(best).sort((a,b)=>best[b].score-best[a].score);
-  box.innerHTML = keys.length? "" : `<div class="scorerow" style="color:var(--muted)">No sessions yet — complete a Word Quest.</div>`;
+  box.innerHTML = keys.length ? "" : `<div class="scorerow" style="color:var(--muted)">${t("scores.empty")}</div>`;
   for(const k of keys){
     const row = document.createElement("div");
     row.className = "scorerow";
@@ -961,7 +963,7 @@ function renderScores(){
 /* ============================== shop ============================== */
 function renderShop(){
   sfx.pack = shopState.soundpack || "default";  // keep sfx in sync with the equipped slot
-  $("#shop-wallet").innerHTML = `Wallet: <b>${wallet.toLocaleString()}</b> coins`;
+  $("#shop-wallet").innerHTML = t("shop.wallet", { coins: wallet.toLocaleString() });
   const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), decoBox = $("#shop-street");
   skinBox.innerHTML = ""; bdBox.innerHTML = ""; fxBox.innerHTML = ""; sndBox.innerHTML = ""; decoBox.innerHTML = "";
   for(const item of CATALOG){
@@ -971,7 +973,7 @@ function renderShop(){
     const row = document.createElement("div");
     row.className = "scorerow shoprow";
     const left = document.createElement("span");
-    left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${item.price.toLocaleString()} coins</span>`;
+    left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${t("shop.coins", { coins: item.price.toLocaleString() })}</span>`;
     left.className = "shop-left";
     const preview = document.createElement("canvas");
     preview.className = "shop-preview";
@@ -979,16 +981,16 @@ function renderShop(){
     preview._shopItem = item;
     const copy = document.createElement("span");
     copy.className = "shop-copy";
-    copy.innerHTML = `<b>${item.name}</b><small>${item.price.toLocaleString()} coins</small>`;
+    copy.innerHTML = `<b>${item.name}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
     left.replaceChildren(preview, copy);
     const btn = document.createElement("button");
     if(item.type === "deco"){
       // Decos are never equipped — every owned deco just appears on the street.
       btn.className = "chip"+(owned? " on":"");
       if(owned){
-        btn.textContent = "On street"; btn.disabled = true;
+        btn.textContent = t("shop.onStreet"); btn.disabled = true;
       }else{
-        btn.textContent = "Buy";
+        btn.textContent = t("shop.buy");
         btn.disabled = !canAfford(wallet, item.id);
         btn.onclick = ()=>{
           const r = buy(wallet, shopState, item.id);
@@ -1001,12 +1003,12 @@ function renderShop(){
     }else{
       btn.className = "chip"+(equipped? " on":"");
       if(equipped){
-        btn.textContent = "Equipped"; btn.disabled = true;
+        btn.textContent = t("shop.equipped"); btn.disabled = true;
       }else if(owned){
-        btn.textContent = "Equip";
+        btn.textContent = t("shop.equip");
         btn.onclick = ()=>{ shopState = equipItem(shopState, item.id); store.set("shop", shopState); renderShop(); };
       }else{
-        btn.textContent = "Buy";
+        btn.textContent = t("shop.buy");
         btn.disabled = !canAfford(wallet, item.id);
         btn.onclick = ()=>{
           const r = buy(wallet, shopState, item.id);
@@ -1358,7 +1360,7 @@ function renderNeedsWork(){
   const list = $("#needswork-list");
   list.innerHTML = "";
   if(!weak.length){
-    list.innerHTML = `<div class="missrow" style="color:var(--muted)">Nothing needs work — go play!</div>`;
+    list.innerHTML = `<div class="missrow" style="color:var(--muted)">${t("progress.nothing")}</div>`;
   }
   for(const w of weak){
     const row = document.createElement("div");
