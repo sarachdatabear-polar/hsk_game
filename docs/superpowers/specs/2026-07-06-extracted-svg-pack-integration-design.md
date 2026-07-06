@@ -1,7 +1,7 @@
 # Extracted SVG Pack v2 — Production Integration Design
 
 **Date:** 2026-07-06
-**Status:** Approved by Northbear (brainstorm 2026-07-06)
+**Status:** Implemented on feature/extracted-svg-pack-v2 (2026-07-06)
 **Source assets:** `assets/_plan/extracted/` (ui/ 12, icons/ 12, effects/ 3, vfx/ 4 — SVG, 0.5–3 KB each)
 **Target:** production `assets/` + wiring in `index.html`, `src/`, `sw.js`
 

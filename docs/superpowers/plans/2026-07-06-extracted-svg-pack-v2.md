@@ -839,3 +839,14 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 - [ ] **Step 6: Ship**
 
 Invoke the `open-pr-to-dev` skill to push `feature/extracted-svg-pack-v2` and open the PR against `development` (never main). PR body notes: SHELL bump intentionally excluded per dev-PR workflow; `data/words.*` working-tree changes intentionally excluded (another session's in-flight work).
+
+---
+
+## Post-review follow-ups (final whole-branch review, 2026-07-06)
+
+Non-blocking; branch shipped READY TO MERGE.
+
+1. `fx-correct.svg`/`fx-wrong.svg` are 420×440 (non-square) but `drawFeedbackLayer` draws a square dest → ~4.5% vertical squish on the paw stamps. Square the viewBoxes or divide dest height by 420/440.
+2. `ui-badge-mastery.svg` now carries the gold-disc paw badge art. Dormant (P1/approved — never loads), but it reads coin-adjacent; run it past the art-direction guardrails before ever promoting it to P0.
+3. Pre-existing dead frame vars (not from this branch): `.chip` references `--f-ui-tab` (P1, never preloads); `.big.primary:active` references `--f-ui-button-primary-pressed` (no file/manifest entry). Either promote/ship the assets or drop the vars.
+4. SHELL cache bump deliberately NOT in this branch (dev-PR workflow); bump ships at release with the deploy.
