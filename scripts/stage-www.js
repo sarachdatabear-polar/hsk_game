@@ -23,12 +23,7 @@ function copy(src, dst) {
   const st = fs.statSync(src);
   if (st.isDirectory()) {
     fs.mkdirSync(dst, { recursive: true });
-    // Skip `_`-prefixed dirs (e.g. assets/_plan/ — source art docs + reference
-    // board that live beside the runtime assets but must never ship in the app).
-    for (const name of fs.readdirSync(src)) {
-      if (name.startsWith("_")) continue;
-      copy(path.join(src, name), path.join(dst, name));
-    }
+    for (const name of fs.readdirSync(src)) copy(path.join(src, name), path.join(dst, name));
   } else {
     fs.copyFileSync(src, dst);
     files++;

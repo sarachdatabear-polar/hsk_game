@@ -7,24 +7,13 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const manifestPath = path.join(root, "assets", "asset-manifest.json");
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 const allowedStatuses = new Set(manifest.status_values);
-const allowedTypes = new Set(manifest.types || []);
 const approvedStatuses = new Set(["approved", "integrated"]);
-const frameTypes = new Set(["ui-surface", "ui-frame"]);
 
 let failures = 0;
 
 function fail(message) {
   failures += 1;
   console.error(`asset validation: ${message}`);
-}
-
-function stateFile(asset, state) {
-  return state === "default" ? asset.file : asset.file.replace(/\.png$/, `-${state}.png`);
-}
-
-function assetFiles(asset) {
-  const states = asset.states || ["default"];
-  return states.map(state => stateFile(asset, state));
 }
 
 function readPngSize(filePath) {
@@ -44,57 +33,30 @@ for (const asset of manifest.assets) {
     fail(`${asset.id} has invalid status '${asset.status}'`);
   }
 
-  if (allowedTypes.size && !allowedTypes.has(asset.type)) {
-    fail(`${asset.id} has invalid type '${asset.type}'`);
-  }
-
-  if (frameTypes.has(asset.type)) {
-    if (!Object.prototype.hasOwnProperty.call(asset, "slice")) {
-      fail(`${asset.id} is missing slice`);
-    } else if (
-      asset.slice !== null &&
-      (!Array.isArray(asset.slice) ||
-        asset.slice.length !== 4 ||
-        asset.slice.some(n => !Number.isFinite(n)))
-    ) {
-      fail(`${asset.id} slice must be null or four numbers`);
-    }
-  }
-
-  if (asset.states && JSON.stringify(asset.states) !== JSON.stringify(["default", "pressed", "disabled"])) {
-    fail(`${asset.id} states must be default/pressed/disabled`);
-  }
-
-  if (asset.type === "sprite-sheet") {
-    if (asset.frameWidth * asset.frames !== asset.w) {
-      fail(`${asset.file} frameWidth * frames does not match width`);
-    }
-    if (asset.frameHeight !== asset.h) {
-      fail(`${asset.file} frameHeight does not match height`);
-    }
-  }
-
-  if (!approvedStatuses.has(asset.status)) {
+  const filePath = path.join(root, "assets", asset.file);
+  if (approvedStatuses.has(asset.status) && !fs.existsSync(filePath)) {
+    fail(`${asset.id} is ${asset.status} but ${asset.file} is missing`);
     continue;
   }
 
-  for (const file of assetFiles(asset)) {
-    const filePath = path.join(root, "assets", file);
-    if (!fs.existsSync(filePath)) {
-      fail(`${asset.id} is ${asset.status} but ${file} is missing`);
-      continue;
-    }
+  if (!fs.existsSync(filePath) || !asset.file.endsWith(".png")) {
+    continue;
+  }
 
-    if (!file.endsWith(".png")) {
-      continue;
-    }
+  const size = readPngSize(filePath);
+  if (asset.width && size.width !== asset.width) {
+    fail(`${asset.file} width ${size.width} !== ${asset.width}`);
+  }
+  if (asset.height && size.height !== asset.height) {
+    fail(`${asset.file} height ${size.height} !== ${asset.height}`);
+  }
 
-    const size = readPngSize(filePath);
-    if (Number.isFinite(asset.w) && size.width !== asset.w) {
-      fail(`${file} width ${size.width} !== ${asset.w}`);
+  if (asset.type === "sprite-sheet") {
+    if (asset.frameWidth * asset.frames !== asset.width) {
+      fail(`${asset.file} frameWidth * frames does not match width`);
     }
-    if (Number.isFinite(asset.h) && size.height !== asset.h) {
-      fail(`${file} height ${size.height} !== ${asset.h}`);
+    if (asset.frameHeight !== asset.height) {
+      fail(`${asset.file} frameHeight does not match height`);
     }
   }
 }

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#FBF3E0">
+<meta name="theme-color" content="#1a0d0d">
 <link rel="icon" href="data:,">
 <link rel="manifest" href="pwa/manifest.webmanifest">
 <title>Lucky Cat HSK 招财猫</title>
@@ -25,23 +25,11 @@
     --lc-cream:#FFF4E0;
     --lc-tan:#C9A58A;
     --lc-shadow:rgba(18,8,6,.42);
-    /* Education-first palette: Lucky Cat Learning Journey */
-    --edu-paper:#FFF8E8;
-    --edu-coral:#E65A4F;
-    --edu-jade:#4FAE8A;
-    --edu-sky:#6EB6E8;
-    --edu-sun:#F5C85B;
-    --edu-ink:#243447;
-    --edu-plum:#7B5B8E;
-    --edu-gray:#E7E2D9;
-    --edu-leaf:#78B86B;
-    --edu-brown:#7A5A44;
-    --bg:#FBF3E0; --panel:var(--edu-paper); --card:var(--edu-paper);
-    --ink:var(--edu-ink); --muted:#6B7A88;
-    --gold:var(--edu-sun); --crimson:var(--edu-coral); --jade:var(--edu-jade);
+    --bg:#1a0d0d; --panel:#2e1515; --card:#3a1a1a; --ink:var(--lc-cream); --muted:var(--lc-tan);
+    --gold:var(--lc-gold); --crimson:var(--lc-lacquer); --jade:var(--lc-jade);
     --amber:var(--gold); --green:var(--jade);
-    --red:var(--edu-coral); --chip:#EFE7D4; --chip-on:var(--edu-sky); --chip-ink-on:#08324a;
-    --panel-border:var(--edu-gray); --panel-wash:#FFFDF6;
+    --red:var(--lc-lacquer); --chip:rgba(74,16,21,.88); --chip-on:var(--gold); --chip-ink-on:var(--lc-ink);
+    --panel-border:#5a2c22; --panel-wash:rgba(74,16,21,.88);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0; background:var(--bg); color:var(--ink);
@@ -60,42 +48,38 @@
   .icon-text{display:inline-flex; align-items:center; justify-content:center; gap:8px;}
   /* glossy pill buttons */
   .big{padding:16px; font-size:18px; font-weight:600; border-radius:999px;
-    background-color:var(--panel-wash);
+    background-color:var(--panel);
+    background-image:var(--ui-button-secondary-image, none);
+    background-size:100% 100%;
     color:var(--ink);
-    border:2px solid var(--edu-sky);
-    border-image:var(--f-ui-button-secondary, none);
-    box-shadow:0 3px 8px rgba(36,52,71,.12);}
+    border:2px solid var(--panel-border);
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.12), 0 4px 0 var(--lc-shadow);
+    text-shadow:0 1px 2px rgba(0,0,0,.4);}
   .big.primary{
-    background-color:var(--edu-coral);
-    background-image:linear-gradient(180deg,#EE6D62,var(--edu-coral));
-    border-image:var(--f-ui-button-primary, none);
-    color:#FFFFFF; border-color:#C64A40;
-    box-shadow:0 4px 10px rgba(230,90,79,.25);}
+    background-color:var(--lc-lacquer);
+    background-image:var(--ui-button-primary-image, linear-gradient(180deg,var(--lc-lacquer) 0%,var(--lc-crimson) 100%));
+    background-size:100% 100%;
+    color:var(--lc-cream); border-color:var(--lc-gold);
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.35), 0 4px 0 var(--lc-shadow);}
   .big.gold{
-    background:var(--panel-wash);
-    color:var(--edu-ink); border-color:var(--edu-gray);
-    box-shadow:0 3px 8px rgba(36,52,71,.10);}
+    background-color:var(--lc-gold);
+    background-image:var(--ui-button-neutral-image, linear-gradient(180deg,var(--lc-paper) 0%,var(--lc-gold) 45%,var(--lc-dark-gold) 100%));
+    background-size:100% 100%;
+    color:var(--lc-ink); border-color:var(--lc-dark-gold);
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.35), 0 4px 0 var(--lc-shadow);}
   .big:active{transform:scale(.98);}
-  .big.primary:active{border-image:var(--f-ui-button-primary-pressed, var(--f-ui-button-primary, none));}
-  /* once a production frame is loaded, drop the fallback pill chrome so it
-     cannot peek around the frame (border-image ignores border-radius) */
-  :root.has-ui-button-secondary .big{background:none; border-color:transparent; border-radius:22px;
-    box-shadow:0 4px 9px rgba(60,42,22,.20);}
-  :root.has-ui-button-primary .big.primary{background:none; border-color:transparent; border-radius:22px;
-    box-shadow:0 4px 9px rgba(60,42,22,.22);}
-  .back{align-self:flex-start; background:none; color:var(--edu-sky); font-size:15px; padding:6px 2px; margin-bottom:6px;
-    min-height:44px; display:inline-flex; align-items:center;}
+  .back{align-self:flex-start; background:none; color:var(--muted); font-size:15px; padding:6px 2px; margin-bottom:6px;}
   h2{font-size:20px; margin:4px 0 14px; color:var(--gold);}
   .sect{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:16px 0 8px;}
   .chips{display:flex; flex-wrap:wrap; gap:8px;}
-  .chip{padding:9px 14px; border-radius:999px; background:var(--chip); color:var(--edu-ink);
-    min-height:44px;
-    font-size:15px; font-weight:600; border:1px solid var(--panel-border);
-    border-image:var(--f-ui-tab, none);}
+  .chip{padding:9px 14px; border-radius:999px; background:var(--chip); color:var(--ink);
+    background-image:var(--ui-button-neutral-image, none); background-size:100% 100%;
+    font-size:15px; font-weight:600; border:1px solid var(--panel-border);}
   .chip.on{background-color:var(--chip-on); color:var(--chip-ink-on); border-color:var(--chip-on);}
   .chip:disabled{opacity:.45;}
   .chip.preset{background:transparent; border-style:dashed; color:var(--muted); font-weight:500;}
   #len-custom{width:86px; padding:9px 14px; border-radius:999px; background:var(--chip);
+    background-image:var(--ui-button-neutral-image, none); background-size:100% 100%;
     color:var(--ink); font-size:15px; font-weight:600; border:1px solid var(--panel-border); text-align:center;}
   #len-custom:focus{outline:none; border-color:var(--gold);}
   #len-custom{appearance:textfield; -moz-appearance:textfield;}
@@ -110,18 +94,11 @@
   #opts button,
   .spk{
     background-color:var(--panel-wash);
-    border-color:var(--panel-border);
-    box-shadow:0 2px 8px rgba(36,52,71,.08);
+    background-image:var(--ui-panel-image, none);
+    background-size:100% 100%;
   }
-  .screen-card,
-  .panel,
-  .shop-card,
-  .readout,
-  .misslist,
-  .scorelist,
-  .quest-row{border-image:var(--f-ui-card-paper, none);}
-  .readout{margin:18px 0 4px; padding:12px 14px; background-color:var(--panel-wash); border-radius:12px;
-    border:1px solid var(--panel-border); border-image:var(--f-ui-card-soft, none); font-size:15px;}
+  .readout{margin:18px 0 4px; padding:12px 14px; background-color:var(--panel); border-radius:12px;
+    border:1px solid var(--panel-border); font-size:15px;}
   .readout b{color:var(--gold);}
   .readout .warn{color:var(--muted); font-size:12.5px; margin-top:4px;}
   .startrow{display:flex; gap:10px; margin-top:14px;}
@@ -136,33 +113,41 @@
   .icon-row{display:flex; justify-content:center; gap:14px; margin-top:12px; flex-wrap:wrap;}
   .icon-btn{
     width:64px; height:64px; border-radius:50%; font-size:26px; line-height:1;
-    background:var(--panel-wash);
-    border:1px solid var(--edu-gray); color:var(--edu-ink);
-    box-shadow:0 3px 10px rgba(36,52,71,.12);
+    background:radial-gradient(circle at 35% 30%,var(--lc-cream),var(--lc-gold) 70%,var(--lc-dark-gold));
+    border:3px solid var(--lc-dark-gold); color:var(--lc-ink);
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.4), 0 4px 0 var(--lc-shadow);
     display:flex; align-items:center; justify-content:center;}
   .icon-btn:active{transform:scale(.96);}
+  /* real gold-disc art (assets/btn-*.png) replaces the CSS disc fallback. */
   .icon-btn[data-go="scope-learn"],
   .icon-btn[data-go="shop"],
   .icon-btn[data-go="scores"],
   .icon-btn[data-go="progress"],
   .icon-btn[data-go="howto"],
   .icon-btn#home-sound{
-    border-color:var(--edu-gray);}
-  /* muted state dims the sound control so on/off still reads at a glance */
+    color:transparent; font-size:0; border-color:var(--lc-dark-gold);
+    background-size:cover; background-position:center; background-repeat:no-repeat;}
+  .icon-btn[data-go="scope-learn"]{background-image:url("assets/btn-learn.png");}
+  .icon-btn[data-go="shop"]{background-image:url("assets/btn-shop.svg");}
+  .icon-btn[data-go="scores"]{background-image:url("assets/btn-scores.png");}
+  .icon-btn[data-go="progress"]{background-image:url("assets/btn-progress.png");}
+  .icon-btn[data-go="howto"]{background-image:url("assets/btn-howto.png");}
+  .icon-btn#home-sound{background-image:url("assets/btn-sound.png");}
+  /* muted state: btn-sound art greys out so on/off still reads at a glance */
   .icon-btn#home-sound.muted{filter:grayscale(1) opacity(.45);}
   /* flashcards */
   .fc-top{display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:14px;}
   .word-card,
   .flash-card,
   .card{
-    background-color:var(--edu-paper);
-    border-image:var(--f-ui-card-paper, none);
+    background-color:var(--lc-paper);
+    background-image:var(--ui-word-plaque-image, none);
+    background-size:100% 100%;
   }
   .card{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;
-    color:var(--edu-ink); border:2px solid var(--edu-gray); border-radius:20px; margin:14px 0;
-    border-image:var(--f-ui-card-paper, none);
+    color:var(--lc-ink); border:2px solid var(--panel-border); border-radius:20px; margin:14px 0;
     padding:24px; text-align:center; min-height:280px; cursor:pointer; user-select:none;
-    box-shadow:0 4px 14px rgba(36,52,71,.10);}
+    box-shadow:0 0 16px rgba(245,197,24,.12);}
   .card .hz{font-size:64px; line-height:1.15;}
   .card .py{font-size:24px; color:var(--gold); margin-top:8px;}
   .card .mean{font-size:22px; margin-top:6px;}
@@ -172,21 +157,19 @@
   .fc-btns .big{flex:1; font-size:16px; padding:14px 6px;}
   .know{background-color:var(--jade); color:#0d2200; border-color:var(--lc-jade);}
   .learn2{background-color:var(--crimson); color:var(--lc-cream); border-color:var(--lc-lacquer);}
-  .spk{color:var(--edu-sky); font-size:22px; padding:10px 16px; border-radius:12px; border:1px solid var(--panel-border);
-    min-width:44px; min-height:44px;
+  .spk{color:var(--gold); font-size:22px; padding:10px 16px; border-radius:12px; border:1px solid var(--panel-border);
     display:inline-flex; align-items:center; justify-content:center;}
   /* battle */
   #hud{display:flex; justify-content:space-between; align-items:center; font-size:15px; padding:2px 2px 8px; gap:6px; flex-wrap:wrap;}
-  .hud-pill{display:inline-flex; align-items:center; gap:4px; background:var(--panel-wash);
-    color:var(--edu-ink); border-radius:999px; padding:4px 10px; border:1px solid var(--edu-gray); font-weight:700; font-size:14px;
-    box-shadow:0 2px 6px rgba(36,52,71,.08);}
-  #home-wallet{color:var(--muted); font-size:13px;}
-  .hud-round{width:44px; height:44px; border-radius:50%; background:var(--panel-wash);
-    color:var(--edu-ink); border:1px solid var(--edu-gray); border-image:var(--f-ui-badge-mastery, none); font-size:18px; cursor:pointer;
+  .hud-pill{display:inline-flex; align-items:center; gap:4px; background-color:var(--lc-gold); background-image:var(--ui-badge-image, linear-gradient(180deg,var(--lc-paper),var(--lc-gold) 55%,var(--lc-dark-gold)));
+    background-size:100% 100%; color:var(--lc-ink); border-radius:999px; padding:4px 10px; border:2px solid var(--lc-dark-gold); font-weight:700; font-size:14px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 2px 0 var(--lc-shadow);}
+  .hud-round{width:36px; height:36px; border-radius:50%; background-color:var(--lc-gold); background-image:var(--ui-badge-image, linear-gradient(180deg,var(--lc-paper),var(--lc-gold) 55%,var(--lc-dark-gold)));
+    background-size:100% 100%; color:var(--lc-ink); border:2px solid var(--lc-dark-gold); font-size:18px; cursor:pointer;
     display:flex; align-items:center; justify-content:center;
-    box-shadow:0 2px 6px rgba(36,52,71,.08);}
-  #hud .combo{color:var(--edu-jade); font-weight:700;}
-  .life-icon{width:18px; height:18px; color:var(--edu-coral); filter:drop-shadow(0 1px 1px rgba(0,0,0,.2));}
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 2px 0 var(--lc-shadow);}
+  #hud .combo{color:var(--crimson); font-weight:700;}
+  .life-icon{width:18px; height:18px; color:var(--lc-lacquer); filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));}
   .life-icon.empty{color:#6a3a3a; opacity:.65;}
   /* canvas fills the space between HUD and options; .cv-wrap absorbs all the
      slack (flex:1) and centers the canvas. #cv fills that box exactly (no forced
@@ -195,25 +178,25 @@
   #s-battle{padding:8px 12px 10px;}
   .cv-wrap{flex:1 1 0; min-height:260px; display:flex; align-items:stretch; justify-content:center;}
   #cv{width:100%; height:100%; border-radius:14px;
-    background-image:linear-gradient(#EAF2FB,#DCE8F5 60%,#F1E7D6);
+    /* image layered OVER gradient: if the PNG is missing, the festive gradient still shows */
+    background-image:url("assets/bg-battle.png"), linear-gradient(#2a0f2a,#4a1420 60%,#6b2a1a);
     background-size:cover; background-position:bottom; background-repeat:no-repeat;
     border:1px solid var(--panel-border); display:block; touch-action:none;
     box-shadow:0 10px 22px rgba(0,0,0,.25), inset 0 0 18px rgba(245,197,24,.08);}
   #opts{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;}
-  #opts button{padding:13px 8px; font-size:15.5px; line-height:1.3; background-color:var(--edu-paper);
-    color:var(--edu-ink); border:1px solid var(--edu-gray); border-image:var(--f-ui-button-neutral, none); border-radius:12px; min-height:62px;
-    overflow-wrap:anywhere;}
+  #opts button{padding:13px 8px; font-size:15.5px; line-height:1.3; background-color:var(--panel);
+    color:var(--ink); border:1px solid var(--panel-border); border-radius:12px; min-height:62px;}
   #opts button .th{display:block; color:var(--jade); font-size:14.5px;}
-  #opts button.good{background-color:var(--edu-jade); color:#0d2b20;}
+  #opts button.good{background-color:var(--jade); color:#1a3a00;}
   #opts button.good .th{color:#0d2200;}
   #opts button.bad{background-color:var(--red); color:#fff;}
-  #opts button:disabled{opacity:.55; border-image:var(--f-ui-button-neutral-disabled, var(--f-ui-button-neutral, none));}
+  #opts button:disabled{opacity:.55;}
   /* results */
   .bignum{font-size:52px; text-align:center; color:var(--gold); font-weight:800; margin:6px 0;
     font-family:'LuckyTitle',"Segoe UI",sans-serif;}
   .sub{text-align:center; color:var(--muted); margin:0 0 14px;}
   .misslist{flex:1; overflow-y:auto; background-color:var(--panel); border-radius:12px;
-    background-color:var(--panel-wash);
+    background-color:var(--panel-wash); background-image:var(--ui-panel-image, none); background-size:100% 100%;
     border:1px solid var(--panel-border); padding:6px 12px; margin:10px 0; max-height:38vh;}
   .missrow{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid rgba(201,165,138,.2);}
   .missrow:last-child{border-bottom:none;}
@@ -221,7 +204,7 @@
   .missrow .det{flex:1; font-size:13.5px; color:var(--muted); line-height:1.35;}
   .missrow .det .py{color:var(--gold);}
   .missrow .sp{background:none; font-size:19px; padding:4px;}
-  .scorelist{background-color:var(--panel-wash); border-radius:12px; border:1px solid var(--panel-border); padding:8px 14px;}
+  .scorelist{background-color:var(--panel-wash); background-image:var(--ui-panel-image, none); background-size:100% 100%; border-radius:12px; border:1px solid var(--panel-border); padding:8px 14px;}
   .scorerow{display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(201,165,138,.2); font-size:15px;}
   .scorerow:last-child{border-bottom:none;}
   .scorerow b{color:var(--gold);}
@@ -233,8 +216,8 @@
   .shop-copy{display:flex; flex-direction:column; gap:2px; min-width:0;}
   .shop-copy b{font-size:15.5px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .shop-copy small{font-size:12px; color:var(--muted);}
-  .mbar{height:6px; border-radius:999px; background:rgba(201,160,138,.2); border-image:var(--f-ui-progress-track, none); overflow:hidden;}
-  .mbar i{display:block; height:100%; background-color:var(--gold); background-image:linear-gradient(180deg,var(--lc-paper),var(--lc-gold) 50%,var(--lc-dark-gold)); border-image:var(--f-ui-progress-fill, none); border-radius:999px;}
+  .mbar{height:6px; border-radius:999px; background:rgba(201,160,138,.2); background-image:var(--ui-progress-track-image, none); background-size:100% 100%; overflow:hidden;}
+  .mbar i{display:block; height:100%; background-color:var(--gold); background-image:var(--ui-progress-fill-image, linear-gradient(180deg,var(--lc-paper),var(--lc-gold) 50%,var(--lc-dark-gold))); background-size:100% 100%; border-radius:999px;}
   /* daily quests */
   #quest-panel{width:100%; max-width:320px; margin:10px auto 0; display:flex; flex-direction:column; gap:5px;}
   .quest-row{display:flex; align-items:center; gap:6px; font-size:12.5px; line-height:1.3;
@@ -243,9 +226,6 @@
   .quest-row .qd{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .quest-row .qp{color:var(--muted); font-size:11.5px; white-space:nowrap;}
   .quest-row .qr{color:var(--gold); font-weight:700; white-space:nowrap;}
-  .misslist,
-  .scorelist,
-  .quest-row{border-image:var(--f-ui-card-paper, none);}
   #r-quests{color:var(--gold); font-size:14px; text-align:center; margin:0 0 8px;}
   #r-quests div{margin:2px 0;}
   #r-perfect{color:var(--lc-ink); background:linear-gradient(var(--lc-cream),var(--lc-gold)); border:1px solid var(--lc-dark-gold);
@@ -257,36 +237,11 @@
   .howto{line-height:1.55; font-size:15.5px; color:var(--ink);}
   .howto b{color:var(--gold);}
   footer{color:#a3766a; text-align:center; font-size:11.5px; padding:10px 0 16px;}
-  /* production screen backgrounds */
-  #s-home,
-  #s-learn,
-  #s-results,
-  #s-progress,
-  #s-shop{
-    background-size:cover;
-    background-position:center;
-    background-repeat:no-repeat;
-  }
-
-  #s-learn{
-    background-image:linear-gradient(rgba(255,248,232,.76),rgba(255,248,232,.90)), url("assets/bg-flashcards.png"), linear-gradient(#FFF8E8,#FDEFD2);
-  }
-
-  #s-results{
-    background-image:linear-gradient(rgba(255,248,232,.78),rgba(255,248,232,.92)), url("assets/bg-results.png"), linear-gradient(#FFF8E8,#FDEFD2);
-  }
-
-  #s-progress{
-    background-image:linear-gradient(rgba(255,248,232,.76),rgba(255,248,232,.91)), url("assets/bg-progress.png"), linear-gradient(#FFF8E8,#FDEFD2);
-  }
-
-  #s-shop{
-    background-image:linear-gradient(rgba(255,248,232,.78),rgba(255,248,232,.92)), url("assets/bg-collection.png"), linear-gradient(#FFF8E8,#FDEFD2);
-  }
-
   /* home hero background */
   #s-home{
-    background-image:linear-gradient(rgba(255,248,232,.58),rgba(255,248,232,.86)), url("assets/bg-home.png"), linear-gradient(#FFF8E8,#FDEFD2);
+    /* image layered OVER gradient: gradient is the fallback while bg-home.png is absent */
+    background-image:url("assets/bg-home.png"), linear-gradient(#3a1020,#1a0d0d);
+    background-size:cover; background-position:center; background-repeat:no-repeat;
     justify-content:space-between;
   }
   /* festive decor — swaying lantern.png corners + a soft cloud.png behind the
@@ -305,10 +260,7 @@
   .screen.festive::after{right:8px; animation-delay:-1.6s;}
   @keyframes sway{from{transform:rotate(-7deg);} to{transform:rotate(7deg);}}
   @media (prefers-reduced-motion:reduce){
-    .screen.festive::before,.screen.festive::after{animation:none;}
-    *{animation-duration:.001ms !important; animation-iteration-count:1 !important;
-      transition-duration:.001ms !important;}}
-  :focus-visible{outline:3px solid var(--edu-sky); outline-offset:2px; border-radius:4px;}
+    .screen.festive::before,.screen.festive::after{animation:none;}}
   .screen.festive h2{position:relative; padding:12px 10px;}
   .screen.festive h2::before{
     content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
@@ -322,25 +274,25 @@
   <!-- HOME -->
   <div class="screen on" id="s-home">
     <h1>Lucky Cat HSK <span class="sub-cn">招财猫</span></h1>
-    <p class="tag"><span data-i18n="home.tagline1">Match each word to its meaning —</span><br><span data-i18n="home.tagline">master real-exam HSK vocabulary.</span></p>
+    <p class="tag">Feed the lucky cat the right meanings —<br>collect coins, learn real-exam HSK words.</p>
     <div class="menu">
-      <button class="big primary" data-go="scope"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#learn"></use></svg><span data-i18n="home.learn">Learn</span></span></button>
-      <button class="big" id="go-smart"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#target"></use></svg><span data-i18n="home.smart">Smart Review</span></span></button>
+      <button class="big primary" data-go="scope"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span>Play</span></span></button>
+      <button class="big" id="go-smart"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#target"></use></svg><span>Smart Review</span></span></button>
       <div style="text-align:center; display:flex; justify-content:center; gap:8px; flex-wrap:wrap">
+        <span class="hud-pill" id="home-wallet"><svg class="asset-icon"><use href="assets/ui-icons.svg#coin"></use></svg><span>0</span></span>
         <span class="hud-pill" id="home-streak"><svg class="asset-icon"><use href="assets/ui-icons.svg#streak"></use></svg><span>0 · 0/20 today</span></span>
         <span class="hud-pill" id="home-level"><svg class="asset-icon"><use href="assets/ui-icons.svg#paw"></use></svg><span>Lv 1</span></span>
-        <span class="hud-pill" id="home-wallet"><svg class="asset-icon"><use href="assets/ui-icons.svg#secondary-coin"></use></svg><span>0</span></span>
       </div>
       <canvas id="street-cv"></canvas>
       <div id="street-caption"></div>
       <div id="quest-panel"></div>
       <div class="icon-row">
-        <button class="icon-btn" data-go="scope-learn" title="Flashcards" data-i18n-title="home.flashcards" aria-label="Flashcards"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg></button>
-        <button class="icon-btn" data-go="shop" title="Collection" data-i18n-title="home.collection" aria-label="Collection"><svg class="asset-icon"><use href="assets/ui-icons.svg#collection"></use></svg></button>
-        <button class="icon-btn" data-go="scores" title="Best Sessions" data-i18n-title="home.best" aria-label="Best Sessions"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg></button>
-        <button class="icon-btn" data-go="progress" title="Progress" data-i18n-title="home.progress" aria-label="Progress"><svg class="asset-icon"><use href="assets/ui-icons.svg#progress"></use></svg></button>
-        <button class="icon-btn" data-go="howto" title="How to play" data-i18n-title="home.howto" aria-label="How to play"><svg class="asset-icon"><use href="assets/ui-icons.svg#help"></use></svg></button>
-        <button class="icon-btn" id="home-sound" title="Sound effects" data-i18n-title="home.sound" aria-label="Sound effects"><svg class="asset-icon"><use href="assets/ui-icons.svg#audio"></use></svg></button>
+        <button class="icon-btn" data-go="scope-learn" title="Flashcards" aria-label="Flashcards"></button>
+        <button class="icon-btn" data-go="shop" title="Lucky Shop" aria-label="Lucky Shop"></button>
+        <button class="icon-btn" data-go="scores" title="High scores" aria-label="High scores"></button>
+        <button class="icon-btn" data-go="progress" title="Progress" aria-label="Progress"></button>
+        <button class="icon-btn" data-go="howto" title="How to play" aria-label="How to play"></button>
+        <button class="icon-btn" id="home-sound" title="Sound effects" aria-label="Sound effects"></button>
       </div>
     </div>
     <footer>Lucky Cat · HSK 1–6 · built from real exam data</footer>
@@ -348,65 +300,60 @@
 
   <!-- SCOPE -->
   <div class="screen" id="s-scope">
-    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
-    <h2 data-i18n="scope.title">Choose your words</h2>
-    <div class="sect" data-i18n="scope.levels">Levels</div>
+    <button class="back" data-go="home">← Home</button>
+    <h2>Choose your words</h2>
+    <div class="sect">Levels</div>
     <div class="chips" id="lv-chips"></div>
     <div class="chips" style="margin-top:8px" id="preset-chips">
       <button class="chip preset" data-preset="1,2,3">HSK1–3</button>
       <button class="chip preset" data-preset="4,5,6">HSK4–6</button>
       <button class="chip preset" data-preset="1,2,3,4,5,6">HSK1–6</button>
     </div>
-    <div class="sect" data-i18n="scope.filters">Filters</div>
+    <div class="sect">Filters</div>
     <div class="chips">
-      <button class="chip" id="f-core" data-i18n="scope.highYield">High-yield only</button>
-      <button class="chip" id="f-new" data-i18n="scope.newOnly">New words only</button>
+      <button class="chip" id="f-core">High-yield only</button>
+      <button class="chip" id="f-new">New words only</button>
     </div>
-    <div class="sect" data-i18n="scope.topN">Top-N by frequency</div>
+    <div class="sect">Top-N by frequency</div>
     <div class="chips" id="topn-chips">
       <button class="chip" data-n="100">100</button>
       <button class="chip" data-n="300">300</button>
       <button class="chip" data-n="500">500</button>
-      <button class="chip on" data-n="0" data-i18n="scope.all">All</button>
+      <button class="chip on" data-n="0">All</button>
     </div>
-    <div class="sect" data-i18n="scope.meaningLang">Meaning language</div>
+    <div class="sect">Meaning language</div>
     <div class="chips" id="lang-chips">
       <button class="chip" data-lang="th">ไทย</button>
-      <button class="chip" data-lang="en" data-i18n="scope.english">English</button>
-      <button class="chip on" data-lang="both" data-i18n="scope.both">Both</button>
+      <button class="chip" data-lang="en">English</button>
+      <button class="chip on" data-lang="both">Both</button>
     </div>
-    <div class="sect" data-i18n="common.language">Language</div>
-    <div class="chips" id="ui-lang-chips">
-      <button class="chip" data-uilang="en">English</button>
-      <button class="chip" data-uilang="th">ไทย</button>
-    </div>
-    <div class="sect" data-i18n="scope.sessionLen">Session length</div>
+    <div class="sect">Session length</div>
     <div class="chips" id="len-chips">
       <button class="chip" data-len="20">20</button>
       <button class="chip" data-len="40">40</button>
       <button class="chip" data-len="100">100</button>
-      <button class="chip" data-len="custom"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#pencil"></use></svg><span data-i18n="scope.custom">Custom</span></span></button>
-      <input id="len-custom" type="number" inputmode="numeric" min="5" max="500" placeholder="5–500" data-i18n-ph="scope.customPh" hidden>
+      <button class="chip" data-len="custom"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#pencil"></use></svg><span>Custom</span></span></button>
+      <input id="len-custom" type="number" inputmode="numeric" min="5" max="500" placeholder="5–500" hidden>
     </div>
     <div class="readout" id="readout"></div>
     <div class="startrow">
-      <button class="big primary" id="go-battle"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span>Word Quest · 20</span></span></button>
-      <button class="big" id="go-endless"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#infinity"></use></svg><span data-i18n="scope.endless">Endless</span></span></button>
-      <button class="big" id="go-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#cards"></use></svg><span data-i18n="scope.cards">Cards</span></span></button>
+      <button class="big primary" id="go-battle"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span>Battle · 20</span></span></button>
+      <button class="big" id="go-endless"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#infinity"></use></svg><span>Endless</span></span></button>
+      <button class="big" id="go-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#cards"></use></svg><span>Cards</span></span></button>
     </div>
   </div>
 
   <!-- LEARN -->
   <div class="screen" id="s-learn">
     <div class="fc-top">
-      <button class="back" style="margin:0" data-go="home" data-i18n="learn.exit">Exit</button>
+      <button class="back" style="margin:0" data-go="home">Exit</button>
       <span id="fc-count"></span>
     </div>
     <div class="card" id="fc-card"></div>
     <div class="fc-btns">
-      <button class="big learn2" id="fc-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#repeat"></use></svg><span data-i18n="learn.stillLearning">Still learning</span></span></button>
+      <button class="big learn2" id="fc-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#repeat"></use></svg><span>Still learning</span></span></button>
       <button class="spk" id="fc-spk" aria-label="Play audio"><svg class="asset-icon"><use href="assets/ui-icons.svg#sound"></use></svg></button>
-      <button class="big know" id="fc-know"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#check"></use></svg><span data-i18n="learn.knowIt">Know it</span></span></button>
+      <button class="big know" id="fc-know"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#check"></use></svg><span>Know it</span></span></button>
     </div>
   </div>
 
@@ -414,7 +361,7 @@
   <div class="screen" id="s-battle">
     <div id="hud">
       <span class="hud-pill" id="hud-lives"></span>
-      <span class="hud-pill"><svg class="asset-icon"><use href="assets/ui-icons.svg#secondary-coin"></use></svg><b id="hud-score">0</b> <span class="combo" id="hud-combo"></span></span>
+      <span class="hud-pill"><svg class="asset-icon"><use href="assets/ui-icons.svg#coin"></use></svg><b id="hud-score">0</b> <span class="combo" id="hud-combo"></span></span>
       <span class="hud-pill" id="hud-left"></span>
       <button class="hud-round" id="hud-sfx" title="sound effects" aria-label="sound effects"></button>
       <button class="hud-round" id="hud-audio" title="word audio on spawn" aria-label="word audio on spawn"></button>
@@ -426,70 +373,70 @@
 
   <!-- RESULTS -->
   <div class="screen festive" id="s-results">
-    <h2 style="text-align:center" data-i18n="results.roundOver">Round over</h2>
+    <h2 style="text-align:center">Round over</h2>
     <div class="bignum" id="r-score"></div>
     <p class="sub" id="r-sub"></p>
     <p class="sub" id="r-wallet" style="color:var(--gold)"></p>
     <div id="r-perfect" style="display:none"></div>
     <div id="r-levelup" style="display:none"></div>
     <div id="r-quests"></div>
-    <div class="sect" id="r-misshead" data-i18n="results.missed">Words you missed</div>
+    <div class="sect" id="r-misshead">Words you missed</div>
     <div class="misslist" id="r-miss"></div>
     <div class="startrow">
-      <button class="big" id="r-review"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#review"></use></svg><span data-i18n="results.reviewWords">Review Words</span></span></button>
-      <button class="big" id="r-fight-miss"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#retry"></use></svg><span data-i18n="results.practiceMissed">Practice Missed Words</span></span></button>
-      <button class="big primary" id="r-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span data-i18n="results.playAgain">Play again</span></span></button>
+      <button class="big" id="r-review"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#cards"></use></svg><span>Review misses</span></span></button>
+      <button class="big" id="r-fight-miss"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#fight"></use></svg><span>Fight misses</span></span></button>
+      <button class="big primary" id="r-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span>Play again</span></span></button>
     </div>
-    <button class="big" style="margin-top:10px" data-go="home" data-i18n="results.home">Home</button>
+    <button class="big" style="margin-top:10px" data-go="home">Home</button>
   </div>
 
   <!-- SCORES -->
   <div class="screen festive" id="s-scores">
-    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
-    <h2 data-i18n="scores.title">Best Sessions</h2>
+    <button class="back" data-go="home">← Home</button>
+    <h2>High scores</h2>
     <div class="scorelist" id="scorelist"></div>
   </div>
 
   <!-- PROGRESS -->
   <div class="screen festive" id="s-progress">
-    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
-    <h2 data-i18n="progress.title">Progress</h2>
+    <button class="back" data-go="home">← Home</button>
+    <h2>Progress</h2>
     <div class="scorelist" id="growth-card"></div>
     <div class="scorelist" id="progresslist"></div>
-    <div class="sect" data-i18n="progress.needsWork">Needs work</div>
+    <div class="sect">Needs work</div>
     <div class="misslist" id="needswork-list"></div>
     <div class="startrow">
-      <button class="big" id="nw-review"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#review"></use></svg><span data-i18n="progress.reviewThese">Review these</span></span></button>
-      <button class="big" id="nw-fight"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#retry"></use></svg><span data-i18n="progress.practiceThese">Practice These</span></span></button>
+      <button class="big" id="nw-review"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#cards"></use></svg><span>Review these</span></span></button>
+      <button class="big" id="nw-fight"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#fight"></use></svg><span>Fight these</span></span></button>
     </div>
   </div>
 
   <!-- SHOP -->
   <div class="screen festive" id="s-shop">
-    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
-    <h2 data-i18n="shop.title">Collection</h2>
+    <button class="back" data-go="home">← Home</button>
+    <h2>Lucky Shop</h2>
     <div class="readout" id="shop-wallet"></div>
-    <div class="sect" data-i18n="shop.skins">Cat skins</div>
+    <div class="sect">Cat skins</div>
     <div class="scorelist" id="shop-skins"></div>
-    <div class="sect" data-i18n="shop.backdrops">Quest backdrops</div>
+    <div class="sect">Battle backdrops</div>
     <div class="scorelist" id="shop-backdrops"></div>
-    <div class="sect" data-i18n="shop.effects">Effects</div>
+    <div class="sect">Effects</div>
     <div class="scorelist" id="shop-effects"></div>
-    <div class="sect" data-i18n="shop.sounds">Sounds</div>
+    <div class="sect">Sounds</div>
     <div class="scorelist" id="shop-sounds"></div>
-    <div class="sect" data-i18n="shop.street">Street decorations</div>
+    <div class="sect">Street decorations</div>
     <div class="scorelist" id="shop-street"></div>
   </div>
 
   <!-- HOW TO -->
   <div class="screen festive" id="s-howto">
-    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
-    <h2 data-i18n="howto.title">How to play</h2>
+    <button class="back" data-go="home">← Home</button>
+    <h2>How to play</h2>
     <p class="howto">
       A lucky cat strolls in from the right carrying a <b>Chinese word</b> (with pinyin) on a flag.<br><br>
-      Tap the <b>correct meaning</b> and the cat celebrates your answer.
-      The farther away the cat still is, the bigger the practice bonus — and learning streaks build your score.<br><br>
-      <b data-i18n="howto.oneShot">You get one shot per word.</b> A wrong tap costs a heart — no second guesses.
+      Tap the <b>correct meaning</b> and the cat cheers, flips a gold coin, and you score!
+      The farther away the cat still is, the bigger the bonus — and streaks multiply your score.<br><br>
+      <b>You get one shot per word.</b> A wrong tap costs a heart — no second guesses.
       The correct answer flashes green so you learn it for next time.<br><br>
       Too slow counts too: if the cat wanders all the way across without an answer,
       that costs a heart. Three hearts and the round is over.<br><br>

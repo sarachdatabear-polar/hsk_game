@@ -37,4 +37,4 @@ npm run cap:sync     # sync www/ into the Capacitor Android project
 npm run apk:release  # build a signed release APK
 ```
 
-See `docs/build/ANDROID_BUILD.md` for full signing and release instructions.
+See `docs/ANDROID_BUILD.md` for full signing and release instructions.

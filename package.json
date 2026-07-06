@@ -7,7 +7,6 @@
     "test": "vitest run",
     "build": "esbuild src/main.js --bundle --format=iife --outfile=dist/app.js",
     "assets:validate": "node scripts/validate-assets.mjs",
-    "assets:report": "node scripts/asset-report.mjs",
     "assets:shop": "node scripts/generate-shop-assets.mjs",
     "serve": "python -m http.server 8000",
     "cap:sync": "npm run build && node scripts/stage-www.js && npx cap sync android",
