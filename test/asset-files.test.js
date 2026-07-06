@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { SPRITE_NAMES } from "../src/sprites.js";
 
 const ASSETS = join(dirname(fileURLToPath(import.meta.url)), "..", "assets");
 
@@ -31,5 +32,13 @@ describe("extracted-pack production assets", () => {
     const svg = readFileSync(join(ASSETS, "ui-progress-fill.svg"), "utf8");
     expect(svg).toMatch(/width="400"/);
     expect(svg).not.toMatch(/width="289\.5"/); // the baked partial fill from the source file
+  });
+});
+
+describe("sprite registry", () => {
+  it("registers the orbs and word plaque for canvas drawing", () => {
+    for (const name of ["vfx-orb-green", "vfx-orb-red", "vfx-orb-blue", "vfx-orb-gold", "ui-word-plaque"]) {
+      expect(SPRITE_NAMES).toContain(name);
+    }
   });
 });
