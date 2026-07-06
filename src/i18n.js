@@ -7,6 +7,7 @@
 export const STRINGS = {
   en: {
     // home
+    "home.tagline1": "Match each word to its meaning —",
     "home.tagline": "master real-exam HSK vocabulary.",
     "home.learn": "Learn",
     "home.smart": "Smart Review",
@@ -98,6 +99,7 @@ export const STRINGS = {
   },
   th: {
     // home
+    "home.tagline1": "จับคู่คำศัพท์กับความหมาย —",
     "home.tagline": "เรียนรู้คำศัพท์ HSK จากข้อสอบจริง",
     "home.learn": "เรียน",
     "home.smart": "ทบทวนอัจฉริยะ",
