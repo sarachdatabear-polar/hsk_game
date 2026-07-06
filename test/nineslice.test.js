@@ -29,5 +29,9 @@ describe("nineSliceRects", () => {
     const tiny = nineSliceRects(560, 320, 48, 0, 0, 40, 30, 24);
     const total = tiny.reduce((s, r) => s + r.dw * r.dh, 0);
     expect(total).toBe(40 * 30); // no negative middle bands
+    for (const r of tiny) {
+      expect(r.dw).toBeGreaterThanOrEqual(0);
+      expect(r.dh).toBeGreaterThanOrEqual(0);
+    }
   });
 });

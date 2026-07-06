@@ -24,7 +24,7 @@ describe("extracted-pack production assets", () => {
       expect(existsSync(path), `${file} missing from assets/`).toBe(true);
       const svg = readFileSync(path, "utf8");
       expect(svg).toContain("<svg");
-      expect(svg, `${file} contains baked text`).not.toMatch(/<text[\s>]/);
+      expect(svg, `${file} contains baked text`).not.toMatch(/<text[\s/>]/);
     });
   }
 

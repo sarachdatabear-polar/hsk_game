@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createAssets, REGISTRY, frameCSS, img } from "../src/assets.js";
+import manifest from "../assets/asset-manifest.json";
 
 function fakeImages() {
   const created = [];
@@ -204,8 +205,6 @@ describe("singleton bound to the real manifest", () => {
     expect(img("unknown-id")).toBeNull();
   });
 });
-
-import manifest from "../assets/asset-manifest.json";
 
 describe("extracted pack v2 manifest entries", () => {
   const byId = Object.fromEntries(manifest.assets.map(a => [a.id, a]));
