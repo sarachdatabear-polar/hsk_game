@@ -75,6 +75,25 @@ v3 is live. v4 (street + effect/sound packs + decorations) is built locally and 
 - [ ] file:// open still works (no blank screen).
 - [ ] Happy? Say "ship v4" → commit + push + deploy.
 
+## 9. Playtest — Visual Slice v1 (PRD home + battle rebuild, 2026-07-06)
+
+Branch `feat/prd-visual-slice-v1` (PR to `development`). Test on `npm run serve` → http://localhost:8000 (canonical dev check — file:// works too).
+
+- [ ] Home: new layout — avatar + Lv/XP capsule and coin capsule up top, LUCKY CAT · HSK title, reading cat hero, Study Streak card, big yellow **START**.
+- [ ] **START starts a battle immediately** with your last scope; the chip beside it (e.g. "HSK3 · 20 words") opens the old scope screen; changes there are reflected on the chip when you come back.
+- [ ] Bottom nav: Home / Street / Progress / Quests / More all switch screens; nav disappears during battle and flashcards. Sound toggle + language now live in **More**.
+- [ ] Battle: HUD is hearts · blue "Round 1/20" capsule · coins · **pause**. Pause freezes everything (raccoon stops mid-step), toggles for sound/word-audio/pinyin are in the overlay, Resume continues the SAME word with no time lost, Quit exits.
+- [ ] Backgrounding the app/tab auto-pauses the battle.
+- [ ] Enemy is now a **gray raccoon ninja** with a small HP bar; your cat (with any equipped skin + unlocked accessories + kitten) stands on the left and hops when you score. Boss raccoon at word 10: HP drops to half after its first question.
+- [ ] Word plaque: pinyin sits ABOVE the hanzi; the meaning line under the hanzi is dashes until you answer, then fills in. Tap the plaque (speaker icon) → the word replays aloud.
+- [ ] Answers are a 2×2 grid of cream buttons; correct flashes green with ✓, wrong flashes coral with ✕ and highlights the right one.
+- [ ] Combo strip appears under the battlefield at combo ≥2 (COMBO n · fires · xN); at combo 10 a "CRITICAL!" burst fires.
+- [ ] Fonts: the big hanzi should look like a serif/kai display face (not your system font) — also on a phone with no Chinese fonts installed.
+- [ ] Old save sanity: wallet/skins/streak/level/mastery all intact.
+- [ ] Grind-free checks: `index.html#debug` + console `__grantXp(11000)` → kitten beside your cat in battle.
+- [ ] Replacement art (optional, whenever): generate per [GENERATION-PROMPTS-visual-slice.md](../art/GENERATION-PROMPTS-visual-slice.md) and drop the PNGs into `assets/` — same filenames, no code change.
+- [ ] Happy? Merge the PR into `development`; the deploy to `main` (with SHELL bump) is a separate release step you trigger.
+
 ## Decisions parked with you
 
 - When to deploy (section 2) — nothing goes live until you say so.
