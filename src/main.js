@@ -19,6 +19,7 @@ import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem } from "./shop.js";
 import { streetPieces, streetProgress } from "./street.js";
 import { iconSvg, setIconLabel, setIconOnly, setPill } from "./icons.js";
+import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -30,6 +31,9 @@ const store = {
 const scope = Object.assign({levels:[3], core:false, newOnly:false, topN:0, lang:"both", sessionLen:20},
                             store.get("scope", {}));
 let settings = Object.assign({autoSpeak:true}, store.get("settings", {}));
+// UI language: persisted choice wins, else device language. i18n.js is pure,
+// so persistence lives here (nbhsk.locale), like every other nbhsk.* key.
+setLocale(store.get("locale", detectLocale()));
 sfx.enabled = store.get("sfx", true);
 let pool = [];            // current merged word pool
 let learnDeck = null;     // override deck for "review misses"
@@ -139,6 +143,19 @@ fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>in
 /* ============================== sprite preload ============================== */
 loadSprites();
 preloadAssets();
+
+/* ============================== i18n DOM binding ============================== */
+// Localizes any static markup annotated with data-i18n* attributes. Dynamic
+// strings (built in JS) call t() directly at render time.
+function applyStaticI18n(root = document){
+  root.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.getAttribute("data-i18n")); });
+  root.querySelectorAll("[data-i18n-title]").forEach(el => {
+    const v = t(el.getAttribute("data-i18n-title"));
+    el.title = v; el.setAttribute("aria-label", v);
+  });
+  root.querySelectorAll("[data-i18n-ph]").forEach(el => { el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph"))); });
+  document.documentElement.lang = getLocale();
+}
 
 /* ============================== screens ============================== */
 let currentScreen = "home";
@@ -1351,6 +1368,7 @@ function renderNeedsWork(){
 
 /* ============================== boot ============================== */
 pool = buildPool(D.levels, scope);
+applyStaticI18n();
 sfx.pack = shopState.soundpack || "default";
 updateWalletChip();
 updateSmartBtn();
