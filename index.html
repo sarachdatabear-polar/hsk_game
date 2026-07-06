@@ -210,7 +210,6 @@
     display:flex; align-items:center; justify-content:center; flex:0 0 auto;
     box-shadow:0 2px 6px rgba(36,52,71,.08);}
   .hud-round:active{transform:scale(.94);}
-  #hud .combo{color:var(--edu-jade); font-weight:700;}
   .life-icon{width:18px; height:18px; color:var(--edu-coral); filter:drop-shadow(0 1px 1px rgba(0,0,0,.2));}
   .life-icon.empty{color:#6a3a3a; opacity:.65;}
   /* pause overlay — cream plaque on a dim scrim, covers #s-battle only (nav is
@@ -258,15 +257,52 @@
     background-size:cover; background-position:bottom; background-repeat:no-repeat;
     border:1px solid var(--panel-border); display:block; touch-action:none;
     box-shadow:0 10px 22px rgba(0,0,0,.25), inset 0 0 18px rgba(245,197,24,.08);}
-  #opts{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;}
-  #opts button{padding:13px 8px; font-size:15.5px; line-height:1.3; background-color:var(--edu-paper);
-    color:var(--edu-ink); border:1px solid var(--edu-gray); border-image:var(--f-ui-button-neutral, none); border-radius:12px; min-height:62px;
+  /* keyboard-focusable (M6, §11): Enter/Space replays the current word's audio,
+     same target the plaque click hit-test uses (see main.js replayCurrentWord). */
+  #cv:focus{outline:3px solid var(--lc-sun); outline-offset:2px;}
+  #cv:focus:not(:focus-visible){outline:none;}
+  /* combo strip (M6, §6.2 item 5): thin bar between the canvas and the answer
+     grid; .hidden zero-states it below a 2-combo (updateComboStrip in main.js). */
+  #combo-strip{display:flex; align-items:center; justify-content:space-between; gap:8px;
+    margin-top:8px; padding:6px 12px; min-height:30px;
+    background-color:var(--lc-cream); border:1.5px solid var(--lc-brown); border-radius:14px;}
+  #combo-strip.hidden{visibility:hidden;}
+  .combo-strip-label{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800; font-size:12.5px;
+    letter-spacing:.04em; color:var(--lc-brown); white-space:nowrap;}
+  .combo-strip-label b{font-size:14px; color:var(--lc-ink);}
+  .combo-strip-fires{display:flex; align-items:center; gap:3px;}
+  .combo-fire{width:15px; height:15px; color:var(--lc-gray); opacity:.4;}
+  .combo-fire.lit{color:var(--lc-sun); opacity:1; filter:drop-shadow(0 0 2px rgba(242,188,87,.55));}
+  .combo-strip-badge{display:inline-flex; align-items:center; justify-content:center; min-width:28px; height:24px;
+    padding:0 6px; border-radius:50%; background-color:var(--lc-sun); color:var(--lc-teal);
+    font-weight:800; font-size:12.5px; border:1.5px solid var(--lc-brown);}
+  /* answer grid (M6, §6.2 item 4 + §7.2): strict 2x2, equal-size cells at any
+     row count (grid-auto-rows keeps the boss reverse-question's 3rd prompt
+     row the same height as the two button rows below it). */
+  #opts{display:grid; grid-template-columns:1fr 1fr; grid-auto-rows:1fr; gap:10px; margin-top:10px;}
+  #opts button{padding:12px 10px; font-size:20px; font-weight:700; line-height:1.25; text-align:center;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background-color:var(--lc-sand); color:var(--lc-ink);
+    border:2px solid var(--lc-brown); border-image:var(--f-ui-button-neutral, none); border-radius:14px; min-height:68px;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.45), inset 0 -3px 0 rgba(120,80,40,.28), 0 2px 6px rgba(36,26,16,.18);
     overflow-wrap:anywhere;}
-  #opts button .th{display:block; color:var(--jade); font-size:14.5px;}
-  #opts button.good{background-color:var(--edu-jade); color:#0d2b20;}
-  #opts button.good .th{color:#0d2200;}
-  #opts button.bad{background-color:var(--red); color:#fff;}
-  #opts button:disabled{opacity:.55; border-image:var(--f-ui-button-neutral-disabled, var(--f-ui-button-neutral, none));}
+  #opts button .th{display:block; color:var(--lc-brown); font-size:15px; font-weight:600; margin-top:2px;}
+  /* reveal states never rely on color alone (§11): a ✓/✕ affix rides along
+     with the green/coral fill + the game's existing sound/haptic/motion. */
+  #opts button.good{background-color:var(--lc-success); color:var(--lc-cream); border-color:#173F22;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.3), inset 0 -3px 0 rgba(0,0,0,.22), 0 2px 6px rgba(0,0,0,.2);}
+  #opts button.good .th{color:var(--lc-cream);}
+  #opts button.good::before{content:"✓"; font-size:22px; font-weight:800; line-height:1;}
+  #opts button.bad{background-color:var(--lc-error); color:var(--lc-cream); border-color:#6E2A18;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.28), inset 0 -3px 0 rgba(0,0,0,.22), 0 2px 6px rgba(0,0,0,.2);}
+  #opts button.bad .th{color:var(--lc-cream);}
+  #opts button.bad::before{content:"✕"; font-size:22px; font-weight:800; line-height:1;}
+  #opts button:disabled{opacity:.5; border-image:var(--f-ui-button-neutral-disabled, var(--f-ui-button-neutral, none));}
+  #opts button:disabled.good, #opts button:disabled.bad{opacity:1;}
+  /* boss stage-2 reverse-question banner (spans both columns, row 1) */
+  .boss-prompt{grid-column:1/-1; text-align:center; font-weight:800; font-size:14px;
+    color:var(--lc-brown); background-color:var(--lc-cream); border:1.5px solid var(--lc-brown);
+    border-radius:10px; padding:8px 10px;}
   /* results */
   .bignum{font-size:52px; text-align:center; color:var(--gold); font-weight:800; margin:6px 0;
     font-family:'LuckyTitle',"Segoe UI",sans-serif;}
@@ -596,10 +632,17 @@
     <div id="hud">
       <span class="hud-pill" id="hud-lives"></span>
       <span class="hud-pill hud-round-pill" id="hud-round"></span>
-      <span class="hud-pill"><svg class="asset-icon"><use href="assets/ui-icons.svg#secondary-coin"></use></svg><b id="hud-score">0</b> <span class="combo" id="hud-combo"></span></span>
+      <span class="hud-pill"><svg class="asset-icon"><use href="assets/ui-icons.svg#secondary-coin"></use></svg><b id="hud-score">0</b></span>
       <button class="hud-round" id="hud-pause" title="Pause" aria-label="Pause" data-i18n-title="battle.pause"><svg class="asset-icon"><use href="assets/ui-icons.svg#pause"></use></svg></button>
     </div>
-    <div class="cv-wrap"><canvas id="cv"></canvas></div>
+    <div class="cv-wrap"><canvas id="cv" tabindex="0" role="img" data-i18n-title="battle.canvasLabel"></canvas></div>
+    <!-- combo strip (M6, §6.2 item 5): COMBO N · fire row · xN badge. Hidden
+         (via .hidden) below a 2-combo by updateComboStrip() in main.js. -->
+    <div id="combo-strip" class="hidden">
+      <span class="combo-strip-label">COMBO <b id="combo-count">0</b></span>
+      <span class="combo-strip-fires" id="combo-fires"></span>
+      <span class="combo-strip-badge" id="combo-badge"></span>
+    </div>
     <div id="opts"></div>
 
     <!-- Pause overlay: hidden by default (no .on class); covers the whole

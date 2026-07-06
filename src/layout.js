@@ -21,7 +21,11 @@ export function layout(w, h) {
     ground: 30 * S,
     mascotX: 52 * S,
     catHalf: 34 * S,
-    hanziPx: 44 * S,
+    // 60 (not 44): at a 390 CSS-px-wide viewport the battle canvas measures
+    // ~366px after screen padding, giving S ~0.96 (width-bound, see uiScale) —
+    // 44*0.96 ~ 42px fails the PRD §10 "Hanzi >= 56 CSS px at 390-wide" floor;
+    // 60*0.96 ~ 58px clears it.
+    hanziPx: 60 * S,
     pinyinPx: 18 * S,
     floaterPx: 20 * S,
     mascotPx: 48 * S,

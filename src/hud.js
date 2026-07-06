@@ -16,3 +16,19 @@ export function roundLabel(mode, spawned, total) {
   const current = Math.min(Math.max(1, spawned), total);
   return `${current}/${total}`;
 }
+
+// Combo strip (M6 — visual PRD §6.2 item 5). Both helpers are pure formatting
+// over B.combo; main.js decides when to hide the strip entirely (combo < 2).
+
+// The "xN" multiplier badge — same meaning as the old #hud-combo pill it
+// replaces: the raw combo count, shown once a streak actually exists (>=2),
+// blank below that (caller hides the strip in that case).
+export function comboMultiplier(combo) {
+  return combo >= 2 ? `x${combo}` : "";
+}
+
+// Number of lit fire glyphs in the combo strip's center row, capped at 6 so
+// a long streak doesn't need an ever-growing row of icons.
+export function comboFires(combo) {
+  return Math.max(0, Math.min(6, combo));
+}

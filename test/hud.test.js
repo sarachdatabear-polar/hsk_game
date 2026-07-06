@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { roundLabel } from "../src/hud.js";
+import { roundLabel, comboMultiplier, comboFires } from "../src/hud.js";
 
 describe("roundLabel", () => {
   it("reads 1/20 on the first word (spawned=0, before the first spawn)", () => {
@@ -27,5 +27,33 @@ describe("roundLabel", () => {
   });
   it("endless mode never goes negative", () => {
     expect(roundLabel("endless", -1, Infinity)).toBe("0 · ∞");
+  });
+});
+
+describe("comboMultiplier", () => {
+  it("blank below a 2-combo", () => {
+    expect(comboMultiplier(0)).toBe("");
+    expect(comboMultiplier(1)).toBe("");
+  });
+  it("reads xN at 2+ (same number the old #hud-combo pill showed)", () => {
+    expect(comboMultiplier(2)).toBe("x2");
+    expect(comboMultiplier(9)).toBe("x9");
+    expect(comboMultiplier(23)).toBe("x23");
+  });
+});
+
+describe("comboFires", () => {
+  it("lits one glyph per combo point", () => {
+    expect(comboFires(0)).toBe(0);
+    expect(comboFires(1)).toBe(1);
+    expect(comboFires(4)).toBe(4);
+  });
+  it("caps at 6 glyphs for long streaks", () => {
+    expect(comboFires(6)).toBe(6);
+    expect(comboFires(7)).toBe(6);
+    expect(comboFires(23)).toBe(6);
+  });
+  it("never goes negative", () => {
+    expect(comboFires(-3)).toBe(0);
   });
 });

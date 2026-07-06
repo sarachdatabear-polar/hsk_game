@@ -848,7 +848,11 @@
       ground: 30 * S,
       mascotX: 52 * S,
       catHalf: 34 * S,
-      hanziPx: 44 * S,
+      // 60 (not 44): at a 390 CSS-px-wide viewport the battle canvas measures
+      // ~366px after screen padding, giving S ~0.96 (width-bound, see uiScale) —
+      // 44*0.96 ~ 42px fails the PRD §10 "Hanzi >= 56 CSS px at 390-wide" floor;
+      // 60*0.96 ~ 58px clears it.
+      hanziPx: 60 * S,
       pinyinPx: 18 * S,
       floaterPx: 20 * S,
       mascotPx: 48 * S,
@@ -1596,6 +1600,8 @@
       "battle.pinyin": "Pinyin",
       "battle.on": "On",
       "battle.off": "Off",
+      "battle.canvasLabel": "Battle scene. Press Enter or Space to replay the word's audio.",
+      "battle.bossPrompt": "Review Challenge \xB7 pick the hanzi for: {meaning}",
       // common
       "common.back": "\u2190 Home",
       "common.backMore": "\u2190 More",
@@ -1710,6 +1716,8 @@
       "battle.pinyin": "\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19",
       "battle.on": "\u0E40\u0E1B\u0E34\u0E14",
       "battle.off": "\u0E1B\u0E34\u0E14",
+      "battle.canvasLabel": "\u0E09\u0E32\u0E01\u0E15\u0E48\u0E2D\u0E2A\u0E39\u0E49 \u0E01\u0E14 Enter \u0E2B\u0E23\u0E37\u0E2D Space \u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E1F\u0E31\u0E07\u0E40\u0E2A\u0E35\u0E22\u0E07\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07",
+      "battle.bossPrompt": "\u0E14\u0E48\u0E32\u0E19\u0E17\u0E1A\u0E17\u0E27\u0E19 \xB7 \u0E40\u0E25\u0E37\u0E2D\u0E01\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E08\u0E35\u0E19\u0E02\u0E2D\u0E07\u0E04\u0E33\u0E27\u0E48\u0E32: {meaning}",
       // common
       "common.back": "\u2190 \u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
       "common.backMore": "\u2190 \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
@@ -1763,10 +1771,23 @@
     const current2 = Math.min(Math.max(1, spawned), total);
     return `${current2}/${total}`;
   }
+  function comboMultiplier(combo) {
+    return combo >= 2 ? `x${combo}` : "";
+  }
+  function comboFires(combo) {
+    return Math.max(0, Math.min(6, combo));
+  }
 
   // src/main.js
   var D = window.HSK_DATA;
   var $ = (s) => document.querySelector(s);
+  var REDUCED_MOTION = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function fxDuration(ms) {
+    return REDUCED_MOTION ? Math.round(ms / 2) : ms;
+  }
+  function fxUntil(ms) {
+    return performance.now() + fxDuration(ms);
+  }
   var store = {
     get(k, d) {
       try {
@@ -2174,6 +2195,22 @@
   window.addEventListener("resize", () => {
     if (B.on) sizeCanvas();
   });
+  function replayCurrentWord() {
+    if (B.paused || !B.zombie) return;
+    speak(B.zombie.w.h);
+  }
+  cv.addEventListener("click", (e) => {
+    const r = B.plaqueRect;
+    if (!r) return;
+    const box = cv.getBoundingClientRect();
+    const x = e.clientX - box.left, y = e.clientY - box.top;
+    if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) replayCurrentWord();
+  });
+  cv.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+    e.preventDefault();
+    replayCurrentWord();
+  });
   function pickWord() {
     const deck = B.deck;
     const now = Date.now();
@@ -2224,6 +2261,7 @@
     B.nextAt = 0;
     B.lastT = 0;
     B.locked = false;
+    B.bossStageAt = 0;
     B.paused = false;
     B.pausedAt = 0;
     $("#pause-overlay").classList.remove("on");
@@ -2267,8 +2305,25 @@
       lives.appendChild(h);
     }
     $("#hud-score").textContent = B.score;
-    $("#hud-combo").textContent = B.combo >= 2 ? "x" + B.combo : "";
     $("#hud-round").textContent = t("battle.round", { label: roundLabel(B.mode, B.spawned, B.wordsTotal) });
+    updateComboStrip();
+  }
+  function updateComboStrip() {
+    const strip = $("#combo-strip");
+    if (!strip) return;
+    const show2 = B.combo >= 2;
+    strip.classList.toggle("hidden", !show2);
+    if (!show2) return;
+    $("#combo-count").textContent = B.combo;
+    $("#combo-badge").textContent = comboMultiplier(B.combo);
+    const lit = comboFires(B.combo);
+    const fires = $("#combo-fires");
+    fires.replaceChildren();
+    for (let i = 0; i < 6; i++) {
+      const f = iconSvg("streak");
+      f.classList.add("combo-fire", i < lit ? "lit" : "unlit");
+      fires.appendChild(f);
+    }
   }
   var PAUSE_TOGGLES = [
     { icon: "bell", iconOff: "bell-off", labelKey: "home.sound", isOn: () => sfx.enabled, toggle: () => toggleSfx() },
@@ -2334,6 +2389,7 @@
     if (B.mascotHopUntil) B.mascotHopUntil += shift;
     if (B.feedback) B.feedback.until += shift;
     if (B.zombie && B.zombie.wrongUntil) B.zombie.wrongUntil += shift;
+    if (B.bossStageAt) B.bossStageAt += shift;
     B.paused = false;
     keepAwake(true);
     $("#pause-overlay").classList.remove("on");
@@ -2388,8 +2444,8 @@
     box.innerHTML = "";
     const m = meaning(word, scope.lang);
     const prompt = document.createElement("div");
-    prompt.style.cssText = "grid-column:1/-1; text-align:center; font-weight:700; color:var(--gold); padding:2px 4px 8px;";
-    prompt.textContent = `Review Challenge \xB7 pick the hanzi for: ${m.main}`;
+    prompt.className = "boss-prompt";
+    prompt.textContent = t("battle.bossPrompt", { meaning: m.main });
     box.appendChild(prompt);
     for (const o of opts) {
       const b = document.createElement("button");
@@ -2425,16 +2481,11 @@
       z.hp = 0.5;
       btn.classList.add("good");
       lockOptions();
-      setTimeout(() => {
-        if (!B.on || B.zombie !== z) return;
-        z.stage = "hanzi";
-        z.frozen = false;
-        renderBossHanzi(z.w);
-        B.locked = false;
-      }, 500);
+      B.bossStageAt = performance.now() + 500;
       updateHud();
       return;
     }
+    z.revealed = true;
     if (correct) {
       B.correct++;
       B.combo++;
@@ -2453,12 +2504,12 @@
       B.proj = { x: B.L.mascotX + 16 * B.S, y: B.h - B.L.ground - 30 * B.S };
       if (boss) noteAnswer(z.w.h, true);
       const gy = B.h - B.L.ground;
-      B.feedback = { ...feedbackEffect("correct", z.x, gy - 42 * B.S), until: performance.now() + 620 };
+      B.feedback = { ...feedbackEffect("correct", z.x, gy - 42 * B.S), until: fxUntil(620) };
       const floater = comboFloater(z.x, gy - 130, B.combo);
       if (floater) B.floats.push(floater);
       if (B.combo >= 10 && B.combo % 10 === 0) {
         B.parts.push(...fireworkRing(z.x, gy - 16));
-        B.feedback = { ...feedbackEffect("streak", z.x, gy - 42 * B.S), until: performance.now() + 750 };
+        B.feedback = { ...feedbackEffect("critical", z.x, gy - 42 * B.S), until: fxUntil(750) };
       }
     } else {
       B.combo = 0;
@@ -2472,11 +2523,11 @@
       if (boss) noteAnswer(z.w.h, false);
       B.lives--;
       B.flash = 1;
-      B.screenShake = 1;
+      B.screenShake = REDUCED_MOTION ? 0 : 1;
       B.resolved++;
       z.state = "wrong";
       z.wrongUntil = performance.now() + 560;
-      B.feedback = { ...feedbackEffect("wrong", z.x, B.h - B.L.ground - 44 * B.S), until: performance.now() + 560 };
+      B.feedback = { ...feedbackEffect("wrong", z.x, B.h - B.L.ground - 44 * B.S), until: fxUntil(560) };
     }
     updateHud();
   }
@@ -2504,6 +2555,7 @@
       pushMiss(z.w);
       revealCorrect(z.w);
       lockOptions();
+      z.revealed = true;
     }
     sfx.bite();
     B.lives--;
@@ -2521,6 +2573,16 @@
     }
     const dt = Math.min(0.05, (t2 - (B.lastT || t2)) / 1e3);
     B.lastT = t2;
+    if (B.bossStageAt && t2 >= B.bossStageAt) {
+      B.bossStageAt = 0;
+      const bz = B.zombie;
+      if (bz && bz.frozen && bz.stage === "meaning") {
+        bz.stage = "hanzi";
+        bz.frozen = false;
+        renderBossHanzi(bz.w);
+        B.locked = false;
+      }
+    }
     if (!B.zombie && t2 >= B.nextAt) {
       if (B.lives > 0 && B.spawned < B.wordsTotal) spawnZombie();
       else {
@@ -2701,9 +2763,7 @@
     const z = B.zombie;
     if (z) {
       const hideWord = z.boss && z.stage === "hanzi" && z.state === "walk";
-      const bh = hideWord ? "\uFF1F\uFF1F" : z.w.h;
-      const bp = hideWord || !settings.showPinyin ? "" : z.w.p;
-      drawWordPlate(hideWord ? "??" : bh, bp, z.w.lv, z.boss, t2);
+      drawWordPlate(z, hideWord, t2);
       const rScale = z.boss ? 1.5 * B.S : B.S;
       drawRaccoon(ctx2, z.x, gy + 6 * B.S, t2, z.state, rScale, !!z.boss);
       let hpFrac = z.hp;
@@ -2712,6 +2772,8 @@
         hpFrac = (z.hpAtKill ?? z.hp) * (remain / 250);
       }
       drawHpBar(ctx2, z.x, gy + 6 * B.S - RACCOON_HEIGHT * rScale, 46 * B.S, hpFrac, B.S);
+    } else {
+      B.plaqueRect = null;
     }
     if (B.proj) {
       const coinImg = sprite("coin");
@@ -2772,13 +2834,23 @@
     }
     if (shake) ctx2.restore();
   }
-  function drawWordPlate(hanzi, pinyin, level, boss, t2) {
+  function drawWordPlate(z, hideWord, t2) {
+    const w = z.w, boss = z.boss, level = w.lv;
+    const hanzi = hideWord ? "\uFF1F\uFF1F" : w.h;
+    const pinyin = hideWord || !settings.showPinyin ? "" : w.p;
+    const revealed = !!z.revealed;
+    const showSub = scope.lang === "both";
     const wy = Math.round(B.h * 0.36);
     ctx2.save();
     ctx2.font = fontString(700, B.L.hanziPx, HANZI_STACK);
     const textW = Math.max(ctx2.measureText(hanzi).width, 74 * B.S);
-    const lw = Math.min(B.w - 24 * B.S, textW + 48 * B.S);
-    const lh = (pinyin ? 86 : 64) * B.S;
+    const spkR = 12 * B.S;
+    const lw = Math.min(B.w - 24 * B.S, textW + 56 * B.S + spkR * 2.2);
+    const padV = 10 * B.S;
+    const pinyinH = pinyin ? 22 * B.S : 0;
+    const hanziH = B.L.hanziPx * 1.05;
+    const transH = (showSub ? 40 : 24) * B.S;
+    const lh = padV * 2 + pinyinH + hanziH + transH;
     const x = B.w / 2 - lw / 2, y = wy - lh / 2;
     const plaqueImg = sprite("ui-word-plaque");
     if (plaqueImg) {
@@ -2825,15 +2897,48 @@
       ctx2.lineTo(x + lw - ti, y + lh - ti - tk);
       ctx2.stroke();
     }
-    ctx2.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
     ctx2.textAlign = "center";
-    ctx2.font = fontString(700, B.L.hanziPx, HANZI_STACK);
-    ctx2.fillText(hanzi, B.w / 2, wy + (pinyin ? -5 * B.S : B.L.hanziPx * 0.34));
+    ctx2.textBaseline = "middle";
+    let cy = y + padV;
     if (pinyin) {
       ctx2.font = fontString(600, B.L.pinyinPx, LATIN_STACK);
       ctx2.fillStyle = "#8C5F2A";
-      ctx2.fillText(pinyin, B.w / 2, wy + 28 * B.S);
+      ctx2.fillText(pinyin, B.w / 2, cy + pinyinH / 2);
+      cy += pinyinH;
     }
+    ctx2.font = fontString(700, B.L.hanziPx, HANZI_STACK);
+    ctx2.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
+    ctx2.fillText(hanzi, B.w / 2, cy + hanziH / 2);
+    cy += hanziH;
+    const midY = cy + (showSub ? transH * 0.32 : transH / 2);
+    if (revealed) {
+      const m = meaning(w, scope.lang);
+      ctx2.font = fontString(700, 15 * B.S, LATIN_STACK);
+      ctx2.fillStyle = "#2F6B4F";
+      ctx2.fillText(m.main, B.w / 2, midY);
+      if (showSub && m.sub) {
+        ctx2.font = fontString(600, 13 * B.S, LATIN_STACK);
+        ctx2.fillStyle = "#5C7A68";
+        ctx2.fillText(m.sub, B.w / 2, cy + transH * 0.74);
+      }
+    } else {
+      ctx2.strokeStyle = "rgba(140,95,42,.32)";
+      ctx2.lineWidth = Math.max(1.4, 2 * B.S);
+      ctx2.setLineDash([4 * B.S, 4 * B.S]);
+      ctx2.beginPath();
+      ctx2.moveTo(B.w / 2 - 44 * B.S, midY);
+      ctx2.lineTo(B.w / 2 + 44 * B.S, midY);
+      ctx2.stroke();
+      if (showSub) {
+        const y2 = cy + transH * 0.74;
+        ctx2.beginPath();
+        ctx2.moveTo(B.w / 2 - 30 * B.S, y2);
+        ctx2.lineTo(B.w / 2 + 30 * B.S, y2);
+        ctx2.stroke();
+      }
+      ctx2.setLineDash([]);
+    }
+    ctx2.textBaseline = "alphabetic";
     if (level) {
       ctx2.font = fontString(700, 10 * B.S, LATIN_STACK);
       const tagText = `HSK ${level}`;
@@ -2850,13 +2955,39 @@
       ctx2.textAlign = "left";
       ctx2.fillText(tagText, x + 14 * B.S, y - th * 0.45 + th * 0.7);
     }
+    drawSpeakerIcon(ctx2, x + lw - spkR - 10 * B.S, y + lh / 2, spkR, boss ? "#7A4E0C" : "#8C5F2A");
+    B.plaqueRect = { x, y, w: lw, h: lh };
     ctx2.restore();
+  }
+  function drawSpeakerIcon(c, cx, cy, r, color) {
+    c.save();
+    c.translate(cx, cy);
+    c.fillStyle = color;
+    c.beginPath();
+    c.moveTo(-r * 0.9, -r * 0.35);
+    c.lineTo(-r * 0.3, -r * 0.35);
+    c.lineTo(r * 0.35, -r * 0.85);
+    c.lineTo(r * 0.35, r * 0.85);
+    c.lineTo(-r * 0.3, r * 0.35);
+    c.lineTo(-r * 0.9, r * 0.35);
+    c.closePath();
+    c.fill();
+    c.strokeStyle = color;
+    c.lineWidth = Math.max(1.2, r * 0.16);
+    c.lineCap = "round";
+    c.beginPath();
+    c.arc(r * 0.05, 0, r * 0.62, -Math.PI * 0.32, Math.PI * 0.32);
+    c.stroke();
+    c.beginPath();
+    c.arc(r * 0.05, 0, r * 0.98, -Math.PI * 0.34, Math.PI * 0.34);
+    c.stroke();
+    c.restore();
   }
   function drawFeedbackLayer(t2) {
     const fb = B.feedback;
     if (!fb) return;
     const kind = fb.kind || fb.type;
-    const total = kind === "critical" || kind === "streak" ? 750 : kind === "correct" ? 620 : 560;
+    const total = fxDuration(kind === "critical" || kind === "streak" ? 750 : kind === "correct" ? 620 : 560);
     const left = fb.until - performance.now();
     if (left <= 0) {
       B.feedback = null;
@@ -2867,7 +2998,7 @@
     ctx2.globalAlpha = Math.max(0, 1 - p);
     const orbImg = fb.orb ? sprite(fb.orb) : null;
     if (orbImg) {
-      const os = (kind === "streak" ? 110 : 84) * B.S * (0.6 + 0.5 * Math.min(1, p * 2.4));
+      const os = (kind === "streak" || kind === "critical" ? 110 : 84) * B.S * (0.6 + 0.5 * Math.min(1, p * 2.4));
       ctx2.drawImage(orbImg, fb.x - os / 2, fb.y - os / 2, os, os);
     }
     const fxImg = fb.sprite ? sprite(fb.sprite) : null;
@@ -2894,6 +3025,23 @@
       ctx2.beginPath();
       ctx2.arc(fb.x, fb.y, (18 + 26 * p) * B.S, Math.PI * 0.15, Math.PI * 1.85);
       ctx2.stroke();
+    }
+    if (kind === "critical") {
+      const tx = Math.min(Math.max(fb.x, 74 * B.S), B.w - 74 * B.S);
+      const scale = 0.55 + 0.45 * Math.min(1, p * 6);
+      ctx2.save();
+      ctx2.translate(tx, fb.y);
+      ctx2.scale(scale, scale);
+      ctx2.textAlign = "center";
+      ctx2.textBaseline = "middle";
+      ctx2.font = fontString(800, 22 * B.S, LATIN_STACK);
+      ctx2.lineJoin = "round";
+      ctx2.strokeStyle = "#FBF5E8";
+      ctx2.lineWidth = 4 * B.S;
+      ctx2.strokeText("CRITICAL!", 0, 0);
+      ctx2.fillStyle = "#7A4E0C";
+      ctx2.fillText("CRITICAL!", 0, 0);
+      ctx2.restore();
     }
     ctx2.restore();
   }
