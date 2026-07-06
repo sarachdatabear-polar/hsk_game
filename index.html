@@ -296,10 +296,10 @@
   <!-- HOME -->
   <div class="screen on" id="s-home">
     <h1>Lucky Cat HSK <span class="sub-cn">招财猫</span></h1>
-    <p class="tag">Match each word to its meaning —<br>master real-exam HSK vocabulary.</p>
+    <p class="tag" data-i18n="home.tagline">Match each word to its meaning —<br>master real-exam HSK vocabulary.</p>
     <div class="menu">
-      <button class="big primary" data-go="scope"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#learn"></use></svg><span>Learn</span></span></button>
-      <button class="big" id="go-smart"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#target"></use></svg><span>Smart Review</span></span></button>
+      <button class="big primary" data-go="scope"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#learn"></use></svg><span data-i18n="home.learn">Learn</span></span></button>
+      <button class="big" id="go-smart"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#target"></use></svg><span data-i18n="home.smart">Smart Review</span></span></button>
       <div style="text-align:center; display:flex; justify-content:center; gap:8px; flex-wrap:wrap">
         <span class="hud-pill" id="home-streak"><svg class="asset-icon"><use href="assets/ui-icons.svg#streak"></use></svg><span>0 · 0/20 today</span></span>
         <span class="hud-pill" id="home-level"><svg class="asset-icon"><use href="assets/ui-icons.svg#paw"></use></svg><span>Lv 1</span></span>
@@ -309,12 +309,12 @@
       <div id="street-caption"></div>
       <div id="quest-panel"></div>
       <div class="icon-row">
-        <button class="icon-btn" data-go="scope-learn" title="Flashcards" aria-label="Flashcards"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg></button>
-        <button class="icon-btn" data-go="shop" title="Collection" aria-label="Collection"><svg class="asset-icon"><use href="assets/ui-icons.svg#collection"></use></svg></button>
-        <button class="icon-btn" data-go="scores" title="Best Sessions" aria-label="Best Sessions"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg></button>
-        <button class="icon-btn" data-go="progress" title="Progress" aria-label="Progress"><svg class="asset-icon"><use href="assets/ui-icons.svg#progress"></use></svg></button>
-        <button class="icon-btn" data-go="howto" title="How to play" aria-label="How to play"><svg class="asset-icon"><use href="assets/ui-icons.svg#help"></use></svg></button>
-        <button class="icon-btn" id="home-sound" title="Sound effects" aria-label="Sound effects"><svg class="asset-icon"><use href="assets/ui-icons.svg#audio"></use></svg></button>
+        <button class="icon-btn" data-go="scope-learn" title="Flashcards" data-i18n-title="home.flashcards" aria-label="Flashcards"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg></button>
+        <button class="icon-btn" data-go="shop" title="Collection" data-i18n-title="home.collection" aria-label="Collection"><svg class="asset-icon"><use href="assets/ui-icons.svg#collection"></use></svg></button>
+        <button class="icon-btn" data-go="scores" title="Best Sessions" data-i18n-title="home.best" aria-label="Best Sessions"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg></button>
+        <button class="icon-btn" data-go="progress" title="Progress" data-i18n-title="home.progress" aria-label="Progress"><svg class="asset-icon"><use href="assets/ui-icons.svg#progress"></use></svg></button>
+        <button class="icon-btn" data-go="howto" title="How to play" data-i18n-title="home.howto" aria-label="How to play"><svg class="asset-icon"><use href="assets/ui-icons.svg#help"></use></svg></button>
+        <button class="icon-btn" id="home-sound" title="Sound effects" data-i18n-title="home.sound" aria-label="Sound effects"><svg class="asset-icon"><use href="assets/ui-icons.svg#audio"></use></svg></button>
       </div>
     </div>
     <footer>Lucky Cat · HSK 1–6 · built from real exam data</footer>
@@ -322,60 +322,60 @@
 
   <!-- SCOPE -->
   <div class="screen" id="s-scope">
-    <button class="back" data-go="home">← Home</button>
-    <h2>Choose your words</h2>
-    <div class="sect">Levels</div>
+    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
+    <h2 data-i18n="scope.title">Choose your words</h2>
+    <div class="sect" data-i18n="scope.levels">Levels</div>
     <div class="chips" id="lv-chips"></div>
     <div class="chips" style="margin-top:8px" id="preset-chips">
       <button class="chip preset" data-preset="1,2,3">HSK1–3</button>
       <button class="chip preset" data-preset="4,5,6">HSK4–6</button>
       <button class="chip preset" data-preset="1,2,3,4,5,6">HSK1–6</button>
     </div>
-    <div class="sect">Filters</div>
+    <div class="sect" data-i18n="scope.filters">Filters</div>
     <div class="chips">
-      <button class="chip" id="f-core">High-yield only</button>
-      <button class="chip" id="f-new">New words only</button>
+      <button class="chip" id="f-core" data-i18n="scope.highYield">High-yield only</button>
+      <button class="chip" id="f-new" data-i18n="scope.newOnly">New words only</button>
     </div>
-    <div class="sect">Top-N by frequency</div>
+    <div class="sect" data-i18n="scope.topN">Top-N by frequency</div>
     <div class="chips" id="topn-chips">
       <button class="chip" data-n="100">100</button>
       <button class="chip" data-n="300">300</button>
       <button class="chip" data-n="500">500</button>
-      <button class="chip on" data-n="0">All</button>
+      <button class="chip on" data-n="0" data-i18n="scope.all">All</button>
     </div>
-    <div class="sect">Meaning language</div>
+    <div class="sect" data-i18n="scope.meaningLang">Meaning language</div>
     <div class="chips" id="lang-chips">
       <button class="chip" data-lang="th">ไทย</button>
-      <button class="chip" data-lang="en">English</button>
-      <button class="chip on" data-lang="both">Both</button>
+      <button class="chip" data-lang="en" data-i18n="scope.english">English</button>
+      <button class="chip on" data-lang="both" data-i18n="scope.both">Both</button>
     </div>
-    <div class="sect">Session length</div>
+    <div class="sect" data-i18n="scope.sessionLen">Session length</div>
     <div class="chips" id="len-chips">
       <button class="chip" data-len="20">20</button>
       <button class="chip" data-len="40">40</button>
       <button class="chip" data-len="100">100</button>
-      <button class="chip" data-len="custom"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#pencil"></use></svg><span>Custom</span></span></button>
-      <input id="len-custom" type="number" inputmode="numeric" min="5" max="500" placeholder="5–500" hidden>
+      <button class="chip" data-len="custom"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#pencil"></use></svg><span data-i18n="scope.custom">Custom</span></span></button>
+      <input id="len-custom" type="number" inputmode="numeric" min="5" max="500" placeholder="5–500" data-i18n-ph="scope.customPh" hidden>
     </div>
     <div class="readout" id="readout"></div>
     <div class="startrow">
       <button class="big primary" id="go-battle"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span>Word Quest · 20</span></span></button>
-      <button class="big" id="go-endless"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#infinity"></use></svg><span>Endless</span></span></button>
-      <button class="big" id="go-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#cards"></use></svg><span>Cards</span></span></button>
+      <button class="big" id="go-endless"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#infinity"></use></svg><span data-i18n="scope.endless">Endless</span></span></button>
+      <button class="big" id="go-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#cards"></use></svg><span data-i18n="scope.cards">Cards</span></span></button>
     </div>
   </div>
 
   <!-- LEARN -->
   <div class="screen" id="s-learn">
     <div class="fc-top">
-      <button class="back" style="margin:0" data-go="home">Exit</button>
+      <button class="back" style="margin:0" data-go="home" data-i18n="learn.exit">Exit</button>
       <span id="fc-count"></span>
     </div>
     <div class="card" id="fc-card"></div>
     <div class="fc-btns">
-      <button class="big learn2" id="fc-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#repeat"></use></svg><span>Still learning</span></span></button>
+      <button class="big learn2" id="fc-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#repeat"></use></svg><span data-i18n="learn.stillLearning">Still learning</span></span></button>
       <button class="spk" id="fc-spk" aria-label="Play audio"><svg class="asset-icon"><use href="assets/ui-icons.svg#sound"></use></svg></button>
-      <button class="big know" id="fc-know"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#check"></use></svg><span>Know it</span></span></button>
+      <button class="big know" id="fc-know"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#check"></use></svg><span data-i18n="learn.knowIt">Know it</span></span></button>
     </div>
   </div>
 
@@ -395,70 +395,70 @@
 
   <!-- RESULTS -->
   <div class="screen festive" id="s-results">
-    <h2 style="text-align:center">Round over</h2>
+    <h2 style="text-align:center" data-i18n="results.roundOver">Round over</h2>
     <div class="bignum" id="r-score"></div>
     <p class="sub" id="r-sub"></p>
     <p class="sub" id="r-wallet" style="color:var(--gold)"></p>
     <div id="r-perfect" style="display:none"></div>
     <div id="r-levelup" style="display:none"></div>
     <div id="r-quests"></div>
-    <div class="sect" id="r-misshead">Words you missed</div>
+    <div class="sect" id="r-misshead" data-i18n="results.missed">Words you missed</div>
     <div class="misslist" id="r-miss"></div>
     <div class="startrow">
-      <button class="big" id="r-review"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#review"></use></svg><span>Review Words</span></span></button>
-      <button class="big" id="r-fight-miss"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#retry"></use></svg><span>Practice Missed Words</span></span></button>
-      <button class="big primary" id="r-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span>Play again</span></span></button>
+      <button class="big" id="r-review"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#review"></use></svg><span data-i18n="results.reviewWords">Review Words</span></span></button>
+      <button class="big" id="r-fight-miss"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#retry"></use></svg><span data-i18n="results.practiceMissed">Practice Missed Words</span></span></button>
+      <button class="big primary" id="r-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span data-i18n="results.playAgain">Play again</span></span></button>
     </div>
-    <button class="big" style="margin-top:10px" data-go="home">Home</button>
+    <button class="big" style="margin-top:10px" data-go="home" data-i18n="results.home">Home</button>
   </div>
 
   <!-- SCORES -->
   <div class="screen festive" id="s-scores">
-    <button class="back" data-go="home">← Home</button>
-    <h2>Best Sessions</h2>
+    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
+    <h2 data-i18n="scores.title">Best Sessions</h2>
     <div class="scorelist" id="scorelist"></div>
   </div>
 
   <!-- PROGRESS -->
   <div class="screen festive" id="s-progress">
-    <button class="back" data-go="home">← Home</button>
-    <h2>Progress</h2>
+    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
+    <h2 data-i18n="progress.title">Progress</h2>
     <div class="scorelist" id="growth-card"></div>
     <div class="scorelist" id="progresslist"></div>
-    <div class="sect">Needs work</div>
+    <div class="sect" data-i18n="progress.needsWork">Needs work</div>
     <div class="misslist" id="needswork-list"></div>
     <div class="startrow">
-      <button class="big" id="nw-review"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#review"></use></svg><span>Review these</span></span></button>
-      <button class="big" id="nw-fight"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#retry"></use></svg><span>Practice These</span></span></button>
+      <button class="big" id="nw-review"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#review"></use></svg><span data-i18n="progress.reviewThese">Review these</span></span></button>
+      <button class="big" id="nw-fight"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#retry"></use></svg><span data-i18n="progress.practiceThese">Practice These</span></span></button>
     </div>
   </div>
 
   <!-- SHOP -->
   <div class="screen festive" id="s-shop">
-    <button class="back" data-go="home">← Home</button>
-    <h2>Collection</h2>
+    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
+    <h2 data-i18n="shop.title">Collection</h2>
     <div class="readout" id="shop-wallet"></div>
-    <div class="sect">Cat skins</div>
+    <div class="sect" data-i18n="shop.skins">Cat skins</div>
     <div class="scorelist" id="shop-skins"></div>
-    <div class="sect">Quest backdrops</div>
+    <div class="sect" data-i18n="shop.backdrops">Quest backdrops</div>
     <div class="scorelist" id="shop-backdrops"></div>
-    <div class="sect">Effects</div>
+    <div class="sect" data-i18n="shop.effects">Effects</div>
     <div class="scorelist" id="shop-effects"></div>
-    <div class="sect">Sounds</div>
+    <div class="sect" data-i18n="shop.sounds">Sounds</div>
     <div class="scorelist" id="shop-sounds"></div>
-    <div class="sect">Street decorations</div>
+    <div class="sect" data-i18n="shop.street">Street decorations</div>
     <div class="scorelist" id="shop-street"></div>
   </div>
 
   <!-- HOW TO -->
   <div class="screen festive" id="s-howto">
-    <button class="back" data-go="home">← Home</button>
-    <h2>How to play</h2>
+    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
+    <h2 data-i18n="howto.title">How to play</h2>
     <p class="howto">
       A lucky cat strolls in from the right carrying a <b>Chinese word</b> (with pinyin) on a flag.<br><br>
       Tap the <b>correct meaning</b> and the cat celebrates your answer.
       The farther away the cat still is, the bigger the practice bonus — and learning streaks build your score.<br><br>
-      <b>You get one shot per word.</b> A wrong tap costs a heart — no second guesses.
+      <b data-i18n="howto.oneShot">You get one shot per word.</b> A wrong tap costs a heart — no second guesses.
       The correct answer flashes green so you learn it for next time.<br><br>
       Too slow counts too: if the cat wanders all the way across without an answer,
       that costs a heart. Three hearts and the round is over.<br><br>
