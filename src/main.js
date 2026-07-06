@@ -7,6 +7,7 @@ import { sfx } from "./sfx.js";
 import { drawCat } from "./cat.js";
 import { uiScale, layout } from "./layout.js";
 import { loadSprites, sprite } from "./sprites.js";
+import { nineSliceRects } from "./nineslice.js";
 import { preload as preloadAssets } from "./assets.js";
 import { recordAnswer, levelMastery } from "./mastery.js";
 import { levelForXp, xpToNext, accessoriesFor, nextMilestone, MILESTONES } from "./growth.js";
@@ -505,8 +506,11 @@ function answer(btn, o){
     B.feedback = {...feedbackEffect("correct", z.x, gy-42*B.S), until:performance.now()+620};
     const floater = comboFloater(z.x, gy-130, B.combo);
     if(floater) B.floats.push(floater);
-    // milestone combo (10, 20, ...): extra sparkle on top of the usual combo sting above
-    if(B.combo>=10 && B.combo%10===0) B.parts.push(...fireworkRing(z.x, gy-16));
+    // milestone combo (10, 20, ...): extra sparkle + blue streak orb replaces the plain stamp
+    if(B.combo>=10 && B.combo%10===0){
+      B.parts.push(...fireworkRing(z.x, gy-16));
+      B.feedback = {...feedbackEffect("streak", z.x, gy-42*B.S), until:performance.now()+750};
+    }
   }else{
     // ONE attempt per word: wrong tap = lose a heart. Skip the charge animation and
     // advance quickly — just long enough to see the correct answer flashed green.
@@ -766,34 +770,43 @@ function drawWordPlate(hanzi, pinyin, level, boss, t){
   const lw = Math.min(B.w - 24*B.S, textW + 48*B.S);
   const lh = (pinyin ? 86 : 64) * B.S;
   const x = B.w/2 - lw/2, y = wy - lh/2;
-  // cream paper plaque (education-first reference): matte paper, warm-brown
-  // border, corner ticks — hanzi/pinyin stay dynamic text, never baked art
-  ctx.shadowColor = "rgba(60,40,20,.32)";
-  ctx.shadowBlur = 12*B.S;
-  ctx.shadowOffsetY = 4*B.S;
-  const paper = ctx.createLinearGradient(0,y,0,y+lh);
-  paper.addColorStop(0,"rgba(253,246,227,.97)");
-  paper.addColorStop(1,"rgba(243,230,198,.97)");
-  ctx.fillStyle = paper;
-  roundRect(x,y,lw,lh,14*B.S); ctx.fill();
-  ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-  ctx.strokeStyle = boss ? "#D8A93A" : "#B98F55";
-  ctx.lineWidth = 2.6*B.S;
-  roundRect(x+1.3*B.S,y+1.3*B.S,lw-2.6*B.S,lh-2.6*B.S,13*B.S); ctx.stroke();
-  ctx.strokeStyle = "rgba(231,211,166,.9)";
-  ctx.lineWidth = 1.2*B.S;
-  roundRect(x+6*B.S,y+6*B.S,lw-12*B.S,lh-12*B.S,9*B.S); ctx.stroke();
-  // corner ticks
-  ctx.strokeStyle = "#C29B5F";
-  ctx.lineWidth = 1.8*B.S;
-  ctx.lineCap = "round";
-  const tk = 5*B.S, ti = 10*B.S;
-  ctx.beginPath();
-  ctx.moveTo(x+ti, y+ti+tk); ctx.lineTo(x+ti, y+ti); ctx.lineTo(x+ti+tk, y+ti);
-  ctx.moveTo(x+lw-ti-tk, y+ti); ctx.lineTo(x+lw-ti, y+ti); ctx.lineTo(x+lw-ti, y+ti+tk);
-  ctx.moveTo(x+ti, y+lh-ti-tk); ctx.lineTo(x+ti, y+lh-ti); ctx.lineTo(x+ti+tk, y+lh-ti);
-  ctx.moveTo(x+lw-ti-tk, y+lh-ti); ctx.lineTo(x+lw-ti, y+lh-ti); ctx.lineTo(x+lw-ti, y+lh-ti-tk);
-  ctx.stroke();
+  const plaqueImg = sprite("ui-word-plaque");
+  if(plaqueImg){
+    // 9-slice so the gold rim + notched frame stay crisp at any plaque size
+    const di = Math.min(20*B.S, lw/3, lh/3);
+    for(const r of nineSliceRects(560, 320, 48, x, y, lw, lh, di)){
+      ctx.drawImage(plaqueImg, r.sx, r.sy, r.sw, r.sh, r.dx, r.dy, r.dw, r.dh);
+    }
+  }else{
+    // vector fallback: cream paper plaque (education-first reference): matte
+    // paper, warm-brown border, corner ticks — hanzi/pinyin stay dynamic text
+    ctx.shadowColor = "rgba(60,40,20,.32)";
+    ctx.shadowBlur = 12*B.S;
+    ctx.shadowOffsetY = 4*B.S;
+    const paper = ctx.createLinearGradient(0,y,0,y+lh);
+    paper.addColorStop(0,"rgba(253,246,227,.97)");
+    paper.addColorStop(1,"rgba(243,230,198,.97)");
+    ctx.fillStyle = paper;
+    roundRect(x,y,lw,lh,14*B.S); ctx.fill();
+    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = boss ? "#D8A93A" : "#B98F55";
+    ctx.lineWidth = 2.6*B.S;
+    roundRect(x+1.3*B.S,y+1.3*B.S,lw-2.6*B.S,lh-2.6*B.S,13*B.S); ctx.stroke();
+    ctx.strokeStyle = "rgba(231,211,166,.9)";
+    ctx.lineWidth = 1.2*B.S;
+    roundRect(x+6*B.S,y+6*B.S,lw-12*B.S,lh-12*B.S,9*B.S); ctx.stroke();
+    // corner ticks
+    ctx.strokeStyle = "#C29B5F";
+    ctx.lineWidth = 1.8*B.S;
+    ctx.lineCap = "round";
+    const tk = 5*B.S, ti = 10*B.S;
+    ctx.beginPath();
+    ctx.moveTo(x+ti, y+ti+tk); ctx.lineTo(x+ti, y+ti); ctx.lineTo(x+ti+tk, y+ti);
+    ctx.moveTo(x+lw-ti-tk, y+ti); ctx.lineTo(x+lw-ti, y+ti); ctx.lineTo(x+lw-ti, y+ti+tk);
+    ctx.moveTo(x+ti, y+lh-ti-tk); ctx.lineTo(x+ti, y+lh-ti); ctx.lineTo(x+ti+tk, y+lh-ti);
+    ctx.moveTo(x+lw-ti-tk, y+lh-ti); ctx.lineTo(x+lw-ti, y+lh-ti); ctx.lineTo(x+lw-ti, y+lh-ti-tk);
+    ctx.stroke();
+  }
   ctx.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
   ctx.textAlign = "center";
   ctx.font = `700 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
@@ -824,17 +837,24 @@ function drawFeedbackLayer(t){
   const fb = B.feedback;
   if(!fb) return;
   const kind = fb.kind || fb.type;
-  const total = kind === "critical" ? 750 : kind === "correct" ? 620 : 560;
+  const total = (kind === "critical" || kind === "streak") ? 750 : kind === "correct" ? 620 : 560;
   const left = fb.until - performance.now();
   if(left <= 0){ B.feedback = null; return; }
   const p = 1 - left / total;
   ctx.save();
   ctx.globalAlpha = Math.max(0, 1-p);
+  // orb burst: quick scale-in pop behind the stamp; skipped silently if the
+  // sprite hasn't loaded (file:// first-frame, offline) — stamp/vector remains
+  const orbImg = fb.orb ? sprite(fb.orb) : null;
+  if(orbImg){
+    const os = (kind === "streak" ? 110 : 84) * B.S * (0.6 + 0.5 * Math.min(1, p * 2.4));
+    ctx.drawImage(orbImg, fb.x - os/2, fb.y - os/2, os, os);
+  }
   const fxImg = fb.sprite ? sprite(fb.sprite) : null;
   if(fxImg){
     const size = (kind === "critical" ? 96 : 72) * B.S;
     ctx.drawImage(fxImg, fb.x - size/2, fb.y - size/2, size, size);
-  }else if(kind === "correct"){
+  }else if(kind === "correct" || (kind === "streak" && !orbImg)){
     ctx.strokeStyle = "rgba(245,197,24,.86)";
     ctx.lineWidth = Math.max(2, 4*B.S*(1-p));
     ctx.beginPath(); ctx.arc(fb.x, fb.y, (18 + 44*p)*B.S, 0, Math.PI*2); ctx.stroke();

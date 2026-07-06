@@ -18,10 +18,16 @@ export const SPRITE_NAMES = [
   "bg-home", "bg-quest", "bg-battle", "bg-market",
   "bg-temple", "bg-bamboo",
   "fx-correct", "fx-wrong", "fx-critical", "fx-level-up",
+  "vfx-orb-green", "vfx-orb-red", "vfx-orb-blue", "vfx-orb-gold",
+  "ui-word-plaque",
 ];
 
 // Effect stamps ship as SVG (crisp at any canvas scale); everything else is PNG.
-const SVG_SPRITES = new Set(["fx-correct", "fx-wrong", "fx-critical", "fx-level-up"]);
+const SVG_SPRITES = new Set([
+  "fx-correct", "fx-wrong", "fx-critical", "fx-level-up",
+  "vfx-orb-green", "vfx-orb-red", "vfx-orb-blue", "vfx-orb-gold",
+  "ui-word-plaque",
+]);
 
 export function loadSprites() {
   for (const name of SPRITE_NAMES) {

@@ -156,9 +156,10 @@
     return specs;
   }
   function feedbackEffect(kind, x, y) {
-    if (kind === "wrong") return { kind: "wrong", x, y, life: 0.55, sprite: "fx-wrong" };
-    if (kind === "critical") return { kind: "critical", x, y, life: 0.75, sprite: "fx-critical" };
-    return { kind: "correct", x, y, life: 0.6, sprite: "fx-correct" };
+    if (kind === "wrong") return { kind: "wrong", x, y, life: 0.55, sprite: "fx-wrong", orb: "vfx-orb-red" };
+    if (kind === "critical") return { kind: "critical", x, y, life: 0.75, sprite: "fx-critical", orb: "vfx-orb-gold" };
+    if (kind === "streak") return { kind: "streak", x, y, life: 0.75, sprite: null, orb: "vfx-orb-blue" };
+    return { kind: "correct", x, y, life: 0.6, sprite: "fx-correct", orb: "vfx-orb-green" };
   }
   function perfectBonus(score) {
     return Math.min(500, Math.round(score * 0.25));
@@ -296,9 +297,24 @@
     "fx-correct",
     "fx-wrong",
     "fx-critical",
-    "fx-level-up"
+    "fx-level-up",
+    "vfx-orb-green",
+    "vfx-orb-red",
+    "vfx-orb-blue",
+    "vfx-orb-gold",
+    "ui-word-plaque"
   ];
-  var SVG_SPRITES = /* @__PURE__ */ new Set(["fx-correct", "fx-wrong", "fx-critical", "fx-level-up"]);
+  var SVG_SPRITES = /* @__PURE__ */ new Set([
+    "fx-correct",
+    "fx-wrong",
+    "fx-critical",
+    "fx-level-up",
+    "vfx-orb-green",
+    "vfx-orb-red",
+    "vfx-orb-blue",
+    "vfx-orb-gold",
+    "ui-word-plaque"
+  ]);
   function loadSprites() {
     for (const name of SPRITE_NAMES) {
       const img2 = new Image();
@@ -615,12 +631,41 @@
     };
   }
 
+  // src/nineslice.js
+  function nineSliceRects(sw, sh, si, dx, dy, dw, dh, di) {
+    const d = Math.min(di, dw / 2, dh / 2);
+    const sxs = [0, si, sw - si];
+    const sws = [si, sw - 2 * si, si];
+    const dxs = [dx, dx + d, dx + dw - d];
+    const dws = [d, dw - 2 * d, d];
+    const sys = [0, si, sh - si];
+    const shs = [si, sh - 2 * si, si];
+    const dys = [dy, dy + d, dy + dh - d];
+    const dhs = [d, dh - 2 * d, d];
+    const rects = [];
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        rects.push({
+          sx: sxs[col],
+          sy: sys[row],
+          sw: sws[col],
+          sh: shs[row],
+          dx: dxs[col],
+          dy: dys[row],
+          dw: dws[col],
+          dh: dhs[row]
+        });
+      }
+    }
+    return rects;
+  }
+
   // assets/asset-manifest.json
   var asset_manifest_default = {
     project: "Lucky Cat HSK",
     milestone: "Education-First Visual Redesign v1",
     theme: "Lucky Cat Learning Journey",
-    version: 2,
+    version: 3,
     status_values: ["planned", "concept", "review", "approved", "integrated", "rejected"],
     types: ["sprite-sheet", "character", "background", "ui-surface", "icon-sprite", "effect"],
     assets: [
@@ -640,16 +685,21 @@
       { id: "bg-collection", file: "bg-collection.png", type: "background", status: "integrated", priority: "P2", w: 1080, h: 1920, fallback: "css:#s-shop" },
       { id: "ui-card-paper", file: "ui-card-paper.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 360, h: 240, slice: [36, 36, 36, 36], scale: 2, fallback: "css:.card,.word-card,.flash-card" },
       { id: "ui-card-soft", file: "ui-card-soft.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 360, h: 220, slice: [32, 32, 32, 32], scale: 2, fallback: "css:.readout" },
-      { id: "ui-button-primary", file: "ui-button-primary.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 300, h: 88, slice: [26, 26, 34, 26], scale: 2, fallback: "css:.big.primary" },
-      { id: "ui-button-secondary", file: "ui-button-secondary.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 300, h: 88, slice: [26, 26, 34, 26], scale: 2, fallback: "css:.big" },
-      { id: "ui-button-neutral", file: "ui-button-neutral.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 300, h: 88, slice: [26, 26, 34, 26], scale: 2, fallback: "css:#opts button" },
+      { id: "ui-button-primary", file: "ui-button-primary.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 380, h: 98, slice: [32, 32, 34, 32], scale: 2, fallback: "css:.big.primary" },
+      { id: "ui-button-secondary", file: "ui-button-secondary.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 380, h: 98, slice: [32, 32, 34, 32], scale: 2, fallback: "css:.big" },
+      { id: "ui-button-neutral", file: "ui-button-neutral.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 380, h: 98, slice: [32, 32, 34, 32], scale: 2, states: ["default", "disabled"], fallback: "css:#opts button" },
       { id: "ui-tab", file: "ui-tab.svg", type: "ui-surface", status: "integrated", priority: "P1", w: 180, h: 72, slice: [22, 24, 20, 24], scale: 2, fallback: "css:.chip" },
-      { id: "ui-tag", file: "ui-tag.svg", type: "ui-surface", status: "approved", priority: "P1", w: 140, h: 56, slice: null, fallback: "css:.chip.active" },
+      { id: "ui-tag", file: "ui-tag.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 150, h: 64, slice: [18, 18, 18, 18], scale: 2, fallback: "css:.chip.on" },
       { id: "ui-badge-mastery", file: "ui-badge-mastery.svg", type: "ui-surface", status: "approved", priority: "P1", w: 120, h: 120, slice: null, fallback: "css:.hud-round" },
-      { id: "ui-progress-track", file: "ui-progress-track.svg", type: "ui-surface", status: "approved", priority: "P0", w: 320, h: 48, slice: null, fallback: "css:.mbar" },
-      { id: "ui-progress-fill", file: "ui-progress-fill.svg", type: "ui-surface", status: "approved", priority: "P0", w: 320, h: 48, slice: null, fallback: "css:.mbar i" },
+      { id: "ui-progress-track", file: "ui-progress-track.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 400, h: 44, slice: [22, 22, 22, 22], scale: 8, fallback: "css:.mbar" },
+      { id: "ui-progress-fill", file: "ui-progress-fill.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 400, h: 44, slice: [16, 16, 16, 16], scale: 8, fallback: "css:.mbar i" },
       { id: "ui-stamp-correct", file: "ui-stamp-correct.svg", type: "ui-surface", status: "approved", priority: "P1", w: 120, h: 120, slice: null, fallback: "canvas:feedbackEffect" },
       { id: "ui-divider", file: "ui-divider.svg", type: "ui-surface", status: "approved", priority: "P2", w: 240, h: 24, slice: null, fallback: "css:.sect" },
+      { id: "ui-button-danger", file: "ui-button-danger.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 380, h: 98, slice: [32, 32, 34, 32], scale: 2, fallback: "css:.big.danger" },
+      { id: "ui-button-start", file: "ui-button-start.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 380, h: 98, slice: [32, 32, 34, 32], scale: 2, fallback: "css:#go-battle" },
+      { id: "ui-panel", file: "ui-panel.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 560, h: 200, slice: [34, 34, 34, 34], scale: 2, fallback: "css:#quest-panel" },
+      { id: "ui-icon-tile", file: "ui-icon-tile.svg", type: "ui-surface", status: "integrated", priority: "P0", w: 96, h: 96, slice: [30, 30, 30, 30], scale: 2, fallback: "css:.icon-btn" },
+      { id: "ui-word-plaque", file: "ui-word-plaque.svg", type: "ui-surface", status: "integrated", priority: "P1", w: 560, h: 320, slice: null, fallback: "canvas:drawWordPlate" },
       { id: "ui-icons", file: "ui-icons.svg", type: "icon-sprite", status: "integrated", priority: "P0", w: null, h: null, fallback: "svg:inline" },
       { id: "fx-correct", file: "fx-correct.svg", type: "effect", status: "integrated", priority: "P0", w: 120, h: 120, anchor: "center", fallback: "canvas:coinBurst" },
       { id: "fx-wrong", file: "fx-wrong.svg", type: "effect", status: "integrated", priority: "P0", w: 120, h: 120, anchor: "center", fallback: "canvas:feedbackEffect" },
@@ -658,7 +708,11 @@
       { id: "fx-retry", file: "fx-retry.svg", type: "effect", status: "approved", priority: "P0", w: 120, h: 120, anchor: "center", fallback: "canvas:feedbackEffect" },
       { id: "fx-mastery", file: "fx-mastery.svg", type: "effect", status: "approved", priority: "P1", w: 120, h: 120, anchor: "center", fallback: "canvas:fireworkRing" },
       { id: "fx-level-up", file: "fx-level-up.svg", type: "effect", status: "integrated", priority: "P1", w: 120, h: 120, anchor: "center", fallback: "canvas:fireworkRing" },
-      { id: "fx-daily-goal", file: "fx-daily-goal.svg", type: "effect", status: "approved", priority: "P1", w: 120, h: 120, anchor: "center", fallback: "canvas:comboFloater" }
+      { id: "fx-daily-goal", file: "fx-daily-goal.svg", type: "effect", status: "approved", priority: "P1", w: 120, h: 120, anchor: "center", fallback: "canvas:comboFloater" },
+      { id: "vfx-orb-green", file: "vfx-orb-green.svg", type: "effect", status: "integrated", priority: "P1", w: 220, h: 220, anchor: "center", fallback: "canvas:feedbackEffect" },
+      { id: "vfx-orb-red", file: "vfx-orb-red.svg", type: "effect", status: "integrated", priority: "P1", w: 220, h: 220, anchor: "center", fallback: "canvas:feedbackEffect" },
+      { id: "vfx-orb-blue", file: "vfx-orb-blue.svg", type: "effect", status: "integrated", priority: "P1", w: 220, h: 220, anchor: "center", fallback: "canvas:feedbackEffect" },
+      { id: "vfx-orb-gold", file: "vfx-orb-gold.svg", type: "effect", status: "integrated", priority: "P1", w: 220, h: 220, anchor: "center", fallback: "canvas:feedbackEffect" }
     ],
     required_icons: [
       "home",
@@ -1979,7 +2033,10 @@
       B.feedback = { ...feedbackEffect("correct", z.x, gy - 42 * B.S), until: performance.now() + 620 };
       const floater = comboFloater(z.x, gy - 130, B.combo);
       if (floater) B.floats.push(floater);
-      if (B.combo >= 10 && B.combo % 10 === 0) B.parts.push(...fireworkRing(z.x, gy - 16));
+      if (B.combo >= 10 && B.combo % 10 === 0) {
+        B.parts.push(...fireworkRing(z.x, gy - 16));
+        B.feedback = { ...feedbackEffect("streak", z.x, gy - 42 * B.S), until: performance.now() + 750 };
+      }
     } else {
       B.combo = 0;
       sfx.wrong();
@@ -2293,43 +2350,51 @@
     const lw = Math.min(B.w - 24 * B.S, textW + 48 * B.S);
     const lh = (pinyin ? 86 : 64) * B.S;
     const x = B.w / 2 - lw / 2, y = wy - lh / 2;
-    ctx2.shadowColor = "rgba(60,40,20,.32)";
-    ctx2.shadowBlur = 12 * B.S;
-    ctx2.shadowOffsetY = 4 * B.S;
-    const paper = ctx2.createLinearGradient(0, y, 0, y + lh);
-    paper.addColorStop(0, "rgba(253,246,227,.97)");
-    paper.addColorStop(1, "rgba(243,230,198,.97)");
-    ctx2.fillStyle = paper;
-    roundRect(x, y, lw, lh, 14 * B.S);
-    ctx2.fill();
-    ctx2.shadowBlur = 0;
-    ctx2.shadowOffsetY = 0;
-    ctx2.strokeStyle = boss ? "#D8A93A" : "#B98F55";
-    ctx2.lineWidth = 2.6 * B.S;
-    roundRect(x + 1.3 * B.S, y + 1.3 * B.S, lw - 2.6 * B.S, lh - 2.6 * B.S, 13 * B.S);
-    ctx2.stroke();
-    ctx2.strokeStyle = "rgba(231,211,166,.9)";
-    ctx2.lineWidth = 1.2 * B.S;
-    roundRect(x + 6 * B.S, y + 6 * B.S, lw - 12 * B.S, lh - 12 * B.S, 9 * B.S);
-    ctx2.stroke();
-    ctx2.strokeStyle = "#C29B5F";
-    ctx2.lineWidth = 1.8 * B.S;
-    ctx2.lineCap = "round";
-    const tk = 5 * B.S, ti = 10 * B.S;
-    ctx2.beginPath();
-    ctx2.moveTo(x + ti, y + ti + tk);
-    ctx2.lineTo(x + ti, y + ti);
-    ctx2.lineTo(x + ti + tk, y + ti);
-    ctx2.moveTo(x + lw - ti - tk, y + ti);
-    ctx2.lineTo(x + lw - ti, y + ti);
-    ctx2.lineTo(x + lw - ti, y + ti + tk);
-    ctx2.moveTo(x + ti, y + lh - ti - tk);
-    ctx2.lineTo(x + ti, y + lh - ti);
-    ctx2.lineTo(x + ti + tk, y + lh - ti);
-    ctx2.moveTo(x + lw - ti - tk, y + lh - ti);
-    ctx2.lineTo(x + lw - ti, y + lh - ti);
-    ctx2.lineTo(x + lw - ti, y + lh - ti - tk);
-    ctx2.stroke();
+    const plaqueImg = sprite("ui-word-plaque");
+    if (plaqueImg) {
+      const di = Math.min(20 * B.S, lw / 3, lh / 3);
+      for (const r of nineSliceRects(560, 320, 48, x, y, lw, lh, di)) {
+        ctx2.drawImage(plaqueImg, r.sx, r.sy, r.sw, r.sh, r.dx, r.dy, r.dw, r.dh);
+      }
+    } else {
+      ctx2.shadowColor = "rgba(60,40,20,.32)";
+      ctx2.shadowBlur = 12 * B.S;
+      ctx2.shadowOffsetY = 4 * B.S;
+      const paper = ctx2.createLinearGradient(0, y, 0, y + lh);
+      paper.addColorStop(0, "rgba(253,246,227,.97)");
+      paper.addColorStop(1, "rgba(243,230,198,.97)");
+      ctx2.fillStyle = paper;
+      roundRect(x, y, lw, lh, 14 * B.S);
+      ctx2.fill();
+      ctx2.shadowBlur = 0;
+      ctx2.shadowOffsetY = 0;
+      ctx2.strokeStyle = boss ? "#D8A93A" : "#B98F55";
+      ctx2.lineWidth = 2.6 * B.S;
+      roundRect(x + 1.3 * B.S, y + 1.3 * B.S, lw - 2.6 * B.S, lh - 2.6 * B.S, 13 * B.S);
+      ctx2.stroke();
+      ctx2.strokeStyle = "rgba(231,211,166,.9)";
+      ctx2.lineWidth = 1.2 * B.S;
+      roundRect(x + 6 * B.S, y + 6 * B.S, lw - 12 * B.S, lh - 12 * B.S, 9 * B.S);
+      ctx2.stroke();
+      ctx2.strokeStyle = "#C29B5F";
+      ctx2.lineWidth = 1.8 * B.S;
+      ctx2.lineCap = "round";
+      const tk = 5 * B.S, ti = 10 * B.S;
+      ctx2.beginPath();
+      ctx2.moveTo(x + ti, y + ti + tk);
+      ctx2.lineTo(x + ti, y + ti);
+      ctx2.lineTo(x + ti + tk, y + ti);
+      ctx2.moveTo(x + lw - ti - tk, y + ti);
+      ctx2.lineTo(x + lw - ti, y + ti);
+      ctx2.lineTo(x + lw - ti, y + ti + tk);
+      ctx2.moveTo(x + ti, y + lh - ti - tk);
+      ctx2.lineTo(x + ti, y + lh - ti);
+      ctx2.lineTo(x + ti + tk, y + lh - ti);
+      ctx2.moveTo(x + lw - ti - tk, y + lh - ti);
+      ctx2.lineTo(x + lw - ti, y + lh - ti);
+      ctx2.lineTo(x + lw - ti, y + lh - ti - tk);
+      ctx2.stroke();
+    }
     ctx2.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
     ctx2.textAlign = "center";
     ctx2.font = `700 ${Math.round(B.L.hanziPx)}px 'Segoe UI',sans-serif`;
@@ -2361,7 +2426,7 @@
     const fb = B.feedback;
     if (!fb) return;
     const kind = fb.kind || fb.type;
-    const total = kind === "critical" ? 750 : kind === "correct" ? 620 : 560;
+    const total = kind === "critical" || kind === "streak" ? 750 : kind === "correct" ? 620 : 560;
     const left = fb.until - performance.now();
     if (left <= 0) {
       B.feedback = null;
@@ -2370,11 +2435,16 @@
     const p = 1 - left / total;
     ctx2.save();
     ctx2.globalAlpha = Math.max(0, 1 - p);
+    const orbImg = fb.orb ? sprite(fb.orb) : null;
+    if (orbImg) {
+      const os = (kind === "streak" ? 110 : 84) * B.S * (0.6 + 0.5 * Math.min(1, p * 2.4));
+      ctx2.drawImage(orbImg, fb.x - os / 2, fb.y - os / 2, os, os);
+    }
     const fxImg = fb.sprite ? sprite(fb.sprite) : null;
     if (fxImg) {
       const size = (kind === "critical" ? 96 : 72) * B.S;
       ctx2.drawImage(fxImg, fb.x - size / 2, fb.y - size / 2, size, size);
-    } else if (kind === "correct") {
+    } else if (kind === "correct" || kind === "streak" && !orbImg) {
       ctx2.strokeStyle = "rgba(245,197,24,.86)";
       ctx2.lineWidth = Math.max(2, 4 * B.S * (1 - p));
       ctx2.beginPath();

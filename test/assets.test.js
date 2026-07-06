@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createAssets, REGISTRY, frameCSS, img } from "../src/assets.js";
+import manifest from "../assets/asset-manifest.json";
 
 function fakeImages() {
   const created = [];
@@ -202,5 +203,44 @@ describe("singleton bound to the real manifest", () => {
     expect(frameCSS("ui-card-paper")).toBe("none");
     expect(img("cat-walk")).toBeNull();
     expect(img("unknown-id")).toBeNull();
+  });
+});
+
+describe("extracted pack v2 manifest entries", () => {
+  const byId = Object.fromEntries(manifest.assets.map(a => [a.id, a]));
+
+  it("registers the new pack surfaces as loadable P0 ui-surfaces with slices", () => {
+    for (const id of ["ui-button-danger", "ui-button-start", "ui-panel", "ui-icon-tile"]) {
+      const a = byId[id];
+      expect(a, `${id} missing`).toBeTruthy();
+      expect(a.type).toBe("ui-surface");
+      expect(a.status).toBe("integrated");
+      expect(a.priority).toBe("P0");
+      expect(Array.isArray(a.slice) && a.slice.length === 4, `${id} needs a 4-part slice`).toBe(true);
+    }
+  });
+
+  it("activates tag and progress surfaces (P0 + slice, previously inert)", () => {
+    for (const id of ["ui-tag", "ui-progress-track", "ui-progress-fill"]) {
+      const a = byId[id];
+      expect(a.priority).toBe("P0");
+      expect(a.status).toBe("integrated");
+      expect(Array.isArray(a.slice)).toBe(true);
+    }
+  });
+
+  it("gives ui-button-neutral a disabled state", () => {
+    expect(byId["ui-button-neutral"].states).toContain("disabled");
+  });
+
+  it("registers plaque and orbs (canvas-drawn, no frame slice)", () => {
+    expect(byId["ui-word-plaque"]).toMatchObject({ status: "integrated", slice: null });
+    for (const c of ["green", "red", "blue", "gold"]) {
+      expect(byId[`vfx-orb-${c}`]).toMatchObject({ type: "effect", status: "integrated" });
+    }
+  });
+
+  it("bumps the manifest version", () => {
+    expect(manifest.version).toBeGreaterThanOrEqual(3);
   });
 });

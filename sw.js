@@ -61,6 +61,16 @@ const PRECACHE = [
   "assets/fx-mastery.svg",
   "assets/fx-level-up.svg",
   "assets/fx-daily-goal.svg",
+  "assets/ui-button-neutral-disabled.svg",
+  "assets/ui-button-danger.svg",
+  "assets/ui-button-start.svg",
+  "assets/ui-panel.svg",
+  "assets/ui-word-plaque.svg",
+  "assets/ui-icon-tile.svg",
+  "assets/vfx-orb-green.svg",
+  "assets/vfx-orb-red.svg",
+  "assets/vfx-orb-blue.svg",
+  "assets/vfx-orb-gold.svg",
   "assets/fx-new-best.png",
   "assets/fonts/title.woff2"
 ];

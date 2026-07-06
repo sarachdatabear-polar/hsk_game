@@ -1,10 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 48" width="320" height="48">
-  <title>Progress fill — green pill, stretches horizontally</title>
-  <defs>
-    <linearGradient id="pf" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#7CC061"/><stop offset="1" stop-color="#4C9B45"/>
-    </linearGradient>
-  </defs>
-  <rect x="4" y="4" width="312" height="40" rx="20" fill="url(#pf)" stroke="#2E6B2C" stroke-width="3"/>
-  <rect x="14" y="9" width="292" height="10" rx="5" fill="#CDE9A9" opacity=".65"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="44" viewBox="0 0 400 44">
+<defs><linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#43A374"/><stop offset="1" stop-color="#256A49"/></linearGradient></defs>
+<rect x="0" y="7" width="400" height="30" rx="15" fill="url(#fill)"/>
+<rect x="5" y="10" width="390" height="10" rx="5" fill="#FFFFFF" opacity="0.3"/>
 </svg>

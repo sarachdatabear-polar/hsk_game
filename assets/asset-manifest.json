@@ -2,7 +2,7 @@
   "project": "Lucky Cat HSK",
   "milestone": "Education-First Visual Redesign v1",
   "theme": "Lucky Cat Learning Journey",
-  "version": 2,
+  "version": 3,
   "status_values": ["planned", "concept", "review", "approved", "integrated", "rejected"],
   "types": ["sprite-sheet", "character", "background", "ui-surface", "icon-sprite", "effect"],
   "assets": [
@@ -24,16 +24,21 @@
 
     { "id": "ui-card-paper", "file": "ui-card-paper.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 360, "h": 240, "slice": [36, 36, 36, 36], "scale": 2, "fallback": "css:.card,.word-card,.flash-card" },
     { "id": "ui-card-soft", "file": "ui-card-soft.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 360, "h": 220, "slice": [32, 32, 32, 32], "scale": 2, "fallback": "css:.readout" },
-    { "id": "ui-button-primary", "file": "ui-button-primary.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 300, "h": 88, "slice": [26, 26, 34, 26], "scale": 2, "fallback": "css:.big.primary" },
-    { "id": "ui-button-secondary", "file": "ui-button-secondary.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 300, "h": 88, "slice": [26, 26, 34, 26], "scale": 2, "fallback": "css:.big" },
-    { "id": "ui-button-neutral", "file": "ui-button-neutral.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 300, "h": 88, "slice": [26, 26, 34, 26], "scale": 2, "fallback": "css:#opts button" },
+    { "id": "ui-button-primary", "file": "ui-button-primary.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 380, "h": 98, "slice": [32, 32, 34, 32], "scale": 2, "fallback": "css:.big.primary" },
+    { "id": "ui-button-secondary", "file": "ui-button-secondary.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 380, "h": 98, "slice": [32, 32, 34, 32], "scale": 2, "fallback": "css:.big" },
+    { "id": "ui-button-neutral", "file": "ui-button-neutral.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 380, "h": 98, "slice": [32, 32, 34, 32], "scale": 2, "states": ["default", "disabled"], "fallback": "css:#opts button" },
     { "id": "ui-tab", "file": "ui-tab.svg", "type": "ui-surface", "status": "integrated", "priority": "P1", "w": 180, "h": 72, "slice": [22, 24, 20, 24], "scale": 2, "fallback": "css:.chip" },
-    { "id": "ui-tag", "file": "ui-tag.svg", "type": "ui-surface", "status": "approved", "priority": "P1", "w": 140, "h": 56, "slice": null, "fallback": "css:.chip.active" },
+    { "id": "ui-tag", "file": "ui-tag.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 150, "h": 64, "slice": [18, 18, 18, 18], "scale": 2, "fallback": "css:.chip.on" },
     { "id": "ui-badge-mastery", "file": "ui-badge-mastery.svg", "type": "ui-surface", "status": "approved", "priority": "P1", "w": 120, "h": 120, "slice": null, "fallback": "css:.hud-round" },
-    { "id": "ui-progress-track", "file": "ui-progress-track.svg", "type": "ui-surface", "status": "approved", "priority": "P0", "w": 320, "h": 48, "slice": null, "fallback": "css:.mbar" },
-    { "id": "ui-progress-fill", "file": "ui-progress-fill.svg", "type": "ui-surface", "status": "approved", "priority": "P0", "w": 320, "h": 48, "slice": null, "fallback": "css:.mbar i" },
+    { "id": "ui-progress-track", "file": "ui-progress-track.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 400, "h": 44, "slice": [22, 22, 22, 22], "scale": 8, "fallback": "css:.mbar" },
+    { "id": "ui-progress-fill", "file": "ui-progress-fill.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 400, "h": 44, "slice": [16, 16, 16, 16], "scale": 8, "fallback": "css:.mbar i" },
     { "id": "ui-stamp-correct", "file": "ui-stamp-correct.svg", "type": "ui-surface", "status": "approved", "priority": "P1", "w": 120, "h": 120, "slice": null, "fallback": "canvas:feedbackEffect" },
     { "id": "ui-divider", "file": "ui-divider.svg", "type": "ui-surface", "status": "approved", "priority": "P2", "w": 240, "h": 24, "slice": null, "fallback": "css:.sect" },
+    { "id": "ui-button-danger", "file": "ui-button-danger.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 380, "h": 98, "slice": [32, 32, 34, 32], "scale": 2, "fallback": "css:.big.danger" },
+    { "id": "ui-button-start", "file": "ui-button-start.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 380, "h": 98, "slice": [32, 32, 34, 32], "scale": 2, "fallback": "css:#go-battle" },
+    { "id": "ui-panel", "file": "ui-panel.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 560, "h": 200, "slice": [34, 34, 34, 34], "scale": 2, "fallback": "css:#quest-panel" },
+    { "id": "ui-icon-tile", "file": "ui-icon-tile.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 96, "h": 96, "slice": [30, 30, 30, 30], "scale": 2, "fallback": "css:.icon-btn" },
+    { "id": "ui-word-plaque", "file": "ui-word-plaque.svg", "type": "ui-surface", "status": "integrated", "priority": "P1", "w": 560, "h": 320, "slice": null, "fallback": "canvas:drawWordPlate" },
 
     { "id": "ui-icons", "file": "ui-icons.svg", "type": "icon-sprite", "status": "integrated", "priority": "P0", "w": null, "h": null, "fallback": "svg:inline" },
 
@@ -44,7 +49,11 @@
     { "id": "fx-retry", "file": "fx-retry.svg", "type": "effect", "status": "approved", "priority": "P0", "w": 120, "h": 120, "anchor": "center", "fallback": "canvas:feedbackEffect" },
     { "id": "fx-mastery", "file": "fx-mastery.svg", "type": "effect", "status": "approved", "priority": "P1", "w": 120, "h": 120, "anchor": "center", "fallback": "canvas:fireworkRing" },
     { "id": "fx-level-up", "file": "fx-level-up.svg", "type": "effect", "status": "integrated", "priority": "P1", "w": 120, "h": 120, "anchor": "center", "fallback": "canvas:fireworkRing" },
-    { "id": "fx-daily-goal", "file": "fx-daily-goal.svg", "type": "effect", "status": "approved", "priority": "P1", "w": 120, "h": 120, "anchor": "center", "fallback": "canvas:comboFloater" }
+    { "id": "fx-daily-goal", "file": "fx-daily-goal.svg", "type": "effect", "status": "approved", "priority": "P1", "w": 120, "h": 120, "anchor": "center", "fallback": "canvas:comboFloater" },
+    { "id": "vfx-orb-green", "file": "vfx-orb-green.svg", "type": "effect", "status": "integrated", "priority": "P1", "w": 220, "h": 220, "anchor": "center", "fallback": "canvas:feedbackEffect" },
+    { "id": "vfx-orb-red", "file": "vfx-orb-red.svg", "type": "effect", "status": "integrated", "priority": "P1", "w": 220, "h": 220, "anchor": "center", "fallback": "canvas:feedbackEffect" },
+    { "id": "vfx-orb-blue", "file": "vfx-orb-blue.svg", "type": "effect", "status": "integrated", "priority": "P1", "w": 220, "h": 220, "anchor": "center", "fallback": "canvas:feedbackEffect" },
+    { "id": "vfx-orb-gold", "file": "vfx-orb-gold.svg", "type": "effect", "status": "integrated", "priority": "P1", "w": 220, "h": 220, "anchor": "center", "fallback": "canvas:feedbackEffect" }
   ],
   "required_icons": [
     "home", "flashcards", "audio", "muted", "progress", "streak",

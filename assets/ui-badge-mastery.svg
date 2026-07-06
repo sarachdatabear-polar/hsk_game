@@ -1,27 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
-  <title>Mastery badge — jade rounded shield with star, leaves, book (spec §6.7, not coin-like)</title>
-  <defs>
-    <linearGradient id="bsh" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#5CBA97"/><stop offset="1" stop-color="#3E9174"/>
-    </linearGradient>
-  </defs>
-  <!-- rounded shield -->
-  <path d="M60 8c14 8 28 11 40 11v42c0 26 -17 43 -40 51C37 104 20 87 20 61V19c12 0 26 -3 40 -11z"
-        fill="url(#bsh)" stroke="#2F7F5C" stroke-width="4" stroke-linejoin="round"/>
-  <path d="M60 16c11.5 6 23 9 33 9.6V61c0 21.5 -14 35.5 -33 42.6C41 96.5 27 82.5 27 61V25.6c10 -.6 21.5 -3.6 33 -9.6z"
-        fill="none" stroke="#BFE6D6" stroke-width="2.5" opacity=".55"/>
-  <!-- sun star -->
-  <path d="M60 26 66 39.5 81 41.5 70 51.5 73 66 60 59 47 66 50 51.5 39 41.5 54 39.5z"
-        fill="#F5C85B" stroke="#8A5C14" stroke-width="3" stroke-linejoin="round"/>
-  <!-- leaves -->
-  <g stroke="#2F7F5C" stroke-width="2.5" stroke-linejoin="round">
-    <path d="M42 78c-7 -2 -10 -9 -9 -16 5 2 8 8 9 13 2 -2 4 -2 6 -1z" fill="#78B86B"/>
-    <path d="M78 78c7 -2 10 -9 9 -16 -5 2 -8 8 -9 13 -2 -2 -4 -2 -6 -1z" fill="#78B86B"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+<defs><radialGradient id="b" cx="0.5" cy="0.35" r="0.8">
+  <stop offset="0" stop-color="#FBF4E2"/><stop offset="1" stop-color="#EBDDB6"/></radialGradient></defs>
+<circle cx="60.0" cy="60.0" r="57.0" fill="#C08A1E"/>
+<circle cx="60.0" cy="60.0" r="52.0" fill="url(#b)"/>
+<circle cx="60.0" cy="60.0" r="52.0" fill="none" stroke="#F5C243" stroke-width="3"/>
+<g transform="translate(60.0,64.0) scale(0.34)">
+  <g fill="#2E7D57">
+    <ellipse cx="0" cy="18" rx="52" ry="42"/>
+    <ellipse cx="-58" cy="-18" rx="20" ry="26" transform="rotate(-20 -58 -18)"/>
+    <ellipse cx="-21" cy="-44" rx="20" ry="27"/>
+    <ellipse cx="21" cy="-44" rx="20" ry="27"/>
+    <ellipse cx="58" cy="-18" rx="20" ry="26" transform="rotate(20 58 -18)"/>
   </g>
-  <!-- small open book -->
-  <g stroke="#FFF8E8" stroke-width="2.5" stroke-linejoin="round" fill="none">
-    <path d="M60 76c-4.5 -3 -10.5 -3 -15 -1v13c4.5 -2 10.5 -2 15 1"/>
-    <path d="M60 76c4.5 -3 10.5 -3 15 -1v13c-4.5 -2 -10.5 -2 -15 1"/>
-    <path d="M60 77v12"/>
-  </g>
+</g>
 </svg>
