@@ -114,10 +114,14 @@ describe("fireworkRing", () => {
 });
 
 describe("feedbackEffect", () => {
-  it("describes production feedback effect sprites", () => {
-    expect(feedbackEffect("correct", 10, 20)).toMatchObject({ kind: "correct", x: 10, y: 20, sprite: "fx-correct" });
-    expect(feedbackEffect("wrong", 10, 20)).toMatchObject({ kind: "wrong", sprite: "fx-wrong" });
-    expect(feedbackEffect("critical", 10, 20)).toMatchObject({ kind: "critical", sprite: "fx-critical" });
+  it("maps kinds to fx stamps and orb bursts", () => {
+    expect(feedbackEffect("correct", 10, 20)).toMatchObject({ kind: "correct", x: 10, y: 20, sprite: "fx-correct", orb: "vfx-orb-green" });
+    expect(feedbackEffect("wrong", 10, 20)).toMatchObject({ kind: "wrong", sprite: "fx-wrong", orb: "vfx-orb-red" });
+    expect(feedbackEffect("critical", 10, 20)).toMatchObject({ kind: "critical", sprite: "fx-critical", orb: "vfx-orb-gold" });
+  });
+
+  it("streak milestone gets a blue orb and no stamp", () => {
+    expect(feedbackEffect("streak", 5, 6)).toMatchObject({ kind: "streak", x: 5, y: 6, life: 0.75, sprite: null, orb: "vfx-orb-blue" });
   });
 });
 
