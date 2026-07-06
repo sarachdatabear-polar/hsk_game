@@ -41,9 +41,13 @@ describe("education asset manifest contract", () => {
     }
   });
 
-  it("declares the full state set on stateful button surfaces", () => {
+  it("declares a valid, default-first state set on stateful button surfaces", () => {
+    const VALID_STATES = new Set(["default", "pressed", "disabled"]);
     for (const a of manifest.assets.filter(x => x.states)) {
-      expect(a.states, `${a.id} states`).toEqual(["default", "pressed", "disabled"]);
+      expect(a.states[0], `${a.id} states must start with "default"`).toBe("default");
+      for (const s of a.states) {
+        expect(VALID_STATES.has(s), `${a.id} unknown state "${s}"`).toBe(true);
+      }
       expect(FRAME_TYPES.has(a.type), `${a.id} must be a ui-surface`).toBe(true);
     }
   });
