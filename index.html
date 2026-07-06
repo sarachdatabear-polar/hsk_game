@@ -159,8 +159,8 @@
   .readout .warn{color:var(--muted); font-size:12.5px; margin-top:4px;}
   .startrow{display:flex; gap:10px; margin-top:14px;}
   .startrow .big{flex:1; padding:14px 6px; font-size:16px;}
-  /* Lucky Cat Street — home-screen strip; DPR-crisp buffer sized by main.js */
-  #street-cv{width:100%; height:96px; display:block; border-radius:12px;
+  /* Lucky Cat Street — own screen (M2); DPR-crisp buffer sized by main.js */
+  #street-cv{width:100%; height:min(40vh,320px); display:block; border-radius:12px;
     border:1px solid rgba(245,197,24,.4);
     box-shadow:inset 0 0 18px rgba(245,197,24,.12), 0 3px 10px rgba(0,0,0,.28);}
   #street-caption{color:#f0cda4; font-size:12px; text-align:center; margin:4px 0 0;
@@ -186,6 +186,17 @@
     border-color:var(--edu-gray);}
   /* muted state dims the sound control so on/off still reads at a glance */
   .icon-btn#home-sound.muted{filter:grayscale(1) opacity(.45);}
+  #more-sound.muted{filter:grayscale(1) opacity(.6);}
+  /* bottom nav (M2) — deep-teal bar, last child of #app, safe-area padding
+     already reserved by #app itself so the bar sits flush above it. */
+  #bottom-nav{display:flex; gap:4px; margin-top:10px; padding:6px 4px;
+    background-color:var(--lc-teal); border-radius:18px;
+    box-shadow:0 -2px 10px rgba(0,0,0,.2);}
+  .nav-btn{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:2px; min-height:48px; padding:5px 2px; background:none; color:var(--lc-gray);
+    font-size:11px; font-weight:600; border-radius:14px;}
+  .nav-btn .asset-icon{width:21px; height:21px;}
+  .nav-btn.active{background-color:var(--lc-sun); color:var(--lc-teal);}
   /* flashcards */
   .fc-top{display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:14px;}
   .word-card,
@@ -368,19 +379,41 @@
         <span class="hud-pill" id="home-level"><svg class="asset-icon"><use href="assets/ui-icons.svg#paw"></use></svg><span>Lv 1</span></span>
         <span class="hud-pill" id="home-wallet"><svg class="asset-icon"><use href="assets/ui-icons.svg#secondary-coin"></use></svg><span>0</span></span>
       </div>
-      <canvas id="street-cv"></canvas>
-      <div id="street-caption"></div>
-      <div id="quest-panel"></div>
       <div class="icon-row">
         <button class="icon-btn" data-go="scope-learn" title="Flashcards" data-i18n-title="home.flashcards" aria-label="Flashcards"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg></button>
         <button class="icon-btn" data-go="shop" title="Collection" data-i18n-title="home.collection" aria-label="Collection"><svg class="asset-icon"><use href="assets/ui-icons.svg#collection"></use></svg></button>
-        <button class="icon-btn" data-go="scores" title="Best Sessions" data-i18n-title="home.best" aria-label="Best Sessions"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg></button>
-        <button class="icon-btn" data-go="progress" title="Progress" data-i18n-title="home.progress" aria-label="Progress"><svg class="asset-icon"><use href="assets/ui-icons.svg#progress"></use></svg></button>
-        <button class="icon-btn" data-go="howto" title="How to play" data-i18n-title="home.howto" aria-label="How to play"><svg class="asset-icon"><use href="assets/ui-icons.svg#help"></use></svg></button>
         <button class="icon-btn" id="home-sound" title="Sound effects" data-i18n-title="home.sound" aria-label="Sound effects"><svg class="asset-icon"><use href="assets/ui-icons.svg#audio"></use></svg></button>
       </div>
     </div>
     <footer>Lucky Cat · HSK 1–6 · built from real exam data</footer>
+  </div>
+
+  <!-- STREET -->
+  <div class="screen festive" id="s-street">
+    <h2 data-i18n="street.title">Lucky Cat Street</h2>
+    <canvas id="street-cv"></canvas>
+    <div id="street-caption"></div>
+  </div>
+
+  <!-- QUESTS -->
+  <div class="screen festive" id="s-quests">
+    <h2 data-i18n="quests.title">Daily Quests</h2>
+    <div id="quest-panel"></div>
+  </div>
+
+  <!-- MORE -->
+  <div class="screen festive" id="s-more">
+    <h2 data-i18n="nav.more">More</h2>
+    <div class="menu">
+      <button class="big" data-go="scores"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="home.best">Best Sessions</span></span></button>
+      <button class="big" data-go="howto"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#help"></use></svg><span data-i18n="home.howto">How to play</span></span></button>
+      <button class="big" id="more-sound"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#audio"></use></svg><span data-i18n="home.sound">Sound effects</span></span></button>
+    </div>
+    <div class="sect" data-i18n="common.language">Language</div>
+    <div class="chips" id="ui-lang-chips">
+      <button class="chip" data-uilang="en">English</button>
+      <button class="chip" data-uilang="th">ไทย</button>
+    </div>
   </div>
 
   <!-- SCOPE -->
@@ -411,11 +444,6 @@
       <button class="chip" data-lang="th">ไทย</button>
       <button class="chip" data-lang="en" data-i18n="scope.english">English</button>
       <button class="chip on" data-lang="both" data-i18n="scope.both">Both</button>
-    </div>
-    <div class="sect" data-i18n="common.language">Language</div>
-    <div class="chips" id="ui-lang-chips">
-      <button class="chip" data-uilang="en">English</button>
-      <button class="chip" data-uilang="th">ไทย</button>
     </div>
     <div class="sect" data-i18n="scope.sessionLen">Session length</div>
     <div class="chips" id="len-chips">
@@ -483,7 +511,7 @@
 
   <!-- SCORES -->
   <div class="screen festive" id="s-scores">
-    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
+    <button class="back" data-go="more" data-i18n="common.backMore">← More</button>
     <h2 data-i18n="scores.title">Best Sessions</h2>
     <div class="scorelist" id="scorelist"></div>
   </div>
@@ -521,7 +549,7 @@
 
   <!-- HOW TO -->
   <div class="screen festive" id="s-howto">
-    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
+    <button class="back" data-go="more" data-i18n="common.backMore">← More</button>
     <h2 data-i18n="howto.title">How to play</h2>
     <p class="howto">
       A lucky cat strolls in from the right carrying a <b>Chinese word</b> (with pinyin) on a flag.<br><br>
@@ -537,6 +565,15 @@
       study, then play.
     </p>
   </div>
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottom-nav">
+    <button class="nav-btn" data-go="home" data-tab="home"><svg class="asset-icon"><use href="assets/ui-icons.svg#home"></use></svg><span data-i18n="nav.home">Home</span></button>
+    <button class="nav-btn" data-go="street" data-tab="street"><svg class="asset-icon"><use href="assets/ui-icons.svg#street"></use></svg><span data-i18n="nav.street">Street</span></button>
+    <button class="nav-btn" data-go="progress" data-tab="progress"><svg class="asset-icon"><use href="assets/ui-icons.svg#progress"></use></svg><span data-i18n="nav.progress">Progress</span></button>
+    <button class="nav-btn" data-go="quests" data-tab="quests"><svg class="asset-icon"><use href="assets/ui-icons.svg#quests"></use></svg><span data-i18n="nav.quests">Quests</span></button>
+    <button class="nav-btn" data-go="more" data-tab="more"><svg class="asset-icon"><use href="assets/ui-icons.svg#more"></use></svg><span data-i18n="nav.more">More</span></button>
+  </nav>
 </div>
 
 <script src="data/words.js"></script>

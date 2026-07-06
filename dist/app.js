@@ -741,7 +741,10 @@
       "retry",
       "next",
       "previous",
-      "secondary-coin"
+      "secondary-coin",
+      "street",
+      "quests",
+      "more"
     ],
     planned_icons: []
   };
@@ -1274,6 +1277,14 @@
       "home.progress": "Progress",
       "home.howto": "How to play",
       "home.sound": "Sound effects",
+      // bottom nav (M2)
+      "nav.home": "Home",
+      "nav.street": "Street",
+      "nav.progress": "Progress",
+      "nav.quests": "Quests",
+      "nav.more": "More",
+      "street.title": "Lucky Cat Street",
+      "quests.title": "Daily Quests",
       // scope
       "scope.title": "Choose your words",
       "scope.levels": "Levels",
@@ -1352,6 +1363,7 @@
       "howto.oneShot": "You get one shot per word.",
       // common
       "common.back": "\u2190 Home",
+      "common.backMore": "\u2190 More",
       "common.language": "Language"
     },
     th: {
@@ -1366,6 +1378,14 @@
       "home.progress": "\u0E04\u0E27\u0E32\u0E21\u0E04\u0E37\u0E1A\u0E2B\u0E19\u0E49\u0E32",
       "home.howto": "\u0E27\u0E34\u0E18\u0E35\u0E40\u0E25\u0E48\u0E19",
       "home.sound": "\u0E40\u0E2A\u0E35\u0E22\u0E07\u0E1B\u0E23\u0E30\u0E01\u0E2D\u0E1A",
+      // bottom nav (M2)
+      "nav.home": "\u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
+      "nav.street": "\u0E16\u0E19\u0E19",
+      "nav.progress": "\u0E04\u0E27\u0E32\u0E21\u0E04\u0E37\u0E1A\u0E2B\u0E19\u0E49\u0E32",
+      "nav.quests": "\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C",
+      "nav.more": "\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
+      "street.title": "\u0E16\u0E19\u0E19\u0E19\u0E33\u0E42\u0E0A\u0E04",
+      "quests.title": "\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C\u0E1B\u0E23\u0E30\u0E08\u0E33\u0E27\u0E31\u0E19",
       // scope
       "scope.title": "\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C",
       "scope.levels": "\u0E23\u0E30\u0E14\u0E31\u0E1A",
@@ -1444,6 +1464,7 @@
       "howto.oneShot": "\u0E15\u0E2D\u0E1A\u0E44\u0E14\u0E49\u0E04\u0E23\u0E31\u0E49\u0E07\u0E40\u0E14\u0E35\u0E22\u0E27\u0E15\u0E48\u0E2D\u0E04\u0E33",
       // common
       "common.back": "\u2190 \u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
+      "common.backMore": "\u2190 \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
       "common.language": "\u0E20\u0E32\u0E29\u0E32"
     }
   };
@@ -1469,6 +1490,21 @@
   var LATIN_STACK = "'LC Latin','LC Thai','Segoe UI',sans-serif";
   function fontString(weight, px, stack) {
     return `${weight} ${Math.round(px)}px ${stack}`;
+  }
+
+  // src/nav.js
+  var TABS = ["home", "street", "progress", "quests", "more"];
+  var MORE_SUBSCREENS = ["scores", "howto"];
+  var NAV_VISIBLE = /* @__PURE__ */ new Set([...TABS, ...MORE_SUBSCREENS, "shop"]);
+  function navVisibleOn(screen) {
+    return NAV_VISIBLE.has(screen);
+  }
+  function activeTabFor(screen) {
+    if (!navVisibleOn(screen)) return null;
+    if (TABS.includes(screen)) return screen;
+    if (MORE_SUBSCREENS.includes(screen)) return "more";
+    if (screen === "shop") return "home";
+    return null;
   }
 
   // src/main.js
@@ -1618,13 +1654,24 @@
     document.documentElement.lang = getLocale();
   }
   var currentScreen = "home";
+  function updateNav(name) {
+    const nav = $("#bottom-nav");
+    if (!nav) return;
+    const visible = navVisibleOn(name);
+    nav.style.display = visible ? "flex" : "none";
+    const active = activeTabFor(name);
+    nav.querySelectorAll(".nav-btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === active));
+  }
   function show(name) {
     currentScreen = name;
     document.querySelectorAll(".screen").forEach((el) => el.classList.remove("on"));
     $("#s-" + name).classList.add("on");
-    if (name === "home") {
-      renderQuests();
+    updateNav(name);
+    if (name === "street") {
       renderStreet();
+    }
+    if (name === "quests") {
+      renderQuests();
     }
   }
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => {
@@ -1916,13 +1963,19 @@
     store.set("settings", settings);
     setIconOnly($("#hud-pinyin"), settings.showPinyin ? "pinyin" : "pinyin-off");
   };
-  $("#home-sound").addEventListener("click", () => {
+  function syncSoundToggles() {
+    $("#home-sound").classList.toggle("muted", !sfx.enabled);
+    $("#more-sound").classList.toggle("muted", !sfx.enabled);
+  }
+  function toggleSfx() {
     sfx.enabled = !sfx.enabled;
     store.set("sfx", sfx.enabled);
-    $("#home-sound").classList.toggle("muted", !sfx.enabled);
+    syncSoundToggles();
     updateHud();
-  });
-  $("#home-sound").classList.toggle("muted", !sfx.enabled);
+  }
+  $("#home-sound").addEventListener("click", toggleSfx);
+  $("#more-sound").addEventListener("click", toggleSfx);
+  syncSoundToggles();
   function updateHud() {
     const lives = $("#hud-lives");
     lives.replaceChildren();
@@ -3178,6 +3231,7 @@
   updateLevelChip();
   renderQuests();
   renderStreet();
+  updateNav(currentScreen);
   if (location.hash === "#debug") {
     window.__debugTarget = () => B.zombie && B.zombie.w.h;
     window.__grantXp = (n) => {

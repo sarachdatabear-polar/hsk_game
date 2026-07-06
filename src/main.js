@@ -22,6 +22,7 @@ import { streetPieces, streetProgress } from "./street.js";
 import { iconSvg, setIconLabel, setIconOnly, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
+import { navVisibleOn, activeTabFor } from "./nav.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -164,11 +165,21 @@ function applyStaticI18n(root = document){
 
 /* ============================== screens ============================== */
 let currentScreen = "home";
+function updateNav(name){
+  const nav = $("#bottom-nav");
+  if(!nav) return;
+  const visible = navVisibleOn(name);
+  nav.style.display = visible ? "flex" : "none";
+  const active = activeTabFor(name);
+  nav.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.tab===active));
+}
 function show(name){
   currentScreen = name;
   document.querySelectorAll(".screen").forEach(el=>el.classList.remove("on"));
   $("#s-"+name).classList.add("on");
-  if(name==="home"){ renderQuests(); renderStreet(); }
+  updateNav(name);
+  if(name==="street"){ renderStreet(); }
+  if(name==="quests"){ renderQuests(); }
 }
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()=>{
   const t = b.dataset.go;
@@ -383,14 +394,21 @@ $("#hud-pinyin").onclick = ()=>{
   store.set("settings", settings);
   setIconOnly($("#hud-pinyin"), settings.showPinyin ? "pinyin" : "pinyin-off");
 };
-/* home-screen sound toggle mirrors hud-sfx; the button dims when muted. */
-$("#home-sound").addEventListener("click", ()=>{
+/* home-screen + More-screen sound toggles mirror hud-sfx; both dim when muted
+   and stay in sync with each other (same nbhsk.sfx store key). */
+function syncSoundToggles(){
+  $("#home-sound").classList.toggle("muted", !sfx.enabled);
+  $("#more-sound").classList.toggle("muted", !sfx.enabled);
+}
+function toggleSfx(){
   sfx.enabled = !sfx.enabled;
   store.set("sfx", sfx.enabled);
-  $("#home-sound").classList.toggle("muted", !sfx.enabled);
+  syncSoundToggles();
   updateHud();
-});
-$("#home-sound").classList.toggle("muted", !sfx.enabled);
+}
+$("#home-sound").addEventListener("click", toggleSfx);
+$("#more-sound").addEventListener("click", toggleSfx);
+syncSoundToggles();
 function updateHud(){
   const lives = $("#hud-lives");
   lives.replaceChildren();
@@ -1423,6 +1441,7 @@ updateStreakChip();
 updateLevelChip();
 renderQuests();
 renderStreet();
+updateNav(currentScreen);
 if(location.hash === "#debug"){
   window.__debugTarget = ()=> B.zombie && B.zombie.w.h;
   window.__grantXp = n => { addXp(n); };

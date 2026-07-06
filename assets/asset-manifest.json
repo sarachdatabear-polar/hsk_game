@@ -60,7 +60,7 @@
     "pencil", "check", "back", "close", "pause", "play",
     "learn", "quest", "review", "collection", "settings", "calendar",
     "focus-heart", "star", "mastery", "book", "headphones", "retry",
-    "next", "previous", "secondary-coin"
+    "next", "previous", "secondary-coin", "street", "quests", "more"
   ],
   "planned_icons": []
 }
