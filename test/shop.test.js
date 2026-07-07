@@ -91,19 +91,19 @@ describe("shop", () => {
     expect(JSON.stringify(shop)).toBe(before);
   });
 
-  it("CATALOG has 4 skins, 3 backdrops, 2 effects, and 2 soundpacks with expected ids/prices", () => {
+  it("CATALOG has 10 skins, 8 backdrops, 3 effects, and 3 soundpacks with expected ids/prices", () => {
     const skins = CATALOG.filter(i => i.type === "skin");
     const backdrops = CATALOG.filter(i => i.type === "backdrop");
     const effects = CATALOG.filter(i => i.type === "effect");
     const soundpacks = CATALOG.filter(i => i.type === "soundpack");
-    expect(skins.length).toBe(4);
-    expect(backdrops.length).toBe(3);
-    expect(effects.length).toBe(2);
-    expect(soundpacks.length).toBe(2);
-    expect(skins.map(i => i.id)).toEqual(["midnight", "sakura", "jade", "gold"]);
-    expect(backdrops.map(i => i.id)).toEqual(["market", "temple", "bamboo"]);
-    expect(effects.map(i => i.id)).toEqual(["sakura-fx", "firecracker-fx"]);
-    expect(soundpacks.map(i => i.id)).toEqual(["bells", "arcade"]);
+    expect(skins.length).toBe(10);
+    expect(backdrops.length).toBe(8);
+    expect(effects.length).toBe(3);
+    expect(soundpacks.length).toBe(3);
+    expect(skins.map(i => i.id)).toEqual(["midnight", "sakura", "jade", "gold", "panda", "ninja", "astronaut", "beach", "mooncake-rabbit", "dragon"]);
+    expect(backdrops.map(i => i.id)).toEqual(["market", "temple", "bamboo", "harbor-night", "snow-festival", "island-sunset", "lantern-festival", "dragon-gate"]);
+    expect(effects.map(i => i.id)).toEqual(["sakura-fx", "firecracker-fx", "star-shower"]);
+    expect(soundpacks.map(i => i.id)).toEqual(["bells", "arcade", "lion-drum"]);
   });
 
   it("effect items are purchasable and equip into the effect slot", () => {
@@ -154,11 +154,11 @@ describe("shop", () => {
     expect(s.soundpack).toBe("");
   });
 
-  it("CATALOG has 5 street decorations with expected ids/prices", () => {
+  it("CATALOG has 15 street decorations with expected ids/prices", () => {
     const decos = CATALOG.filter(i => i.type === "deco");
-    expect(decos.length).toBe(5);
-    expect(decos.map(i => i.id)).toEqual(["red-lantern", "noodle-stall", "tea-sign", "foo-dog", "golden-arch"]);
-    expect(decos.map(i => i.price)).toEqual([800, 1500, 2200, 3000, 5000]);
+    expect(decos.length).toBe(15);
+    expect(decos.map(i => i.id)).toEqual(["red-lantern", "noodle-stall", "tea-sign", "foo-dog", "golden-arch", "mahjong-table", "koi-pond", "drum-tower", "bubble-tea", "paper-umbrella", "goldfish-banner", "neon-cat-sign", "shaved-ice-cart", "mooncake-stall", "firecracker-arch"]);
+    expect(decos.map(i => i.price)).toEqual([800, 1500, 2200, 3000, 5000, 4000, 6000, 9000, 2500, 1800, 2200, 3500, 4500, 5000, 6000]);
   });
 
   it("buying a deco adds it to owned", () => {
@@ -174,5 +174,53 @@ describe("shop", () => {
     // Decos have no slot: equipItem must return the shop unchanged — same
     // shape, no stray "deco" field.
     expect(s).toEqual(shop);
+  });
+
+  it("v7 catalog: permanent prestige items with expected ids/prices", () => {
+    const pick = id => CATALOG.find(i => i.id === id);
+    expect(pick("panda")).toMatchObject({ type: "skin", price: 8000 });
+    expect(pick("ninja")).toMatchObject({ type: "skin", price: 12000 });
+    expect(pick("astronaut")).toMatchObject({ type: "skin", price: 20000 });
+    expect(pick("harbor-night")).toMatchObject({ type: "backdrop", price: 6000 });
+    expect(pick("snow-festival")).toMatchObject({ type: "backdrop", price: 8000 });
+    expect(pick("mahjong-table")).toMatchObject({ type: "deco", price: 4000 });
+    expect(pick("koi-pond")).toMatchObject({ type: "deco", price: 6000 });
+    expect(pick("drum-tower")).toMatchObject({ type: "deco", price: 9000 });
+    // permanent items carry neither pool nor season
+    for (const id of ["panda", "harbor-night", "drum-tower"]) {
+      expect(pick(id).pool).toBeUndefined();
+      expect(pick(id).season).toBeUndefined();
+    }
+  });
+
+  it("v7 catalog: daily pool is exactly the six launch items", () => {
+    const pool = CATALOG.filter(i => i.pool === "daily");
+    expect(pool.map(i => i.id)).toEqual([
+      "bubble-tea", "paper-umbrella", "goldfish-banner",
+      "neon-cat-sign", "lion-drum", "star-shower",
+    ]);
+    expect(pool.map(i => i.price)).toEqual([2500, 1800, 2200, 3500, 4500, 3000]);
+    expect(pool.find(i => i.id === "lion-drum").type).toBe("soundpack");
+    expect(pool.find(i => i.id === "star-shower").type).toBe("effect");
+  });
+
+  it("v7 catalog: three season sets, three items each", () => {
+    const byId = id => CATALOG.find(i => i.id === id);
+    expect(CATALOG.filter(i => i.season === "summer").map(i => i.id))
+      .toEqual(["beach", "island-sunset", "shaved-ice-cart"]);
+    expect(CATALOG.filter(i => i.season === "midautumn").map(i => i.id))
+      .toEqual(["mooncake-rabbit", "lantern-festival", "mooncake-stall"]);
+    expect(CATALOG.filter(i => i.season === "cny").map(i => i.id))
+      .toEqual(["dragon", "dragon-gate", "firecracker-arch"]);
+    expect(byId("dragon").price).toBe(25000);
+    expect(byId("beach").price).toBe(12000);
+    expect(byId("mooncake-rabbit").price).toBe(15000);
+  });
+
+  it("v7 catalog: every deco (old and new) has maxTier 3; nothing else does", () => {
+    for (const i of CATALOG) {
+      if (i.type === "deco") expect(i.maxTier, i.id).toBe(3);
+      else expect(i.maxTier, i.id).toBeUndefined();
+    }
   });
 });
