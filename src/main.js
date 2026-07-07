@@ -1276,7 +1276,7 @@ function endBattle(quit){
     const isBest = B.score > prev;
     if(isBest){ best[key] = {score:B.score, date:new Date().toISOString().slice(0,10)}; store.set("best", best); }
     $("#r-sub").innerHTML = t("results.sub", { acc, words: B.correct, key })
-      + (isBest ? ` · <b style="color:var(--gold)">${t("results.bestTag")}</b>` : ` · ${t("results.bestPrev", { prev })}`);
+      + (isBest ? ` · <b style="color:var(--lc-brown)">${t("results.bestTag")}</b>` : ` · ${t("results.bestPrev", { prev })}`);
   }
   const list = $("#r-miss");
   list.innerHTML = "";
