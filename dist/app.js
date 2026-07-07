@@ -1784,6 +1784,14 @@
     return Math.max(0, Math.min(6, combo));
   }
 
+  // src/juice.js
+  function comboGlowTier(combo) {
+    if (combo >= 15) return 3;
+    if (combo >= 10) return 2;
+    if (combo >= 5) return 1;
+    return 0;
+  }
+
   // src/main.js
   var D = window.HSK_DATA;
   var $ = (s) => document.querySelector(s);
@@ -2322,7 +2330,16 @@
     strip.classList.toggle("hidden", !show2);
     if (!show2) return;
     $("#combo-count").textContent = B.combo;
-    $("#combo-badge").textContent = comboMultiplier(B.combo);
+    const tier = comboGlowTier(B.combo);
+    for (let g = 1; g <= 3; g++) strip.classList.toggle("glow-" + g, tier === g);
+    const badge = $("#combo-badge");
+    const label = comboMultiplier(B.combo);
+    if (badge.textContent !== label && label && !REDUCED_MOTION) {
+      badge.classList.remove("pop");
+      void badge.offsetWidth;
+      badge.classList.add("pop");
+    }
+    badge.textContent = label;
     const lit = comboFires(B.combo);
     const fires = $("#combo-fires");
     fires.replaceChildren();
@@ -2508,7 +2525,7 @@
       sfx.kill();
       hapticKill();
       if (B.combo >= 3) sfx.combo(B.combo);
-      btn.classList.add("good");
+      btn.classList.add("good", "stamp", "stamp-good");
       lockOptions();
       B.proj = { x: B.L.mascotX + 16 * B.S, y: B.h - B.L.ground - 30 * B.S };
       if (boss) noteAnswer(z.w.h, true);
@@ -2525,7 +2542,7 @@
       sfx.wrong();
       sfx.bite();
       hapticWrong();
-      btn.classList.add("bad");
+      btn.classList.add("bad", "stamp", "stamp-bad");
       lockOptions();
       revealCorrect(z.w);
       pushMiss(z.w);

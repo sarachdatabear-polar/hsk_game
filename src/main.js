@@ -25,6 +25,7 @@ import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
 import { navVisibleOn, activeTabFor } from "./nav.js";
 import { roundLabel, comboMultiplier, comboFires } from "./hud.js";
+import { comboGlowTier, plaqueBounce, countUpValue } from "./juice.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -502,7 +503,17 @@ function updateComboStrip(){
   strip.classList.toggle("hidden", !show);
   if(!show) return;
   $("#combo-count").textContent = B.combo;
-  $("#combo-badge").textContent = comboMultiplier(B.combo);
+  // escalating warm glow at 5/10/15 (A3); classes are additive tiers
+  const tier = comboGlowTier(B.combo);
+  for(let g=1; g<=3; g++) strip.classList.toggle("glow-"+g, tier===g);
+  const badge = $("#combo-badge");
+  const label = comboMultiplier(B.combo);
+  if(badge.textContent !== label && label && !REDUCED_MOTION){
+    badge.classList.remove("pop");
+    void badge.offsetWidth;   // restart the keyframe
+    badge.classList.add("pop");
+  }
+  badge.textContent = label;
   const lit = comboFires(B.combo);
   const fires = $("#combo-fires");
   fires.replaceChildren();
@@ -683,7 +694,7 @@ function answer(btn, o){
     const distFrac = Math.max(0, z.x - biteX) / (B.w - biteX);
     B.score += boss ? bossPoints(killPoints(B.combo, distFrac)) : killPoints(B.combo, distFrac);
     sfx.kill(); hapticKill(); if (B.combo >= 3) sfx.combo(B.combo);
-    btn.classList.add("good");
+    btn.classList.add("good", "stamp", "stamp-good");
     lockOptions();
     B.proj = {x:B.L.mascotX+16*B.S, y:B.h-B.L.ground-30*B.S};   // coin flies at the cat
     // (word audio fires once, on spawn — no replay on the answer tap)
@@ -704,7 +715,7 @@ function answer(btn, o){
     // advance quickly — just long enough to see the correct answer flashed green.
     B.combo = 0;
     sfx.wrong(); sfx.bite(); hapticWrong();
-    btn.classList.add("bad");
+    btn.classList.add("bad", "stamp", "stamp-bad");
     lockOptions();
     revealCorrect(z.w);
     pushMiss(z.w);
