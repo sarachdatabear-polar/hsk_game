@@ -15,12 +15,12 @@
     { "id": "cat-portrait", "file": "cat-portrait.png", "type": "character", "status": "integrated", "priority": "P0", "w": 512, "h": 512, "anchor": "center", "fallback": "canvas:drawCat" },
     { "id": "maneki", "file": "maneki.png", "type": "character", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "bottom-center", "fallback": "canvas:maneki-vector" },
 
-    { "id": "bg-home", "file": "bg-home.png", "type": "background", "status": "integrated", "priority": "P0", "w": 1080, "h": 1920, "fallback": "css:#s-home" },
+    { "id": "bg-home", "file": "bg-home.webp", "type": "background", "status": "integrated", "priority": "P0", "w": 1080, "h": 1920, "fallback": "css:#s-home" },
     { "id": "bg-quest", "file": "bg-quest.png", "type": "background", "status": "integrated", "priority": "P0", "w": 1024, "h": 512, "fallback": "css:#s-battle" },
-    { "id": "bg-flashcards", "file": "bg-flashcards.png", "type": "background", "status": "integrated", "priority": "P0", "w": 1080, "h": 1920, "fallback": "css:#s-learn" },
-    { "id": "bg-results", "file": "bg-results.png", "type": "background", "status": "integrated", "priority": "P1", "w": 1080, "h": 1920, "fallback": "css:.screen.festive" },
-    { "id": "bg-progress", "file": "bg-progress.png", "type": "background", "status": "integrated", "priority": "P1", "w": 1080, "h": 1920, "fallback": "css:#s-progress" },
-    { "id": "bg-collection", "file": "bg-collection.png", "type": "background", "status": "integrated", "priority": "P2", "w": 1080, "h": 1920, "fallback": "css:#s-shop" },
+    { "id": "bg-flashcards", "file": "bg-flashcards.webp", "type": "background", "status": "integrated", "priority": "P0", "w": 1080, "h": 1920, "fallback": "css:#s-learn" },
+    { "id": "bg-results", "file": "bg-results.webp", "type": "background", "status": "integrated", "priority": "P1", "w": 1080, "h": 1920, "fallback": "css:.screen.festive" },
+    { "id": "bg-progress", "file": "bg-progress.webp", "type": "background", "status": "integrated", "priority": "P1", "w": 1080, "h": 1920, "fallback": "css:#s-progress" },
+    { "id": "bg-collection", "file": "bg-collection.webp", "type": "background", "status": "integrated", "priority": "P2", "w": 1080, "h": 1920, "fallback": "css:#s-shop" },
 
     { "id": "ui-card-paper", "file": "ui-card-paper.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 360, "h": 240, "slice": [36, 36, 36, 36], "scale": 2, "fallback": "css:.card,.word-card,.flash-card" },
     { "id": "ui-card-soft", "file": "ui-card-soft.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 360, "h": 220, "slice": [32, 32, 32, 32], "scale": 2, "fallback": "css:.readout" },

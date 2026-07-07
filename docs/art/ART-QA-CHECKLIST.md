@@ -17,7 +17,7 @@ FAIL) and every judgment box checked.
 
 ## Mechanical (qa_asset.py enforces — listed for visibility)
 - Dims exactly match the manifest `w`/`h`; sprite sheets: `frameWidth*frames == w`.
-- Budgets: backgrounds <350 KB (compress with `scripts/compress_bg.py`), cat/raccoon sheets <500 KB, coin-class icons <20 KB.
+- Budgets: backgrounds <350 KB (1024×512 PNGs: `scripts/compress_bg.py`; full-screen 1080×1920: `scripts/to_webp.py`), cat/raccoon sheets <500 KB, coin-class icons <20 KB.
 - Alpha where the type requires it; clean transparency (no opaque matte corners).
 
 ## Integration

@@ -127,3 +127,5 @@ improvise it).
 Integration notes: same filename → `assets/` → no rebuild needed for images;
 run `npm test`; set the manifest row's `status`; log the QA result in
 `docs/art/ART-QA-CHECKLIST.md`; bump `sw.js` SHELL once per shipped round.
+Full-screen 1080×1920 backgrounds ship as WebP q80 (`python3 scripts/to_webp.py`);
+1024×512 battle backdrops stay PNG via `scripts/compress_bg.py`.
