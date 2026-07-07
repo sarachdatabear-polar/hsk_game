@@ -232,8 +232,7 @@ describe("daily: kind streak (B1 rest days)", () => {
   it("streakInfo: uncoverable gap (rest spent this week) reads 0", () => {
     let d = run(["2026-07-06", "2026-07-07", "2026-07-08"]);
     d = noteActivity(d, "2026-07-10", GOAL);                   // rest spent on Thu 07-09
-    expect(streakInfo(d, "2026-07-13").streak).toBe(0);        // missed Sat 07-12... wait gap>2 anyway
-    // precise same-week double-miss read: last=07-10, check 07-12 (missed 07-11, same week, rest spent)
+    // same-week double-miss read: last=07-10, check 07-12 (missed 07-11, same week, rest spent)
     expect(streakInfo(d, "2026-07-12").streak).toBe(0);
   });
 });

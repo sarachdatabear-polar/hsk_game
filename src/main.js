@@ -1417,6 +1417,16 @@ function endBattle(quit){
     if(B.resolved > 0) noteDaily(B.resolved);
     if(B.score > 0){ wallet += B.score; store.set("wallet", wallet); updateWalletChip(); }
     if(introPhase){ introPhase = null; store.set("introDone", true); }
+    // B2: evaluate awards on quit too (a streak-7 crossing must not be lost),
+    // but silently — the toast queue waits for the next real results screen.
+    const quitFacts = {
+      ...scopeFacts(D.levels, masteryStore),
+      sessionDone: false,
+      bossDefeated: !!B.bossDefeated,
+      streak: streakInfo(daily, todayStr()).streak,
+    };
+    stickerState = evaluateAwards(stickerState, STICKER_DEFS, quitFacts, todayStr());
+    store.set("stickers", stickerState);
     show("home"); return;
   }
   noteDaily(B.resolved);

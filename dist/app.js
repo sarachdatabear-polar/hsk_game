@@ -1205,7 +1205,7 @@
     const restWeek = daily2.restWeek || "";
     const restDay = daily2.restDay || "";
     const missed = daily2.last ? addDays(daily2.last, 1) : "";
-    const coverableGap = daily2.last !== "" && addDays(daily2.last, 2) === dateStr && daily2.streak >= 3 && (restDay === missed || weekStart(missed) !== restWeek);
+    const coverableGap = daily2.last !== "" && addDays(daily2.last, 2) === dateStr && daily2.streak >= 3 && weekStart(missed) !== restWeek;
     const chainAlive = daily2.last === dateStr || isYesterday(daily2.last, dateStr) || coverableGap;
     return {
       streak: chainAlive ? daily2.streak : 0,
@@ -1640,7 +1640,7 @@
       "sticker.streak7Hint": "Keep a 7-day study streak",
       "sticker.streak30Name": "30-Day Streak",
       "sticker.streak30Hint": "Keep a 30-day study streak",
-      "results.newSticker": "New sticker: {name}!",
+      "results.newSticker": "New sticker: {name}",
       // shop / collection
       "shop.title": "Collection",
       "shop.skins": "Cat skins",
@@ -1784,7 +1784,7 @@
       "sticker.streak7Hint": "\u0E23\u0E31\u0E01\u0E29\u0E32\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E01\u0E32\u0E23\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07 7 \u0E27\u0E31\u0E19",
       "sticker.streak30Name": "\u0E2A\u0E15\u0E23\u0E35\u0E04 30 \u0E27\u0E31\u0E19",
       "sticker.streak30Hint": "\u0E23\u0E31\u0E01\u0E29\u0E32\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E01\u0E32\u0E23\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07 30 \u0E27\u0E31\u0E19",
-      "results.newSticker": "\u0E2A\u0E15\u0E34\u0E01\u0E40\u0E01\u0E2D\u0E23\u0E4C\u0E43\u0E2B\u0E21\u0E48: {name}!",
+      "results.newSticker": "\u0E2A\u0E15\u0E34\u0E01\u0E40\u0E01\u0E2D\u0E23\u0E4C\u0E43\u0E2B\u0E21\u0E48: {name}",
       // shop / collection
       "shop.title": "\u0E04\u0E2D\u0E25\u0E40\u0E25\u0E01\u0E0A\u0E31\u0E19",
       "shop.skins": "\u0E2A\u0E01\u0E34\u0E19\u0E41\u0E21\u0E27",
@@ -3486,6 +3486,14 @@
         introPhase = null;
         store.set("introDone", true);
       }
+      const quitFacts = {
+        ...scopeFacts(D.levels, masteryStore),
+        sessionDone: false,
+        bossDefeated: !!B.bossDefeated,
+        streak: streakInfo(daily, todayStr()).streak
+      };
+      stickerState = evaluateAwards(stickerState, STICKER_DEFS, quitFacts, todayStr());
+      store.set("stickers", stickerState);
       show("home");
       return;
     }

@@ -79,8 +79,10 @@ export function streakInfo(daily, dateStr) {
   const restWeek = daily.restWeek || "";
   const restDay = daily.restDay || "";
   const missed = daily.last ? addDays(daily.last, 1) : "";
+  // (a consumed rest day always advances `last` past restDay, so the only
+  //  question is whether the missed day's week still has its rest unspent)
   const coverableGap = daily.last !== "" && addDays(daily.last, 2) === dateStr &&
-    daily.streak >= 3 && (restDay === missed || weekStart(missed) !== restWeek);
+    daily.streak >= 3 && weekStart(missed) !== restWeek;
   const chainAlive = daily.last === dateStr || isYesterday(daily.last, dateStr) || coverableGap;
   return {
     streak: chainAlive ? daily.streak : 0,

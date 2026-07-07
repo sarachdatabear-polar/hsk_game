@@ -117,7 +117,7 @@ export const STRINGS = {
     "sticker.streak7Hint": "Keep a 7-day study streak",
     "sticker.streak30Name": "30-Day Streak",
     "sticker.streak30Hint": "Keep a 30-day study streak",
-    "results.newSticker": "New sticker: {name}!",
+    "results.newSticker": "New sticker: {name}",
     // shop / collection
     "shop.title": "Collection",
     "shop.skins": "Cat skins",
@@ -261,7 +261,7 @@ export const STRINGS = {
     "sticker.streak7Hint": "รักษาสตรีคการเรียนต่อเนื่อง 7 วัน",
     "sticker.streak30Name": "สตรีค 30 วัน",
     "sticker.streak30Hint": "รักษาสตรีคการเรียนต่อเนื่อง 30 วัน",
-    "results.newSticker": "สติกเกอร์ใหม่: {name}!",
+    "results.newSticker": "สติกเกอร์ใหม่: {name}",
     // shop / collection
     "shop.title": "คอลเลกชัน",
     "shop.skins": "สกินแมว",
