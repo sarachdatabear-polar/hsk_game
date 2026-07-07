@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { GOAL, defaultDaily, noteActivity, streakInfo, isYesterday } from "../src/daily.js";
+import { GOAL, defaultDaily, noteActivity, streakInfo, isYesterday, addDays, weekStart } from "../src/daily.js";
 
 describe("daily: defaults", () => {
   it("GOAL is 20", () => {
     expect(GOAL).toBe(20);
   });
   it("defaultDaily shape", () => {
-    expect(defaultDaily()).toEqual({ last: "", streak: 0, today: { date: "", resolved: 0 } });
+    expect(defaultDaily()).toEqual({ last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" });
   });
 });
 
@@ -144,5 +144,96 @@ describe("daily: streakInfo", () => {
     d = noteActivity(d, "2025-12-31", GOAL);
     const info = streakInfo(d, "2026-01-01");
     expect(info.streak).toBe(1);
+  });
+});
+
+describe("daily: kind streak (B1 rest days)", () => {
+  // helper: complete the goal on each date in order
+  const run = dates => dates.reduce((d, ds) => noteActivity(d, ds, GOAL), defaultDaily());
+
+  it("addDays / weekStart (Mon–Sun weeks)", () => {
+    expect(addDays("2026-07-04", 1)).toBe("2026-07-05");
+    expect(addDays("2026-07-31", 1)).toBe("2026-08-01");
+    expect(weekStart("2026-07-06")).toBe("2026-07-06"); // Monday maps to itself
+    expect(weekStart("2026-07-07")).toBe("2026-07-06");
+    expect(weekStart("2026-07-12")).toBe("2026-07-06"); // Sunday belongs to the Monday week
+    expect(weekStart("2026-07-05")).toBe("2026-06-29"); // the Sunday BEFORE that Monday
+  });
+
+  it("miss-1-covered: one missed day with streak ≥3 consumes the rest day, streak survives", () => {
+    let d = run(["2026-07-04", "2026-07-05", "2026-07-06"]);   // streak 3
+    d = noteActivity(d, "2026-07-08", GOAL);                   // missed 07-07
+    expect(d.streak).toBe(4);                                  // ...never increments FOR the rest day
+    expect(d.restDay).toBe("2026-07-07");
+    expect(d.restWeek).toBe("2026-07-06");
+  });
+
+  it("rest-day-never-increments: covered gap yields +1 (the active day), not +2", () => {
+    let d = run(["2026-07-03", "2026-07-04", "2026-07-05", "2026-07-06"]); // streak 4
+    d = noteActivity(d, "2026-07-08", GOAL);                               // miss 07-07, covered
+    expect(d.streak).toBe(5);
+  });
+
+  it("miss-2-breaks: two consecutive missed days always break", () => {
+    let d = run(["2026-07-04", "2026-07-05", "2026-07-06"]);   // streak 3
+    d = noteActivity(d, "2026-07-09", GOAL);                   // missed 07-07 AND 07-08
+    expect(d.streak).toBe(1);
+  });
+
+  it("two-misses-same-week-breaks: the weekly rest day is spent once", () => {
+    let d = run(["2026-07-06", "2026-07-07", "2026-07-08"]);   // Mon–Wed, streak 3
+    d = noteActivity(d, "2026-07-10", GOAL);                   // miss Thu 07-09 → covered
+    expect(d.streak).toBe(4);
+    d = noteActivity(d, "2026-07-12", GOAL);                   // miss Sat 07-11 → SAME Mon–Sun week
+    expect(d.streak).toBe(1);                                  // rest already used → break
+  });
+
+  it("week-boundary reset: a new Mon–Sun week grants a fresh rest day", () => {
+    let d = run(["2026-07-06", "2026-07-07", "2026-07-08"]);   // streak 3
+    d = noteActivity(d, "2026-07-10", GOAL);                   // miss Thu 07-09 → covered (week of 07-06)
+    d = noteActivity(d, "2026-07-11", GOAL);
+    d = noteActivity(d, "2026-07-12", GOAL);                   // streak 6 by Sunday
+    d = noteActivity(d, "2026-07-14", GOAL);                   // miss Mon 07-13 → NEW week → covered
+    expect(d.streak).toBe(7);
+    expect(d.restWeek).toBe("2026-07-13");
+  });
+
+  it("streak<3 uncovered: nothing to protect yet — behaves as before", () => {
+    let d = run(["2026-07-04", "2026-07-05"]);                 // streak 2
+    d = noteActivity(d, "2026-07-07", GOAL);                   // miss 07-06
+    expect(d.streak).toBe(1);
+  });
+
+  it("migration: an old-shape save (no rest fields) works and never retro-breaks", () => {
+    const old = { last: "2026-07-05", streak: 6, today: { date: "2026-07-05", resolved: 25 } };
+    // yesterday-chain intact exactly as before
+    expect(streakInfo(old, "2026-07-06").streak).toBe(6);
+    // next-day activity continues the streak and grows the new fields
+    const d = noteActivity(old, "2026-07-06", GOAL);
+    expect(d.streak).toBe(7);
+    expect(d.restWeek).toBe("");
+    expect(d.restDay).toBe("");
+    // and a 2-day gap on an old save with streak ≥3 is now coverable, not broken
+    expect(streakInfo(old, "2026-07-07").streak).toBe(6);
+  });
+
+  it("streakInfo: coverable gap shows the streak as alive; restNote fires on the return day", () => {
+    let d = run(["2026-07-04", "2026-07-05", "2026-07-06"]);
+    // 07-08, before playing: yesterday (07-07) is coverable → chain alive
+    expect(streakInfo(d, "2026-07-08").streak).toBe(3);
+    expect(streakInfo(d, "2026-07-08").restNote).toBe(false);  // not consumed yet
+    d = noteActivity(d, "2026-07-08", GOAL);                   // consume
+    const info = streakInfo(d, "2026-07-08");
+    expect(info.streak).toBe(4);
+    expect(info.restNote).toBe(true);                          // "🍵 Rest day used…" day
+    expect(streakInfo(d, "2026-07-09").restNote).toBe(false);  // gone the next day
+  });
+
+  it("streakInfo: uncoverable gap (rest spent this week) reads 0", () => {
+    let d = run(["2026-07-06", "2026-07-07", "2026-07-08"]);
+    d = noteActivity(d, "2026-07-10", GOAL);                   // rest spent on Thu 07-09
+    expect(streakInfo(d, "2026-07-13").streak).toBe(0);        // missed Sat 07-12... wait gap>2 anyway
+    // precise same-week double-miss read: last=07-10, check 07-12 (missed 07-11, same week, rest spent)
+    expect(streakInfo(d, "2026-07-12").streak).toBe(0);
   });
 });
