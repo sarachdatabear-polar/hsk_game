@@ -60,6 +60,13 @@ export const STRINGS = {
     "scope.smartReviewReady": "Smart Review · {n}",
     "scope.readout": "Pool: <b>{count}</b> words · ~<b>{pct}%</b> of exam text",
     "scope.readoutNoThai": "* {n} long-tail words have no Thai yet — English shown instead.",
+    // journey map (B3)
+    "scope.tabPicker": "Picker",
+    "scope.tabJourney": "Journey",
+    "journey.youAreHere": "You are here",
+    "journey.nodeAll": "HSK{lv} · All words",
+    "journey.nodeTop": "HSK{lv} · Top {n}",
+    "journey.play": "Play",
     // learn / flashcards
     "learn.exit": "Exit",
     "learn.stillLearning": "Still learning",
@@ -204,6 +211,13 @@ export const STRINGS = {
     "scope.smartReviewReady": "ทบทวนอัจฉริยะ · {n}",
     "scope.readout": "คลังคำ: <b>{count}</b> คำ · ~<b>{pct}%</b> ของข้อสอบ",
     "scope.readoutNoThai": "* มี {n} คำที่ยังไม่มีภาษาไทย — แสดงภาษาอังกฤษแทน",
+    // journey map (B3)
+    "scope.tabPicker": "เลือกเอง",
+    "scope.tabJourney": "เส้นทาง",
+    "journey.youAreHere": "คุณอยู่ตรงนี้",
+    "journey.nodeAll": "HSK{lv} · คำทั้งหมด",
+    "journey.nodeTop": "HSK{lv} · Top {n}",
+    "journey.play": "เล่น",
     // learn / flashcards
     "learn.exit": "ออก",
     "learn.stillLearning": "ยังไม่แม่น",
