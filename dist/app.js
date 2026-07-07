@@ -2090,6 +2090,10 @@
     } else {
       if (t2 === "home") {
         stopBattle();
+        if (introPhase) {
+          introPhase = null;
+          store.set("introDone", true);
+        }
       }
       show(t2);
     }

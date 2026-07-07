@@ -278,7 +278,15 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
   else if(t==="scores"){ renderScores(); show("scores"); }
   else if(t==="progress"){ renderProgress(); show("progress"); }
   else if(t==="shop"){ renderShop(); show("shop"); }
-  else { if(t==="home"){ stopBattle(); } show(t); }
+  else {
+    if(t==="home"){
+      stopBattle();
+      // A4: leaving mid-intro (learn screen's Exit) abandons the intro for
+      // good — never hijack a later flashcard session, never re-show welcome.
+      if(introPhase){ introPhase = null; store.set("introDone", true); }
+    }
+    show(t);
+  }
 }));
 
 /* ============================== scope selector ============================== */
