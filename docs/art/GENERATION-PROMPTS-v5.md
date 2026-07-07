@@ -128,8 +128,7 @@ The six big backgrounds (`bg-home`, `bg-flashcards`, `bg-results`,
 prompts in earlier rounds, and the UI plaque/buttons/tags/badges/fx stamps/orbs
 are **SVGs extracted directly from the reference sheet** (pack v2) — regenerating
 those risks drift, not fixes. If one fails the A2 QA gate at review time, reuse
-its original prompt from `docs/art/GENERATION-PROMPTS-visual-slice.md` (bg-home,
-bg-battle) with the master prompt above; fx/plaque/button PNG replacements also
+its original prompt from `docs/art/GENERATION-PROMPTS-visual-slice.md` (bg-home) with the master prompt above; fx/plaque/button PNG replacements also
 need a `sprites.js` `SVG_SPRITES` edit (a dev-round change — file it, don't
 improvise it).
 
