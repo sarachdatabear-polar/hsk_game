@@ -52,6 +52,16 @@ export const PACKS = {
              tones: [{ d: .05, w: "square", v: .16, at: 0   },
                      { d: .07, w: "square", v: .16, at: .03 }] },
   },
+  "lion-drum": {
+    kill:  [{ f: 150, d: .18, w: "sine",     v: .22, at: 0   },
+            { f: 320, d: .1,  w: "triangle", v: .16, at: .09 }],
+    wrong: [{ f: 90,  d: .3,  w: "sine",     v: .2,  at: 0   }],
+    bite:  [{ f: 130, d: .16, w: "sine",     v: .22, at: 0   },
+            { f: 80,  d: .28, w: "sine",     v: .18, at: .1  }],
+    combo: { boff: -400, mult: 1.5,
+             tones: [{ d: .12, w: "sine",     v: .14, at: 0   },
+                     { d: .14, w: "triangle", v: .14, at: .07 }] },
+  },
 };
 
 function playSpecs(specs) { for (const s of specs) tone(s.f, s.d, s.w, s.v, s.at || 0); }

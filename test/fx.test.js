@@ -70,6 +70,17 @@ describe("coinBurst", () => {
     expect(boss.filter(s => s.kind === "cracker").length).toBe(12);
     expect(boss.filter(s => s.kind === "spark").length).toBe(22);
   });
+
+  it("star-shower burst: count+4 specs, all star kind with slow-fall gravity", () => {
+    const specs = coinBurst(10, 20, false, "star-shower");
+    expect(specs.length).toBe(16); // 12 + 4
+    expect(specs.every(s => s.kind === "star")).toBe(true);
+    expect(specs.every(s => s.g === 220)).toBe(true);
+  });
+
+  it("star-shower boss burst scales with the boss count", () => {
+    expect(coinBurst(0, 0, true, "star-shower").length).toBe(32); // 28 + 4
+  });
 });
 
 describe("comboFloater", () => {
