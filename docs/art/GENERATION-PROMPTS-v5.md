@@ -60,6 +60,17 @@ Negative (add): pitch-black night, red-only lighting, crowds, people.
 > clear flat earth path along the bottom fifth for two small characters; low
 > detail in the center band. Fresh greens within the palette, cream sky glimpses.
 
+### `bg-battle.png` — 1024×512, no alpha, ≤350 KB (battle backdrop: daylight forest — replaces legacy night-festival art with baked-in 福 text)
+
+> Bright daylight forest clearing for a cute side-view battle scene, landscape
+> 1024×512. A clear flat dirt/grass lane runs along the bottom fifth where two
+> small characters stand. Layered friendly trees and bushes on both sides, a
+> few rocks, soft green mountains far behind, warm sunlight from the upper
+> left with soft shadows. Low detail in the center band (a word card overlays
+> the middle). Fresh greens and creams within the palette.
+
+Negative (add): night, lanterns, festival/red-gold decor, dense clutter behind the center.
+
 ### `raccoon-walk.png` — 1536×256 (6 frames of 256×256), alpha, ≤500 KB
 ### `raccoon-happy.png` — 1024×256 (4 frames of 256×256), alpha, ≤500 KB
 
@@ -112,7 +123,7 @@ timing, SAME frame layout, only fur/outfit palette changes:
 
 ## P2 — regenerate ONLY on owner decision (current files are already style-locked)
 
-The seven big backgrounds (`bg-home`, `bg-battle`, `bg-flashcards`, `bg-results`,
+The six big backgrounds (`bg-home`, `bg-flashcards`, `bg-results`,
 `bg-progress`, `bg-collection`, `bg-quest`) were generated with palette-locked
 prompts in earlier rounds, and the UI plaque/buttons/tags/badges/fx stamps/orbs
 are **SVGs extracted directly from the reference sheet** (pack v2) — regenerating
