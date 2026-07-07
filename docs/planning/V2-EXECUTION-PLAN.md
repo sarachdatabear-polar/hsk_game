@@ -1,5 +1,27 @@
 # V2/V3/V4 Execution Plan — living checklist
 
+## v7 "Shop Seasons" (2026-07-07)
+
+Spec: [PRD-v7-shop-seasons.md](../prd/PRD-v7-shop-seasons.md). Branch
+`feat/v7-shop-seasons` off `development`.
+
+- [x] **Task 1 — Catalog expansion**: data + shape tests for the expanded item catalog.
+- [x] **Task 2 — Availability engine**: rotation + season windows (Today's Stock is a pure function of the date string; stable for the same date, changes at midnight).
+- [x] **Task 3 — Tiers + extended `buy()`**: tiered item support in `shop.js`.
+- [x] **Task 4 — `street.js` new decos + tier passthrough**.
+- [x] **Task 5 — fx + sfx packs**: Star Shower effect, Lion Dance Drum sound pack.
+- [x] **Task 6 — Sprite registry, skin palettes, generation prompts**: art pipeline scaffolding for the new item art.
+- [x] **Task 7 — Shop UI**: Today's Stock, Season Corner, upgrade rows, i18n wiring; controller browser smoke 10/10 incl. Thai relabel + tier flow.
+- [x] **Task 8 — Street rendering**: tier embellishments + 10 new deco shapes; tier-2 glow pixel-verified.
+- [x] **Art round (controller, riding this branch)**: in-repo tracked `art-drop/` intake folder (`intake_art.py` prefers it, decor cutout path added); 6 QA-passed generated assets installed (bg-battle/market/temple/bamboo backdrops + coin + lantern); raccoon PNG sprite-sheet wiring (raccoon-walk/happy integrated, precached, vector fallback kept).
+- [x] **Task 9 — Ship prep**: full regression (588 tests, up from 553 at branch start), `sw.js` SHELL bumped v29 → v30, `dist/app.js` rebuilt, this status entry.
+
+**Known deferrals:**
+- 17 v7 item art files pending generation/intake (cat-panda/ninja/astronaut/beach/mooncake/dragon sheets ×2 each + 5 backdrops) — vector/procedural fallbacks are live; expect 404 noise in console until they land.
+- Tier-specific deco art variants deferred to intake — procedural glow/flank fallbacks live.
+- Item names remain English pending i18n pass 2.
+- Street-screen layout crowding (tier-3 flanking overlaps on packed streets) deferred to the already-filed street-restyle round.
+
 ## Code-review fix round (2026-07-07)
 
 Full-codebase review (Fable lead + 2 review subagents), then fixes on `feat/prd-visual-slice-v1`. All confirmed findings fixed; 350 tests green, build clean, DOM-id check passed.

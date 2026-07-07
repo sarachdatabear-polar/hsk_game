@@ -31,7 +31,9 @@ from pathlib import Path
 from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
-DROP = Path.home() / "Desktop" / "hsk-art-drop"
+# Prefer the tracked in-repo drop folder (syncs between machines via git);
+# fall back to the original Desktop location.
+DROP = ROOT / "art-drop" if (ROOT / "art-drop").is_dir() else Path.home() / "Desktop" / "hsk-art-drop"
 MANIFEST = json.loads((ROOT / "assets" / "asset-manifest.json").read_text())
 BY_FILE = {a["file"]: a for a in MANIFEST["assets"]}
 BG_CROP_TOP_BIAS = 0.7  # crop mostly from the top; the lane lives at the bottom
@@ -148,6 +150,23 @@ def to_sheet(img, row):
     return sheet
 
 
+def to_cutout(img, w, h):
+    """Single transparent sprite (decor/character/effect): strip the solid
+    generated background, crop to the subject, fit inside the target box."""
+    img = strip_background(img)
+    bbox = img.getbbox()
+    if bbox is None:
+        raise ValueError("image is empty after background removal")
+    img = img.crop(bbox)
+    scale = min(w / img.width, h / img.height)
+    img = img.resize((max(1, round(img.width * scale)),
+                      max(1, round(img.height * scale))), Image.LANCZOS)
+    canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    # bottom-center: decor sits on the ground line like the street pieces
+    canvas.alpha_composite(img, ((w - img.width) // 2, h - img.height))
+    return canvas
+
+
 def process(path):
     target = find_target(path)
     if target is None:
@@ -163,6 +182,8 @@ def process(path):
     img = Image.open(path)
     if row["type"] == "sprite-sheet":
         to_sheet(img, row).save(out, optimize=True)
+    elif row["type"] in ("decor", "character", "effect"):
+        to_cutout(img, row["w"], row["h"]).save(out, optimize=True)
     else:
         to_backdrop(img, row["w"], row["h"]).save(out, optimize=True)
         subprocess.run([sys.executable, ROOT / "scripts" / "compress_bg.py", out],

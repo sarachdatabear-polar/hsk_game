@@ -295,6 +295,23 @@
       }
       return specs2;
     }
+    if (style === "star-shower") {
+      const extra = 4;
+      const specs2 = [];
+      for (let i = 0; i < count + extra; i++) {
+        specs2.push({
+          x,
+          y,
+          vx: (Math.random() - 0.5) * 360,
+          vy: -Math.random() * vyMax * 1.15,
+          life: 0.8 + Math.random() * 0.4,
+          kind: "star",
+          g: 220
+          // gentle fall, slower than crackers
+        });
+      }
+      return specs2;
+    }
     const specs = [];
     for (let i = 0; i < count; i++) {
       specs.push({
@@ -419,6 +436,25 @@
           { d: 0.07, w: "square", v: 0.16, at: 0.03 }
         ]
       }
+    },
+    "lion-drum": {
+      kill: [
+        { f: 150, d: 0.18, w: "sine", v: 0.22, at: 0 },
+        { f: 320, d: 0.1, w: "triangle", v: 0.16, at: 0.09 }
+      ],
+      wrong: [{ f: 90, d: 0.3, w: "sine", v: 0.2, at: 0 }],
+      bite: [
+        { f: 130, d: 0.16, w: "sine", v: 0.22, at: 0 },
+        { f: 80, d: 0.28, w: "sine", v: 0.18, at: 0.1 }
+      ],
+      combo: {
+        boff: -400,
+        mult: 1.5,
+        tones: [
+          { d: 0.12, w: "sine", v: 0.14, at: 0 },
+          { d: 0.14, w: "triangle", v: 0.14, at: 0.07 }
+        ]
+      }
     }
   };
   function playSpecs(specs) {
@@ -459,8 +495,22 @@
     "cat-jade-happy",
     "cat-gold-walk",
     "cat-gold-happy",
+    "cat-panda-walk",
+    "cat-panda-happy",
+    "cat-ninja-walk",
+    "cat-ninja-happy",
+    "cat-astronaut-walk",
+    "cat-astronaut-happy",
+    "cat-beach-walk",
+    "cat-beach-happy",
+    "cat-mooncake-walk",
+    "cat-mooncake-happy",
+    "cat-dragon-walk",
+    "cat-dragon-happy",
     "cat-boss-walk",
     "cat-boss-happy",
+    "raccoon-walk",
+    "raccoon-happy",
     "maneki",
     "coin",
     "bg-quest",
@@ -468,6 +518,11 @@
     "bg-market",
     "bg-temple",
     "bg-bamboo",
+    "bg-harbor-night",
+    "bg-snow-festival",
+    "bg-island-sunset",
+    "bg-lantern-festival",
+    "bg-dragon-gate",
     "fx-correct",
     "fx-wrong",
     "fx-critical",
@@ -774,137 +829,176 @@
       ctx3.scale(scale, scale);
       ctx3.translate(-x, -groundY);
     }
-    ctx3.save();
-    ctx3.translate(x, groundY);
-    if (happy) {
-      ctx3.rotate(0.18);
-    } else if (wrong) {
-      ctx3.rotate(-0.08);
-    }
-    const headband = boss ? HEADBAND_BOSS : HEADBAND;
-    ctx3.strokeStyle = FUR_DARK;
-    ctx3.lineWidth = 7;
-    ctx3.lineCap = "round";
-    ctx3.beginPath();
-    ctx3.moveTo(8, -18 + bob);
-    ctx3.quadraticCurveTo(25, -34 + bob, 15, -58 + bob);
-    ctx3.stroke();
-    ctx3.strokeStyle = "#E4DFD4";
-    ctx3.lineWidth = 2.6;
-    for (const p of [[10.5, -24], [16, -34], [18.5, -45]]) {
-      ctx3.beginPath();
-      ctx3.moveTo(p[0] - 2.6, p[1] + 1.6 + bob);
-      ctx3.lineTo(p[0] + 2.6, p[1] - 1.6 + bob);
-      ctx3.stroke();
-    }
-    ctx3.strokeStyle = FUR_DARK;
-    ctx3.lineWidth = 6;
-    ctx3.lineCap = "round";
-    ctx3.beginPath();
-    ctx3.moveTo(-5, -20);
-    ctx3.lineTo(-5 - legSwing * 0.4, 0);
-    ctx3.stroke();
-    ctx3.beginPath();
-    ctx3.moveTo(5, -20);
-    ctx3.lineTo(5 + legSwing * 0.4, 0);
-    ctx3.stroke();
-    ctx3.fillStyle = OUTFIT;
-    ctx3.fillRect(-11, -40 + bob, 22, 22);
-    ctx3.strokeStyle = OUTLINE;
-    ctx3.lineWidth = 1.4;
-    ctx3.strokeRect(-11, -40 + bob, 22, 22);
-    ctx3.strokeStyle = OUTLINE;
-    ctx3.lineWidth = 3;
-    ctx3.lineCap = "round";
-    ctx3.beginPath();
-    ctx3.moveTo(-7, -41 + bob);
-    ctx3.lineTo(9, -18 + bob);
-    ctx3.stroke();
-    ctx3.strokeStyle = FUR;
-    ctx3.lineWidth = 5;
-    ctx3.lineCap = "round";
-    ctx3.beginPath();
-    ctx3.moveTo(-9, -34 + bob);
-    ctx3.lineTo(-15, -26 + bob + legSwing * 0.2);
-    ctx3.stroke();
-    ctx3.beginPath();
-    ctx3.moveTo(9, -34 + bob);
-    ctx3.lineTo(15, -26 + bob - legSwing * 0.2);
-    ctx3.stroke();
-    ctx3.fillStyle = FUR;
-    ctx3.beginPath();
-    ctx3.arc(0, -49 + bob, 11, 0, Math.PI * 2);
-    ctx3.fill();
-    ctx3.fillStyle = FUR_DARK;
-    ctx3.beginPath();
-    ctx3.moveTo(-9, -57 + bob);
-    ctx3.lineTo(-13, -66 + bob);
-    ctx3.lineTo(-3, -59 + bob);
-    ctx3.closePath();
-    ctx3.fill();
-    ctx3.beginPath();
-    ctx3.moveTo(9, -57 + bob);
-    ctx3.lineTo(13, -66 + bob);
-    ctx3.lineTo(3, -59 + bob);
-    ctx3.closePath();
-    ctx3.fill();
-    ctx3.fillStyle = headband;
-    ctx3.fillRect(-11, -55 + bob, 22, 5);
-    ctx3.beginPath();
-    ctx3.moveTo(11, -55 + bob);
-    ctx3.lineTo(17, -51 + bob);
-    ctx3.lineTo(11, -50 + bob);
-    ctx3.closePath();
-    ctx3.fill();
-    ctx3.beginPath();
-    ctx3.moveTo(11, -52 + bob);
-    ctx3.lineTo(16, -47 + bob);
-    ctx3.lineTo(10, -47 + bob);
-    ctx3.closePath();
-    ctx3.fill();
-    ctx3.fillStyle = FUR_DARK;
-    ctx3.beginPath();
-    ctx3.ellipse(-4, -50 + bob, 3.6, 2.6, -0.15, 0, Math.PI * 2);
-    ctx3.fill();
-    ctx3.beginPath();
-    ctx3.ellipse(4, -50 + bob, 3.6, 2.6, 0.15, 0, Math.PI * 2);
-    ctx3.fill();
-    if (happy) {
-      ctx3.strokeStyle = EYE_LIGHT;
-      ctx3.lineWidth = 1.4;
-      ctx3.lineCap = "round";
-      ctx3.beginPath();
-      ctx3.arc(-4, -49 + bob, 2, Math.PI * 0.15, Math.PI * 0.85);
-      ctx3.stroke();
-      ctx3.beginPath();
-      ctx3.arc(4, -49 + bob, 2, Math.PI * 0.15, Math.PI * 0.85);
-      ctx3.stroke();
-    } else {
-      ctx3.fillStyle = EYE_LIGHT;
-      ctx3.beginPath();
-      ctx3.ellipse(-4, -50 + bob, 2, 1.5, 0, 0, Math.PI * 2);
-      ctx3.fill();
-      ctx3.beginPath();
-      ctx3.ellipse(4, -50 + bob, 2, 1.5, 0, 0, Math.PI * 2);
-      ctx3.fill();
-      ctx3.fillStyle = INK;
-      if (wrong) {
-        ctx3.fillRect(-5.4, -50 + bob, 2.8, 1.1);
-        ctx3.fillRect(2.6, -50 + bob, 2.8, 1.1);
-      } else {
-        ctx3.beginPath();
-        ctx3.arc(-4, -50 + bob, 1, 0, Math.PI * 2);
-        ctx3.fill();
-        ctx3.beginPath();
-        ctx3.arc(4, -50 + bob, 1, 0, Math.PI * 2);
-        ctx3.fill();
+    let drawn = false;
+    if (state === "walk") {
+      const img2 = sprite("raccoon-walk");
+      if (img2) {
+        const frame = Math.floor(tMs / 110) % 6;
+        ctx3.drawImage(
+          img2,
+          frame * 256,
+          0,
+          256,
+          256,
+          x - RACCOON_HEIGHT / 2,
+          groundY - RACCOON_HEIGHT,
+          RACCOON_HEIGHT,
+          RACCOON_HEIGHT
+        );
+        drawn = true;
       }
     }
-    ctx3.fillStyle = NOSE;
-    ctx3.beginPath();
-    ctx3.arc(0, -46 + bob, 1.4, 0, Math.PI * 2);
-    ctx3.fill();
-    ctx3.restore();
+    if (!drawn && happy) {
+      const img2 = sprite("raccoon-happy");
+      if (img2) {
+        const frame = Math.floor(tMs / 80) % 4;
+        ctx3.drawImage(
+          img2,
+          frame * 256,
+          0,
+          256,
+          256,
+          x - RACCOON_HEIGHT / 2,
+          groundY - RACCOON_HEIGHT,
+          RACCOON_HEIGHT,
+          RACCOON_HEIGHT
+        );
+        drawn = true;
+      }
+    }
+    if (!drawn) {
+      ctx3.save();
+      ctx3.translate(x, groundY);
+      if (happy) {
+        ctx3.rotate(0.18);
+      } else if (wrong) {
+        ctx3.rotate(-0.08);
+      }
+      const headband = boss ? HEADBAND_BOSS : HEADBAND;
+      ctx3.strokeStyle = FUR_DARK;
+      ctx3.lineWidth = 7;
+      ctx3.lineCap = "round";
+      ctx3.beginPath();
+      ctx3.moveTo(8, -18 + bob);
+      ctx3.quadraticCurveTo(25, -34 + bob, 15, -58 + bob);
+      ctx3.stroke();
+      ctx3.strokeStyle = "#E4DFD4";
+      ctx3.lineWidth = 2.6;
+      for (const p of [[10.5, -24], [16, -34], [18.5, -45]]) {
+        ctx3.beginPath();
+        ctx3.moveTo(p[0] - 2.6, p[1] + 1.6 + bob);
+        ctx3.lineTo(p[0] + 2.6, p[1] - 1.6 + bob);
+        ctx3.stroke();
+      }
+      ctx3.strokeStyle = FUR_DARK;
+      ctx3.lineWidth = 6;
+      ctx3.lineCap = "round";
+      ctx3.beginPath();
+      ctx3.moveTo(-5, -20);
+      ctx3.lineTo(-5 - legSwing * 0.4, 0);
+      ctx3.stroke();
+      ctx3.beginPath();
+      ctx3.moveTo(5, -20);
+      ctx3.lineTo(5 + legSwing * 0.4, 0);
+      ctx3.stroke();
+      ctx3.fillStyle = OUTFIT;
+      ctx3.fillRect(-11, -40 + bob, 22, 22);
+      ctx3.strokeStyle = OUTLINE;
+      ctx3.lineWidth = 1.4;
+      ctx3.strokeRect(-11, -40 + bob, 22, 22);
+      ctx3.strokeStyle = OUTLINE;
+      ctx3.lineWidth = 3;
+      ctx3.lineCap = "round";
+      ctx3.beginPath();
+      ctx3.moveTo(-7, -41 + bob);
+      ctx3.lineTo(9, -18 + bob);
+      ctx3.stroke();
+      ctx3.strokeStyle = FUR;
+      ctx3.lineWidth = 5;
+      ctx3.lineCap = "round";
+      ctx3.beginPath();
+      ctx3.moveTo(-9, -34 + bob);
+      ctx3.lineTo(-15, -26 + bob + legSwing * 0.2);
+      ctx3.stroke();
+      ctx3.beginPath();
+      ctx3.moveTo(9, -34 + bob);
+      ctx3.lineTo(15, -26 + bob - legSwing * 0.2);
+      ctx3.stroke();
+      ctx3.fillStyle = FUR;
+      ctx3.beginPath();
+      ctx3.arc(0, -49 + bob, 11, 0, Math.PI * 2);
+      ctx3.fill();
+      ctx3.fillStyle = FUR_DARK;
+      ctx3.beginPath();
+      ctx3.moveTo(-9, -57 + bob);
+      ctx3.lineTo(-13, -66 + bob);
+      ctx3.lineTo(-3, -59 + bob);
+      ctx3.closePath();
+      ctx3.fill();
+      ctx3.beginPath();
+      ctx3.moveTo(9, -57 + bob);
+      ctx3.lineTo(13, -66 + bob);
+      ctx3.lineTo(3, -59 + bob);
+      ctx3.closePath();
+      ctx3.fill();
+      ctx3.fillStyle = headband;
+      ctx3.fillRect(-11, -55 + bob, 22, 5);
+      ctx3.beginPath();
+      ctx3.moveTo(11, -55 + bob);
+      ctx3.lineTo(17, -51 + bob);
+      ctx3.lineTo(11, -50 + bob);
+      ctx3.closePath();
+      ctx3.fill();
+      ctx3.beginPath();
+      ctx3.moveTo(11, -52 + bob);
+      ctx3.lineTo(16, -47 + bob);
+      ctx3.lineTo(10, -47 + bob);
+      ctx3.closePath();
+      ctx3.fill();
+      ctx3.fillStyle = FUR_DARK;
+      ctx3.beginPath();
+      ctx3.ellipse(-4, -50 + bob, 3.6, 2.6, -0.15, 0, Math.PI * 2);
+      ctx3.fill();
+      ctx3.beginPath();
+      ctx3.ellipse(4, -50 + bob, 3.6, 2.6, 0.15, 0, Math.PI * 2);
+      ctx3.fill();
+      if (happy) {
+        ctx3.strokeStyle = EYE_LIGHT;
+        ctx3.lineWidth = 1.4;
+        ctx3.lineCap = "round";
+        ctx3.beginPath();
+        ctx3.arc(-4, -49 + bob, 2, Math.PI * 0.15, Math.PI * 0.85);
+        ctx3.stroke();
+        ctx3.beginPath();
+        ctx3.arc(4, -49 + bob, 2, Math.PI * 0.15, Math.PI * 0.85);
+        ctx3.stroke();
+      } else {
+        ctx3.fillStyle = EYE_LIGHT;
+        ctx3.beginPath();
+        ctx3.ellipse(-4, -50 + bob, 2, 1.5, 0, 0, Math.PI * 2);
+        ctx3.fill();
+        ctx3.beginPath();
+        ctx3.ellipse(4, -50 + bob, 2, 1.5, 0, 0, Math.PI * 2);
+        ctx3.fill();
+        ctx3.fillStyle = INK;
+        if (wrong) {
+          ctx3.fillRect(-5.4, -50 + bob, 2.8, 1.1);
+          ctx3.fillRect(2.6, -50 + bob, 2.8, 1.1);
+        } else {
+          ctx3.beginPath();
+          ctx3.arc(-4, -50 + bob, 1, 0, Math.PI * 2);
+          ctx3.fill();
+          ctx3.beginPath();
+          ctx3.arc(4, -50 + bob, 1, 0, Math.PI * 2);
+          ctx3.fill();
+        }
+      }
+      ctx3.fillStyle = NOSE;
+      ctx3.beginPath();
+      ctx3.arc(0, -46 + bob, 1.4, 0, Math.PI * 2);
+      ctx3.fill();
+      ctx3.restore();
+    }
     ctx3.restore();
   }
   function roundedRect2(ctx3, x, y, w, h, r) {
@@ -1063,8 +1157,25 @@
       { id: "lantern", file: "lantern.png", type: "decor", status: "integrated", priority: "P2", w: 256, h: 384, fallback: "css:none (decor)" },
       { id: "cloud", file: "cloud.png", type: "decor", status: "integrated", priority: "P2", w: 512, h: 256, fallback: "css:none (decor)" },
       { id: "coin", file: "coin.png", type: "decor", status: "integrated", priority: "P2", w: 128, h: 128, fallback: "canvas:coin-vector" },
-      { id: "raccoon-walk", file: "raccoon-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawRaccoon" },
-      { id: "raccoon-happy", file: "raccoon-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawRaccoon" }
+      { id: "raccoon-walk", file: "raccoon-walk.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawRaccoon" },
+      { id: "raccoon-happy", file: "raccoon-happy.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawRaccoon" },
+      { id: "cat-panda-walk", file: "cat-panda-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-panda-happy", file: "cat-panda-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-ninja-walk", file: "cat-ninja-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-ninja-happy", file: "cat-ninja-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-astronaut-walk", file: "cat-astronaut-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-astronaut-happy", file: "cat-astronaut-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-beach-walk", file: "cat-beach-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-beach-happy", file: "cat-beach-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-mooncake-walk", file: "cat-mooncake-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-mooncake-happy", file: "cat-mooncake-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-dragon-walk", file: "cat-dragon-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-dragon-happy", file: "cat-dragon-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "bg-harbor-night", file: "bg-harbor-night.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
+      { id: "bg-snow-festival", file: "bg-snow-festival.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
+      { id: "bg-island-sunset", file: "bg-island-sunset.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
+      { id: "bg-lantern-festival", file: "bg-lantern-festival.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
+      { id: "bg-dragon-gate", file: "bg-dragon-gate.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" }
     ],
     required_icons: [
       "home",
@@ -1521,11 +1632,37 @@
     { id: "firecracker-fx", name: "Firecrackers", price: 3500, type: "effect" },
     { id: "bells", name: "Temple Bells", price: 2500, type: "soundpack" },
     { id: "arcade", name: "Arcade", price: 4e3, type: "soundpack" },
-    { id: "red-lantern", name: "Red Lantern", price: 800, type: "deco" },
-    { id: "noodle-stall", name: "Noodle Stall", price: 1500, type: "deco" },
-    { id: "tea-sign", name: "Tea Sign", price: 2200, type: "deco" },
-    { id: "foo-dog", name: "Foo Dog", price: 3e3, type: "deco" },
-    { id: "golden-arch", name: "Golden Arch", price: 5e3, type: "deco" }
+    { id: "red-lantern", name: "Red Lantern", price: 800, type: "deco", maxTier: 3 },
+    { id: "noodle-stall", name: "Noodle Stall", price: 1500, type: "deco", maxTier: 3 },
+    { id: "tea-sign", name: "Tea Sign", price: 2200, type: "deco", maxTier: 3 },
+    { id: "foo-dog", name: "Foo Dog", price: 3e3, type: "deco", maxTier: 3 },
+    { id: "golden-arch", name: "Golden Arch", price: 5e3, type: "deco", maxTier: 3 },
+    // ---- v7 permanent prestige band (PRD v7 F1) ----
+    { id: "panda", name: "Panda", price: 8e3, type: "skin" },
+    { id: "ninja", name: "Ninja", price: 12e3, type: "skin" },
+    { id: "astronaut", name: "Astronaut", price: 2e4, type: "skin" },
+    { id: "harbor-night", name: "Harbor Night", price: 6e3, type: "backdrop" },
+    { id: "snow-festival", name: "Snow Festival", price: 8e3, type: "backdrop" },
+    { id: "mahjong-table", name: "Mahjong Table", price: 4e3, type: "deco", maxTier: 3 },
+    { id: "koi-pond", name: "Koi Pond", price: 6e3, type: "deco", maxTier: 3 },
+    { id: "drum-tower", name: "Drum Tower", price: 9e3, type: "deco", maxTier: 3 },
+    // ---- v7 Today's Stock daily pool (F2) — buyable only while featured ----
+    { id: "bubble-tea", name: "Bubble Tea Stand", price: 2500, type: "deco", pool: "daily", maxTier: 3 },
+    { id: "paper-umbrella", name: "Paper Umbrella", price: 1800, type: "deco", pool: "daily", maxTier: 3 },
+    { id: "goldfish-banner", name: "Goldfish Banner", price: 2200, type: "deco", pool: "daily", maxTier: 3 },
+    { id: "neon-cat-sign", name: "Neon Cat Sign", price: 3500, type: "deco", pool: "daily", maxTier: 3 },
+    { id: "lion-drum", name: "Lion Dance Drum", price: 4500, type: "soundpack", pool: "daily" },
+    { id: "star-shower", name: "Star Shower", price: 3e3, type: "effect", pool: "daily" },
+    // ---- v7 Season Corner (F3) — buyable only inside the season window ----
+    { id: "beach", name: "Beach Cat", price: 12e3, type: "skin", season: "summer" },
+    { id: "island-sunset", name: "Island Sunset", price: 8e3, type: "backdrop", season: "summer" },
+    { id: "shaved-ice-cart", name: "Shaved-Ice Cart", price: 4500, type: "deco", season: "summer", maxTier: 3 },
+    { id: "mooncake-rabbit", name: "Mooncake Rabbit", price: 15e3, type: "skin", season: "midautumn" },
+    { id: "lantern-festival", name: "Lantern Festival", price: 9e3, type: "backdrop", season: "midautumn" },
+    { id: "mooncake-stall", name: "Mooncake Stall", price: 5e3, type: "deco", season: "midautumn", maxTier: 3 },
+    { id: "dragon", name: "Dragon", price: 25e3, type: "skin", season: "cny" },
+    { id: "dragon-gate", name: "Dragon Gate", price: 1e4, type: "backdrop", season: "cny" },
+    { id: "firecracker-arch", name: "Firecracker Arch", price: 6e3, type: "deco", season: "cny", maxTier: 3 }
   ];
   var SKIN_PALETTES = {
     midnight: {
@@ -1563,22 +1700,139 @@
       inner: "#fff4e0",
       leg: "#9c6b00",
       filter: "saturate(1.6) brightness(1.25) contrast(1.05)"
+    },
+    panda: {
+      sprite: "cat-panda",
+      body: "#f4f4f0",
+      head: "#ffffff",
+      ear: "#26262c",
+      inner: "#3a3a40",
+      leg: "#26262c",
+      filter: "grayscale(1) brightness(1.32) contrast(1.08)"
+    },
+    ninja: {
+      sprite: "cat-ninja",
+      body: "#23233a",
+      head: "#2c2c46",
+      ear: "#2c2c46",
+      inner: "#c1272d",
+      leg: "#16162a",
+      filter: "grayscale(.85) brightness(.45)"
+    },
+    astronaut: {
+      sprite: "cat-astronaut",
+      body: "#e8ecf4",
+      head: "#f4f7fd",
+      ear: "#f4f7fd",
+      inner: "#4a7fd4",
+      leg: "#b8c2d4",
+      filter: "grayscale(.9) brightness(1.35)"
+    },
+    beach: {
+      sprite: "cat-beach",
+      body: "#f3b23e",
+      head: "#ffd27a",
+      ear: "#ffd27a",
+      inner: "#2aa8c4",
+      leg: "#d08a20",
+      filter: "saturate(1.4) brightness(1.2) hue-rotate(10deg)"
+    },
+    "mooncake-rabbit": {
+      sprite: "cat-mooncake",
+      body: "#efe6da",
+      head: "#f8f2e8",
+      ear: "#f8f2e8",
+      inner: "#c9a34e",
+      leg: "#cbbfa8",
+      filter: "sepia(.4) brightness(1.25)"
+    },
+    dragon: {
+      sprite: "cat-dragon",
+      body: "#b3202a",
+      head: "#c92f30",
+      ear: "#c92f30",
+      inner: "#f5c518",
+      leg: "#7c1418",
+      filter: "saturate(1.5) hue-rotate(-20deg) brightness(.95)"
     }
   };
+  var SEASONS = [
+    { id: "summer", label: "Summer", from: [7, 1], to: [8, 15] },
+    { id: "midautumn", label: "Mid-Autumn", from: [9, 1], to: [10, 5] },
+    { id: "cny", label: "Lunar New Year", from: [1, 20], to: [2, 24] }
+  ];
+  var dayIndex = (dateStr) => Math.floor(Date.parse(dateStr + "T00:00:00Z") / 864e5);
+  function dailyStock(dateStr) {
+    const pool2 = CATALOG.filter((i) => i.pool === "daily");
+    const d = dayIndex(dateStr);
+    return [0, 1, 2].map((i) => pool2[((d * 3 + i) % pool2.length + pool2.length) % pool2.length].id);
+  }
+  function inWindow(dateStr, from, to) {
+    const [, m, d] = dateStr.split("-").map(Number);
+    const md = m * 100 + d, lo = from[0] * 100 + from[1], hi = to[0] * 100 + to[1];
+    return lo <= hi ? md >= lo && md <= hi : md >= lo || md <= hi;
+  }
+  function isAvailable(item, dateStr) {
+    if (!item) return false;
+    if (item.pool === "daily") return !!dateStr && dailyStock(dateStr).includes(item.id);
+    if (item.season) {
+      if (!dateStr) return false;
+      const s = SEASONS.find((s2) => s2.id === item.season);
+      return !!s && inWindow(dateStr, s.from, s.to);
+    }
+    return true;
+  }
+  function daysUntil(dateStr, [m, d]) {
+    const y = Number(dateStr.slice(0, 4));
+    const today = dayIndex(dateStr);
+    for (const year of [y, y + 1]) {
+      const target = Math.floor(Date.UTC(year, m - 1, d) / 864e5);
+      if (target > today) return target - today;
+    }
+    return 366;
+  }
+  function seasonStatus(dateStr) {
+    const active = SEASONS.find((s) => inWindow(dateStr, s.from, s.to)) || null;
+    let next = null, best = Infinity;
+    for (const s of SEASONS) {
+      if (s === active) continue;
+      const n = daysUntil(dateStr, s.from);
+      if (n < best) {
+        best = n;
+        next = s;
+      }
+    }
+    return { active, next, nextInDays: best };
+  }
   function byId(id) {
     return CATALOG.find((it) => it.id === id);
   }
   function defaultShop() {
-    return { owned: [], skin: "", backdrop: "", effect: "", soundpack: "" };
+    return { owned: [], skin: "", backdrop: "", effect: "", soundpack: "", tiers: {} };
   }
   function canAfford(wallet2, id) {
     const item = byId(id);
     return !!item && wallet2 >= item.price;
   }
-  function buy(wallet2, shop, id) {
+  function upgradePrice(item, currentTier) {
+    if (!item || !item.maxTier || currentTier >= item.maxTier) return null;
+    return Math.round(item.price * (currentTier === 1 ? 1.5 : 2.5));
+  }
+  function buy(wallet2, shop, id, dateStr) {
     const item = byId(id);
     if (!item) return { ok: false, wallet: wallet2, shop };
-    if (shop.owned.includes(id)) return { ok: false, wallet: wallet2, shop };
+    if (shop.owned.includes(id)) {
+      if (item.type !== "deco" || !item.maxTier) return { ok: false, wallet: wallet2, shop };
+      const cur = shop.tiers && shop.tiers[id] || 1;
+      const price = upgradePrice(item, cur);
+      if (price === null || wallet2 < price) return { ok: false, wallet: wallet2, shop };
+      return {
+        ok: true,
+        wallet: wallet2 - price,
+        shop: { ...shop, tiers: { ...shop.tiers || {}, [id]: cur + 1 } }
+      };
+    }
+    if (!isAvailable(item, dateStr)) return { ok: false, wallet: wallet2, shop };
     if (wallet2 < item.price) return { ok: false, wallet: wallet2, shop };
     return {
       ok: true,
@@ -1602,16 +1856,48 @@
     { lv: 30, id: "kitten-cafe", name: "Kitten Caf\xE9" },
     { lv: 50, id: "emperor-gate", name: "Emperor's Gate" }
   ];
-  var DECO_IDS = ["red-lantern", "noodle-stall", "tea-sign", "foo-dog", "golden-arch"];
+  var DECO_IDS = [
+    "red-lantern",
+    "noodle-stall",
+    "tea-sign",
+    "foo-dog",
+    "golden-arch",
+    "mahjong-table",
+    "koi-pond",
+    "drum-tower",
+    "bubble-tea",
+    "paper-umbrella",
+    "goldfish-banner",
+    "neon-cat-sign",
+    "shaved-ice-cart",
+    "mooncake-stall",
+    "firecracker-arch"
+  ];
   var BUILDING_SLOTS = [0.18, 0.34, 0.5, 0.66, 0.82];
-  var DECO_SLOTS = [0.1, 0.26, 0.42, 0.58, 0.74];
-  function streetPieces(level, owned) {
+  var DECO_SLOTS = [
+    0.1,
+    0.26,
+    0.42,
+    0.58,
+    0.74,
+    0.06,
+    0.14,
+    0.22,
+    0.3,
+    0.38,
+    0.46,
+    0.54,
+    0.62,
+    0.7,
+    0.9
+  ];
+  function streetPieces(level, owned, tiers = {}) {
     const pieces = [];
     BUILDINGS.forEach((b, i) => {
       if (level >= b.lv) pieces.push({ id: b.id, kind: "building", slot: BUILDING_SLOTS[i] });
     });
     DECO_IDS.forEach((id, i) => {
-      if (owned.includes(id)) pieces.push({ id, kind: "deco", slot: DECO_SLOTS[i] });
+      if (owned.includes(id)) pieces.push({ id, kind: "deco", slot: DECO_SLOTS[i], tier: tiers[id] || 1 });
     });
     return pieces.sort((a, b) => a.slot - b.slot);
   }
@@ -1779,8 +2065,17 @@
       "shop.buy": "Buy",
       "shop.equip": "Equip",
       "shop.equipped": "Equipped",
-      "shop.onStreet": "On street",
       "shop.coins": "{coins} coins",
+      "shop.daily": "Today's Stock",
+      "shop.dailyNote": "New stock at midnight",
+      "shop.season": "Season Corner",
+      "shop.seasonUntil": "Available until {date}",
+      "shop.seasonReturns": "\u{1F3EE} {name} set returns {date}",
+      "shop.upgrade": "Upgrade {stars} ({coins})",
+      "shop.maxed": "\u2605\u2605\u2605",
+      "season.summer": "Summer",
+      "season.midautumn": "Mid-Autumn",
+      "season.cny": "Lunar New Year",
       // howto
       "howto.title": "How to play",
       "howto.oneShot": "You get one shot per word.",
@@ -1936,8 +2231,17 @@
       "shop.buy": "\u0E0B\u0E37\u0E49\u0E2D",
       "shop.equip": "\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19",
       "shop.equipped": "\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19\u0E2D\u0E22\u0E39\u0E48",
-      "shop.onStreet": "\u0E2D\u0E22\u0E39\u0E48\u0E1A\u0E19\u0E16\u0E19\u0E19",
       "shop.coins": "{coins} \u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D",
+      "shop.daily": "\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49",
+      "shop.dailyNote": "\u0E02\u0E2D\u0E07\u0E43\u0E2B\u0E21\u0E48\u0E21\u0E32\u0E15\u0E2D\u0E19\u0E40\u0E17\u0E35\u0E48\u0E22\u0E07\u0E04\u0E37\u0E19",
+      "shop.season": "\u0E21\u0E38\u0E21\u0E40\u0E17\u0E28\u0E01\u0E32\u0E25",
+      "shop.seasonUntil": "\u0E21\u0E35\u0E16\u0E36\u0E07 {date}",
+      "shop.seasonReturns": "\u{1F3EE} \u0E40\u0E0B\u0E47\u0E15 {name} \u0E08\u0E30\u0E01\u0E25\u0E31\u0E1A\u0E21\u0E32 {date}",
+      "shop.upgrade": "\u0E2D\u0E31\u0E1B\u0E40\u0E01\u0E23\u0E14 {stars} ({coins})",
+      "shop.maxed": "\u2605\u2605\u2605",
+      "season.summer": "\u0E24\u0E14\u0E39\u0E23\u0E49\u0E2D\u0E19",
+      "season.midautumn": "\u0E44\u0E2B\u0E27\u0E49\u0E1E\u0E23\u0E30\u0E08\u0E31\u0E19\u0E17\u0E23\u0E4C",
+      "season.cny": "\u0E15\u0E23\u0E38\u0E29\u0E08\u0E35\u0E19",
       // howto
       "howto.title": "\u0E27\u0E34\u0E18\u0E35\u0E40\u0E25\u0E48\u0E19",
       "howto.oneShot": "\u0E15\u0E2D\u0E1A\u0E44\u0E14\u0E49\u0E04\u0E23\u0E31\u0E49\u0E07\u0E40\u0E14\u0E35\u0E22\u0E27\u0E15\u0E48\u0E2D\u0E04\u0E33",
@@ -3430,6 +3734,9 @@
         ctx2.beginPath();
         ctx2.arc(p.x, p.y, 4.4, 0, 7);
         ctx2.fill();
+      } else if (p.kind === "star") {
+        ctx2.fillStyle = "#ffe08a";
+        drawStarMark(ctx2, p.x, p.y, 5.2);
       } else {
         ctx2.fillStyle = "#f5c518";
         ctx2.beginPath();
@@ -3909,83 +4216,100 @@
   function renderShop() {
     sfx.pack = shopState.soundpack || "default";
     $("#shop-wallet").innerHTML = t("shop.wallet", { coins: wallet.toLocaleString() });
+    const today = todayStr();
+    const dailyBox = $("#shop-daily"), seasonBox = $("#shop-season");
     const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), decoBox = $("#shop-street");
-    skinBox.innerHTML = "";
-    bdBox.innerHTML = "";
-    fxBox.innerHTML = "";
-    sndBox.innerHTML = "";
-    decoBox.innerHTML = "";
-    for (const item of CATALOG) {
-      const box = item.type === "skin" ? skinBox : item.type === "backdrop" ? bdBox : item.type === "effect" ? fxBox : item.type === "soundpack" ? sndBox : decoBox;
-      const owned = shopState.owned.includes(item.id);
-      const equipped = shopState[item.type] === item.id;
-      const row = document.createElement("div");
-      row.className = "scorerow shoprow";
-      const left = document.createElement("span");
-      left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${t("shop.coins", { coins: item.price.toLocaleString() })}</span>`;
-      left.className = "shop-left";
-      const preview = document.createElement("canvas");
-      preview.className = "shop-preview";
-      preview.setAttribute("aria-hidden", "true");
-      preview._shopItem = item;
-      const copy = document.createElement("span");
-      copy.className = "shop-copy";
-      copy.innerHTML = `<b>${item.name}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
-      left.replaceChildren(preview, copy);
-      const btn = document.createElement("button");
-      if (item.type === "deco") {
-        btn.className = "chip" + (owned ? " on" : "");
-        if (owned) {
-          btn.textContent = t("shop.onStreet");
-          btn.disabled = true;
-        } else {
-          btn.textContent = t("shop.buy");
-          btn.disabled = !canAfford(wallet, item.id);
-          btn.onclick = () => {
-            const r = buy(wallet, shopState, item.id);
-            if (!r.ok) return;
-            wallet = r.wallet;
-            shopState = r.shop;
-            store.set("wallet", wallet);
-            store.set("shop", shopState);
-            updateWalletChip();
-            renderShop();
-            renderStreet();
-          };
-        }
-      } else {
-        btn.className = "chip" + (equipped ? " on" : "");
-        if (equipped) {
-          btn.textContent = t("shop.equipped");
-          btn.disabled = true;
-        } else if (owned) {
-          btn.textContent = t("shop.equip");
-          btn.onclick = () => {
-            shopState = equipItem(shopState, item.id);
-            store.set("shop", shopState);
-            renderShop();
-          };
-        } else {
-          btn.textContent = t("shop.buy");
-          btn.disabled = !canAfford(wallet, item.id);
-          btn.onclick = () => {
-            const r = buy(wallet, shopState, item.id);
-            if (!r.ok) return;
-            wallet = r.wallet;
-            shopState = r.shop;
-            store.set("wallet", wallet);
-            store.set("shop", shopState);
-            updateWalletChip();
-            renderShop();
-          };
-        }
+    for (const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, decoBox]) b.innerHTML = "";
+    for (const id of dailyStock(today)) {
+      const item = CATALOG.find((i) => i.id === id);
+      if (item && !shopState.owned.includes(id)) dailyBox.appendChild(makeShopRow(item, today));
+    }
+    const st = seasonStatus(today);
+    const seasonNote = $("#shop-season-note");
+    if (st.active) {
+      for (const item of CATALOG.filter((i) => i.season === st.active.id && !shopState.owned.includes(i.id))) {
+        seasonBox.appendChild(makeShopRow(item, today));
       }
-      row.appendChild(left);
-      row.appendChild(btn);
-      box.appendChild(row);
-      renderShopPreview(preview, item, performance.now());
+      seasonNote.textContent = t("shop.seasonUntil", { date: fmtMonthDay(st.active.to) });
+    } else {
+      seasonNote.textContent = t("shop.seasonReturns", { name: t("season." + st.next.id), date: fmtMonthDay(st.next.from) });
+    }
+    for (const item of CATALOG) {
+      if ((item.pool || item.season) && !shopState.owned.includes(item.id)) continue;
+      const box = item.type === "skin" ? skinBox : item.type === "backdrop" ? bdBox : item.type === "effect" ? fxBox : item.type === "soundpack" ? sndBox : decoBox;
+      box.appendChild(makeShopRow(item, today));
     }
     startShopPreviewLoop();
+  }
+  var fmtMonthDay = ([m, d]) => new Date(2026, m - 1, d).toLocaleDateString(getLocale() === "th" ? "th-TH" : "en-US", { month: "short", day: "numeric" });
+  function makeShopRow(item, today) {
+    const owned = shopState.owned.includes(item.id);
+    const equipped = shopState[item.type] === item.id;
+    const tier = shopState.tiers && shopState.tiers[item.id] || 1;
+    const row = document.createElement("div");
+    row.className = "scorerow shoprow";
+    const left = document.createElement("span");
+    left.className = "shop-left";
+    const preview = document.createElement("canvas");
+    preview.className = "shop-preview";
+    preview.setAttribute("aria-hidden", "true");
+    preview._shopItem = item;
+    const copy = document.createElement("span");
+    copy.className = "shop-copy";
+    const stars = item.type === "deco" && owned ? " " + "\u2605".repeat(tier) : "";
+    copy.innerHTML = `<b>${item.name}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
+    left.replaceChildren(preview, copy);
+    const btn = document.createElement("button");
+    const doBuy = () => {
+      const r = buy(wallet, shopState, item.id, today);
+      if (!r.ok) return;
+      wallet = r.wallet;
+      shopState = r.shop;
+      store.set("wallet", wallet);
+      store.set("shop", shopState);
+      updateWalletChip();
+      renderShop();
+      renderStreet();
+    };
+    if (item.type === "deco") {
+      if (!owned) {
+        btn.className = "chip";
+        btn.textContent = t("shop.buy");
+        btn.disabled = !canAfford(wallet, item.id);
+        btn.onclick = doBuy;
+      } else if (item.maxTier && tier < item.maxTier) {
+        const up = upgradePrice(item, tier);
+        btn.className = "chip";
+        btn.textContent = t("shop.upgrade", { stars: "\u2605".repeat(tier + 1), coins: up.toLocaleString() });
+        btn.disabled = wallet < up;
+        btn.onclick = doBuy;
+      } else {
+        btn.className = "chip on";
+        btn.textContent = t("shop.maxed");
+        btn.disabled = true;
+      }
+    } else {
+      btn.className = "chip" + (equipped ? " on" : "");
+      if (equipped) {
+        btn.textContent = t("shop.equipped");
+        btn.disabled = true;
+      } else if (owned) {
+        btn.textContent = t("shop.equip");
+        btn.onclick = () => {
+          shopState = equipItem(shopState, item.id);
+          store.set("shop", shopState);
+          renderShop();
+        };
+      } else {
+        btn.textContent = t("shop.buy");
+        btn.disabled = !canAfford(wallet, item.id);
+        btn.onclick = doBuy;
+      }
+    }
+    row.appendChild(left);
+    row.appendChild(btn);
+    renderShopPreview(preview, item, performance.now());
+    return row;
   }
   var shopPreviewRaf = 0;
   function startShopPreviewLoop() {
@@ -4040,6 +4364,9 @@
           c.ellipse(x, y, 5, 2.6, r, 0, Math.PI * 2);
           c.fill();
         }
+      } else if (item.id === "star-shower") {
+        c.fillStyle = "#ffe08a";
+        for (const [x, y, r] of [[18, 14, 4], [33, 22, 5], [44, 12, 3], [25, 30, 3.5]]) drawStarMark(c, x, y, r);
       } else {
         c.fillStyle = "#e04040";
         c.beginPath();
@@ -4068,6 +4395,21 @@
         c.beginPath();
         c.arc(30, 30, 2.6, 0, Math.PI * 2);
         c.fill();
+      } else if (item.id === "lion-drum") {
+        c.fillStyle = "#c1272d";
+        c.beginPath();
+        c.ellipse(28, 24, 12, 9, 0, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#f5c518";
+        c.fillRect(16, 20, 24, 3);
+        c.strokeStyle = "#7a1c14";
+        c.lineWidth = 2;
+        c.beginPath();
+        c.moveTo(20, 10);
+        c.lineTo(26, 19);
+        c.moveTo(38, 10);
+        c.lineTo(32, 19);
+        c.stroke();
       } else {
         c.beginPath();
         c.moveTo(16, 29);
@@ -4100,12 +4442,12 @@
     paintStreetBase(sc, w, h);
     const gy = h - 10;
     const level = levelForXp(xp);
-    const pieces = streetPieces(level, shopState.owned);
+    const pieces = streetPieces(level, shopState.owned, shopState.tiers || {});
     drawStreetPads(sc, w, gy, h, pieces);
     for (const p of pieces) {
       const x = p.slot * w;
       if (p.kind === "building") drawStreetBuilding(sc, p.id, x, gy, h);
-      else drawStreetDeco(sc, p.id, x, gy, h);
+      else drawTieredDeco(sc, p, x, gy, h);
     }
     const mImg = sprite("maneki");
     const mp = Math.min(h * 0.62, 48);
@@ -4285,12 +4627,46 @@
     }
     c.restore();
   }
+  function drawStarMark(c, x, y, r) {
+    c.beginPath();
+    c.moveTo(x, y - r);
+    c.quadraticCurveTo(x, y, x + r, y);
+    c.quadraticCurveTo(x, y, x, y + r);
+    c.quadraticCurveTo(x, y, x - r, y);
+    c.quadraticCurveTo(x, y, x, y - r);
+    c.fill();
+  }
+  function drawTieredDeco(c, p, x, gy, h) {
+    const tier = p.tier || 1;
+    if (tier >= 3) {
+      const dx = h * 0.26;
+      c.save();
+      c.globalAlpha = 0.8;
+      drawStreetDeco(c, p.id, x - dx, gy, h * 0.68);
+      drawStreetDeco(c, p.id, x + dx, gy, h * 0.68);
+      c.restore();
+    }
+    if (tier >= 2) {
+      c.save();
+      c.shadowColor = "rgba(255,214,95,.55)";
+      c.shadowBlur = 12;
+      c.translate(x, gy);
+      c.scale(1.15, 1.15);
+      c.translate(-x, -gy);
+      drawStreetDeco(c, p.id, x, gy, h);
+      c.restore();
+    } else {
+      drawStreetDeco(c, p.id, x, gy, h);
+    }
+  }
   function drawStreetDeco(c, id, x, gy, h) {
     const s = h * 0.32;
     c.save();
     c.translate(x, gy);
-    c.shadowColor = "rgba(245,197,24,.28)";
-    c.shadowBlur = 5;
+    if (!c.shadowBlur) {
+      c.shadowColor = "rgba(245,197,24,.28)";
+      c.shadowBlur = 5;
+    }
     switch (id) {
       case "red-lantern":
         c.strokeStyle = "#8a2a24";
@@ -4364,6 +4740,165 @@
         c.fillStyle = "rgba(255,244,224,.35)";
         c.beginPath();
         c.arc(0, -s * 0.93, s * 0.13, 0, Math.PI * 2);
+        c.fill();
+        break;
+      case "mahjong-table":
+        c.fillStyle = "#2f7d4f";
+        c.fillRect(-s * 0.5, -s * 0.55, s, s * 0.16);
+        c.fillStyle = "#8a5a2c";
+        c.fillRect(-s * 0.42, -s * 0.4, s * 0.1, s * 0.4);
+        c.fillRect(s * 0.32, -s * 0.4, s * 0.1, s * 0.4);
+        c.fillStyle = "#fdf6e3";
+        for (const tx of [-s * 0.3, -s * 0.1, s * 0.1, s * 0.28]) c.fillRect(tx, -s * 0.72, s * 0.14, s * 0.14);
+        break;
+      case "koi-pond":
+        c.fillStyle = "#3f8fb0";
+        c.beginPath();
+        c.ellipse(0, -s * 0.14, s * 0.55, s * 0.22, 0, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#e8734a";
+        c.beginPath();
+        c.ellipse(-s * 0.14, -s * 0.16, s * 0.16, s * 0.07, -0.5, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#fdf6e3";
+        c.beginPath();
+        c.ellipse(s * 0.16, -s * 0.1, s * 0.13, s * 0.06, 0.4, 0, Math.PI * 2);
+        c.fill();
+        c.strokeStyle = "#8a5a2c";
+        c.lineWidth = 2;
+        c.beginPath();
+        c.ellipse(0, -s * 0.14, s * 0.58, s * 0.25, 0, 0, Math.PI * 2);
+        c.stroke();
+        break;
+      case "drum-tower":
+        c.fillStyle = "#8a5a2c";
+        c.fillRect(-s * 0.34, -s * 1.15, s * 0.68, s * 1.15);
+        c.fillStyle = "#c1272d";
+        c.beginPath();
+        c.moveTo(-s * 0.48, -s * 1.15);
+        c.lineTo(0, -s * 1.5);
+        c.lineTo(s * 0.48, -s * 1.15);
+        c.closePath();
+        c.fill();
+        c.beginPath();
+        c.ellipse(0, -s * 0.62, s * 0.2, s * 0.24, 0, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#f5c518";
+        c.beginPath();
+        c.arc(0, -s * 0.62, s * 0.07, 0, Math.PI * 2);
+        c.fill();
+        break;
+      case "bubble-tea":
+        c.fillStyle = "#8a5a2c";
+        c.fillRect(-s * 0.4, -s * 0.7, s * 0.8, s * 0.7);
+        c.fillStyle = "#f5c518";
+        c.fillRect(-s * 0.48, -s * 0.86, s * 0.96, s * 0.16);
+        c.fillStyle = "#e8a9c9";
+        c.fillRect(-s * 0.12, -s * 1.2, s * 0.24, s * 0.3);
+        c.strokeStyle = "#5a3a1c";
+        c.lineWidth = 2;
+        c.beginPath();
+        c.moveTo(0, -s * 1.2);
+        c.lineTo(s * 0.06, -s * 1.34);
+        c.stroke();
+        break;
+      case "paper-umbrella":
+        c.strokeStyle = "#8a5a2c";
+        c.lineWidth = 2;
+        c.beginPath();
+        c.moveTo(0, 0);
+        c.lineTo(0, -s * 0.9);
+        c.stroke();
+        c.fillStyle = "#e8734a";
+        c.beginPath();
+        c.arc(0, -s * 0.9, s * 0.5, Math.PI, 0);
+        c.fill();
+        c.strokeStyle = "#fdf6e3";
+        c.lineWidth = 1.5;
+        for (const a of [-2.5, -1.9, -1.2, -0.6]) {
+          c.beginPath();
+          c.moveTo(0, -s * 0.9);
+          c.lineTo(Math.cos(a) * s * 0.5, -s * 0.9 + Math.sin(a) * s * 0.5);
+          c.stroke();
+        }
+        break;
+      case "goldfish-banner":
+        c.strokeStyle = "#8a5a2c";
+        c.lineWidth = 2;
+        c.beginPath();
+        c.moveTo(0, 0);
+        c.lineTo(0, -s * 1.4);
+        c.stroke();
+        c.fillStyle = "#e8734a";
+        c.beginPath();
+        c.ellipse(s * 0.2, -s * 1.1, s * 0.3, s * 0.12, 0, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#f5c518";
+        c.beginPath();
+        c.moveTo(s * 0.46, -s * 1.1);
+        c.lineTo(s * 0.62, -s * 1.2);
+        c.lineTo(s * 0.62, -s * 1);
+        c.closePath();
+        c.fill();
+        break;
+      case "neon-cat-sign":
+        c.fillStyle = "#23233a";
+        c.fillRect(-s * 0.36, -s * 1.1, s * 0.72, s * 0.8);
+        c.strokeStyle = "#7fd7ff";
+        c.lineWidth = 2;
+        c.strokeRect(-s * 0.36, -s * 1.1, s * 0.72, s * 0.8);
+        c.strokeStyle = "#f5c518";
+        c.beginPath();
+        c.arc(0, -s * 0.72, s * 0.18, 0, Math.PI * 2);
+        c.stroke();
+        c.beginPath();
+        c.moveTo(-s * 0.14, -s * 0.86);
+        c.lineTo(-s * 0.06, -s * 0.98);
+        c.moveTo(s * 0.14, -s * 0.86);
+        c.lineTo(s * 0.06, -s * 0.98);
+        c.stroke();
+        break;
+      case "shaved-ice-cart":
+        c.fillStyle = "#fdf6e3";
+        c.fillRect(-s * 0.4, -s * 0.62, s * 0.8, s * 0.5);
+        c.fillStyle = "#7fd7ff";
+        c.beginPath();
+        c.arc(0, -s * 0.72, s * 0.22, Math.PI, 0);
+        c.fill();
+        c.fillStyle = "#e8734a";
+        c.fillRect(-s * 0.06, -s * 0.94, s * 0.12, s * 0.1);
+        c.strokeStyle = "#8a5a2c";
+        c.lineWidth = 2;
+        c.beginPath();
+        c.arc(-s * 0.22, -s * 0.04, s * 0.1, 0, Math.PI * 2);
+        c.stroke();
+        c.beginPath();
+        c.arc(s * 0.22, -s * 0.04, s * 0.1, 0, Math.PI * 2);
+        c.stroke();
+        break;
+      case "mooncake-stall":
+        c.fillStyle = "#8a5a2c";
+        c.fillRect(-s * 0.42, -s * 0.6, s * 0.84, s * 0.6);
+        c.fillStyle = "#c1272d";
+        c.fillRect(-s * 0.5, -s * 0.78, s, s * 0.18);
+        c.fillStyle = "#f5c518";
+        for (const tx of [-s * 0.26, -s * 0.02, s * 0.2]) {
+          c.beginPath();
+          c.arc(tx + s * 0.06, -s * 0.42, s * 0.09, 0, Math.PI * 2);
+          c.fill();
+        }
+        break;
+      case "firecracker-arch":
+        c.strokeStyle = "#c1272d";
+        c.lineWidth = 3;
+        c.beginPath();
+        c.arc(0, -s * 0.2, s * 0.62, Math.PI, 0);
+        c.stroke();
+        c.fillStyle = "#c1272d";
+        for (const [ax, ay] of [[-s * 0.62, -s * 0.2], [s * 0.62, -s * 0.2], [-s * 0.5, -s * 0.62], [s * 0.5, -s * 0.62], [0, -s * 0.82]]) c.fillRect(ax - 2, ay, 4, s * 0.18);
+        c.fillStyle = "#f5c518";
+        c.beginPath();
+        c.arc(0, -s * 0.82, s * 0.06, 0, Math.PI * 2);
         c.fill();
         break;
     }

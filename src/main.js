@@ -18,7 +18,7 @@ import { defaultQuestState, noteQuestEvent, questStatus } from "./quests.js";
 import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
-import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem } from "./shop.js";
+import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem, dailyStock, seasonStatus, upgradePrice } from "./shop.js";
 import { streetPieces, streetProgress } from "./street.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
@@ -1245,6 +1245,8 @@ function draw(t){
       ctx.fillStyle = "#f6a8c8"; ctx.beginPath(); ctx.ellipse(p.x,p.y,4.6,2.6,p.x*0.05,0,7); ctx.fill();
     }else if(p.kind==="cracker"){
       ctx.fillStyle = "#e04040"; ctx.beginPath(); ctx.arc(p.x,p.y,4.4,0,7); ctx.fill();
+    }else if(p.kind==="star"){
+      ctx.fillStyle = "#ffe08a"; drawStarMark(ctx, p.x, p.y, 5.2);
     }else{
       ctx.fillStyle = "#f5c518"; ctx.beginPath(); ctx.arc(p.x,p.y,3.4,0,7); ctx.fill();
     }
@@ -1694,66 +1696,104 @@ function renderScores(){
 function renderShop(){
   sfx.pack = shopState.soundpack || "default";  // keep sfx in sync with the equipped slot
   $("#shop-wallet").innerHTML = t("shop.wallet", { coins: wallet.toLocaleString() });
+  const today = todayStr();
+  const dailyBox = $("#shop-daily"), seasonBox = $("#shop-season");
   const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), decoBox = $("#shop-street");
-  skinBox.innerHTML = ""; bdBox.innerHTML = ""; fxBox.innerHTML = ""; sndBox.innerHTML = ""; decoBox.innerHTML = "";
-  for(const item of CATALOG){
-    const box = item.type==="skin" ? skinBox : item.type==="backdrop" ? bdBox : item.type==="effect" ? fxBox : item.type==="soundpack" ? sndBox : decoBox;
-    const owned = shopState.owned.includes(item.id);
-    const equipped = shopState[item.type] === item.id;
-    const row = document.createElement("div");
-    row.className = "scorerow shoprow";
-    const left = document.createElement("span");
-    left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${t("shop.coins", { coins: item.price.toLocaleString() })}</span>`;
-    left.className = "shop-left";
-    const preview = document.createElement("canvas");
-    preview.className = "shop-preview";
-    preview.setAttribute("aria-hidden", "true");
-    preview._shopItem = item;
-    const copy = document.createElement("span");
-    copy.className = "shop-copy";
-    copy.innerHTML = `<b>${item.name}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
-    left.replaceChildren(preview, copy);
-    const btn = document.createElement("button");
-    if(item.type === "deco"){
-      // Decos are never equipped — every owned deco just appears on the street.
-      btn.className = "chip"+(owned? " on":"");
-      if(owned){
-        btn.textContent = t("shop.onStreet"); btn.disabled = true;
-      }else{
-        btn.textContent = t("shop.buy");
-        btn.disabled = !canAfford(wallet, item.id);
-        btn.onclick = ()=>{
-          const r = buy(wallet, shopState, item.id);
-          if(!r.ok) return;
-          wallet = r.wallet; shopState = r.shop;
-          store.set("wallet", wallet); store.set("shop", shopState);
-          updateWalletChip(); renderShop(); renderStreet();
-        };
-      }
-    }else{
-      btn.className = "chip"+(equipped? " on":"");
-      if(equipped){
-        btn.textContent = t("shop.equipped"); btn.disabled = true;
-      }else if(owned){
-        btn.textContent = t("shop.equip");
-        btn.onclick = ()=>{ shopState = equipItem(shopState, item.id); store.set("shop", shopState); renderShop(); };
-      }else{
-        btn.textContent = t("shop.buy");
-        btn.disabled = !canAfford(wallet, item.id);
-        btn.onclick = ()=>{
-          const r = buy(wallet, shopState, item.id);
-          if(!r.ok) return;
-          wallet = r.wallet; shopState = r.shop;
-          store.set("wallet", wallet); store.set("shop", shopState);
-          updateWalletChip(); renderShop();
-        };
-      }
+  for(const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, decoBox]) b.innerHTML = "";
+
+  // Today's Stock — the 3 featured pool items; once owned they live in their type section
+  for(const id of dailyStock(today)){
+    const item = CATALOG.find(i => i.id === id);
+    if(item && !shopState.owned.includes(id)) dailyBox.appendChild(makeShopRow(item, today));
+  }
+
+  // Season Corner — active set is buyable; off-season shows the next set's teaser
+  const st = seasonStatus(today);
+  const seasonNote = $("#shop-season-note");
+  if(st.active){
+    for(const item of CATALOG.filter(i => i.season === st.active.id && !shopState.owned.includes(i.id))){
+      seasonBox.appendChild(makeShopRow(item, today));
     }
-    row.appendChild(left); row.appendChild(btn);
-    box.appendChild(row);
-    renderShopPreview(preview, item, performance.now());
+    seasonNote.textContent = t("shop.seasonUntil", { date: fmtMonthDay(st.active.to) });
+  }else{
+    seasonNote.textContent = t("shop.seasonReturns", { name: t("season." + st.next.id), date: fmtMonthDay(st.next.from) });
+  }
+
+  // Permanent sections — pool/season items appear here only once owned
+  for(const item of CATALOG){
+    if((item.pool || item.season) && !shopState.owned.includes(item.id)) continue;
+    const box = item.type==="skin" ? skinBox : item.type==="backdrop" ? bdBox : item.type==="effect" ? fxBox : item.type==="soundpack" ? sndBox : decoBox;
+    box.appendChild(makeShopRow(item, today));
   }
   startShopPreviewLoop();
+}
+
+// "Jul 1" / "1 ก.ค." for a [month, day] pair, in the active locale.
+// The fixed 2026 year is inert: only month/day are rendered (see the
+// { month: "short", day: "numeric" } options below), and there's no leap-day
+// window in play, so the hardcoded year never affects the output.
+const fmtMonthDay = ([m, d]) =>
+  new Date(2026, m - 1, d).toLocaleDateString(getLocale() === "th" ? "th-TH" : "en-US", { month: "short", day: "numeric" });
+
+function makeShopRow(item, today){
+  const owned = shopState.owned.includes(item.id);
+  const equipped = shopState[item.type] === item.id;
+  const tier = (shopState.tiers && shopState.tiers[item.id]) || 1;
+  const row = document.createElement("div");
+  row.className = "scorerow shoprow";
+  const left = document.createElement("span");
+  left.className = "shop-left";
+  const preview = document.createElement("canvas");
+  preview.className = "shop-preview";
+  preview.setAttribute("aria-hidden", "true");
+  preview._shopItem = item;
+  const copy = document.createElement("span");
+  copy.className = "shop-copy";
+  const stars = item.type === "deco" && owned ? " " + "★".repeat(tier) : "";
+  copy.innerHTML = `<b>${item.name}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
+  left.replaceChildren(preview, copy);
+  const btn = document.createElement("button");
+  const doBuy = () => {
+    const r = buy(wallet, shopState, item.id, today);
+    if(!r.ok) return;
+    wallet = r.wallet; shopState = r.shop;
+    store.set("wallet", wallet); store.set("shop", shopState);
+    updateWalletChip(); renderShop(); renderStreet();
+  };
+  if(item.type === "deco"){
+    // Owning a deco displays it on the street; re-buys upgrade its tier (v7 F4).
+    if(!owned){
+      btn.className = "chip";
+      btn.textContent = t("shop.buy");
+      btn.disabled = !canAfford(wallet, item.id);
+      btn.onclick = doBuy;
+    }else if(item.maxTier && tier < item.maxTier){
+      const up = upgradePrice(item, tier);
+      btn.className = "chip";
+      btn.textContent = t("shop.upgrade", { stars: "★".repeat(tier + 1), coins: up.toLocaleString() });
+      btn.disabled = wallet < up;
+      btn.onclick = doBuy;
+    }else{
+      btn.className = "chip on";
+      btn.textContent = t("shop.maxed");
+      btn.disabled = true;
+    }
+  }else{
+    btn.className = "chip" + (equipped ? " on" : "");
+    if(equipped){
+      btn.textContent = t("shop.equipped"); btn.disabled = true;
+    }else if(owned){
+      btn.textContent = t("shop.equip");
+      btn.onclick = ()=>{ shopState = equipItem(shopState, item.id); store.set("shop", shopState); renderShop(); };
+    }else{
+      btn.textContent = t("shop.buy");
+      btn.disabled = !canAfford(wallet, item.id);
+      btn.onclick = doBuy;
+    }
+  }
+  row.appendChild(left); row.appendChild(btn);
+  renderShopPreview(preview, item, performance.now());
+  return row;
 }
 
 let shopPreviewRaf = 0;
@@ -1796,6 +1836,9 @@ function renderShopPreview(canvas, item, t=0){
       for(const [x,y,r] of [[18,15,0],[31,24,.9],[43,13,-.5],[24,31,.4]]){
         c.beginPath(); c.ellipse(x,y,5,2.6,r,0,Math.PI*2); c.fill();
       }
+    }else if(item.id==="star-shower"){
+      c.fillStyle = "#ffe08a";
+      for(const [x,y,r] of [[18,14,4],[33,22,5],[44,12,3],[25,30,3.5]]) drawStarMark(c, x, y, r);
     }else{
       c.fillStyle = "#e04040"; c.beginPath(); c.arc(24,22,8,0,Math.PI*2); c.fill();
       c.fillStyle = "#fff4c0";
@@ -1807,6 +1850,11 @@ function renderShopPreview(canvas, item, t=0){
     if(item.id==="bells"){
       c.fillStyle = "#f5c518"; c.beginPath(); c.arc(30,19,10,Math.PI,0); c.lineTo(42,30); c.lineTo(18,30); c.closePath(); c.fill();
       c.fillStyle = "#3a2200"; c.beginPath(); c.arc(30,30,2.6,0,Math.PI*2); c.fill();
+    }else if(item.id==="lion-drum"){
+      c.fillStyle = "#c1272d"; c.beginPath(); c.ellipse(28,24,12,9,0,0,Math.PI*2); c.fill();
+      c.fillStyle = "#f5c518"; c.fillRect(16,20,24,3);
+      c.strokeStyle = "#7a1c14"; c.lineWidth = 2;
+      c.beginPath(); c.moveTo(20,10); c.lineTo(26,19); c.moveTo(38,10); c.lineTo(32,19); c.stroke();
     }else{
       c.beginPath(); c.moveTo(16,29); c.lineTo(16,14); c.lineTo(39,10); c.lineTo(39,25); c.stroke();
       c.beginPath(); c.arc(14,31,4,0,Math.PI*2); c.stroke(); c.beginPath(); c.arc(37,27,4,0,Math.PI*2); c.stroke();
@@ -1833,12 +1881,12 @@ function renderStreet(){
   const gy = h - 10;
 
   const level = levelForXp(xp);
-  const pieces = streetPieces(level, shopState.owned);
+  const pieces = streetPieces(level, shopState.owned, shopState.tiers || {});
   drawStreetPads(sc, w, gy, h, pieces);
   for(const p of pieces){
     const x = p.slot * w;
     if(p.kind==="building") drawStreetBuilding(sc, p.id, x, gy, h);
-    else drawStreetDeco(sc, p.id, x, gy, h);
+    else drawTieredDeco(sc, p, x, gy, h);
   }
 
   // mascot - maneki sprite or vector fallback, always far left on the ground
@@ -2009,11 +2057,39 @@ function drawStreetBuilding(c, id, x, gy, h){
   }
   c.restore();
 }
+// Small 4-point star (shop previews + star-shower particles).
+function drawStarMark(c, x, y, r){
+  c.beginPath();
+  c.moveTo(x, y - r); c.quadraticCurveTo(x, y, x + r, y);
+  c.quadraticCurveTo(x, y, x, y + r); c.quadraticCurveTo(x, y, x - r, y);
+  c.quadraticCurveTo(x, y, x, y - r); c.fill();
+}
+function drawTieredDeco(c, p, x, gy, h){
+  const tier = p.tier || 1;
+  if(tier >= 3){
+    const dx = h * .26;
+    c.save(); c.globalAlpha = .8;
+    drawStreetDeco(c, p.id, x - dx, gy, h * .68);
+    drawStreetDeco(c, p.id, x + dx, gy, h * .68);
+    c.restore();
+  }
+  if(tier >= 2){
+    c.save();
+    c.shadowColor = "rgba(255,214,95,.55)"; c.shadowBlur = 12;
+    c.translate(x, gy); c.scale(1.15, 1.15); c.translate(-x, -gy);
+    drawStreetDeco(c, p.id, x, gy, h);
+    c.restore();
+  }else{
+    drawStreetDeco(c, p.id, x, gy, h);
+  }
+}
 function drawStreetDeco(c, id, x, gy, h){
   const s = h*.32;
   c.save(); c.translate(x, gy);
-  c.shadowColor = "rgba(245,197,24,.28)";
-  c.shadowBlur = 5;
+  if(!c.shadowBlur){                       // keep caller-set glow (tiered decos)
+    c.shadowColor = "rgba(245,197,24,.28)";
+    c.shadowBlur = 5;
+  }
   switch(id){
     case "red-lantern":
       c.strokeStyle = "#8a2a24"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(0,-s*1.6); c.lineTo(0,-s*1.1); c.stroke();
@@ -2041,6 +2117,68 @@ function drawStreetDeco(c, id, x, gy, h){
       c.beginPath(); c.arc(0,-s*.5, s*.9, Math.PI, 0); c.stroke();
       c.beginPath(); c.moveTo(-s*.9,-s*.5); c.lineTo(-s*.9,0); c.moveTo(s*.9,-s*.5); c.lineTo(s*.9,0); c.stroke();
       c.fillStyle = "rgba(255,244,224,.35)"; c.beginPath(); c.arc(0,-s*.93,s*.13,0,Math.PI*2); c.fill();
+      break;
+    case "mahjong-table":
+      c.fillStyle = "#2f7d4f"; c.fillRect(-s*.5,-s*.55,s,s*.16);
+      c.fillStyle = "#8a5a2c"; c.fillRect(-s*.42,-s*.4,s*.1,s*.4); c.fillRect(s*.32,-s*.4,s*.1,s*.4);
+      c.fillStyle = "#fdf6e3";
+      for(const tx of [-s*.3,-s*.1,s*.1,s*.28]) c.fillRect(tx,-s*.72,s*.14,s*.14);
+      break;
+    case "koi-pond":
+      c.fillStyle = "#3f8fb0"; c.beginPath(); c.ellipse(0,-s*.14,s*.55,s*.22,0,0,Math.PI*2); c.fill();
+      c.fillStyle = "#e8734a"; c.beginPath(); c.ellipse(-s*.14,-s*.16,s*.16,s*.07,-.5,0,Math.PI*2); c.fill();
+      c.fillStyle = "#fdf6e3"; c.beginPath(); c.ellipse(s*.16,-s*.1,s*.13,s*.06,.4,0,Math.PI*2); c.fill();
+      c.strokeStyle = "#8a5a2c"; c.lineWidth = 2; c.beginPath(); c.ellipse(0,-s*.14,s*.58,s*.25,0,0,Math.PI*2); c.stroke();
+      break;
+    case "drum-tower":
+      c.fillStyle = "#8a5a2c"; c.fillRect(-s*.34,-s*1.15,s*.68,s*1.15);
+      c.fillStyle = "#c1272d"; c.beginPath(); c.moveTo(-s*.48,-s*1.15); c.lineTo(0,-s*1.5); c.lineTo(s*.48,-s*1.15); c.closePath(); c.fill();
+      c.beginPath(); c.ellipse(0,-s*.62,s*.2,s*.24,0,0,Math.PI*2); c.fill();
+      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-s*.62,s*.07,0,Math.PI*2); c.fill();
+      break;
+    case "bubble-tea":
+      c.fillStyle = "#8a5a2c"; c.fillRect(-s*.4,-s*.7,s*.8,s*.7);
+      c.fillStyle = "#f5c518"; c.fillRect(-s*.48,-s*.86,s*.96,s*.16);
+      c.fillStyle = "#e8a9c9"; c.fillRect(-s*.12,-s*1.2,s*.24,s*.3);
+      c.strokeStyle = "#5a3a1c"; c.lineWidth = 2; c.beginPath(); c.moveTo(0,-s*1.2); c.lineTo(s*.06,-s*1.34); c.stroke();
+      break;
+    case "paper-umbrella":
+      c.strokeStyle = "#8a5a2c"; c.lineWidth = 2; c.beginPath(); c.moveTo(0,0); c.lineTo(0,-s*.9); c.stroke();
+      c.fillStyle = "#e8734a"; c.beginPath(); c.arc(0,-s*.9,s*.5,Math.PI,0); c.fill();
+      c.strokeStyle = "#fdf6e3"; c.lineWidth = 1.5;
+      for(const a of [-2.5,-1.9,-1.2,-.6]){ c.beginPath(); c.moveTo(0,-s*.9); c.lineTo(Math.cos(a)*s*.5,-s*.9+Math.sin(a)*s*.5); c.stroke(); }
+      break;
+    case "goldfish-banner":
+      c.strokeStyle = "#8a5a2c"; c.lineWidth = 2; c.beginPath(); c.moveTo(0,0); c.lineTo(0,-s*1.4); c.stroke();
+      c.fillStyle = "#e8734a"; c.beginPath(); c.ellipse(s*.2,-s*1.1,s*.3,s*.12,0,0,Math.PI*2); c.fill();
+      c.fillStyle = "#f5c518"; c.beginPath(); c.moveTo(s*.46,-s*1.1); c.lineTo(s*.62,-s*1.2); c.lineTo(s*.62,-s*1.0); c.closePath(); c.fill();
+      break;
+    case "neon-cat-sign":
+      c.fillStyle = "#23233a"; c.fillRect(-s*.36,-s*1.1,s*.72,s*.8);
+      c.strokeStyle = "#7fd7ff"; c.lineWidth = 2; c.strokeRect(-s*.36,-s*1.1,s*.72,s*.8);
+      c.strokeStyle = "#f5c518"; c.beginPath(); c.arc(0,-s*.72,s*.18,0,Math.PI*2); c.stroke();
+      c.beginPath(); c.moveTo(-s*.14,-s*.86); c.lineTo(-s*.06,-s*.98); c.moveTo(s*.14,-s*.86); c.lineTo(s*.06,-s*.98); c.stroke();
+      break;
+    case "shaved-ice-cart":
+      c.fillStyle = "#fdf6e3"; c.fillRect(-s*.4,-s*.62,s*.8,s*.5);
+      c.fillStyle = "#7fd7ff"; c.beginPath(); c.arc(0,-s*.72,s*.22,Math.PI,0); c.fill();
+      c.fillStyle = "#e8734a"; c.fillRect(-s*.06,-s*.94,s*.12,s*.1);
+      c.strokeStyle = "#8a5a2c"; c.lineWidth = 2;
+      c.beginPath(); c.arc(-s*.22,-s*.04,s*.1,0,Math.PI*2); c.stroke();
+      c.beginPath(); c.arc(s*.22,-s*.04,s*.1,0,Math.PI*2); c.stroke();
+      break;
+    case "mooncake-stall":
+      c.fillStyle = "#8a5a2c"; c.fillRect(-s*.42,-s*.6,s*.84,s*.6);
+      c.fillStyle = "#c1272d"; c.fillRect(-s*.5,-s*.78,s,s*.18);
+      c.fillStyle = "#f5c518";
+      for(const tx of [-s*.26,-s*.02,s*.2]){ c.beginPath(); c.arc(tx+s*.06,-s*.42,s*.09,0,Math.PI*2); c.fill(); }
+      break;
+    case "firecracker-arch":
+      c.strokeStyle = "#c1272d"; c.lineWidth = 3;
+      c.beginPath(); c.arc(0,-s*.2,s*.62,Math.PI,0); c.stroke();
+      c.fillStyle = "#c1272d";
+      for(const [ax,ay] of [[-s*.62,-s*.2],[s*.62,-s*.2],[-s*.5,-s*.62],[s*.5,-s*.62],[0,-s*.82]]) c.fillRect(ax-2,ay,4,s*.18);
+      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-s*.82,s*.06,0,Math.PI*2); c.fill();
       break;
   }
   c.restore();

@@ -43,6 +43,22 @@ export function coinBurst(x, y, boss, style) {
     return specs;
   }
 
+  if (style === "star-shower") {
+    const extra = 4;
+    const specs = [];
+    for (let i = 0; i < count + extra; i++) {
+      specs.push({
+        x, y,
+        vx: (Math.random() - 0.5) * 360,
+        vy: -Math.random() * vyMax * 1.15,
+        life: 0.8 + Math.random() * 0.4,
+        kind: "star",
+        g: 220                              // gentle fall, slower than crackers
+      });
+    }
+    return specs;
+  }
+
   const specs = [];
   for (let i = 0; i < count; i++) {
     specs.push({

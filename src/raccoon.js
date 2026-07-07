@@ -1,4 +1,5 @@
 "use strict";
+import { sprite } from "./sprites.js";
 /* drawRaccoon — the battle enemy: a cute chibi gray raccoon ninja (PRD §5.4).
    Same draw contract as the old walker (drawCat/drawZombie before it):
    drawRaccoon(ctx, x, groundY, tMs, state, scale, boss).
@@ -75,6 +76,34 @@ export function drawRaccoon(ctx, x, groundY, tMs, state, scale = 1, boss = false
     ctx.scale(scale, scale);
     ctx.translate(-x, -groundY);
   }
+
+  /* --- try sprite sheets first (walk/happy only — "wrong" has no sheet and
+     always falls through to the vector drawing below). Sheets already face
+     LEFT, same as the vector art, so no mirroring is needed. Frames are
+     scaled into a box the size of RACCOON_HEIGHT so the sprite lines up with
+     the same ground-contact/scale convention the vector fallback uses. --- */
+  let drawn = false;
+  if (state === "walk") {
+    const img = sprite("raccoon-walk");
+    if (img) {
+      const frame = Math.floor(tMs / 110) % 6;
+      ctx.drawImage(img, frame * 256, 0, 256, 256,
+        x - RACCOON_HEIGHT / 2, groundY - RACCOON_HEIGHT, RACCOON_HEIGHT, RACCOON_HEIGHT);
+      drawn = true;
+    }
+  }
+  if (!drawn && happy) {
+    const img = sprite("raccoon-happy");
+    if (img) {
+      const frame = Math.floor(tMs / 80) % 4;
+      ctx.drawImage(img, frame * 256, 0, 256, 256,
+        x - RACCOON_HEIGHT / 2, groundY - RACCOON_HEIGHT, RACCOON_HEIGHT, RACCOON_HEIGHT);
+      drawn = true;
+    }
+  }
+
+  /* --- vector raccoon fallback --- */
+  if (!drawn) {
   ctx.save();
   ctx.translate(x, groundY);
 
@@ -163,6 +192,8 @@ export function drawRaccoon(ctx, x, groundY, tMs, state, scale = 1, boss = false
   ctx.beginPath(); ctx.arc(0, -46 + bob, 1.4, 0, Math.PI * 2); ctx.fill();
 
   ctx.restore();
+  }
+
   ctx.restore();
 }
 
