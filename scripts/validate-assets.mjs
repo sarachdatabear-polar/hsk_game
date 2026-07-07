@@ -61,8 +61,16 @@ for (const asset of manifest.assets) {
     }
   }
 
-  if (asset.states && JSON.stringify(asset.states) !== JSON.stringify(["default", "pressed", "disabled"])) {
-    fail(`${asset.id} states must be default/pressed/disabled`);
+  if (asset.states) {
+    const allowed = new Set(["default", "pressed", "disabled"]);
+    const valid = Array.isArray(asset.states)
+      && asset.states.length > 0
+      && asset.states[0] === "default"
+      && asset.states.every(s => allowed.has(s))
+      && new Set(asset.states).size === asset.states.length;
+    if (!valid) {
+      fail(`${asset.id} states must be unique values from default/pressed/disabled, starting with default`);
+    }
   }
 
   if (asset.type === "sprite-sheet") {

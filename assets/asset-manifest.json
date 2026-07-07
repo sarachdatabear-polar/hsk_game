@@ -26,7 +26,7 @@
     { "id": "ui-card-soft", "file": "ui-card-soft.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 360, "h": 220, "slice": [32, 32, 32, 32], "scale": 2, "fallback": "css:.readout" },
     { "id": "ui-button-primary", "file": "ui-button-primary.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 380, "h": 98, "slice": [32, 32, 34, 32], "scale": 2, "fallback": "css:.big.primary" },
     { "id": "ui-button-secondary", "file": "ui-button-secondary.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 380, "h": 98, "slice": [32, 32, 34, 32], "scale": 2, "fallback": "css:.big" },
-    { "id": "ui-button-neutral", "file": "ui-button-neutral.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 380, "h": 98, "slice": [32, 32, 34, 32], "scale": 2, "fallback": "css:#opts button" },
+    { "id": "ui-button-neutral", "file": "ui-button-neutral.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 380, "h": 98, "slice": [32, 32, 34, 32], "scale": 2, "states": ["default", "disabled"], "fallback": "css:#opts button" },
     { "id": "ui-tab", "file": "ui-tab.svg", "type": "ui-surface", "status": "integrated", "priority": "P1", "w": 180, "h": 72, "slice": [22, 24, 20, 24], "scale": 2, "fallback": "css:.chip" },
     { "id": "ui-tag", "file": "ui-tag.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 150, "h": 64, "slice": [18, 18, 18, 18], "scale": 2, "fallback": "css:.chip.on" },
     { "id": "ui-badge-mastery", "file": "ui-badge-mastery.svg", "type": "ui-surface", "status": "approved", "priority": "P1", "w": 120, "h": 120, "slice": null, "fallback": "css:.hud-round" },
