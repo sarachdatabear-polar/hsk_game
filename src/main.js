@@ -1878,12 +1878,12 @@ function renderStreet(){
   const gy = h - 10;
 
   const level = levelForXp(xp);
-  const pieces = streetPieces(level, shopState.owned);
+  const pieces = streetPieces(level, shopState.owned, shopState.tiers || {});
   drawStreetPads(sc, w, gy, h, pieces);
   for(const p of pieces){
     const x = p.slot * w;
     if(p.kind==="building") drawStreetBuilding(sc, p.id, x, gy, h);
-    else drawStreetDeco(sc, p.id, x, gy, h);
+    else drawTieredDeco(sc, p, x, gy, h);
   }
 
   // mascot - maneki sprite or vector fallback, always far left on the ground
@@ -2061,6 +2061,25 @@ function drawStarMark(c, x, y, r){
   c.quadraticCurveTo(x, y, x, y + r); c.quadraticCurveTo(x, y, x - r, y);
   c.quadraticCurveTo(x, y, x, y - r); c.fill();
 }
+function drawTieredDeco(c, p, x, gy, h){
+  const tier = p.tier || 1;
+  if(tier >= 3){
+    const dx = h * .26;
+    c.save(); c.globalAlpha = .8;
+    drawStreetDeco(c, p.id, x - dx, gy, h * .68);
+    drawStreetDeco(c, p.id, x + dx, gy, h * .68);
+    c.restore();
+  }
+  if(tier >= 2){
+    c.save();
+    c.shadowColor = "rgba(255,214,95,.55)"; c.shadowBlur = 12;
+    c.translate(x, gy); c.scale(1.15, 1.15); c.translate(-x, -gy);
+    drawStreetDeco(c, p.id, x, gy, h);
+    c.restore();
+  }else{
+    drawStreetDeco(c, p.id, x, gy, h);
+  }
+}
 function drawStreetDeco(c, id, x, gy, h){
   const s = h*.32;
   c.save(); c.translate(x, gy);
@@ -2093,6 +2112,68 @@ function drawStreetDeco(c, id, x, gy, h){
       c.beginPath(); c.arc(0,-s*.5, s*.9, Math.PI, 0); c.stroke();
       c.beginPath(); c.moveTo(-s*.9,-s*.5); c.lineTo(-s*.9,0); c.moveTo(s*.9,-s*.5); c.lineTo(s*.9,0); c.stroke();
       c.fillStyle = "rgba(255,244,224,.35)"; c.beginPath(); c.arc(0,-s*.93,s*.13,0,Math.PI*2); c.fill();
+      break;
+    case "mahjong-table":
+      c.fillStyle = "#2f7d4f"; c.fillRect(-s*.5,-s*.55,s,s*.16);
+      c.fillStyle = "#8a5a2c"; c.fillRect(-s*.42,-s*.4,s*.1,s*.4); c.fillRect(s*.32,-s*.4,s*.1,s*.4);
+      c.fillStyle = "#fdf6e3";
+      for(const tx of [-s*.3,-s*.1,s*.1,s*.28]) c.fillRect(tx,-s*.72,s*.14,s*.14);
+      break;
+    case "koi-pond":
+      c.fillStyle = "#3f8fb0"; c.beginPath(); c.ellipse(0,-s*.14,s*.55,s*.22,0,0,Math.PI*2); c.fill();
+      c.fillStyle = "#e8734a"; c.beginPath(); c.ellipse(-s*.14,-s*.16,s*.16,s*.07,-.5,0,Math.PI*2); c.fill();
+      c.fillStyle = "#fdf6e3"; c.beginPath(); c.ellipse(s*.16,-s*.1,s*.13,s*.06,.4,0,Math.PI*2); c.fill();
+      c.strokeStyle = "#8a5a2c"; c.lineWidth = 2; c.beginPath(); c.ellipse(0,-s*.14,s*.58,s*.25,0,0,Math.PI*2); c.stroke();
+      break;
+    case "drum-tower":
+      c.fillStyle = "#8a5a2c"; c.fillRect(-s*.34,-s*1.15,s*.68,s*1.15);
+      c.fillStyle = "#c1272d"; c.beginPath(); c.moveTo(-s*.48,-s*1.15); c.lineTo(0,-s*1.5); c.lineTo(s*.48,-s*1.15); c.closePath(); c.fill();
+      c.beginPath(); c.ellipse(0,-s*.62,s*.2,s*.24,0,0,Math.PI*2); c.fill();
+      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-s*.62,s*.07,0,Math.PI*2); c.fill();
+      break;
+    case "bubble-tea":
+      c.fillStyle = "#8a5a2c"; c.fillRect(-s*.4,-s*.7,s*.8,s*.7);
+      c.fillStyle = "#f5c518"; c.fillRect(-s*.48,-s*.86,s*.96,s*.16);
+      c.fillStyle = "#e8a9c9"; c.fillRect(-s*.12,-s*1.2,s*.24,s*.3);
+      c.strokeStyle = "#5a3a1c"; c.lineWidth = 2; c.beginPath(); c.moveTo(0,-s*1.2); c.lineTo(s*.06,-s*1.34); c.stroke();
+      break;
+    case "paper-umbrella":
+      c.strokeStyle = "#8a5a2c"; c.lineWidth = 2; c.beginPath(); c.moveTo(0,0); c.lineTo(0,-s*.9); c.stroke();
+      c.fillStyle = "#e8734a"; c.beginPath(); c.arc(0,-s*.9,s*.5,Math.PI,0); c.fill();
+      c.strokeStyle = "#fdf6e3"; c.lineWidth = 1.5;
+      for(const a of [-2.5,-1.9,-1.2,-.6]){ c.beginPath(); c.moveTo(0,-s*.9); c.lineTo(Math.cos(a)*s*.5,-s*.9+Math.sin(a)*s*.5); c.stroke(); }
+      break;
+    case "goldfish-banner":
+      c.strokeStyle = "#8a5a2c"; c.lineWidth = 2; c.beginPath(); c.moveTo(0,0); c.lineTo(0,-s*1.4); c.stroke();
+      c.fillStyle = "#e8734a"; c.beginPath(); c.ellipse(s*.2,-s*1.1,s*.3,s*.12,0,0,Math.PI*2); c.fill();
+      c.fillStyle = "#f5c518"; c.beginPath(); c.moveTo(s*.46,-s*1.1); c.lineTo(s*.62,-s*1.2); c.lineTo(s*.62,-s*1.0); c.closePath(); c.fill();
+      break;
+    case "neon-cat-sign":
+      c.fillStyle = "#23233a"; c.fillRect(-s*.36,-s*1.1,s*.72,s*.8);
+      c.strokeStyle = "#7fd7ff"; c.lineWidth = 2; c.strokeRect(-s*.36,-s*1.1,s*.72,s*.8);
+      c.strokeStyle = "#f5c518"; c.beginPath(); c.arc(0,-s*.72,s*.18,0,Math.PI*2); c.stroke();
+      c.beginPath(); c.moveTo(-s*.14,-s*.86); c.lineTo(-s*.06,-s*.98); c.moveTo(s*.14,-s*.86); c.lineTo(s*.06,-s*.98); c.stroke();
+      break;
+    case "shaved-ice-cart":
+      c.fillStyle = "#fdf6e3"; c.fillRect(-s*.4,-s*.62,s*.8,s*.5);
+      c.fillStyle = "#7fd7ff"; c.beginPath(); c.arc(0,-s*.72,s*.22,Math.PI,0); c.fill();
+      c.fillStyle = "#e8734a"; c.fillRect(-s*.06,-s*.94,s*.12,s*.1);
+      c.strokeStyle = "#8a5a2c"; c.lineWidth = 2;
+      c.beginPath(); c.arc(-s*.22,-s*.04,s*.1,0,Math.PI*2); c.stroke();
+      c.beginPath(); c.arc(s*.22,-s*.04,s*.1,0,Math.PI*2); c.stroke();
+      break;
+    case "mooncake-stall":
+      c.fillStyle = "#8a5a2c"; c.fillRect(-s*.42,-s*.6,s*.84,s*.6);
+      c.fillStyle = "#c1272d"; c.fillRect(-s*.5,-s*.78,s,s*.18);
+      c.fillStyle = "#f5c518";
+      for(const tx of [-s*.26,-s*.02,s*.2]){ c.beginPath(); c.arc(tx+s*.06,-s*.42,s*.09,0,Math.PI*2); c.fill(); }
+      break;
+    case "firecracker-arch":
+      c.strokeStyle = "#c1272d"; c.lineWidth = 3;
+      c.beginPath(); c.arc(0,-s*.2,s*.62,Math.PI,0); c.stroke();
+      c.fillStyle = "#c1272d";
+      for(const [ax,ay] of [[-s*.62,-s*.2],[s*.62,-s*.2],[-s*.5,-s*.62],[s*.5,-s*.62],[0,-s*.82]]) c.fillRect(ax-2,ay,4,s*.18);
+      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-s*.82,s*.06,0,Math.PI*2); c.fill();
       break;
   }
   c.restore();
