@@ -31,13 +31,21 @@ describe("STYLE-TOKENS.md <-> index.html sync", () => {
       expect(re.test(html), `${name}:${hex} not found in index.html :root`).toBe(true);
     });
   }
+
+  it("every --lc-* token defined in :root is documented in STYLE-TOKENS.md", () => {
+    const root = html.match(/:root\s*\{[\s\S]*?\}/)[0];
+    const defined = [...root.matchAll(/(--lc-[a-z-]+)\s*:/g)].map(m => m[1]);
+    const documented = new Set(rows.map(r => r.name));
+    const undocumented = [...new Set(defined)].filter(n => !documented.has(n));
+    expect(undocumented, `tokens in :root missing from STYLE-TOKENS.md: ${undocumented.join(", ")}`).toEqual([]);
+  });
 });
 
 // ---- forbidden legacy palettes (PRD v5 A1 acceptance: "no element uses a legacy color") ----
 
 const srcFiles = readdirSync(join(ROOT, "src")).filter(f => f.endsWith(".js"));
 const srcText = srcFiles.map(f => readFileSync(join(ROOT, "src", f), "utf8")).join("\n");
-const htmlSansRoot = html.replace(/:root\{[\s\S]*?\}/, "");
+const htmlSansRoot = html.replace(/:root\s*\{[\s\S]*?\}/, "");
 
 // token names: banned in index.html AND src/*.js. Boundary (?![\w-]) keeps
 // --panel from matching --panel-wash, --green from matching nothing (no
@@ -61,6 +69,7 @@ const FORBIDDEN_HEX = [
 ];
 
 // rgb triples from the dead palettes (washes/glows written as rgba(...))
+// substring match on a whitespace-stripped haystack: keep triples distinctive enough not to collide with unrelated digit runs
 const FORBIDDEN_RGB = ["255,248,232", "36,52,71", "18,8,6", "245,197,24", "245,195,75", "201,165,138", "201,160,138"];
 
 describe("forbidden legacy palette lint", () => {

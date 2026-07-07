@@ -30,7 +30,7 @@
     /* semantic aliases (STYLE-TOKENS.md §3) */
     --bg:var(--lc-cream); --ink:var(--lc-ink); --muted:var(--lc-brown);
     --panel-wash:var(--lc-cream); --panel-border:var(--lc-sand);
-    --chip:var(--lc-sand); --chip-on:var(--lc-sky); --chip-ink-on:var(--lc-teal);
+    --chip:var(--lc-sand); --chip-on:var(--lc-sky); --chip-ink-on:var(--lc-ink);
     /* PRD v5 core palette (docs/art/STYLE-TOKENS.md §1 — enforced by test/style-tokens.test.js) */
     --lc-green:#32775E; --lc-sky:#5DAADD; --lc-sun:#F2BC57; --lc-coral:#E69777;
     --lc-brown:#846043; --lc-gray:#B2AEA9; --lc-cream:#FBF5E8; --lc-teal:#1F4D4A;
@@ -75,9 +75,6 @@
   #go-battle{border-image:var(--f-ui-button-start, var(--f-ui-button-primary, none));}
   :root.has-ui-button-start #go-battle{background:none; border-color:transparent; border-radius:22px;
     color:var(--lc-wood-ink); box-shadow:0 4px 9px rgba(46,42,36,.25); text-shadow:none;}
-  .big.danger{border-image:var(--f-ui-button-danger, none);}
-  :root.has-ui-button-danger .big.danger{background:none; border-color:transparent; border-radius:22px;
-    color:#FFFFFF; box-shadow:0 4px 9px rgba(120,30,20,.25);}
   /* once a production frame is loaded, drop the fallback pill chrome so it
      cannot peek around the frame (border-image ignores border-radius) */
   :root.has-ui-button-secondary .big{background:none; border-color:transparent; border-radius:22px;

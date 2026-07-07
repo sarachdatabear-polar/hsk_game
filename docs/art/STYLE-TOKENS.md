@@ -50,7 +50,7 @@ shadows/washes built from ink `rgba(46,42,36,α)` or cream `rgba(251,245,232,α)
 
 `--bg`, `--ink`, `--muted`, `--panel-wash`, `--panel-border`, `--chip`, `--chip-on`,
 `--chip-ink-on` — each maps onto a core token in `:root` (cream / ink / brown / cream /
-sand / sand / sky / teal). JS may use `var(--muted)`. Everything else uses `--lc-*` directly.
+sand / sand / sky / ink). JS may use `var(--muted)`. Everything else uses `--lc-*` directly.
 
 ## 4. Surfaces & materials
 
