@@ -141,7 +141,9 @@ let questToasts = [];  // quests completed during the current battle, for the re
 /* ============================== sticker album (B2) ============================== */
 // earn-only — never purchasable. Persisted immediately on every award so a
 // sticker earned mid-session survives reload (PRD B2 acceptance).
-const st0 = store.get("stickers", {});
+// null-safe: Object.assign ignores null/undefined sources, and a stored
+// literal null (bad write/manual edit) must not crash module eval.
+const st0 = Object.assign(defaultStickers(), store.get("stickers", {}) || {});
 let stickerState = {
   earned: Object.assign({}, st0.earned),
   queue: Array.isArray(st0.queue) ? st0.queue.slice() : [],
@@ -578,6 +580,7 @@ function startBattle(mode){
   smartDeckNext = false;
   B.zombie = null; B.proj = null; B.parts = []; B.flash = 0; B.screenShake = 0; B.feedback = null;
   B.hitFlash = null; B.plaqueHitAt = 0;
+  B.bossDefeated = false;   // session fact for the first-boss sticker (B2)
   B.floats = []; B.mascotHopUntil = 0;
   B.score = 0; B.combo = 0; B.lives = 3;
   B.wordsTotal = mode==="round"? normalizeLen(scope.sessionLen) : Infinity;
@@ -843,7 +846,7 @@ function answer(btn, o){
     lockOptions();
     B.proj = {x:B.L.mascotX+16*B.S, y:B.h-B.L.ground-30*B.S};   // coin flies at the cat
     // (word audio fires once, on spawn — no replay on the answer tap)
-    if(boss) noteAnswer(z.w.h, true);           // both stages passed
+    if(boss){ noteAnswer(z.w.h, true); B.bossDefeated = true; }   // both stages passed
     const gy = B.h-B.L.ground;
     // boss final kill gets the reference's CRITICAL! starburst (A3); the
     // 10-combo milestone below may upgrade a normal kill to critical too.
@@ -1507,6 +1510,35 @@ function endBattle(quit){
     hintEl.style.display = "block";
   }else{
     hintEl.style.display = "none";
+  }
+  // B2 sticker awards: evaluate every unearned sticker against fresh facts.
+  // Persist immediately (a sticker earned mid-session survives reload); show
+  // at most ONE toast per results screen — the rest stay queued.
+  const stickerFacts = {
+    ...scopeFacts(D.levels, masteryStore),
+    sessionDone: B.resolved > 0,
+    bossDefeated: !!B.bossDefeated,
+    streak: streakInfo(daily, todayStr()).streak,
+  };
+  stickerState = evaluateAwards(stickerState, STICKER_DEFS, stickerFacts, todayStr());
+  store.set("stickers", stickerState);
+  const slot = $("#r-sticker-slot");
+  const popped = popToast(stickerState);
+  if(popped.id){
+    stickerState = popped.state;
+    store.set("stickers", stickerState);
+    const def = STICKER_DEFS.find(d => d.id === popped.id);
+    slot.innerHTML = "";
+    const toastEl = document.createElement("div");
+    toastEl.className = "sticker-toast";
+    toastEl.appendChild(iconSvg(stickerIcon(def)));
+    const label = document.createElement("span");
+    label.textContent = t("results.newSticker", { name: stickerLabel(def) });
+    toastEl.appendChild(label);
+    slot.appendChild(toastEl);
+    slot.style.display = "block";
+  }else{
+    slot.style.display = "none";
   }
   show("results");
 }

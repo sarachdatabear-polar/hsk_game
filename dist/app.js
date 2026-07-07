@@ -1907,6 +1907,9 @@
   var TOP_NS = [100, 300, 500];
   var MILESTONE_PCTS = [25, 50, 75, 100];
   var EVENT_STICKERS = ["welcome", "first-boss", "streak-7", "streak-30"];
+  function defaultStickers() {
+    return { earned: {}, queue: [] };
+  }
   function scopeNodes(levelCounts) {
     const nodes = [];
     const lvs = Object.keys(levelCounts).map(Number).sort((a, b) => a - b);
@@ -1929,6 +1932,51 @@
     }
     for (const ev of EVENT_STICKERS) defs.push({ id: `ev:${ev}`, kind: "event", event: ev });
     return defs;
+  }
+  function scopeFacts(levelsData, mastery) {
+    const levelCounts = {}, scopePcts = {}, levelPcts = {};
+    for (const lv of Object.keys(levelsData)) {
+      const words = [...levelsData[lv]].sort((a, b) => b.f - a.f);
+      levelCounts[lv] = words.length;
+      const marks = words.map((w) => isMastered(mastery, w.h) ? 1 : 0);
+      const total = marks.reduce((s, m) => s + m, 0);
+      levelPcts[lv] = words.length ? Math.floor(100 * total / words.length) : 0;
+      for (const n of TOP_NS) {
+        if (words.length > n) {
+          let top = 0;
+          for (let i = 0; i < n; i++) top += marks[i];
+          scopePcts[`HSK${lv}\xB7top${n}`] = Math.floor(100 * top / n);
+        }
+      }
+      scopePcts[`HSK${lv}\xB7all`] = levelPcts[lv];
+    }
+    return { levelCounts, scopePcts, levelPcts };
+  }
+  function evaluateAwards(state, defs, facts, dateStr) {
+    const earned = { ...state.earned };
+    const queue = [...state.queue];
+    const award = (id) => {
+      earned[id] = dateStr;
+      queue.push(id);
+    };
+    for (const d of defs) {
+      if (earned[d.id]) continue;
+      if (d.kind === "scope") {
+        if ((facts.scopePcts[`HSK${d.lv}\xB7top${d.topN}`] ?? 0) >= 100) award(d.id);
+      } else if (d.kind === "milestone") {
+        if ((facts.levelPcts[String(d.lv)] ?? 0) >= d.pct) award(d.id);
+      } else if (d.kind === "event") {
+        if (d.event === "welcome" && facts.sessionDone) award(d.id);
+        else if (d.event === "first-boss" && facts.bossDefeated) award(d.id);
+        else if (d.event === "streak-7" && facts.streak >= 7) award(d.id);
+        else if (d.event === "streak-30" && facts.streak >= 30) award(d.id);
+      }
+    }
+    return { earned, queue };
+  }
+  function popToast(state) {
+    if (!state.queue.length) return { state, id: null };
+    return { state: { earned: state.earned, queue: state.queue.slice(1) }, id: state.queue[0] };
   }
 
   // src/main.js
@@ -2039,7 +2087,7 @@
   }
   var questState = Object.assign(defaultQuestState(), store.get("quests", {}));
   var questToasts = [];
-  var st0 = store.get("stickers", {});
+  var st0 = Object.assign(defaultStickers(), store.get("stickers", {}) || {});
   var stickerState = {
     earned: Object.assign({}, st0.earned),
     queue: Array.isArray(st0.queue) ? st0.queue.slice() : []
@@ -2526,6 +2574,7 @@
     B.feedback = null;
     B.hitFlash = null;
     B.plaqueHitAt = 0;
+    B.bossDefeated = false;
     B.floats = [];
     B.mascotHopUntil = 0;
     B.score = 0;
@@ -2797,7 +2846,10 @@
       btn.classList.add("good", "stamp", "stamp-good");
       lockOptions();
       B.proj = { x: B.L.mascotX + 16 * B.S, y: B.h - B.L.ground - 30 * B.S };
-      if (boss) noteAnswer(z.w.h, true);
+      if (boss) {
+        noteAnswer(z.w.h, true);
+        B.bossDefeated = true;
+      }
       const gy = B.h - B.L.ground;
       B.feedback = boss ? { ...feedbackEffect("critical", z.x, gy - 42 * B.S), until: fxUntil(750) } : { ...feedbackEffect("correct", z.x, gy - 42 * B.S), until: fxUntil(620) };
       B.plaqueHitAt = performance.now();
@@ -3533,6 +3585,32 @@
       hintEl.style.display = "block";
     } else {
       hintEl.style.display = "none";
+    }
+    const stickerFacts = {
+      ...scopeFacts(D.levels, masteryStore),
+      sessionDone: B.resolved > 0,
+      bossDefeated: !!B.bossDefeated,
+      streak: streakInfo(daily, todayStr()).streak
+    };
+    stickerState = evaluateAwards(stickerState, STICKER_DEFS, stickerFacts, todayStr());
+    store.set("stickers", stickerState);
+    const slot = $("#r-sticker-slot");
+    const popped = popToast(stickerState);
+    if (popped.id) {
+      stickerState = popped.state;
+      store.set("stickers", stickerState);
+      const def = STICKER_DEFS.find((d) => d.id === popped.id);
+      slot.innerHTML = "";
+      const toastEl = document.createElement("div");
+      toastEl.className = "sticker-toast";
+      toastEl.appendChild(iconSvg(stickerIcon(def)));
+      const label = document.createElement("span");
+      label.textContent = t("results.newSticker", { name: stickerLabel(def) });
+      toastEl.appendChild(label);
+      slot.appendChild(toastEl);
+      slot.style.display = "block";
+    } else {
+      slot.style.display = "none";
     }
     show("results");
   }
