@@ -82,11 +82,53 @@
     }
     return a;
   }
-  var tok = (s) => (s || "").toLowerCase().replace(/[()]/g, "").trim().split(/[ ,;/]+/)[0];
+  var STOPWORDS = /* @__PURE__ */ new Set([
+    "to",
+    "a",
+    "an",
+    "the",
+    "of",
+    "in",
+    "on",
+    "at",
+    "for",
+    "and",
+    "or",
+    "sth",
+    "sb",
+    "one's",
+    "etc",
+    "be",
+    "is",
+    "it",
+    "with",
+    "up",
+    "out",
+    "surname",
+    "variant",
+    "used",
+    "form",
+    "particle",
+    "classifier",
+    "prefix",
+    "suffix",
+    "abbr",
+    "lit",
+    "fig"
+  ]);
+  var firstSense = (s) => (s || "").split(";")[0];
+  var contentTokens = (s) => firstSense(s).replace(/\([^)]*\)/g, "").toLowerCase().split(/[^a-z']+/).filter(Boolean).filter((t2) => !STOPWORDS.has(t2));
+  function sameMeaning(a, b) {
+    const ta = contentTokens(a);
+    const tb = contentTokens(b);
+    if (ta.length === 0 && tb.length === 0) {
+      return firstSense(a).trim().toLowerCase() === firstSense(b).trim().toLowerCase();
+    }
+    return ta.some((t2) => tb.includes(t2));
+  }
   function pickDistractors(pool2, target, rand = Math.random) {
     const i = pool2.findIndex((w) => w.h === target.h);
-    const tTok = tok(target.e);
-    const ok = (w) => w.h !== target.h && tok(w.e) !== tTok && !(target.t && w.t === target.t);
+    const ok = (w) => w.h !== target.h && !sameMeaning(w.e, target.e) && !(target.t && w.t === target.t);
     let cands = pool2.slice(Math.max(0, i - 40), i + 41).filter(ok);
     if (cands.length < 3) cands = pool2.filter(ok);
     return shuffle([...cands], rand).slice(0, 3);
@@ -353,7 +395,6 @@
     const bob = Math.sin(ph) * 2.5;
     const legSwing = Math.sin(ph) * 6;
     const happy = state === "happy";
-    const wrong = state === "wrong";
     if (boss) {
       ctx3.fillStyle = "rgba(245,197,24,.18)";
       ctx3.beginPath();
@@ -368,7 +409,7 @@
     }
     let drawn = false;
     const baseSprite = boss ? "cat-boss" : pal.sprite || "cat";
-    if (state === "walk" || wrong) {
+    if (state === "walk") {
       let img2 = sprite(`${baseSprite}-walk`);
       let tint = "none";
       if (!img2) {
@@ -410,24 +451,6 @@
           ctx3.beginPath();
           ctx3.arc(sx, sy + bob, 2.5, 0, 7);
           ctx3.fill();
-        }
-      } else if (wrong) {
-        ctx3.rotate(0.2);
-        ctx3.translate(0, 3);
-        ctx3.globalAlpha = 0.96;
-        ctx3.strokeStyle = "rgba(255,244,224,.82)";
-        ctx3.lineWidth = 1.4;
-        for (const [sx, sy, a] of [[-20, -62, -0.5], [18, -66, 0.35], [2, -75, 0.05]]) {
-          ctx3.save();
-          ctx3.translate(sx, sy + bob);
-          ctx3.rotate(a);
-          ctx3.beginPath();
-          ctx3.moveTo(-3, 0);
-          ctx3.lineTo(3, 0);
-          ctx3.moveTo(0, -3);
-          ctx3.lineTo(0, 3);
-          ctx3.stroke();
-          ctx3.restore();
         }
       }
       ctx3.strokeStyle = pal.leg;
@@ -484,29 +507,12 @@
       ctx3.closePath();
       ctx3.fill();
       ctx3.fillStyle = "#1c1008";
-      if (wrong) {
-        ctx3.strokeStyle = "#1c1008";
-        ctx3.lineWidth = 1.4;
-        ctx3.beginPath();
-        ctx3.moveTo(-6, -52 + bob);
-        ctx3.lineTo(-2, -48 + bob);
-        ctx3.moveTo(-2, -52 + bob);
-        ctx3.lineTo(-6, -48 + bob);
-        ctx3.stroke();
-        ctx3.beginPath();
-        ctx3.moveTo(2, -52 + bob);
-        ctx3.lineTo(6, -48 + bob);
-        ctx3.moveTo(6, -52 + bob);
-        ctx3.lineTo(2, -48 + bob);
-        ctx3.stroke();
-      } else {
-        ctx3.beginPath();
-        ctx3.arc(-4, -50 + bob, 1.8, 0, 7);
-        ctx3.fill();
-        ctx3.beginPath();
-        ctx3.arc(4, -50 + bob, 1.8, 0, 7);
-        ctx3.fill();
-      }
+      ctx3.beginPath();
+      ctx3.arc(-4, -50 + bob, 1.8, 0, 7);
+      ctx3.fill();
+      ctx3.beginPath();
+      ctx3.arc(4, -50 + bob, 1.8, 0, 7);
+      ctx3.fill();
       ctx3.fillStyle = "#e05a78";
       ctx3.beginPath();
       ctx3.arc(0, -47 + bob, 1.2, 0, 7);
@@ -529,24 +535,6 @@
       ctx3.moveTo(4, -47 + bob);
       ctx3.lineTo(14, -48 + bob);
       ctx3.stroke();
-      ctx3.restore();
-    }
-    if (wrong && drawn) {
-      ctx3.save();
-      ctx3.strokeStyle = "rgba(255,244,224,.82)";
-      ctx3.lineWidth = Math.max(1, 1.4 * scale);
-      for (const [sx, sy, a] of [[-18, -58, -0.5], [18, -62, 0.35], [1, -72, 0.05]]) {
-        ctx3.save();
-        ctx3.translate(x + sx, groundY + sy + bob);
-        ctx3.rotate(a);
-        ctx3.beginPath();
-        ctx3.moveTo(-3, 0);
-        ctx3.lineTo(3, 0);
-        ctx3.moveTo(0, -3);
-        ctx3.lineTo(0, 3);
-        ctx3.stroke();
-        ctx3.restore();
-      }
       ctx3.restore();
     }
     if (accessories && accessories.length) {
@@ -2238,6 +2226,7 @@
     B.on = true;
     B.mode = mode;
     B.deck = battleDeckOverride && battleDeckOverride.length >= 2 ? battleDeckOverride : pool;
+    B.customDeck = !!(battleDeckOverride && battleDeckOverride.length >= 2);
     battleDeckOverride = null;
     B.zombie = null;
     B.proj = null;
@@ -2389,6 +2378,7 @@
     if (B.mascotHopUntil) B.mascotHopUntil += shift;
     if (B.feedback) B.feedback.until += shift;
     if (B.zombie && B.zombie.wrongUntil) B.zombie.wrongUntil += shift;
+    if (B.zombie && B.zombie.happyAt) B.zombie.happyAt += shift;
     if (B.bossStageAt) B.bossStageAt += shift;
     B.paused = false;
     keepAwake(true);
@@ -2487,6 +2477,7 @@
     }
     z.revealed = true;
     if (correct) {
+      z.frozen = true;
       B.correct++;
       B.combo++;
       questEvent("correct");
@@ -2540,6 +2531,7 @@
     const gy = B.h - B.L.ground;
     B.parts.push(...coinBurst(z.x, gy - 16, !!z.boss, shopState.effect));
     z.state = "happy";
+    z.happyAt = performance.now();
     z.hpAtKill = z.hp;
     B.dyingUntil = performance.now() + 250;
     B.proj = null;
@@ -2765,7 +2757,7 @@
       const hideWord = z.boss && z.stage === "hanzi" && z.state === "walk";
       drawWordPlate(z, hideWord, t2);
       const rScale = z.boss ? 1.5 * B.S : B.S;
-      drawRaccoon(ctx2, z.x, gy + 6 * B.S, t2, z.state, rScale, !!z.boss);
+      drawRaccoon(ctx2, z.x, gy + 6 * B.S, z.state === "happy" ? t2 - z.happyAt : t2, z.state, rScale, !!z.boss);
       let hpFrac = z.hp;
       if (z.state === "happy" && B.dyingUntil) {
         const remain = Math.max(0, B.dyingUntil - t2);
@@ -3110,11 +3102,17 @@
     stopBattle();
     updateSmartBtn();
     if (quit) {
+      if (B.resolved > 0) noteDaily(B.resolved);
+      if (B.score > 0) {
+        wallet += B.score;
+        store.set("wallet", wallet);
+        updateWalletChip();
+      }
       show("home");
       return;
     }
     noteDaily(B.resolved);
-    const isPerfect = B.mode === "round" && B.resolved > 0 && B.misses.length === 0;
+    const isPerfect = B.mode === "round" && B.resolved > 0 && B.misses.length === 0 && !B.customDeck;
     if (isPerfect) questEvent("perfect");
     wallet += B.score;
     const bonus = isPerfect ? perfectBonus(B.score) : 0;
@@ -3148,14 +3146,18 @@
     const acc = B.attempts ? Math.round(100 * B.correct / B.attempts) : 0;
     $("#r-score").textContent = B.score;
     const key = scopeKey(scope) + "\xB7" + modeKey(B.mode, B.wordsTotal);
-    const best = store.get("best", {});
-    const prev = best[key] ? best[key].score : 0;
-    const isBest = B.score > prev;
-    if (isBest) {
-      best[key] = { score: B.score, date: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10) };
-      store.set("best", best);
+    if (B.customDeck) {
+      $("#r-sub").innerHTML = t("results.sub", { acc, words: B.correct, key });
+    } else {
+      const best = store.get("best", {});
+      const prev = best[key] ? best[key].score : 0;
+      const isBest = B.score > prev;
+      if (isBest) {
+        best[key] = { score: B.score, date: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10) };
+        store.set("best", best);
+      }
+      $("#r-sub").innerHTML = t("results.sub", { acc, words: B.correct, key }) + (isBest ? ` \xB7 <b style="color:var(--gold)">${t("results.bestTag")}</b>` : ` \xB7 ${t("results.bestPrev", { prev })}`);
     }
-    $("#r-sub").innerHTML = t("results.sub", { acc, words: B.correct, key }) + (isBest ? ` \xB7 <b style="color:var(--gold)">${t("results.bestTag")}</b>` : ` \xB7 ${t("results.bestPrev", { prev })}`);
     const list = $("#r-miss");
     list.innerHTML = "";
     $("#r-misshead").style.display = B.misses.length ? "block" : "none";
