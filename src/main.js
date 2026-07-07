@@ -876,7 +876,10 @@ function renderQuestion(word, format, promptKey){
   }
   for(const o of FORMATS[format].buildOptions(word, deck, scope.lang, Math.random)){
     const b = document.createElement("button");
-    b.innerHTML = o.label + (o.sub? `<span class="th">${o.sub}</span>`:"");
+    // Label wrapped in its own span (not just a bare text node) so short
+    // viewports can -webkit-line-clamp it specifically — an ellipsis on the
+    // primary answer only, never a silent symmetric crop across label+sub.
+    b.innerHTML = `<span class="opt-label">${o.label}</span>` + (o.sub? `<span class="th">${o.sub}</span>`:"");
     b._correct = !!o.correct;
     b.onclick = ()=>answer(b, o);
     box.appendChild(b);

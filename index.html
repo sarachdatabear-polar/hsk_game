@@ -241,18 +241,15 @@
   #s-battle{padding:8px 12px 10px;}
   .cv-wrap{flex:1 1 0; min-height:260px; display:flex; align-items:stretch; justify-content:center;}
   /* Short screens (SE-class, landscape handled separately): shrink the canvas
-     floor and tighten the answer grid so HUD + canvas + 2x2 answers fit the
-     height budget with no scrolling mid-round. */
+     floor. The answer-grid half of this media query lives further down,
+     AFTER the base #opts/#opts button rules (see note there) — CSS cascade
+     for equal-specificity selectors is decided by source order, not by
+     whether the winning rule sits inside a media query, so a same-specificity
+     override placed earlier in the file loses to a later unconditional rule
+     even when its media condition is true. */
   @media (max-height: 620px) and (orientation: portrait){
     .cv-wrap{min-height:170px;}
     #s-battle{padding:6px 10px 8px;}
-    #opts{gap:6px; margin-top:6px;}
-    /* answer text length varies with the meaning gloss (can wrap to 2-3
-       lines); cap the row at a fixed height and hide overflow so a long
-       gloss can never push the grid below the fold — a clipped extra line
-       beats a clipped button. */
-    #opts button{padding:6px 6px; min-height:52px; max-height:76px; overflow:hidden; font-size:15px; line-height:1.15;}
-    #opts button .th{font-size:11px; margin-top:1px;}
   }
   #cv{width:100%; height:100%; border-radius:14px;
     background-image:linear-gradient(var(--lc-day-hi),var(--lc-day-mid) 60%,var(--lc-day-ground));
@@ -324,6 +321,32 @@
   }
   #opts button:disabled{opacity:.5; border-image:var(--f-ui-button-neutral-disabled, var(--f-ui-button-neutral, none));}
   #opts button:disabled.good, #opts button:disabled.bad{opacity:1;}
+  /* Short screens (SE-class, landscape handled separately): tighten the
+     answer grid so HUD + canvas + 2x2 answers fit the height budget with no
+     scrolling mid-round. Placed AFTER the base #opts/#opts button rules
+     above (not next to the .cv-wrap/#s-battle half of this same media query
+     near the canvas) so these equal-specificity overrides actually win the
+     cascade — see the note up there. Answer text length varies with the
+     meaning gloss (can wrap to 2-3 lines). Plain overflow:hidden on a
+     flex/align-items:center button crops symmetrically from BOTH the top
+     and bottom with no indicator — e.g. "air conditioning; air conditioner"
+     rendered as "…conditioning; air…", silently eating the start of the
+     answer too. Instead: top-anchor the button (align-items:flex-start) so
+     any cut only ever happens at the end, shrink the type so the common
+     1-2 line case fits with room to spare, and -webkit-line-clamp the
+     label span specifically so the rare 3-line long-tail gets a visible
+     ellipsis with its start always intact. max-height/overflow stay as a
+     belt-and-suspenders cap — with the label already self-limited by the
+     clamp this only ever trims the (secondary) .th line, and only from the
+     bottom, never the label. */
+  @media (max-height: 620px) and (orientation: portrait){
+    #opts{gap:6px; margin-top:6px;}
+    #opts button{padding:6px 6px; min-height:52px; max-height:80px; overflow:hidden;
+      align-items:flex-start; font-size:13px; line-height:1.08;}
+    #opts button .opt-label{display:-webkit-box; -webkit-box-orient:vertical;
+      -webkit-line-clamp:3; overflow:hidden; width:100%;}
+    #opts button .th{display:block; width:100%; font-size:10px; line-height:1.1; margin-top:2px;}
+  }
   /* boss stage-2 reverse-question banner (spans both columns, row 1) */
   .boss-prompt{grid-column:1/-1; text-align:center; font-weight:800; font-size:14px;
     color:var(--lc-brown); background-color:var(--lc-cream); border:1.5px solid var(--lc-brown);
