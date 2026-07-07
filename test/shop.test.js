@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { CATALOG, defaultShop, canAfford, buy, equipItem } from "../src/shop.js";
+import { CATALOG, defaultShop, canAfford, buy, equipItem, SEASONS, dailyStock, nextFeaturedIn, isAvailable, seasonStatus } from "../src/shop.js";
 
 describe("shop", () => {
   it("defaultShop shape", () => {
@@ -222,5 +222,81 @@ describe("shop", () => {
       if (i.type === "deco") expect(i.maxTier, i.id).toBe(3);
       else expect(i.maxTier, i.id).toBeUndefined();
     }
+  });
+});
+
+describe("shop v7 availability", () => {
+  const byId = id => CATALOG.find(i => i.id === id);
+
+  it("SEASONS windows match the PRD", () => {
+    expect(SEASONS.map(s => s.id)).toEqual(["summer", "midautumn", "cny"]);
+    expect(SEASONS[0]).toMatchObject({ from: [7, 1], to: [8, 15] });
+    expect(SEASONS[1]).toMatchObject({ from: [9, 1], to: [10, 5] });
+    expect(SEASONS[2]).toMatchObject({ from: [1, 20], to: [2, 24] });
+  });
+
+  it("dailyStock: 3 unique pool ids, stable for the same date", () => {
+    const a = dailyStock("2026-07-07");
+    expect(a.length).toBe(3);
+    expect(new Set(a).size).toBe(3);
+    for (const id of a) expect(byId(id).pool).toBe("daily");
+    expect(dailyStock("2026-07-07")).toEqual(a);
+  });
+
+  it("dailyStock: full pool cycles in ceil(6/3)=2 days and then repeats", () => {
+    const day0 = dailyStock("2026-07-07");
+    const day1 = dailyStock("2026-07-08");
+    const union = new Set([...day0, ...day1]);
+    expect(union.size).toBe(6);                      // full-cycle coverage
+    expect(dailyStock("2026-07-09")).toEqual(day0);  // period 2
+  });
+
+  it("nextFeaturedIn: 0 when featured today, 1 when featured tomorrow, null for non-pool", () => {
+    const today = "2026-07-07";
+    const featured = dailyStock(today);
+    const absent = CATALOG.filter(i => i.pool === "daily" && !featured.includes(i.id));
+    expect(nextFeaturedIn(featured[0], today)).toBe(0);
+    expect(nextFeaturedIn(absent[0].id, today)).toBe(1);
+    expect(nextFeaturedIn("red-lantern", today)).toBe(null);
+  });
+
+  it("isAvailable: permanent items always, even with no date", () => {
+    expect(isAvailable(byId("panda"), undefined)).toBe(true);
+    expect(isAvailable(byId("red-lantern"), "2026-07-07")).toBe(true);
+  });
+
+  it("isAvailable: pool items only while featured, never without a date", () => {
+    const today = "2026-07-07";
+    const featured = dailyStock(today);
+    const absent = CATALOG.filter(i => i.pool === "daily" && !featured.includes(i.id));
+    expect(isAvailable(byId(featured[0]), today)).toBe(true);
+    expect(isAvailable(absent[0], today)).toBe(false);
+    expect(isAvailable(byId(featured[0]), undefined)).toBe(false);
+  });
+
+  it("isAvailable: season window edges (PRD success criteria)", () => {
+    const beach = byId("beach"), dragon = byId("dragon");
+    expect(isAvailable(beach, "2026-07-01")).toBe(true);   // first day
+    expect(isAvailable(beach, "2026-08-15")).toBe(true);   // last day
+    expect(isAvailable(beach, "2026-06-30")).toBe(false);
+    expect(isAvailable(beach, "2026-08-16")).toBe(false);
+    expect(isAvailable(dragon, "2026-01-20")).toBe(true);
+    expect(isAvailable(dragon, "2026-02-24")).toBe(true);
+    expect(isAvailable(dragon, "2026-02-25")).toBe(false);
+    expect(isAvailable(dragon, undefined)).toBe(false);
+  });
+
+  it("seasonStatus: active summer on launch day; teaser after it ends; year wrap to cny", () => {
+    expect(seasonStatus("2026-07-07").active.id).toBe("summer");
+    const after = seasonStatus("2026-08-16");
+    expect(after.active).toBe(null);
+    expect(after.next.id).toBe("midautumn");
+    expect(after.nextInDays).toBe(16);                     // Aug 16 -> Sep 1
+    expect(seasonStatus("2026-11-01").next.id).toBe("cny"); // wraps into January
+  });
+
+  it("a season item bought in-window equips out-of-window (no date gating on equip)", () => {
+    const shop = { ...defaultShop(), owned: ["dragon"] };
+    expect(equipItem(shop, "dragon").skin).toBe("dragon");
   });
 });

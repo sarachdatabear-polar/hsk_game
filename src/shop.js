@@ -1,6 +1,8 @@
 "use strict";
 // Lucky Shop — pure module, no DOM/localStorage. Caller owns persistence.
 
+import { addDays } from "./daily.js";
+
 export const CATALOG = [
   { id: "midnight", name: "Midnight",  price: 500,  type: "skin" },
   { id: "sakura",   name: "Sakura",    price: 1500, type: "skin" },
@@ -58,6 +60,75 @@ export const SKIN_PALETTES = {
   gold:     { sprite: "cat-gold", body: "#e3a80e", head: "#ffd75e", ear: "#ffd75e", inner: "#fff4e0", leg: "#9c6b00",
               filter: "saturate(1.6) brightness(1.25) contrast(1.05)" },
 };
+
+// ---- v7 availability (PRD v7 F2/F3). All date params are local "YYYY-MM-DD"
+// strings (same convention as daily.js/quests.js); parsing uses the UTC trick
+// so device timezone never shifts the day.
+export const SEASONS = [
+  { id: "summer",    label: "Summer",         from: [7, 1],  to: [8, 15] },
+  { id: "midautumn", label: "Mid-Autumn",     from: [9, 1],  to: [10, 5] },
+  { id: "cny",       label: "Lunar New Year", from: [1, 20], to: [2, 24] },
+];
+
+const dayIndex = dateStr => Math.floor(Date.parse(dateStr + "T00:00:00Z") / 86400000);
+
+// Pure rotation, no RNG: slot i on day d = pool[(d*3 + i) % pool.length].
+export function dailyStock(dateStr) {
+  const pool = CATALOG.filter(i => i.pool === "daily");
+  const d = dayIndex(dateStr);
+  return [0, 1, 2].map(i => pool[(((d * 3 + i) % pool.length) + pool.length) % pool.length].id);
+}
+
+// Days until `id` is next featured (0 = today). null for non-pool ids.
+export function nextFeaturedIn(id, dateStr) {
+  const item = CATALOG.find(i => i.id === id);
+  if (!item || item.pool !== "daily") return null;
+  const cycle = Math.ceil(CATALOG.filter(i => i.pool === "daily").length / 3);
+  for (let n = 0; n <= cycle; n++) {
+    if (dailyStock(addDays(dateStr, n)).includes(id)) return n;
+  }
+  return null; // unreachable while the pool is non-empty
+}
+
+// [month,day] window containment; supports windows that wrap the new year.
+function inWindow(dateStr, from, to) {
+  const [, m, d] = dateStr.split("-").map(Number);
+  const md = m * 100 + d, lo = from[0] * 100 + from[1], hi = to[0] * 100 + to[1];
+  return lo <= hi ? md >= lo && md <= hi : md >= lo || md <= hi;
+}
+
+export function isAvailable(item, dateStr) {
+  if (!item) return false;
+  if (item.pool === "daily") return !!dateStr && dailyStock(dateStr).includes(item.id);
+  if (item.season) {
+    if (!dateStr) return false;
+    const s = SEASONS.find(s => s.id === item.season);
+    return !!s && inWindow(dateStr, s.from, s.to);
+  }
+  return true;
+}
+
+// Days from dateStr to the next occurrence of [month,day] (always >= 1).
+function daysUntil(dateStr, [m, d]) {
+  const y = Number(dateStr.slice(0, 4));
+  const today = dayIndex(dateStr);
+  for (const year of [y, y + 1]) {
+    const target = Math.floor(Date.UTC(year, m - 1, d) / 86400000);
+    if (target > today) return target - today;
+  }
+  return 366; // unreachable
+}
+
+export function seasonStatus(dateStr) {
+  const active = SEASONS.find(s => inWindow(dateStr, s.from, s.to)) || null;
+  let next = null, best = Infinity;
+  for (const s of SEASONS) {
+    if (s === active) continue;
+    const n = daysUntil(dateStr, s.from);
+    if (n < best) { best = n; next = s; }
+  }
+  return { active, next, nextInDays: best };
+}
 
 function byId(id) { return CATALOG.find(it => it.id === id); }
 
