@@ -1512,6 +1512,13 @@
       "home.start": "START",
       "home.startHint": "Need at least 8 words in scope to start \u2014 widen it below.",
       "home.scopeWords": "{n} words",
+      // first run (A4)
+      "welcome.title": "Welcome!",
+      "welcome.blurb": "Learn Chinese words by playing \u2014 a couple of minutes a day.",
+      "welcome.language": "Your language",
+      "welcome.level": "Start at",
+      "welcome.start": "START LEARNING",
+      "results.introHint": "Great first session! Come back tomorrow to start your streak \u{1F375}",
       // bottom nav (M2)
       "nav.home": "Home",
       "nav.street": "Street",
@@ -1547,6 +1554,8 @@
       "learn.stillLearning": "Still learning",
       "learn.knowIt": "Know it",
       "learn.count": "{done} done \xB7 {left} left",
+      "learn.hintFront": "tap to flip \xB7 HSK{lv} \xB7 in {ta}/{tt} papers",
+      "learn.hintBack": "tap to flip back",
       // results
       "results.roundOver": "Round over",
       "results.missed": "Words you missed",
@@ -1628,6 +1637,13 @@
       "home.start": "\u0E40\u0E23\u0E34\u0E48\u0E21",
       "home.startHint": "\u0E15\u0E49\u0E2D\u0E07\u0E21\u0E35\u0E04\u0E33\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E19\u0E49\u0E2D\u0E22 8 \u0E04\u0E33\u0E43\u0E19\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E08\u0E36\u0E07\u0E08\u0E30\u0E40\u0E23\u0E34\u0E48\u0E21\u0E44\u0E14\u0E49 \u2014 \u0E02\u0E22\u0E32\u0E22\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E14\u0E49\u0E32\u0E19\u0E25\u0E48\u0E32\u0E07",
       "home.scopeWords": "{n} \u0E04\u0E33",
+      // first run (A4)
+      "welcome.title": "\u0E22\u0E34\u0E19\u0E14\u0E35\u0E15\u0E49\u0E2D\u0E19\u0E23\u0E31\u0E1A!",
+      "welcome.blurb": "\u0E40\u0E23\u0E35\u0E22\u0E19\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E08\u0E35\u0E19\u0E1C\u0E48\u0E32\u0E19\u0E01\u0E32\u0E23\u0E40\u0E25\u0E48\u0E19 \u2014 \u0E27\u0E31\u0E19\u0E25\u0E30\u0E44\u0E21\u0E48\u0E01\u0E35\u0E48\u0E19\u0E32\u0E17\u0E35",
+      "welcome.language": "\u0E20\u0E32\u0E29\u0E32\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13",
+      "welcome.level": "\u0E40\u0E23\u0E34\u0E48\u0E21\u0E17\u0E35\u0E48\u0E23\u0E30\u0E14\u0E31\u0E1A",
+      "welcome.start": "\u0E40\u0E23\u0E34\u0E48\u0E21\u0E40\u0E23\u0E35\u0E22\u0E19\u0E40\u0E25\u0E22",
+      "results.introHint": "\u0E04\u0E23\u0E31\u0E49\u0E07\u0E41\u0E23\u0E01\u0E40\u0E22\u0E35\u0E48\u0E22\u0E21\u0E21\u0E32\u0E01! \u0E01\u0E25\u0E31\u0E1A\u0E21\u0E32\u0E1E\u0E23\u0E38\u0E48\u0E07\u0E19\u0E35\u0E49\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E40\u0E23\u0E34\u0E48\u0E21\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13 \u{1F375}",
       // bottom nav (M2)
       "nav.home": "\u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
       "nav.street": "\u0E16\u0E19\u0E19",
@@ -1663,6 +1679,8 @@
       "learn.stillLearning": "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E41\u0E21\u0E48\u0E19",
       "learn.knowIt": "\u0E23\u0E39\u0E49\u0E41\u0E25\u0E49\u0E27",
       "learn.count": "\u0E17\u0E33\u0E41\u0E25\u0E49\u0E27 {done} \xB7 \u0E40\u0E2B\u0E25\u0E37\u0E2D {left}",
+      "learn.hintFront": "\u0E41\u0E15\u0E30\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E1E\u0E25\u0E34\u0E01 \xB7 HSK{lv} \xB7 \u0E1E\u0E1A\u0E43\u0E19 {ta}/{tt} \u0E0A\u0E38\u0E14\u0E02\u0E49\u0E2D\u0E2A\u0E2D\u0E1A",
+      "learn.hintBack": "\u0E41\u0E15\u0E30\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E1E\u0E25\u0E34\u0E01\u0E01\u0E25\u0E31\u0E1A",
       // results
       "results.roundOver": "\u0E08\u0E1A\u0E23\u0E2D\u0E1A",
       "results.missed": "\u0E04\u0E33\u0E17\u0E35\u0E48\u0E15\u0E2D\u0E1A\u0E1C\u0E34\u0E14",
@@ -1784,6 +1802,34 @@
     return Math.max(0, Math.min(6, combo));
   }
 
+  // src/juice.js
+  function comboGlowTier(combo) {
+    if (combo >= 15) return 3;
+    if (combo >= 10) return 2;
+    if (combo >= 5) return 1;
+    return 0;
+  }
+  var BOUNCE_MS = 450;
+  var BOUNCE_AMP = 10;
+  function plaqueBounce(ms) {
+    if (!(ms >= 0) || ms >= BOUNCE_MS) return 0;
+    const f = ms / BOUNCE_MS;
+    return BOUNCE_AMP * Math.sin(f * Math.PI * 3) * (1 - f);
+  }
+  function countUpValue(from, to, frac) {
+    const f = Math.min(1, Math.max(0, frac));
+    const eased = 1 - Math.pow(1 - f, 3);
+    return Math.round(from + (to - from) * eased);
+  }
+
+  // src/firstrun.js
+  function isFirstRun(introDone, masteryStore2) {
+    return !introDone && Object.keys(masteryStore2 || {}).length === 0;
+  }
+  function introDeck(pool2, n = 6) {
+    return [...pool2].sort((a, b) => (b.f || 0) - (a.f || 0)).slice(0, n);
+  }
+
   // src/main.js
   var D = window.HSK_DATA;
   var $ = (s) => document.querySelector(s);
@@ -1821,7 +1867,10 @@
   var learnDeck = null;
   var lenCustomOpen = false;
   var battleDeckOverride = null;
+  var smartDeckNext = false;
   var lastMode = "round";
+  var introPhase = null;
+  var introWords = [];
   var masteryStore = store.get("mastery", {});
   function noteAnswer(hanzi, correct) {
     recordAnswer(masteryStore, hanzi, correct);
@@ -1920,6 +1969,7 @@
     const deck = smartDeck(masteryStore, pool, Date.now());
     if (deck.length < 8) return;
     battleDeckOverride = deck;
+    smartDeckNext = true;
     questEvent("review");
     startBattle("round");
   };
@@ -1945,7 +1995,41 @@
     if (chip) chip.textContent = scopeChipLabel();
   }
   $("#home-start").onclick = () => {
-    if (pool.length >= 8) startBattle("round");
+    if (pool.length < 8) return;
+    const deck = smartDeck(masteryStore, pool, Date.now());
+    if (deck.length >= 8) {
+      battleDeckOverride = deck;
+      smartDeckNext = true;
+      questEvent("review");
+    }
+    startBattle("round");
+  };
+  function renderWelcome() {
+    const lang = getLocale();
+    document.querySelectorAll("#welcome-lang-chips .chip").forEach((b) => b.classList.toggle("on", b.dataset.wlang === lang));
+    const lv = scope.levels[0] || 3;
+    document.querySelectorAll("#welcome-level-chips .chip").forEach((b) => b.classList.toggle("on", Number(b.dataset.wlv) === lv));
+  }
+  document.querySelectorAll("#welcome-lang-chips .chip").forEach((b) => b.addEventListener("click", () => {
+    setUiLocale(b.dataset.wlang);
+    renderWelcome();
+  }));
+  document.querySelectorAll("#welcome-level-chips .chip").forEach((b) => b.addEventListener("click", () => {
+    scope.levels = [Number(b.dataset.wlv)];
+    store.set("scope", scope);
+    pool = buildPool(D.levels, scope);
+    renderWelcome();
+  }));
+  $("#welcome-start").onclick = () => {
+    introWords = introDeck(pool, 6);
+    if (introWords.length < 2) {
+      store.set("introDone", true);
+      show("home");
+      return;
+    }
+    introPhase = "learn";
+    learnDeck = introWords.slice();
+    startLearn();
   };
   function shuffle2(a) {
     for (let i = a.length - 1; i > 0; i--) {
@@ -1985,6 +2069,10 @@
     nav.querySelectorAll(".nav-btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === active));
   }
   function show(name) {
+    if (name === "home" && introPhase) {
+      introPhase = null;
+      store.set("introDone", true);
+    }
     currentScreen = name;
     document.querySelectorAll(".screen").forEach((el) => el.classList.remove("on"));
     $("#s-" + name).classList.add("on");
@@ -2130,6 +2218,12 @@
     renderCard();
   }
   function endLearn() {
+    if (introPhase === "learn") {
+      introPhase = "battle";
+      battleDeckOverride = introWords.slice();
+      startBattle("round");
+      return;
+    }
     show(fc.fromMisses ? "results" : "home");
   }
   function renderCard() {
@@ -2142,12 +2236,12 @@
     const c = $("#fc-card");
     if (!fc.flipped) {
       c.innerHTML = `<div class="hz">${w.h}</div><div class="py">${w.p}</div>
-      <div class="hint">tap to flip \xB7 HSK${w.lv} \xB7 in ${w.ta}/${w.tt} papers</div>`;
+      <div class="hint">${t("learn.hintFront", { lv: w.lv, ta: w.ta, tt: w.tt })}</div>`;
       if (settings.autoSpeak) speak(w.h);
     } else {
       const th = w.t ? `<div class="th">${w.t}</div>` : `<div class="th" style="color:var(--muted)">no Thai yet</div>`;
       c.innerHTML = `<div class="hz" style="font-size:40px">${w.h}</div><div class="py">${w.p}</div>
-      <div class="mean">${w.e}${th}</div><div class="hint">tap to flip back</div>`;
+      <div class="mean">${w.e}${th}</div><div class="hint">${t("learn.hintBack")}</div>`;
     }
   }
   $("#fc-card").onclick = () => {
@@ -2246,18 +2340,23 @@
     B.deck = battleDeckOverride && battleDeckOverride.length >= 2 ? battleDeckOverride : pool;
     B.customDeck = !!(battleDeckOverride && battleDeckOverride.length >= 2);
     battleDeckOverride = null;
+    B.smartRound = B.customDeck && smartDeckNext;
+    smartDeckNext = false;
     B.zombie = null;
     B.proj = null;
     B.parts = [];
     B.flash = 0;
     B.screenShake = 0;
     B.feedback = null;
+    B.hitFlash = null;
+    B.plaqueHitAt = 0;
     B.floats = [];
     B.mascotHopUntil = 0;
     B.score = 0;
     B.combo = 0;
     B.lives = 3;
     B.wordsTotal = mode === "round" ? normalizeLen(scope.sessionLen) : Infinity;
+    if (introPhase === "battle") B.wordsTotal = B.deck.length;
     B.spawned = 0;
     B.resolved = 0;
     B.correct = 0;
@@ -2322,7 +2421,16 @@
     strip.classList.toggle("hidden", !show2);
     if (!show2) return;
     $("#combo-count").textContent = B.combo;
-    $("#combo-badge").textContent = comboMultiplier(B.combo);
+    const tier = comboGlowTier(B.combo);
+    for (let g = 1; g <= 3; g++) strip.classList.toggle("glow-" + g, tier === g);
+    const badge = $("#combo-badge");
+    const label = comboMultiplier(B.combo);
+    if (badge.textContent !== label && label && !REDUCED_MOTION) {
+      badge.classList.remove("pop");
+      void badge.offsetWidth;
+      badge.classList.add("pop");
+    }
+    badge.textContent = label;
     const lit = comboFires(B.combo);
     const fires = $("#combo-fires");
     fires.replaceChildren();
@@ -2398,6 +2506,8 @@
     if (B.zombie && B.zombie.wrongUntil) B.zombie.wrongUntil += shift;
     if (B.zombie && B.zombie.happyAt) B.zombie.happyAt += shift;
     if (B.bossStageAt) B.bossStageAt += shift;
+    if (B.hitFlash) B.hitFlash.until += shift;
+    if (B.plaqueHitAt) B.plaqueHitAt += shift;
     B.paused = false;
     keepAwake(true);
     $("#pause-overlay").classList.remove("on");
@@ -2508,12 +2618,13 @@
       sfx.kill();
       hapticKill();
       if (B.combo >= 3) sfx.combo(B.combo);
-      btn.classList.add("good");
+      btn.classList.add("good", "stamp", "stamp-good");
       lockOptions();
       B.proj = { x: B.L.mascotX + 16 * B.S, y: B.h - B.L.ground - 30 * B.S };
       if (boss) noteAnswer(z.w.h, true);
       const gy = B.h - B.L.ground;
-      B.feedback = { ...feedbackEffect("correct", z.x, gy - 42 * B.S), until: fxUntil(620) };
+      B.feedback = boss ? { ...feedbackEffect("critical", z.x, gy - 42 * B.S), until: fxUntil(750) } : { ...feedbackEffect("correct", z.x, gy - 42 * B.S), until: fxUntil(620) };
+      B.plaqueHitAt = performance.now();
       const floater = comboFloater(z.x, gy - 130, B.combo);
       if (floater) B.floats.push(floater);
       if (B.combo >= 10 && B.combo % 10 === 0) {
@@ -2525,7 +2636,7 @@
       sfx.wrong();
       sfx.bite();
       hapticWrong();
-      btn.classList.add("bad");
+      btn.classList.add("bad", "stamp", "stamp-bad");
       lockOptions();
       revealCorrect(z.w);
       pushMiss(z.w);
@@ -2547,6 +2658,7 @@
   }
   function killZombie(z) {
     const gy = B.h - B.L.ground;
+    B.hitFlash = { x: z.x, y: gy - 40 * B.S, until: fxUntil(150) };
     B.parts.push(...coinBurst(z.x, gy - 16, !!z.boss, shopState.effect));
     z.state = "happy";
     z.happyAt = performance.now();
@@ -2837,6 +2949,21 @@
       }
       ctx2.globalAlpha = 1;
     }
+    if (B.hitFlash) {
+      const leftF = B.hitFlash.until - performance.now();
+      if (leftF <= 0) {
+        B.hitFlash = null;
+      } else {
+        ctx2.save();
+        ctx2.globalAlpha = 0.85 * (leftF / fxDuration(150));
+        ctx2.fillStyle = "rgba(251,245,232,1)";
+        const rr = (18 + 30 * (1 - leftF / fxDuration(150))) * B.S;
+        ctx2.beginPath();
+        ctx2.arc(B.hitFlash.x, B.hitFlash.y, rr, 0, Math.PI * 2);
+        ctx2.fill();
+        ctx2.restore();
+      }
+    }
     drawFeedbackLayer(t2);
     if (B.flash > 0) {
       ctx2.fillStyle = `rgba(90,44,80,${(0.3 * B.flash).toFixed(3)})`;
@@ -2850,7 +2977,8 @@
     const pinyin = hideWord || !settings.showPinyin ? "" : w.p;
     const revealed = !!z.revealed;
     const showSub = scope.lang === "both";
-    const wy = Math.round(B.h * 0.36);
+    const bounce = !REDUCED_MOTION && B.plaqueHitAt ? plaqueBounce(performance.now() - B.plaqueHitAt) : 0;
+    const wy = Math.round(B.h * 0.36) + Math.round(bounce);
     ctx2.save();
     ctx2.font = fontString(700, B.L.hanziPx, HANZI_STACK);
     const textW = Math.max(ctx2.measureText(hanzi).width, 74 * B.S);
@@ -3126,11 +3254,15 @@
         store.set("wallet", wallet);
         updateWalletChip();
       }
+      if (introPhase) {
+        introPhase = null;
+        store.set("introDone", true);
+      }
       show("home");
       return;
     }
     noteDaily(B.resolved);
-    const isPerfect = B.mode === "round" && B.resolved > 0 && B.misses.length === 0 && !B.customDeck;
+    const isPerfect = B.mode === "round" && B.resolved > 0 && B.misses.length === 0 && (!B.customDeck || B.smartRound);
     if (isPerfect) questEvent("perfect");
     wallet += B.score;
     const bonus = isPerfect ? perfectBonus(B.score) : 0;
@@ -3162,7 +3294,20 @@
     }
     rq.style.display = questToasts.length ? "block" : "none";
     const acc = B.attempts ? Math.round(100 * B.correct / B.attempts) : 0;
-    $("#r-score").textContent = B.score;
+    const scoreEl = $("#r-score");
+    if (REDUCED_MOTION || B.score === 0) {
+      scoreEl.textContent = B.score;
+    } else {
+      const target = B.score, t0 = performance.now(), dur = 700;
+      scoreEl.textContent = "0";
+      const tick = (now) => {
+        const frac = (now - t0) / dur;
+        scoreEl.textContent = countUpValue(0, target, frac);
+        if (frac < 1 && currentScreen === "results") requestAnimationFrame(tick);
+        else scoreEl.textContent = target;
+      };
+      requestAnimationFrame(tick);
+    }
     const key = scopeKey(scope) + "\xB7" + modeKey(B.mode, B.wordsTotal);
     if (B.customDeck) {
       $("#r-sub").innerHTML = t("results.sub", { acc, words: B.correct, key });
@@ -3204,6 +3349,15 @@
       startBattle("round");
     };
     $("#r-again").onclick = () => startBattle(lastMode);
+    const hintEl = $("#r-intro-hint");
+    if (introPhase === "battle") {
+      introPhase = null;
+      store.set("introDone", true);
+      hintEl.textContent = t("results.introHint");
+      hintEl.style.display = "block";
+    } else {
+      hintEl.style.display = "none";
+    }
     show("results");
   }
   function renderScores() {
@@ -3759,6 +3913,10 @@
   applyStaticI18n();
   syncUiLangChips();
   sfx.pack = shopState.soundpack || "default";
+  if (isFirstRun(store.get("introDone", false), masteryStore)) {
+    renderWelcome();
+    show("welcome");
+  }
   renderHome();
   renderQuests();
   renderStreet();

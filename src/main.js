@@ -25,6 +25,8 @@ import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
 import { navVisibleOn, activeTabFor } from "./nav.js";
 import { roundLabel, comboMultiplier, comboFires } from "./hud.js";
+import { comboGlowTier, plaqueBounce, countUpValue } from "./juice.js";
+import { isFirstRun, introDeck } from "./firstrun.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -50,7 +52,12 @@ let pool = [];            // current merged word pool
 let learnDeck = null;     // override deck for "review misses"
 let lenCustomOpen = false;  // "Custom" chip tapped; input visible even if value matches a preset
 let battleDeckOverride = null;  // when set, next battle draws only these words (e.g. "fight misses")
+let smartDeckNext = false;   // next battle's override is a smart-review deck (earns the perfect bonus)
 let lastMode = "round";
+// A4 first-run intro: null when not in the intro, else "learn" -> "battle".
+// introWords carries the same 6 words from warm-up into the battle.
+let introPhase = null;
+let introWords = [];
 let masteryStore = store.get("mastery", {});
 function noteAnswer(hanzi, correct){
   recordAnswer(masteryStore, hanzi, correct);
@@ -160,6 +167,7 @@ $("#go-smart").onclick = ()=>{
   const deck = smartDeck(masteryStore, pool, Date.now());
   if(deck.length < 8) return;
   battleDeckOverride = deck;
+  smartDeckNext = true;
   questEvent("review");
   startBattle("round");
 };
@@ -191,7 +199,45 @@ function renderHome(){
   const chip = $("#home-scope-chip");
   if(chip) chip.textContent = scopeChipLabel();
 }
-$("#home-start").onclick = ()=>{ if(pool.length >= 8) startBattle("round"); };
+// A4: START launches the smart choice — Smart Review when >=8 weak/due words,
+// else a normal round over the configured scope. The scope chip next to it
+// keeps the full picker one tap away.
+$("#home-start").onclick = ()=>{
+  if(pool.length < 8) return;
+  const deck = smartDeck(masteryStore, pool, Date.now());
+  if(deck.length >= 8){
+    battleDeckOverride = deck;
+    smartDeckNext = true;
+    questEvent("review");
+  }
+  startBattle("round");
+};
+
+/* ============================== first run (A4) ============================== */
+function renderWelcome(){
+  const lang = getLocale();
+  document.querySelectorAll("#welcome-lang-chips .chip").forEach(b=>
+    b.classList.toggle("on", b.dataset.wlang === lang));
+  const lv = scope.levels[0] || 3;
+  document.querySelectorAll("#welcome-level-chips .chip").forEach(b=>
+    b.classList.toggle("on", Number(b.dataset.wlv) === lv));
+}
+document.querySelectorAll("#welcome-lang-chips .chip").forEach(b=>
+  b.addEventListener("click", ()=>{ setUiLocale(b.dataset.wlang); renderWelcome(); }));
+document.querySelectorAll("#welcome-level-chips .chip").forEach(b=>
+  b.addEventListener("click", ()=>{
+    scope.levels = [Number(b.dataset.wlv)];
+    store.set("scope", scope);
+    pool = buildPool(D.levels, scope);
+    renderWelcome();
+  }));
+$("#welcome-start").onclick = ()=>{
+  introWords = introDeck(pool, 6);
+  if(introWords.length < 2){ store.set("introDone", true); show("home"); return; }
+  introPhase = "learn";
+  learnDeck = introWords.slice();
+  startLearn();
+};
 
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
@@ -231,6 +277,11 @@ function updateNav(name){
   nav.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.tab===active));
 }
 function show(name){
+  // A4: ANY route home mid-intro (learn Exit, Android hardware back via
+  // initNative's goHome, future shortcuts) abandons the intro for good —
+  // never hijack a later session, never re-show welcome. endBattle's own
+  // intro completion runs before its show() calls, so this is a no-op there.
+  if(name === "home" && introPhase){ introPhase = null; store.set("introDone", true); }
   currentScreen = name;
   document.querySelectorAll(".screen").forEach(el=>el.classList.remove("on"));
   $("#s-"+name).classList.add("on");
@@ -246,7 +297,10 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
   else if(t==="scores"){ renderScores(); show("scores"); }
   else if(t==="progress"){ renderProgress(); show("progress"); }
   else if(t==="shop"){ renderShop(); show("shop"); }
-  else { if(t==="home"){ stopBattle(); } show(t); }
+  else {
+    if(t==="home"){ stopBattle(); }   // intro abandonment handled in show()
+    show(t);
+  }
 }));
 
 /* ============================== scope selector ============================== */
@@ -333,7 +387,17 @@ function startLearn(){
   show("learn");
   renderCard();
 }
-function endLearn(){ show(fc.fromMisses ? "results" : "home"); }
+function endLearn(){
+  if(introPhase === "learn"){
+    // A4: warm-up done — straight into a short battle over the same 6 words
+    // (normal rules, standard distractors; no fake difficulty).
+    introPhase = "battle";
+    battleDeckOverride = introWords.slice();
+    startBattle("round");
+    return;
+  }
+  show(fc.fromMisses ? "results" : "home");
+}
 function renderCard(){
   const w = fc.deck[fc.i];
   if(!w){ endLearn(); return; }
@@ -341,12 +405,12 @@ function renderCard(){
   const c = $("#fc-card");
   if(!fc.flipped){
     c.innerHTML = `<div class="hz">${w.h}</div><div class="py">${w.p}</div>
-      <div class="hint">tap to flip · HSK${w.lv} · in ${w.ta}/${w.tt} papers</div>`;
+      <div class="hint">${t("learn.hintFront", { lv: w.lv, ta: w.ta, tt: w.tt })}</div>`;
     if(settings.autoSpeak) speak(w.h);
   }else{
     const th = w.t? `<div class="th">${w.t}</div>` : `<div class="th" style="color:var(--muted)">no Thai yet</div>`;
     c.innerHTML = `<div class="hz" style="font-size:40px">${w.h}</div><div class="py">${w.p}</div>
-      <div class="mean">${w.e}${th}</div><div class="hint">tap to flip back</div>`;
+      <div class="mean">${w.e}${th}</div><div class="hint">${t("learn.hintBack")}</div>`;
   }
 }
 $("#fc-card").onclick = ()=>{ fc.flipped = !fc.flipped; renderCard(); };
@@ -436,10 +500,15 @@ function startBattle(mode){
   // endBattle() must not let them set high scores or earn the perfect bonus.
   B.customDeck = !!(battleDeckOverride && battleDeckOverride.length >= 2);
   battleDeckOverride = null;
+  B.smartRound = B.customDeck && smartDeckNext;   // full-rules smart review (owner: perfect bonus yes, best-score no)
+  smartDeckNext = false;
   B.zombie = null; B.proj = null; B.parts = []; B.flash = 0; B.screenShake = 0; B.feedback = null;
+  B.hitFlash = null; B.plaqueHitAt = 0;
   B.floats = []; B.mascotHopUntil = 0;
   B.score = 0; B.combo = 0; B.lives = 3;
   B.wordsTotal = mode==="round"? normalizeLen(scope.sessionLen) : Infinity;
+  // A4 intro battle: exactly the 6 warm-up words, not a full session
+  if(introPhase === "battle") B.wordsTotal = B.deck.length;
   B.spawned = 0; B.resolved = 0; B.correct = 0; B.attempts = 0;
   B.recent = []; B.misses = []; B.missSet = new Set();
   B.nextAt = 0; B.lastT = 0; B.locked = false; B.bossStageAt = 0;
@@ -502,7 +571,17 @@ function updateComboStrip(){
   strip.classList.toggle("hidden", !show);
   if(!show) return;
   $("#combo-count").textContent = B.combo;
-  $("#combo-badge").textContent = comboMultiplier(B.combo);
+  // escalating warm glow at 5/10/15 (A3); classes are additive tiers
+  const tier = comboGlowTier(B.combo);
+  for(let g=1; g<=3; g++) strip.classList.toggle("glow-"+g, tier===g);
+  const badge = $("#combo-badge");
+  const label = comboMultiplier(B.combo);
+  if(badge.textContent !== label && label && !REDUCED_MOTION){
+    badge.classList.remove("pop");
+    void badge.offsetWidth;   // restart the keyframe
+    badge.classList.add("pop");
+  }
+  badge.textContent = label;
   const lit = comboFires(B.combo);
   const fires = $("#combo-fires");
   fires.replaceChildren();
@@ -518,7 +597,8 @@ function updateComboStrip(){
    plain unpause rather than a re-bootstrap. Every absolute performance.now()
    deadline the battle loop reads must be shifted forward by the pause duration
    on resume, or it "expires" while the player was looking at the overlay:
-   B.nextAt, B.dyingUntil, B.mascotHopUntil, B.feedback.until, B.zombie.wrongUntil. */
+   B.nextAt, B.dyingUntil, B.mascotHopUntil, B.feedback.until, B.zombie.wrongUntil,
+   B.hitFlash.until, B.plaqueHitAt. */
 const PAUSE_TOGGLES = [
   { icon:"bell", iconOff:"bell-off", labelKey:"home.sound", isOn:()=>sfx.enabled, toggle:()=>toggleSfx() },
   { icon:"sound", iconOff:"muted", labelKey:"battle.wordAudio", isOn:()=>settings.autoSpeak,
@@ -568,6 +648,8 @@ function resumeBattle(){
   if(B.zombie && B.zombie.wrongUntil) B.zombie.wrongUntil += shift;
   if(B.zombie && B.zombie.happyAt) B.zombie.happyAt += shift;
   if(B.bossStageAt) B.bossStageAt += shift;
+  if(B.hitFlash) B.hitFlash.until += shift;
+  if(B.plaqueHitAt) B.plaqueHitAt += shift;
   B.paused = false;
   keepAwake(true);
   $("#pause-overlay").classList.remove("on");
@@ -683,13 +765,18 @@ function answer(btn, o){
     const distFrac = Math.max(0, z.x - biteX) / (B.w - biteX);
     B.score += boss ? bossPoints(killPoints(B.combo, distFrac)) : killPoints(B.combo, distFrac);
     sfx.kill(); hapticKill(); if (B.combo >= 3) sfx.combo(B.combo);
-    btn.classList.add("good");
+    btn.classList.add("good", "stamp", "stamp-good");
     lockOptions();
     B.proj = {x:B.L.mascotX+16*B.S, y:B.h-B.L.ground-30*B.S};   // coin flies at the cat
     // (word audio fires once, on spawn — no replay on the answer tap)
     if(boss) noteAnswer(z.w.h, true);           // both stages passed
     const gy = B.h-B.L.ground;
-    B.feedback = {...feedbackEffect("correct", z.x, gy-42*B.S), until:fxUntil(620)};
+    // boss final kill gets the reference's CRITICAL! starburst (A3); the
+    // 10-combo milestone below may upgrade a normal kill to critical too.
+    B.feedback = boss
+      ? {...feedbackEffect("critical", z.x, gy-42*B.S), until:fxUntil(750)}
+      : {...feedbackEffect("correct", z.x, gy-42*B.S), until:fxUntil(620)};
+    B.plaqueHitAt = performance.now();   // plaque bounce timebase (drawWordPlate)
     const floater = comboFloater(z.x, gy-130, B.combo);
     if(floater) B.floats.push(floater);
     // milestone combo (10, 20, ...): fireworks + a CRITICAL! comic burst
@@ -704,7 +791,7 @@ function answer(btn, o){
     // advance quickly — just long enough to see the correct answer flashed green.
     B.combo = 0;
     sfx.wrong(); sfx.bite(); hapticWrong();
-    btn.classList.add("bad");
+    btn.classList.add("bad", "stamp", "stamp-bad");
     lockOptions();
     revealCorrect(z.w);
     pushMiss(z.w);
@@ -724,6 +811,9 @@ function scheduleNext(ms){
 }
 function killZombie(z){
   const gy = B.h-B.L.ground;
+  // A3 enemy hit flash: quick warm-white pulse at the raccoon (drawn in draw(),
+  // just before the feedback layer). Absolute deadline — shifted on resume.
+  B.hitFlash = {x:z.x, y:gy-40*B.S, until:fxUntil(150)};
   B.parts.push(...coinBurst(z.x, gy-16, !!z.boss, shopState.effect));   // bosses pop a bigger, coinier burst; effect pack swaps the look
   z.state = "happy";
   z.happyAt = performance.now();   // raccoonBob("happy") wants time-since-defeat, not the raw rAF t
@@ -975,8 +1065,23 @@ function draw(t){
     }
     ctx.globalAlpha = 1;
   }
-  // hit flash — softened dim-violet (cat wandered off, not combat damage)
+  // A3 enemy hit flash: expanding cream pulse at the kill (set in killZombie)
+  if(B.hitFlash){
+    const leftF = B.hitFlash.until - performance.now();
+    if(leftF <= 0){ B.hitFlash = null; }
+    else{
+      // expanding cream pulse, fading out — a fade, so reduced-motion-safe
+      // (fxUntil already halved its duration there)
+      ctx.save();
+      ctx.globalAlpha = 0.85 * (leftF / fxDuration(150));
+      ctx.fillStyle = "rgba(251,245,232,1)";
+      const rr = (18 + 30 * (1 - leftF / fxDuration(150))) * B.S;
+      ctx.beginPath(); ctx.arc(B.hitFlash.x, B.hitFlash.y, rr, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+  }
   drawFeedbackLayer(t);
+  // hit flash — softened dim-violet (cat wandered off, not combat damage)
   if(B.flash>0){ ctx.fillStyle = `rgba(90,44,80,${(0.30*B.flash).toFixed(3)})`; ctx.fillRect(0,0,B.w,B.h); }
   if(shake) ctx.restore();
 }
@@ -994,7 +1099,11 @@ function drawWordPlate(z, hideWord, t){
   const revealed = !!z.revealed;
   const showSub = scope.lang === "both";   // meaningOf() only returns a .sub in "both" mode
 
-  const wy = Math.round(B.h * 0.36);
+  // A3 plaque bounce: damped dip on a correct answer (juice.js curve; 0 when
+  // idle or under reduced motion — no vertical motion, per "fades only").
+  const bounce = (!REDUCED_MOTION && B.plaqueHitAt)
+    ? plaqueBounce(performance.now() - B.plaqueHitAt) : 0;
+  const wy = Math.round(B.h * 0.36) + Math.round(bounce);
   ctx.save();
   ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK);
   const textW = Math.max(ctx.measureText(hanzi).width, 74*B.S);
@@ -1230,10 +1339,11 @@ function endBattle(quit){
     // still bank what was earned so far — no perfect bonus, no best-score, no results screen
     if(B.resolved > 0) noteDaily(B.resolved);
     if(B.score > 0){ wallet += B.score; store.set("wallet", wallet); updateWalletChip(); }
+    if(introPhase){ introPhase = null; store.set("introDone", true); }
     show("home"); return;
   }
   noteDaily(B.resolved);
-  const isPerfect = B.mode==="round" && B.resolved>0 && B.misses.length===0 && !B.customDeck;
+  const isPerfect = B.mode==="round" && B.resolved>0 && B.misses.length===0 && (!B.customDeck || B.smartRound);
   if(isPerfect) questEvent("perfect");
   wallet += B.score;
   const bonus = isPerfect ? perfectBonus(B.score) : 0;
@@ -1265,7 +1375,22 @@ function endBattle(quit){
   }
   rq.style.display = questToasts.length ? "block" : "none";
   const acc = B.attempts? Math.round(100*B.correct/B.attempts) : 0;
-  $("#r-score").textContent = B.score;
+  // A3 results celebration: count the earned coins up (~700ms ease-out).
+  // Reduced motion or a zero score renders instantly.
+  const scoreEl = $("#r-score");
+  if(REDUCED_MOTION || B.score === 0){
+    scoreEl.textContent = B.score;
+  }else{
+    const target = B.score, t0 = performance.now(), dur = 700;
+    scoreEl.textContent = "0";
+    const tick = now => {
+      const frac = (now - t0) / dur;
+      scoreEl.textContent = countUpValue(0, target, frac);
+      if(frac < 1 && currentScreen === "results") requestAnimationFrame(tick);
+      else scoreEl.textContent = target;
+    };
+    requestAnimationFrame(tick);
+  }
   const key = scopeKey(scope)+"·"+modeKey(B.mode, B.wordsTotal);
   if(B.customDeck){
     // miss/weak-word decks don't compete on the scoreboard — no best-tag/prev-best suffix
@@ -1297,6 +1422,18 @@ function endBattle(quit){
   $("#r-fight-miss").style.display = B.misses.length >= 2 ? "block" : "none";
   $("#r-fight-miss").onclick = ()=>{ battleDeckOverride = B.misses.slice(); startBattle("round"); };
   $("#r-again").onclick = ()=>startBattle(lastMode);
+  // A4 intro round: mark the intro complete and point at the streak
+  // ("come back tomorrow"), calm framing. The Welcome sticker occupies
+  // #r-sticker-slot in Phase 4 (stickers.js).
+  const hintEl = $("#r-intro-hint");
+  if(introPhase === "battle"){
+    introPhase = null;
+    store.set("introDone", true);
+    hintEl.textContent = t("results.introHint");
+    hintEl.style.display = "block";
+  }else{
+    hintEl.style.display = "none";
+  }
   show("results");
 }
 
@@ -1738,6 +1875,10 @@ pool = buildPool(D.levels, scope);
 applyStaticI18n();
 syncUiLangChips();
 sfx.pack = shopState.soundpack || "default";
+if(isFirstRun(store.get("introDone", false), masteryStore)){
+  renderWelcome();
+  show("welcome");
+}
 renderHome();
 renderQuests();
 renderStreet();

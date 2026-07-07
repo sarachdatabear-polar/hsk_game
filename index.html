@@ -51,6 +51,10 @@
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
   .screen{display:none; flex:1; flex-direction:column; padding:16px;}
   .screen.on{display:flex;}
+  /* A3: soft enter transition on every screen change (~200ms). The global
+     prefers-reduced-motion rule truncates all animations, so reduced = instant. */
+  .screen.on{animation:screen-in 200ms ease-out;}
+  @keyframes screen-in{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;}}
   .menu{display:flex; flex-direction:column; gap:12px; margin-top:8px;}
   button{font:inherit; border:none; border-radius:12px; cursor:pointer;}
   .asset-icon{width:1.15em; height:1.15em; display:inline-block; vertical-align:-.18em; color:currentColor; flex:0 0 auto;}
@@ -252,6 +256,12 @@
   .combo-strip-badge{display:inline-flex; align-items:center; justify-content:center; min-width:28px; height:24px;
     padding:0 6px; border-radius:50%; background-color:var(--lc-sun); color:var(--lc-teal);
     font-weight:800; font-size:12.5px; border:1.5px solid var(--lc-brown);}
+  /* A3: escalating warm glow at 5/10/15 (tiers from juice.js comboGlowTier) */
+  #combo-strip.glow-1{box-shadow:0 0 8px rgba(242,188,87,.45);}
+  #combo-strip.glow-2{box-shadow:0 0 12px rgba(242,188,87,.65); border-color:var(--lc-sun);}
+  #combo-strip.glow-3{box-shadow:0 0 16px rgba(242,188,87,.85), 0 0 4px rgba(230,151,119,.6); border-color:var(--lc-sun);}
+  .combo-strip-badge.pop{animation:badge-pop 260ms ease-out;}
+  @keyframes badge-pop{0%{transform:scale(1.5);} 100%{transform:scale(1);}}
   /* answer grid (M6, §6.2 item 4 + §7.2): strict 2x2, equal-size cells at any
      row count (grid-auto-rows keeps the boss reverse-question's 3rd prompt
      row the same height as the two button rows below it). */
@@ -273,6 +283,23 @@
     box-shadow:inset 0 2px 0 rgba(255,255,255,.28), inset 0 -3px 0 rgba(0,0,0,.22), 0 2px 6px rgba(0,0,0,.2);}
   #opts button.bad .th{color:var(--lc-cream);}
   #opts button.bad::before{content:"✕"; font-size:22px; font-weight:800; line-height:1;}
+  /* A3: paw-print stamp pops on the TAPPED option (fx sprites are the
+     reference's paw stamps). ::before keeps carrying the ✓/✕ affix (a11y —
+     reveal never relies on color alone), so the stamp rides on ::after. */
+  #opts button{position:relative;}
+  #opts button.stamp::after{
+    content:""; position:absolute; inset:0; margin:auto; width:52px; height:52px;
+    background:center/contain no-repeat; pointer-events:none;
+    animation:paw-stamp 480ms ease-out forwards;
+  }
+  #opts button.stamp-good::after{background-image:url("assets/fx-correct.svg");}
+  #opts button.stamp-bad::after{background-image:url("assets/fx-wrong.svg");}
+  @keyframes paw-stamp{
+    0%{opacity:0; transform:scale(1.7) rotate(-8deg);}
+    45%{opacity:.95; transform:scale(.94) rotate(2deg);}
+    70%{opacity:.9; transform:scale(1.04) rotate(0deg);}
+    100%{opacity:0; transform:scale(1);}
+  }
   #opts button:disabled{opacity:.5; border-image:var(--f-ui-button-neutral-disabled, var(--f-ui-button-neutral, none));}
   #opts button:disabled.good, #opts button:disabled.bad{opacity:1;}
   /* boss stage-2 reverse-question banner (spans both columns, row 1) */
@@ -282,6 +309,12 @@
   /* results */
   .bignum{font-size:52px; text-align:center; color:var(--lc-green); font-weight:800; margin:6px 0;
     font-family:'LC Latin',"Segoe UI",sans-serif;}
+  /* A3: celebrating cat above the results title; gentle bob (reduced-motion
+     rule freezes it). Friendly token — never a jackpot/coin-shower. */
+  .r-cat{display:block; width:96px; height:96px; margin:2px auto 0;
+    filter:drop-shadow(0 6px 8px rgba(46,42,36,.25));
+    animation:cat-bob 2.2s ease-in-out infinite alternate;}
+  @keyframes cat-bob{from{transform:translateY(0) rotate(-2deg);} to{transform:translateY(-6px) rotate(2deg);}}
   .sub{text-align:center; color:var(--muted); margin:0 0 14px;}
   .misslist{flex:1; overflow-y:auto; background-color:var(--panel-wash); border-radius:12px;
     border:1px solid var(--panel-border); padding:6px 12px; margin:10px 0; max-height:38vh;}
@@ -441,6 +474,17 @@
   .sec-btn .asset-icon{width:19px; height:19px; color:var(--lc-teal); flex:0 0 auto;}
   .sec-btn:active{transform:scale(.96);}
   .sec-btn:disabled{opacity:.5;}
+
+  /* A4 welcome (first run): compact single-column card, reuses chip + sun
+     plaque recipes. Nav is hidden here (nav.js doesn't list "welcome"). */
+  #s-welcome{justify-content:center;}
+  .welcome-wrap{display:flex; flex-direction:column; gap:4px; max-width:340px; width:100%; margin:0 auto;}
+  .welcome-cat{width:120px; height:120px; margin:0 auto;
+    filter:drop-shadow(0 8px 10px rgba(46,42,36,.3));}
+  .welcome-title{text-align:center; margin:6px 0 0;}
+  .welcome-blurb{text-align:center; color:var(--muted); font-size:14.5px; margin:2px 0 6px;}
+  .welcome-start{margin-top:16px; flex:none;}
+
   /* festive decor — swaying lantern.png corners + a soft cloud.png behind the
      title. Applied to the bare screens (Results/Scores/Progress/How-to) only;
      #s-home keeps its painted hero so the motif isn't doubled. z-index:0 makes
@@ -514,6 +558,28 @@
       <button class="sec-btn" data-go="scope-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg><span data-i18n="home.flashcards">Flashcards</span></span></button>
       <button class="sec-btn" id="go-smart"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#target"></use></svg><span data-i18n="home.smart">Smart Review</span></span></button>
       <button class="sec-btn" data-go="shop"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#shop"></use></svg><span data-i18n="home.shop">Shop</span></span></button>
+    </div>
+  </div>
+
+  <!-- WELCOME (A4 first run — shown once for fresh profiles; see firstrun.js) -->
+  <div class="screen" id="s-welcome">
+    <div class="welcome-wrap">
+      <img class="welcome-cat" src="assets/cat-study.png" alt="">
+      <h2 class="welcome-title" data-i18n="welcome.title">Welcome!</h2>
+      <p class="welcome-blurb" data-i18n="welcome.blurb">Learn Chinese words by playing — a couple of minutes a day.</p>
+      <div class="sect" data-i18n="welcome.language">Your language</div>
+      <div class="chips" id="welcome-lang-chips">
+        <button class="chip" data-wlang="en">English</button>
+        <button class="chip" data-wlang="th">ไทย</button>
+      </div>
+      <div class="sect" data-i18n="welcome.level">Start at</div>
+      <div class="chips" id="welcome-level-chips">
+        <button class="chip" data-wlv="1">HSK1</button>
+        <button class="chip" data-wlv="2">HSK2</button>
+        <button class="chip" data-wlv="3">HSK3</button>
+        <button class="chip" data-wlv="4">HSK4</button>
+      </div>
+      <button class="start-btn welcome-start" id="welcome-start" data-i18n="welcome.start">START LEARNING</button>
     </div>
   </div>
 
@@ -642,8 +708,13 @@
 
   <!-- RESULTS -->
   <div class="screen festive" id="s-results">
+    <img class="r-cat" src="assets/cat-celebrate.png" alt="">
     <h2 style="text-align:center" data-i18n="results.roundOver">Round over</h2>
     <div class="bignum" id="r-score"></div>
+    <!-- A4/B2 slots: intro streak pointer (filled by endBattle on the intro
+         round) and the sticker toast slot (activates in Phase 4 with stickers.js) -->
+    <p class="sub" id="r-intro-hint" style="display:none"></p>
+    <div id="r-sticker-slot" style="display:none"></div>
     <p class="sub" id="r-sub"></p>
     <p class="sub" id="r-wallet" style="color:var(--lc-brown)"></p>
     <div id="r-perfect" style="display:none"></div>
