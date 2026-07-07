@@ -21,6 +21,9 @@ describe("nav", () => {
       expect(navVisibleOn("scope")).toBe(false);
       expect(navVisibleOn("results")).toBe(false);
     });
+    it("shows the nav on the album (a Progress sub-screen)", () => {
+      expect(navVisibleOn("album")).toBe(true);
+    });
   });
 
   describe("activeTabFor", () => {
@@ -39,6 +42,9 @@ describe("nav", () => {
       expect(activeTabFor("learn")).toBe(null);
       expect(activeTabFor("scope")).toBe(null);
       expect(activeTabFor("results")).toBe(null);
+    });
+    it("is 'progress' for the album", () => {
+      expect(activeTabFor("album")).toBe("progress");
     });
   });
 });

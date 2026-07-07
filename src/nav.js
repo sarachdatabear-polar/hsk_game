@@ -10,9 +10,12 @@ export const TABS = ["home", "street", "progress", "quests", "more"];
 // themselves, but the nav stays visible (with More highlighted) while on them.
 const MORE_SUBSCREENS = ["scores", "howto"];
 
+// Sub-screens that ride under the Progress tab (B2 sticker album).
+const PROGRESS_SUBSCREENS = ["album"];
+
 // Every screen where the bottom nav is shown at all: the 5 tabs, the More
 // sub-screens, plus shop (reachable from home's icon row this milestone).
-const NAV_VISIBLE = new Set([...TABS, ...MORE_SUBSCREENS, "shop"]);
+const NAV_VISIBLE = new Set([...TABS, ...MORE_SUBSCREENS, ...PROGRESS_SUBSCREENS, "shop"]);
 
 export function navVisibleOn(screen) {
   return NAV_VISIBLE.has(screen);
@@ -24,6 +27,7 @@ export function activeTabFor(screen) {
   if (!navVisibleOn(screen)) return null;
   if (TABS.includes(screen)) return screen;
   if (MORE_SUBSCREENS.includes(screen)) return "more";
+  if (PROGRESS_SUBSCREENS.includes(screen)) return "progress";
   if (screen === "shop") return "home";
   return null;
 }
