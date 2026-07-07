@@ -1,6 +1,7 @@
 "use strict";
 import { buildPool, coveragePct, scopeKey, meaning as meaningOf, normalizeLen, modeKey, scopeSummary } from "./pool.js";
 import { pickDistractors } from "./distractors.js";
+import { FORMATS } from "./formats.js";
 import { killPoints } from "./scoring.js";
 import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus } from "./fx.js";
 import { sfx } from "./sfx.js";
@@ -821,41 +822,31 @@ function spawnZombie(){
     sfx.combo(5);   // boss-arrival sting
   }
   if(settings.autoSpeak) speak(w.h);
-  renderOptions(w);
+  renderQuestion(w, "meaning");
   updateHud();   // round capsule tracks B.spawned — refresh as each word enters
   // per-word ramp on the unscaled base, then re-derive the screen-scaled
   // speed (a plain B.speed *= 1.03 would be wiped by the next resize)
   B.speedBase *= 1.03;
   B.speed = B.speedBase * (B.w/380);
 }
-function renderOptions(word){
-  const opts = shuffle([word, ...pickDistractors(B.deck.length >= 8 ? B.deck : pool, word)]);
+// One renderer for every question format. Options come back from the FORMATS
+// registry as plain data; promptKey (boss stage 2 / regular reverse) adds the
+// full-width prompt row above the grid, reusing the boss-prompt styling.
+function renderQuestion(word, format, promptKey){
+  const deck = B.deck.length >= 8 ? B.deck : pool;
   const box = $("#opts");
   box.innerHTML = "";
-  for(const o of opts){
-    const m = meaningOf(o, scope.lang);
-    const b = document.createElement("button");
-    b.innerHTML = m.main + (m.sub? `<span class="th">${m.sub}</span>`:"");
-    b._w = o;
-    b.onclick = ()=>answer(b, o);
-    box.appendChild(b);
+  if(promptKey){
+    const m = meaningOf(word, scope.lang);
+    const prompt = document.createElement("div");
+    prompt.className = "boss-prompt";
+    prompt.textContent = t(promptKey, { meaning: m.main });
+    box.appendChild(prompt);
   }
-}
-// Boss stage 2: reverse question — meaning shown as a prompt, pick the hanzi.
-// Reuses the same #opts grid; a prompt div spans both columns above the buttons.
-function renderBossHanzi(word){
-  const opts = shuffle([word, ...pickDistractors(B.deck.length >= 8 ? B.deck : pool, word)]);
-  const box = $("#opts");
-  box.innerHTML = "";
-  const m = meaningOf(word, scope.lang);
-  const prompt = document.createElement("div");
-  prompt.className = "boss-prompt";
-  prompt.textContent = t("battle.bossPrompt", { meaning: m.main });
-  box.appendChild(prompt);
-  for(const o of opts){
+  for(const o of FORMATS[format].buildOptions(word, deck, scope.lang, Math.random)){
     const b = document.createElement("button");
-    b.innerHTML = o.h + `<span class="th">${o.p}</span>`;
-    b._w = o;
+    b.innerHTML = o.label + (o.sub? `<span class="th">${o.sub}</span>`:"");
+    b._correct = !!o.correct;
     b.onclick = ()=>answer(b, o);
     box.appendChild(b);
   }
@@ -864,9 +855,9 @@ function lockOptions(){
   B.locked = true;
   document.querySelectorAll("#opts button").forEach(b=>b.disabled = true);
 }
-function revealCorrect(word){
+function revealCorrect(){
   document.querySelectorAll("#opts button").forEach(b=>{
-    if(b._w && b._w.h===word.h) b.classList.add("good");
+    if(b._correct) b.classList.add("good");
   });
 }
 function answer(btn, o){
@@ -874,7 +865,7 @@ function answer(btn, o){
   const z = B.zombie;
   if(!z || z.state!=="walk" || B.locked) return;
   const boss = z.boss;
-  const correct = o.h === z.w.h;
+  const correct = !!o.correct;
   if(!boss){
     B.attempts++;
     noteAnswer(z.w.h, correct);
@@ -940,7 +931,7 @@ function answer(btn, o){
     sfx.wrong(); sfx.bite(); hapticWrong();
     btn.classList.add("bad", "stamp", "stamp-bad");
     lockOptions();
-    revealCorrect(z.w);
+    revealCorrect();
     pushMiss(z.w);
     if(boss) noteAnswer(z.w.h, false);          // any miss fails the boss word
     B.lives--; B.flash = 1; B.screenShake = REDUCED_MOTION ? 0 : 1; B.resolved++;
@@ -954,7 +945,7 @@ function scheduleNext(ms){
   B.zombie = null; B.proj = null;
   B.nextAt = performance.now()+ms;
   // options stay visible (locked) so the revealed answer can sink in;
-  // the next spawn's renderOptions replaces them
+  // the next spawn's renderQuestion replaces them
 }
 function killZombie(z){
   const gy = B.h-B.L.ground;
@@ -976,7 +967,7 @@ function bite(timedOut){
     // boss word already counted its one attempt on the first tap (see answer());
     // only count here if it timed out before ever being tapped.
     if(!z.boss || z.stage === "meaning") B.attempts++;
-    B.combo = 0; noteAnswer(z.w.h, false); pushMiss(z.w); revealCorrect(z.w); lockOptions();
+    B.combo = 0; noteAnswer(z.w.h, false); pushMiss(z.w); revealCorrect(); lockOptions();
     z.revealed = true;   // timeout resolves the word too — fill the plaque's translation line
   }
   sfx.bite();
@@ -1003,7 +994,7 @@ function loop(t){
     const bz = B.zombie;
     if(bz && bz.frozen && bz.stage === "meaning"){
       bz.stage = "hanzi"; bz.frozen = false;
-      renderBossHanzi(bz.w);
+      renderQuestion(bz.w, "reverse", "battle.bossPrompt");
       B.locked = false;
     }
   }
