@@ -321,6 +321,34 @@
   }
   #opts button:disabled{opacity:.5; border-image:var(--f-ui-button-neutral-disabled, var(--f-ui-button-neutral, none));}
   #opts button:disabled.good, #opts button:disabled.bad{opacity:1;}
+  /* Mid-height portrait (e.g. 360x640 — above the 620 short-viewport cutoff
+     below, where content-driven full-size buttons still fit almost every
+     round): full 20px typography stays untouched here — only overflow gets
+     capped. A randomized long gloss (2-3 wrapped lines at 20px) can still
+     occasionally push a button's content past a comfortable height even
+     though the 2x2 grid itself fits the viewport, silently cropping the
+     4th button below the fold. Top-anchor + line-clamp the label exactly
+     like the ≤620 tier below (same rationale: never crop from both ends),
+     but with a taller cap so it only ever engages on the rare long-tail
+     gloss, not on ordinary 1-2 line answers. Placed BEFORE the ≤620 block
+     below — same equal-specificity/source-order cascade rule noted there —
+     so the ≤620 tier's more aggressive 13px/80px values still win beneath
+     620px; this block only takes over from 621-700px. */
+  @media (max-height: 700px) and (orientation: portrait){
+    #opts button{align-items:flex-start; max-height:112px; overflow:hidden;}
+    /* flex-shrink:0 is load-bearing: the button is a column flex container
+       (justify-content:center from the base rule, unchanged here), and once
+       label+.th content exceeds max-height, flexbox's default shrink
+       behavior compresses the -webkit-line-clamp box to a non-integer
+       line count — clipping the label mid-line with NO ellipsis (the clamp
+       only draws "…" when its own box is an exact multiple of the line
+       height). Pinning the label's height stops the flex algorithm from
+       touching it, so any overflow is absorbed by the (secondary, already
+       shrinkable) .th line instead, and the label always renders its full
+       3-line clamp with a visible ellipsis when text is cut. */
+    #opts button .opt-label{display:-webkit-box; -webkit-box-orient:vertical;
+      -webkit-line-clamp:3; overflow:hidden; width:100%; flex-shrink:0;}
+  }
   /* Short screens (SE-class, landscape handled separately): tighten the
      answer grid so HUD + canvas + 2x2 answers fit the height budget with no
      scrolling mid-round. Placed AFTER the base #opts/#opts button rules
