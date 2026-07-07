@@ -13,6 +13,8 @@ const PRECACHE = [
   "assets/bg-quest.png",
   "assets/bg-flashcards.png",
   "assets/bg-battle.png",
+  "assets/bg-progress.png",
+  "assets/bg-collection.png",
   "assets/cat-walk.png",
   "assets/cat-happy.png",
   "assets/cat-study.png",
@@ -20,12 +22,6 @@ const PRECACHE = [
   "assets/coin.png",
   "assets/lantern.png",
   "assets/cloud.png",
-  "assets/btn-learn.png",
-  "assets/btn-scores.png",
-  "assets/btn-progress.png",
-  "assets/btn-howto.png",
-  "assets/btn-sound.png",
-  "assets/btn-shop.svg",
   "assets/ui-icons.svg",
   "assets/cat-midnight-walk.png",
   "assets/cat-midnight-happy.png",
@@ -38,6 +34,10 @@ const PRECACHE = [
   "assets/cat-boss-walk.png",
   "assets/cat-boss-happy.png",
   "assets/cat-portrait.png",
+  "assets/cat-guide.png",
+  "assets/cat-celebrate.png",
+  "assets/cat-thinking.png",
+  "assets/ui-tab.svg",
   "assets/bg-market.png",
   "assets/bg-results.png",
   "assets/bg-temple.png",
@@ -46,7 +46,7 @@ const PRECACHE = [
   "assets/ui-button-secondary.svg",
   "assets/ui-button-neutral.svg",
   "assets/ui-card-paper.svg",
-  "assets/ui-card-soft.png",
+  "assets/ui-card-soft.svg",
   "assets/ui-tag.svg",
   "assets/ui-badge-mastery.svg",
   "assets/ui-progress-track.svg",
@@ -71,8 +71,10 @@ const PRECACHE = [
   "assets/vfx-orb-red.svg",
   "assets/vfx-orb-blue.svg",
   "assets/vfx-orb-gold.svg",
-  "assets/fx-new-best.png",
-  "assets/fonts/title.woff2"
+  "assets/fonts/title.woff2",
+  "assets/fonts/lc-hanzi.woff2",
+  "assets/fonts/lc-latin.woff2",
+  "assets/fonts/lc-thai.woff2"
 ];
 
 self.addEventListener("install", e => {
@@ -97,6 +99,17 @@ self.addEventListener("fetch", e => {
       if (res.ok) c.put(e.request, res.clone());
       return res;
     }));
+    return;
+  }
+  // Navigations (address-bar/app launches) may arrive as the directory URL
+  // ("…/repo/"), which never matches the "index.html" cache key — fall back to
+  // the cached shell so an offline launch still boots.
+  if (e.request.mode === "navigate") {
+    e.respondWith(
+      caches.match(e.request).then(hit =>
+        hit || fetch(e.request).catch(() => caches.match("index.html"))
+      )
+    );
     return;
   }
   e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request)));
