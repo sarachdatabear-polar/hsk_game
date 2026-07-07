@@ -610,6 +610,90 @@
     content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
     background:url("assets/cloud.png") left center/auto 2.4em no-repeat; opacity:.3;}
   #s-results h2::before{background-position:center;}
+
+  /* Landscape phones (Task 2, responsive round): height is the scarce axis,
+     width is ample. This block is deliberately the LAST thing in the style
+     sheet — the equal-specificity/source-order cascade rule noted near
+     .cv-wrap/#opts above (a same-specificity override earlier in the file
+     loses to an unconditional rule later, even when its own media condition
+     is true) applies here too, and this single block touches selectors
+     scattered across both the battle and home sections above. Appending it
+     after literally everything it overrides is the only way to guarantee it
+     wins every one of those cascades without hunting down each touch point
+     individually. Mutually exclusive with the `(max-height:620px) and
+     (orientation:portrait)` short-screen blocks above by construction
+     (orientation differs), so the two never fight over the same element.
+     Battle: regroups #s-battle into a 2-column grid — HUD spans a
+     full-width strip on top, canvas + combo strip stack in the left column,
+     and the 2x2 answer grid fills the right column at full height, so nothing
+     scrolls mid-round. Home: every vertical rhythm (paddings, hero art,
+     card padding, control heights) shrinks so status strip -> START stays
+     in the fold without scrolling. */
+  @media (orientation: landscape) and (max-height: 500px){
+    /* ---- battle ---- */
+    /* display:grid is scoped to `#s-battle.on` (not the bare #s-battle ID) on
+       purpose: an ID selector already outranks `.screen.on{display:flex}` and
+       even `.screen{display:none}` on specificity alone, so an unscoped
+       `#s-battle{display:grid}` here would force the battle screen visible
+       at all times this media query matches — bleeding through and stacking
+       under whichever screen is actually .on (caught via probe: it inflated
+       document scrollHeight on the *home* screen at 844x390). Keeping the
+       non-display layout properties on the bare ID is harmless since they
+       have no effect while display:none. */
+    #s-battle{padding:4px 8px 3px; grid-template-columns:1fr 1fr;
+      grid-template-rows:auto 1fr auto; grid-template-areas:"hud hud" "canvas opts" "combo opts";
+      gap:6px; align-items:stretch;}
+    #s-battle.on{display:grid;}
+    #hud{grid-area:hud; padding:0; gap:4px;}
+    .hud-pill{padding:3px 8px; font-size:12px;}
+    .hud-round{width:34px; height:34px; min-width:34px; font-size:15px;}
+    .life-icon{width:15px; height:15px;}
+    .cv-wrap{grid-area:canvas; min-height:0;}
+    #combo-strip{grid-area:combo; margin-top:0; min-height:18px; padding:3px 8px;}
+    .combo-strip-label{font-size:11px;}
+    .combo-strip-label b{font-size:12px;}
+    .combo-fire{width:12px; height:12px;}
+    .combo-strip-badge{min-width:22px; height:19px; font-size:11px;}
+    #opts{grid-area:opts; margin-top:0; gap:6px; align-self:stretch;}
+    #opts button{padding:6px 6px; min-height:0; max-height:none; overflow:hidden;
+      align-items:flex-start; font-size:13px; line-height:1.1;}
+    #opts button .opt-label{display:-webkit-box; -webkit-box-orient:vertical;
+      -webkit-line-clamp:3; overflow:hidden; width:100%;}
+    #opts button .th{display:block; width:100%; font-size:10px; line-height:1.1; margin-top:2px;}
+
+    /* ---- home ---- */
+    #s-home{padding:5px 12px 3px;}
+    .home-status{margin-bottom:0;}
+    .status-cap{min-height:28px; padding:2px 8px 2px 2px;}
+    .level-avatar{width:24px; height:24px;}
+    .level-info{min-width:52px;}
+    .level-text{font-size:11px;}
+    .xp-bar{width:52px;}
+    .gear-btn{width:28px; height:28px; min-width:28px;}
+    .gear-btn .asset-icon{width:15px; height:15px;}
+    .brand-title{margin:2px 0 0;}
+    .brand-sub{font-size:11px;}
+    .brand-cn{font-size:9px;}
+    .brand-main{font-size:22px;}
+    .home-hero{flex:0 0 auto; min-height:0; max-height:13vh; padding-bottom:0;}
+    .hero-cat{width:auto; height:100%; max-height:13vh; min-width:0;}
+    .streak-card{padding:4px 10px; margin:3px 0;}
+    .streak-row{margin-bottom:2px;}
+    .streak-left{font-size:11px;}
+    .streak-days{font-size:12px;}
+    .streak-bar{height:4px;}
+    .streak-note{margin-top:2px; font-size:9.5px;}
+    .home-cta{margin:3px 0 0; gap:6px;}
+    .start-btn{font-size:15px; padding:5px 6px; min-height:34px;}
+    .scope-chip-btn{padding:3px 6px; min-height:34px; font-size:9.5px;}
+    .start-hint{margin:1px 0 2px; font-size:9.5px;}
+    .home-secondary-row{margin-top:3px; gap:6px;}
+    .sec-btn{min-height:34px; padding:4px 4px; font-size:9.5px;}
+    .sec-btn .asset-icon{width:14px; height:14px;}
+    #bottom-nav{margin-top:3px; padding:2px 3px;}
+    .nav-btn{min-height:28px; padding:1px 2px; gap:1px; font-size:9px;}
+    .nav-btn .asset-icon{width:16px; height:16px;}
+  }
 </style>
 </head>
 <body>
