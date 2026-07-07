@@ -1880,7 +1880,9 @@ function renderStreet(){
   const sc = scv.getContext("2d");
   sc.setTransform(dpr,0,0,dpr,0,0);
   sc.clearRect(0,0,w,h);
-  paintStreetBase(sc, w, h);
+  const bg = sprite("bg-street");
+  if(bg) drawCoverImage(sc, bg, 0, 0, w, h);
+  else paintStreetBase(sc, w, h);
   const gy = h - 10;
 
   const level = levelForXp(xp);
@@ -1912,24 +1914,42 @@ function renderStreet(){
     : `${prog.unlocked}/${prog.total} buildings · ${nextTxt}`;
 }
 function paintStreetBase(c, w, h){
+  // Warm-daylight village street: cream/sky gradient, soft green hills, sun
+  // upper-left, sand road along the bottom fifth. Deterministic (fixed
+  // positions, no Math.random) so it matches the bg-street.png art hook.
   const sky = c.createLinearGradient(0,0,0,h);
-  sky.addColorStop(0, "#160b2a"); sky.addColorStop(.58, "#2a1232"); sky.addColorStop(1, "#5a1d18");
+  sky.addColorStop(0, "#5DAADD"); sky.addColorStop(.55, "#BFE0F2"); sky.addColorStop(1, "#FBF5E8");
   c.fillStyle = sky; c.fillRect(0,0,w,h);
-  c.fillStyle = "rgba(255,231,144,.86)";
-  c.beginPath(); c.arc(w*.82, h*.24, h*.12, 0, Math.PI*2); c.fill();
-  c.fillStyle = "rgba(245,197,24,.7)";
-  for(const [fx,fy,r] of [[.16,.18,1.2],[.31,.28,1],[.46,.16,1.4],[.66,.3,1.1],[.92,.42,1]]){ c.beginPath(); c.arc(w*fx,h*fy,r,0,Math.PI*2); c.fill(); }
-  c.fillStyle = "rgba(18,12,24,.58)";
-  c.beginPath(); c.moveTo(0,h*.58); c.lineTo(w*.16,h*.42); c.lineTo(w*.3,h*.57); c.lineTo(w*.48,h*.37); c.lineTo(w*.72,h*.58); c.lineTo(w,h*.43); c.lineTo(w,h); c.lineTo(0,h); c.closePath(); c.fill();
-  c.fillStyle = "rgba(92,31,24,.9)";
-  c.fillRect(0,h*.64,w,h*.36);
-  c.strokeStyle = "rgba(245,197,24,.24)"; c.lineWidth = 1;
-  for(let y=h*.7;y<h;y+=h*.12){ c.beginPath(); c.moveTo(0,y); c.lineTo(w,y); c.stroke(); }
-  for(let x=-w*.1;x<w;x+=w*.14){ c.beginPath(); c.moveTo(x,h); c.lineTo(x+w*.07,h*.66); c.stroke(); }
-  c.strokeStyle = "rgba(245,197,24,.55)"; c.lineWidth = 2;
-  c.beginPath(); c.moveTo(0,h-10); c.lineTo(w,h-10); c.stroke();
-  c.fillStyle = "rgba(245,197,24,.12)";
-  c.fillRect(0,h*.62,w,h*.05);
+
+  // sun disc, upper-left (project light rule), with a soft outer glow
+  c.fillStyle = "rgba(242,188,87,.32)";
+  c.beginPath(); c.arc(w*.16, h*.2, h*.22, 0, Math.PI*2); c.fill();
+  c.fillStyle = "rgba(242,188,87,.88)";
+  c.beginPath(); c.arc(w*.16, h*.2, h*.13, 0, Math.PI*2); c.fill();
+
+  // faint cream cloud blobs, fixed positions
+  c.fillStyle = "rgba(251,245,232,.7)";
+  for(const [fx,fy,rx,ry] of [[.42,.14,.055,.022],[.58,.09,.04,.017],[.8,.17,.05,.02],[.27,.26,.038,.016]]){
+    c.beginPath(); c.ellipse(w*fx, h*fy, w*rx, h*ry, 0, 0, Math.PI*2); c.fill();
+  }
+
+  // two soft green hill bands, 55-70% alpha
+  c.fillStyle = "rgba(50,119,94,.55)";
+  c.beginPath();
+  c.moveTo(0,h*.62); c.lineTo(w*.18,h*.5); c.lineTo(w*.38,h*.6); c.lineTo(w*.6,h*.46); c.lineTo(w*.82,h*.58); c.lineTo(w,h*.5);
+  c.lineTo(w,h*.74); c.lineTo(0,h*.74); c.closePath(); c.fill();
+
+  c.fillStyle = "rgba(50,119,94,.7)";
+  c.beginPath();
+  c.moveTo(0,h*.7); c.lineTo(w*.22,h*.6); c.lineTo(w*.44,h*.68); c.lineTo(w*.66,h*.58); c.lineTo(w*.88,h*.66); c.lineTo(w,h*.62);
+  c.lineTo(w,h*.82); c.lineTo(0,h*.82); c.closePath(); c.fill();
+
+  // sand road, bottom fifth, with a warm edge line
+  const roadY = h*.8;
+  c.fillStyle = "#EAC796";
+  c.fillRect(0, roadY, w, h - roadY);
+  c.strokeStyle = "#846043"; c.lineWidth = 2;
+  c.beginPath(); c.moveTo(0, roadY); c.lineTo(w, roadY); c.stroke();
 }
 function drawStreetPads(c, w, gy, h, pieces){
   const occupied = new Set(pieces.map(p => p.slot.toFixed(2)));
