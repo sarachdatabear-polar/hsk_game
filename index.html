@@ -240,6 +240,17 @@
      off the measured size (see layout.js), so any ratio the flex box gives it works. */
   #s-battle{padding:8px 12px 10px;}
   .cv-wrap{flex:1 1 0; min-height:260px; display:flex; align-items:stretch; justify-content:center;}
+  /* Short screens (SE-class, landscape handled separately): shrink the canvas
+     floor. The answer-grid half of this media query lives further down,
+     AFTER the base #opts/#opts button rules (see note there) — CSS cascade
+     for equal-specificity selectors is decided by source order, not by
+     whether the winning rule sits inside a media query, so a same-specificity
+     override placed earlier in the file loses to a later unconditional rule
+     even when its media condition is true. */
+  @media (max-height: 620px) and (orientation: portrait){
+    .cv-wrap{min-height:170px;}
+    #s-battle{padding:6px 10px 8px;}
+  }
   #cv{width:100%; height:100%; border-radius:14px;
     background-image:linear-gradient(var(--lc-day-hi),var(--lc-day-mid) 60%,var(--lc-day-ground));
     background-size:cover; background-position:bottom; background-repeat:no-repeat;
@@ -310,6 +321,60 @@
   }
   #opts button:disabled{opacity:.5; border-image:var(--f-ui-button-neutral-disabled, var(--f-ui-button-neutral, none));}
   #opts button:disabled.good, #opts button:disabled.bad{opacity:1;}
+  /* Mid-height portrait (e.g. 360x640 — above the 620 short-viewport cutoff
+     below, where content-driven full-size buttons still fit almost every
+     round): full 20px typography stays untouched here — only overflow gets
+     capped. A randomized long gloss (2-3 wrapped lines at 20px) can still
+     occasionally push a button's content past a comfortable height even
+     though the 2x2 grid itself fits the viewport, silently cropping the
+     4th button below the fold. Top-anchor + line-clamp the label exactly
+     like the ≤620 tier below (same rationale: never crop from both ends),
+     but with a taller cap so it only ever engages on the rare long-tail
+     gloss, not on ordinary 1-2 line answers. Placed BEFORE the ≤620 block
+     below — same equal-specificity/source-order cascade rule noted there —
+     so the ≤620 tier's more aggressive 13px/80px values still win beneath
+     620px; this block only takes over from 621-700px. */
+  @media (max-height: 700px) and (orientation: portrait){
+    #opts button{align-items:flex-start; max-height:112px; overflow:hidden;}
+    /* flex-shrink:0 is load-bearing: the button is a column flex container
+       (justify-content:center from the base rule, unchanged here), and once
+       label+.th content exceeds max-height, flexbox's default shrink
+       behavior compresses the -webkit-line-clamp box to a non-integer
+       line count — clipping the label mid-line with NO ellipsis (the clamp
+       only draws "…" when its own box is an exact multiple of the line
+       height). Pinning the label's height stops the flex algorithm from
+       touching it, so any overflow is absorbed by the (secondary, already
+       shrinkable) .th line instead, and the label always renders its full
+       3-line clamp with a visible ellipsis when text is cut. */
+    #opts button .opt-label{display:-webkit-box; -webkit-box-orient:vertical;
+      -webkit-line-clamp:3; overflow:hidden; width:100%; flex-shrink:0;}
+  }
+  /* Short screens (SE-class, landscape handled separately): tighten the
+     answer grid so HUD + canvas + 2x2 answers fit the height budget with no
+     scrolling mid-round. Placed AFTER the base #opts/#opts button rules
+     above (not next to the .cv-wrap/#s-battle half of this same media query
+     near the canvas) so these equal-specificity overrides actually win the
+     cascade — see the note up there. Answer text length varies with the
+     meaning gloss (can wrap to 2-3 lines). Plain overflow:hidden on a
+     flex/align-items:center button crops symmetrically from BOTH the top
+     and bottom with no indicator — e.g. "air conditioning; air conditioner"
+     rendered as "…conditioning; air…", silently eating the start of the
+     answer too. Instead: top-anchor the button (align-items:flex-start) so
+     any cut only ever happens at the end, shrink the type so the common
+     1-2 line case fits with room to spare, and -webkit-line-clamp the
+     label span specifically so the rare 3-line long-tail gets a visible
+     ellipsis with its start always intact. max-height/overflow stay as a
+     belt-and-suspenders cap — with the label already self-limited by the
+     clamp this only ever trims the (secondary) .th line, and only from the
+     bottom, never the label. */
+  @media (max-height: 620px) and (orientation: portrait){
+    #opts{gap:6px; margin-top:6px;}
+    #opts button{padding:6px 6px; min-height:52px; max-height:80px; overflow:hidden;
+      align-items:flex-start; font-size:13px; line-height:1.08;}
+    #opts button .opt-label{display:-webkit-box; -webkit-box-orient:vertical;
+      -webkit-line-clamp:3; overflow:hidden; width:100%;}
+    #opts button .th{display:block; width:100%; font-size:10px; line-height:1.1; margin-top:2px;}
+  }
   /* boss stage-2 reverse-question banner (spans both columns, row 1) */
   .boss-prompt{grid-column:1/-1; text-align:center; font-weight:800; font-size:14px;
     color:var(--lc-brown); background-color:var(--lc-cream); border:1.5px solid var(--lc-brown);
@@ -573,6 +638,90 @@
     content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
     background:url("assets/cloud.png") left center/auto 2.4em no-repeat; opacity:.3;}
   #s-results h2::before{background-position:center;}
+
+  /* Landscape phones (Task 2, responsive round): height is the scarce axis,
+     width is ample. This block is deliberately the LAST thing in the style
+     sheet — the equal-specificity/source-order cascade rule noted near
+     .cv-wrap/#opts above (a same-specificity override earlier in the file
+     loses to an unconditional rule later, even when its own media condition
+     is true) applies here too, and this single block touches selectors
+     scattered across both the battle and home sections above. Appending it
+     after literally everything it overrides is the only way to guarantee it
+     wins every one of those cascades without hunting down each touch point
+     individually. Mutually exclusive with the `(max-height:620px) and
+     (orientation:portrait)` short-screen blocks above by construction
+     (orientation differs), so the two never fight over the same element.
+     Battle: regroups #s-battle into a 2-column grid — HUD spans a
+     full-width strip on top, canvas + combo strip stack in the left column,
+     and the 2x2 answer grid fills the right column at full height, so nothing
+     scrolls mid-round. Home: every vertical rhythm (paddings, hero art,
+     card padding, control heights) shrinks so status strip -> START stays
+     in the fold without scrolling. */
+  @media (orientation: landscape) and (max-height: 500px){
+    /* ---- battle ---- */
+    /* display:grid is scoped to `#s-battle.on` (not the bare #s-battle ID) on
+       purpose: an ID selector already outranks `.screen.on{display:flex}` and
+       even `.screen{display:none}` on specificity alone, so an unscoped
+       `#s-battle{display:grid}` here would force the battle screen visible
+       at all times this media query matches — bleeding through and stacking
+       under whichever screen is actually .on (caught via probe: it inflated
+       document scrollHeight on the *home* screen at 844x390). Keeping the
+       non-display layout properties on the bare ID is harmless since they
+       have no effect while display:none. */
+    #s-battle{padding:4px 8px 3px; grid-template-columns:1fr 1fr;
+      grid-template-rows:auto 1fr auto; grid-template-areas:"hud hud" "canvas opts" "combo opts";
+      gap:6px; align-items:stretch;}
+    #s-battle.on{display:grid;}
+    #hud{grid-area:hud; padding:0; gap:4px;}
+    .hud-pill{padding:3px 8px; font-size:12px;}
+    .hud-round{width:36px; height:36px; min-width:36px; font-size:14px;}
+    .life-icon{width:15px; height:15px;}
+    .cv-wrap{grid-area:canvas; min-height:0;}
+    #combo-strip{grid-area:combo; margin-top:0; min-height:18px; padding:3px 8px;}
+    .combo-strip-label{font-size:11px;}
+    .combo-strip-label b{font-size:12px;}
+    .combo-fire{width:12px; height:12px;}
+    .combo-strip-badge{min-width:22px; height:19px; font-size:11px;}
+    #opts{grid-area:opts; margin-top:0; gap:6px; align-self:stretch;}
+    #opts button{padding:6px 6px; min-height:0; max-height:none; overflow:hidden;
+      align-items:flex-start; font-size:13px; line-height:1.1;}
+    #opts button .opt-label{display:-webkit-box; -webkit-box-orient:vertical;
+      -webkit-line-clamp:3; overflow:hidden; width:100%;}
+    #opts button .th{display:block; width:100%; font-size:10px; line-height:1.1; margin-top:2px;}
+
+    /* ---- home ---- */
+    #s-home{padding:5px 12px 3px;}
+    .home-status{margin-bottom:0;}
+    .status-cap{min-height:28px; padding:2px 8px 2px 2px;}
+    .level-avatar{width:24px; height:24px;}
+    .level-info{min-width:52px;}
+    .level-text{font-size:11px;}
+    .xp-bar{width:52px;}
+    .gear-btn{width:36px; height:36px; min-width:36px;}
+    .gear-btn .asset-icon{width:16px; height:16px;}
+    .brand-title{margin:2px 0 0;}
+    .brand-sub{font-size:11px;}
+    .brand-cn{font-size:9px;}
+    .brand-main{font-size:22px;}
+    .home-hero{flex:0 0 auto; min-height:0; max-height:13vh; padding-bottom:0;}
+    .hero-cat{width:auto; height:100%; max-height:13vh; min-width:0;}
+    .streak-card{padding:4px 10px; margin:3px 0;}
+    .streak-row{margin-bottom:2px;}
+    .streak-left{font-size:11px;}
+    .streak-days{font-size:12px;}
+    .streak-bar{height:4px;}
+    .streak-note{margin-top:2px; font-size:9.5px;}
+    .home-cta{margin:3px 0 0; gap:6px;}
+    .start-btn{font-size:15px; padding:4px 6px; min-height:36px;}
+    .scope-chip-btn{padding:2px 6px; min-height:36px; font-size:9.5px;}
+    .start-hint{margin:1px 0 2px; font-size:9.5px;}
+    .home-secondary-row{margin-top:3px; gap:6px;}
+    .sec-btn{min-height:36px; padding:3px 4px; font-size:9.5px;}
+    .sec-btn .asset-icon{width:14px; height:14px;}
+    #bottom-nav{margin-top:3px; padding:2px 3px;}
+    .nav-btn{min-height:28px; padding:1px 2px; gap:1px; font-size:9px;}
+    .nav-btn .asset-icon{width:16px; height:16px;}
+  }
 </style>
 </head>
 <body>

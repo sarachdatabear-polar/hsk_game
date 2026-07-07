@@ -3338,7 +3338,7 @@
     }
     for (const o of FORMATS[format].buildOptions(word, deck, scope.lang, Math.random)) {
       const b = document.createElement("button");
-      b.innerHTML = o.label + (o.sub ? `<span class="th">${o.sub}</span>` : "");
+      b.innerHTML = `<span class="opt-label">${o.label}</span>` + (o.sub ? `<span class="th">${o.sub}</span>` : "");
       b._correct = !!o.correct;
       b.onclick = () => answer(b, o);
       box.appendChild(b);
