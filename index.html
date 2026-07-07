@@ -62,10 +62,18 @@
     --amber:var(--gold); --green:var(--jade);
     --red:var(--edu-coral); --chip:#EFE7D4; --chip-on:var(--edu-sky); --chip-ink-on:#08324a;
     --panel-border:var(--edu-gray); --panel-wash:#FFFDF6;
-    /* Visual Slice v1 palette (PRD §4.1) — additive tokens, not yet wired into screens */
+    /* PRD v5 core palette (docs/art/STYLE-TOKENS.md §1 — enforced by test/style-tokens.test.js) */
     --lc-green:#32775E; --lc-sky:#5DAADD; --lc-sun:#F2BC57; --lc-coral:#E69777;
     --lc-brown:#846043; --lc-gray:#B2AEA9; --lc-cream:#FBF5E8; --lc-teal:#1F4D4A;
     --lc-success:#28723B; --lc-error:#C95A41; --lc-sand:#EAC796; --lc-ink:#2E2A24;
+    /* derived shades (STYLE-TOKENS.md §2): gradients, borders, 3D press shadows */
+    --lc-sun-hi:#FFE59B; --lc-sun-deep:#D99A2E; --lc-sun-shadow:#B97A1E;
+    --lc-green-hi:#3E8B6F; --lc-green-deep:#245A47;
+    --lc-success-hi:#2F8347; --lc-success-deep:#173F22;
+    --lc-coral-hi:#F0AB8F; --lc-coral-deep:#B04A33;
+    --lc-error-deep:#8A2F20; --lc-error-border:#6E2A18;
+    --lc-cream-deep:#FDEFD2; --lc-wood-ink:#3A2E1A;
+    --lc-day-hi:#EAF2FB; --lc-day-mid:#DCE8F5; --lc-day-ground:#F1E7D6;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0; background:var(--bg); color:var(--ink);
