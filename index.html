@@ -90,22 +90,19 @@
   .asset-icon{width:1.15em; height:1.15em; display:inline-block; vertical-align:-.18em; color:currentColor; flex:0 0 auto;}
   .icon-text{display:inline-flex; align-items:center; justify-content:center; gap:8px;}
   /* glossy pill buttons */
-  .big{padding:16px; font-size:18px; font-weight:600; border-radius:999px;
-    background-color:var(--panel-wash);
-    color:var(--ink);
-    border:2px solid var(--edu-sky);
+  .big{padding:16px; font-size:18px; font-weight:700; border-radius:16px;
+    background-color:var(--lc-green);
+    background-image:linear-gradient(180deg,var(--lc-green-hi),var(--lc-green) 55%,var(--lc-green-deep));
+    color:var(--lc-cream);
+    border:2px solid var(--lc-green-deep);
     border-image:var(--f-ui-button-secondary, none);
-    box-shadow:0 3px 8px rgba(36,52,71,.12);}
+    box-shadow:0 3px 0 var(--lc-green-deep), 0 6px 12px rgba(46,42,36,.22);}
   .big.primary{
-    background-color:var(--edu-coral);
-    background-image:linear-gradient(180deg,#EE6D62,var(--edu-coral));
+    background-color:var(--lc-sun);
+    background-image:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun) 55%,var(--lc-sun-deep));
     border-image:var(--f-ui-button-primary, none);
-    color:#FFFFFF; border-color:#C64A40;
-    box-shadow:0 4px 10px rgba(230,90,79,.25);}
-  .big.gold{
-    background:var(--panel-wash);
-    color:var(--edu-ink); border-color:var(--edu-gray);
-    box-shadow:0 3px 8px rgba(36,52,71,.10);}
+    color:var(--lc-brown); border-color:var(--lc-brown);
+    box-shadow:0 3px 0 var(--lc-sun-shadow), 0 6px 12px rgba(46,42,36,.24);}
   .big:active{transform:scale(.98);}
   .big.primary:active{border-image:var(--f-ui-button-primary-pressed, var(--f-ui-button-primary, none));}
   /* gold start plaque (pack v2) on the Word Quest launcher */
@@ -121,23 +118,23 @@
     box-shadow:0 4px 9px rgba(60,42,22,.20);}
   :root.has-ui-button-primary .big.primary{background:none; border-color:transparent; border-radius:22px;
     box-shadow:0 4px 9px rgba(60,42,22,.22);}
-  .back{align-self:flex-start; background:none; color:var(--edu-sky); font-size:15px; padding:6px 2px; margin-bottom:6px;
+  .back{align-self:flex-start; background:none; color:var(--lc-teal); font-weight:700; font-size:15px; padding:6px 2px; margin-bottom:6px;
     min-height:44px; display:inline-flex; align-items:center;}
-  h2{font-size:20px; margin:4px 0 14px; color:var(--gold);}
+  h2{font-size:20px; margin:4px 0 14px; color:var(--lc-green);}
   .sect{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:16px 0 8px;}
   .chips{display:flex; flex-wrap:wrap; gap:8px;}
-  .chip{padding:9px 14px; border-radius:999px; background:var(--chip); color:var(--edu-ink);
+  .chip{padding:9px 14px; border-radius:999px; background:var(--chip); color:var(--ink);
     min-height:44px;
     font-size:15px; font-weight:600; border:1px solid var(--panel-border);
     border-image:var(--f-ui-tab, none);}
-  .chip.on{background-color:var(--chip-on); color:var(--chip-ink-on); border-color:var(--chip-on);
+  .chip.on{background-color:var(--chip-on); color:var(--chip-ink-on); border-color:var(--lc-teal);
     border-image:var(--f-ui-tag, none);}
-  :root.has-ui-tag .chip.on{background:none; border-color:transparent; border-radius:14px; color:#FFF8E8;}
+  :root.has-ui-tag .chip.on{background:none; border-color:transparent; border-radius:14px; color:var(--lc-cream);}
   .chip:disabled{opacity:.45;}
   .chip.preset{background:transparent; border-style:dashed; color:var(--muted); font-weight:500;}
   #len-custom{width:86px; padding:9px 14px; border-radius:999px; background:var(--chip);
     color:var(--ink); font-size:15px; font-weight:600; border:1px solid var(--panel-border); text-align:center;}
-  #len-custom:focus{outline:none; border-color:var(--gold);}
+  #len-custom:focus{outline:none; border-color:var(--lc-sky);}
   #len-custom{appearance:textfield; -moz-appearance:textfield;}
   #len-custom::-webkit-outer-spin-button, #len-custom::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
   .screen-card,
@@ -151,7 +148,7 @@
   .spk{
     background-color:var(--panel-wash);
     border-color:var(--panel-border);
-    box-shadow:0 2px 8px rgba(36,52,71,.08);
+    box-shadow:0 2px 8px rgba(46,42,36,.10);
   }
   .screen-card,
   .panel,
@@ -162,7 +159,7 @@
   .quest-row{border-image:var(--f-ui-card-paper, none);}
   .readout{margin:18px 0 4px; padding:12px 14px; background-color:var(--panel-wash); border-radius:12px;
     border:1px solid var(--panel-border); border-image:var(--f-ui-card-soft, none); font-size:15px;}
-  .readout b{color:var(--gold);}
+  .readout b{color:var(--lc-green);}
   .readout .warn{color:var(--muted); font-size:12.5px; margin-top:4px;}
   .startrow{display:flex; gap:10px; margin-top:14px;}
   .startrow .big{flex:1; padding:14px 6px; font-size:16px;}
@@ -203,9 +200,15 @@
   .card .hint{color:#6a4f42; font-size:13px; margin-top:26px;}
   .fc-btns{display:flex; gap:10px;}
   .fc-btns .big{flex:1; font-size:16px; padding:14px 6px;}
-  .know{background-color:var(--jade); color:#0d2200; border-color:var(--lc-jade);}
-  .learn2{background-color:var(--crimson); color:var(--lc-cream-legacy); border-color:var(--lc-lacquer);}
-  .spk{color:var(--edu-sky); font-size:22px; padding:10px 16px; border-radius:12px; border:1px solid var(--panel-border);
+  .know{background-color:var(--lc-success);
+    background-image:linear-gradient(180deg,var(--lc-success-hi),var(--lc-success) 55%,var(--lc-success-deep));
+    color:var(--lc-cream); border-color:var(--lc-success-deep);
+    box-shadow:0 3px 0 var(--lc-success-deep), 0 6px 12px rgba(46,42,36,.22);}
+  .learn2{background-color:var(--lc-coral);
+    background-image:linear-gradient(180deg,var(--lc-coral-hi),var(--lc-coral) 55%,var(--lc-coral-deep));
+    color:var(--lc-ink); border-color:var(--lc-coral-deep);
+    box-shadow:0 3px 0 var(--lc-coral-deep), 0 6px 12px rgba(46,42,36,.22);}
+  .spk{color:var(--lc-teal); font-size:22px; padding:10px 16px; border-radius:12px; border:1px solid var(--panel-border);
     min-width:44px; min-height:44px;
     display:inline-flex; align-items:center; justify-content:center;}
   /* battle (M4 — minimal HUD: hearts · round capsule · coins · pause) */
@@ -339,8 +342,8 @@
   .shop-copy{display:flex; flex-direction:column; gap:2px; min-width:0;}
   .shop-copy b{font-size:15.5px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .shop-copy small{font-size:12px; color:var(--muted);}
-  .mbar{height:6px; border-radius:999px; background:rgba(201,160,138,.2); border-image:var(--f-ui-progress-track, none); overflow:hidden;}
-  .mbar i{display:block; height:100%; background-color:var(--gold); background-image:linear-gradient(180deg,var(--lc-paper),var(--lc-gold) 50%,var(--lc-dark-gold)); border-image:var(--f-ui-progress-fill, none); border-radius:999px;}
+  .mbar{height:6px; border-radius:999px; background:rgba(132,96,67,.22); border-image:var(--f-ui-progress-track, none); overflow:hidden;}
+  .mbar i{display:block; height:100%; background-color:var(--lc-green); background-image:linear-gradient(180deg,var(--lc-green-hi),var(--lc-green) 60%,var(--lc-green-deep)); border-image:var(--f-ui-progress-fill, none); border-radius:999px;}
   /* daily quests */
   #quest-panel{width:100%; max-width:320px; margin:10px auto 0; display:flex; flex-direction:column; gap:5px;
     border-image:var(--f-ui-panel, none);}
@@ -362,7 +365,7 @@
     border-radius:10px; font-weight:800; font-size:15px; text-align:center; padding:7px 10px; margin:0 0 10px;
     box-shadow:0 0 10px rgba(127,201,74,.5);}
   .howto{line-height:1.55; font-size:15.5px; color:var(--ink);}
-  .howto b{color:var(--gold);}
+  .howto b{color:var(--lc-green);}
   /* production screen backgrounds */
   #s-home,
   #s-learn,
@@ -494,7 +497,7 @@
     .screen.festive::before,.screen.festive::after{animation:none;}
     *{animation-duration:.001ms !important; animation-iteration-count:1 !important;
       transition-duration:.001ms !important;}}
-  :focus-visible{outline:3px solid var(--edu-sky); outline-offset:2px; border-radius:4px;}
+  :focus-visible{outline:3px solid var(--lc-sky); outline-offset:2px; border-radius:4px;}
   .screen.festive h2{position:relative; padding:12px 10px;}
   .screen.festive h2::before{
     content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
