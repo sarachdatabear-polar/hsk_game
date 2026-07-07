@@ -240,6 +240,20 @@
      off the measured size (see layout.js), so any ratio the flex box gives it works. */
   #s-battle{padding:8px 12px 10px;}
   .cv-wrap{flex:1 1 0; min-height:260px; display:flex; align-items:stretch; justify-content:center;}
+  /* Short screens (SE-class, landscape handled separately): shrink the canvas
+     floor and tighten the answer grid so HUD + canvas + 2x2 answers fit the
+     height budget with no scrolling mid-round. */
+  @media (max-height: 620px) and (orientation: portrait){
+    .cv-wrap{min-height:170px;}
+    #s-battle{padding:6px 10px 8px;}
+    #opts{gap:6px; margin-top:6px;}
+    /* answer text length varies with the meaning gloss (can wrap to 2-3
+       lines); cap the row at a fixed height and hide overflow so a long
+       gloss can never push the grid below the fold — a clipped extra line
+       beats a clipped button. */
+    #opts button{padding:6px 6px; min-height:52px; max-height:76px; overflow:hidden; font-size:15px; line-height:1.15;}
+    #opts button .th{font-size:11px; margin-top:1px;}
+  }
   #cv{width:100%; height:100%; border-radius:14px;
     background-image:linear-gradient(var(--lc-day-hi),var(--lc-day-mid) 60%,var(--lc-day-ground));
     background-size:cover; background-position:bottom; background-repeat:no-repeat;
