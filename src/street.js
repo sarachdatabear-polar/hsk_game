@@ -12,24 +12,31 @@ export const BUILDINGS = [
 ];
 
 // Display order for owned decorations; ids owned but absent here are ignored.
-export const DECO_IDS = ["red-lantern", "noodle-stall", "tea-sign", "foo-dog", "golden-arch"];
+// v7 adds the permanent prestige decos, the daily-pool decos, and the three
+// seasonal decos (order fixes each one's street slot below).
+export const DECO_IDS = [
+  "red-lantern", "noodle-stall", "tea-sign", "foo-dog", "golden-arch",
+  "mahjong-table", "koi-pond", "drum-tower",
+  "bubble-tea", "paper-umbrella", "goldfish-banner", "neon-cat-sign",
+  "shaved-ice-cart", "mooncake-stall", "firecracker-arch",
+];
 
-// 10 fixed slots (fraction of street width, left→right), interleaved so the
-// street reads as spread-out rather than bunched even with only a couple of
-// pieces: deco, building, deco, building, ... across the strip.
 const BUILDING_SLOTS = [.18, .34, .5, .66, .82];
-const DECO_SLOTS = [.10, .26, .42, .58, .74];
+// First five match v4 so existing streets do not reshuffle; the ten new
+// fractions fill remaining gaps between buildings.
+const DECO_SLOTS = [
+  .10, .26, .42, .58, .74,
+  .06, .14, .22, .30, .38,
+  .46, .54, .62, .70, .90,
+];
 
-// Deterministic draw list for the given level/owned decos. Same inputs always
-// produce the same array (order + slots), so callers can unit-test layout
-// without any DOM/canvas involved.
-export function streetPieces(level, owned) {
+export function streetPieces(level, owned, tiers = {}) {
   const pieces = [];
   BUILDINGS.forEach((b, i) => {
     if (level >= b.lv) pieces.push({ id: b.id, kind: "building", slot: BUILDING_SLOTS[i] });
   });
   DECO_IDS.forEach((id, i) => {
-    if (owned.includes(id)) pieces.push({ id, kind: "deco", slot: DECO_SLOTS[i] });
+    if (owned.includes(id)) pieces.push({ id, kind: "deco", slot: DECO_SLOTS[i], tier: tiers[id] || 1 });
   });
   return pieces.sort((a, b) => a.slot - b.slot);
 }
