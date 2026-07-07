@@ -9,11 +9,6 @@
 <title>Lucky Cat HSK 招财猫</title>
 <style>
   @font-face{
-    font-family:'LuckyTitle';
-    src:url('assets/fonts/title.woff2') format('woff2');
-    font-display:swap;
-  }
-  @font-face{
     font-family:'LC Hanzi';
     src:url('assets/fonts/lc-hanzi.woff2') format('woff2');
     font-weight:900;
@@ -185,19 +180,19 @@
   .word-card,
   .flash-card,
   .card{
-    background-color:var(--edu-paper);
+    background-color:var(--lc-cream);
     border-image:var(--f-ui-card-paper, none);
   }
   .card{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;
-    color:var(--edu-ink); border:2px solid var(--edu-gray); border-radius:20px; margin:14px 0;
+    color:var(--ink); border:2px solid var(--lc-sand); border-radius:20px; margin:14px 0;
     border-image:var(--f-ui-card-paper, none);
     padding:24px; text-align:center; min-height:280px; cursor:pointer; user-select:none;
-    box-shadow:0 4px 14px rgba(36,52,71,.10);}
+    box-shadow:0 4px 14px rgba(46,42,36,.12);}
   .card .hz{font-size:64px; line-height:1.15;}
-  .card .py{font-size:24px; color:var(--gold); margin-top:8px;}
+  .card .py{font-size:24px; font-weight:500; color:var(--lc-brown); margin-top:8px;}
   .card .mean{font-size:22px; margin-top:6px;}
-  .card .mean .th{color:var(--jade); font-size:24px; margin-top:8px;}
-  .card .hint{color:#6a4f42; font-size:13px; margin-top:26px;}
+  .card .mean .th{color:var(--lc-green); font-size:24px; margin-top:8px;}
+  .card .hint{color:var(--lc-brown); font-size:13px; margin-top:26px;}
   .fc-btns{display:flex; gap:10px;}
   .fc-btns .big{flex:1; font-size:16px; padding:14px 6px;}
   .know{background-color:var(--lc-success);
@@ -318,22 +313,21 @@
     color:var(--lc-brown); background-color:var(--lc-cream); border:1.5px solid var(--lc-brown);
     border-radius:10px; padding:8px 10px;}
   /* results */
-  .bignum{font-size:52px; text-align:center; color:var(--gold); font-weight:800; margin:6px 0;
-    font-family:'LuckyTitle',"Segoe UI",sans-serif;}
+  .bignum{font-size:52px; text-align:center; color:var(--lc-green); font-weight:800; margin:6px 0;
+    font-family:'LC Latin',"Segoe UI",sans-serif;}
   .sub{text-align:center; color:var(--muted); margin:0 0 14px;}
-  .misslist{flex:1; overflow-y:auto; background-color:var(--panel); border-radius:12px;
-    background-color:var(--panel-wash);
+  .misslist{flex:1; overflow-y:auto; background-color:var(--panel-wash); border-radius:12px;
     border:1px solid var(--panel-border); padding:6px 12px; margin:10px 0; max-height:38vh;}
-  .missrow{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid rgba(201,165,138,.2);}
+  .missrow{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid rgba(132,96,67,.22);}
   .missrow:last-child{border-bottom:none;}
   .missrow .hz{font-size:24px; min-width:70px;}
   .missrow .det{flex:1; font-size:13.5px; color:var(--muted); line-height:1.35;}
-  .missrow .det .py{color:var(--gold);}
+  .missrow .det .py{color:var(--lc-brown);}
   .missrow .sp{background:none; font-size:19px; padding:4px;}
   .scorelist{background-color:var(--panel-wash); border-radius:12px; border:1px solid var(--panel-border); padding:8px 14px;}
-  .scorerow{display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(201,165,138,.2); font-size:15px;}
+  .scorerow{display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(132,96,67,.22); font-size:15px;}
   .scorerow:last-child{border-bottom:none;}
-  .scorerow b{color:var(--gold);}
+  .scorerow b{color:var(--lc-green);}
   .shoprow{align-items:center; gap:12px; min-height:82px;}
   .shop-left{display:flex; align-items:center; gap:12px; min-width:0;}
   .shop-preview{flex:0 0 96px; width:96px; height:64px; border-radius:8px;
@@ -356,14 +350,16 @@
   .misslist,
   .scorelist,
   .quest-row{border-image:var(--f-ui-card-paper, none);}
-  #r-quests{color:var(--gold); font-size:14px; text-align:center; margin:0 0 8px;}
+  #r-quests{color:var(--lc-brown); font-size:14px; text-align:center; margin:0 0 8px;}
   #r-quests div{margin:2px 0;}
-  #r-perfect{color:var(--lc-ink-legacy); background:linear-gradient(var(--lc-cream-legacy),var(--lc-gold)); border:1px solid var(--lc-dark-gold);
-    border-radius:10px; font-weight:800; font-size:15px; text-align:center; padding:7px 10px; margin:0 0 10px;
-    box-shadow:0 0 10px rgba(245,197,24,.5);}
-  #r-levelup{color:#0d2200; background:linear-gradient(#c8f5a0,var(--lc-jade)); border:1px solid var(--lc-jade);
-    border-radius:10px; font-weight:800; font-size:15px; text-align:center; padding:7px 10px; margin:0 0 10px;
-    box-shadow:0 0 10px rgba(127,201,74,.5);}
+  #r-perfect{color:var(--lc-brown); background-color:var(--lc-sun);
+    background-image:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun)); border:2px solid var(--lc-brown);
+    border-radius:12px; font-weight:800; font-size:15px; text-align:center; padding:7px 10px; margin:0 0 10px;
+    box-shadow:0 2px 6px rgba(46,42,36,.18);}
+  #r-levelup{color:var(--lc-cream); background-color:var(--lc-success);
+    background-image:linear-gradient(180deg,var(--lc-success-hi),var(--lc-success)); border:2px solid var(--lc-success-deep);
+    border-radius:12px; font-weight:800; font-size:15px; text-align:center; padding:7px 10px; margin:0 0 10px;
+    box-shadow:0 2px 6px rgba(46,42,36,.18);}
   .howto{line-height:1.55; font-size:15.5px; color:var(--ink);}
   .howto b{color:var(--lc-green);}
   /* production screen backgrounds */
@@ -378,11 +374,11 @@
   }
 
   #s-learn{
-    background-image:linear-gradient(rgba(255,248,232,.76),rgba(255,248,232,.90)), url("assets/bg-flashcards.png"), linear-gradient(#FFF8E8,#FDEFD2);
+    background-image:linear-gradient(rgba(251,245,232,.76),rgba(251,245,232,.90)), url("assets/bg-flashcards.png"), linear-gradient(var(--lc-cream),var(--lc-cream-deep));
   }
 
   #s-results{
-    background-image:linear-gradient(rgba(255,248,232,.78),rgba(255,248,232,.92)), url("assets/bg-results.png"), linear-gradient(#FFF8E8,#FDEFD2);
+    background-image:linear-gradient(rgba(251,245,232,.78),rgba(251,245,232,.92)), url("assets/bg-results.png"), linear-gradient(var(--lc-cream),var(--lc-cream-deep));
   }
 
   #s-progress{
@@ -682,7 +678,7 @@
     <h2 style="text-align:center" data-i18n="results.roundOver">Round over</h2>
     <div class="bignum" id="r-score"></div>
     <p class="sub" id="r-sub"></p>
-    <p class="sub" id="r-wallet" style="color:var(--gold)"></p>
+    <p class="sub" id="r-wallet" style="color:var(--lc-brown)"></p>
     <div id="r-perfect" style="display:none"></div>
     <div id="r-levelup" style="display:none"></div>
     <div id="r-quests"></div>

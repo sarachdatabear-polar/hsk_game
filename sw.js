@@ -71,7 +71,6 @@ const PRECACHE = [
   "assets/vfx-orb-red.svg",
   "assets/vfx-orb-blue.svg",
   "assets/vfx-orb-gold.svg",
-  "assets/fonts/title.woff2",
   "assets/fonts/lc-hanzi.woff2",
   "assets/fonts/lc-latin.woff2",
   "assets/fonts/lc-thai.woff2"
