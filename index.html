@@ -474,6 +474,35 @@
     box-shadow:0 2px 6px rgba(46,42,36,.18);}
   .sticker-toast .asset-icon{width:20px; height:20px;}
 
+  /* B3 journey map: vertical path of nodes; stars show coverage; the cat
+     marker suggests where to go next — every node stays tappable */
+  /* the list rides the document scroll (#app min-height model) — no inner
+     overflow container needed at 21 nodes */
+  #journey-list{display:flex; flex-direction:column; gap:0; padding:4px 0;}
+  .j-node{display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+    background-color:var(--panel-wash); border:1px solid var(--panel-border); border-radius:14px;
+    padding:10px 12px; margin:3px 0; box-shadow:0 2px 6px rgba(46,42,36,.08); position:relative;}
+  .j-node:active{transform:scale(.98);}
+  .j-node::before{content:""; position:absolute; left:26px; top:-8px; width:3px; height:8px;
+    background:var(--lc-sand);}   /* path line between nodes */
+  .j-node:first-child::before{display:none;}
+  .j-dot{width:34px; height:34px; min-width:34px; border-radius:50%; display:flex; align-items:center;
+    justify-content:center; background-color:var(--lc-sand); border:2px solid var(--lc-brown);
+    font-weight:800; font-size:12px; color:var(--lc-brown);}
+  .j-node.done .j-dot{background-color:var(--lc-green); border-color:var(--lc-green-deep); color:var(--lc-cream);}
+  .j-copy{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;}
+  .j-copy b{font-size:13.5px; color:var(--ink);}
+  .j-stars{font-size:12px; letter-spacing:.1em; color:var(--lc-sun-deep);}
+  .j-stars .off{color:var(--lc-gray);}
+  .j-here{display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:800;
+    color:var(--lc-teal); background-color:var(--lc-sky); border-radius:999px; padding:2px 8px;
+    align-self:flex-start;}
+  .j-here .asset-icon{width:12px; height:12px;}
+  .j-play{background-color:var(--lc-sun);
+    background-image:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun) 55%,var(--lc-sun-deep));
+    border:2px solid var(--lc-brown); border-radius:12px; color:var(--lc-brown);
+    font-weight:800; font-size:12.5px; padding:8px 12px; min-height:40px; flex:0 0 auto;}
+
   .home-cta{display:flex; align-items:stretch; gap:10px; margin:8px 0 2px;}
   .start-btn{flex:1 1 62%; font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800;
     font-size:21px; letter-spacing:.05em; color:var(--lc-brown);
@@ -640,6 +669,16 @@
   <div class="screen" id="s-scope">
     <button class="back" data-go="home" data-i18n="common.back">← Home</button>
     <h2 data-i18n="scope.title">Choose your words</h2>
+    <!-- B3: view toggle — the picker stays the default and untouched; the
+         journey map is an optional suggested-order view over the same scopes -->
+    <div class="chips" id="scope-view-tabs">
+      <button class="chip on" data-view="picker" data-i18n="scope.tabPicker">Picker</button>
+      <button class="chip" data-view="journey" data-i18n="scope.tabJourney">Journey</button>
+    </div>
+    <div id="journey-pane" hidden>
+      <div id="journey-list"></div>
+    </div>
+    <div id="picker-pane">
     <div class="sect" data-i18n="scope.levels">Levels</div>
     <div class="chips" id="lv-chips"></div>
     <div class="chips" style="margin-top:8px" id="preset-chips">
@@ -678,6 +717,7 @@
       <button class="big primary" id="go-battle"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span>Word Quest · 20</span></span></button>
       <button class="big" id="go-endless"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#infinity"></use></svg><span data-i18n="scope.endless">Endless</span></span></button>
       <button class="big" id="go-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#cards"></use></svg><span data-i18n="scope.cards">Cards</span></span></button>
+    </div>
     </div>
   </div>
 

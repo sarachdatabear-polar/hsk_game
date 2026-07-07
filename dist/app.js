@@ -1583,6 +1583,13 @@
       "scope.smartReviewReady": "Smart Review \xB7 {n}",
       "scope.readout": "Pool: <b>{count}</b> words \xB7 ~<b>{pct}%</b> of exam text",
       "scope.readoutNoThai": "* {n} long-tail words have no Thai yet \u2014 English shown instead.",
+      // journey map (B3)
+      "scope.tabPicker": "Picker",
+      "scope.tabJourney": "Journey",
+      "journey.youAreHere": "You are here",
+      "journey.nodeAll": "HSK{lv} \xB7 All words",
+      "journey.nodeTop": "HSK{lv} \xB7 Top {n}",
+      "journey.play": "Play",
       // learn / flashcards
       "learn.exit": "Exit",
       "learn.stillLearning": "Still learning",
@@ -1727,6 +1734,13 @@
       "scope.smartReviewReady": "\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E2D\u0E31\u0E08\u0E09\u0E23\u0E34\u0E22\u0E30 \xB7 {n}",
       "scope.readout": "\u0E04\u0E25\u0E31\u0E07\u0E04\u0E33: <b>{count}</b> \u0E04\u0E33 \xB7 ~<b>{pct}%</b> \u0E02\u0E2D\u0E07\u0E02\u0E49\u0E2D\u0E2A\u0E2D\u0E1A",
       "scope.readoutNoThai": "* \u0E21\u0E35 {n} \u0E04\u0E33\u0E17\u0E35\u0E48\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E20\u0E32\u0E29\u0E32\u0E44\u0E17\u0E22 \u2014 \u0E41\u0E2A\u0E14\u0E07\u0E20\u0E32\u0E29\u0E32\u0E2D\u0E31\u0E07\u0E01\u0E24\u0E29\u0E41\u0E17\u0E19",
+      // journey map (B3)
+      "scope.tabPicker": "\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E40\u0E2D\u0E07",
+      "scope.tabJourney": "\u0E40\u0E2A\u0E49\u0E19\u0E17\u0E32\u0E07",
+      "journey.youAreHere": "\u0E04\u0E38\u0E13\u0E2D\u0E22\u0E39\u0E48\u0E15\u0E23\u0E07\u0E19\u0E35\u0E49",
+      "journey.nodeAll": "HSK{lv} \xB7 \u0E04\u0E33\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14",
+      "journey.nodeTop": "HSK{lv} \xB7 Top {n}",
+      "journey.play": "\u0E40\u0E25\u0E48\u0E19",
       // learn / flashcards
       "learn.exit": "\u0E2D\u0E2D\u0E01",
       "learn.stillLearning": "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E41\u0E21\u0E48\u0E19",
@@ -1977,6 +1991,24 @@
   function popToast(state) {
     if (!state.queue.length) return { state, id: null };
     return { state: { earned: state.earned, queue: state.queue.slice(1) }, id: state.queue[0] };
+  }
+
+  // src/journey.js
+  var STAR_THRESHOLDS = [50, 80, 100];
+  function starsFor(pct) {
+    let stars = 0;
+    for (const th of STAR_THRESHOLDS) if (pct >= th) stars++;
+    return stars;
+  }
+  function journeyNodes(levelCounts, scopePcts) {
+    return scopeNodes(levelCounts).map((n) => {
+      const pct = scopePcts[n.id] ?? 0;
+      return { ...n, pct, stars: starsFor(pct) };
+    });
+  }
+  function currentNodeId(nodes) {
+    const cur = nodes.find((n) => n.stars < 2);
+    return cur ? cur.id : null;
   }
 
   // src/main.js
@@ -2312,9 +2344,11 @@
     const t2 = b.dataset.go;
     if (t2 === "scope") {
       renderScope();
+      applyScopeView();
       show("scope");
     } else if (t2 === "scope-learn") {
       renderScope();
+      applyScopeView();
       show("scope");
     } else if (t2 === "scores") {
       renderScores();
@@ -2374,6 +2408,69 @@
     const startable = pool.length >= 8;
     $("#go-battle").disabled = $("#go-endless").disabled = $("#go-learn").disabled = !startable;
     updateSmartBtn();
+  }
+  var scopeView = store.get("scopeView", "picker");
+  function applyScopeView() {
+    $("#picker-pane").hidden = scopeView !== "picker";
+    $("#journey-pane").hidden = scopeView !== "journey";
+    document.querySelectorAll("#scope-view-tabs .chip").forEach((c) => c.classList.toggle("on", c.dataset.view === scopeView));
+    if (scopeView === "journey") renderJourney();
+  }
+  document.querySelectorAll("#scope-view-tabs .chip").forEach((b) => b.addEventListener("click", () => {
+    scopeView = b.dataset.view;
+    store.set("scopeView", scopeView);
+    applyScopeView();
+  }));
+  function nodeLabel(n) {
+    return n.topN ? t("journey.nodeTop", { lv: n.lv, n: n.topN }) : t("journey.nodeAll", { lv: n.lv });
+  }
+  function playJourneyNode(n) {
+    scope.levels = [n.lv];
+    scope.topN = n.topN;
+    scope.core = false;
+    scope.newOnly = false;
+    renderScope();
+    if (pool.length >= 8) startBattle("round");
+  }
+  function renderJourney() {
+    const facts = scopeFacts(D.levels, masteryStore);
+    const nodes = journeyNodes(STICKER_LEVEL_COUNTS, facts.scopePcts);
+    const hereId = currentNodeId(nodes);
+    const box = $("#journey-list");
+    box.innerHTML = "";
+    for (const n of nodes) {
+      const row = document.createElement("button");
+      row.className = "j-node" + (n.stars >= 3 ? " done" : "");
+      const dot = document.createElement("span");
+      dot.className = "j-dot";
+      dot.textContent = n.stars >= 3 ? "\u2713" : `${n.pct}%`;
+      row.appendChild(dot);
+      const copy = document.createElement("span");
+      copy.className = "j-copy";
+      const name = document.createElement("b");
+      name.textContent = nodeLabel(n);
+      copy.appendChild(name);
+      const stars = document.createElement("span");
+      stars.className = "j-stars";
+      stars.innerHTML = "\u2605".repeat(n.stars) + `<span class="off">${"\u2605".repeat(3 - n.stars)}</span>`;
+      copy.appendChild(stars);
+      if (n.id === hereId) {
+        const here = document.createElement("span");
+        here.className = "j-here";
+        here.appendChild(iconSvg("paw"));
+        const hl = document.createElement("span");
+        hl.textContent = t("journey.youAreHere");
+        here.appendChild(hl);
+        copy.appendChild(here);
+      }
+      row.appendChild(copy);
+      const play = document.createElement("span");
+      play.className = "j-play";
+      play.textContent = t("journey.play");
+      row.appendChild(play);
+      row.onclick = () => playJourneyNode(n);
+      box.appendChild(row);
+    }
   }
   $("#f-core").onclick = () => {
     scope.core = !scope.core;

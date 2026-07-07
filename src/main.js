@@ -28,6 +28,7 @@ import { roundLabel, comboMultiplier, comboFires } from "./hud.js";
 import { comboGlowTier, plaqueBounce, countUpValue } from "./juice.js";
 import { isFirstRun, introDeck } from "./firstrun.js";
 import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast } from "./stickers.js";
+import { journeyNodes, currentNodeId } from "./journey.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -367,8 +368,8 @@ function show(name){
 }
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()=>{
   const t = b.dataset.go;
-  if(t==="scope"){ renderScope(); show("scope"); }
-  else if(t==="scope-learn"){ renderScope(); show("scope"); }
+  if(t==="scope"){ renderScope(); applyScopeView(); show("scope"); }
+  else if(t==="scope-learn"){ renderScope(); applyScopeView(); show("scope"); }
   else if(t==="scores"){ renderScores(); show("scores"); }
   else if(t==="progress"){ renderProgress(); show("progress"); }
   else if(t==="shop"){ renderShop(); show("shop"); }
@@ -420,6 +421,75 @@ function renderScope(){
   const startable = pool.length >= 8;
   $("#go-battle").disabled = $("#go-endless").disabled = $("#go-learn").disabled = !startable;
   updateSmartBtn();
+}
+/* ============================== journey map (B3) ============================== */
+// Optional suggested-order view over the same sub-scopes as the picker and
+// the sticker album (shared scopeNodes/scopeFacts — always consistent).
+// No hard gating: every node starts its scope immediately.
+let scopeView = store.get("scopeView", "picker");
+function applyScopeView(){
+  $("#picker-pane").hidden = scopeView !== "picker";
+  $("#journey-pane").hidden = scopeView !== "journey";
+  document.querySelectorAll("#scope-view-tabs .chip").forEach(c =>
+    c.classList.toggle("on", c.dataset.view === scopeView));
+  if(scopeView === "journey") renderJourney();
+}
+document.querySelectorAll("#scope-view-tabs .chip").forEach(b =>
+  b.addEventListener("click", ()=>{
+    scopeView = b.dataset.view;
+    store.set("scopeView", scopeView);
+    applyScopeView();
+  }));
+function nodeLabel(n){
+  return n.topN ? t("journey.nodeTop", { lv: n.lv, n: n.topN }) : t("journey.nodeAll", { lv: n.lv });
+}
+function playJourneyNode(n){
+  scope.levels = [n.lv];
+  scope.topN = n.topN;
+  scope.core = false;
+  scope.newOnly = false;
+  renderScope();          // rebuilds pool + persists scope
+  if(pool.length >= 8) startBattle("round");
+}
+function renderJourney(){
+  const facts = scopeFacts(D.levels, masteryStore);
+  const nodes = journeyNodes(STICKER_LEVEL_COUNTS, facts.scopePcts);
+  const hereId = currentNodeId(nodes);
+  const box = $("#journey-list");
+  box.innerHTML = "";
+  for(const n of nodes){
+    const row = document.createElement("button");
+    row.className = "j-node" + (n.stars >= 3 ? " done" : "");
+    const dot = document.createElement("span");
+    dot.className = "j-dot";
+    dot.textContent = n.stars >= 3 ? "✓" : `${n.pct}%`;
+    row.appendChild(dot);
+    const copy = document.createElement("span");
+    copy.className = "j-copy";
+    const name = document.createElement("b");
+    name.textContent = nodeLabel(n);
+    copy.appendChild(name);
+    const stars = document.createElement("span");
+    stars.className = "j-stars";
+    stars.innerHTML = "★".repeat(n.stars) + `<span class="off">${"★".repeat(3 - n.stars)}</span>`;
+    copy.appendChild(stars);
+    if(n.id === hereId){
+      const here = document.createElement("span");
+      here.className = "j-here";
+      here.appendChild(iconSvg("paw"));
+      const hl = document.createElement("span");
+      hl.textContent = t("journey.youAreHere");
+      here.appendChild(hl);
+      copy.appendChild(here);
+    }
+    row.appendChild(copy);
+    const play = document.createElement("span");
+    play.className = "j-play";
+    play.textContent = t("journey.play");
+    row.appendChild(play);
+    row.onclick = ()=> playJourneyNode(n);
+    box.appendChild(row);
+  }
 }
 $("#f-core").onclick = ()=>{ scope.core = !scope.core; renderScope(); };
 $("#f-new").onclick  = ()=>{ scope.newOnly = !scope.newOnly; renderScope(); };
