@@ -1791,6 +1791,18 @@
     if (combo >= 5) return 1;
     return 0;
   }
+  var BOUNCE_MS = 450;
+  var BOUNCE_AMP = 10;
+  function plaqueBounce(ms) {
+    if (!(ms >= 0) || ms >= BOUNCE_MS) return 0;
+    const f = ms / BOUNCE_MS;
+    return BOUNCE_AMP * Math.sin(f * Math.PI * 3) * (1 - f);
+  }
+  function countUpValue(from, to, frac) {
+    const f = Math.min(1, Math.max(0, frac));
+    const eased = 1 - Math.pow(1 - f, 3);
+    return Math.round(from + (to - from) * eased);
+  }
 
   // src/main.js
   var D = window.HSK_DATA;
@@ -2415,6 +2427,8 @@
     if (B.zombie && B.zombie.wrongUntil) B.zombie.wrongUntil += shift;
     if (B.zombie && B.zombie.happyAt) B.zombie.happyAt += shift;
     if (B.bossStageAt) B.bossStageAt += shift;
+    if (B.hitFlash) B.hitFlash.until += shift;
+    if (B.plaqueHitAt) B.plaqueHitAt += shift;
     B.paused = false;
     keepAwake(true);
     $("#pause-overlay").classList.remove("on");
@@ -2530,7 +2544,8 @@
       B.proj = { x: B.L.mascotX + 16 * B.S, y: B.h - B.L.ground - 30 * B.S };
       if (boss) noteAnswer(z.w.h, true);
       const gy = B.h - B.L.ground;
-      B.feedback = { ...feedbackEffect("correct", z.x, gy - 42 * B.S), until: fxUntil(620) };
+      B.feedback = boss ? { ...feedbackEffect("critical", z.x, gy - 42 * B.S), until: fxUntil(750) } : { ...feedbackEffect("correct", z.x, gy - 42 * B.S), until: fxUntil(620) };
+      B.plaqueHitAt = performance.now();
       const floater = comboFloater(z.x, gy - 130, B.combo);
       if (floater) B.floats.push(floater);
       if (B.combo >= 10 && B.combo % 10 === 0) {
@@ -2564,6 +2579,7 @@
   }
   function killZombie(z) {
     const gy = B.h - B.L.ground;
+    B.hitFlash = { x: z.x, y: gy - 40 * B.S, until: fxUntil(150) };
     B.parts.push(...coinBurst(z.x, gy - 16, !!z.boss, shopState.effect));
     z.state = "happy";
     z.happyAt = performance.now();
@@ -2854,6 +2870,21 @@
       }
       ctx2.globalAlpha = 1;
     }
+    if (B.hitFlash) {
+      const leftF = B.hitFlash.until - performance.now();
+      if (leftF <= 0) {
+        B.hitFlash = null;
+      } else {
+        ctx2.save();
+        ctx2.globalAlpha = 0.85 * (leftF / fxDuration(150));
+        ctx2.fillStyle = "rgba(251,245,232,1)";
+        const rr = (18 + 30 * (1 - leftF / fxDuration(150))) * B.S;
+        ctx2.beginPath();
+        ctx2.arc(B.hitFlash.x, B.hitFlash.y, rr, 0, Math.PI * 2);
+        ctx2.fill();
+        ctx2.restore();
+      }
+    }
     drawFeedbackLayer(t2);
     if (B.flash > 0) {
       ctx2.fillStyle = `rgba(90,44,80,${(0.3 * B.flash).toFixed(3)})`;
@@ -2867,7 +2898,8 @@
     const pinyin = hideWord || !settings.showPinyin ? "" : w.p;
     const revealed = !!z.revealed;
     const showSub = scope.lang === "both";
-    const wy = Math.round(B.h * 0.36);
+    const bounce = !REDUCED_MOTION && B.plaqueHitAt ? plaqueBounce(performance.now() - B.plaqueHitAt) : 0;
+    const wy = Math.round(B.h * 0.36) + Math.round(bounce);
     ctx2.save();
     ctx2.font = fontString(700, B.L.hanziPx, HANZI_STACK);
     const textW = Math.max(ctx2.measureText(hanzi).width, 74 * B.S);
@@ -3179,7 +3211,20 @@
     }
     rq.style.display = questToasts.length ? "block" : "none";
     const acc = B.attempts ? Math.round(100 * B.correct / B.attempts) : 0;
-    $("#r-score").textContent = B.score;
+    const scoreEl = $("#r-score");
+    if (REDUCED_MOTION || B.score === 0) {
+      scoreEl.textContent = B.score;
+    } else {
+      const target = B.score, t0 = performance.now(), dur = 700;
+      scoreEl.textContent = "0";
+      const tick = (now) => {
+        const frac = (now - t0) / dur;
+        scoreEl.textContent = countUpValue(0, target, frac);
+        if (frac < 1 && currentScreen === "results") requestAnimationFrame(tick);
+        else scoreEl.textContent = target;
+      };
+      requestAnimationFrame(tick);
+    }
     const key = scopeKey(scope) + "\xB7" + modeKey(B.mode, B.wordsTotal);
     if (B.customDeck) {
       $("#r-sub").innerHTML = t("results.sub", { acc, words: B.correct, key });

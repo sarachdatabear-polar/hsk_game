@@ -529,7 +529,8 @@ function updateComboStrip(){
    plain unpause rather than a re-bootstrap. Every absolute performance.now()
    deadline the battle loop reads must be shifted forward by the pause duration
    on resume, or it "expires" while the player was looking at the overlay:
-   B.nextAt, B.dyingUntil, B.mascotHopUntil, B.feedback.until, B.zombie.wrongUntil. */
+   B.nextAt, B.dyingUntil, B.mascotHopUntil, B.feedback.until, B.zombie.wrongUntil,
+   B.hitFlash.until, B.plaqueHitAt. */
 const PAUSE_TOGGLES = [
   { icon:"bell", iconOff:"bell-off", labelKey:"home.sound", isOn:()=>sfx.enabled, toggle:()=>toggleSfx() },
   { icon:"sound", iconOff:"muted", labelKey:"battle.wordAudio", isOn:()=>settings.autoSpeak,
@@ -579,6 +580,8 @@ function resumeBattle(){
   if(B.zombie && B.zombie.wrongUntil) B.zombie.wrongUntil += shift;
   if(B.zombie && B.zombie.happyAt) B.zombie.happyAt += shift;
   if(B.bossStageAt) B.bossStageAt += shift;
+  if(B.hitFlash) B.hitFlash.until += shift;
+  if(B.plaqueHitAt) B.plaqueHitAt += shift;
   B.paused = false;
   keepAwake(true);
   $("#pause-overlay").classList.remove("on");
@@ -700,7 +703,12 @@ function answer(btn, o){
     // (word audio fires once, on spawn — no replay on the answer tap)
     if(boss) noteAnswer(z.w.h, true);           // both stages passed
     const gy = B.h-B.L.ground;
-    B.feedback = {...feedbackEffect("correct", z.x, gy-42*B.S), until:fxUntil(620)};
+    // boss final kill gets the reference's CRITICAL! starburst (A3); the
+    // 10-combo milestone below may upgrade a normal kill to critical too.
+    B.feedback = boss
+      ? {...feedbackEffect("critical", z.x, gy-42*B.S), until:fxUntil(750)}
+      : {...feedbackEffect("correct", z.x, gy-42*B.S), until:fxUntil(620)};
+    B.plaqueHitAt = performance.now();   // plaque bounce timebase (drawWordPlate)
     const floater = comboFloater(z.x, gy-130, B.combo);
     if(floater) B.floats.push(floater);
     // milestone combo (10, 20, ...): fireworks + a CRITICAL! comic burst
@@ -735,6 +743,9 @@ function scheduleNext(ms){
 }
 function killZombie(z){
   const gy = B.h-B.L.ground;
+  // A3 enemy hit flash: quick warm-white pulse at the raccoon (drawn in draw(),
+  // just before the feedback layer). Absolute deadline — shifted on resume.
+  B.hitFlash = {x:z.x, y:gy-40*B.S, until:fxUntil(150)};
   B.parts.push(...coinBurst(z.x, gy-16, !!z.boss, shopState.effect));   // bosses pop a bigger, coinier burst; effect pack swaps the look
   z.state = "happy";
   z.happyAt = performance.now();   // raccoonBob("happy") wants time-since-defeat, not the raw rAF t
@@ -987,6 +998,20 @@ function draw(t){
     ctx.globalAlpha = 1;
   }
   // hit flash — softened dim-violet (cat wandered off, not combat damage)
+  if(B.hitFlash){
+    const leftF = B.hitFlash.until - performance.now();
+    if(leftF <= 0){ B.hitFlash = null; }
+    else{
+      // expanding cream pulse, fading out — a fade, so reduced-motion-safe
+      // (fxUntil already halved its duration there)
+      ctx.save();
+      ctx.globalAlpha = 0.85 * (leftF / fxDuration(150));
+      ctx.fillStyle = "rgba(251,245,232,1)";
+      const rr = (18 + 30 * (1 - leftF / fxDuration(150))) * B.S;
+      ctx.beginPath(); ctx.arc(B.hitFlash.x, B.hitFlash.y, rr, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+  }
   drawFeedbackLayer(t);
   if(B.flash>0){ ctx.fillStyle = `rgba(90,44,80,${(0.30*B.flash).toFixed(3)})`; ctx.fillRect(0,0,B.w,B.h); }
   if(shake) ctx.restore();
@@ -1005,7 +1030,11 @@ function drawWordPlate(z, hideWord, t){
   const revealed = !!z.revealed;
   const showSub = scope.lang === "both";   // meaningOf() only returns a .sub in "both" mode
 
-  const wy = Math.round(B.h * 0.36);
+  // A3 plaque bounce: damped dip on a correct answer (juice.js curve; 0 when
+  // idle or under reduced motion — no vertical motion, per "fades only").
+  const bounce = (!REDUCED_MOTION && B.plaqueHitAt)
+    ? plaqueBounce(performance.now() - B.plaqueHitAt) : 0;
+  const wy = Math.round(B.h * 0.36) + Math.round(bounce);
   ctx.save();
   ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK);
   const textW = Math.max(ctx.measureText(hanzi).width, 74*B.S);
@@ -1276,7 +1305,22 @@ function endBattle(quit){
   }
   rq.style.display = questToasts.length ? "block" : "none";
   const acc = B.attempts? Math.round(100*B.correct/B.attempts) : 0;
-  $("#r-score").textContent = B.score;
+  // A3 results celebration: count the earned coins up (~700ms ease-out).
+  // Reduced motion or a zero score renders instantly.
+  const scoreEl = $("#r-score");
+  if(REDUCED_MOTION || B.score === 0){
+    scoreEl.textContent = B.score;
+  }else{
+    const target = B.score, t0 = performance.now(), dur = 700;
+    scoreEl.textContent = "0";
+    const tick = now => {
+      const frac = (now - t0) / dur;
+      scoreEl.textContent = countUpValue(0, target, frac);
+      if(frac < 1 && currentScreen === "results") requestAnimationFrame(tick);
+      else scoreEl.textContent = target;
+    };
+    requestAnimationFrame(tick);
+  }
   const key = scopeKey(scope)+"·"+modeKey(B.mode, B.wordsTotal);
   if(B.customDeck){
     // miss/weak-word decks don't compete on the scoreboard — no best-tag/prev-best suffix
