@@ -476,7 +476,9 @@
 
   /* B3 journey map: vertical path of nodes; stars show coverage; the cat
      marker suggests where to go next — every node stays tappable */
-  #journey-list{display:flex; flex-direction:column; gap:0; overflow-y:auto; flex:1; padding:4px 0;}
+  /* the list rides the document scroll (#app min-height model) — no inner
+     overflow container needed at 21 nodes */
+  #journey-list{display:flex; flex-direction:column; gap:0; padding:4px 0;}
   .j-node{display:flex; align-items:center; gap:10px; width:100%; text-align:left;
     background-color:var(--panel-wash); border:1px solid var(--panel-border); border-radius:14px;
     padding:10px 12px; margin:3px 0; box-shadow:0 2px 6px rgba(46,42,36,.08); position:relative;}
