@@ -33,6 +33,8 @@ const PRECACHE = [
   "assets/cat-gold-happy.png",
   "assets/cat-boss-walk.png",
   "assets/cat-boss-happy.png",
+  "assets/raccoon-walk.png",
+  "assets/raccoon-happy.png",
   "assets/cat-portrait.png",
   "assets/cat-guide.png",
   "assets/cat-celebrate.png",
