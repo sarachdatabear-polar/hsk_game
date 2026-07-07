@@ -1729,6 +1729,9 @@ function renderShop(){
 }
 
 // "Jul 1" / "1 ก.ค." for a [month, day] pair, in the active locale.
+// The fixed 2026 year is inert: only month/day are rendered (see the
+// { month: "short", day: "numeric" } options below), and there's no leap-day
+// window in play, so the hardcoded year never affects the output.
 const fmtMonthDay = ([m, d]) =>
   new Date(2026, m - 1, d).toLocaleDateString(getLocale() === "th" ? "th-TH" : "en-US", { month: "short", day: "numeric" });
 

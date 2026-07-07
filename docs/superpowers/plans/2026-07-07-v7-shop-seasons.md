@@ -1111,3 +1111,14 @@ PR body: summary per PRD feature (F1–F4), test counts before/after, the fallba
 - F1 catalog → Task 1; F2 rotation → Task 2 (+UI Task 7); F3 seasons → Tasks 2, 7; F4 tiers → Tasks 3, 4, 7, 8. §5 art pipeline → Task 6. §6 module list → shop (1–3), street (4), main/index/i18n (7–8). §7 constraints → global section + Task 9. §9 success criteria each map to a test or the Task 7/8 manual smoke; "same 3 items all day / changes at midnight" holds by construction (pure function of the date string) and is covered by the stable-for-same-date test.
 - The PRD's `nextFeaturedIn` "back in ~N days" caption is explicitly logic/tests-only (PRD F2) — no UI consumes it in v7.
 - Old tests knowingly touched: defaultShop shape, catalog counts, street deco `toEqual` objects — each updated in its task's heads-up note.
+
+## Post-review follow-ups (filed 2026-07-08)
+
+Non-blocking items surfaced by the final whole-branch review of `feat/v7-shop-seasons`, deferred to future rounds:
+
+- **Deco generation prompts + decor-type manifest rows for the 11 new decos** — the tier-2/tier-3 street decos shipped with procedural glow/flank fallbacks only; next art round needs copy-paste generation prompts (per the `GENERATION-PROMPTS-v5.md` format) plus corresponding `"decor"`-type rows in `assets/asset-manifest.json`.
+- **Per-id procedural scenes or prompt-priority for the 5 new backdrops** — `bg-harbor-night`, `bg-snow-festival`, `bg-island-sunset`, `bg-lantern-festival`, `bg-dragon-gate` all currently share the same generic gradient fallback (`canvas:paintBackdrop-default`); needs either distinct procedural paint routines per backdrop or an explicit priority order for art-drop intake.
+- **`doBuy`/`renderStreet` dead-call cleanup** — a follow-up pass should check for and remove any now-unreachable/redundant calls between `doBuy` and `renderStreet` left over from the shop rewrite.
+- **Empty "Today's Stock" shelf cosmetic state** — when every pool item in the daily rotation is already owned, the shelf currently renders empty with no explicit "nothing new today" treatment; needs a cosmetic empty state.
+- **Shop-registry test hardening** — add assertions that soundpack ids are a subset of `PACKS` and that every effect id referenced by the catalog is handled by `coinBurst` (or its equivalent), so a future catalog addition without matching sound/effect wiring fails loudly in tests rather than silently falling back.
+- **Art-drop raw PNG pruning policy after install** — `scripts/intake_art.py`'s `drop/processed/<target>/cand-NN/` output accumulates candidate PNGs indefinitely; needs a policy (and possibly a script) for pruning installed/rejected candidates after a winner is chosen.
