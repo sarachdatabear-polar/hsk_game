@@ -153,6 +153,8 @@ export const STRINGS = {
     "battle.off": "Off",
     "battle.canvasLabel": "Battle scene. Press Enter or Space to replay the word's audio.",
     "battle.bossPrompt": "Review Challenge · pick the hanzi for: {meaning}",
+    "battle.replay": "Play it again",
+    "battle.reversePrompt": "Pick the hanzi for: {meaning}",
     // common
     "common.back": "← Home",
     "common.backMore": "← More",
@@ -304,6 +306,8 @@ export const STRINGS = {
     "battle.off": "ปิด",
     "battle.canvasLabel": "ฉากต่อสู้ กด Enter หรือ Space เพื่อฟังเสียงคำศัพท์อีกครั้ง",
     "battle.bossPrompt": "ด่านทบทวน · เลือกตัวอักษรจีนของคำว่า: {meaning}",
+    "battle.replay": "ฟังอีกครั้ง",
+    "battle.reversePrompt": "เลือกตัวอักษรจีนของคำว่า: {meaning}",
     // common
     "common.back": "← หน้าหลัก",
     "common.backMore": "← เพิ่มเติม",

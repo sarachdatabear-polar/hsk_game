@@ -24,6 +24,11 @@ export function chooseTts() {
   return "none";
 }
 
+// Can this word be spoken at all? (bundled mp3, or any TTS path)
+export function audioAvailable(hanzi) {
+  return mp3Set.has(hanzi) || chooseTts() !== "none";
+}
+
 export function speak(hanzi) {
   if (!hanzi) return;
   if (current) { current.pause(); current = null; }
