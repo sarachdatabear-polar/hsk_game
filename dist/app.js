@@ -1623,6 +1623,24 @@
       "progress.reviewThese": "Review these",
       "progress.practiceThese": "Practice These",
       "progress.nothing": "Nothing needs work \u2014 go play!",
+      // sticker album (B2 — earn-only, never sold)
+      "progress.album": "Sticker Album",
+      "album.title": "Sticker Album",
+      "album.back": "\u2190 Progress",
+      "album.events": "Events",
+      "sticker.scopeName": "HSK{lv} \xB7 Top {n}",
+      "sticker.scopeHint": "Master all Top {n} words of HSK{lv}",
+      "sticker.msName": "HSK{lv} \xB7 {pct}%",
+      "sticker.msHint": "Master {pct}% of HSK{lv}",
+      "sticker.welcomeName": "Welcome!",
+      "sticker.welcomeHint": "Finish your first session",
+      "sticker.bossName": "Boss Buster",
+      "sticker.bossHint": "Defeat your first boss",
+      "sticker.streak7Name": "7-Day Streak",
+      "sticker.streak7Hint": "Keep a 7-day study streak",
+      "sticker.streak30Name": "30-Day Streak",
+      "sticker.streak30Hint": "Keep a 30-day study streak",
+      "results.newSticker": "New sticker: {name}!",
       // shop / collection
       "shop.title": "Collection",
       "shop.skins": "Cat skins",
@@ -1749,6 +1767,24 @@
       "progress.reviewThese": "\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E04\u0E33\u0E40\u0E2B\u0E25\u0E48\u0E32\u0E19\u0E35\u0E49",
       "progress.practiceThese": "\u0E1D\u0E36\u0E01\u0E04\u0E33\u0E40\u0E2B\u0E25\u0E48\u0E32\u0E19\u0E35\u0E49",
       "progress.nothing": "\u0E44\u0E21\u0E48\u0E21\u0E35\u0E04\u0E33\u0E17\u0E35\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E1D\u0E36\u0E01 \u2014 \u0E44\u0E1B\u0E40\u0E25\u0E48\u0E19\u0E01\u0E31\u0E19\u0E40\u0E25\u0E22!",
+      // sticker album (B2 — earn-only, never sold)
+      "progress.album": "\u0E2D\u0E31\u0E25\u0E1A\u0E31\u0E49\u0E21\u0E2A\u0E15\u0E34\u0E01\u0E40\u0E01\u0E2D\u0E23\u0E4C",
+      "album.title": "\u0E2D\u0E31\u0E25\u0E1A\u0E31\u0E49\u0E21\u0E2A\u0E15\u0E34\u0E01\u0E40\u0E01\u0E2D\u0E23\u0E4C",
+      "album.back": "\u2190 \u0E04\u0E27\u0E32\u0E21\u0E04\u0E37\u0E1A\u0E2B\u0E19\u0E49\u0E32",
+      "album.events": "\u0E2D\u0E35\u0E40\u0E27\u0E19\u0E15\u0E4C",
+      "sticker.scopeName": "HSK{lv} \xB7 Top {n}",
+      "sticker.scopeHint": "\u0E40\u0E0A\u0E35\u0E48\u0E22\u0E27\u0E0A\u0E32\u0E0D\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C Top {n} \u0E02\u0E2D\u0E07 HSK{lv} \u0E43\u0E2B\u0E49\u0E04\u0E23\u0E1A",
+      "sticker.msName": "HSK{lv} \xB7 {pct}%",
+      "sticker.msHint": "\u0E40\u0E0A\u0E35\u0E48\u0E22\u0E27\u0E0A\u0E32\u0E0D {pct}% \u0E02\u0E2D\u0E07 HSK{lv}",
+      "sticker.welcomeName": "\u0E22\u0E34\u0E19\u0E14\u0E35\u0E15\u0E49\u0E2D\u0E19\u0E23\u0E31\u0E1A!",
+      "sticker.welcomeHint": "\u0E08\u0E1A\u0E40\u0E0B\u0E2A\u0E0A\u0E31\u0E19\u0E41\u0E23\u0E01\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13",
+      "sticker.bossName": "\u0E1C\u0E39\u0E49\u0E1E\u0E34\u0E0A\u0E34\u0E15\u0E1A\u0E2D\u0E2A",
+      "sticker.bossHint": "\u0E40\u0E2D\u0E32\u0E0A\u0E19\u0E30\u0E1A\u0E2D\u0E2A\u0E15\u0E31\u0E27\u0E41\u0E23\u0E01",
+      "sticker.streak7Name": "\u0E2A\u0E15\u0E23\u0E35\u0E04 7 \u0E27\u0E31\u0E19",
+      "sticker.streak7Hint": "\u0E23\u0E31\u0E01\u0E29\u0E32\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E01\u0E32\u0E23\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07 7 \u0E27\u0E31\u0E19",
+      "sticker.streak30Name": "\u0E2A\u0E15\u0E23\u0E35\u0E04 30 \u0E27\u0E31\u0E19",
+      "sticker.streak30Hint": "\u0E23\u0E31\u0E01\u0E29\u0E32\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E01\u0E32\u0E23\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07 30 \u0E27\u0E31\u0E19",
+      "results.newSticker": "\u0E2A\u0E15\u0E34\u0E01\u0E40\u0E01\u0E2D\u0E23\u0E4C\u0E43\u0E2B\u0E21\u0E48: {name}!",
       // shop / collection
       "shop.title": "\u0E04\u0E2D\u0E25\u0E40\u0E25\u0E01\u0E0A\u0E31\u0E19",
       "shop.skins": "\u0E2A\u0E01\u0E34\u0E19\u0E41\u0E21\u0E27",
@@ -1810,7 +1846,8 @@
   // src/nav.js
   var TABS = ["home", "street", "progress", "quests", "more"];
   var MORE_SUBSCREENS = ["scores", "howto"];
-  var NAV_VISIBLE = /* @__PURE__ */ new Set([...TABS, ...MORE_SUBSCREENS, "shop"]);
+  var PROGRESS_SUBSCREENS = ["album"];
+  var NAV_VISIBLE = /* @__PURE__ */ new Set([...TABS, ...MORE_SUBSCREENS, ...PROGRESS_SUBSCREENS, "shop"]);
   function navVisibleOn(screen) {
     return NAV_VISIBLE.has(screen);
   }
@@ -1818,6 +1855,7 @@
     if (!navVisibleOn(screen)) return null;
     if (TABS.includes(screen)) return screen;
     if (MORE_SUBSCREENS.includes(screen)) return "more";
+    if (PROGRESS_SUBSCREENS.includes(screen)) return "progress";
     if (screen === "shop") return "home";
     return null;
   }
@@ -1863,6 +1901,34 @@
   }
   function introDeck(pool2, n = 6) {
     return [...pool2].sort((a, b) => (b.f || 0) - (a.f || 0)).slice(0, n);
+  }
+
+  // src/stickers.js
+  var TOP_NS = [100, 300, 500];
+  var MILESTONE_PCTS = [25, 50, 75, 100];
+  var EVENT_STICKERS = ["welcome", "first-boss", "streak-7", "streak-30"];
+  function scopeNodes(levelCounts) {
+    const nodes = [];
+    const lvs = Object.keys(levelCounts).map(Number).sort((a, b) => a - b);
+    for (const lv of lvs) {
+      for (const n of TOP_NS) {
+        if (levelCounts[lv] > n) nodes.push({ id: `HSK${lv}\xB7top${n}`, lv, topN: n });
+      }
+      nodes.push({ id: `HSK${lv}\xB7all`, lv, topN: 0 });
+    }
+    return nodes;
+  }
+  function stickerDefs(levelCounts) {
+    const defs = [];
+    for (const node of scopeNodes(levelCounts)) {
+      if (node.topN > 0) defs.push({ id: `scope:${node.id}`, kind: "scope", lv: node.lv, topN: node.topN });
+    }
+    const lvs = Object.keys(levelCounts).map(Number).sort((a, b) => a - b);
+    for (const lv of lvs) {
+      for (const pct of MILESTONE_PCTS) defs.push({ id: `ms:HSK${lv}:${pct}`, kind: "milestone", lv, pct });
+    }
+    for (const ev of EVENT_STICKERS) defs.push({ id: `ev:${ev}`, kind: "event", event: ev });
+    return defs;
   }
 
   // src/main.js
@@ -1973,6 +2039,73 @@
   }
   var questState = Object.assign(defaultQuestState(), store.get("quests", {}));
   var questToasts = [];
+  var st0 = store.get("stickers", {});
+  var stickerState = {
+    earned: Object.assign({}, st0.earned),
+    queue: Array.isArray(st0.queue) ? st0.queue.slice() : []
+  };
+  var STICKER_LEVEL_COUNTS = Object.fromEntries(Object.entries(D.levels).map(([k, v]) => [k, v.length]));
+  var STICKER_DEFS = stickerDefs(STICKER_LEVEL_COUNTS);
+  function stickerLabel(def) {
+    if (def.kind === "scope") return t("sticker.scopeName", { lv: def.lv, n: def.topN });
+    if (def.kind === "milestone") return t("sticker.msName", { lv: def.lv, pct: def.pct });
+    if (def.event === "welcome") return t("sticker.welcomeName");
+    if (def.event === "first-boss") return t("sticker.bossName");
+    if (def.event === "streak-7") return t("sticker.streak7Name");
+    return t("sticker.streak30Name");
+  }
+  function stickerHint(def) {
+    if (def.kind === "scope") return t("sticker.scopeHint", { lv: def.lv, n: def.topN });
+    if (def.kind === "milestone") return t("sticker.msHint", { lv: def.lv, pct: def.pct });
+    if (def.event === "welcome") return t("sticker.welcomeHint");
+    if (def.event === "first-boss") return t("sticker.bossHint");
+    if (def.event === "streak-7") return t("sticker.streak7Hint");
+    return t("sticker.streak30Hint");
+  }
+  function stickerIcon(def) {
+    if (def.kind === "scope") return "paw";
+    if (def.kind === "milestone") return "star";
+    if (def.event === "first-boss") return "target";
+    if (def.event === "welcome") return "cards";
+    return "streak";
+  }
+  function renderAlbum() {
+    const box = $("#album-list");
+    box.innerHTML = "";
+    const tile = (def) => {
+      const earned = !!stickerState.earned[def.id];
+      const el = document.createElement("div");
+      el.className = `sticker kind-${def.kind}` + (earned ? "" : " locked");
+      el.appendChild(iconSvg(stickerIcon(def)));
+      const name = document.createElement("b");
+      name.textContent = stickerLabel(def);
+      el.appendChild(name);
+      const hint = document.createElement("small");
+      hint.textContent = earned ? stickerState.earned[def.id] : stickerHint(def);
+      el.appendChild(hint);
+      return el;
+    };
+    for (let lv = 1; lv <= 6; lv++) {
+      const defs = STICKER_DEFS.filter((d) => d.lv === lv);
+      if (!defs.length) continue;
+      const head = document.createElement("div");
+      head.className = "sect";
+      head.textContent = `HSK${lv}`;
+      box.appendChild(head);
+      const grid = document.createElement("div");
+      grid.className = "album-grid";
+      defs.forEach((d) => grid.appendChild(tile(d)));
+      box.appendChild(grid);
+    }
+    const evHead = document.createElement("div");
+    evHead.className = "sect";
+    evHead.textContent = t("album.events");
+    box.appendChild(evHead);
+    const evGrid = document.createElement("div");
+    evGrid.className = "album-grid";
+    STICKER_DEFS.filter((d) => d.kind === "event").forEach((d) => evGrid.appendChild(tile(d)));
+    box.appendChild(evGrid);
+  }
   function questEvent(eventId, n = 1) {
     const r = noteQuestEvent(questState, todayStr(), eventId, n);
     questState = r.state;
@@ -2144,6 +2277,9 @@
     } else if (t2 === "shop") {
       renderShop();
       show("shop");
+    } else if (t2 === "album") {
+      renderAlbum();
+      show("album");
     } else {
       if (t2 === "home") {
         stopBattle();

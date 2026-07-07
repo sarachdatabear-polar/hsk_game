@@ -27,6 +27,7 @@ import { navVisibleOn, activeTabFor } from "./nav.js";
 import { roundLabel, comboMultiplier, comboFires } from "./hud.js";
 import { comboGlowTier, plaqueBounce, countUpValue } from "./juice.js";
 import { isFirstRun, introDeck } from "./firstrun.js";
+import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast } from "./stickers.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -136,6 +137,73 @@ function noteDaily(count){
 /* ============================== daily quests ============================== */
 let questState = Object.assign(defaultQuestState(), store.get("quests", {}));
 let questToasts = [];  // quests completed during the current battle, for the results screen
+
+/* ============================== sticker album (B2) ============================== */
+// earn-only — never purchasable. Persisted immediately on every award so a
+// sticker earned mid-session survives reload (PRD B2 acceptance).
+const st0 = store.get("stickers", {});
+let stickerState = {
+  earned: Object.assign({}, st0.earned),
+  queue: Array.isArray(st0.queue) ? st0.queue.slice() : [],
+};
+const STICKER_LEVEL_COUNTS = Object.fromEntries(Object.entries(D.levels).map(([k, v]) => [k, v.length]));
+const STICKER_DEFS = stickerDefs(STICKER_LEVEL_COUNTS);
+
+function stickerLabel(def){
+  if(def.kind === "scope") return t("sticker.scopeName", { lv: def.lv, n: def.topN });
+  if(def.kind === "milestone") return t("sticker.msName", { lv: def.lv, pct: def.pct });
+  if(def.event === "welcome") return t("sticker.welcomeName");
+  if(def.event === "first-boss") return t("sticker.bossName");
+  if(def.event === "streak-7") return t("sticker.streak7Name");
+  return t("sticker.streak30Name");
+}
+function stickerHint(def){
+  if(def.kind === "scope") return t("sticker.scopeHint", { lv: def.lv, n: def.topN });
+  if(def.kind === "milestone") return t("sticker.msHint", { lv: def.lv, pct: def.pct });
+  if(def.event === "welcome") return t("sticker.welcomeHint");
+  if(def.event === "first-boss") return t("sticker.bossHint");
+  if(def.event === "streak-7") return t("sticker.streak7Hint");
+  return t("sticker.streak30Hint");
+}
+function stickerIcon(def){
+  if(def.kind === "scope") return "paw";
+  if(def.kind === "milestone") return "star";
+  if(def.event === "first-boss") return "target";
+  if(def.event === "welcome") return "cards";
+  return "streak";
+}
+function renderAlbum(){
+  const box = $("#album-list");
+  box.innerHTML = "";
+  const tile = def => {
+    const earned = !!stickerState.earned[def.id];
+    const el = document.createElement("div");
+    el.className = `sticker kind-${def.kind}` + (earned ? "" : " locked");
+    el.appendChild(iconSvg(stickerIcon(def)));
+    const name = document.createElement("b"); name.textContent = stickerLabel(def);
+    el.appendChild(name);
+    const hint = document.createElement("small");
+    hint.textContent = earned ? stickerState.earned[def.id] : stickerHint(def);
+    el.appendChild(hint);
+    return el;
+  };
+  for(let lv = 1; lv <= 6; lv++){
+    const defs = STICKER_DEFS.filter(d => d.lv === lv);
+    if(!defs.length) continue;
+    const head = document.createElement("div");
+    head.className = "sect"; head.textContent = `HSK${lv}`;
+    box.appendChild(head);
+    const grid = document.createElement("div"); grid.className = "album-grid";
+    defs.forEach(d => grid.appendChild(tile(d)));
+    box.appendChild(grid);
+  }
+  const evHead = document.createElement("div");
+  evHead.className = "sect"; evHead.textContent = t("album.events");
+  box.appendChild(evHead);
+  const evGrid = document.createElement("div"); evGrid.className = "album-grid";
+  STICKER_DEFS.filter(d => d.kind === "event").forEach(d => evGrid.appendChild(tile(d)));
+  box.appendChild(evGrid);
+}
 function questEvent(eventId, n=1){
   const r = noteQuestEvent(questState, todayStr(), eventId, n);
   questState = r.state;
@@ -302,6 +370,7 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
   else if(t==="scores"){ renderScores(); show("scores"); }
   else if(t==="progress"){ renderProgress(); show("progress"); }
   else if(t==="shop"){ renderShop(); show("shop"); }
+  else if(t==="album"){ renderAlbum(); show("album"); }
   else {
     if(t==="home"){ stopBattle(); }   // intro abandonment handled in show()
     show(t);

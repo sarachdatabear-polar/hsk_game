@@ -452,6 +452,20 @@
   /* B1: calm rest-day note on the return day — informational, never guilt */
   .streak-note{margin-top:6px; font-size:12px; color:var(--lc-brown);}
 
+  /* B2 sticker album: per-level sections, 4-up grid; unearned = silhouette */
+  #album-list{display:flex; flex-direction:column; gap:4px; overflow-y:auto; flex:1;}
+  .album-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:6px;}
+  .sticker{display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 4px;
+    background-color:var(--panel-wash); border:1px solid var(--panel-border); border-radius:12px;
+    text-align:center; box-shadow:0 2px 6px rgba(46,42,36,.08);}
+  .sticker .asset-icon{width:32px; height:32px; color:var(--lc-green);}
+  .sticker.kind-milestone .asset-icon{color:var(--lc-sun-deep);}
+  .sticker.kind-event .asset-icon{color:var(--lc-coral);}
+  .sticker b{font-size:11px; color:var(--ink); line-height:1.2;}
+  .sticker small{font-size:9.5px; color:var(--muted); line-height:1.25;}
+  .sticker.locked{opacity:.55;}
+  .sticker.locked .asset-icon{color:var(--lc-gray);}
+
   .home-cta{display:flex; align-items:stretch; gap:10px; margin:8px 0 2px;}
   .start-btn{flex:1 1 62%; font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800;
     font-size:21px; letter-spacing:.05em; color:var(--lc-brown);
@@ -744,6 +758,7 @@
   <div class="screen festive" id="s-progress">
     <button class="back" data-go="home" data-i18n="common.back">← Home</button>
     <h2 data-i18n="progress.title">Progress</h2>
+    <button class="big" data-go="album"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="progress.album">Sticker Album</span></span></button>
     <div class="scorelist" id="growth-card"></div>
     <div class="scorelist" id="progresslist"></div>
     <div class="sect" data-i18n="progress.needsWork">Needs work</div>
@@ -752,6 +767,14 @@
       <button class="big" id="nw-review"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#review"></use></svg><span data-i18n="progress.reviewThese">Review these</span></span></button>
       <button class="big" id="nw-fight"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#retry"></use></svg><span data-i18n="progress.practiceThese">Practice These</span></span></button>
     </div>
+  </div>
+
+  <!-- STICKER ALBUM (B2 — earn-only; sticker art lands via the A2 pipeline,
+       tiles use ui-icons placeholders until then) -->
+  <div class="screen festive" id="s-album">
+    <button class="back" data-go="progress" data-i18n="album.back">← Progress</button>
+    <h2 data-i18n="album.title">Sticker Album</h2>
+    <div id="album-list"></div>
   </div>
 
   <!-- SHOP -->
