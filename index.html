@@ -27,39 +27,10 @@
     font-display:swap;
   }
   :root{
-    --lc-lacquer:#A51F24;
-    --lc-crimson:#4A1015;
-    --lc-gold:#F5C34B;
-    --lc-dark-gold:#9C6900;
-    --lc-jade:#2F9B72;
-    --lc-night:#101B2B;
-    --lc-paper:#F4E2BE;
-    /* renamed from --lc-ink/--lc-cream: those names are claimed by the Visual
-       Slice v1 palette below (different values) — kept for existing usages */
-    --lc-ink-legacy:#24150E;
-    --lc-cream-legacy:#FFF4E0;
-    --lc-tan:#C9A58A;
-    --lc-shadow:rgba(18,8,6,.42);
-    /* Education-first palette: Lucky Cat Learning Journey */
-    --edu-paper:#FFF8E8;
-    --edu-coral:#E65A4F;
-    --edu-jade:#4FAE8A;
-    --edu-sky:#6EB6E8;
-    --edu-sun:#F5C85B;
-    --edu-ink:#243447;
-    --edu-plum:#7B5B8E;
-    --edu-gray:#E7E2D9;
-    --edu-leaf:#78B86B;
-    --edu-brown:#7A5A44;
-    /* semantic aliases (STYLE-TOKENS.md §3). --gold/--crimson/--jade/--amber/--green/
-       --red/--card are deprecated: re-pointed here so nothing regresses mid-migration,
-       usages removed in Tasks 3–6, definitions deleted in Task 7. */
-    --bg:var(--lc-cream); --panel:var(--lc-cream); --card:var(--lc-cream);
-    --ink:var(--lc-ink); --muted:var(--lc-brown);
-    --gold:var(--lc-brown); --crimson:var(--lc-coral); --jade:var(--lc-green);
-    --amber:var(--lc-sun); --green:var(--lc-success);
-    --red:var(--lc-error); --chip:var(--lc-sand); --chip-on:var(--lc-sky); --chip-ink-on:var(--lc-teal);
-    --panel-border:var(--lc-sand); --panel-wash:var(--lc-cream);
+    /* semantic aliases (STYLE-TOKENS.md §3) */
+    --bg:var(--lc-cream); --ink:var(--lc-ink); --muted:var(--lc-brown);
+    --panel-wash:var(--lc-cream); --panel-border:var(--lc-sand);
+    --chip:var(--lc-sand); --chip-on:var(--lc-sky); --chip-ink-on:var(--lc-teal);
     /* PRD v5 core palette (docs/art/STYLE-TOKENS.md §1 — enforced by test/style-tokens.test.js) */
     --lc-green:#32775E; --lc-sky:#5DAADD; --lc-sun:#F2BC57; --lc-coral:#E69777;
     --lc-brown:#846043; --lc-gray:#B2AEA9; --lc-cream:#FBF5E8; --lc-teal:#1F4D4A;
@@ -396,7 +367,7 @@
       linear-gradient(to bottom,
         rgba(251,245,232,.94) 0%, rgba(251,245,232,.55) 16%, rgba(251,245,232,0) 32%,
         rgba(251,245,232,0) 58%, rgba(251,245,232,.55) 74%, rgba(251,245,232,.94) 100%),
-      url("assets/bg-home.png"), linear-gradient(#FFF8E8,#FDEFD2);
+      url("assets/bg-home.png"), linear-gradient(var(--lc-cream),var(--lc-cream-deep));
     overflow:hidden;
   }
 
