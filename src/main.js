@@ -601,8 +601,18 @@ window.addEventListener("resize", ()=>{ if(B.on) sizeCanvas(); });
 // tap target (not just a small icon) — B.plaqueRect is set every draw() frame
 // from drawWordPlate(); null whenever no word is on screen. Mouse/touch via
 // click, keyboard via Enter/Space on the now-focusable canvas (tabindex below).
+// Shared gate for the plaque-replay affordance (click/keyboard/icon): once a
+// word resolves, replay is always fine; while it's still live, formats whose
+// audio would hand the answer away (tone, reverse) must not speak it.
+function canReplayAudio(z){
+  if(!z) return false;
+  const live = z.state === "walk" && !z.revealed;
+  const forbidden = FORMATS[z.format || "meaning"].audio === "never";
+  return !(live && forbidden);
+}
 function replayCurrentWord(){
   if(B.paused || !B.zombie) return;
+  if(!canReplayAudio(B.zombie)) return;
   speak(B.zombie.w.h);
 }
 cv.addEventListener("click", e=>{
@@ -830,7 +840,6 @@ function spawnZombie(){
   // the guide explains it in one line, and that word can never cost a life.
   const introKey = FORMATS[z.format].intro;
   if(introKey && !formatIntros[z.format]){
-    formatIntros[z.format] = 1; store.set("formatIntros", formatIntros);
     z.frozen = true; z.introFree = true;
     showFormatIntro(introKey);
   }
@@ -880,6 +889,11 @@ function showFormatIntro(key){
   $("#fi-ok").onclick = ()=>{
     $("#format-intro").classList.remove("on");
     const z = B.zombie;
+    if(z){
+      // Persist the once-ever intro flag only on dismissal (not at spawn):
+      // quitting mid-overlay must not burn the intro or the free attempt.
+      formatIntros[z.format] = 1; store.set("formatIntros", formatIntros);
+    }
     if(z && z.state === "walk"){
       z.x = B.w + 30;      // full runway — the intro must never eat thinking time
       z.frozen = false;
@@ -899,7 +913,7 @@ function revealCorrect(){
 function answer(btn, o){
   if(B.paused) return;   // overlay is up — ignore any tap that leaks through
   const z = B.zombie;
-  if(!z || z.state!=="walk" || B.locked) return;
+  if(!z || z.state!=="walk" || z.frozen || B.locked) return;
   const boss = z.boss;
   const correct = !!o.correct;
   if(!boss){
@@ -1392,7 +1406,12 @@ function drawWordPlate(z, vis, t){
   }
   // speaker icon, right edge of the plaque, vertically centered — also the
   // visual affordance for the click/keyboard hit-test set up on #cv below.
-  drawSpeakerIcon(ctx, x + lw - spkR - 10*B.S, y + lh/2, spkR, boss ? "#7A4E0C" : "#8C5F2A");
+  // Skipped when replay is disallowed (tone/reverse while live — don't
+  // advertise a disabled affordance) and when the plaque is already showing
+  // the big 🔊-as-hanzi (listen format live) to avoid two speaker glyphs.
+  if(canReplayAudio(z) && !vis.icon){
+    drawSpeakerIcon(ctx, x + lw - spkR - 10*B.S, y + lh/2, spkR, boss ? "#7A4E0C" : "#8C5F2A");
+  }
   B.plaqueRect = {x, y, w: lw, h: lh};
   ctx.restore();
 }

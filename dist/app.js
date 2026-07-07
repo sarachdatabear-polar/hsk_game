@@ -134,6 +134,123 @@
     return shuffle([...cands], rand).slice(0, 3);
   }
 
+  // src/pinyin.js
+  var MARKED = {
+    a: ["\u0101", "\xE1", "\u01CE", "\xE0"],
+    e: ["\u0113", "\xE9", "\u011B", "\xE8"],
+    i: ["\u012B", "\xED", "\u01D0", "\xEC"],
+    o: ["\u014D", "\xF3", "\u01D2", "\xF2"],
+    u: ["\u016B", "\xFA", "\u01D4", "\xF9"],
+    "\xFC": ["\u01D6", "\u01D8", "\u01DA", "\u01DC"]
+  };
+  var TONE_OF = {};
+  for (const [vowel, arr] of Object.entries(MARKED)) {
+    arr.forEach((ch, k) => {
+      TONE_OF[ch] = { vowel, tone: k + 1 };
+    });
+  }
+  function toneSlots(p) {
+    const slots = [];
+    [...p || ""].forEach((ch, i) => {
+      if (TONE_OF[ch]) slots.push({ i, vowel: TONE_OF[ch].vowel, tone: TONE_OF[ch].tone });
+    });
+    return slots;
+  }
+  function retone(p, tones) {
+    const chars = [...p];
+    toneSlots(p).forEach((s, k) => {
+      chars[s.i] = MARKED[s.vowel][tones[k] - 1];
+    });
+    return chars.join("");
+  }
+  function shuffle2(a, rand) {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function toneVariants(p, rand = Math.random) {
+    const slots = toneSlots(p);
+    if (!slots.length) return null;
+    const orig = slots.map((s) => s.tone);
+    const cands = /* @__PURE__ */ new Set();
+    slots.forEach((s, k) => {
+      for (let t2 = 1; t2 <= 4; t2++) {
+        if (t2 !== s.tone) {
+          const tones = orig.slice();
+          tones[k] = t2;
+          cands.add(retone(p, tones));
+        }
+      }
+    });
+    return shuffle2([...cands], rand).slice(0, 3);
+  }
+
+  // src/formats.js
+  function shuffle3(a, rand) {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function formatFor(word, rec, caps = { audio: true }) {
+    const r = rec && rec.r || 0;
+    let f = r >= 5 ? "tone" : r >= 3 ? "reverse" : r >= 1 ? "listen" : "meaning";
+    if (f === "listen" && !caps.audio) f = "meaning";
+    if (f === "tone" && toneSlots(word.p).length === 0) f = "meaning";
+    return f;
+  }
+  function meaningOptions(word, deck, lang, rand) {
+    return shuffle3([word, ...pickDistractors(deck, word, rand)], rand).map((o) => {
+      const m = meaning(o, lang);
+      return { label: m.main, sub: m.sub, correct: o.h === word.h };
+    });
+  }
+  var FORMATS = {
+    meaning: {
+      plaque: { hz: true, py: true },
+      audio: "setting",
+      intro: null,
+      // today's format needs no introduction
+      buildOptions: meaningOptions
+    },
+    listen: {
+      plaque: { icon: true },
+      // 🔊 only — the ear does the work
+      audio: "always",
+      intro: "battle.introListen",
+      buildOptions: meaningOptions
+    },
+    reverse: {
+      plaque: { mask: true },
+      // ？？ like today's boss stage 2
+      audio: "never",
+      // audio would say the answer
+      intro: "battle.introReverse",
+      buildOptions(word, deck, lang, rand) {
+        return shuffle3([word, ...pickDistractors(deck, word, rand)], rand).map((o) => ({ label: o.h, sub: o.p, correct: o.h === word.h }));
+      }
+    },
+    tone: {
+      plaque: { hz: true },
+      // hanzi only; pinyin would give the tones away
+      audio: "never",
+      intro: "battle.introTone",
+      buildOptions(word, deck, lang, rand) {
+        const wrong = toneVariants(word.p, rand) || [];
+        return shuffle3(
+          [
+            { label: word.p, sub: "", correct: true },
+            ...wrong.map((p) => ({ label: p, sub: "", correct: false }))
+          ],
+          rand
+        );
+      }
+    }
+  };
+
   // src/scoring.js
   function killPoints(combo, distFrac) {
     const distBonus = Math.round(8 * Math.max(0, Math.min(1, distFrac)));
@@ -1360,6 +1477,9 @@
     if (typeof window !== "undefined" && window.speechSynthesis) return "web";
     return "none";
   }
+  function audioAvailable(hanzi) {
+    return mp3Set.has(hanzi) || chooseTts() !== "none";
+  }
   function speak(hanzi) {
     if (!hanzi) return;
     if (current) {
@@ -1674,8 +1794,14 @@
       "battle.pinyin": "Pinyin",
       "battle.on": "On",
       "battle.off": "Off",
-      "battle.canvasLabel": "Battle scene. Press Enter or Space to replay the word's audio.",
+      "battle.canvasLabel": "Battle scene. Press Enter or Space to replay the word's audio (when available).",
       "battle.bossPrompt": "Review Challenge \xB7 pick the hanzi for: {meaning}",
+      "battle.replay": "Play it again",
+      "battle.reversePrompt": "Pick the hanzi for: {meaning}",
+      "battle.introOk": "Got it!",
+      "battle.introListen": "New: listen first! Play the sound and tap the meaning you hear.",
+      "battle.introReverse": "New: you know this word \u2014 now pick its hanzi from the meaning!",
+      "battle.introTone": "New: tone check! Tap the pinyin with the right tone marks.",
       // common
       "common.back": "\u2190 Home",
       "common.backMore": "\u2190 More",
@@ -1825,8 +1951,14 @@
       "battle.pinyin": "\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19",
       "battle.on": "\u0E40\u0E1B\u0E34\u0E14",
       "battle.off": "\u0E1B\u0E34\u0E14",
-      "battle.canvasLabel": "\u0E09\u0E32\u0E01\u0E15\u0E48\u0E2D\u0E2A\u0E39\u0E49 \u0E01\u0E14 Enter \u0E2B\u0E23\u0E37\u0E2D Space \u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E1F\u0E31\u0E07\u0E40\u0E2A\u0E35\u0E22\u0E07\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07",
+      "battle.canvasLabel": "\u0E09\u0E32\u0E01\u0E15\u0E48\u0E2D\u0E2A\u0E39\u0E49 \u0E01\u0E14 Enter \u0E2B\u0E23\u0E37\u0E2D Space \u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E1F\u0E31\u0E07\u0E40\u0E2A\u0E35\u0E22\u0E07\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07 (\u0E40\u0E21\u0E37\u0E48\u0E2D\u0E40\u0E1B\u0E34\u0E14\u0E43\u0E2B\u0E49\u0E1F\u0E31\u0E07)",
       "battle.bossPrompt": "\u0E14\u0E48\u0E32\u0E19\u0E17\u0E1A\u0E17\u0E27\u0E19 \xB7 \u0E40\u0E25\u0E37\u0E2D\u0E01\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E08\u0E35\u0E19\u0E02\u0E2D\u0E07\u0E04\u0E33\u0E27\u0E48\u0E32: {meaning}",
+      "battle.replay": "\u0E1F\u0E31\u0E07\u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07",
+      "battle.reversePrompt": "\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E08\u0E35\u0E19\u0E02\u0E2D\u0E07\u0E04\u0E33\u0E27\u0E48\u0E32: {meaning}",
+      "battle.introOk": "\u0E40\u0E02\u0E49\u0E32\u0E43\u0E08\u0E41\u0E25\u0E49\u0E27!",
+      "battle.introListen": "\u0E43\u0E2B\u0E21\u0E48: \u0E1F\u0E31\u0E07\u0E01\u0E48\u0E2D\u0E19\u0E19\u0E30! \u0E01\u0E14\u0E1F\u0E31\u0E07\u0E40\u0E2A\u0E35\u0E22\u0E07\u0E41\u0E25\u0E49\u0E27\u0E41\u0E15\u0E30\u0E04\u0E27\u0E32\u0E21\u0E2B\u0E21\u0E32\u0E22\u0E17\u0E35\u0E48\u0E44\u0E14\u0E49\u0E22\u0E34\u0E19",
+      "battle.introReverse": "\u0E43\u0E2B\u0E21\u0E48: \u0E04\u0E33\u0E19\u0E35\u0E49\u0E04\u0E38\u0E49\u0E19\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E40\u0E25\u0E37\u0E2D\u0E01\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E08\u0E35\u0E19\u0E08\u0E32\u0E01\u0E04\u0E27\u0E32\u0E21\u0E2B\u0E21\u0E32\u0E22\u0E40\u0E25\u0E22!",
+      "battle.introTone": "\u0E43\u0E2B\u0E21\u0E48: \u0E40\u0E0A\u0E47\u0E04\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C! \u0E41\u0E15\u0E30\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19\u0E17\u0E35\u0E48\u0E21\u0E35\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C\u0E16\u0E39\u0E01\u0E15\u0E49\u0E2D\u0E07",
       // common
       "common.back": "\u2190 \u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
       "common.backMore": "\u2190 \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
@@ -2042,6 +2174,7 @@
     store.get("scope", {})
   );
   var settings = Object.assign({ autoSpeak: true, showPinyin: true }, store.get("settings", {}));
+  var formatIntros = store.get("formatIntros", {});
   setLocale(store.get("locale", detectLocale()));
   sfx.enabled = store.get("sfx", true);
   var pool = [];
@@ -2284,7 +2417,7 @@
     learnDeck = introWords.slice();
     startLearn();
   };
-  function shuffle2(a) {
+  function shuffle4(a) {
     for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [a[i], a[j]] = [a[j], a[i]];
@@ -2530,7 +2663,7 @@
   function startLearn() {
     const src = learnDeck && learnDeck.length ? learnDeck : pool;
     fc.fromMisses = !!(learnDeck && learnDeck.length);
-    fc.deck = shuffle2(src.slice(0, 400));
+    fc.deck = shuffle4(src.slice(0, 400));
     fc.i = 0;
     fc.done = 0;
     fc.total = fc.deck.length;
@@ -2616,8 +2749,15 @@
   window.addEventListener("resize", () => {
     if (B.on) sizeCanvas();
   });
+  function canReplayAudio(z) {
+    if (!z) return false;
+    const live = z.state === "walk" && !z.revealed;
+    const forbidden = FORMATS[z.format || "meaning"].audio === "never";
+    return !(live && forbidden);
+  }
   function replayCurrentWord() {
     if (B.paused || !B.zombie) return;
+    if (!canReplayAudio(B.zombie)) return;
     speak(B.zombie.w.h);
   }
   cv.addEventListener("click", (e) => {
@@ -2859,57 +2999,80 @@
       B.zombie.stage = "meaning";
       sfx.combo(5);
     }
-    if (settings.autoSpeak) speak(w.h);
-    renderOptions(w);
+    const z = B.zombie;
+    z.format = z.boss || introPhase === "battle" ? "meaning" : formatFor(w, masteryStore[w.h], { audio: audioAvailable(w.h) });
+    const introKey = FORMATS[z.format].intro;
+    if (introKey && !formatIntros[z.format]) {
+      z.frozen = true;
+      z.introFree = true;
+      showFormatIntro(introKey);
+    }
+    const pol = FORMATS[z.format].audio;
+    if (!z.frozen && (pol === "always" || pol === "setting" && settings.autoSpeak)) speak(w.h);
+    renderQuestion(w, z.format, z.format === "reverse" ? "battle.reversePrompt" : null);
     updateHud();
     B.speedBase *= 1.03;
     B.speed = B.speedBase * (B.w / 380);
   }
-  function renderOptions(word) {
-    const opts = shuffle2([word, ...pickDistractors(B.deck.length >= 8 ? B.deck : pool, word)]);
+  function renderQuestion(word, format, promptKey) {
+    const deck = B.deck.length >= 8 ? B.deck : pool;
     const box = $("#opts");
     box.innerHTML = "";
-    for (const o of opts) {
-      const m = meaning(o, scope.lang);
+    if (promptKey) {
+      const m = meaning(word, scope.lang);
+      const prompt = document.createElement("div");
+      prompt.className = "boss-prompt";
+      prompt.textContent = t(promptKey, { meaning: m.main });
+      box.appendChild(prompt);
+    }
+    if (format === "listen") {
+      const rp = document.createElement("button");
+      rp.className = "replay";
+      rp.textContent = "\u{1F50A} " + t("battle.replay");
+      rp.onclick = () => speak(word.h);
+      box.appendChild(rp);
+    }
+    for (const o of FORMATS[format].buildOptions(word, deck, scope.lang, Math.random)) {
       const b = document.createElement("button");
-      b.innerHTML = m.main + (m.sub ? `<span class="th">${m.sub}</span>` : "");
-      b._w = o;
+      b.innerHTML = o.label + (o.sub ? `<span class="th">${o.sub}</span>` : "");
+      b._correct = !!o.correct;
       b.onclick = () => answer(b, o);
       box.appendChild(b);
     }
   }
-  function renderBossHanzi(word) {
-    const opts = shuffle2([word, ...pickDistractors(B.deck.length >= 8 ? B.deck : pool, word)]);
-    const box = $("#opts");
-    box.innerHTML = "";
-    const m = meaning(word, scope.lang);
-    const prompt = document.createElement("div");
-    prompt.className = "boss-prompt";
-    prompt.textContent = t("battle.bossPrompt", { meaning: m.main });
-    box.appendChild(prompt);
-    for (const o of opts) {
-      const b = document.createElement("button");
-      b.innerHTML = o.h + `<span class="th">${o.p}</span>`;
-      b._w = o;
-      b.onclick = () => answer(b, o);
-      box.appendChild(b);
-    }
+  function showFormatIntro(key) {
+    $("#fi-text").textContent = t(key);
+    $("#fi-ok").textContent = t("battle.introOk");
+    $("#format-intro").classList.add("on");
+    $("#fi-ok").onclick = () => {
+      $("#format-intro").classList.remove("on");
+      const z = B.zombie;
+      if (z) {
+        formatIntros[z.format] = 1;
+        store.set("formatIntros", formatIntros);
+      }
+      if (z && z.state === "walk") {
+        z.x = B.w + 30;
+        z.frozen = false;
+        if (FORMATS[z.format].audio === "always") speak(z.w.h);
+      }
+    };
   }
   function lockOptions() {
     B.locked = true;
     document.querySelectorAll("#opts button").forEach((b) => b.disabled = true);
   }
-  function revealCorrect(word) {
+  function revealCorrect() {
     document.querySelectorAll("#opts button").forEach((b) => {
-      if (b._w && b._w.h === word.h) b.classList.add("good");
+      if (b._correct) b.classList.add("good");
     });
   }
   function answer(btn, o) {
     if (B.paused) return;
     const z = B.zombie;
-    if (!z || z.state !== "walk" || B.locked) return;
+    if (!z || z.state !== "walk" || z.frozen || B.locked) return;
     const boss = z.boss;
-    const correct = o.h === z.w.h;
+    const correct = !!o.correct;
     if (!boss) {
       B.attempts++;
       noteAnswer(z.w.h, correct);
@@ -2958,17 +3121,22 @@
       }
     } else {
       B.combo = 0;
+      const free = !!z.introFree;
       sfx.wrong();
-      sfx.bite();
-      hapticWrong();
+      if (!free) {
+        sfx.bite();
+        hapticWrong();
+      }
       btn.classList.add("bad", "stamp", "stamp-bad");
       lockOptions();
-      revealCorrect(z.w);
+      revealCorrect();
       pushMiss(z.w);
       if (boss) noteAnswer(z.w.h, false);
-      B.lives--;
-      B.flash = 1;
-      B.screenShake = REDUCED_MOTION ? 0 : 1;
+      if (!free) {
+        B.lives--;
+        B.flash = 1;
+        B.screenShake = REDUCED_MOTION ? 0 : 1;
+      }
       B.resolved++;
       z.state = "wrong";
       z.wrongUntil = performance.now() + 560;
@@ -3000,13 +3168,16 @@
       B.combo = 0;
       noteAnswer(z.w.h, false);
       pushMiss(z.w);
-      revealCorrect(z.w);
+      revealCorrect();
       lockOptions();
       z.revealed = true;
     }
+    const free = !!(z && z.introFree);
     sfx.bite();
-    B.lives--;
-    B.flash = 1;
+    if (!free) {
+      B.lives--;
+      B.flash = 1;
+    }
     B.resolved++;
     scheduleNext(1500);
     updateHud();
@@ -3026,7 +3197,8 @@
       if (bz && bz.frozen && bz.stage === "meaning") {
         bz.stage = "hanzi";
         bz.frozen = false;
-        renderBossHanzi(bz.w);
+        bz.format = "reverse";
+        renderQuestion(bz.w, "reverse", "battle.bossPrompt");
         B.locked = false;
       }
     }
@@ -3209,8 +3381,9 @@
     }
     const z = B.zombie;
     if (z) {
-      const hideWord = z.boss && z.stage === "hanzi" && z.state === "walk";
-      drawWordPlate(z, hideWord, t2);
+      const fl = FORMATS[z.format || "meaning"].plaque;
+      const live = z.state === "walk" && !z.revealed;
+      drawWordPlate(z, { mask: live && !!fl.mask, icon: live && !!fl.icon, py: !live || !!fl.py }, t2);
       const rScale = z.boss ? 1.5 * B.S : B.S;
       drawRaccoon(ctx2, z.x, gy + 6 * B.S, z.state === "happy" ? t2 - z.happyAt : t2, z.state, rScale, !!z.boss);
       let hpFrac = z.hp;
@@ -3296,10 +3469,10 @@
     }
     if (shake) ctx2.restore();
   }
-  function drawWordPlate(z, hideWord, t2) {
+  function drawWordPlate(z, vis, t2) {
     const w = z.w, boss = z.boss, level = w.lv;
-    const hanzi = hideWord ? "\uFF1F\uFF1F" : w.h;
-    const pinyin = hideWord || !settings.showPinyin ? "" : w.p;
+    const hanzi = vis.mask ? "\uFF1F\uFF1F" : vis.icon ? "\u{1F50A}" : w.h;
+    const pinyin = !vis.py || !settings.showPinyin ? "" : w.p;
     const revealed = !!z.revealed;
     const showSub = scope.lang === "both";
     const bounce = !REDUCED_MOTION && B.plaqueHitAt ? plaqueBounce(performance.now() - B.plaqueHitAt) : 0;
@@ -3418,7 +3591,9 @@
       ctx2.textAlign = "left";
       ctx2.fillText(tagText, x + 14 * B.S, y - th * 0.45 + th * 0.7);
     }
-    drawSpeakerIcon(ctx2, x + lw - spkR - 10 * B.S, y + lh / 2, spkR, boss ? "#7A4E0C" : "#8C5F2A");
+    if (canReplayAudio(z) && !vis.icon) {
+      drawSpeakerIcon(ctx2, x + lw - spkR - 10 * B.S, y + lh / 2, spkR, boss ? "#7A4E0C" : "#8C5F2A");
+    }
     B.plaqueRect = { x, y, w: lw, h: lh };
     ctx2.restore();
   }
