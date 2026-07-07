@@ -197,7 +197,18 @@ function renderHome(){
   const chip = $("#home-scope-chip");
   if(chip) chip.textContent = scopeChipLabel();
 }
-$("#home-start").onclick = ()=>{ if(pool.length >= 8) startBattle("round"); };
+// A4: START launches the smart choice — Smart Review when >=8 weak/due words,
+// else a normal round over the configured scope. The scope chip next to it
+// keeps the full picker one tap away.
+$("#home-start").onclick = ()=>{
+  if(pool.length < 8) return;
+  const deck = smartDeck(masteryStore, pool, Date.now());
+  if(deck.length >= 8){
+    battleDeckOverride = deck;
+    questEvent("review");
+  }
+  startBattle("round");
+};
 
 /* ============================== first run (A4) ============================== */
 function renderWelcome(){

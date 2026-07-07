@@ -1989,7 +1989,13 @@
     if (chip) chip.textContent = scopeChipLabel();
   }
   $("#home-start").onclick = () => {
-    if (pool.length >= 8) startBattle("round");
+    if (pool.length < 8) return;
+    const deck = smartDeck(masteryStore, pool, Date.now());
+    if (deck.length >= 8) {
+      battleDeckOverride = deck;
+      questEvent("review");
+    }
+    startBattle("round");
   };
   function renderWelcome() {
     const lang = getLocale();
