@@ -1,6 +1,6 @@
 "use strict";
 import { buildPool, coveragePct, scopeKey, meaning as meaningOf, normalizeLen, modeKey, scopeSummary } from "./pool.js";
-import { pickDistractors } from "./distractors.js";
+import { formatFor, FORMATS } from "./formats.js";
 import { killPoints } from "./scoring.js";
 import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus } from "./fx.js";
 import { sfx } from "./sfx.js";
@@ -16,7 +16,7 @@ import { wordWeight, smartDeck, weakWords } from "./srs.js";
 import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
 import { defaultQuestState, noteQuestEvent, questStatus } from "./quests.js";
 import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
-import { initAudio, speak } from "./audio.js";
+import { initAudio, speak, audioAvailable } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem } from "./shop.js";
 import { streetPieces, streetProgress } from "./street.js";
@@ -46,6 +46,7 @@ const store = {
 const scope = Object.assign({levels:[3], core:false, newOnly:false, topN:0, lang:"both", sessionLen:20},
                             store.get("scope", {}));
 let settings = Object.assign({autoSpeak:true, showPinyin:true}, store.get("settings", {}));
+let formatIntros = store.get("formatIntros", {});   // v6: which formats have had their soft-intro
 // UI language: persisted choice wins, else device language. i18n.js is pure,
 // so persistence lives here (nbhsk.locale), like every other nbhsk.* key.
 setLocale(store.get("locale", detectLocale()));
@@ -600,8 +601,18 @@ window.addEventListener("resize", ()=>{ if(B.on) sizeCanvas(); });
 // tap target (not just a small icon) — B.plaqueRect is set every draw() frame
 // from drawWordPlate(); null whenever no word is on screen. Mouse/touch via
 // click, keyboard via Enter/Space on the now-focusable canvas (tabindex below).
+// Shared gate for the plaque-replay affordance (click/keyboard/icon): once a
+// word resolves, replay is always fine; while it's still live, formats whose
+// audio would hand the answer away (tone, reverse) must not speak it.
+function canReplayAudio(z){
+  if(!z) return false;
+  const live = z.state === "walk" && !z.revealed;
+  const forbidden = FORMATS[z.format || "meaning"].audio === "never";
+  return !(live && forbidden);
+}
 function replayCurrentWord(){
   if(B.paused || !B.zombie) return;
+  if(!canReplayAudio(B.zombie)) return;
   speak(B.zombie.w.h);
 }
 cv.addEventListener("click", e=>{
@@ -820,61 +831,91 @@ function spawnZombie(){
     B.zombie.boss = true; B.zombie.stage = "meaning";
     sfx.combo(5);   // boss-arrival sting
   }
-  if(settings.autoSpeak) speak(w.h);
-  renderOptions(w);
+  const z = B.zombie;
+  // v6 ladder: per-word format from the mastery streak. Bosses keep their own
+  // two-stage ritual and the A4 intro battle stays meaning-only.
+  z.format = (z.boss || introPhase === "battle") ? "meaning"
+    : formatFor(w, masteryStore[w.h], { audio: audioAvailable(w.h) });
+  // v6 soft-intro: the first-ever appearance of a format freezes the walker,
+  // the guide explains it in one line, and that word can never cost a life.
+  const introKey = FORMATS[z.format].intro;
+  if(introKey && !formatIntros[z.format]){
+    z.frozen = true; z.introFree = true;
+    showFormatIntro(introKey);
+  }
+  const pol = FORMATS[z.format].audio;
+  // during an intro the audio waits for dismiss (played in showFormatIntro's OK)
+  if(!z.frozen && (pol === "always" || (pol === "setting" && settings.autoSpeak))) speak(w.h);
+  renderQuestion(w, z.format, z.format === "reverse" ? "battle.reversePrompt" : null);
   updateHud();   // round capsule tracks B.spawned — refresh as each word enters
   // per-word ramp on the unscaled base, then re-derive the screen-scaled
   // speed (a plain B.speed *= 1.03 would be wiped by the next resize)
   B.speedBase *= 1.03;
   B.speed = B.speedBase * (B.w/380);
 }
-function renderOptions(word){
-  const opts = shuffle([word, ...pickDistractors(B.deck.length >= 8 ? B.deck : pool, word)]);
+// One renderer for every question format. Options come back from the FORMATS
+// registry as plain data; promptKey (boss stage 2 / regular reverse) adds the
+// full-width prompt row above the grid, reusing the boss-prompt styling.
+function renderQuestion(word, format, promptKey){
+  const deck = B.deck.length >= 8 ? B.deck : pool;
   const box = $("#opts");
   box.innerHTML = "";
-  for(const o of opts){
-    const m = meaningOf(o, scope.lang);
+  if(promptKey){
+    const m = meaningOf(word, scope.lang);
+    const prompt = document.createElement("div");
+    prompt.className = "boss-prompt";
+    prompt.textContent = t(promptKey, { meaning: m.main });
+    box.appendChild(prompt);
+  }
+  if(format === "listen"){
+    const rp = document.createElement("button");
+    rp.className = "replay";
+    rp.textContent = "🔊 " + t("battle.replay");
+    rp.onclick = ()=> speak(word.h);   // never locked — replay is always allowed
+    box.appendChild(rp);
+  }
+  for(const o of FORMATS[format].buildOptions(word, deck, scope.lang, Math.random)){
     const b = document.createElement("button");
-    b.innerHTML = m.main + (m.sub? `<span class="th">${m.sub}</span>`:"");
-    b._w = o;
+    b.innerHTML = o.label + (o.sub? `<span class="th">${o.sub}</span>`:"");
+    b._correct = !!o.correct;
     b.onclick = ()=>answer(b, o);
     box.appendChild(b);
   }
 }
-// Boss stage 2: reverse question — meaning shown as a prompt, pick the hanzi.
-// Reuses the same #opts grid; a prompt div spans both columns above the buttons.
-function renderBossHanzi(word){
-  const opts = shuffle([word, ...pickDistractors(B.deck.length >= 8 ? B.deck : pool, word)]);
-  const box = $("#opts");
-  box.innerHTML = "";
-  const m = meaningOf(word, scope.lang);
-  const prompt = document.createElement("div");
-  prompt.className = "boss-prompt";
-  prompt.textContent = t("battle.bossPrompt", { meaning: m.main });
-  box.appendChild(prompt);
-  for(const o of opts){
-    const b = document.createElement("button");
-    b.innerHTML = o.h + `<span class="th">${o.p}</span>`;
-    b._w = o;
-    b.onclick = ()=>answer(b, o);
-    box.appendChild(b);
-  }
+function showFormatIntro(key){
+  $("#fi-text").textContent = t(key);
+  $("#fi-ok").textContent = t("battle.introOk");
+  $("#format-intro").classList.add("on");
+  $("#fi-ok").onclick = ()=>{
+    $("#format-intro").classList.remove("on");
+    const z = B.zombie;
+    if(z){
+      // Persist the once-ever intro flag only on dismissal (not at spawn):
+      // quitting mid-overlay must not burn the intro or the free attempt.
+      formatIntros[z.format] = 1; store.set("formatIntros", formatIntros);
+    }
+    if(z && z.state === "walk"){
+      z.x = B.w + 30;      // full runway — the intro must never eat thinking time
+      z.frozen = false;
+      if(FORMATS[z.format].audio === "always") speak(z.w.h);
+    }
+  };
 }
 function lockOptions(){
   B.locked = true;
   document.querySelectorAll("#opts button").forEach(b=>b.disabled = true);
 }
-function revealCorrect(word){
+function revealCorrect(){
   document.querySelectorAll("#opts button").forEach(b=>{
-    if(b._w && b._w.h===word.h) b.classList.add("good");
+    if(b._correct) b.classList.add("good");
   });
 }
 function answer(btn, o){
   if(B.paused) return;   // overlay is up — ignore any tap that leaks through
   const z = B.zombie;
-  if(!z || z.state!=="walk" || B.locked) return;
+  if(!z || z.state!=="walk" || z.frozen || B.locked) return;
   const boss = z.boss;
-  const correct = o.h === z.w.h;
+  const correct = !!o.correct;
   if(!boss){
     B.attempts++;
     noteAnswer(z.w.h, correct);
@@ -937,13 +978,15 @@ function answer(btn, o){
     // ONE attempt per word: wrong tap = lose a heart. Skip the charge animation and
     // advance quickly — just long enough to see the correct answer flashed green.
     B.combo = 0;
-    sfx.wrong(); sfx.bite(); hapticWrong();
+    const free = !!z.introFree;   // first-ever attempt of a new format: no heart lost
+    sfx.wrong(); if(!free){ sfx.bite(); hapticWrong(); }
     btn.classList.add("bad", "stamp", "stamp-bad");
     lockOptions();
-    revealCorrect(z.w);
+    revealCorrect();
     pushMiss(z.w);
     if(boss) noteAnswer(z.w.h, false);          // any miss fails the boss word
-    B.lives--; B.flash = 1; B.screenShake = REDUCED_MOTION ? 0 : 1; B.resolved++;
+    if(!free){ B.lives--; B.flash = 1; B.screenShake = REDUCED_MOTION ? 0 : 1; }
+    B.resolved++;
     z.state = "wrong";
     z.wrongUntil = performance.now() + 560;
     B.feedback = {...feedbackEffect("wrong", z.x, B.h-B.L.ground-44*B.S), until:fxUntil(560)};
@@ -954,7 +997,7 @@ function scheduleNext(ms){
   B.zombie = null; B.proj = null;
   B.nextAt = performance.now()+ms;
   // options stay visible (locked) so the revealed answer can sink in;
-  // the next spawn's renderOptions replaces them
+  // the next spawn's renderQuestion replaces them
 }
 function killZombie(z){
   const gy = B.h-B.L.ground;
@@ -976,11 +1019,12 @@ function bite(timedOut){
     // boss word already counted its one attempt on the first tap (see answer());
     // only count here if it timed out before ever being tapped.
     if(!z.boss || z.stage === "meaning") B.attempts++;
-    B.combo = 0; noteAnswer(z.w.h, false); pushMiss(z.w); revealCorrect(z.w); lockOptions();
+    B.combo = 0; noteAnswer(z.w.h, false); pushMiss(z.w); revealCorrect(); lockOptions();
     z.revealed = true;   // timeout resolves the word too — fill the plaque's translation line
   }
+  const free = !!(z && z.introFree);   // intro word timing out is also forgiven
   sfx.bite();
-  B.lives--; B.flash = 1;
+  if(!free){ B.lives--; B.flash = 1; }
   B.resolved++;
   scheduleNext(1500);   // long enough to read the revealed answer
   updateHud();
@@ -1003,7 +1047,8 @@ function loop(t){
     const bz = B.zombie;
     if(bz && bz.frozen && bz.stage === "meaning"){
       bz.stage = "hanzi"; bz.frozen = false;
-      renderBossHanzi(bz.w);
+      bz.format = "reverse";
+      renderQuestion(bz.w, "reverse", "battle.bossPrompt");
       B.locked = false;
     }
   }
@@ -1155,8 +1200,11 @@ function draw(t){
     // word + pinyin + (post-reveal) translation, fixed at the center of the
     // sky area (not following the raccoon). Boss stage 2 asks "which hanzi?",
     // so the plate must not give it away while the raccoon is still walking.
-    const hideWord = z.boss && z.stage === "hanzi" && z.state === "walk";
-    drawWordPlate(z, hideWord, t);
+    // Format decides what the plaque may reveal while the word is live; any
+    // resolution (kill/wrong/timeout) reveals everything, as before.
+    const fl = FORMATS[z.format || "meaning"].plaque;
+    const live = z.state === "walk" && !z.revealed;
+    drawWordPlate(z, { mask: live && !!fl.mask, icon: live && !!fl.icon, py: !live || !!fl.py }, t);
     // raccoon enemy (was the cat walker) — bosses draw bigger with a gold
     // aura (boss param, not scale — see raccoon.js); no skins/accessories/
     // kitten on it, those moved to the player above.
@@ -1234,15 +1282,15 @@ function draw(t){
 }
 // z: the current walker (B.zombie) — carries the target word (z.w), boss
 // flags, and z.revealed (set in answer()/bite() once the word is resolved).
-// hideWord: true only mid boss-reverse-question (stage 2, still walking) —
-// the caller (draw()) already knows this from z.boss/z.stage/z.state.
+// vis: { mask, icon, py } — what the format may reveal while live (see the
+// call site in draw(), which derives it from FORMATS[z.format].plaque).
 // Order per PRD §4.3/§6.2: pinyin (small, above) -> Hanzi (large) ->
 // translation (reserved space always; filled in only once z.revealed).
-function drawWordPlate(z, hideWord, t){
+function drawWordPlate(z, vis, t){
   const w = z.w, boss = z.boss, level = w.lv;
-  const hanzi = hideWord ? "？？" : w.h;
-  // pinyin off when: boss reverse-question hides it, OR the player toggled it off
-  const pinyin = (hideWord || !settings.showPinyin) ? "" : w.p;
+  const hanzi = vis.mask ? "？？" : vis.icon ? "🔊" : w.h;
+  // pinyin off when: the format hides it (reverse/listen/tone while live), OR the player toggled it off
+  const pinyin = (!vis.py || !settings.showPinyin) ? "" : w.p;
   const revealed = !!z.revealed;
   const showSub = scope.lang === "both";   // meaningOf() only returns a .sub in "both" mode
 
@@ -1358,7 +1406,12 @@ function drawWordPlate(z, hideWord, t){
   }
   // speaker icon, right edge of the plaque, vertically centered — also the
   // visual affordance for the click/keyboard hit-test set up on #cv below.
-  drawSpeakerIcon(ctx, x + lw - spkR - 10*B.S, y + lh/2, spkR, boss ? "#7A4E0C" : "#8C5F2A");
+  // Skipped when replay is disallowed (tone/reverse while live — don't
+  // advertise a disabled affordance) and when the plaque is already showing
+  // the big 🔊-as-hanzi (listen format live) to avoid two speaker glyphs.
+  if(canReplayAudio(z) && !vis.icon){
+    drawSpeakerIcon(ctx, x + lw - spkR - 10*B.S, y + lh/2, spkR, boss ? "#7A4E0C" : "#8C5F2A");
+  }
   B.plaqueRect = {x, y, w: lw, h: lh};
   ctx.restore();
 }
