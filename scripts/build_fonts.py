@@ -11,10 +11,17 @@ writes woff2 outputs into assets/fonts/:
   - lc-thai.woff2   <- Noto Sans Thai, weight 600, whole Thai block + Latin.
   - lc-latin.woff2  <- Fredoka, weight 600, Latin + punctuation + digits.
 
-Re-runnable: skips all work if the three outputs already exist (like
-build_audio.py). Requires `fonttools` + `brotli` (pip install fonttools
-brotli) for variable-font instancing and woff2 subsetting.
+Re-runnable and content-aware: for each output, a sha256 hash of its
+required character set is stored in assets/fonts/subset-manifest.json.
+A font is only skipped when its output file exists AND its stored hash
+matches the currently required character set - so a vocabulary refresh
+that introduces new hanzi glyphs forces a rebuild instead of silently
+shipping a stale subset missing those glyphs.
+
+Requires `fonttools` + `brotli` (pip install fonttools brotli) for
+variable-font instancing and woff2 subsetting.
 """
+import hashlib
 import json
 import subprocess
 import sys
@@ -25,6 +32,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CACHE = Path(__file__).resolve().parent / ".fontcache"
 OUT = ROOT / "assets" / "fonts"
 WORDS_JSON = ROOT / "data" / "words.json"
+SUBSET_MANIFEST = OUT / "subset-manifest.json"
 
 # (cache filename, raw GitHub URL) for each source variable font.
 SOURCES = {
@@ -48,10 +56,20 @@ OUTPUTS = {
     "latin": OUT / "lc-latin.woff2",
 }
 
+# Per-output pipeline: which source font to use, which axes to pin when
+# instancing the variable font, and where to cache the instanced static.
+FONT_PIPELINE = {
+    "hanzi": {"source": "notoserifsc", "axes": {"wght": 900}, "static_name": "NotoSerifSC-900.ttf"},
+    "thai": {"source": "notosansthai", "axes": {"wght": 600, "wdth": 100}, "static_name": "NotoSansThai-600.ttf"},
+    "latin": {"source": "fredoka", "axes": {"wght": 600, "wdth": 100}, "static_name": "Fredoka-600.ttf"},
+}
+
 ASCII_BASIC = "".join(chr(c) for c in range(0x20, 0x7F))
 # CJK punctuation used in the plaque/UI, plus the boss "？？" placeholder and
 # the "·" separator used elsewhere in the UI (both already present here).
 CJK_PUNCT = "，。！？、：；“”‘’（）·—…"
+# Thai block (U+0E00-0E7F) + basic Latin, kept whole per spec.
+THAI_UNICODES = "U+0020-007E,U+0E00-0E7F"
 
 
 def log(msg):
@@ -74,7 +92,7 @@ def download(name):
     return dest
 
 
-def collect_hanzi_unicodes():
+def collect_hanzi_unicodes() -> set:
     """Every unique hanzi character across all `h` fields in words.json."""
     data = json.loads(WORDS_JSON.read_text(encoding="utf-8"))
     chars = set()
@@ -84,6 +102,39 @@ def collect_hanzi_unicodes():
     chars.update(ASCII_BASIC)
     chars.update(CJK_PUNCT)
     return chars
+
+
+def required_charsets() -> dict:
+    """The character set each output font subset must cover, keyed by
+    output name. Used both to build the subset and to hash it for the
+    skip-if-unchanged check."""
+    return {
+        "hanzi": collect_hanzi_unicodes(),
+        # Fixed ranges, but hashed too so a future change to these
+        # constants is also picked up by the freshness check.
+        "thai": set(chr(c) for c in range(0x20, 0x7F)) | set(chr(c) for c in range(0x0E00, 0x0E80)),
+        "latin": set(ASCII_BASIC),
+    }
+
+
+def charset_hash(chars) -> str:
+    """Stable sha256 over the sorted unique characters in a set."""
+    ordered = "".join(sorted(set(chars)))
+    return hashlib.sha256(ordered.encode("utf-8")).hexdigest()
+
+
+def load_subset_manifest() -> dict:
+    if not SUBSET_MANIFEST.exists():
+        return {}
+    try:
+        return json.loads(SUBSET_MANIFEST.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def save_subset_manifest(manifest: dict) -> None:
+    SUBSET_MANIFEST.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def instance(src, dest, axes):
@@ -99,40 +150,54 @@ def subset(src, dest_woff2, unicodes=None, whole_thai=False):
             f"--output-file={dest_woff2}", "--flavor=woff2",
             "--layout-features=*"]
     if whole_thai:
-        # Thai block (U+0E00-0E7F) + basic Latin, kept whole per spec.
-        args.append("--unicodes=U+0020-007E,U+0E00-0E7F")
+        args.append(f"--unicodes={THAI_UNICODES}")
     elif unicodes is not None:
         args.append("--unicodes=" + ",".join(f"U+{ord(c):04X}" for c in sorted(unicodes)))
     subprocess.run(args, check=True)
 
 
+def build_one(name: str, chars: set) -> None:
+    """Run the download -> instance -> subset pipeline for a single output."""
+    spec = FONT_PIPELINE[name]
+    src = download(spec["source"])
+    static_path = CACHE / spec["static_name"]
+    if not static_path.exists():
+        instance(src, static_path, spec["axes"])
+    dest = OUTPUTS[name]
+    if name == "thai":
+        subset(static_path, dest, whole_thai=True)
+    else:
+        subset(static_path, dest, unicodes=chars)
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    if all(p.exists() for p in OUTPUTS.values()):
-        log("All font outputs already exist, skipping build:")
+
+    required = required_charsets()
+    hashes = {name: charset_hash(chars) for name, chars in required.items()}
+    stored = load_subset_manifest()
+
+    def up_to_date(name: str) -> bool:
+        return (OUTPUTS[name].exists()
+                and stored.get(name, {}).get("hash") == hashes[name])
+
+    stale = [name for name in OUTPUTS if not up_to_date(name)]
+
+    if not stale:
+        log("All font outputs exist and glyph subsets match current requirements, skipping build:")
         for name, path in OUTPUTS.items():
             log(f"  {path.name}: {path.stat().st_size/1024:.1f} KB")
         return 0
 
-    log("Downloading source fonts (cached under scripts/.fontcache/)...")
-    serif_src = download("notoserifsc")
-    thai_src = download("notosansthai")
-    fredoka_src = download("fredoka")
+    for name in stale:
+        reason = "missing output" if not OUTPUTS[name].exists() else "glyph requirements changed"
+        log(f"Rebuilding {OUTPUTS[name].name}: {reason}")
 
-    log("Instancing variable fonts to fixed weights...")
-    serif_static = CACHE / "NotoSerifSC-900.ttf"
-    instance(serif_src, serif_static, {"wght": 900})
-    thai_static = CACHE / "NotoSansThai-600.ttf"
-    instance(thai_src, thai_static, {"wght": 600, "wdth": 100})
-    fredoka_static = CACHE / "Fredoka-600.ttf"
-    instance(fredoka_src, fredoka_static, {"wght": 600, "wdth": 100})
+    for name in stale:
+        build_one(name, required[name])
+        stored[name] = {"hash": hashes[name], "chars": len(required[name])}
 
-    log("Subsetting...")
-    hanzi_unicodes = collect_hanzi_unicodes()
-    log(f"  hanzi subset: {len(hanzi_unicodes)} unique codepoints from data/words.json + ASCII + CJK punct")
-    subset(serif_static, OUTPUTS["hanzi"], unicodes=hanzi_unicodes)
-    subset(thai_static, OUTPUTS["thai"], whole_thai=True)
-    subset(fredoka_static, OUTPUTS["latin"], unicodes=set(ASCII_BASIC))
+    save_subset_manifest(stored)
 
     log("Done. Output sizes:")
     for name, path in OUTPUTS.items():

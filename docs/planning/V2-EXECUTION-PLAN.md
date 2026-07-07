@@ -1,5 +1,24 @@
 # V2/V3/V4 Execution Plan — living checklist
 
+## Code-review fix round (2026-07-07)
+
+Full-codebase review (Fable lead + 2 review subagents), then fixes on `feat/prd-visual-slice-v1`. All confirmed findings fixed; 350 tests green, build clean, DOM-id check passed.
+
+- [x] **Distractors**: first-token meaning check broke with CC-CEDICT glosses (6,293/22,027 start "to " → the only "to …" option was always the answer). Now content-token overlap on the first sense with a stopword list (`src/distractors.js`, +4 tests).
+- [x] **Bite race**: correct answer now freezes the walker (`z.frozen`) so a last-instant correct tap can't be recorded as a miss while the coin is in flight.
+- [x] **Raccoon defeat animation**: never played (raw rAF timestamp passed where time-since-defeat was expected) — `z.happyAt` per-defeat clock, shifted on pause-resume.
+- [x] **Custom decks** (fight-misses/needs-work): no longer set scope high scores or earn the perfect bonus/quest (`B.customDeck`).
+- [x] **Quit banking** (user-approved): quitting banks coins + daily-goal credit; still no best score/perfect/results screen.
+- [x] **sw.js precache**: fixed `ui-card-soft.png`→`.svg` typo; added the 3 LC fonts, `bg-progress`/`bg-collection`, `cat-guide/celebrate/thinking`, `ui-tab.svg`; removed 7 dead entries; navigation fallback to cached `index.html` when offline (SHELL bump deferred to the development → main release, per branching model). New `test/sw-precache.test.js` diffs PRECACHE against disk + index.html/sprites/asset-manifest so this can't drift again.
+- [x] **cat.js**: removed unreachable `"wrong"` state (moved to raccoon in M5) and its latent double-scaled lineWidth.
+- [x] **build_audio.py**: source = `data/words.json` top-2000 by frequency **plus all HSK1–2** (exam-text frequency underranks basics — 七 was rank ~4,600), replacing the stale `hsk_top2000_bilingual.csv`; index.json rebuilt from disk. Generated 297 missing MP3s → 2,297 total; HSK1–2 coverage now 100%.
+- [x] **build_game_data.py**: OVERRIDES now only fill broken values (廖/萄/蔡 keep corrected upstream glosses); ragged-row guard with file+line error; dead `manifest.tests_total` removed. Data regenerated.
+- [x] **build_fonts.py**: skip guard is now charset-hash-aware (sidecar `assets/fonts/subset-manifest.json`) so vocabulary refreshes can't ship stale subsets.
+- [ ] Ship: rides this branch's PR to `development`; SHELL bump (v23→v24) happens at the development → main release.
+- [ ] User playtest (see USER-CHECKLIST §6).
+
+Known deferrals: `pool.js` merges polyphones by hanzi (no dup rows exist today); AUDIO runtime cache has no eviction (bounded ~2,300 files); `thai-supplement.csv` fallback currently unexercised (kept as safety net).
+
 ## Visual Slice v1 — PRD-exact Home + Battle rebuild (2026-07-06)
 
 Spec: [PRD-visual-slice-v1.md](../prd/PRD-visual-slice-v1.md) (built against the

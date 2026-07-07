@@ -432,6 +432,9 @@ function startBattle(mode){
   // A miss deck can be as small as 2 (only 3 lives => at most 3 misses per round);
   // distractors fall back to the full pool for small decks, so 2 is safe.
   B.deck = (battleDeckOverride && battleDeckOverride.length >= 2) ? battleDeckOverride : pool;
+  // miss/weak-word decks are a small custom slice of the pool, not a real round —
+  // endBattle() must not let them set high scores or earn the perfect bonus.
+  B.customDeck = !!(battleDeckOverride && battleDeckOverride.length >= 2);
   battleDeckOverride = null;
   B.zombie = null; B.proj = null; B.parts = []; B.flash = 0; B.screenShake = 0; B.feedback = null;
   B.floats = []; B.mascotHopUntil = 0;
@@ -563,6 +566,7 @@ function resumeBattle(){
   if(B.mascotHopUntil) B.mascotHopUntil += shift;
   if(B.feedback) B.feedback.until += shift;
   if(B.zombie && B.zombie.wrongUntil) B.zombie.wrongUntil += shift;
+  if(B.zombie && B.zombie.happyAt) B.zombie.happyAt += shift;
   if(B.bossStageAt) B.bossStageAt += shift;
   B.paused = false;
   keepAwake(true);
@@ -668,6 +672,7 @@ function answer(btn, o){
   // plaque from here on (drawWordPlate reads z.revealed, not the answer state).
   z.revealed = true;
   if(correct){
+    z.frozen = true;   // coin is in flight — don't let the walker cross the bite line first (race with killZombie)
     B.correct++; B.combo++;
     questEvent("correct");
     questEvent("combo", B.combo);
@@ -721,6 +726,7 @@ function killZombie(z){
   const gy = B.h-B.L.ground;
   B.parts.push(...coinBurst(z.x, gy-16, !!z.boss, shopState.effect));   // bosses pop a bigger, coinier burst; effect pack swaps the look
   z.state = "happy";
+  z.happyAt = performance.now();   // raccoonBob("happy") wants time-since-defeat, not the raw rAF t
   z.hpAtKill = z.hp;   // draw() lerps hp -> 0 over the happy/dying window from this
   B.dyingUntil = performance.now() + 250;
   B.proj = null;
@@ -918,7 +924,7 @@ function draw(t){
     // aura (boss param, not scale — see raccoon.js); no skins/accessories/
     // kitten on it, those moved to the player above.
     const rScale = z.boss ? 1.5*B.S : B.S;
-    drawRaccoon(ctx, z.x, gy + 6*B.S, t, z.state, rScale, !!z.boss);
+    drawRaccoon(ctx, z.x, gy + 6*B.S, z.state === "happy" ? t - z.happyAt : t, z.state, rScale, !!z.boss);
     // floating HP bar above its head — cosmetic only. Animates hp -> 0 over
     // the happy/dying window (killZombie snapshots hpAtKill); wrong/timeout
     // never touch hp (the raccoon "wins" that word, no damage).
@@ -1220,9 +1226,14 @@ function drawPagodaSilhouette(c, x, baseY, s){
 function endBattle(quit){
   stopBattle();
   updateSmartBtn();
-  if(quit){ show("home"); return; }
+  if(quit){
+    // still bank what was earned so far — no perfect bonus, no best-score, no results screen
+    if(B.resolved > 0) noteDaily(B.resolved);
+    if(B.score > 0){ wallet += B.score; store.set("wallet", wallet); updateWalletChip(); }
+    show("home"); return;
+  }
   noteDaily(B.resolved);
-  const isPerfect = B.mode==="round" && B.resolved>0 && B.misses.length===0;
+  const isPerfect = B.mode==="round" && B.resolved>0 && B.misses.length===0 && !B.customDeck;
   if(isPerfect) questEvent("perfect");
   wallet += B.score;
   const bonus = isPerfect ? perfectBonus(B.score) : 0;
@@ -1256,12 +1267,17 @@ function endBattle(quit){
   const acc = B.attempts? Math.round(100*B.correct/B.attempts) : 0;
   $("#r-score").textContent = B.score;
   const key = scopeKey(scope)+"·"+modeKey(B.mode, B.wordsTotal);
-  const best = store.get("best", {});
-  const prev = best[key]? best[key].score : 0;
-  const isBest = B.score > prev;
-  if(isBest){ best[key] = {score:B.score, date:new Date().toISOString().slice(0,10)}; store.set("best", best); }
-  $("#r-sub").innerHTML = t("results.sub", { acc, words: B.correct, key })
-    + (isBest ? ` · <b style="color:var(--gold)">${t("results.bestTag")}</b>` : ` · ${t("results.bestPrev", { prev })}`);
+  if(B.customDeck){
+    // miss/weak-word decks don't compete on the scoreboard — no best-tag/prev-best suffix
+    $("#r-sub").innerHTML = t("results.sub", { acc, words: B.correct, key });
+  }else{
+    const best = store.get("best", {});
+    const prev = best[key]? best[key].score : 0;
+    const isBest = B.score > prev;
+    if(isBest){ best[key] = {score:B.score, date:new Date().toISOString().slice(0,10)}; store.set("best", best); }
+    $("#r-sub").innerHTML = t("results.sub", { acc, words: B.correct, key })
+      + (isBest ? ` · <b style="color:var(--gold)">${t("results.bestTag")}</b>` : ` · ${t("results.bestPrev", { prev })}`);
+  }
   const list = $("#r-miss");
   list.innerHTML = "";
   $("#r-misshead").style.display = B.misses.length? "block":"none";
