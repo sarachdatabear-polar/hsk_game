@@ -133,7 +133,7 @@ export function seasonStatus(dateStr) {
 function byId(id) { return CATALOG.find(it => it.id === id); }
 
 export function defaultShop() {
-  return { owned: [], skin: "", backdrop: "", effect: "", soundpack: "" };
+  return { owned: [], skin: "", backdrop: "", effect: "", soundpack: "", tiers: {} };
 }
 
 export function canAfford(wallet, id) {
@@ -141,10 +141,30 @@ export function canAfford(wallet, id) {
   return !!item && wallet >= item.price;
 }
 
-export function buy(wallet, shop, id) {
+// Next-tier price for a tierable item, or null when maxed / not tierable.
+// tier 1 -> 2 costs 1.5x base; tier 2 -> 3 costs 2.5x base (PRD v7 F4).
+export function upgradePrice(item, currentTier) {
+  if (!item || !item.maxTier || currentTier >= item.maxTier) return null;
+  return Math.round(item.price * (currentTier === 1 ? 1.5 : 2.5));
+}
+
+export function buy(wallet, shop, id, dateStr) {
   const item = byId(id);
   if (!item) return { ok: false, wallet, shop };
-  if (shop.owned.includes(id)) return { ok: false, wallet, shop };
+  if (shop.owned.includes(id)) {
+    // Owned tierable deco -> tier upgrade. Availability is not re-checked:
+    // once owned, seasonal/pool decos upgrade year-round (PRD v7 F4).
+    if (item.type !== "deco" || !item.maxTier) return { ok: false, wallet, shop };
+    const cur = (shop.tiers && shop.tiers[id]) || 1;
+    const price = upgradePrice(item, cur);
+    if (price === null || wallet < price) return { ok: false, wallet, shop };
+    return {
+      ok: true,
+      wallet: wallet - price,
+      shop: { ...shop, tiers: { ...(shop.tiers || {}), [id]: cur + 1 } },
+    };
+  }
+  if (!isAvailable(item, dateStr)) return { ok: false, wallet, shop };
   if (wallet < item.price) return { ok: false, wallet, shop };
   return {
     ok: true,

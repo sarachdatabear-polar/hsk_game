@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { CATALOG, defaultShop, canAfford, buy, equipItem, SEASONS, dailyStock, nextFeaturedIn, isAvailable, seasonStatus } from "../src/shop.js";
+import { CATALOG, defaultShop, canAfford, buy, equipItem, SEASONS, dailyStock, nextFeaturedIn, isAvailable, seasonStatus, upgradePrice } from "../src/shop.js";
 
 describe("shop", () => {
   it("defaultShop shape", () => {
-    expect(defaultShop()).toEqual({ owned: [], skin: "", backdrop: "", effect: "", soundpack: "" });
+    expect(defaultShop()).toEqual({ owned: [], skin: "", backdrop: "", effect: "", soundpack: "", tiers: {} });
   });
 
   it("canAfford true/false by wallet", () => {
@@ -298,5 +298,73 @@ describe("shop v7 availability", () => {
   it("a season item bought in-window equips out-of-window (no date gating on equip)", () => {
     const shop = { ...defaultShop(), owned: ["dragon"] };
     expect(equipItem(shop, "dragon").skin).toBe("dragon");
+  });
+});
+
+describe("shop v7 tiers", () => {
+  const lantern = CATALOG.find(i => i.id === "red-lantern"); // 800, deco, maxTier 3
+
+  it("defaultShop includes an empty tiers map", () => {
+    expect(defaultShop().tiers).toEqual({});
+  });
+
+  it("upgradePrice: 1.5x then 2.5x base; null when maxed or not tierable", () => {
+    expect(upgradePrice(lantern, 1)).toBe(1200);
+    expect(upgradePrice(lantern, 2)).toBe(2000);
+    expect(upgradePrice(lantern, 3)).toBe(null);
+    expect(upgradePrice(CATALOG.find(i => i.id === "gold"), 1)).toBe(null);
+  });
+
+  it("re-buying an owned deco upgrades its tier and charges upgradePrice", () => {
+    let shop = { ...defaultShop(), owned: ["red-lantern"] };
+    let r = buy(1200, shop, "red-lantern");
+    expect(r.ok).toBe(true);
+    expect(r.wallet).toBe(0);
+    expect(r.shop.tiers).toEqual({ "red-lantern": 2 });
+    r = buy(2000, r.shop, "red-lantern");
+    expect(r.shop.tiers).toEqual({ "red-lantern": 3 });
+    expect(buy(99999, r.shop, "red-lantern").ok).toBe(false); // maxed
+  });
+
+  it("upgrade fails when wallet is short; inputs not mutated", () => {
+    const shop = { ...defaultShop(), owned: ["red-lantern"] };
+    const before = JSON.stringify(shop);
+    const r = buy(1199, shop, "red-lantern");
+    expect(r.ok).toBe(false);
+    expect(JSON.stringify(shop)).toBe(before);
+  });
+
+  it("legacy shop object without a tiers field upgrades cleanly (old-save load)", () => {
+    const legacy = { owned: ["red-lantern"], skin: "", backdrop: "", effect: "", soundpack: "" };
+    const r = buy(1200, legacy, "red-lantern");
+    expect(r.ok).toBe(true);
+    expect(r.shop.tiers).toEqual({ "red-lantern": 2 });
+  });
+
+  it("re-buying an owned non-deco still fails", () => {
+    const shop = { ...defaultShop(), owned: ["midnight"] };
+    expect(buy(99999, shop, "midnight").ok).toBe(false);
+  });
+
+  it("gated first purchases respect availability; upgrades do not need the window", () => {
+    const today = "2026-07-07"; // summer active
+    let r = buy(4500, defaultShop(), "shaved-ice-cart", today);
+    expect(r.ok).toBe(true);
+    // upgrade in deep winter still works — item already owned
+    r = buy(Math.round(4500 * 1.5), r.shop, "shaved-ice-cart", "2026-12-01");
+    expect(r.ok).toBe(true);
+    expect(r.shop.tiers["shaved-ice-cart"]).toBe(2);
+    // but a first purchase out of window fails
+    expect(buy(99999, defaultShop(), "shaved-ice-cart", "2026-12-01").ok).toBe(false);
+    // and a gated first purchase with no date fails
+    expect(buy(99999, defaultShop(), "shaved-ice-cart").ok).toBe(false);
+  });
+
+  it("pool item buyable only while featured", () => {
+    const today = "2026-07-07";
+    const featured = dailyStock(today);
+    const absent = CATALOG.filter(i => i.pool === "daily" && !featured.includes(i.id));
+    expect(buy(99999, defaultShop(), featured[0], today).ok).toBe(true);
+    expect(buy(99999, defaultShop(), absent[0].id, today).ok).toBe(false);
   });
 });
