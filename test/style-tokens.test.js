@@ -65,7 +65,9 @@ const FORBIDDEN_RGB = ["255,248,232", "36,52,71", "18,8,6", "245,197,24", "245,1
 
 describe("forbidden legacy palette lint", () => {
   for (const name of FORBIDDEN_NAMES) {
-    const re = new RegExp(`${name}(?![\\w-])`);
+    // names ending in "-" are prefixes (e.g. --edu- matches --edu-paper);
+    // exact names keep the boundary so --panel can't match --panel-wash.
+    const re = name.endsWith("-") ? new RegExp(name) : new RegExp(`${name}(?![\\w-])`);
     it(`token ${name} is gone from index.html`, () => {
       expect(re.test(html), `${name} still referenced in index.html`).toBe(false);
     });
