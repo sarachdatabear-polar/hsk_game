@@ -22,6 +22,13 @@ export const STRINGS = {
     "home.start": "START",
     "home.startHint": "Need at least 8 words in scope to start — widen it below.",
     "home.scopeWords": "{n} words",
+    // first run (A4)
+    "welcome.title": "Welcome!",
+    "welcome.blurb": "Learn Chinese words by playing — a couple of minutes a day.",
+    "welcome.language": "Your language",
+    "welcome.level": "Start at",
+    "welcome.start": "START LEARNING",
+    "results.introHint": "Great first session! Come back tomorrow to start your streak 🍵",
     // bottom nav (M2)
     "nav.home": "Home",
     "nav.street": "Street",
@@ -138,6 +145,13 @@ export const STRINGS = {
     "home.start": "เริ่ม",
     "home.startHint": "ต้องมีคำอย่างน้อย 8 คำในขอบเขตจึงจะเริ่มได้ — ขยายขอบเขตด้านล่าง",
     "home.scopeWords": "{n} คำ",
+    // first run (A4)
+    "welcome.title": "ยินดีต้อนรับ!",
+    "welcome.blurb": "เรียนคำศัพท์จีนผ่านการเล่น — วันละไม่กี่นาที",
+    "welcome.language": "ภาษาของคุณ",
+    "welcome.level": "เริ่มที่ระดับ",
+    "welcome.start": "เริ่มเรียนเลย",
+    "results.introHint": "ครั้งแรกเยี่ยมมาก! กลับมาพรุ่งนี้เพื่อเริ่มสตรีคของคุณ 🍵",
     // bottom nav (M2)
     "nav.home": "หน้าหลัก",
     "nav.street": "ถนน",

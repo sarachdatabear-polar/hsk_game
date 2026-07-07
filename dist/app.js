@@ -1512,6 +1512,13 @@
       "home.start": "START",
       "home.startHint": "Need at least 8 words in scope to start \u2014 widen it below.",
       "home.scopeWords": "{n} words",
+      // first run (A4)
+      "welcome.title": "Welcome!",
+      "welcome.blurb": "Learn Chinese words by playing \u2014 a couple of minutes a day.",
+      "welcome.language": "Your language",
+      "welcome.level": "Start at",
+      "welcome.start": "START LEARNING",
+      "results.introHint": "Great first session! Come back tomorrow to start your streak \u{1F375}",
       // bottom nav (M2)
       "nav.home": "Home",
       "nav.street": "Street",
@@ -1628,6 +1635,13 @@
       "home.start": "\u0E40\u0E23\u0E34\u0E48\u0E21",
       "home.startHint": "\u0E15\u0E49\u0E2D\u0E07\u0E21\u0E35\u0E04\u0E33\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E19\u0E49\u0E2D\u0E22 8 \u0E04\u0E33\u0E43\u0E19\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E08\u0E36\u0E07\u0E08\u0E30\u0E40\u0E23\u0E34\u0E48\u0E21\u0E44\u0E14\u0E49 \u2014 \u0E02\u0E22\u0E32\u0E22\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E14\u0E49\u0E32\u0E19\u0E25\u0E48\u0E32\u0E07",
       "home.scopeWords": "{n} \u0E04\u0E33",
+      // first run (A4)
+      "welcome.title": "\u0E22\u0E34\u0E19\u0E14\u0E35\u0E15\u0E49\u0E2D\u0E19\u0E23\u0E31\u0E1A!",
+      "welcome.blurb": "\u0E40\u0E23\u0E35\u0E22\u0E19\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E08\u0E35\u0E19\u0E1C\u0E48\u0E32\u0E19\u0E01\u0E32\u0E23\u0E40\u0E25\u0E48\u0E19 \u2014 \u0E27\u0E31\u0E19\u0E25\u0E30\u0E44\u0E21\u0E48\u0E01\u0E35\u0E48\u0E19\u0E32\u0E17\u0E35",
+      "welcome.language": "\u0E20\u0E32\u0E29\u0E32\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13",
+      "welcome.level": "\u0E40\u0E23\u0E34\u0E48\u0E21\u0E17\u0E35\u0E48\u0E23\u0E30\u0E14\u0E31\u0E1A",
+      "welcome.start": "\u0E40\u0E23\u0E34\u0E48\u0E21\u0E40\u0E23\u0E35\u0E22\u0E19\u0E40\u0E25\u0E22",
+      "results.introHint": "\u0E04\u0E23\u0E31\u0E49\u0E07\u0E41\u0E23\u0E01\u0E40\u0E22\u0E35\u0E48\u0E22\u0E21\u0E21\u0E32\u0E01! \u0E01\u0E25\u0E31\u0E1A\u0E21\u0E32\u0E1E\u0E23\u0E38\u0E48\u0E07\u0E19\u0E35\u0E49\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E40\u0E23\u0E34\u0E48\u0E21\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13 \u{1F375}",
       // bottom nav (M2)
       "nav.home": "\u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
       "nav.street": "\u0E16\u0E19\u0E19",
@@ -1804,6 +1818,14 @@
     return Math.round(from + (to - from) * eased);
   }
 
+  // src/firstrun.js
+  function isFirstRun(introDone, masteryStore2) {
+    return !introDone && Object.keys(masteryStore2 || {}).length === 0;
+  }
+  function introDeck(pool2, n = 6) {
+    return [...pool2].sort((a, b) => (b.f || 0) - (a.f || 0)).slice(0, n);
+  }
+
   // src/main.js
   var D = window.HSK_DATA;
   var $ = (s) => document.querySelector(s);
@@ -1842,6 +1864,8 @@
   var lenCustomOpen = false;
   var battleDeckOverride = null;
   var lastMode = "round";
+  var introPhase = null;
+  var introWords = [];
   var masteryStore = store.get("mastery", {});
   function noteAnswer(hanzi, correct) {
     recordAnswer(masteryStore, hanzi, correct);
@@ -1966,6 +1990,33 @@
   }
   $("#home-start").onclick = () => {
     if (pool.length >= 8) startBattle("round");
+  };
+  function renderWelcome() {
+    const lang = getLocale();
+    document.querySelectorAll("#welcome-lang-chips .chip").forEach((b) => b.classList.toggle("on", b.dataset.wlang === lang));
+    const lv = scope.levels[0] || 3;
+    document.querySelectorAll("#welcome-level-chips .chip").forEach((b) => b.classList.toggle("on", Number(b.dataset.wlv) === lv));
+  }
+  document.querySelectorAll("#welcome-lang-chips .chip").forEach((b) => b.addEventListener("click", () => {
+    setUiLocale(b.dataset.wlang);
+    renderWelcome();
+  }));
+  document.querySelectorAll("#welcome-level-chips .chip").forEach((b) => b.addEventListener("click", () => {
+    scope.levels = [Number(b.dataset.wlv)];
+    store.set("scope", scope);
+    pool = buildPool(D.levels, scope);
+    renderWelcome();
+  }));
+  $("#welcome-start").onclick = () => {
+    introWords = introDeck(pool, 6);
+    if (introWords.length < 2) {
+      store.set("introDone", true);
+      show("home");
+      return;
+    }
+    introPhase = "learn";
+    learnDeck = introWords.slice();
+    startLearn();
   };
   function shuffle2(a) {
     for (let i = a.length - 1; i > 0; i--) {
@@ -2150,6 +2201,12 @@
     renderCard();
   }
   function endLearn() {
+    if (introPhase === "learn") {
+      introPhase = "battle";
+      battleDeckOverride = introWords.slice();
+      startBattle("round");
+      return;
+    }
     show(fc.fromMisses ? "results" : "home");
   }
   function renderCard() {
@@ -2280,6 +2337,7 @@
     B.combo = 0;
     B.lives = 3;
     B.wordsTotal = mode === "round" ? normalizeLen(scope.sessionLen) : Infinity;
+    if (introPhase === "battle") B.wordsTotal = B.deck.length;
     B.spawned = 0;
     B.resolved = 0;
     B.correct = 0;
@@ -3177,6 +3235,10 @@
         store.set("wallet", wallet);
         updateWalletChip();
       }
+      if (introPhase) {
+        introPhase = null;
+        store.set("introDone", true);
+      }
       show("home");
       return;
     }
@@ -3268,6 +3330,15 @@
       startBattle("round");
     };
     $("#r-again").onclick = () => startBattle(lastMode);
+    const hintEl = $("#r-intro-hint");
+    if (introPhase === "battle") {
+      introPhase = null;
+      store.set("introDone", true);
+      hintEl.textContent = t("results.introHint");
+      hintEl.style.display = "block";
+    } else {
+      hintEl.style.display = "none";
+    }
     show("results");
   }
   function renderScores() {
@@ -3823,6 +3894,10 @@
   applyStaticI18n();
   syncUiLangChips();
   sfx.pack = shopState.soundpack || "default";
+  if (isFirstRun(store.get("introDone", false), masteryStore)) {
+    renderWelcome();
+    show("welcome");
+  }
   renderHome();
   renderQuests();
   renderStreet();

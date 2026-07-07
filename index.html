@@ -474,6 +474,17 @@
   .sec-btn .asset-icon{width:19px; height:19px; color:var(--lc-teal); flex:0 0 auto;}
   .sec-btn:active{transform:scale(.96);}
   .sec-btn:disabled{opacity:.5;}
+
+  /* A4 welcome (first run): compact single-column card, reuses chip + sun
+     plaque recipes. Nav is hidden here (nav.js doesn't list "welcome"). */
+  #s-welcome{justify-content:center;}
+  .welcome-wrap{display:flex; flex-direction:column; gap:4px; max-width:340px; width:100%; margin:0 auto;}
+  .welcome-cat{width:120px; height:120px; margin:0 auto;
+    filter:drop-shadow(0 8px 10px rgba(46,42,36,.3));}
+  .welcome-title{text-align:center; margin:6px 0 0;}
+  .welcome-blurb{text-align:center; color:var(--muted); font-size:14.5px; margin:2px 0 6px;}
+  .welcome-start{margin-top:16px; flex:none;}
+
   /* festive decor — swaying lantern.png corners + a soft cloud.png behind the
      title. Applied to the bare screens (Results/Scores/Progress/How-to) only;
      #s-home keeps its painted hero so the motif isn't doubled. z-index:0 makes
@@ -547,6 +558,28 @@
       <button class="sec-btn" data-go="scope-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg><span data-i18n="home.flashcards">Flashcards</span></span></button>
       <button class="sec-btn" id="go-smart"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#target"></use></svg><span data-i18n="home.smart">Smart Review</span></span></button>
       <button class="sec-btn" data-go="shop"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#shop"></use></svg><span data-i18n="home.shop">Shop</span></span></button>
+    </div>
+  </div>
+
+  <!-- WELCOME (A4 first run — shown once for fresh profiles; see firstrun.js) -->
+  <div class="screen" id="s-welcome">
+    <div class="welcome-wrap">
+      <img class="welcome-cat" src="assets/cat-study.png" alt="">
+      <h2 class="welcome-title" data-i18n="welcome.title">Welcome!</h2>
+      <p class="welcome-blurb" data-i18n="welcome.blurb">Learn Chinese words by playing — a couple of minutes a day.</p>
+      <div class="sect" data-i18n="welcome.language">Your language</div>
+      <div class="chips" id="welcome-lang-chips">
+        <button class="chip" data-wlang="en">English</button>
+        <button class="chip" data-wlang="th">ไทย</button>
+      </div>
+      <div class="sect" data-i18n="welcome.level">Start at</div>
+      <div class="chips" id="welcome-level-chips">
+        <button class="chip" data-wlv="1">HSK1</button>
+        <button class="chip" data-wlv="2">HSK2</button>
+        <button class="chip" data-wlv="3">HSK3</button>
+        <button class="chip" data-wlv="4">HSK4</button>
+      </div>
+      <button class="start-btn welcome-start" id="welcome-start" data-i18n="welcome.start">START LEARNING</button>
     </div>
   </div>
 

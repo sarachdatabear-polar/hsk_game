@@ -26,6 +26,7 @@ import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
 import { navVisibleOn, activeTabFor } from "./nav.js";
 import { roundLabel, comboMultiplier, comboFires } from "./hud.js";
 import { comboGlowTier, plaqueBounce, countUpValue } from "./juice.js";
+import { isFirstRun, introDeck } from "./firstrun.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -52,6 +53,10 @@ let learnDeck = null;     // override deck for "review misses"
 let lenCustomOpen = false;  // "Custom" chip tapped; input visible even if value matches a preset
 let battleDeckOverride = null;  // when set, next battle draws only these words (e.g. "fight misses")
 let lastMode = "round";
+// A4 first-run intro: null when not in the intro, else "learn" -> "battle".
+// introWords carries the same 6 words from warm-up into the battle.
+let introPhase = null;
+let introWords = [];
 let masteryStore = store.get("mastery", {});
 function noteAnswer(hanzi, correct){
   recordAnswer(masteryStore, hanzi, correct);
@@ -194,6 +199,32 @@ function renderHome(){
 }
 $("#home-start").onclick = ()=>{ if(pool.length >= 8) startBattle("round"); };
 
+/* ============================== first run (A4) ============================== */
+function renderWelcome(){
+  const lang = getLocale();
+  document.querySelectorAll("#welcome-lang-chips .chip").forEach(b=>
+    b.classList.toggle("on", b.dataset.wlang === lang));
+  const lv = scope.levels[0] || 3;
+  document.querySelectorAll("#welcome-level-chips .chip").forEach(b=>
+    b.classList.toggle("on", Number(b.dataset.wlv) === lv));
+}
+document.querySelectorAll("#welcome-lang-chips .chip").forEach(b=>
+  b.addEventListener("click", ()=>{ setUiLocale(b.dataset.wlang); renderWelcome(); }));
+document.querySelectorAll("#welcome-level-chips .chip").forEach(b=>
+  b.addEventListener("click", ()=>{
+    scope.levels = [Number(b.dataset.wlv)];
+    store.set("scope", scope);
+    pool = buildPool(D.levels, scope);
+    renderWelcome();
+  }));
+$("#welcome-start").onclick = ()=>{
+  introWords = introDeck(pool, 6);
+  if(introWords.length < 2){ store.set("introDone", true); show("home"); return; }
+  introPhase = "learn";
+  learnDeck = introWords.slice();
+  startLearn();
+};
+
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
 /* ============================== audio (pre-recorded mp3 first, Web Speech fallback) ============================== */
@@ -334,7 +365,17 @@ function startLearn(){
   show("learn");
   renderCard();
 }
-function endLearn(){ show(fc.fromMisses ? "results" : "home"); }
+function endLearn(){
+  if(introPhase === "learn"){
+    // A4: warm-up done — straight into a short battle over the same 6 words
+    // (normal rules, standard distractors; no fake difficulty).
+    introPhase = "battle";
+    battleDeckOverride = introWords.slice();
+    startBattle("round");
+    return;
+  }
+  show(fc.fromMisses ? "results" : "home");
+}
 function renderCard(){
   const w = fc.deck[fc.i];
   if(!w){ endLearn(); return; }
@@ -442,6 +483,8 @@ function startBattle(mode){
   B.floats = []; B.mascotHopUntil = 0;
   B.score = 0; B.combo = 0; B.lives = 3;
   B.wordsTotal = mode==="round"? normalizeLen(scope.sessionLen) : Infinity;
+  // A4 intro battle: exactly the 6 warm-up words, not a full session
+  if(introPhase === "battle") B.wordsTotal = B.deck.length;
   B.spawned = 0; B.resolved = 0; B.correct = 0; B.attempts = 0;
   B.recent = []; B.misses = []; B.missSet = new Set();
   B.nextAt = 0; B.lastT = 0; B.locked = false; B.bossStageAt = 0;
@@ -1272,6 +1315,7 @@ function endBattle(quit){
     // still bank what was earned so far — no perfect bonus, no best-score, no results screen
     if(B.resolved > 0) noteDaily(B.resolved);
     if(B.score > 0){ wallet += B.score; store.set("wallet", wallet); updateWalletChip(); }
+    if(introPhase){ introPhase = null; store.set("introDone", true); }
     show("home"); return;
   }
   noteDaily(B.resolved);
@@ -1354,6 +1398,18 @@ function endBattle(quit){
   $("#r-fight-miss").style.display = B.misses.length >= 2 ? "block" : "none";
   $("#r-fight-miss").onclick = ()=>{ battleDeckOverride = B.misses.slice(); startBattle("round"); };
   $("#r-again").onclick = ()=>startBattle(lastMode);
+  // A4 intro round: mark the intro complete and point at the streak
+  // ("come back tomorrow"), calm framing. The Welcome sticker occupies
+  // #r-sticker-slot in Phase 4 (stickers.js).
+  const hintEl = $("#r-intro-hint");
+  if(introPhase === "battle"){
+    introPhase = null;
+    store.set("introDone", true);
+    hintEl.textContent = t("results.introHint");
+    hintEl.style.display = "block";
+  }else{
+    hintEl.style.display = "none";
+  }
   show("results");
 }
 
@@ -1795,6 +1851,10 @@ pool = buildPool(D.levels, scope);
 applyStaticI18n();
 syncUiLangChips();
 sfx.pack = shopState.soundpack || "default";
+if(isFirstRun(store.get("introDone", false), masteryStore)){
+  renderWelcome();
+  show("welcome");
+}
 renderHome();
 renderQuests();
 renderStreet();
