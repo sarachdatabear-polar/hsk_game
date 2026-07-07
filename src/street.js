@@ -48,3 +48,13 @@ export function streetProgress(level) {
   const next = nextB ? { lv: nextB.lv, name: nextB.name } : null;
   return { unlocked, total, next };
 }
+
+// Two-row street layout metrics for a given canvas (w, h).
+// Deterministic, no DOM; all outputs are positive and finite.
+export function streetMetrics(w, h) {
+  const unit = Math.min(h * 0.30, w * 0.062);
+  const backY = 0.86;
+  const frontY = 1.0;
+  const backScale = 0.78;
+  return { unit, backY, frontY, backScale };
+}
