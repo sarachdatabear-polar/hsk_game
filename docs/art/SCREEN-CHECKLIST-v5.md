@@ -12,16 +12,23 @@ Shared checks for every screen:
 
 | Screen | `#s-` id | Pass A1 | Notes |
 |---|---|---|---|
-| Home | `s-home` | [ ] | shipped by Visual Slice v1 — re-verify only |
-| Battle + pause overlay | `s-battle` | [ ] | shipped by Visual Slice v1 — re-verify + `#cv`/HUD polish |
-| Flashcards | `s-learn` | [ ] | card = paper plaque; Know/Still-learning per §5 |
-| Results | `s-results` | [ ] | green big number; calm perfect/level-up plaques |
-| Scope picker | `s-scope` | [ ] | chips sand/sky; Word Quest = sun plaque |
-| Shop / Collection | `s-shop` | [ ] | previews sand-bordered |
-| Street | `s-street` | [ ] | brown-framed canvas, brown caption |
-| Progress | `s-progress` | [ ] | |
-| Quests | `s-quests` | [ ] | |
-| Scores | `s-scores` | [ ] | |
-| More | `s-more` | [ ] | green secondary plaques |
-| How to play | `s-howto` | [ ] | green `b` accents |
-| Bottom nav | `bottom-nav` | [ ] | shipped by Visual Slice v1 — re-verify only |
+| Home | `s-home` | [x] | shipped by Visual Slice v1 — re-verify only |
+| Battle + pause overlay | `s-battle` | [x] | shipped by Visual Slice v1 — re-verify + `#cv`/HUD polish |
+| Flashcards | `s-learn` | [x] | card = paper plaque; Know/Still-learning per §5 |
+| Results | `s-results` | [x] | green big number; calm perfect/level-up plaques |
+| Scope picker | `s-scope` | [x] | chips sand/sky; Word Quest = sun plaque |
+| Shop / Collection | `s-shop` | [x] | previews sand-bordered |
+| Street | `s-street` | [x] | brown-framed canvas, brown caption |
+| Progress | `s-progress` | [x] | |
+| Quests | `s-quests` | [x] | |
+| Scores | `s-scores` | [x] | |
+| More | `s-more` | [x] | green secondary plaques |
+| How to play | `s-howto` | [x] | green `b` accents |
+| Bottom nav | `bottom-nav` | [x] | shipped by Visual Slice v1 — re-verify only |
+
+## A1 walk notes (2026-07-07, screenshot pass)
+
+- All 13 screens pass on the production-asset path (Chrome, 390×844) — warm cream surfaces, zero arcade chrome.
+- With frame assets loaded, `.big` secondary buttons render the blue `ui-button-secondary` frame (matches the reference sheet's SECONDARY element); the green plaque CSS is the file:// / missing-asset fallback.
+- `.know` / `.learn2` inherit the secondary frame via the `has-ui` override's specificity (pre-existing behavior). Dedicated success/coral frame variants are an A2 asset candidate.
+- `.big.primary` under the green `ui-button-primary` frame needed `color:var(--lc-cream)` in the `has-ui` override (this round's one walk fix); its CSS fallback stays sun-yellow + brown text.
