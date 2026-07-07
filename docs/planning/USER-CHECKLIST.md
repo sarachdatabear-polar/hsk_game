@@ -39,6 +39,18 @@ Per [ART-BRIEF.md](../art/ART-BRIEF.md): create or commission, then hand the PNG
 - [ ] Flashcards still show pinyin on both faces (the toggle is battle-only, on purpose).
 - [ ] Each word is spoken **once**, when it walks in — no second playback when you tap the correct answer.
 
+## 6. Playtest — code-review fix round (2026-07-07)
+
+Open via `npm run serve` → http://localhost:8000 (canonical dev check).
+
+- [ ] Battle a few verbs: the four options should now include OTHER verbs ("to …" words) as wrong answers — the right answer must no longer be "the only option starting with to".
+- [ ] Defeat a raccoon and watch closely: it should do a short bow-and-settle over ~half a second, not snap instantly into the sitting pose.
+- [ ] Answer correctly at the very last moment (raccoon almost at the cat): it must count as a kill, never as a miss.
+- [ ] Finish a "Fight these words" round from the results screen: results should show NO "NEW BEST" tag, and your real high score for that scope must be untouched.
+- [ ] Quit a battle mid-round from pause: your coins earned so far and daily-goal words should still be credited on the home screen.
+- [ ] Flashcards/battle for HSK1 basics (七, 九, 四, 星期一): pronunciation should now be the recorded voice (crisper), not robotic device TTS.
+- [ ] Note anything that feels wrong: ______________________
+
 - [ ] 4 cat skins (Midnight / Sakura / Jade / Gold) — priority HIGH
 - [ ] 3 battle backdrops (Night Market / Temple Dawn / Bamboo) — priority HIGH
 - [ ] Boss cat sprite — MEDIUM
