@@ -155,6 +155,10 @@ export const STRINGS = {
     "battle.bossPrompt": "Review Challenge · pick the hanzi for: {meaning}",
     "battle.replay": "Play it again",
     "battle.reversePrompt": "Pick the hanzi for: {meaning}",
+    "battle.introOk": "Got it!",
+    "battle.introListen": "New: listen first! Play the sound and tap the meaning you hear.",
+    "battle.introReverse": "New: you know this word — now pick its hanzi from the meaning!",
+    "battle.introTone": "New: tone check! Tap the pinyin with the right tone marks.",
     // common
     "common.back": "← Home",
     "common.backMore": "← More",
@@ -308,6 +312,10 @@ export const STRINGS = {
     "battle.bossPrompt": "ด่านทบทวน · เลือกตัวอักษรจีนของคำว่า: {meaning}",
     "battle.replay": "ฟังอีกครั้ง",
     "battle.reversePrompt": "เลือกตัวอักษรจีนของคำว่า: {meaning}",
+    "battle.introOk": "เข้าใจแล้ว!",
+    "battle.introListen": "ใหม่: ฟังก่อนนะ! กดฟังเสียงแล้วแตะความหมายที่ได้ยิน",
+    "battle.introReverse": "ใหม่: คำนี้คุ้นแล้ว — เลือกตัวอักษรจีนจากความหมายเลย!",
+    "battle.introTone": "ใหม่: เช็ควรรณยุกต์! แตะพินอินที่มีวรรณยุกต์ถูกต้อง",
     // common
     "common.back": "← หน้าหลัก",
     "common.backMore": "← เพิ่มเติม",

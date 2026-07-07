@@ -217,6 +217,14 @@
   .pause-toggle:active{transform:scale(.98);}
   .pause-toggle .icon-text{display:flex; align-items:center; gap:8px;}
   .pause-toggle .asset-icon{width:19px; height:19px; color:var(--lc-teal); flex:0 0 auto;}
+  /* v6 soft-intro overlay — reuses .pause-resume for the #fi-ok button so it
+     matches the pause panel's primary-action styling. */
+  #format-intro{position:absolute; inset:0; display:none; align-items:center;
+    justify-content:center; background:rgba(31,45,42,.45); z-index:30;}
+  #format-intro.on{display:flex;}
+  #format-intro .fi-card{background:#FBF5E8; border:2px solid #B98F55;
+    border-radius:16px; padding:18px 20px; max-width:280px; text-align:center;}
+  #format-intro .fi-card p{margin:10px 0 14px; font-weight:700;}
   .pause-toggle .pt-state{font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
     padding:3px 9px; border-radius:999px; background-color:var(--lc-gray); color:var(--lc-ink); flex:0 0 auto;}
   .pause-toggle.on .pt-state{background-color:var(--lc-success); color:var(--lc-cream);}
@@ -768,6 +776,16 @@
         <button class="pause-quit" id="pause-quit">
           <span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#close"></use></svg><span data-i18n="battle.quit">Quit</span></span>
         </button>
+      </div>
+    </div>
+
+    <!-- v6 soft-intro: first-ever meeting of a question format. Walker is
+         frozen (z.frozen) behind this; dismiss resets it to the spawn edge. -->
+    <div id="format-intro">
+      <div class="fi-card">
+        <img src="assets/cat-guide.png" alt="" width="96">
+        <p id="fi-text"></p>
+        <button id="fi-ok" class="pause-resume"></button>
       </div>
     </div>
   </div>

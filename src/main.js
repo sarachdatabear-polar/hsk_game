@@ -46,6 +46,7 @@ const store = {
 const scope = Object.assign({levels:[3], core:false, newOnly:false, topN:0, lang:"both", sessionLen:20},
                             store.get("scope", {}));
 let settings = Object.assign({autoSpeak:true, showPinyin:true}, store.get("settings", {}));
+let formatIntros = store.get("formatIntros", {});   // v6: which formats have had their soft-intro
 // UI language: persisted choice wins, else device language. i18n.js is pure,
 // so persistence lives here (nbhsk.locale), like every other nbhsk.* key.
 setLocale(store.get("locale", detectLocale()));
@@ -825,8 +826,17 @@ function spawnZombie(){
   // two-stage ritual and the A4 intro battle stays meaning-only.
   z.format = (z.boss || introPhase === "battle") ? "meaning"
     : formatFor(w, masteryStore[w.h], { audio: audioAvailable(w.h) });
+  // v6 soft-intro: the first-ever appearance of a format freezes the walker,
+  // the guide explains it in one line, and that word can never cost a life.
+  const introKey = FORMATS[z.format].intro;
+  if(introKey && !formatIntros[z.format]){
+    formatIntros[z.format] = 1; store.set("formatIntros", formatIntros);
+    z.frozen = true; z.introFree = true;
+    showFormatIntro(introKey);
+  }
   const pol = FORMATS[z.format].audio;
-  if(pol === "always" || (pol === "setting" && settings.autoSpeak)) speak(w.h);
+  // during an intro the audio waits for dismiss (played in showFormatIntro's OK)
+  if(!z.frozen && (pol === "always" || (pol === "setting" && settings.autoSpeak))) speak(w.h);
   renderQuestion(w, z.format, z.format === "reverse" ? "battle.reversePrompt" : null);
   updateHud();   // round capsule tracks B.spawned — refresh as each word enters
   // per-word ramp on the unscaled base, then re-derive the screen-scaled
@@ -862,6 +872,20 @@ function renderQuestion(word, format, promptKey){
     b.onclick = ()=>answer(b, o);
     box.appendChild(b);
   }
+}
+function showFormatIntro(key){
+  $("#fi-text").textContent = t(key);
+  $("#fi-ok").textContent = t("battle.introOk");
+  $("#format-intro").classList.add("on");
+  $("#fi-ok").onclick = ()=>{
+    $("#format-intro").classList.remove("on");
+    const z = B.zombie;
+    if(z && z.state === "walk"){
+      z.x = B.w + 30;      // full runway — the intro must never eat thinking time
+      z.frozen = false;
+      if(FORMATS[z.format].audio === "always") speak(z.w.h);
+    }
+  };
 }
 function lockOptions(){
   B.locked = true;
@@ -940,13 +964,15 @@ function answer(btn, o){
     // ONE attempt per word: wrong tap = lose a heart. Skip the charge animation and
     // advance quickly — just long enough to see the correct answer flashed green.
     B.combo = 0;
-    sfx.wrong(); sfx.bite(); hapticWrong();
+    const free = !!z.introFree;   // first-ever attempt of a new format: no heart lost
+    sfx.wrong(); if(!free){ sfx.bite(); hapticWrong(); }
     btn.classList.add("bad", "stamp", "stamp-bad");
     lockOptions();
     revealCorrect();
     pushMiss(z.w);
     if(boss) noteAnswer(z.w.h, false);          // any miss fails the boss word
-    B.lives--; B.flash = 1; B.screenShake = REDUCED_MOTION ? 0 : 1; B.resolved++;
+    if(!free){ B.lives--; B.flash = 1; B.screenShake = REDUCED_MOTION ? 0 : 1; }
+    B.resolved++;
     z.state = "wrong";
     z.wrongUntil = performance.now() + 560;
     B.feedback = {...feedbackEffect("wrong", z.x, B.h-B.L.ground-44*B.S), until:fxUntil(560)};
@@ -982,8 +1008,9 @@ function bite(timedOut){
     B.combo = 0; noteAnswer(z.w.h, false); pushMiss(z.w); revealCorrect(); lockOptions();
     z.revealed = true;   // timeout resolves the word too — fill the plaque's translation line
   }
+  const free = !!(z && z.introFree);   // intro word timing out is also forgiven
   sfx.bite();
-  B.lives--; B.flash = 1;
+  if(!free){ B.lives--; B.flash = 1; }
   B.resolved++;
   scheduleNext(1500);   // long enough to read the revealed answer
   updateHud();
