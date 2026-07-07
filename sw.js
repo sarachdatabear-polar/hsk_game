@@ -2,27 +2,26 @@
 // A worker registered from pwa/ would be scoped to /pwa/ and could not serve the
 // app shell offline, since static hosts (GitHub Pages) don't send
 // Service-Worker-Allowed to widen scope. Paths below are root-relative.
-const SHELL = "nbhsk-shell-v19";
+const SHELL = "nbhsk-shell-v30";
 const AUDIO = "nbhsk-audio-v1";
 const PRECACHE = [
   "index.html", "dist/app.js", "data/words.js", "audio/index.json",
   "pwa/manifest.webmanifest", "pwa/icons/icon-192.png", "pwa/icons/icon-512.png",
   // art assets — tolerant: missing files are silently skipped so a partial
   // asset drop never bricks an offline install
-  "assets/bg-home.png",
+  "assets/bg-home.webp",
+  "assets/bg-quest.png",
+  "assets/bg-flashcards.webp",
   "assets/bg-battle.png",
+  "assets/bg-progress.webp",
+  "assets/bg-collection.webp",
   "assets/cat-walk.png",
   "assets/cat-happy.png",
+  "assets/cat-study.png",
   "assets/maneki.png",
   "assets/coin.png",
   "assets/lantern.png",
   "assets/cloud.png",
-  "assets/btn-learn.png",
-  "assets/btn-scores.png",
-  "assets/btn-progress.png",
-  "assets/btn-howto.png",
-  "assets/btn-sound.png",
-  "assets/btn-shop.svg",
   "assets/ui-icons.svg",
   "assets/cat-midnight-walk.png",
   "assets/cat-midnight-happy.png",
@@ -34,25 +33,49 @@ const PRECACHE = [
   "assets/cat-gold-happy.png",
   "assets/cat-boss-walk.png",
   "assets/cat-boss-happy.png",
+  "assets/raccoon-walk.png",
+  "assets/raccoon-happy.png",
   "assets/cat-portrait.png",
+  "assets/cat-guide.png",
+  "assets/cat-celebrate.png",
+  "assets/cat-thinking.png",
+  "assets/ui-tab.svg",
   "assets/bg-market.png",
-  "assets/bg-results.png",
+  "assets/bg-results.webp",
   "assets/bg-temple.png",
   "assets/bg-bamboo.png",
-  "assets/ui-panel.png",
-  "assets/ui-word-plaque.png",
-  "assets/ui-button-primary.png",
-  "assets/ui-button-secondary.png",
-  "assets/ui-button-neutral.png",
-  "assets/ui-badge.png",
-  "assets/ui-progress-track.png",
-  "assets/ui-progress-fill.png",
-  "assets/fx-correct.png",
-  "assets/fx-wrong.png",
-  "assets/fx-critical.png",
-  "assets/fx-level-up.png",
-  "assets/fx-new-best.png",
-  "assets/fonts/title.woff2"
+  "assets/ui-button-primary.svg",
+  "assets/ui-button-secondary.svg",
+  "assets/ui-button-neutral.svg",
+  "assets/ui-card-paper.svg",
+  "assets/ui-card-soft.svg",
+  "assets/ui-tag.svg",
+  "assets/ui-badge-mastery.svg",
+  "assets/ui-progress-track.svg",
+  "assets/ui-progress-fill.svg",
+  "assets/ui-stamp-correct.svg",
+  "assets/ui-divider.svg",
+  "assets/fx-correct.svg",
+  "assets/fx-wrong.svg",
+  "assets/fx-critical.svg",
+  "assets/fx-perfect.svg",
+  "assets/fx-retry.svg",
+  "assets/fx-mastery.svg",
+  "assets/fx-level-up.svg",
+  "assets/fx-daily-goal.svg",
+  "assets/ui-button-neutral-disabled.svg",
+  "assets/ui-button-danger.svg",
+  "assets/ui-button-start.svg",
+  "assets/ui-panel.svg",
+  "assets/ui-word-plaque.svg",
+  "assets/ui-icon-tile.svg",
+  "assets/vfx-orb-green.svg",
+  "assets/vfx-orb-red.svg",
+  "assets/vfx-orb-blue.svg",
+  "assets/vfx-orb-gold.svg",
+  "assets/fonts/lc-hanzi.woff2",
+  "assets/fonts/lc-latin.woff2",
+  "assets/fonts/lc-thai.woff2"
 ];
 
 self.addEventListener("install", e => {
@@ -77,6 +100,17 @@ self.addEventListener("fetch", e => {
       if (res.ok) c.put(e.request, res.clone());
       return res;
     }));
+    return;
+  }
+  // Navigations (address-bar/app launches) may arrive as the directory URL
+  // ("…/repo/"), which never matches the "index.html" cache key — fall back to
+  // the cached shell so an offline launch still boots.
+  if (e.request.mode === "navigate") {
+    e.respondWith(
+      caches.match(e.request).then(hit =>
+        hit || fetch(e.request).catch(() => caches.match("index.html"))
+      )
+    );
     return;
   }
   e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request)));

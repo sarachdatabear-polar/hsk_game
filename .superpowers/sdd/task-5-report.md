@@ -1,69 +1,87 @@
-Status: DONE
+# Task 5 report: soft-intro moments + free first attempt
 
-Summary:
-- Created `src/icons.js` with the shared `iconSvg(id)`, `setIconLabel(el, icon, label)`, `setIconOnly(el, icon)`, and `setPill(el, icon, text)` helpers from the brief.
-- Updated `src/main.js` to import the shared helpers, removed the local icon helper implementations, and switched the level chip to the required `paw` icon.
-- Expanded `assets/ui-icons.svg` so every required icon ID from `assets/asset-manifest.json` exists as a real `<symbol id="...">`, reusing shapes where appropriate.
-- Updated `index.html` to remove the obsolete `pill-icon` background-image rules and replaced the remaining static coin/cat pill fallback markup with inline SVG icon usage so initial render still shows icons without JS.
-- Rebuilt `dist/app.js`.
+## Route taken for #fi-ok styling
 
-Verification:
-- `test/asset-manifest.test.js` is absent in this worktree, so I manually verified required icon IDs with:
-  `node -e 'const fs=require("fs"); const manifest=JSON.parse(fs.readFileSync("assets/asset-manifest.json","utf8")); const svg=fs.readFileSync("assets/ui-icons.svg","utf8"); const missing=manifest.required_icons.filter(id=>!svg.includes(\`id="${id}"\`)); if(missing.length){ console.error("Missing icon ids:", missing.join(", ")); process.exit(1); } console.log("All required icon ids present:", manifest.required_icons.join(", "));'`
-- `npm run build` passed.
-- `npm test` passed: 17 files, 169 tests.
+Grepped `pause-resume` in `index.html`: it is a **class** (`class="pause-resume"`, not an id-based
+selector) applied to the pause overlay's resume button, with real button styling (gradient sun
+background, brown border, shadow, active-press transform) defined at `.pause-resume{...}` /
+`.pause-resume:active{...}` (index.html lines 207-212).
 
-Commit:
-- Intended commit message: `feat: centralize production icons`
+Per the brief's Step 1 note, I put `class="pause-resume"` directly on `#fi-ok` and **skipped** the
+bespoke `#fi-ok{...}` button-styling block from the brief (font/padding/border/background rules).
+Kept the `#format-intro`, `#format-intro.on`, `.fi-card`, and `.fi-card p` rules verbatim from the
+brief, since those aren't covered by any existing pause-overlay class.
 
-Concerns:
-- None.
+## Changes per file
 
----
+### `index.html`
+- Added the `#format-intro` overlay markup (cat-guide image, `#fi-text`, `#fi-ok` button) right
+  after the pause-overlay's closing `</div>`, still inside `#s-battle` (confirmed `#s-battle` opens
+  at line 740; the new markup sits between the pause-overlay's close and `#s-battle`'s close).
+  `#fi-ok` carries `class="pause-resume"` (see route above) instead of a bare `id` for styling.
+- Added CSS next to the `.pause-overlay`/`.pause-toggle` rules: `#format-intro`,
+  `#format-intro.on`, `#format-intro .fi-card`, `#format-intro .fi-card p`. No `#fi-ok` CSS block
+  added (styling comes from `.pause-resume`).
+- Confirmed `assets/cat-guide.png` exists in the repo (used by the `<img>` tag).
 
-Fix report (post-review):
+### `src/main.js`
+- Added `let formatIntros = store.get("formatIntros", {});` next to `let settings = ...` (line 49).
+- In `spawnZombie()`, replaced the Task 4 audio-policy pair with the soft-intro check + the
+  frozen-aware audio-policy line, exactly as the brief specifies (introKey lookup, formatIntros
+  persistence, `z.frozen`/`z.introFree` flags, `showFormatIntro(introKey)` call, and the `!z.frozen`
+  guard added to the speak-on-spawn condition).
+- Added `showFormatIntro(key)` directly below `renderQuestion` (before `lockOptions`): sets
+  `#fi-text`/`#fi-ok` text via `t()`, shows the overlay, and on OK dismiss resets `z.x` to the
+  spawn edge, clears `z.frozen`, and replays audio for `always`-audio formats.
+- In `answer()`'s wrong-tap branch: introduced `const free = !!z.introFree;`, gated `sfx.bite()` +
+  `hapticWrong()` behind `!free`, and gated `B.lives--`/`B.flash`/`B.screenShake` behind `!free`
+  while `B.resolved++` still always runs. Note: the actual file has `pushMiss(z.w); if(boss)
+  noteAnswer(z.w.h, false);` between the two brief-quoted snippets (rather than exactly "three
+  lines later") — preserved that line and applied the same free-attempt gating semantics.
+- In `bite()`: added `const free = !!(z && z.introFree);`, gated `B.lives--`/`B.flash` behind
+  `!free`; `sfx.bite()` and `B.resolved++` still run unconditionally.
 
-What I changed
-- Bumped the service worker shell cache key in `sw.js` from `nbhsk-shell-v12` to `nbhsk-shell-v13` so the updated app shell assets invalidate correctly.
-- Added `test/asset-manifest.test.js` to verify every ID listed in `assets/asset-manifest.json` `required_icons` exists as a real `id="..."` symbol in `assets/ui-icons.svg`.
-- Used the new test to cover the reviewer verification gap for the full icon-ID set.
+### `src/i18n.js`
+- Added the four keys (`battle.introOk`, `battle.introListen`, `battle.introReverse`,
+  `battle.introTone`) to both the `en` and `th` tables, immediately after `battle.reversePrompt`
+  (the Task 4 addition), verbatim from the brief.
 
-Commands run and outputs
-- `npm test -- test/asset-manifest.test.js`
-  - Before the fix: failed with `No test files found, exiting with code 1`.
-  - After the fix: passed, `1 file, 1 test`.
-- `npm test`
-  - Passed for the full suite, including `test/asset-manifest.test.js`.
-- `npm run build`
-  - Skipped. This fix only changes `sw.js`, a test file, and the task report; no `src/` files changed, so `dist/app.js` was not expected to change.
+## Self-review grep evidence
 
-Files changed
-- `sw.js`
-- `test/asset-manifest.test.js`
-- `.superpowers/sdd/task-5-report.md`
+```
+$ grep -n "formatIntros" src/main.js
+49:let formatIntros = store.get("formatIntros", {});   // v6: which formats have had their soft-intro
+832:  if(introKey && !formatIntros[z.format]){
+833:    formatIntros[z.format] = 1; store.set("formatIntros", formatIntros);
 
-Self-review
-- Edit scope stayed within the assigned files only.
-- The new test is intentionally narrow and limited to the `required_icons` contract, without adding the deferred Task 3+4 coverage.
-- The shell cache bump matches the user-facing shell/art changes the reviewer called out.
+$ grep -n "introFree" src/main.js
+834:    z.frozen = true; z.introFree = true;
+967:    const free = !!z.introFree;   // first-ever attempt of a new format: no heart lost
+1011:  const free = !!(z && z.introFree);   // intro word timing out is also forgiven
+```
 
----
+- Set in `spawnZombie` (line 834), read in `answer()`'s wrong branch (line 967) and in `bite()`
+  (line 1011). Both wrong-tap and timeout paths gate `B.lives--` behind `!free` — the intro word
+  can never cost a life.
+- The audio-policy line in `spawnZombie` (`if(!z.frozen && (pol === "always" || ...)) speak(w.h);`)
+  now skips `speak()` while `z.frozen` (intro pending); `showFormatIntro`'s `#fi-ok` onclick
+  handler replays audio for `always`-policy formats after dismiss.
+- `FORMATS[f].intro` keys (`battle.introListen`/`battle.introReverse`/`battle.introTone`, checked
+  in `src/formats.js`) match the four new i18n keys exactly; confirmed all four keys present in
+  both `en` and `th` tables of `src/i18n.js`.
+- `#format-intro` markup confirmed inside `#s-battle` (inserted before `#s-battle`'s closing
+  `</div>`, after the pause-overlay's closing `</div>`).
+- `z.frozen` confirmed as the walker-movement gate in `loop()`:
+  `if(z.state==="walk"){ if(!z.frozen){ z.x -= ... } }` (line ~1049).
 
-Fix report (review follow-up):
+## Test results
 
-What I changed
-- Tightened `test/asset-manifest.test.js` so each required icon must match a real `<symbol ... id="...">` entry in `assets/ui-icons.svg`, not just any substring containing the ID.
+`npm test` → **554 tests passed across 35 files**, 0 failures.
 
-Commands run and outputs
-- `npm test -- test/asset-manifest.test.js`
-  - Passed: 1 file, 1 test.
-- `npm test`
-  - Passed: 18 files, 170 tests.
+## Concerns
 
-Files changed
-- `test/asset-manifest.test.js`
-- `.superpowers/sdd/task-5-report.md`
-
-Self-review
-- The assertion now checks the actual SVG symbol tag shape required by Task 5.
-- No runtime files were changed.
+- None blocking.
+- Step 6 (manual browser verify of the freeze/overlay/dismiss/no-repeat-overlay flow) was
+  explicitly deferred per task instructions to Task 6's end-to-end check — not performed here.
+- Found a stale, unrelated report already sitting at this path (from a prior "centralize
+  production icons" task) — overwrote it with this task's report as instructed.

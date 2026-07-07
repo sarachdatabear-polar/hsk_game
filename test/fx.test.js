@@ -70,6 +70,17 @@ describe("coinBurst", () => {
     expect(boss.filter(s => s.kind === "cracker").length).toBe(12);
     expect(boss.filter(s => s.kind === "spark").length).toBe(22);
   });
+
+  it("star-shower burst: count+4 specs, all star kind with slow-fall gravity", () => {
+    const specs = coinBurst(10, 20, false, "star-shower");
+    expect(specs.length).toBe(16); // 12 + 4
+    expect(specs.every(s => s.kind === "star")).toBe(true);
+    expect(specs.every(s => s.g === 220)).toBe(true);
+  });
+
+  it("star-shower boss burst scales with the boss count", () => {
+    expect(coinBurst(0, 0, true, "star-shower").length).toBe(32); // 28 + 4
+  });
 });
 
 describe("comboFloater", () => {
@@ -114,10 +125,14 @@ describe("fireworkRing", () => {
 });
 
 describe("feedbackEffect", () => {
-  it("describes production feedback effect sprites", () => {
-    expect(feedbackEffect("correct", 10, 20)).toMatchObject({ kind: "correct", x: 10, y: 20, sprite: "fx-correct" });
-    expect(feedbackEffect("wrong", 10, 20)).toMatchObject({ kind: "wrong", sprite: "fx-wrong" });
-    expect(feedbackEffect("critical", 10, 20)).toMatchObject({ kind: "critical", sprite: "fx-critical" });
+  it("maps kinds to fx stamps and orb bursts", () => {
+    expect(feedbackEffect("correct", 10, 20)).toMatchObject({ kind: "correct", x: 10, y: 20, sprite: "fx-correct", orb: "vfx-orb-green" });
+    expect(feedbackEffect("wrong", 10, 20)).toMatchObject({ kind: "wrong", sprite: "fx-wrong", orb: "vfx-orb-red" });
+    expect(feedbackEffect("critical", 10, 20)).toMatchObject({ kind: "critical", sprite: "fx-critical", orb: "vfx-orb-gold" });
+  });
+
+  it("streak milestone gets a blue orb and no stamp", () => {
+    expect(feedbackEffect("streak", 5, 6)).toMatchObject({ kind: "streak", x: 5, y: 6, life: 0.75, sprite: null, orb: "vfx-orb-blue" });
   });
 });
 

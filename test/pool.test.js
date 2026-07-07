@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildPool, coveragePct, scopeKey, meaning } from "../src/pool.js";
+import { buildPool, coveragePct, scopeKey, meaning, scopeSummary } from "../src/pool.js";
 import { LEVELS, MANIFEST } from "./fixtures.js";
 
 const base = { levels: [1, 2], core: false, newOnly: false, topN: 0 };
@@ -55,6 +55,29 @@ describe("meaning", () => {
   });
   it("english mode returns english with no sub", () => {
     expect(meaning(th, "en")).toEqual({ main: "cat", sub: "" });
+  });
+});
+
+describe("scopeSummary", () => {
+  it("collapses a contiguous run of levels to a dash range", () => {
+    expect(scopeSummary({ levels: [1, 2, 3], core: false, newOnly: false, sessionLen: 20 }))
+      .toEqual({ levelLabel: "HSK1–3", core: false, newOnly: false, sessionLen: 20 });
+  });
+  it("uses a single label for one level", () => {
+    expect(scopeSummary({ levels: [4], core: false, newOnly: false, sessionLen: 40 }).levelLabel)
+      .toBe("HSK4");
+  });
+  it("joins a non-contiguous selection with +", () => {
+    expect(scopeSummary({ levels: [1, 3], core: false, newOnly: false, sessionLen: 20 }).levelLabel)
+      .toBe("HSK1+3");
+  });
+  it("sorts unordered levels before summarizing", () => {
+    expect(scopeSummary({ levels: [3, 1, 2], core: false, newOnly: false, sessionLen: 20 }).levelLabel)
+      .toBe("HSK1–3");
+  });
+  it("passes through the core/newOnly flags and a normalized session length", () => {
+    expect(scopeSummary({ levels: [2], core: true, newOnly: true, sessionLen: "7" }))
+      .toEqual({ levelLabel: "HSK2", core: true, newOnly: true, sessionLen: 7 });
   });
 });
 

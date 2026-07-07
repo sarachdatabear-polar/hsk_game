@@ -100,6 +100,15 @@
     <path d="M7 17h10l-1.5-2.5V10a3.5 3.5 0 0 0-7 0v4.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
     <path d="M5 5l14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
   </symbol>
+  <symbol id="pinyin" viewBox="0 0 24 24">
+    <path d="M8 7h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <path d="M5 12h14M5 16.5h9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="pinyin-off" viewBox="0 0 24 24">
+    <path d="M8 7h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <path d="M5 12h14M5 16.5h9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <path d="M5 5l14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
   <symbol id="close" viewBox="0 0 24 24">
     <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
   </symbol>
@@ -126,5 +135,48 @@
   </symbol>
   <symbol id="heart-empty" viewBox="0 0 24 24">
     <path d="M12 20s-7-4.5-9-9a4.4 4.4 0 0 1 7-5 4.4 4.4 0 0 1 7 5c-2 4.5-9 9-9 9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="book" viewBox="0 0 24 24">
+    <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v15H5.5A1.5 1.5 0 0 0 4 20.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v15h5.5A1.5 1.5 0 0 1 20 20.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="learn" viewBox="0 0 24 24"><use href="#book"/></symbol>
+  <symbol id="quest" viewBox="0 0 24 24"><use href="#target"/></symbol>
+  <symbol id="review" viewBox="0 0 24 24"><use href="#repeat"/></symbol>
+  <symbol id="retry" viewBox="0 0 24 24"><use href="#repeat"/></symbol>
+  <symbol id="headphones" viewBox="0 0 24 24">
+    <path d="M5 14v-1a7 7 0 0 1 14 0v1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <rect x="3.5" y="13" width="4" height="7" rx="2" fill="currentColor"/>
+    <rect x="16.5" y="13" width="4" height="7" rx="2" fill="currentColor"/>
+  </symbol>
+  <symbol id="secondary-coin" viewBox="0 0 24 24"><use href="#coin"/></symbol>
+  <symbol id="focus-heart" viewBox="0 0 24 24"><use href="#heart"/></symbol>
+  <symbol id="collection" viewBox="0 0 24 24">
+    <rect x="4" y="4" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
+    <rect x="13" y="4" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
+    <rect x="4" y="13" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
+    <rect x="13" y="13" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
+  </symbol>
+  <symbol id="settings" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="calendar" viewBox="0 0 24 24">
+    <rect x="4" y="5" width="16" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M4 9h16M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="star" viewBox="0 0 24 24">
+    <path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 17l-5.3 2.8 1-5.8L3.5 9.7l5.9-.9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="mastery" viewBox="0 0 24 24">
+    <circle cx="12" cy="9" r="5" fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M9 13l-1.5 7 4.5-2.5L16.5 20 15 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="next" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="previous" viewBox="0 0 24 24"><use href="#back"/></symbol>
+  <symbol id="more" viewBox="0 0 24 24">
+    <circle cx="5.5" cy="12" r="1.9" fill="currentColor"/>
+    <circle cx="12" cy="12" r="1.9" fill="currentColor"/>
+    <circle cx="18.5" cy="12" r="1.9" fill="currentColor"/>
   </symbol>
 </svg>

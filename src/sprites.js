@@ -7,27 +7,42 @@
 
 const REGISTRY = {};
 
+// bg-home is CSS-only (ships as WebP) — not a canvas sprite.
 export const SPRITE_NAMES = [
   "cat-walk", "cat-happy",
   "cat-midnight-walk", "cat-midnight-happy",
   "cat-sakura-walk", "cat-sakura-happy",
   "cat-jade-walk", "cat-jade-happy",
   "cat-gold-walk", "cat-gold-happy",
+  "cat-panda-walk", "cat-panda-happy",
+  "cat-ninja-walk", "cat-ninja-happy",
+  "cat-astronaut-walk", "cat-astronaut-happy",
+  "cat-beach-walk", "cat-beach-happy",
+  "cat-mooncake-walk", "cat-mooncake-happy",
+  "cat-dragon-walk", "cat-dragon-happy",
   "cat-boss-walk", "cat-boss-happy",
-  "cat-portrait",
+  "raccoon-walk", "raccoon-happy",
   "maneki", "coin",
-  "bg-home", "bg-battle", "bg-market", "bg-results",
+  "bg-quest", "bg-battle", "bg-market",
   "bg-temple", "bg-bamboo",
-  "ui-panel", "ui-word-plaque",
-  "ui-button-primary", "ui-button-secondary", "ui-button-neutral",
-  "ui-badge", "ui-progress-track", "ui-progress-fill",
-  "fx-correct", "fx-wrong", "fx-critical", "fx-level-up", "fx-new-best",
+  "bg-harbor-night", "bg-snow-festival", "bg-island-sunset",
+  "bg-lantern-festival", "bg-dragon-gate",
+  "fx-correct", "fx-wrong", "fx-critical", "fx-level-up",
+  "vfx-orb-green", "vfx-orb-red", "vfx-orb-blue", "vfx-orb-gold",
+  "ui-word-plaque",
 ];
+
+// Effect stamps ship as SVG (crisp at any canvas scale); everything else is PNG.
+const SVG_SPRITES = new Set([
+  "fx-correct", "fx-wrong", "fx-critical", "fx-level-up",
+  "vfx-orb-green", "vfx-orb-red", "vfx-orb-blue", "vfx-orb-gold",
+  "ui-word-plaque",
+]);
 
 export function loadSprites() {
   for (const name of SPRITE_NAMES) {
     const img = new Image();
-    img.src = "assets/" + name + ".png";
+    img.src = "assets/" + name + (SVG_SPRITES.has(name) ? ".svg" : ".png");
     REGISTRY[name] = img;
   }
 }

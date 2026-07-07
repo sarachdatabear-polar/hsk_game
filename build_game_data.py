@@ -45,16 +45,37 @@ def load_supplement() -> dict:
                 for r in csv.DictReader(fh) if r["thai"].strip()}
 
 
+REQUIRED_FIELDS = (
+    "hanzi", "pinyin", "english", "thai",
+    "freq", "tests_appeared", "tests_total", "tier", "status",
+)
+
+
 def read_level(level: int, supplement: dict) -> list[dict]:
     path = SRC_DIR / f"HSK{level}_words-to-remember_bilingual.csv"
     words = []
     with open(path, encoding="utf-8-sig", newline="") as fh:
-        for row in csv.DictReader(fh):
+        reader = csv.DictReader(fh)
+        for row in reader:
+            missing = [f for f in REQUIRED_FIELDS if row.get(f) is None]
+            if missing:
+                raise SystemExit(
+                    f"ERROR: ragged row in {path.name} at line {reader.line_num}: "
+                    f"missing/None field(s) {missing}")
             hanzi = row["hanzi"].strip()
             if not hanzi:
                 continue
             fix = OVERRIDES.get(hanzi, {})
-            row["english"] = fix.get("e", row["english"])
+            # Only apply an override when the source value is actually
+            # broken (empty or equal to the hanzi itself) - the upstream
+            # CSVs are generated files and may have since been corrected,
+            # so don't let a stale override clobber good data.
+            english = row["english"].strip()
+            if "e" in fix and (not english or english == hanzi):
+                row["english"] = fix["e"]
+            pinyin = row["pinyin"].strip()
+            if "p" in fix and not pinyin:
+                row["pinyin"] = fix["p"]
             if not row["thai"].strip():
                 row["thai"] = fix.get("t") or supplement.get(hanzi, "")
             words.append({
@@ -86,7 +107,7 @@ def main() -> int:
         print(f"thai supplement: {len(supplement)} words loaded from {SUPPLEMENT.name}")
     levels = {str(n): read_level(n, supplement) for n in LEVELS}
 
-    manifest = {"tests_total": {}, "levels": {}}
+    manifest = {"levels": {}}
     for n in LEVELS:
         ws = levels[str(n)]
         manifest["levels"][str(n)] = {
@@ -96,7 +117,6 @@ def main() -> int:
             "thai": sum(1 for w in ws if w["t"]),
             "freq_total": sum(w["f"] for w in ws),
         }
-        manifest["tests_total"][str(n)] = ws[0]["tt"] if ws else 0
 
     payload = {"manifest": manifest, "levels": levels}
 

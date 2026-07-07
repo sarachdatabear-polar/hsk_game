@@ -43,6 +43,22 @@ export function coinBurst(x, y, boss, style) {
     return specs;
   }
 
+  if (style === "star-shower") {
+    const extra = 4;
+    const specs = [];
+    for (let i = 0; i < count + extra; i++) {
+      specs.push({
+        x, y,
+        vx: (Math.random() - 0.5) * 360,
+        vy: -Math.random() * vyMax * 1.15,
+        life: 0.8 + Math.random() * 0.4,
+        kind: "star",
+        g: 220                              // gentle fall, slower than crackers
+      });
+    }
+    return specs;
+  }
+
   const specs = [];
   for (let i = 0; i < count; i++) {
     specs.push({
@@ -81,9 +97,11 @@ export function fireworkRing(x, y) {
 }
 
 export function feedbackEffect(kind, x, y) {
-  if (kind === "wrong") return { kind: "wrong", x, y, life: 0.55, sprite: "fx-wrong" };
-  if (kind === "critical") return { kind: "critical", x, y, life: 0.75, sprite: "fx-critical" };
-  return { kind: "correct", x, y, life: 0.6, sprite: "fx-correct" };
+  if (kind === "wrong") return { kind: "wrong", x, y, life: 0.55, sprite: "fx-wrong", orb: "vfx-orb-red" };
+  if (kind === "critical") return { kind: "critical", x, y, life: 0.75, sprite: "fx-critical", orb: "vfx-orb-gold" };
+  // 10-combo milestone: pure orb pop, no stamp (the combo floater carries the number)
+  if (kind === "streak") return { kind: "streak", x, y, life: 0.75, sprite: null, orb: "vfx-orb-blue" };
+  return { kind: "correct", x, y, life: 0.6, sprite: "fx-correct", orb: "vfx-orb-green" };
 }
 
 // Wallet bonus for a miss-free round, capped so it stays a nice-to-have.

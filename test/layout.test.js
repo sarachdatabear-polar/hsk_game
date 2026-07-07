@@ -30,7 +30,7 @@ describe("layout", () => {
     expect(L.ground).toBe(30);
     expect(L.mascotX).toBe(52);
     expect(L.catHalf).toBe(34);
-    expect(L.hanziPx).toBe(44);
+    expect(L.hanziPx).toBe(60);   // M6: bumped from 44 so Hanzi clears 56 CSS px at 390-wide (PRD §10)
     expect(L.pinyinPx).toBe(18);
     expect(L.floaterPx).toBe(20);
     expect(L.mascotPx).toBe(48);

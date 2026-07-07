@@ -14,8 +14,8 @@ function checkSpec(spec) {
 }
 
 describe("sfx PACKS", () => {
-  it("has default, bells, and arcade packs", () => {
-    expect(Object.keys(PACKS).sort()).toEqual(["arcade", "bells", "default"]);
+  it("has default, bells, arcade, and lion-drum packs", () => {
+    expect(Object.keys(PACKS).sort()).toEqual(["arcade", "bells", "default", "lion-drum"]);
   });
 
   it("every pack defines kill/wrong/bite/combo", () => {
@@ -70,5 +70,22 @@ describe("sfx PACKS", () => {
       { f: 220, d: .12, w: "sawtooth", v: .2, at: 0 },
       { f: 110, d: .3, w: "sawtooth", v: .2, at: .1 },
     ]);
+  });
+
+  it("lion-drum pack has the full spec shape", () => {
+    const p = PACKS["lion-drum"];
+    expect(p).toBeTruthy();
+    for (const k of ["kill", "wrong", "bite"]) {
+      expect(Array.isArray(p[k])).toBe(true);
+      for (const s of p[k]) {
+        expect(typeof s.f).toBe("number");
+        expect(typeof s.d).toBe("number");
+        expect(typeof s.w).toBe("string");
+        expect(typeof s.v).toBe("number");
+      }
+    }
+    expect(Array.isArray(p.combo.tones)).toBe(true);
+    expect(typeof p.combo.boff).toBe("number");
+    expect(typeof p.combo.mult).toBe("number");
   });
 });

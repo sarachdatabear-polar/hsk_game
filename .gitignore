@@ -10,3 +10,4 @@ dist-apk/
 __pycache__/
 *.pyc
 .worktrees/
+scripts/.fontcache/

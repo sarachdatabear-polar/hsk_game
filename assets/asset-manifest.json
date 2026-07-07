@@ -1,213 +1,104 @@
 {
   "project": "Lucky Cat HSK",
-  "milestone": "Production Art Vertical Slice v1",
-  "version": 1,
-  "status_values": [
-    "planned",
-    "concept",
-    "review",
-    "approved",
-    "integrated",
-    "rejected"
-  ],
+  "milestone": "PRD v5 A2 — style-locked regeneration",
+  "theme": "Lucky Cat Learning Journey",
+  "version": 3,
+  "status_values": ["planned", "concept", "review", "approved", "integrated", "rejected"],
+  "types": ["sprite-sheet", "character", "background", "ui-surface", "icon-sprite", "effect", "decor"],
   "assets": [
-    {
-      "id": "cat-base-walk",
-      "file": "cat-walk.png",
-      "type": "sprite-sheet",
-      "status": "planned",
-      "width": 1536,
-      "height": 256,
-      "frames": 6,
-      "frameWidth": 256,
-      "frameHeight": 256,
-      "priority": "P0"
-    },
-    {
-      "id": "cat-base-happy",
-      "file": "cat-happy.png",
-      "type": "sprite-sheet",
-      "status": "planned",
-      "width": 1024,
-      "height": 256,
-      "frames": 4,
-      "frameWidth": 256,
-      "frameHeight": 256,
-      "priority": "P0"
-    },
-    {
-      "id": "maneki-home",
-      "file": "maneki.png",
-      "type": "character",
-      "status": "planned",
-      "width": 512,
-      "height": 512,
-      "priority": "P0"
-    },
-    {
-      "id": "cat-portrait",
-      "file": "cat-portrait.png",
-      "type": "character",
-      "status": "planned",
-      "width": 512,
-      "height": 512,
-      "priority": "P0"
-    },
-    {
-      "id": "bg-home",
-      "file": "bg-home.png",
-      "type": "background",
-      "status": "planned",
-      "width": 1080,
-      "height": 1920,
-      "priority": "P0"
-    },
-    {
-      "id": "bg-battle",
-      "file": "bg-battle.png",
-      "type": "background",
-      "status": "planned",
-      "width": 1024,
-      "height": 512,
-      "priority": "P0"
-    },
-    {
-      "id": "bg-market",
-      "file": "bg-market.png",
-      "type": "background",
-      "status": "planned",
-      "width": 1024,
-      "height": 512,
-      "priority": "P0"
-    },
-    {
-      "id": "bg-results",
-      "file": "bg-results.png",
-      "type": "background",
-      "status": "planned",
-      "width": 1080,
-      "height": 1920,
-      "priority": "P1"
-    },
-    {
-      "id": "ui-panel",
-      "file": "ui-panel.png",
-      "type": "ui-frame",
-      "status": "planned",
-      "priority": "P0"
-    },
-    {
-      "id": "ui-word-plaque",
-      "file": "ui-word-plaque.png",
-      "type": "ui-frame",
-      "status": "planned",
-      "priority": "P0"
-    },
-    {
-      "id": "ui-button-primary",
-      "file": "ui-button-primary.png",
-      "type": "ui-frame",
-      "status": "planned",
-      "priority": "P0"
-    },
-    {
-      "id": "ui-button-secondary",
-      "file": "ui-button-secondary.png",
-      "type": "ui-frame",
-      "status": "planned",
-      "priority": "P0"
-    },
-    {
-      "id": "ui-button-neutral",
-      "file": "ui-button-neutral.png",
-      "type": "ui-frame",
-      "status": "planned",
-      "priority": "P0"
-    },
-    {
-      "id": "ui-badge",
-      "file": "ui-badge.png",
-      "type": "ui-frame",
-      "status": "planned",
-      "priority": "P1"
-    },
-    {
-      "id": "ui-progress-track",
-      "file": "ui-progress-track.png",
-      "type": "ui-frame",
-      "status": "planned",
-      "priority": "P1"
-    },
-    {
-      "id": "ui-progress-fill",
-      "file": "ui-progress-fill.png",
-      "type": "ui-frame",
-      "status": "planned",
-      "priority": "P1"
-    },
-    {
-      "id": "fx-correct",
-      "file": "fx-correct.png",
-      "type": "effect-atlas",
-      "status": "planned",
-      "priority": "P0"
-    },
-    {
-      "id": "fx-wrong",
-      "file": "fx-wrong.png",
-      "type": "effect-atlas",
-      "status": "planned",
-      "priority": "P0"
-    },
-    {
-      "id": "fx-critical",
-      "file": "fx-critical.png",
-      "type": "effect-atlas",
-      "status": "planned",
-      "priority": "P0"
-    },
-    {
-      "id": "fx-level-up",
-      "file": "fx-level-up.png",
-      "type": "effect-atlas",
-      "status": "planned",
-      "priority": "P1"
-    },
-    {
-      "id": "fx-new-best",
-      "file": "fx-new-best.png",
-      "type": "effect-atlas",
-      "status": "planned",
-      "priority": "P1"
-    },
-    {
-      "id": "ui-icons",
-      "file": "ui-icons.svg",
-      "type": "icon-sprite",
-      "status": "planned",
-      "priority": "P0"
-    }
+    { "id": "cat-walk", "file": "cat-walk.png", "type": "sprite-sheet", "status": "integrated", "priority": "P0", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat" },
+    { "id": "cat-happy", "file": "cat-happy.png", "type": "sprite-sheet", "status": "integrated", "priority": "P0", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat" },
+    { "id": "cat-study", "file": "cat-study.png", "type": "character", "status": "integrated", "priority": "P0", "w": 512, "h": 512, "anchor": "center", "fallback": "canvas:drawCat" },
+    { "id": "cat-guide", "file": "cat-guide.png", "type": "character", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "center", "fallback": "canvas:drawCat" },
+    { "id": "cat-celebrate", "file": "cat-celebrate.png", "type": "character", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "center", "fallback": "canvas:drawCat" },
+    { "id": "cat-thinking", "file": "cat-thinking.png", "type": "character", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "center", "fallback": "canvas:drawCat" },
+    { "id": "cat-portrait", "file": "cat-portrait.png", "type": "character", "status": "integrated", "priority": "P0", "w": 512, "h": 512, "anchor": "center", "fallback": "canvas:drawCat" },
+    { "id": "maneki", "file": "maneki.png", "type": "character", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "bottom-center", "fallback": "canvas:maneki-vector" },
+
+    { "id": "bg-home", "file": "bg-home.webp", "type": "background", "status": "integrated", "priority": "P0", "w": 1080, "h": 1920, "fallback": "css:#s-home" },
+    { "id": "bg-quest", "file": "bg-quest.png", "type": "background", "status": "integrated", "priority": "P0", "w": 1024, "h": 512, "fallback": "css:#s-battle" },
+    { "id": "bg-flashcards", "file": "bg-flashcards.webp", "type": "background", "status": "integrated", "priority": "P0", "w": 1080, "h": 1920, "fallback": "css:#s-learn" },
+    { "id": "bg-results", "file": "bg-results.webp", "type": "background", "status": "integrated", "priority": "P1", "w": 1080, "h": 1920, "fallback": "css:.screen.festive" },
+    { "id": "bg-progress", "file": "bg-progress.webp", "type": "background", "status": "integrated", "priority": "P1", "w": 1080, "h": 1920, "fallback": "css:#s-progress" },
+    { "id": "bg-collection", "file": "bg-collection.webp", "type": "background", "status": "integrated", "priority": "P2", "w": 1080, "h": 1920, "fallback": "css:#s-shop" },
+
+    { "id": "ui-card-paper", "file": "ui-card-paper.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 360, "h": 240, "slice": [36, 36, 36, 36], "scale": 2, "fallback": "css:.card,.word-card,.flash-card" },
+    { "id": "ui-card-soft", "file": "ui-card-soft.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 360, "h": 220, "slice": [32, 32, 32, 32], "scale": 2, "fallback": "css:.readout" },
+    { "id": "ui-button-primary", "file": "ui-button-primary.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 380, "h": 98, "slice": [32, 32, 34, 32], "scale": 2, "fallback": "css:.big.primary" },
+    { "id": "ui-button-secondary", "file": "ui-button-secondary.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 380, "h": 98, "slice": [32, 32, 34, 32], "scale": 2, "fallback": "css:.big" },
+    { "id": "ui-button-neutral", "file": "ui-button-neutral.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 380, "h": 98, "slice": [32, 32, 34, 32], "scale": 2, "states": ["default", "disabled"], "fallback": "css:#opts button" },
+    { "id": "ui-tab", "file": "ui-tab.svg", "type": "ui-surface", "status": "integrated", "priority": "P1", "w": 180, "h": 72, "slice": [22, 24, 20, 24], "scale": 2, "fallback": "css:.chip" },
+    { "id": "ui-tag", "file": "ui-tag.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 150, "h": 64, "slice": [18, 18, 18, 18], "scale": 2, "fallback": "css:.chip.on" },
+    { "id": "ui-badge-mastery", "file": "ui-badge-mastery.svg", "type": "ui-surface", "status": "approved", "priority": "P1", "w": 120, "h": 120, "slice": null, "fallback": "css:.hud-round" },
+    { "id": "ui-progress-track", "file": "ui-progress-track.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 400, "h": 44, "slice": [22, 22, 22, 22], "scale": 8, "fallback": "css:.mbar" },
+    { "id": "ui-progress-fill", "file": "ui-progress-fill.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 400, "h": 44, "slice": [16, 16, 16, 16], "scale": 8, "fallback": "css:.mbar i" },
+    { "id": "ui-stamp-correct", "file": "ui-stamp-correct.svg", "type": "ui-surface", "status": "approved", "priority": "P1", "w": 120, "h": 120, "slice": null, "fallback": "canvas:feedbackEffect" },
+    { "id": "ui-divider", "file": "ui-divider.svg", "type": "ui-surface", "status": "approved", "priority": "P2", "w": 240, "h": 24, "slice": null, "fallback": "css:.sect" },
+    { "id": "ui-button-danger", "file": "ui-button-danger.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 380, "h": 98, "slice": [32, 32, 34, 32], "scale": 2, "fallback": "css:.big.danger" },
+    { "id": "ui-button-start", "file": "ui-button-start.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 380, "h": 98, "slice": [32, 32, 34, 32], "scale": 2, "fallback": "css:#go-battle" },
+    { "id": "ui-panel", "file": "ui-panel.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 560, "h": 200, "slice": [34, 34, 34, 34], "scale": 2, "fallback": "css:#quest-panel" },
+    { "id": "ui-icon-tile", "file": "ui-icon-tile.svg", "type": "ui-surface", "status": "integrated", "priority": "P0", "w": 96, "h": 96, "slice": [30, 30, 30, 30], "scale": 2, "fallback": "css:.icon-btn" },
+    { "id": "ui-word-plaque", "file": "ui-word-plaque.svg", "type": "ui-surface", "status": "integrated", "priority": "P1", "w": 560, "h": 320, "slice": null, "fallback": "canvas:drawWordPlate" },
+
+    { "id": "ui-icons", "file": "ui-icons.svg", "type": "icon-sprite", "status": "integrated", "priority": "P0", "w": null, "h": null, "fallback": "svg:inline" },
+
+    { "id": "fx-correct", "file": "fx-correct.svg", "type": "effect", "status": "integrated", "priority": "P0", "w": 120, "h": 120, "anchor": "center", "fallback": "canvas:coinBurst" },
+    { "id": "fx-wrong", "file": "fx-wrong.svg", "type": "effect", "status": "integrated", "priority": "P0", "w": 120, "h": 120, "anchor": "center", "fallback": "canvas:feedbackEffect" },
+    { "id": "fx-critical", "file": "fx-critical.svg", "type": "effect", "status": "integrated", "priority": "P0", "w": 120, "h": 120, "anchor": "center", "fallback": "canvas:feedbackEffect" },
+    { "id": "fx-perfect", "file": "fx-perfect.svg", "type": "effect", "status": "approved", "priority": "P0", "w": 120, "h": 120, "anchor": "center", "fallback": "canvas:perfectBonus" },
+    { "id": "fx-retry", "file": "fx-retry.svg", "type": "effect", "status": "approved", "priority": "P0", "w": 120, "h": 120, "anchor": "center", "fallback": "canvas:feedbackEffect" },
+    { "id": "fx-mastery", "file": "fx-mastery.svg", "type": "effect", "status": "approved", "priority": "P1", "w": 120, "h": 120, "anchor": "center", "fallback": "canvas:fireworkRing" },
+    { "id": "fx-level-up", "file": "fx-level-up.svg", "type": "effect", "status": "integrated", "priority": "P1", "w": 120, "h": 120, "anchor": "center", "fallback": "canvas:fireworkRing" },
+    { "id": "fx-daily-goal", "file": "fx-daily-goal.svg", "type": "effect", "status": "approved", "priority": "P1", "w": 120, "h": 120, "anchor": "center", "fallback": "canvas:comboFloater" },
+    { "id": "vfx-orb-green", "file": "vfx-orb-green.svg", "type": "effect", "status": "integrated", "priority": "P1", "w": 220, "h": 220, "anchor": "center", "fallback": "canvas:feedbackEffect" },
+    { "id": "vfx-orb-red", "file": "vfx-orb-red.svg", "type": "effect", "status": "integrated", "priority": "P1", "w": 220, "h": 220, "anchor": "center", "fallback": "canvas:feedbackEffect" },
+    { "id": "vfx-orb-blue", "file": "vfx-orb-blue.svg", "type": "effect", "status": "integrated", "priority": "P1", "w": 220, "h": 220, "anchor": "center", "fallback": "canvas:feedbackEffect" },
+    { "id": "vfx-orb-gold", "file": "vfx-orb-gold.svg", "type": "effect", "status": "integrated", "priority": "P1", "w": 220, "h": 220, "anchor": "center", "fallback": "canvas:feedbackEffect" },
+    { "id": "cat-midnight-walk", "file": "cat-midnight-walk.png", "type": "sprite-sheet", "status": "integrated", "priority": "P1", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-midnight-happy", "file": "cat-midnight-happy.png", "type": "sprite-sheet", "status": "integrated", "priority": "P1", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-sakura-walk", "file": "cat-sakura-walk.png", "type": "sprite-sheet", "status": "integrated", "priority": "P1", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-sakura-happy", "file": "cat-sakura-happy.png", "type": "sprite-sheet", "status": "integrated", "priority": "P1", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-jade-walk", "file": "cat-jade-walk.png", "type": "sprite-sheet", "status": "integrated", "priority": "P1", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-jade-happy", "file": "cat-jade-happy.png", "type": "sprite-sheet", "status": "integrated", "priority": "P1", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-gold-walk", "file": "cat-gold-walk.png", "type": "sprite-sheet", "status": "integrated", "priority": "P1", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-gold-happy", "file": "cat-gold-happy.png", "type": "sprite-sheet", "status": "integrated", "priority": "P1", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-boss-walk", "file": "cat-boss-walk.png", "type": "sprite-sheet", "status": "integrated", "priority": "P1", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+boss" },
+    { "id": "cat-boss-happy", "file": "cat-boss-happy.png", "type": "sprite-sheet", "status": "integrated", "priority": "P1", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+boss" },
+    { "id": "bg-battle", "file": "bg-battle.png", "type": "background", "status": "integrated", "priority": "P0", "w": 1024, "h": 512, "fallback": "css:#cv gradient", "note": "legacy night-festival art with baked-in text — P0 regeneration per GENERATION-PROMPTS-v5" },
+    { "id": "bg-market", "file": "bg-market.png", "type": "background", "status": "integrated", "priority": "P0", "w": 1024, "h": 512, "fallback": "css:#cv gradient", "note": "vector placeholder — regenerate per GENERATION-PROMPTS-v5" },
+    { "id": "bg-temple", "file": "bg-temple.png", "type": "background", "status": "integrated", "priority": "P0", "w": 1024, "h": 512, "fallback": "css:#cv gradient", "note": "vector placeholder — regenerate per GENERATION-PROMPTS-v5" },
+    { "id": "bg-bamboo", "file": "bg-bamboo.png", "type": "background", "status": "integrated", "priority": "P0", "w": 1024, "h": 512, "fallback": "css:#cv gradient", "note": "vector placeholder — regenerate per GENERATION-PROMPTS-v5" },
+    { "id": "lantern", "file": "lantern.png", "type": "decor", "status": "integrated", "priority": "P2", "w": 256, "h": 384, "fallback": "css:none (decor)" },
+    { "id": "cloud", "file": "cloud.png", "type": "decor", "status": "integrated", "priority": "P2", "w": 512, "h": 256, "fallback": "css:none (decor)" },
+    { "id": "coin", "file": "coin.png", "type": "decor", "status": "integrated", "priority": "P2", "w": 128, "h": 128, "fallback": "canvas:coin-vector" },
+    { "id": "raccoon-walk", "file": "raccoon-walk.png", "type": "sprite-sheet", "status": "integrated", "priority": "P0", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawRaccoon" },
+    { "id": "raccoon-happy", "file": "raccoon-happy.png", "type": "sprite-sheet", "status": "integrated", "priority": "P0", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawRaccoon" },
+
+    { "id": "cat-panda-walk", "file": "cat-panda-walk.png", "type": "sprite-sheet", "status": "planned", "priority": "P0", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-panda-happy", "file": "cat-panda-happy.png", "type": "sprite-sheet", "status": "planned", "priority": "P0", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-ninja-walk", "file": "cat-ninja-walk.png", "type": "sprite-sheet", "status": "planned", "priority": "P0", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-ninja-happy", "file": "cat-ninja-happy.png", "type": "sprite-sheet", "status": "planned", "priority": "P0", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-astronaut-walk", "file": "cat-astronaut-walk.png", "type": "sprite-sheet", "status": "planned", "priority": "P0", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-astronaut-happy", "file": "cat-astronaut-happy.png", "type": "sprite-sheet", "status": "planned", "priority": "P0", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-beach-walk", "file": "cat-beach-walk.png", "type": "sprite-sheet", "status": "planned", "priority": "P0", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-beach-happy", "file": "cat-beach-happy.png", "type": "sprite-sheet", "status": "planned", "priority": "P0", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-mooncake-walk", "file": "cat-mooncake-walk.png", "type": "sprite-sheet", "status": "planned", "priority": "P0", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-mooncake-happy", "file": "cat-mooncake-happy.png", "type": "sprite-sheet", "status": "planned", "priority": "P0", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-dragon-walk", "file": "cat-dragon-walk.png", "type": "sprite-sheet", "status": "planned", "priority": "P0", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+    { "id": "cat-dragon-happy", "file": "cat-dragon-happy.png", "type": "sprite-sheet", "status": "planned", "priority": "P0", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
+
+    { "id": "bg-harbor-night", "file": "bg-harbor-night.png", "type": "background", "status": "planned", "priority": "P0", "w": 1024, "h": 512, "fallback": "canvas:paintBackdrop-default" },
+    { "id": "bg-snow-festival", "file": "bg-snow-festival.png", "type": "background", "status": "planned", "priority": "P0", "w": 1024, "h": 512, "fallback": "canvas:paintBackdrop-default" },
+    { "id": "bg-island-sunset", "file": "bg-island-sunset.png", "type": "background", "status": "planned", "priority": "P0", "w": 1024, "h": 512, "fallback": "canvas:paintBackdrop-default" },
+    { "id": "bg-lantern-festival", "file": "bg-lantern-festival.png", "type": "background", "status": "planned", "priority": "P0", "w": 1024, "h": 512, "fallback": "canvas:paintBackdrop-default" },
+    { "id": "bg-dragon-gate", "file": "bg-dragon-gate.png", "type": "background", "status": "planned", "priority": "P0", "w": 1024, "h": 512, "fallback": "canvas:paintBackdrop-default" }
   ],
   "required_icons": [
-    "heart",
-    "heart-empty",
-    "coin",
-    "diamond",
-    "audio",
-    "muted",
-    "pause",
-    "close",
-    "back",
-    "home",
-    "shop",
-    "street",
-    "progress",
-    "quests",
-    "flashcards",
-    "battle",
-    "check",
-    "wrong",
-    "paw",
-    "streak"
-  ]
+    "home", "flashcards", "audio", "muted", "progress", "streak",
+    "pencil", "check", "back", "close", "pause", "play",
+    "learn", "quest", "review", "collection", "settings", "calendar",
+    "focus-heart", "star", "mastery", "book", "headphones", "retry",
+    "next", "previous", "secondary-coin", "street", "quests", "more"
+  ],
+  "planned_icons": []
 }
