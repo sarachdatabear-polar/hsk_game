@@ -1,26 +1,28 @@
 # Lucky Cat HSK — docs index
 
-Docs are grouped by **content / workstream**. Historical execution logs live under
-`superpowers/` and intentionally keep their original in-text paths (they record what
-was done at the time).
+Docs are grouped by **content / workstream**. This index lists the **active** docs
+(current plan + evergreen references). Shipped one-off specs and superseded art
+briefs are removed once their work lands — recover any of them from git history if
+needed. Historical execution logs live under `superpowers/` and intentionally keep
+their original in-text paths (they record what was done at the time).
 
 ## 📋 `prd/` — Product requirements (what to build)
-- [PRD-v2-upgrade.md](prd/PRD-v2-upgrade.md) — v2 "Make It Stick" (wallet/shop, smart review, bosses, streak)
-- [PRD-v4-street.md](prd/PRD-v4-street.md) — v4 "Lucky Cat Street" (home-screen street, shop item types)
-- [PRD-monetization-and-production.md](prd/PRD-monetization-and-production.md) — store launch + monetization
-- [PRD-pinyin-toggle-and-audio.md](prd/PRD-pinyin-toggle-and-audio.md) — battle pinyin toggle + one-shot word audio
+- [PRD-v7-shop-seasons.md](prd/PRD-v7-shop-seasons.md) — **current plan**: Shop Seasons (themed catalog, daily stock, season exclusives, deco tiers)
+- [PRD-v5-visual-retention.md](prd/PRD-v5-visual-retention.md) — shipped 2026-07-07 (phases 1–5); §8 still holds the v-next roadmap (question types → v6, HSK 3.0, social layer)
+- [PRD-monetization-and-production.md](prd/PRD-monetization-and-production.md) — store launch + monetization roadmap (all monetization deferred here)
 
 ## 🎨 `art/` — Art direction & production
-- [ART-BRIEF.md](art/ART-BRIEF.md) — style spec / implementation notes
-- [ART-QA-CHECKLIST.md](art/ART-QA-CHECKLIST.md) — per-asset acceptance gate
-- [ASSET-INVENTORY.md](art/ASSET-INVENTORY.md) — asset audit (casino-cue removal)
-- [PRD-production-art-v1.md](art/PRD-production-art-v1.md) — production-art upgrade spec
-- [CODEX-EXECUTION-PROMPT.md](art/CODEX-EXECUTION-PROMPT.md) — Codex art execution prompt
-- [CODEX-ART-HANDOFF-CHECKLIST.md](art/CODEX-ART-HANDOFF-CHECKLIST.md) — Codex art handoff checklist
+- [Lucky_Cat_HSK_PRD_Visual_Spec_v1.0.md](art/Lucky_Cat_HSK_PRD_Visual_Spec_v1.0.md) — visual-exact source spec (warm-daylight look)
+- [STYLE-TOKENS.md](art/STYLE-TOKENS.md) — style bible: palette hex, typography, panel/light rules (v5 A0)
+- [SCREEN-CHECKLIST-v5.md](art/SCREEN-CHECKLIST-v5.md) — per-screen reference-match acceptance gate (v5 A0/A1)
+- [GENERATION-PROMPTS-v5.md](art/GENERATION-PROMPTS-v5.md) — style-locked master prompt + per-asset clauses (v5 A2)
+- [GENERATION-PROMPTS-P0-copypaste.md](art/GENERATION-PROMPTS-P0-copypaste.md) — copy-paste prompt blocks + art-drop intake workflow
+- [GENERATION-PROMPTS-visual-slice.md](art/GENERATION-PROMPTS-visual-slice.md) — earlier prompt pack for backgrounds / raccoon sheets
+- [ART-QA-CHECKLIST.md](art/ART-QA-CHECKLIST.md) — per-asset style acceptance gate
+- [ASSET-INVENTORY.md](art/ASSET-INVENTORY.md) — asset audit baseline
 
 ## 📌 `planning/` — Living checklists & status
-- [V2-EXECUTION-PLAN.md](planning/V2-EXECUTION-PLAN.md) — technical status across v2/v3/v4
-- [USER-CHECKLIST.md](planning/USER-CHECKLIST.md) — human-only tasks
+- [V2-EXECUTION-PLAN.md](planning/V2-EXECUTION-PLAN.md) — cross-session technical status/log across v2–v5
 
 ## 🔧 `build/` — Build & release
 - [ANDROID_BUILD.md](build/ANDROID_BUILD.md) — Capacitor → APK build/signing guide

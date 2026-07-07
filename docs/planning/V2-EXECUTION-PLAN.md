@@ -21,7 +21,7 @@ Known deferrals: `pool.js` merges polyphones by hanzi (no dup rows exist today);
 
 ## Visual Slice v1 — PRD-exact Home + Battle rebuild (2026-07-06)
 
-Spec: [PRD-visual-slice-v1.md](../prd/PRD-visual-slice-v1.md) (built against the
+Spec: `PRD-visual-slice-v1.md` (shipped, removed in docs cleanup; built against the
 visual-exact PRD [Lucky_Cat_HSK_PRD_Visual_Spec_v1.0.md](../art/Lucky_Cat_HSK_PRD_Visual_Spec_v1.0.md)).
 Branch `feat/prd-visual-slice-v1` → PR to `development`.
 
@@ -63,7 +63,7 @@ kitten companion crowds the idle coin icon at 360px; `B.L.mascotPx` now unused.
 
 ## Pinyin toggle + one-shot audio (small round; 2026-07-06)
 
-Spec: [PRD-pinyin-toggle-and-audio.md](../prd/PRD-pinyin-toggle-and-audio.md).
+Spec: `PRD-pinyin-toggle-and-audio.md` (shipped, removed in docs cleanup).
 
 - [x] Battle `#hud-pinyin` toggle (`settings.showPinyin`, default on) hides pinyin on the word plate only — flashcards unchanged. Wiring-only, 199 tests green, build clean, DOM-id check passed.
 - [x] Word audio fires once on spawn — removed the answer-tap replay (`speak(z.w.h)`).
@@ -72,7 +72,7 @@ Spec: [PRD-pinyin-toggle-and-audio.md](../prd/PRD-pinyin-toggle-and-audio.md).
 
 ## V4 "Lucky Cat Street" status (deferred-items round; scope signed off 2026-07-04)
 
-Spec: [PRD-v4-street.md](../prd/PRD-v4-street.md). Hybrid street economy approved: milestone buildings free, decorations purchased.
+Spec: `PRD-v4-street.md` (shipped, removed in docs cleanup). Hybrid street economy approved: milestone buildings free, decorations purchased.
 
 - [x] **M1 — Effect packs** (`shop.js` effect slot + Sakura/Firecracker items, `fx.js` styled bursts w/ per-spec gravity, petal/cracker draw kinds, shop Effects section) — done 2026-07-04, +14 tests.
 - [x] **M2 — Sound packs** (`shop.js` soundpack slot + Bells/Arcade items, `sfx.js` data-driven `PACKS` table — default pack byte-identical to old tones, shop Sounds section, `sfx.pack` synced at boot + renderShop) — done 2026-07-04, +8 tests.
@@ -93,7 +93,7 @@ Spec: [PRD-v4-street.md](../prd/PRD-v4-street.md). Hybrid street economy approve
 
 ---
 
-*Cross-session continuation doc for the v2 "Make It Stick" upgrade. Spec: [PRD-v2-upgrade.md](../prd/PRD-v2-upgrade.md). Art spec (user-facing, non-blocking): [ART-BRIEF.md](../art/ART-BRIEF.md).*
+*Cross-session continuation doc for the v2 "Make It Stick" upgrade. Spec: `PRD-v2-upgrade.md` (shipped, removed in docs cleanup). Art spec (v2 dark-red/gold direction, superseded by the warm-daylight look): `ART-BRIEF.md` (removed in docs cleanup).*
 
 **Workflow:** Fable leads (plan/review), Sonnet worker subagents implement one milestone at a time, sequentially (milestones all touch `main.js`/`index.html` — do NOT parallelize). After each milestone: `npm test` green + `npm run build` clean before starting the next.
 
@@ -107,7 +107,7 @@ Spec: [PRD-v4-street.md](../prd/PRD-v4-street.md). Hybrid street economy approve
 - [x] **M4 — Daily streak + Progress v2** — done 2026-07-04 (`src/daily.js`, 19 tests; `#home-streak` chip, 20/day goal; mastery bars + "Needs work" list with Review/Fight)
 - [x] **M5 — Ship prep** — done 2026-07-04: `sw.js` SHELL bumped v4 → v5; full regression green (98 tests, build 45 kb); DOM-id wiring check passed. **NOT yet committed/pushed** — user decides when to commit in `game/` repo and push to deploy (GitHub Pages runs on push to main).
 - [ ] Manual device smoke (user): buy/equip a skin, hit a boss on spawn 10, check streak chip next day, file:// open.
-- [ ] Optional later: real art per [ART-BRIEF.md](../art/ART-BRIEF.md) → drop PNGs in `assets/`, register in `sprites.js`. `npm run cap:sync` + `apk:release` for the Android build once web version is confirmed.
+- [ ] Optional later: real art per `ART-BRIEF.md` (superseded; done differently via the v5 warm-daylight pipeline) → drop PNGs in `assets/`, register in `sprites.js`. `npm run cap:sync` + `apk:release` for the Android build once web version is confirmed.
 
 ## Key invariants (check on every milestone review)
 
