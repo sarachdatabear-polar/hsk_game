@@ -70,7 +70,9 @@ describe("education asset manifest contract", () => {
   });
 
   it("pre-caches every P0 PNG (incl. state variants) tolerantly in sw.js", () => {
-    const p0 = manifest.assets.filter(a => a.priority === "P0" && a.file.endsWith(".png"));
+    // planned/concept art has no file to cache yet — only shipped statuses must be precached
+    const p0 = manifest.assets.filter(a => ["approved", "integrated"].includes(a.status)
+      && a.priority === "P0" && a.file.endsWith(".png"));
     for (const a of p0) {
       for (const f of allFiles(a)) {
         expect(sw, `assets/${f} missing from sw.js PRECACHE`).toContain(`assets/${f}`);

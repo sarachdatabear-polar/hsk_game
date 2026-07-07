@@ -7,6 +7,7 @@
 
 const REGISTRY = {};
 
+// bg-home is CSS-only (ships as WebP) — not a canvas sprite.
 export const SPRITE_NAMES = [
   "cat-walk", "cat-happy",
   "cat-midnight-walk", "cat-midnight-happy",
@@ -15,7 +16,7 @@ export const SPRITE_NAMES = [
   "cat-gold-walk", "cat-gold-happy",
   "cat-boss-walk", "cat-boss-happy",
   "maneki", "coin",
-  "bg-home", "bg-quest", "bg-battle", "bg-market",
+  "bg-quest", "bg-battle", "bg-market",
   "bg-temple", "bg-bamboo",
   "fx-correct", "fx-wrong", "fx-critical", "fx-level-up",
   "vfx-orb-green", "vfx-orb-red", "vfx-orb-blue", "vfx-orb-gold",

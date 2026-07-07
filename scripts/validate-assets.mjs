@@ -39,6 +39,25 @@ function readPngSize(filePath) {
   };
 }
 
+function readWebpSize(filePath) {
+  const b = fs.readFileSync(filePath);
+  if (b.toString("ascii", 0, 4) !== "RIFF" || b.toString("ascii", 8, 12) !== "WEBP") {
+    throw new Error(`${path.basename(filePath)} is not a WebP`);
+  }
+  const fourcc = b.toString("ascii", 12, 16);
+  if (fourcc === "VP8X") {
+    return { width: 1 + b.readUIntLE(24, 3), height: 1 + b.readUIntLE(27, 3) };
+  }
+  if (fourcc === "VP8L") {
+    const bits = b.readUInt32LE(21);
+    return { width: 1 + (bits & 0x3fff), height: 1 + ((bits >> 14) & 0x3fff) };
+  }
+  if (fourcc === "VP8 ") {
+    return { width: b.readUInt16LE(26) & 0x3fff, height: b.readUInt16LE(28) & 0x3fff };
+  }
+  throw new Error(`${path.basename(filePath)} has unsupported WebP variant ${fourcc}`);
+}
+
 for (const asset of manifest.assets) {
   if (!allowedStatuses.has(asset.status)) {
     fail(`${asset.id} has invalid status '${asset.status}'`);
@@ -61,8 +80,16 @@ for (const asset of manifest.assets) {
     }
   }
 
-  if (asset.states && JSON.stringify(asset.states) !== JSON.stringify(["default", "pressed", "disabled"])) {
-    fail(`${asset.id} states must be default/pressed/disabled`);
+  if (asset.states) {
+    const allowed = new Set(["default", "pressed", "disabled"]);
+    const valid = Array.isArray(asset.states)
+      && asset.states.length > 0
+      && asset.states[0] === "default"
+      && asset.states.every(s => allowed.has(s))
+      && new Set(asset.states).size === asset.states.length;
+    if (!valid) {
+      fail(`${asset.id} states must be unique values from default/pressed/disabled, starting with default`);
+    }
   }
 
   if (asset.type === "sprite-sheet") {
@@ -85,11 +112,14 @@ for (const asset of manifest.assets) {
       continue;
     }
 
-    if (!file.endsWith(".png")) {
-      continue;
+    let size;
+    if (file.endsWith(".png")) {
+      size = readPngSize(filePath);
+    } else if (file.endsWith(".webp")) {
+      size = readWebpSize(filePath);
+    } else {
+      continue; // svg dims are not contractual
     }
-
-    const size = readPngSize(filePath);
     if (Number.isFinite(asset.w) && size.width !== asset.w) {
       fail(`${file} width ${size.width} !== ${asset.w}`);
     }

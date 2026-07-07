@@ -9,16 +9,35 @@ const manifest = JSON.parse(
   fs.readFileSync(path.join(root, "assets", "asset-manifest.json"), "utf8")
 );
 
-const rows = manifest.assets.map(asset => ({
-  id: asset.id,
-  file: asset.file,
-  type: asset.type,
-  status: asset.status,
-  priority: asset.priority,
-  present: fs.existsSync(path.join(root, "assets", asset.file)) ? "yes" : "-",
-}));
+// advisory budgets (bytes); hard enforcement for background/sprite-sheet
+// lives in test/asset-budgets.test.js
+const BUDGETS = {
+  background: 350 * 1024,
+  "sprite-sheet": 500 * 1024,
+  character: 500 * 1024,
+  decor: 120 * 1024,
+  "ui-surface": 60 * 1024,
+  effect: 60 * 1024,
+};
 
-const cols = ["id", "file", "type", "status", "priority", "present"];
+const rows = manifest.assets.map(asset => {
+  const filePath = path.join(root, "assets", asset.file);
+  const present = fs.existsSync(filePath);
+  const bytes = present ? fs.statSync(filePath).size : 0;
+  const budget = BUDGETS[asset.type];
+  return {
+    id: asset.id,
+    file: asset.file,
+    type: asset.type,
+    status: asset.status,
+    priority: asset.priority,
+    present: present ? "yes" : "-",
+    kb: present ? Math.round(bytes / 1024) : "-",
+    budget: budget ? `${Math.round(budget / 1024)}KB${present && bytes > budget ? " OVER" : ""}` : "-",
+  };
+});
+
+const cols = ["id", "file", "type", "status", "priority", "present", "kb", "budget"];
 const widths = Object.fromEntries(
   cols.map(col => [col, Math.max(col.length, ...rows.map(row => String(row[col]).length))])
 );

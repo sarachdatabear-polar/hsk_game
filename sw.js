@@ -2,19 +2,19 @@
 // A worker registered from pwa/ would be scoped to /pwa/ and could not serve the
 // app shell offline, since static hosts (GitHub Pages) don't send
 // Service-Worker-Allowed to widen scope. Paths below are root-relative.
-const SHELL = "nbhsk-shell-v24";
+const SHELL = "nbhsk-shell-v25";
 const AUDIO = "nbhsk-audio-v1";
 const PRECACHE = [
   "index.html", "dist/app.js", "data/words.js", "audio/index.json",
   "pwa/manifest.webmanifest", "pwa/icons/icon-192.png", "pwa/icons/icon-512.png",
   // art assets — tolerant: missing files are silently skipped so a partial
   // asset drop never bricks an offline install
-  "assets/bg-home.png",
+  "assets/bg-home.webp",
   "assets/bg-quest.png",
-  "assets/bg-flashcards.png",
+  "assets/bg-flashcards.webp",
   "assets/bg-battle.png",
-  "assets/bg-progress.png",
-  "assets/bg-collection.png",
+  "assets/bg-progress.webp",
+  "assets/bg-collection.webp",
   "assets/cat-walk.png",
   "assets/cat-happy.png",
   "assets/cat-study.png",
@@ -39,7 +39,7 @@ const PRECACHE = [
   "assets/cat-thinking.png",
   "assets/ui-tab.svg",
   "assets/bg-market.png",
-  "assets/bg-results.png",
+  "assets/bg-results.webp",
   "assets/bg-temple.png",
   "assets/bg-bamboo.png",
   "assets/ui-button-primary.svg",
