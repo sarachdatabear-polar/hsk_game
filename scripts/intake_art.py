@@ -31,7 +31,9 @@ from pathlib import Path
 from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
-DROP = Path.home() / "Desktop" / "hsk-art-drop"
+# Prefer the tracked in-repo drop folder (syncs between machines via git);
+# fall back to the original Desktop location.
+DROP = ROOT / "art-drop" if (ROOT / "art-drop").is_dir() else Path.home() / "Desktop" / "hsk-art-drop"
 MANIFEST = json.loads((ROOT / "assets" / "asset-manifest.json").read_text())
 BY_FILE = {a["file"]: a for a in MANIFEST["assets"]}
 BG_CROP_TOP_BIAS = 0.7  # crop mostly from the top; the lane lives at the bottom
