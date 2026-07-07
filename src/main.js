@@ -2083,8 +2083,10 @@ function drawTieredDeco(c, p, x, gy, h){
 function drawStreetDeco(c, id, x, gy, h){
   const s = h*.32;
   c.save(); c.translate(x, gy);
-  c.shadowColor = "rgba(245,197,24,.28)";
-  c.shadowBlur = 5;
+  if(!c.shadowBlur){                       // keep caller-set glow (tiered decos)
+    c.shadowColor = "rgba(245,197,24,.28)";
+    c.shadowBlur = 5;
+  }
   switch(id){
     case "red-lantern":
       c.strokeStyle = "#8a2a24"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(0,-s*1.6); c.lineTo(0,-s*1.1); c.stroke();
