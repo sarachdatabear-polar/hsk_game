@@ -438,6 +438,7 @@ function startBattle(mode){
   B.customDeck = !!(battleDeckOverride && battleDeckOverride.length >= 2);
   battleDeckOverride = null;
   B.zombie = null; B.proj = null; B.parts = []; B.flash = 0; B.screenShake = 0; B.feedback = null;
+  B.hitFlash = null; B.plaqueHitAt = 0;
   B.floats = []; B.mascotHopUntil = 0;
   B.score = 0; B.combo = 0; B.lives = 3;
   B.wordsTotal = mode==="round"? normalizeLen(scope.sessionLen) : Infinity;
@@ -997,7 +998,7 @@ function draw(t){
     }
     ctx.globalAlpha = 1;
   }
-  // hit flash — softened dim-violet (cat wandered off, not combat damage)
+  // A3 enemy hit flash: expanding cream pulse at the kill (set in killZombie)
   if(B.hitFlash){
     const leftF = B.hitFlash.until - performance.now();
     if(leftF <= 0){ B.hitFlash = null; }
@@ -1013,6 +1014,7 @@ function draw(t){
     }
   }
   drawFeedbackLayer(t);
+  // hit flash — softened dim-violet (cat wandered off, not combat damage)
   if(B.flash>0){ ctx.fillStyle = `rgba(90,44,80,${(0.30*B.flash).toFixed(3)})`; ctx.fillRect(0,0,B.w,B.h); }
   if(shake) ctx.restore();
 }

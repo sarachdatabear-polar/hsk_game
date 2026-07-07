@@ -2272,6 +2272,8 @@
     B.flash = 0;
     B.screenShake = 0;
     B.feedback = null;
+    B.hitFlash = null;
+    B.plaqueHitAt = 0;
     B.floats = [];
     B.mascotHopUntil = 0;
     B.score = 0;
