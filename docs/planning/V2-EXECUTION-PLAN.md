@@ -1,5 +1,15 @@
 # V2/V3/V4 Execution Plan — living checklist
 
+## Responsive all-devices round (2026-07-08)
+
+Plan: [2026-07-07-responsive-all-devices.md](../superpowers/plans/2026-07-07-responsive-all-devices.md). Branch `fix/responsive-all-devices`.
+
+- [x] Short-portrait battle fit (≤620px): compact grid + `.opt-label` ellipsis clamp; cascade-order bug found (media block must sit AFTER base rules).
+- [x] Landscape phones (≤500px height): HUD strip + canvas|answers side-by-side, home START in-fold; `#s-battle.on` scoping (bare ID selector beat `.screen{display:none}`).
+- [x] Landscape tap targets raised to the 36px floor.
+- [x] Mid-tier (≤700px portrait) gloss clamp stabilizes 360×640 (flexbox+line-clamp needs `flex-shrink:0` on the clamped label).
+- [x] Permanent gate `scripts/responsive-sweep.mjs`: 10 viewports × home/shop/battle, ancestor-clip-aware; 10/10 stable across repeated runs. 588 tests green throughout.
+
 ## v7 "Shop Seasons" (2026-07-07)
 
 Spec: [PRD-v7-shop-seasons.md](../archive/prd/PRD-v7-shop-seasons.md). Branch
