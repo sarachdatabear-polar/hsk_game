@@ -18,7 +18,7 @@ import { defaultQuestState, noteQuestEvent, questStatus } from "./quests.js";
 import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
-import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem } from "./shop.js";
+import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem, dailyStock, seasonStatus, upgradePrice } from "./shop.js";
 import { streetPieces, streetProgress } from "./street.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
@@ -1245,6 +1245,8 @@ function draw(t){
       ctx.fillStyle = "#f6a8c8"; ctx.beginPath(); ctx.ellipse(p.x,p.y,4.6,2.6,p.x*0.05,0,7); ctx.fill();
     }else if(p.kind==="cracker"){
       ctx.fillStyle = "#e04040"; ctx.beginPath(); ctx.arc(p.x,p.y,4.4,0,7); ctx.fill();
+    }else if(p.kind==="star"){
+      ctx.fillStyle = "#ffe08a"; drawStarMark(ctx, p.x, p.y, 5.2);
     }else{
       ctx.fillStyle = "#f5c518"; ctx.beginPath(); ctx.arc(p.x,p.y,3.4,0,7); ctx.fill();
     }
@@ -1694,66 +1696,101 @@ function renderScores(){
 function renderShop(){
   sfx.pack = shopState.soundpack || "default";  // keep sfx in sync with the equipped slot
   $("#shop-wallet").innerHTML = t("shop.wallet", { coins: wallet.toLocaleString() });
+  const today = todayStr();
+  const dailyBox = $("#shop-daily"), seasonBox = $("#shop-season");
   const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), decoBox = $("#shop-street");
-  skinBox.innerHTML = ""; bdBox.innerHTML = ""; fxBox.innerHTML = ""; sndBox.innerHTML = ""; decoBox.innerHTML = "";
-  for(const item of CATALOG){
-    const box = item.type==="skin" ? skinBox : item.type==="backdrop" ? bdBox : item.type==="effect" ? fxBox : item.type==="soundpack" ? sndBox : decoBox;
-    const owned = shopState.owned.includes(item.id);
-    const equipped = shopState[item.type] === item.id;
-    const row = document.createElement("div");
-    row.className = "scorerow shoprow";
-    const left = document.createElement("span");
-    left.innerHTML = `${item.name} <span style="color:var(--muted);font-size:12px">${t("shop.coins", { coins: item.price.toLocaleString() })}</span>`;
-    left.className = "shop-left";
-    const preview = document.createElement("canvas");
-    preview.className = "shop-preview";
-    preview.setAttribute("aria-hidden", "true");
-    preview._shopItem = item;
-    const copy = document.createElement("span");
-    copy.className = "shop-copy";
-    copy.innerHTML = `<b>${item.name}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
-    left.replaceChildren(preview, copy);
-    const btn = document.createElement("button");
-    if(item.type === "deco"){
-      // Decos are never equipped — every owned deco just appears on the street.
-      btn.className = "chip"+(owned? " on":"");
-      if(owned){
-        btn.textContent = t("shop.onStreet"); btn.disabled = true;
-      }else{
-        btn.textContent = t("shop.buy");
-        btn.disabled = !canAfford(wallet, item.id);
-        btn.onclick = ()=>{
-          const r = buy(wallet, shopState, item.id);
-          if(!r.ok) return;
-          wallet = r.wallet; shopState = r.shop;
-          store.set("wallet", wallet); store.set("shop", shopState);
-          updateWalletChip(); renderShop(); renderStreet();
-        };
-      }
-    }else{
-      btn.className = "chip"+(equipped? " on":"");
-      if(equipped){
-        btn.textContent = t("shop.equipped"); btn.disabled = true;
-      }else if(owned){
-        btn.textContent = t("shop.equip");
-        btn.onclick = ()=>{ shopState = equipItem(shopState, item.id); store.set("shop", shopState); renderShop(); };
-      }else{
-        btn.textContent = t("shop.buy");
-        btn.disabled = !canAfford(wallet, item.id);
-        btn.onclick = ()=>{
-          const r = buy(wallet, shopState, item.id);
-          if(!r.ok) return;
-          wallet = r.wallet; shopState = r.shop;
-          store.set("wallet", wallet); store.set("shop", shopState);
-          updateWalletChip(); renderShop();
-        };
-      }
+  for(const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, decoBox]) b.innerHTML = "";
+
+  // Today's Stock — the 3 featured pool items; once owned they live in their type section
+  for(const id of dailyStock(today)){
+    const item = CATALOG.find(i => i.id === id);
+    if(item && !shopState.owned.includes(id)) dailyBox.appendChild(makeShopRow(item, today));
+  }
+
+  // Season Corner — active set is buyable; off-season shows the next set's teaser
+  const st = seasonStatus(today);
+  const seasonNote = $("#shop-season-note");
+  if(st.active){
+    for(const item of CATALOG.filter(i => i.season === st.active.id && !shopState.owned.includes(i.id))){
+      seasonBox.appendChild(makeShopRow(item, today));
     }
-    row.appendChild(left); row.appendChild(btn);
-    box.appendChild(row);
-    renderShopPreview(preview, item, performance.now());
+    seasonNote.textContent = t("shop.seasonUntil", { date: fmtMonthDay(st.active.to) });
+  }else{
+    seasonNote.textContent = t("shop.seasonReturns", { name: t("season." + st.next.id), date: fmtMonthDay(st.next.from) });
+  }
+
+  // Permanent sections — pool/season items appear here only once owned
+  for(const item of CATALOG){
+    if((item.pool || item.season) && !shopState.owned.includes(item.id)) continue;
+    const box = item.type==="skin" ? skinBox : item.type==="backdrop" ? bdBox : item.type==="effect" ? fxBox : item.type==="soundpack" ? sndBox : decoBox;
+    box.appendChild(makeShopRow(item, today));
   }
   startShopPreviewLoop();
+}
+
+// "Jul 1" / "1 ก.ค." for a [month, day] pair, in the active locale.
+const fmtMonthDay = ([m, d]) =>
+  new Date(2026, m - 1, d).toLocaleDateString(getLocale() === "th" ? "th-TH" : "en-US", { month: "short", day: "numeric" });
+
+function makeShopRow(item, today){
+  const owned = shopState.owned.includes(item.id);
+  const equipped = shopState[item.type] === item.id;
+  const tier = (shopState.tiers && shopState.tiers[item.id]) || 1;
+  const row = document.createElement("div");
+  row.className = "scorerow shoprow";
+  const left = document.createElement("span");
+  left.className = "shop-left";
+  const preview = document.createElement("canvas");
+  preview.className = "shop-preview";
+  preview.setAttribute("aria-hidden", "true");
+  preview._shopItem = item;
+  const copy = document.createElement("span");
+  copy.className = "shop-copy";
+  const stars = item.type === "deco" && owned ? " " + "★".repeat(tier) : "";
+  copy.innerHTML = `<b>${item.name}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
+  left.replaceChildren(preview, copy);
+  const btn = document.createElement("button");
+  const doBuy = () => {
+    const r = buy(wallet, shopState, item.id, today);
+    if(!r.ok) return;
+    wallet = r.wallet; shopState = r.shop;
+    store.set("wallet", wallet); store.set("shop", shopState);
+    updateWalletChip(); renderShop(); renderStreet();
+  };
+  if(item.type === "deco"){
+    // Owning a deco displays it on the street; re-buys upgrade its tier (v7 F4).
+    if(!owned){
+      btn.className = "chip";
+      btn.textContent = t("shop.buy");
+      btn.disabled = !canAfford(wallet, item.id);
+      btn.onclick = doBuy;
+    }else if(item.maxTier && tier < item.maxTier){
+      const up = upgradePrice(item, tier);
+      btn.className = "chip";
+      btn.textContent = t("shop.upgrade", { stars: "★".repeat(tier + 1), coins: up.toLocaleString() });
+      btn.disabled = wallet < up;
+      btn.onclick = doBuy;
+    }else{
+      btn.className = "chip on";
+      btn.textContent = t("shop.maxed");
+      btn.disabled = true;
+    }
+  }else{
+    btn.className = "chip" + (equipped ? " on" : "");
+    if(equipped){
+      btn.textContent = t("shop.equipped"); btn.disabled = true;
+    }else if(owned){
+      btn.textContent = t("shop.equip");
+      btn.onclick = ()=>{ shopState = equipItem(shopState, item.id); store.set("shop", shopState); renderShop(); };
+    }else{
+      btn.textContent = t("shop.buy");
+      btn.disabled = !canAfford(wallet, item.id);
+      btn.onclick = doBuy;
+    }
+  }
+  row.appendChild(left); row.appendChild(btn);
+  renderShopPreview(preview, item, performance.now());
+  return row;
 }
 
 let shopPreviewRaf = 0;
@@ -1796,6 +1833,9 @@ function renderShopPreview(canvas, item, t=0){
       for(const [x,y,r] of [[18,15,0],[31,24,.9],[43,13,-.5],[24,31,.4]]){
         c.beginPath(); c.ellipse(x,y,5,2.6,r,0,Math.PI*2); c.fill();
       }
+    }else if(item.id==="star-shower"){
+      c.fillStyle = "#ffe08a";
+      for(const [x,y,r] of [[18,14,4],[33,22,5],[44,12,3],[25,30,3.5]]) drawStarMark(c, x, y, r);
     }else{
       c.fillStyle = "#e04040"; c.beginPath(); c.arc(24,22,8,0,Math.PI*2); c.fill();
       c.fillStyle = "#fff4c0";
@@ -1807,6 +1847,11 @@ function renderShopPreview(canvas, item, t=0){
     if(item.id==="bells"){
       c.fillStyle = "#f5c518"; c.beginPath(); c.arc(30,19,10,Math.PI,0); c.lineTo(42,30); c.lineTo(18,30); c.closePath(); c.fill();
       c.fillStyle = "#3a2200"; c.beginPath(); c.arc(30,30,2.6,0,Math.PI*2); c.fill();
+    }else if(item.id==="lion-drum"){
+      c.fillStyle = "#c1272d"; c.beginPath(); c.ellipse(28,24,12,9,0,0,Math.PI*2); c.fill();
+      c.fillStyle = "#f5c518"; c.fillRect(16,20,24,3);
+      c.strokeStyle = "#7a1c14"; c.lineWidth = 2;
+      c.beginPath(); c.moveTo(20,10); c.lineTo(26,19); c.moveTo(38,10); c.lineTo(32,19); c.stroke();
     }else{
       c.beginPath(); c.moveTo(16,29); c.lineTo(16,14); c.lineTo(39,10); c.lineTo(39,25); c.stroke();
       c.beginPath(); c.arc(14,31,4,0,Math.PI*2); c.stroke(); c.beginPath(); c.arc(37,27,4,0,Math.PI*2); c.stroke();
@@ -2008,6 +2053,13 @@ function drawStreetBuilding(c, id, x, gy, h){
       break;
   }
   c.restore();
+}
+// Small 4-point star (shop previews + star-shower particles).
+function drawStarMark(c, x, y, r){
+  c.beginPath();
+  c.moveTo(x, y - r); c.quadraticCurveTo(x, y, x + r, y);
+  c.quadraticCurveTo(x, y, x, y + r); c.quadraticCurveTo(x, y, x - r, y);
+  c.quadraticCurveTo(x, y, x, y - r); c.fill();
 }
 function drawStreetDeco(c, id, x, gy, h){
   const s = h*.32;
