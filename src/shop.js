@@ -59,6 +59,18 @@ export const SKIN_PALETTES = {
               filter: "hue-rotate(85deg) saturate(.8)" },
   gold:     { sprite: "cat-gold", body: "#e3a80e", head: "#ffd75e", ear: "#ffd75e", inner: "#fff4e0", leg: "#9c6b00",
               filter: "saturate(1.6) brightness(1.25) contrast(1.05)" },
+  panda:     { sprite: "cat-panda", body: "#f4f4f0", head: "#ffffff", ear: "#26262c", inner: "#3a3a40", leg: "#26262c",
+               filter: "grayscale(1) brightness(1.32) contrast(1.08)" },
+  ninja:     { sprite: "cat-ninja", body: "#23233a", head: "#2c2c46", ear: "#2c2c46", inner: "#c1272d", leg: "#16162a",
+               filter: "grayscale(.85) brightness(.45)" },
+  astronaut: { sprite: "cat-astronaut", body: "#e8ecf4", head: "#f4f7fd", ear: "#f4f7fd", inner: "#4a7fd4", leg: "#b8c2d4",
+               filter: "grayscale(.9) brightness(1.35)" },
+  beach:     { sprite: "cat-beach", body: "#f3b23e", head: "#ffd27a", ear: "#ffd27a", inner: "#2aa8c4", leg: "#d08a20",
+               filter: "saturate(1.4) brightness(1.2) hue-rotate(10deg)" },
+  "mooncake-rabbit": { sprite: "cat-mooncake", body: "#efe6da", head: "#f8f2e8", ear: "#f8f2e8", inner: "#c9a34e", leg: "#cbbfa8",
+               filter: "sepia(.4) brightness(1.25)" },
+  dragon:    { sprite: "cat-dragon", body: "#b3202a", head: "#c92f30", ear: "#c92f30", inner: "#f5c518", leg: "#7c1418",
+               filter: "saturate(1.5) hue-rotate(-20deg) brightness(.95)" },
 };
 
 // ---- v7 availability (PRD v7 F2/F3). All date params are local "YYYY-MM-DD"
