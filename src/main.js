@@ -52,6 +52,7 @@ let pool = [];            // current merged word pool
 let learnDeck = null;     // override deck for "review misses"
 let lenCustomOpen = false;  // "Custom" chip tapped; input visible even if value matches a preset
 let battleDeckOverride = null;  // when set, next battle draws only these words (e.g. "fight misses")
+let smartDeckNext = false;   // next battle's override is a smart-review deck (earns the perfect bonus)
 let lastMode = "round";
 // A4 first-run intro: null when not in the intro, else "learn" -> "battle".
 // introWords carries the same 6 words from warm-up into the battle.
@@ -166,6 +167,7 @@ $("#go-smart").onclick = ()=>{
   const deck = smartDeck(masteryStore, pool, Date.now());
   if(deck.length < 8) return;
   battleDeckOverride = deck;
+  smartDeckNext = true;
   questEvent("review");
   startBattle("round");
 };
@@ -205,6 +207,7 @@ $("#home-start").onclick = ()=>{
   const deck = smartDeck(masteryStore, pool, Date.now());
   if(deck.length >= 8){
     battleDeckOverride = deck;
+    smartDeckNext = true;
     questEvent("review");
   }
   startBattle("round");
@@ -274,6 +277,11 @@ function updateNav(name){
   nav.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.tab===active));
 }
 function show(name){
+  // A4: ANY route home mid-intro (learn Exit, Android hardware back via
+  // initNative's goHome, future shortcuts) abandons the intro for good —
+  // never hijack a later session, never re-show welcome. endBattle's own
+  // intro completion runs before its show() calls, so this is a no-op there.
+  if(name === "home" && introPhase){ introPhase = null; store.set("introDone", true); }
   currentScreen = name;
   document.querySelectorAll(".screen").forEach(el=>el.classList.remove("on"));
   $("#s-"+name).classList.add("on");
@@ -290,12 +298,7 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
   else if(t==="progress"){ renderProgress(); show("progress"); }
   else if(t==="shop"){ renderShop(); show("shop"); }
   else {
-    if(t==="home"){
-      stopBattle();
-      // A4: leaving mid-intro (learn screen's Exit) abandons the intro for
-      // good — never hijack a later flashcard session, never re-show welcome.
-      if(introPhase){ introPhase = null; store.set("introDone", true); }
-    }
+    if(t==="home"){ stopBattle(); }   // intro abandonment handled in show()
     show(t);
   }
 }));
@@ -402,12 +405,12 @@ function renderCard(){
   const c = $("#fc-card");
   if(!fc.flipped){
     c.innerHTML = `<div class="hz">${w.h}</div><div class="py">${w.p}</div>
-      <div class="hint">tap to flip · HSK${w.lv} · in ${w.ta}/${w.tt} papers</div>`;
+      <div class="hint">${t("learn.hintFront", { lv: w.lv, ta: w.ta, tt: w.tt })}</div>`;
     if(settings.autoSpeak) speak(w.h);
   }else{
     const th = w.t? `<div class="th">${w.t}</div>` : `<div class="th" style="color:var(--muted)">no Thai yet</div>`;
     c.innerHTML = `<div class="hz" style="font-size:40px">${w.h}</div><div class="py">${w.p}</div>
-      <div class="mean">${w.e}${th}</div><div class="hint">tap to flip back</div>`;
+      <div class="mean">${w.e}${th}</div><div class="hint">${t("learn.hintBack")}</div>`;
   }
 }
 $("#fc-card").onclick = ()=>{ fc.flipped = !fc.flipped; renderCard(); };
@@ -497,6 +500,8 @@ function startBattle(mode){
   // endBattle() must not let them set high scores or earn the perfect bonus.
   B.customDeck = !!(battleDeckOverride && battleDeckOverride.length >= 2);
   battleDeckOverride = null;
+  B.smartRound = B.customDeck && smartDeckNext;   // full-rules smart review (owner: perfect bonus yes, best-score no)
+  smartDeckNext = false;
   B.zombie = null; B.proj = null; B.parts = []; B.flash = 0; B.screenShake = 0; B.feedback = null;
   B.hitFlash = null; B.plaqueHitAt = 0;
   B.floats = []; B.mascotHopUntil = 0;
@@ -1338,7 +1343,7 @@ function endBattle(quit){
     show("home"); return;
   }
   noteDaily(B.resolved);
-  const isPerfect = B.mode==="round" && B.resolved>0 && B.misses.length===0 && !B.customDeck;
+  const isPerfect = B.mode==="round" && B.resolved>0 && B.misses.length===0 && (!B.customDeck || B.smartRound);
   if(isPerfect) questEvent("perfect");
   wallet += B.score;
   const bonus = isPerfect ? perfectBonus(B.score) : 0;

@@ -64,6 +64,8 @@ export const STRINGS = {
     "learn.stillLearning": "Still learning",
     "learn.knowIt": "Know it",
     "learn.count": "{done} done · {left} left",
+    "learn.hintFront": "tap to flip · HSK{lv} · in {ta}/{tt} papers",
+    "learn.hintBack": "tap to flip back",
     // results
     "results.roundOver": "Round over",
     "results.missed": "Words you missed",
@@ -187,6 +189,8 @@ export const STRINGS = {
     "learn.stillLearning": "ยังไม่แม่น",
     "learn.knowIt": "รู้แล้ว",
     "learn.count": "ทำแล้ว {done} · เหลือ {left}",
+    "learn.hintFront": "แตะเพื่อพลิก · HSK{lv} · พบใน {ta}/{tt} ชุดข้อสอบ",
+    "learn.hintBack": "แตะเพื่อพลิกกลับ",
     // results
     "results.roundOver": "จบรอบ",
     "results.missed": "คำที่ตอบผิด",

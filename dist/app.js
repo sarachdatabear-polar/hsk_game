@@ -1554,6 +1554,8 @@
       "learn.stillLearning": "Still learning",
       "learn.knowIt": "Know it",
       "learn.count": "{done} done \xB7 {left} left",
+      "learn.hintFront": "tap to flip \xB7 HSK{lv} \xB7 in {ta}/{tt} papers",
+      "learn.hintBack": "tap to flip back",
       // results
       "results.roundOver": "Round over",
       "results.missed": "Words you missed",
@@ -1677,6 +1679,8 @@
       "learn.stillLearning": "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E41\u0E21\u0E48\u0E19",
       "learn.knowIt": "\u0E23\u0E39\u0E49\u0E41\u0E25\u0E49\u0E27",
       "learn.count": "\u0E17\u0E33\u0E41\u0E25\u0E49\u0E27 {done} \xB7 \u0E40\u0E2B\u0E25\u0E37\u0E2D {left}",
+      "learn.hintFront": "\u0E41\u0E15\u0E30\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E1E\u0E25\u0E34\u0E01 \xB7 HSK{lv} \xB7 \u0E1E\u0E1A\u0E43\u0E19 {ta}/{tt} \u0E0A\u0E38\u0E14\u0E02\u0E49\u0E2D\u0E2A\u0E2D\u0E1A",
+      "learn.hintBack": "\u0E41\u0E15\u0E30\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E1E\u0E25\u0E34\u0E01\u0E01\u0E25\u0E31\u0E1A",
       // results
       "results.roundOver": "\u0E08\u0E1A\u0E23\u0E2D\u0E1A",
       "results.missed": "\u0E04\u0E33\u0E17\u0E35\u0E48\u0E15\u0E2D\u0E1A\u0E1C\u0E34\u0E14",
@@ -1863,6 +1867,7 @@
   var learnDeck = null;
   var lenCustomOpen = false;
   var battleDeckOverride = null;
+  var smartDeckNext = false;
   var lastMode = "round";
   var introPhase = null;
   var introWords = [];
@@ -1964,6 +1969,7 @@
     const deck = smartDeck(masteryStore, pool, Date.now());
     if (deck.length < 8) return;
     battleDeckOverride = deck;
+    smartDeckNext = true;
     questEvent("review");
     startBattle("round");
   };
@@ -1993,6 +1999,7 @@
     const deck = smartDeck(masteryStore, pool, Date.now());
     if (deck.length >= 8) {
       battleDeckOverride = deck;
+      smartDeckNext = true;
       questEvent("review");
     }
     startBattle("round");
@@ -2062,6 +2069,10 @@
     nav.querySelectorAll(".nav-btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === active));
   }
   function show(name) {
+    if (name === "home" && introPhase) {
+      introPhase = null;
+      store.set("introDone", true);
+    }
     currentScreen = name;
     document.querySelectorAll(".screen").forEach((el) => el.classList.remove("on"));
     $("#s-" + name).classList.add("on");
@@ -2096,10 +2107,6 @@
     } else {
       if (t2 === "home") {
         stopBattle();
-        if (introPhase) {
-          introPhase = null;
-          store.set("introDone", true);
-        }
       }
       show(t2);
     }
@@ -2229,12 +2236,12 @@
     const c = $("#fc-card");
     if (!fc.flipped) {
       c.innerHTML = `<div class="hz">${w.h}</div><div class="py">${w.p}</div>
-      <div class="hint">tap to flip \xB7 HSK${w.lv} \xB7 in ${w.ta}/${w.tt} papers</div>`;
+      <div class="hint">${t("learn.hintFront", { lv: w.lv, ta: w.ta, tt: w.tt })}</div>`;
       if (settings.autoSpeak) speak(w.h);
     } else {
       const th = w.t ? `<div class="th">${w.t}</div>` : `<div class="th" style="color:var(--muted)">no Thai yet</div>`;
       c.innerHTML = `<div class="hz" style="font-size:40px">${w.h}</div><div class="py">${w.p}</div>
-      <div class="mean">${w.e}${th}</div><div class="hint">tap to flip back</div>`;
+      <div class="mean">${w.e}${th}</div><div class="hint">${t("learn.hintBack")}</div>`;
     }
   }
   $("#fc-card").onclick = () => {
@@ -2333,6 +2340,8 @@
     B.deck = battleDeckOverride && battleDeckOverride.length >= 2 ? battleDeckOverride : pool;
     B.customDeck = !!(battleDeckOverride && battleDeckOverride.length >= 2);
     battleDeckOverride = null;
+    B.smartRound = B.customDeck && smartDeckNext;
+    smartDeckNext = false;
     B.zombie = null;
     B.proj = null;
     B.parts = [];
@@ -3253,7 +3262,7 @@
       return;
     }
     noteDaily(B.resolved);
-    const isPerfect = B.mode === "round" && B.resolved > 0 && B.misses.length === 0 && !B.customDeck;
+    const isPerfect = B.mode === "round" && B.resolved > 0 && B.misses.length === 0 && (!B.customDeck || B.smartRound);
     if (isPerfect) questEvent("perfect");
     wallet += B.score;
     const bonus = isPerfect ? perfectBonus(B.score) : 0;

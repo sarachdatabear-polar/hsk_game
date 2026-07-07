@@ -29,4 +29,9 @@ describe("introDeck", () => {
     introDeck(pool, 6);
     expect(pool.map(w => w.h).join("")).toBe(order);
   });
+  it("words with no frequency sort last (||0 fallback)", () => {
+    const withMissing = [...pool, { h: "九", p: "九p", e: "九e", lv: 1 }];
+    const picked = introDeck(withMissing, withMissing.length);
+    expect(picked[picked.length - 1].h).toBe("九");
+  });
 });
