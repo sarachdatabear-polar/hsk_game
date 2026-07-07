@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#FBF3E0">
+<meta name="theme-color" content="#FBF5E8">
 <link rel="icon" href="data:,">
 <link rel="manifest" href="pwa/manifest.webmanifest">
 <title>Lucky Cat HSK 招财猫</title>
@@ -56,12 +56,15 @@
     --edu-gray:#E7E2D9;
     --edu-leaf:#78B86B;
     --edu-brown:#7A5A44;
-    --bg:#FBF3E0; --panel:var(--edu-paper); --card:var(--edu-paper);
-    --ink:var(--edu-ink); --muted:#6B7A88;
-    --gold:var(--edu-sun); --crimson:var(--edu-coral); --jade:var(--edu-jade);
-    --amber:var(--gold); --green:var(--jade);
-    --red:var(--edu-coral); --chip:#EFE7D4; --chip-on:var(--edu-sky); --chip-ink-on:#08324a;
-    --panel-border:var(--edu-gray); --panel-wash:#FFFDF6;
+    /* semantic aliases (STYLE-TOKENS.md §3). --gold/--crimson/--jade/--amber/--green/
+       --red/--card are deprecated: re-pointed here so nothing regresses mid-migration,
+       usages removed in Tasks 3–6, definitions deleted in Task 7. */
+    --bg:var(--lc-cream); --panel:var(--lc-cream); --card:var(--lc-cream);
+    --ink:var(--lc-ink); --muted:var(--lc-brown);
+    --gold:var(--lc-brown); --crimson:var(--lc-coral); --jade:var(--lc-green);
+    --amber:var(--lc-sun); --green:var(--lc-success);
+    --red:var(--lc-error); --chip:var(--lc-sand); --chip-on:var(--lc-sky); --chip-ink-on:var(--lc-teal);
+    --panel-border:var(--lc-sand); --panel-wash:var(--lc-cream);
     /* PRD v5 core palette (docs/art/STYLE-TOKENS.md §1 — enforced by test/style-tokens.test.js) */
     --lc-green:#32775E; --lc-sky:#5DAADD; --lc-sun:#F2BC57; --lc-coral:#E69777;
     --lc-brown:#846043; --lc-gray:#B2AEA9; --lc-cream:#FBF5E8; --lc-teal:#1F4D4A;
