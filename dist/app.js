@@ -1151,7 +1151,7 @@
   var GOAL = 20;
   var DAY_MS = 864e5;
   function defaultDaily() {
-    return { last: "", streak: 0, today: { date: "", resolved: 0 } };
+    return { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" };
   }
   function isYesterday(a, b) {
     if (!a || !b) return false;
@@ -1160,26 +1160,59 @@
     if (isNaN(da) || isNaN(db)) return false;
     return db.getTime() - da.getTime() === DAY_MS;
   }
+  function addDays(dateStr, n) {
+    const d = /* @__PURE__ */ new Date(dateStr + "T00:00:00Z");
+    if (isNaN(d)) return "";
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+  function weekStart(dateStr) {
+    const d = /* @__PURE__ */ new Date(dateStr + "T00:00:00Z");
+    if (isNaN(d)) return "";
+    const dow = (d.getUTCDay() + 6) % 7;
+    d.setUTCDate(d.getUTCDate() - dow);
+    return d.toISOString().slice(0, 10);
+  }
   function noteActivity(daily2, dateStr, count) {
     const before = daily2.today.date === dateStr ? daily2.today.resolved : 0;
     const resolved = before + count;
     const today = { date: dateStr, resolved };
     let { last, streak } = daily2;
+    let restWeek = daily2.restWeek || "";
+    let restDay = daily2.restDay || "";
     const crossedNow = before < GOAL && resolved >= GOAL;
     if (crossedNow && last !== dateStr) {
-      streak = isYesterday(last, dateStr) ? streak + 1 : 1;
+      if (isYesterday(last, dateStr)) {
+        streak += 1;
+      } else {
+        const missed = last ? addDays(last, 1) : "";
+        const covered = streak >= 3 && missed !== "" && addDays(last, 2) === dateStr && // exactly one missed day
+        weekStart(missed) !== restWeek;
+        if (covered) {
+          restWeek = weekStart(missed);
+          restDay = missed;
+          streak += 1;
+        } else {
+          streak = 1;
+        }
+      }
       last = dateStr;
     }
-    return { last, streak, today };
+    return { last, streak, today, restWeek, restDay };
   }
   function streakInfo(daily2, dateStr) {
     const todayResolved = daily2.today.date === dateStr ? daily2.today.resolved : 0;
-    const chainAlive = daily2.last === dateStr || isYesterday(daily2.last, dateStr);
+    const restWeek = daily2.restWeek || "";
+    const restDay = daily2.restDay || "";
+    const missed = daily2.last ? addDays(daily2.last, 1) : "";
+    const coverableGap = daily2.last !== "" && addDays(daily2.last, 2) === dateStr && daily2.streak >= 3 && (restDay === missed || weekStart(missed) !== restWeek);
+    const chainAlive = daily2.last === dateStr || isYesterday(daily2.last, dateStr) || coverableGap;
     return {
       streak: chainAlive ? daily2.streak : 0,
       todayResolved,
       goal: GOAL,
-      goalMet: todayResolved >= GOAL
+      goalMet: todayResolved >= GOAL,
+      restNote: restDay !== "" && isYesterday(restDay, dateStr)
     };
   }
 
@@ -1512,6 +1545,7 @@
       "home.start": "START",
       "home.startHint": "Need at least 8 words in scope to start \u2014 widen it below.",
       "home.scopeWords": "{n} words",
+      "streak.restUsed": "\u{1F375} Rest day used \u2014 your {n}-day streak is safe.",
       // first run (A4)
       "welcome.title": "Welcome!",
       "welcome.blurb": "Learn Chinese words by playing \u2014 a couple of minutes a day.",
@@ -1637,6 +1671,7 @@
       "home.start": "\u0E40\u0E23\u0E34\u0E48\u0E21",
       "home.startHint": "\u0E15\u0E49\u0E2D\u0E07\u0E21\u0E35\u0E04\u0E33\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E19\u0E49\u0E2D\u0E22 8 \u0E04\u0E33\u0E43\u0E19\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E08\u0E36\u0E07\u0E08\u0E30\u0E40\u0E23\u0E34\u0E48\u0E21\u0E44\u0E14\u0E49 \u2014 \u0E02\u0E22\u0E32\u0E22\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E14\u0E49\u0E32\u0E19\u0E25\u0E48\u0E32\u0E07",
       "home.scopeWords": "{n} \u0E04\u0E33",
+      "streak.restUsed": "\u{1F375} \u0E43\u0E0A\u0E49\u0E27\u0E31\u0E19\u0E1E\u0E31\u0E01\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E2A\u0E15\u0E23\u0E35\u0E04 {n} \u0E27\u0E31\u0E19\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E22\u0E31\u0E07\u0E1B\u0E25\u0E2D\u0E14\u0E20\u0E31\u0E22",
       // first run (A4)
       "welcome.title": "\u0E22\u0E34\u0E19\u0E14\u0E35\u0E15\u0E49\u0E2D\u0E19\u0E23\u0E31\u0E1A!",
       "welcome.blurb": "\u0E40\u0E23\u0E35\u0E22\u0E19\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E08\u0E35\u0E19\u0E1C\u0E48\u0E32\u0E19\u0E01\u0E32\u0E23\u0E40\u0E25\u0E48\u0E19 \u2014 \u0E27\u0E31\u0E19\u0E25\u0E30\u0E44\u0E21\u0E48\u0E01\u0E35\u0E48\u0E19\u0E32\u0E17\u0E35",
@@ -1924,6 +1959,11 @@
     if (title) title.textContent = t("home.streakTitle");
     if (count) count.textContent = t("home.streakDays", { n: info.streak });
     if (bar) bar.style.width = Math.min(100, Math.round(100 * info.todayResolved / info.goal)) + "%";
+    const note = el.querySelector("#streak-note");
+    if (note) {
+      note.hidden = !info.restNote;
+      if (info.restNote) note.textContent = t("streak.restUsed", { n: info.streak });
+    }
     el.classList.toggle("goal-met", info.goalMet);
   }
   function noteDaily(count) {

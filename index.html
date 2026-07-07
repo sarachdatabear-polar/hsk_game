@@ -449,6 +449,8 @@
   .streak-card.goal-met .streak-check{display:inline;}
   .streak-bar{height:8px;}
   .streak-bar i{background-image:linear-gradient(90deg, var(--lc-success), var(--lc-sun));}
+  /* B1: calm rest-day note on the return day — informational, never guilt */
+  .streak-note{margin-top:6px; font-size:12px; color:var(--lc-brown);}
 
   .home-cta{display:flex; align-items:stretch; gap:10px; margin:8px 0 2px;}
   .start-btn{flex:1 1 62%; font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800;
@@ -546,6 +548,7 @@
         <span class="streak-days"><span class="streak-count">0</span><span class="streak-check" aria-hidden="true">✓</span></span>
       </div>
       <div class="mbar streak-bar"><i style="width:0%"></i></div>
+      <div class="streak-note" id="streak-note" hidden></div>
     </div>
 
     <div class="home-cta">

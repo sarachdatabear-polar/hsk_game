@@ -22,6 +22,7 @@ export const STRINGS = {
     "home.start": "START",
     "home.startHint": "Need at least 8 words in scope to start — widen it below.",
     "home.scopeWords": "{n} words",
+    "streak.restUsed": "🍵 Rest day used — your {n}-day streak is safe.",
     // first run (A4)
     "welcome.title": "Welcome!",
     "welcome.blurb": "Learn Chinese words by playing — a couple of minutes a day.",
@@ -147,6 +148,7 @@ export const STRINGS = {
     "home.start": "เริ่ม",
     "home.startHint": "ต้องมีคำอย่างน้อย 8 คำในขอบเขตจึงจะเริ่มได้ — ขยายขอบเขตด้านล่าง",
     "home.scopeWords": "{n} คำ",
+    "streak.restUsed": "🍵 ใช้วันพักแล้ว — สตรีค {n} วันของคุณยังปลอดภัย",
     // first run (A4)
     "welcome.title": "ยินดีต้อนรับ!",
     "welcome.blurb": "เรียนคำศัพท์จีนผ่านการเล่น — วันละไม่กี่นาที",

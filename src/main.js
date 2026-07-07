@@ -120,6 +120,11 @@ function updateStreakChip(){
   if(title) title.textContent = t("home.streakTitle");
   if(count) count.textContent = t("home.streakDays", { n: info.streak });
   if(bar) bar.style.width = Math.min(100, Math.round(100*info.todayResolved/info.goal)) + "%";
+  const note = el.querySelector("#streak-note");
+  if(note){
+    note.hidden = !info.restNote;
+    if(info.restNote) note.textContent = t("streak.restUsed", { n: info.streak });
+  }
   el.classList.toggle("goal-met", info.goalMet);
 }
 function noteDaily(count){
