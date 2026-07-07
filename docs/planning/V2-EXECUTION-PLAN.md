@@ -138,6 +138,7 @@ Spec: [PRD-v4-street.md](../archive/prd/PRD-v4-street.md) (shipped, archived). H
 3. New keys namespaced `nbhsk.*` (`wallet`, `shop`, `daily`; mastery gains optional `ls` field).
 4. Pure logic in small modules with vitest tests; `main.js` only wires DOM/canvas.
 5. No new npm dependencies. Playable at 360×640 portrait.
+6. Before each release PR, run `node scripts/responsive-sweep.mjs` (needs `npm i --no-save playwright-core` + Edge, and `npm run serve` in another shell) — the permanent 10-viewport home/shop/battle regression sweep.
 
 ## Session log
 
