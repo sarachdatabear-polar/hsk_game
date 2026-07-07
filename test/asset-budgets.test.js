@@ -12,7 +12,6 @@ const manifest = JSON.parse(readFileSync(join(ROOT, "assets", "asset-manifest.js
 const BUDGETS = { background: 350 * 1024, "sprite-sheet": 500 * 1024 };
 const shipped = manifest.assets.filter(
   a => ["approved", "integrated"].includes(a.status) && BUDGETS[a.type]
-    && existsSync(join(ROOT, "assets", a.file))
 );
 
 describe("asset size budgets (PRD v5 A2)", () => {
@@ -21,7 +20,9 @@ describe("asset size budgets (PRD v5 A2)", () => {
   });
   for (const a of shipped) {
     it(`${a.file} within the ${Math.round(BUDGETS[a.type] / 1024)}KB ${a.type} budget`, () => {
-      const bytes = statSync(join(ROOT, "assets", a.file)).size;
+      const p = join(ROOT, "assets", a.file);
+      expect(existsSync(p), `${a.file} is ${a.status} but missing on disk`).toBe(true);
+      const bytes = statSync(p).size;
       expect(bytes, `${a.file} is ${Math.round(bytes / 1024)}KB`).toBeLessThanOrEqual(BUDGETS[a.type]);
     });
   }

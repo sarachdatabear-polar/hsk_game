@@ -12,14 +12,22 @@ from pathlib import Path
 
 from PIL import Image
 
+BUDGET = 350 * 1024
+
 def convert(path):
     p = Path(path)
     out = p.with_suffix(".webp")
     img = Image.open(p)
     img.load()
     img.convert("RGB").save(out, quality=80, method=6)
-    print(f"{out.name}: {out.stat().st_size // 1024}KB (from {p.stat().st_size // 1024}KB png)")
+    size = out.stat().st_size
+    ok = size <= BUDGET
+    line = f"{out.name}: {size // 1024}KB (from {p.stat().st_size // 1024}KB png)"
+    if not ok:
+        line += " OVER 350KB BUDGET"
+    print(line)
+    return ok
 
 if __name__ == "__main__":
-    for a in sys.argv[1:]:
-        convert(a)
+    ok = all([convert(a) for a in sys.argv[1:]])
+    sys.exit(0 if ok else 1)

@@ -32,6 +32,8 @@ export function createAssets(m, opts = {}) {
 
   function load(id, state = "default") {
     const asset = REGISTRY[id];
+    // .webp rows (full-screen CSS backgrounds) are deliberately not JS-loaded;
+    // extend this regex on purpose if a webp ever needs the runtime registry.
     if (!asset || !/\.(png|svg)$/.test(asset.file) || !LOADABLE.has(asset.status)) return;
     if (asset.file === "ui-icons.svg") return; // icon sprite is <use>-referenced, not an image
 

@@ -2,8 +2,8 @@
 
 Every prompt below = **MASTER STYLE PROMPT + the asset clause**. Keep the exact
 filename and dimensions and the file is drop-in (`assets/`, registries unchanged).
-Workflow per asset: generate → `python3 scripts/compress_bg.py <file>` (backgrounds
-only) → `python3 scripts/qa_asset.py assets/<file>` → manual checklist
+Workflow per asset: generate → `python3 scripts/compress_bg.py <file>` (1024×512
+PNGs; full-screen 1080×1920 → scripts/to_webp.py) → `python3 scripts/qa_asset.py assets/<file>` → manual checklist
 (`docs/art/ART-QA-CHECKLIST.md`) → set manifest status → `npm test`.
 
 ## MASTER STYLE PROMPT (prepend to every asset clause)

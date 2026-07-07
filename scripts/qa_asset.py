@@ -3,8 +3,9 @@
 
 Checks (hard FAIL): PNG readable, dims match the manifest row, size budget for
 background/sprite-sheet, sprite-sheet frame math, alpha channel present when the
-manifest type requires transparency, opaque-corner check for alpha assets.
-Checks (advisory WARN): palette distance from the STYLE-TOKENS core palette.
+manifest type requires transparency.
+Checks (advisory WARN): palette distance from the STYLE-TOKENS core palette,
+opaque-corner check for alpha assets.
 
 Judgment items (light direction, silhouette, line weight) stay manual — see
 docs/art/ART-QA-CHECKLIST.md.
@@ -67,7 +68,7 @@ def check(path):
     budget = HARD_BUDGETS.get(row["type"])
     if budget and size > budget:
         fails.append(f"{size//1024}KB over the {budget//1024}KB {row['type']} budget "
-                     f"(run scripts/compress_bg.py first)")
+                     f"(1024x512 PNGs: scripts/compress_bg.py; full-screen bgs: scripts/to_webp.py)")
 
     if row["type"] == "sprite-sheet":
         if row["frameWidth"] * row["frames"] != row["w"] or row["frameHeight"] != row["h"]:

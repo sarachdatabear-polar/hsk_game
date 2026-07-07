@@ -18,19 +18,26 @@ COLOR_STEPS = [256, 192, 128, 96, 64]
 
 def compress(path):
     p = Path(path)
+    tmp = p.with_suffix(".tmp.png")
     original = p.stat().st_size
     img = Image.open(p)
     img.load()
     rgb = img.convert("RGB")
-    for colors in COLOR_STEPS:
-        q = rgb.quantize(colors=colors, method=Image.MEDIANCUT, dither=Image.FLOYDSTEINBERG)
-        q.save(p, optimize=True)
-        size = p.stat().st_size
-        if size <= BUDGET:
-            print(f"{p.name}: {original//1024}KB -> {size//1024}KB ({colors} colors)")
-            return True
-    print(f"{p.name}: still {size//1024}KB over budget at {COLOR_STEPS[-1]} colors — needs manual handling")
-    return False
+    try:
+        for colors in COLOR_STEPS:
+            q = rgb.quantize(colors=colors, method=Image.MEDIANCUT, dither=Image.FLOYDSTEINBERG)
+            q.save(tmp, optimize=True)
+            size = tmp.stat().st_size
+            if size <= BUDGET:
+                tmp.replace(p)
+                print(f"{p.name}: {original//1024}KB -> {size//1024}KB ({colors} colors)")
+                return True
+        print(f"{p.name}: still {size//1024}KB over budget at {COLOR_STEPS[-1]} colors — "
+              f"needs manual handling (original left unmodified)")
+        return False
+    finally:
+        if tmp.exists():
+            tmp.unlink()
 
 
 if __name__ == "__main__":
