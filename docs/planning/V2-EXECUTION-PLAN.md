@@ -179,3 +179,4 @@ Spec: docs/superpowers/specs/2026-07-08-v6-typed-pinyin-design.md
 - [x] ladder: tone 5-6, typed 7+ (FORMATS.typed, input: true)
 - [x] battle UI: letters + tone taps, 0.4x walker, kind diff line, EN/TH
 Deferred: per-format scoring bonus; cloze + tone minigame stay in PRD-v5 §8.
+- [x] typed-polish follow-up (PR #39, 2026-07-08): Enter-to-submit (+enterKeyHint), answer()-guard ordering so a pause-overlay leak can't reveal the diff, nü tone-row labels (letters uu="ü"), aria-label/aria-pressed on tone chips (battle.toneAria EN/TH)
