@@ -25,6 +25,44 @@ export function retone(p, tones) {
   return chars.join("");
 }
 
+// ---- v6 phase 2: typed-pinyin recall (pure grading, no DOM) ----
+// Word data pinyin is space-separated per syllable with tone marks
+// ("nǐ hǎo", "shén me"); a syllable has at most one marked vowel.
+
+export function syllables(p) {
+  return (p || "").split(/[\s']+/).filter(Boolean);
+}
+
+// Tone number per syllable, 0 for neutral (no marked vowel).
+export function syllableTones(p) {
+  return syllables(p).map(s => {
+    const slots = toneSlots(s);
+    return slots.length ? slots[0].tone : 0;
+  });
+}
+
+// Tone-stripped lowercase letters with separators removed; ü maps to `uu`
+// so the player may type either "v" or "u" for it.
+export function letters(p, uu = "v") {
+  return [...(p || "").toLowerCase()]
+    .map(ch => (TONE_OF[ch] ? TONE_OF[ch].vowel : ch))
+    .join("")
+    .replace(/ü/g, uu)
+    .replace(/[^a-z]/g, "");
+}
+
+// Grade a typed answer. toneChoices is aligned to the NON-neutral syllables
+// in order (neutral syllables render no tone row). No partial credit: the
+// lettersOk/tonesOk split only feeds kind feedback copy.
+export function gradeTyped(p, typedLetters, toneChoices) {
+  const norm = (typedLetters || "").toLowerCase().replace(/ü/g, "v").replace(/[^a-z]/g, "");
+  const lettersOk = norm === letters(p, "v") || norm === letters(p, "u");
+  const want = syllableTones(p).filter(t => t > 0);
+  const got = toneChoices || [];
+  const tonesOk = want.length === got.length && want.every((t, i) => t === got[i]);
+  return { ok: lettersOk && tonesOk, lettersOk, tonesOk };
+}
+
 function shuffle(a, rand) {
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));

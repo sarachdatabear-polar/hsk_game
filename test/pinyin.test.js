@@ -45,3 +45,54 @@ describe("toneVariants", () => {
     expect(toneVariants("ma", firstRand)).toBeNull();
   });
 });
+
+import { syllables, syllableTones, letters, gradeTyped } from "../src/pinyin.js";
+
+describe("syllables / syllableTones / letters (v6 phase 2 typed)", () => {
+  it("splits space-separated pinyin", () => {
+    expect(syllables("nǐ hǎo")).toEqual(["nǐ", "hǎo"]);
+    expect(syllables("shuǐ")).toEqual(["shuǐ"]);
+    expect(syllables("")).toEqual([]);
+  });
+  it("tone per syllable, 0 for neutral", () => {
+    expect(syllableTones("nǐ hǎo")).toEqual([3, 3]);
+    expect(syllableTones("shén me")).toEqual([2, 0]);
+    expect(syllableTones("ma")).toEqual([0]);
+  });
+  it("letters strips tones, lowercases, drops separators", () => {
+    expect(letters("nǐ hǎo")).toEqual("nihao");
+    expect(letters("Xī'ān")).toEqual("xian");
+  });
+  it("letters maps ü by the uu argument", () => {
+    expect(letters("nǚ", "v")).toEqual("nv");
+    expect(letters("nǚ", "u")).toEqual("nu");
+  });
+});
+
+describe("gradeTyped", () => {
+  it("full pass", () => {
+    expect(gradeTyped("nǐ hǎo", "nihao", [3, 3])).toEqual({ ok: true, lettersOk: true, tonesOk: true });
+  });
+  it("ignores case, spaces and apostrophes in typed letters", () => {
+    expect(gradeTyped("nǐ hǎo", " Ni Hao ", [3, 3]).ok).toBe(true);
+  });
+  it("wrong tones — lettersOk survives for kind feedback", () => {
+    expect(gradeTyped("nǐ hǎo", "nihao", [3, 2])).toEqual({ ok: false, lettersOk: true, tonesOk: false });
+  });
+  it("wrong letters — tonesOk survives", () => {
+    expect(gradeTyped("nǐ hǎo", "lihao", [3, 3])).toEqual({ ok: false, lettersOk: false, tonesOk: true });
+  });
+  it("neutral syllables need no tone choice", () => {
+    expect(gradeTyped("shén me", "shenme", [2]).ok).toBe(true);
+    expect(gradeTyped("ma", "ma", []).ok).toBe(true);
+  });
+  it("ü accepts v and u — but v for a plain u is wrong", () => {
+    expect(gradeTyped("nǚ", "nv", [3]).ok).toBe(true);
+    expect(gradeTyped("nǚ", "nu", [3]).ok).toBe(true);
+    expect(gradeTyped("lù", "lv", [4]).ok).toBe(false);
+  });
+  it("missing or extra tone choices fail tonesOk", () => {
+    expect(gradeTyped("nǐ hǎo", "nihao", [3]).tonesOk).toBe(false);
+    expect(gradeTyped("ma", "ma", [1]).tonesOk).toBe(false);
+  });
+});
