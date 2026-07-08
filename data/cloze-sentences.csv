@@ -104,3 +104,53 @@ hanzi,sentence,en,th,d1,d2,d3,source
 块,这个几块？,How many yuan is this?,อันนี้กี่หยวน,很,去,吃,tatoeba
 小,这个不小。,This one is not small.,อันนี้ไม่เล็ก,书,水,菜,ai
 上午,你明天上午吃什么？,What will you eat tomorrow morning?,พรุ่งนี้ตอนเช้าคุณจะกินอะไร,书,水,猫,tatoeba
+中午,中午吃米饭。,Eat rice at noon.,ตอนเที่ยงกินข้าว,很,太,吗,ai
+做,你在做什么？,What are you doing?,คุณกำลังทำอะไร,猫,书,钱,tatoeba
+前面,猫在你前面。,The cat is in front of you.,แมวอยู่ข้างหน้าคุณ,很,太,漂亮,ai
+多少,这个杯子多少钱？,How much is this cup?,ถ้วยนี้ราคาเท่าไหร่,很,吃,漂亮,ai
+客气,你太客气了。,You are too polite.,คุณเกรงใจเกินไป,猫,书,钱,ai
+时候,什么时候回来？,When are you coming back?,จะกลับมาเมื่อไหร่,很,太,吗,ai
+杯子,这是谁的杯子？,Whose cup is this?,นี่ถ้วยของใคร,吃,很,睡觉,tatoeba
+桌子,书在桌子上。,The book is on the table.,หนังสืออยู่บนโต๊ะ,吃,很,漂亮,tatoeba
+漂亮,你女儿漂亮吗？,Is your daughter pretty?,ลูกสาวคุณสวยไหม,猫,书,钱,ai
+睡觉,她在睡觉。,She is sleeping.,เธอกำลังนอนหลับ,冷,热,大,tatoeba
+能,你能看吗？,Can you see?,คุณมองเห็นไหม,很,猫,书,tatoeba
+菜,这是中国菜。,This is Chinese food.,นี่คืออาหารจีน,吃,喝,很,tatoeba
+衣服,我买衣服了。,I bought clothes.,ฉันซื้อเสื้อผ้าแล้ว,吃,喝,很,ai
+这儿,我住在这儿。,I live here.,ฉันอาศัยอยู่ที่นี่,吃,很,漂亮,tatoeba
+猫,我没有猫。,I don't have a cat.,ฉันไม่มีแมว,冷,大,漂亮,tatoeba
+米饭,我在吃米饭。,I am eating rice.,ฉันกำลังกินข้าว,很,去,冷,tatoeba
+你们,你们去哪里？,Where are you going?,พวกคุณจะไปไหน,很,太,吗,tatoeba
+点,他说九点了。,He said it's nine o'clock.,เขาบอกว่าเก้าโมงแล้ว,很,猫,吃,tatoeba
+下雨,明天会下雨。,It will rain tomorrow.,พรุ่งนี้ฝนจะตก,猫,书,很,ai
+冷,今天很冷。,It's cold today.,วันนี้หนาวมาก,猫,书,吃,tatoeba
+后面,猫在桌子后面。,The cat is behind the table.,แมวอยู่หลังโต๊ะ,很,太,漂亮,ai
+字,这个字怎么写？,How do you write this character?,ตัวอักษรนี้เขียนยังไง,吃,很,去,ai
+少,这里的人少。,There are few people here.,ที่นี่คนน้อย,猫,书,吗,ai
+开,火车开了吗？,Has the train left?,รถไฟออกแล้วหรือยัง,猫,书,很,ai
+明天,他明天会来。,He will come tomorrow.,พรุ่งนี้เขาจะมา,猫,书,吗,tatoeba
+星期六,今天是星期六。,Today is Saturday.,วันนี้วันเสาร์,吃,很,去,tatoeba
+没关系,没关系，谢谢。,"It's okay, thanks.",ไม่เป็นไร ขอบคุณ,吃,很,去,ai
+没有,他没有钱。,He has no money.,เขาไม่มีเงิน,很,太,吗,tatoeba
+茶,这是我的茶。,This is my tea.,นี่คือชาของฉัน,吃,很,漂亮,ai
+饭,饭在桌子上。,The food is on the table.,อาหารอยู่บนโต๊ะ,吃,很,吗,ai
+饭馆儿,这个饭馆儿不大。,This restaurant is not big.,ร้านอาหารนี้ไม่ใหญ่,吃,去,漂亮,ai
+上,水在桌子上吗？,Is the water on the table?,น้ำอยู่บนโต๊ะไหม,很,漂亮,太,ai
+狗,那是我的狗。,That is my dog.,นั่นคือหมาของฉัน,吃,很,睡觉,ai
+里,杯子里有水。,There is water in the cup.,ในถ้วยมีน้ำ,吃,很,漂亮,tatoeba
+钱,这些书多少钱？,How much are these books?,หนังสือพวกนี้ราคาเท่าไหร่,吃,很,去,ai
+东西,她去买东西。,She goes shopping.,เธอไปซื้อของ,很,漂亮,吗,tatoeba
+儿子,我认识你儿子。,I know your son.,ฉันรู้จักลูกชายของคุณ,吃,很,去,tatoeba
+分钟,九分钟后见。,See you in nine minutes.,เจอกันในอีกเก้านาที,猫,书,很,ai
+后,九点后回来。,Come back after nine.,กลับมาหลังเก้าโมง,很,猫,吃,ai
+回,我想回学校。,I want to go back to school.,ฉันอยากกลับไปโรงเรียน,猫,书,很,ai
+回来,他回来了。,He came back.,เขากลับมาแล้ว,猫,书,吗,tatoeba
+天,今年有多少天？,How many days are in this year?,ปีนี้มีกี่วัน,吃,很,去,ai
+火车站,这是火车站吗？,Is this the train station?,นี่คือสถานีรถไฟใช่ไหม,吃,很,漂亮,tatoeba
+点儿,我想喝点儿茶。,I want to drink a little tea.,ฉันอยากดื่มชาสักหน่อย,猫,书,很,ai
+电脑,这是我的电脑。,This is my computer.,นี่คือคอมพิวเตอร์ของฉัน,吃,很,睡觉,tatoeba
+看见,我今天看见她了。,I saw her today.,วันนี้ฉันเห็นเธอ,猫,书,很,tatoeba
+读,请读这个字。,Please read this character.,กรุณาอ่านตัวอักษรนี้,猫,很,漂亮,ai
+车,你有车吗？,Do you have a car?,คุณมีรถไหม,很,太,冷,tatoeba
+这么,这么多东西！,So many things!,ของเยอะขนาดนี้,猫,吃,吗,ai
+这些,这些是我的书。,These are my books.,พวกนี้คือหนังสือของฉัน,吃,很,吗,tatoeba
