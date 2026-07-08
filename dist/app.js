@@ -207,6 +207,32 @@
     return shuffle2([...cands], rand).slice(0, 3);
   }
 
+  // src/cloze.js
+  function clozeFor(word, clozeData) {
+    const entry = clozeData && clozeData[word.h];
+    if (!entry) return null;
+    return {
+      text: entry.s.replace(word.h, "___"),
+      en: entry.en,
+      th: entry.th,
+      distractors: entry.d
+    };
+  }
+  function clozeOptions(word, entry, byHanzi, rand) {
+    const opts = [{ label: word.h, sub: word.p, correct: true }].concat(
+      (entry.distractors || entry.d || []).map((h) => ({
+        label: h,
+        sub: byHanzi && byHanzi[h] && byHanzi[h].p || "",
+        correct: false
+      }))
+    );
+    for (let i = opts.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [opts[i], opts[j]] = [opts[j], opts[i]];
+    }
+    return opts;
+  }
+
   // src/formats.js
   function shuffle3(a, rand) {
     for (let i = a.length - 1; i > 0; i--) {
@@ -217,9 +243,10 @@
   }
   function formatFor(word, rec, caps = { audio: true }) {
     const r = rec && rec.r || 0;
-    let f = r >= 7 ? "typed" : r >= 5 ? "tone" : r >= 3 ? "reverse" : r >= 1 ? "listen" : "meaning";
+    let f = r >= 9 ? "typed" : r >= 7 ? "cloze" : r >= 5 ? "tone" : r >= 3 ? "reverse" : r >= 1 ? "listen" : "meaning";
     if (f === "listen" && !caps.audio) f = "meaning";
     if (f === "tone" && toneSlots(word.p).length === 0) f = "meaning";
+    if (f === "cloze" && !(caps.cloze && caps.cloze(word))) f = "typed";
     return f;
   }
   function meaningOptions(word, deck, lang, rand) {
@@ -268,6 +295,19 @@
           rand
         );
       }
+    },
+    cloze: {
+      plaque: { mask: true },
+      // ？？ — the walker must not show the answer
+      audio: "never",
+      // speaking the word gives it away
+      intro: "battle.introCloze",
+      prompt: "cloze",
+      // main.js renders the blanked-sentence prompt row
+      // Unlike the generic buildOptions(word, deck, lang, rand), cloze needs the
+      // cloze entry + a full-data hanzi->record lookup, so main.js calls this on
+      // the cloze branch with (word, entry, byHanzi, rand). Delegates to cloze.js.
+      buildOptions: clozeOptions
     },
     typed: {
       plaque: { hz: true },
@@ -2188,6 +2228,7 @@
       "howto.tooSlow": "Too slow counts too: if the cat wanders all the way across without an answer, that costs a heart. Three hearts and the round is over.",
       "howto.everyWord": "Every word shows <b>pinyin</b> and can be <b>heard aloud</b> \u2014 during the game, in flashcards, and in the missed-words review.",
       "howto.learnMode": "<b>Learn mode</b> drills the same word pool as flashcards first, so you can study, then play.",
+      "howto.attribution": "Some example sentences from Tatoeba (tatoeba.org), CC-BY 2.0 FR.",
       // battle HUD + pause overlay (M4)
       "battle.round": "Round {label}",
       "battle.pause": "Pause",
@@ -2206,6 +2247,7 @@
       "battle.introListen": "New: listen first! Play the sound and tap the meaning you hear.",
       "battle.introReverse": "New: you know this word \u2014 now pick its hanzi from the meaning!",
       "battle.introTone": "New: tone check! Tap the pinyin with the right tone marks.",
+      "battle.introCloze": "New: fill the blank! Pick the word that completes the sentence.",
       "battle.introTyped": "Master level! Type the pinyin yourself \u2014 letters first, then tap each tone.",
       "battle.typedPlaceholder": "type the pinyin letters",
       "battle.typedGo": "ATTACK!",
@@ -2418,6 +2460,7 @@
       "howto.tooSlow": "\u0E0A\u0E49\u0E32\u0E40\u0E01\u0E34\u0E19\u0E44\u0E1B\u0E01\u0E47\u0E40\u0E2A\u0E35\u0E22\u0E2B\u0E31\u0E27\u0E43\u0E08\u0E40\u0E2B\u0E21\u0E37\u0E2D\u0E19\u0E01\u0E31\u0E19 \u0E2B\u0E32\u0E01\u0E41\u0E21\u0E27\u0E40\u0E14\u0E34\u0E19\u0E02\u0E49\u0E32\u0E21\u0E08\u0E2D\u0E44\u0E1B\u0E42\u0E14\u0E22\u0E44\u0E21\u0E48\u0E21\u0E35\u0E04\u0E33\u0E15\u0E2D\u0E1A \u0E08\u0E30\u0E40\u0E2A\u0E35\u0E22\u0E2B\u0E31\u0E27\u0E43\u0E08\u0E2B\u0E19\u0E36\u0E48\u0E07\u0E14\u0E27\u0E07 \u0E04\u0E23\u0E1A\u0E2A\u0E32\u0E21\u0E14\u0E27\u0E07\u0E08\u0E1A\u0E23\u0E2D\u0E1A\u0E17\u0E31\u0E19\u0E17\u0E35",
       "howto.everyWord": "\u0E17\u0E38\u0E01\u0E04\u0E33\u0E41\u0E2A\u0E14\u0E07<b>\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19</b>\u0E41\u0E25\u0E30\u0E2A\u0E32\u0E21\u0E32\u0E23\u0E16<b>\u0E1F\u0E31\u0E07\u0E40\u0E2A\u0E35\u0E22\u0E07\u0E44\u0E14\u0E49</b> \u2014 \u0E17\u0E31\u0E49\u0E07\u0E23\u0E30\u0E2B\u0E27\u0E48\u0E32\u0E07\u0E40\u0E25\u0E48\u0E19\u0E40\u0E01\u0E21 \u0E43\u0E19\u0E1A\u0E31\u0E15\u0E23\u0E04\u0E33 \u0E41\u0E25\u0E30\u0E15\u0E2D\u0E19\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E04\u0E33\u0E17\u0E35\u0E48\u0E15\u0E2D\u0E1A\u0E1C\u0E34\u0E14",
       "howto.learnMode": "<b>\u0E42\u0E2B\u0E21\u0E14\u0E40\u0E23\u0E35\u0E22\u0E19\u0E23\u0E39\u0E49</b>\u0E1D\u0E36\u0E01\u0E04\u0E25\u0E31\u0E07\u0E04\u0E33\u0E40\u0E14\u0E35\u0E22\u0E27\u0E01\u0E31\u0E1A\u0E1A\u0E31\u0E15\u0E23\u0E04\u0E33\u0E01\u0E48\u0E2D\u0E19 \u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E43\u0E2B\u0E49\u0E04\u0E38\u0E13\u0E44\u0E14\u0E49\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E01\u0E48\u0E2D\u0E19\u0E40\u0E23\u0E34\u0E48\u0E21\u0E40\u0E25\u0E48\u0E19",
+      "howto.attribution": "\u0E1B\u0E23\u0E30\u0E42\u0E22\u0E04\u0E15\u0E31\u0E27\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E1A\u0E32\u0E07\u0E2A\u0E48\u0E27\u0E19\u0E08\u0E32\u0E01 Tatoeba (tatoeba.org) \u0E2A\u0E31\u0E0D\u0E0D\u0E32\u0E2D\u0E19\u0E38\u0E0D\u0E32\u0E15 CC-BY 2.0 FR",
       // battle HUD + pause overlay (M4)
       "battle.round": "\u0E23\u0E2D\u0E1A {label}",
       "battle.pause": "\u0E2B\u0E22\u0E38\u0E14\u0E0A\u0E31\u0E48\u0E27\u0E04\u0E23\u0E32\u0E27",
@@ -2436,6 +2479,7 @@
       "battle.introListen": "\u0E43\u0E2B\u0E21\u0E48: \u0E1F\u0E31\u0E07\u0E01\u0E48\u0E2D\u0E19\u0E19\u0E30! \u0E01\u0E14\u0E1F\u0E31\u0E07\u0E40\u0E2A\u0E35\u0E22\u0E07\u0E41\u0E25\u0E49\u0E27\u0E41\u0E15\u0E30\u0E04\u0E27\u0E32\u0E21\u0E2B\u0E21\u0E32\u0E22\u0E17\u0E35\u0E48\u0E44\u0E14\u0E49\u0E22\u0E34\u0E19",
       "battle.introReverse": "\u0E43\u0E2B\u0E21\u0E48: \u0E04\u0E33\u0E19\u0E35\u0E49\u0E04\u0E38\u0E49\u0E19\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E40\u0E25\u0E37\u0E2D\u0E01\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E08\u0E35\u0E19\u0E08\u0E32\u0E01\u0E04\u0E27\u0E32\u0E21\u0E2B\u0E21\u0E32\u0E22\u0E40\u0E25\u0E22!",
       "battle.introTone": "\u0E43\u0E2B\u0E21\u0E48: \u0E40\u0E0A\u0E47\u0E04\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C! \u0E41\u0E15\u0E30\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19\u0E17\u0E35\u0E48\u0E21\u0E35\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C\u0E16\u0E39\u0E01\u0E15\u0E49\u0E2D\u0E07",
+      "battle.introCloze": "\u0E43\u0E2B\u0E21\u0E48: \u0E40\u0E15\u0E34\u0E21\u0E04\u0E33\u0E43\u0E19\u0E0A\u0E48\u0E2D\u0E07\u0E27\u0E48\u0E32\u0E07! \u0E40\u0E25\u0E37\u0E2D\u0E01\u0E04\u0E33\u0E17\u0E35\u0E48\u0E17\u0E33\u0E43\u0E2B\u0E49\u0E1B\u0E23\u0E30\u0E42\u0E22\u0E04\u0E2A\u0E21\u0E1A\u0E39\u0E23\u0E13\u0E4C",
       "battle.introTyped": "\u0E14\u0E48\u0E32\u0E19\u0E21\u0E32\u0E2A\u0E40\u0E15\u0E2D\u0E23\u0E4C! \u0E1E\u0E34\u0E21\u0E1E\u0E4C\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19\u0E40\u0E2D\u0E07 \u2014 \u0E1E\u0E34\u0E21\u0E1E\u0E4C\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E01\u0E48\u0E2D\u0E19 \u0E41\u0E25\u0E49\u0E27\u0E41\u0E15\u0E30\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C\u0E02\u0E2D\u0E07\u0E41\u0E15\u0E48\u0E25\u0E30\u0E1E\u0E22\u0E32\u0E07\u0E04\u0E4C",
       "battle.typedPlaceholder": "\u0E1E\u0E34\u0E21\u0E1E\u0E4C\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19",
       "battle.typedGo": "\u0E42\u0E08\u0E21\u0E15\u0E35!",
@@ -2628,6 +2672,9 @@
 
   // src/main.js
   var D = window.HSK_DATA;
+  var CLOZE = window.HSK_CLOZE || {};
+  var BY_HANZI = {};
+  for (const lv of Object.values(D.levels)) for (const w of lv) BY_HANZI[w.h] = w;
   var $ = (s) => document.querySelector(s);
   var REDUCED_MOTION = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   function fxDuration(ms) {
@@ -3490,7 +3537,7 @@
       sfx.combo(5);
     }
     const z = B.zombie;
-    z.format = z.boss || introPhase === "battle" ? "meaning" : formatFor(w, masteryStore[w.h], { audio: audioAvailable(w.h) });
+    z.format = z.boss || introPhase === "battle" ? "meaning" : formatFor(w, masteryStore[w.h], { audio: audioAvailable(w.h), cloze: (x) => x.h in CLOZE });
     const introKey = FORMATS[z.format].intro;
     if (introKey && !formatIntros[z.format]) {
       z.frozen = true;
@@ -3505,10 +3552,36 @@
     B.speed = B.speedBase * (B.w / 380);
   }
   var TYPED_WALK_FACTOR = 0.4;
+  var CLOZE_WALK_FACTOR = 0.6;
+  function renderOptionButtons(box, opts) {
+    for (const o of opts) {
+      const b = document.createElement("button");
+      b.innerHTML = `<span class="opt-label">${o.label}</span>` + (o.sub ? `<span class="th">${o.sub}</span>` : "");
+      b._correct = !!o.correct;
+      b.onclick = () => answer(b, o);
+      box.appendChild(b);
+    }
+  }
   function renderQuestion(word, format, promptKey) {
     const deck = B.deck.length >= 8 ? B.deck : pool;
     const box = $("#opts");
     box.innerHTML = "";
+    if (format === "cloze") {
+      const c = clozeFor(word, CLOZE);
+      const prompt = document.createElement("div");
+      prompt.className = "boss-prompt cloze-prompt";
+      const sent = document.createElement("div");
+      sent.className = "cloze-sentence";
+      sent.textContent = c ? c.text : "___";
+      prompt.appendChild(sent);
+      const tr = document.createElement("div");
+      tr.className = "cloze-trans";
+      tr.textContent = !c ? "" : scope.lang === "th" ? c.th : scope.lang === "both" ? c.th ? c.en + " \xB7 " + c.th : c.en : c.en;
+      prompt.appendChild(tr);
+      box.appendChild(prompt);
+      renderOptionButtons(box, FORMATS.cloze.buildOptions(word, c || { d: [] }, BY_HANZI, Math.random));
+      return;
+    }
     if (promptKey) {
       const m = meaning(word, scope.lang);
       const prompt = document.createElement("div");
@@ -3527,13 +3600,7 @@
       rp.onclick = () => speak(word.h);
       box.appendChild(rp);
     }
-    for (const o of FORMATS[format].buildOptions(word, deck, scope.lang, Math.random)) {
-      const b = document.createElement("button");
-      b.innerHTML = `<span class="opt-label">${o.label}</span>` + (o.sub ? `<span class="th">${o.sub}</span>` : "");
-      b._correct = !!o.correct;
-      b.onclick = () => answer(b, o);
-      box.appendChild(b);
-    }
+    renderOptionButtons(box, FORMATS[format].buildOptions(word, deck, scope.lang, Math.random));
   }
   function renderTypedInput(word) {
     const box = $("#opts");
@@ -3775,7 +3842,7 @@
     if (z) {
       if (z.state === "walk") {
         if (!z.frozen) {
-          z.x -= B.speed * (z.boss ? bossSpeedFactor : 1) * (z.format === "typed" ? TYPED_WALK_FACTOR : 1) * dt;
+          z.x -= B.speed * (z.boss ? bossSpeedFactor : 1) * (z.format === "typed" ? TYPED_WALK_FACTOR : z.format === "cloze" ? CLOZE_WALK_FACTOR : 1) * dt;
           if (z.x <= B.L.mascotX + B.L.catHalf) bite(true);
         }
       } else if (z.state === "dash") {

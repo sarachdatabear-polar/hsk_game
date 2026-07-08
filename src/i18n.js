@@ -211,6 +211,7 @@ export const STRINGS = {
     "howto.tooSlow": "Too slow counts too: if the cat wanders all the way across without an answer, that costs a heart. Three hearts and the round is over.",
     "howto.everyWord": "Every word shows <b>pinyin</b> and can be <b>heard aloud</b> — during the game, in flashcards, and in the missed-words review.",
     "howto.learnMode": "<b>Learn mode</b> drills the same word pool as flashcards first, so you can study, then play.",
+    "howto.attribution": "Some example sentences from Tatoeba (tatoeba.org), CC-BY 2.0 FR.",
     // battle HUD + pause overlay (M4)
     "battle.round": "Round {label}",
     "battle.pause": "Pause",
@@ -229,6 +230,7 @@ export const STRINGS = {
     "battle.introListen": "New: listen first! Play the sound and tap the meaning you hear.",
     "battle.introReverse": "New: you know this word — now pick its hanzi from the meaning!",
     "battle.introTone": "New: tone check! Tap the pinyin with the right tone marks.",
+    "battle.introCloze": "New: fill the blank! Pick the word that completes the sentence.",
     "battle.introTyped": "Master level! Type the pinyin yourself — letters first, then tap each tone.",
     "battle.typedPlaceholder": "type the pinyin letters",
     "battle.typedGo": "ATTACK!",
@@ -441,6 +443,7 @@ export const STRINGS = {
     "howto.tooSlow": "ช้าเกินไปก็เสียหัวใจเหมือนกัน หากแมวเดินข้ามจอไปโดยไม่มีคำตอบ จะเสียหัวใจหนึ่งดวง ครบสามดวงจบรอบทันที",
     "howto.everyWord": "ทุกคำแสดง<b>พินอิน</b>และสามารถ<b>ฟังเสียงได้</b> — ทั้งระหว่างเล่นเกม ในบัตรคำ และตอนทบทวนคำที่ตอบผิด",
     "howto.learnMode": "<b>โหมดเรียนรู้</b>ฝึกคลังคำเดียวกับบัตรคำก่อน เพื่อให้คุณได้ทบทวนก่อนเริ่มเล่น",
+    "howto.attribution": "ประโยคตัวอย่างบางส่วนจาก Tatoeba (tatoeba.org) สัญญาอนุญาต CC-BY 2.0 FR",
     // battle HUD + pause overlay (M4)
     "battle.round": "รอบ {label}",
     "battle.pause": "หยุดชั่วคราว",
@@ -459,6 +462,7 @@ export const STRINGS = {
     "battle.introListen": "ใหม่: ฟังก่อนนะ! กดฟังเสียงแล้วแตะความหมายที่ได้ยิน",
     "battle.introReverse": "ใหม่: คำนี้คุ้นแล้ว — เลือกตัวอักษรจีนจากความหมายเลย!",
     "battle.introTone": "ใหม่: เช็ควรรณยุกต์! แตะพินอินที่มีวรรณยุกต์ถูกต้อง",
+    "battle.introCloze": "ใหม่: เติมคำในช่องว่าง! เลือกคำที่ทำให้ประโยคสมบูรณ์",
     "battle.introTyped": "ด่านมาสเตอร์! พิมพ์พินอินเอง — พิมพ์ตัวอักษรก่อน แล้วแตะวรรณยุกต์ของแต่ละพยางค์",
     "battle.typedPlaceholder": "พิมพ์ตัวอักษรพินอิน",
     "battle.typedGo": "โจมตี!",
