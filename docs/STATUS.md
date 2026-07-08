@@ -1,15 +1,15 @@
 # Lucky Cat HSK — Status
 
 **Last updated:** 2026-07-08
-**TL;DR:** RELEASED — v5+v6+v7 shipped to the live site 2026-07-08 (PR #28, SHELL v30, live-smoke verified). Next: responsive round, v7 art batch, street restyle.
+**TL;DR:** v5+v6+v7 are live (PR #28, 2026-07-08). Five more rounds — responsive, street restyle, i18n pass 2, tooling, v7 season art — are merged to `development` and awaiting a release cut to the live site.
 
 ## Where the game is
 
 | Tier | State |
 |---|---|
-| **Live on `main` / GitHub Pages** | Current (released 2026-07-08, PR #28): warm-daylight theme, v5 retention features, v6 question formats, v7 Shop Seasons, generated art incl. raccoon sheets. |
-| **Merged to `development`, unreleased** | Nothing — `main` and `development` are in sync as of the 2026-07-08 release. |
-| **On feature branches** | None — all work is merged. |
+| **Live on `main` / GitHub Pages** | Released 2026-07-08 (PR #28, SHELL v30, live-smoke verified): warm-daylight theme, v5 retention features, v6 question formats, v7 Shop Seasons, generated art incl. raccoon sheets. |
+| **Merged to `development`, unreleased** | 5 rounds ahead of `main`, not yet on the live site: responsive all-devices (PR #29), street restyle (PR #30), i18n pass 2 (PR #31), `/update-game-plan` skill restore (PR #32), v7 season backdrops + cat costumes art (PR #33). |
+| **On feature branches** | None — all work is merged to `development`. |
 
 ## Done
 
@@ -31,10 +31,10 @@
 
 ## Planned
 
-1. **Responsive all-devices round** — CSS-only fixes for short viewports + landscape phones, plan ready: [2026-07-07-responsive-all-devices.md](superpowers/plans/2026-07-07-responsive-all-devices.md)
+1. **Release cut to live** — merge the 5 rounds on `development` (PRs #29–#33) to `main` so responsive, street restyle, i18n pass 2, and v7 season art reach the live site; bump SHELL, live-smoke verify.
 2. **v7 art follow-ups** (filed in the [v7 plan](superpowers/plans/2026-07-07-v7-shop-seasons.md)): deco prompts + decor manifest rows, per-backdrop procedural scenes, small cleanups (doBuy renderStreet, empty-shelf state, registry-test hardening, art-drop raw pruning policy)
-5. **v6 phase 2+** — deeper question types per [PRD-v5 §8](prd/PRD-v5-visual-retention.md) (typed-pinyin recall, cloze, tone minigame)
-6. **Roadmaps not started:** [monetization & production](prd/PRD-monetization-and-production.md) (Supabase accounts, store launch); HSK 3.0 content refresh; social layer; notifications/widget; Android release refresh ([ANDROID_BUILD.md](build/ANDROID_BUILD.md))
+3. **v6 phase 2+** — deeper question types per [PRD-v5 §8](prd/PRD-v5-visual-retention.md) (typed-pinyin recall, cloze, tone minigame)
+4. **Roadmaps not started:** [monetization & production](prd/PRD-monetization-and-production.md) (Supabase accounts, store launch); HSK 3.0 content refresh; social layer; notifications/widget; Android release refresh ([ANDROID_BUILD.md](build/ANDROID_BUILD.md))
 
 ## Doc map
 
