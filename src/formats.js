@@ -14,11 +14,12 @@ function shuffle(a, rand) {
   return a;
 }
 
-// Ladder: streak 0/unseen -> meaning, 1-2 -> listen, 3-4 -> reverse, 5+ -> tone.
-// A miss resets the streak (mastery.js), so failures self-heal down the ladder.
+// Ladder: streak 0/unseen -> meaning, 1-2 -> listen, 3-4 -> reverse,
+// 5-6 -> tone, 7+ -> typed. A miss resets the streak (mastery.js), so
+// failures self-heal down the ladder.
 export function formatFor(word, rec, caps = { audio: true }) {
   const r = (rec && rec.r) || 0;
-  let f = r >= 5 ? "tone" : r >= 3 ? "reverse" : r >= 1 ? "listen" : "meaning";
+  let f = r >= 7 ? "typed" : r >= 5 ? "tone" : r >= 3 ? "reverse" : r >= 1 ? "listen" : "meaning";
   if (f === "listen" && !caps.audio) f = "meaning";      // no MP3 + no TTS
   if (f === "tone" && toneSlots(word.p).length === 0) f = "meaning"; // 吗/呢-style
   return f;
@@ -63,5 +64,11 @@ export const FORMATS = {
         [{ label: word.p, sub: "", correct: true },
          ...wrong.map(p => ({ label: p, sub: "", correct: false }))], rand);
     },
+  },
+  typed: {
+    plaque: { hz: true },      // hanzi only; pinyin would be the answer
+    audio: "never",            // hearing the word would give it away
+    intro: "battle.introTyped",
+    input: true,               // main.js renders the typed input UI, not option buttons
   },
 };

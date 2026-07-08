@@ -140,7 +140,7 @@ Each phase is one feature round (branch → `development` → PR, tests green, `
 
 ## 8. Out of scope — recorded v-next candidates (do not build in v5)
 
-1. **New question types** — listening-first rounds, typed-pinyin/tone recall, cloze sentences. Strongest learning-science upgrade on the shelf (generation effect d≈0.40; MC-only is competitors' top documented weakness); first candidate for v6.
+1. **New question types** — listening-first rounds, typed-pinyin/tone recall, cloze sentences (typed-pinyin recall shipped 2026-07-08, v6 phase 2, spec docs/superpowers/specs/2026-07-08-v6-typed-pinyin-design.md; listening-first rounds and cloze remain parked). Strongest learning-science upgrade on the shelf (generation effect d≈0.40; MC-only is competitors' top documented weakness); first candidate for v6.
 2. **HSK 3.0 content** — the 9-level standard replaces HSK 2.0 in July 2026; requires a pipeline re-run with new wordlists. Content risk grows over time.
 3. **Social layer** — weekly friend quest (strongest social retention evidence, 5.6x course-completion lift at Duolingo) and small opt-in leaderboards; blocked on Supabase accounts (see Lovable PRD / monetization PRD P3).
 4. **Notifications & widget** — behavior-triggered, hard-capped ≤3–4/week, never guilt-toned; needs native work (Capacitor local notifications) and/or accounts.

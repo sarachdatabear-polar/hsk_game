@@ -172,3 +172,10 @@ Spec: [PRD-v4-street.md](../archive/prd/PRD-v4-street.md) (shipped, archived). H
 - **2026-07-04 (session 1, post-playtest fix):** user reported "not a cat" — equipping a shop skin switched rendering from the cat PNG sprite to the crude vector fallback (M1's known tradeoff). Fixed: skins now tint the real sprite via `ctx.filter` (per-skin `filter` strings in `SKIN_PALETTES`); vector cat remains only as pre-load/missing-PNG fallback. 98 tests green, rebuilt.
 
 - **2026-07-04 (session 1):** research, PRD, sign-off, art brief, this plan. All milestones M1–M5 implemented and verified (98 tests, build clean). Working tree in `game/` holds the uncommitted v2 changes — next session: commit/push on user request, then device smoke test. Known follow-ups: `weakWords` "Needs work" rows show fixed `en · thai` format (not scope-lang aware); boss reverse-question audio speaks the word at stage-1 kill (acceptable — recall aid); art remains programmatic until ART-BRIEF assets exist.
+
+## v6 phase 2 "Typed-Pinyin Recall" (2026-07-08)
+Spec: docs/superpowers/specs/2026-07-08-v6-typed-pinyin-design.md
+- [x] pinyin.js pure grading (syllables/letters/gradeTyped, ü = v|u)
+- [x] ladder: tone 5-6, typed 7+ (FORMATS.typed, input: true)
+- [x] battle UI: letters + tone taps, 0.4x walker, kind diff line, EN/TH
+Deferred: per-format scoring bonus; cloze + tone minigame stay in PRD-v5 §8.

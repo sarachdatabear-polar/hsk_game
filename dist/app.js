@@ -163,6 +163,26 @@
     });
     return chars.join("");
   }
+  function syllables(p) {
+    return (p || "").split(/[\s']+/).filter(Boolean);
+  }
+  function syllableTones(p) {
+    return syllables(p).map((s) => {
+      const slots = toneSlots(s);
+      return slots.length ? slots[0].tone : 0;
+    });
+  }
+  function letters(p, uu = "v") {
+    return [...(p || "").toLowerCase()].map((ch) => TONE_OF[ch] ? TONE_OF[ch].vowel : ch).join("").replace(/ü/g, uu).replace(/[^a-z]/g, "");
+  }
+  function gradeTyped(p, typedLetters, toneChoices) {
+    const norm = (typedLetters || "").toLowerCase().replace(/ü/g, "v").replace(/[^a-z]/g, "");
+    const lettersOk = norm === letters(p, "v") || norm === letters(p, "u");
+    const want = syllableTones(p).filter((t2) => t2 > 0);
+    const got = toneChoices || [];
+    const tonesOk = want.length === got.length && want.every((t2, i) => t2 === got[i]);
+    return { ok: lettersOk && tonesOk, lettersOk, tonesOk };
+  }
   function shuffle2(a, rand) {
     for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(rand() * (i + 1));
@@ -197,7 +217,7 @@
   }
   function formatFor(word, rec, caps = { audio: true }) {
     const r = rec && rec.r || 0;
-    let f = r >= 5 ? "tone" : r >= 3 ? "reverse" : r >= 1 ? "listen" : "meaning";
+    let f = r >= 7 ? "typed" : r >= 5 ? "tone" : r >= 3 ? "reverse" : r >= 1 ? "listen" : "meaning";
     if (f === "listen" && !caps.audio) f = "meaning";
     if (f === "tone" && toneSlots(word.p).length === 0) f = "meaning";
     return f;
@@ -248,6 +268,15 @@
           rand
         );
       }
+    },
+    typed: {
+      plaque: { hz: true },
+      // hanzi only; pinyin would be the answer
+      audio: "never",
+      // hearing the word would give it away
+      intro: "battle.introTyped",
+      input: true
+      // main.js renders the typed input UI, not option buttons
     }
   };
 
@@ -1155,29 +1184,39 @@
       { id: "bg-market", file: "bg-market.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "css:#cv gradient", note: "vector placeholder \u2014 regenerate per GENERATION-PROMPTS-v5" },
       { id: "bg-temple", file: "bg-temple.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "css:#cv gradient", note: "vector placeholder \u2014 regenerate per GENERATION-PROMPTS-v5" },
       { id: "bg-bamboo", file: "bg-bamboo.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "css:#cv gradient", note: "vector placeholder \u2014 regenerate per GENERATION-PROMPTS-v5" },
-      { id: "bg-street", file: "bg-street.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintStreetBase", note: "warm-daylight village street \u2014 see GENERATION-PROMPTS-P0-copypaste.md" },
+      { id: "bg-street", file: "bg-street.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintStreetBase", note: "warm-daylight village street \u2014 see GENERATION-PROMPTS-P0-copypaste.md" },
       { id: "lantern", file: "lantern.png", type: "decor", status: "integrated", priority: "P2", w: 256, h: 384, fallback: "css:none (decor)" },
       { id: "cloud", file: "cloud.png", type: "decor", status: "integrated", priority: "P2", w: 512, h: 256, fallback: "css:none (decor)" },
       { id: "coin", file: "coin.png", type: "decor", status: "integrated", priority: "P2", w: 128, h: 128, fallback: "canvas:coin-vector" },
       { id: "raccoon-walk", file: "raccoon-walk.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawRaccoon" },
       { id: "raccoon-happy", file: "raccoon-happy.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawRaccoon" },
-      { id: "cat-panda-walk", file: "cat-panda-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-panda-happy", file: "cat-panda-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-ninja-walk", file: "cat-ninja-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-ninja-happy", file: "cat-ninja-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-astronaut-walk", file: "cat-astronaut-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-astronaut-happy", file: "cat-astronaut-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-beach-walk", file: "cat-beach-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-beach-happy", file: "cat-beach-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-mooncake-walk", file: "cat-mooncake-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-mooncake-happy", file: "cat-mooncake-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-dragon-walk", file: "cat-dragon-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-dragon-happy", file: "cat-dragon-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "bg-harbor-night", file: "bg-harbor-night.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
-      { id: "bg-snow-festival", file: "bg-snow-festival.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
-      { id: "bg-island-sunset", file: "bg-island-sunset.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
-      { id: "bg-lantern-festival", file: "bg-lantern-festival.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
-      { id: "bg-dragon-gate", file: "bg-dragon-gate.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" }
+      { id: "cat-panda-walk", file: "cat-panda-walk.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-panda-happy", file: "cat-panda-happy.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-ninja-walk", file: "cat-ninja-walk.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-ninja-happy", file: "cat-ninja-happy.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-astronaut-walk", file: "cat-astronaut-walk.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-astronaut-happy", file: "cat-astronaut-happy.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-beach-walk", file: "cat-beach-walk.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-beach-happy", file: "cat-beach-happy.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-mooncake-walk", file: "cat-mooncake-walk.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-mooncake-happy", file: "cat-mooncake-happy.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-dragon-walk", file: "cat-dragon-walk.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-dragon-happy", file: "cat-dragon-happy.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "bg-harbor-night", file: "bg-harbor-night.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
+      { id: "bg-snow-festival", file: "bg-snow-festival.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
+      { id: "bg-island-sunset", file: "bg-island-sunset.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
+      { id: "bg-lantern-festival", file: "bg-lantern-festival.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
+      { id: "bg-dragon-gate", file: "bg-dragon-gate.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
+      { id: "deco-mahjong-table", file: "deco-mahjong-table.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco", note: "v7 street decos \u2014 prompts in GENERATION-PROMPTS-P0-copypaste.md 'v7 street deco batch'; sprite-draw wiring lands with the art round" },
+      { id: "deco-koi-pond", file: "deco-koi-pond.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-drum-tower", file: "deco-drum-tower.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-bubble-tea", file: "deco-bubble-tea.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-paper-umbrella", file: "deco-paper-umbrella.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-goldfish-banner", file: "deco-goldfish-banner.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-neon-cat-sign", file: "deco-neon-cat-sign.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-shaved-ice-cart", file: "deco-shaved-ice-cart.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-mooncake-stall", file: "deco-mooncake-stall.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-firecracker-arch", file: "deco-firecracker-arch.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" }
     ],
     required_icons: [
       "home",
@@ -1769,6 +1808,9 @@
     const d = dayIndex(dateStr);
     return [0, 1, 2].map((i) => pool2[((d * 3 + i) % pool2.length + pool2.length) % pool2.length].id);
   }
+  function unownedDailyStock(dateStr, shop) {
+    return dailyStock(dateStr).filter((id) => !shop.owned.includes(id));
+  }
   function inWindow(dateStr, from, to) {
     const [, m, d] = dateStr.split("-").map(Number);
     const md = m * 100 + d, lo = from[0] * 100 + from[1], hi = to[0] * 100 + to[1];
@@ -2082,6 +2124,7 @@
       "shop.coins": "{coins} coins",
       "shop.daily": "Today's Stock",
       "shop.dailyNote": "New stock at midnight",
+      "shop.dailyAllOwned": "All stocked up! Fresh finds at midnight \u{1F319}",
       "shop.season": "Season Corner",
       "shop.seasonUntil": "Available until {date}",
       "shop.seasonReturns": "\u{1F3EE} {name} set returns {date}",
@@ -2163,6 +2206,11 @@
       "battle.introListen": "New: listen first! Play the sound and tap the meaning you hear.",
       "battle.introReverse": "New: you know this word \u2014 now pick its hanzi from the meaning!",
       "battle.introTone": "New: tone check! Tap the pinyin with the right tone marks.",
+      "battle.introTyped": "Master level! Type the pinyin yourself \u2014 letters first, then tap each tone.",
+      "battle.typedPlaceholder": "type the pinyin letters",
+      "battle.typedGo": "ATTACK!",
+      "battle.typedLettersOk": "letters right \u2014 check the tones!",
+      "battle.typedTonesOk": "tones right \u2014 check the spelling!",
       // common
       "common.back": "\u2190 Home",
       "common.backMore": "\u2190 More",
@@ -2305,6 +2353,7 @@
       "shop.coins": "{coins} \u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D",
       "shop.daily": "\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49",
       "shop.dailyNote": "\u0E02\u0E2D\u0E07\u0E43\u0E2B\u0E21\u0E48\u0E21\u0E32\u0E15\u0E2D\u0E19\u0E40\u0E17\u0E35\u0E48\u0E22\u0E07\u0E04\u0E37\u0E19",
+      "shop.dailyAllOwned": "\u0E21\u0E35\u0E04\u0E23\u0E1A\u0E17\u0E38\u0E01\u0E0A\u0E34\u0E49\u0E19\u0E41\u0E25\u0E49\u0E27! \u0E02\u0E2D\u0E07\u0E43\u0E2B\u0E21\u0E48\u0E21\u0E32\u0E15\u0E2D\u0E19\u0E40\u0E17\u0E35\u0E48\u0E22\u0E07\u0E04\u0E37\u0E19 \u{1F319}",
       "shop.season": "\u0E21\u0E38\u0E21\u0E40\u0E17\u0E28\u0E01\u0E32\u0E25",
       "shop.seasonUntil": "\u0E21\u0E35\u0E16\u0E36\u0E07 {date}",
       "shop.seasonReturns": "\u{1F3EE} \u0E40\u0E0B\u0E47\u0E15 {name} \u0E08\u0E30\u0E01\u0E25\u0E31\u0E1A\u0E21\u0E32 {date}",
@@ -2386,6 +2435,11 @@
       "battle.introListen": "\u0E43\u0E2B\u0E21\u0E48: \u0E1F\u0E31\u0E07\u0E01\u0E48\u0E2D\u0E19\u0E19\u0E30! \u0E01\u0E14\u0E1F\u0E31\u0E07\u0E40\u0E2A\u0E35\u0E22\u0E07\u0E41\u0E25\u0E49\u0E27\u0E41\u0E15\u0E30\u0E04\u0E27\u0E32\u0E21\u0E2B\u0E21\u0E32\u0E22\u0E17\u0E35\u0E48\u0E44\u0E14\u0E49\u0E22\u0E34\u0E19",
       "battle.introReverse": "\u0E43\u0E2B\u0E21\u0E48: \u0E04\u0E33\u0E19\u0E35\u0E49\u0E04\u0E38\u0E49\u0E19\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E40\u0E25\u0E37\u0E2D\u0E01\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E08\u0E35\u0E19\u0E08\u0E32\u0E01\u0E04\u0E27\u0E32\u0E21\u0E2B\u0E21\u0E32\u0E22\u0E40\u0E25\u0E22!",
       "battle.introTone": "\u0E43\u0E2B\u0E21\u0E48: \u0E40\u0E0A\u0E47\u0E04\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C! \u0E41\u0E15\u0E30\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19\u0E17\u0E35\u0E48\u0E21\u0E35\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C\u0E16\u0E39\u0E01\u0E15\u0E49\u0E2D\u0E07",
+      "battle.introTyped": "\u0E14\u0E48\u0E32\u0E19\u0E21\u0E32\u0E2A\u0E40\u0E15\u0E2D\u0E23\u0E4C! \u0E1E\u0E34\u0E21\u0E1E\u0E4C\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19\u0E40\u0E2D\u0E07 \u2014 \u0E1E\u0E34\u0E21\u0E1E\u0E4C\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E01\u0E48\u0E2D\u0E19 \u0E41\u0E25\u0E49\u0E27\u0E41\u0E15\u0E30\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C\u0E02\u0E2D\u0E07\u0E41\u0E15\u0E48\u0E25\u0E30\u0E1E\u0E22\u0E32\u0E07\u0E04\u0E4C",
+      "battle.typedPlaceholder": "\u0E1E\u0E34\u0E21\u0E1E\u0E4C\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19",
+      "battle.typedGo": "\u0E42\u0E08\u0E21\u0E15\u0E35!",
+      "battle.typedLettersOk": "\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E16\u0E39\u0E01\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E40\u0E0A\u0E47\u0E04\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C!",
+      "battle.typedTonesOk": "\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C\u0E16\u0E39\u0E01\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E40\u0E0A\u0E47\u0E04\u0E15\u0E31\u0E27\u0E2A\u0E30\u0E01\u0E14!",
       // common
       "common.back": "\u2190 \u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
       "common.backMore": "\u2190 \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
@@ -3448,6 +3502,7 @@
     B.speedBase *= 1.03;
     B.speed = B.speedBase * (B.w / 380);
   }
+  var TYPED_WALK_FACTOR = 0.4;
   function renderQuestion(word, format, promptKey) {
     const deck = B.deck.length >= 8 ? B.deck : pool;
     const box = $("#opts");
@@ -3458,6 +3513,10 @@
       prompt.className = "boss-prompt";
       prompt.textContent = t(promptKey, { meaning: m.main });
       box.appendChild(prompt);
+    }
+    if (FORMATS[format].input) {
+      renderTypedInput(word);
+      return;
     }
     if (format === "listen") {
       const rp = document.createElement("button");
@@ -3473,6 +3532,64 @@
       b.onclick = () => answer(b, o);
       box.appendChild(b);
     }
+  }
+  function renderTypedInput(word) {
+    const box = $("#opts");
+    const wrap = document.createElement("div");
+    wrap.className = "typed-box";
+    const field = document.createElement("input");
+    field.type = "text";
+    field.className = "typed-letters";
+    field.placeholder = t("battle.typedPlaceholder");
+    field.autocapitalize = "off";
+    field.autocomplete = "off";
+    field.spellcheck = false;
+    field.setAttribute("autocorrect", "off");
+    wrap.appendChild(field);
+    const sylls = syllables(word.p), tones = syllableTones(word.p);
+    const picks = tones.map(() => 0);
+    const go = document.createElement("button");
+    const sync = () => {
+      go.disabled = !field.value.trim() || tones.some((tn, i) => tn > 0 && !picks[i]);
+    };
+    tones.forEach((tn, i) => {
+      if (!tn) return;
+      const row = document.createElement("div");
+      row.className = "tone-row";
+      const lab = document.createElement("span");
+      lab.className = "tone-label";
+      lab.textContent = letters(sylls[i]);
+      row.appendChild(lab);
+      for (let k = 1; k <= 4; k++) {
+        const c = document.createElement("button");
+        c.className = "chip tone-chip";
+        c.textContent = String(k);
+        c.onclick = () => {
+          picks[i] = k;
+          row.querySelectorAll(".tone-chip").forEach((x) => x.classList.toggle("on", x === c));
+          sync();
+        };
+        row.appendChild(c);
+      }
+      wrap.appendChild(row);
+    });
+    go.className = "typed-go";
+    go.textContent = t("battle.typedGo");
+    go.disabled = true;
+    field.oninput = sync;
+    go.onclick = () => {
+      const g = gradeTyped(word.p, field.value, picks.filter((_, i) => tones[i] > 0));
+      field.disabled = true;
+      if (!g.ok) {
+        const diff = document.createElement("div");
+        diff.className = "boss-prompt";
+        diff.textContent = word.p + (g.lettersOk ? " \xB7 " + t("battle.typedLettersOk") : g.tonesOk ? " \xB7 " + t("battle.typedTonesOk") : "");
+        wrap.appendChild(diff);
+      }
+      answer(go, { correct: g.ok });
+    };
+    wrap.appendChild(go);
+    box.appendChild(wrap);
   }
   function showFormatIntro(key) {
     $("#fi-text").textContent = t(key);
@@ -3494,7 +3611,7 @@
   }
   function lockOptions() {
     B.locked = true;
-    document.querySelectorAll("#opts button").forEach((b) => b.disabled = true);
+    document.querySelectorAll("#opts button, #opts input").forEach((b) => b.disabled = true);
   }
   function revealCorrect() {
     document.querySelectorAll("#opts button").forEach((b) => {
@@ -3647,7 +3764,7 @@
     if (z) {
       if (z.state === "walk") {
         if (!z.frozen) {
-          z.x -= B.speed * (z.boss ? bossSpeedFactor : 1) * dt;
+          z.x -= B.speed * (z.boss ? bossSpeedFactor : 1) * (z.format === "typed" ? TYPED_WALK_FACTOR : 1) * dt;
           if (z.x <= B.L.mascotX + B.L.catHalf) bite(true);
         }
       } else if (z.state === "dash") {
@@ -4350,9 +4467,13 @@
     const dailyBox = $("#shop-daily"), seasonBox = $("#shop-season");
     const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), decoBox = $("#shop-street");
     for (const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, decoBox]) b.innerHTML = "";
-    for (const id of dailyStock(today)) {
+    const stock = unownedDailyStock(today, shopState);
+    for (const id of stock) {
       const item = CATALOG.find((i) => i.id === id);
-      if (item && !shopState.owned.includes(id)) dailyBox.appendChild(makeShopRow(item, today));
+      if (item) dailyBox.appendChild(makeShopRow(item, today));
+    }
+    if (!stock.length) {
+      dailyBox.innerHTML = `<div class="scorerow" style="color:var(--muted)">${t("shop.dailyAllOwned")}</div>`;
     }
     const st = seasonStatus(today);
     const seasonNote = $("#shop-season-note");
@@ -4399,7 +4520,6 @@
       store.set("shop", shopState);
       updateWalletChip();
       renderShop();
-      renderStreet();
     };
     if (item.type === "deco") {
       if (!owned) {
