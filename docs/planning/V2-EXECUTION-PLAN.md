@@ -1,5 +1,13 @@
 # V2/V3/V4 Execution Plan — living checklist
 
+## i18n pass 2 (2026-07-08)
+
+Plan: [2026-07-08-i18n-pass-2.md](../superpowers/plans/2026-07-08-i18n-pass-2.md). Branch `feat/i18n-pass-2`.
+
+- [x] 56 new keys EN+TH (howto.* w/ inline <b> via opt-in `data-i18n-html`, street.* captions, item.* ×39, building.* ×5, fc.noThai) + `{min}` param fix; static-usage guard test (every data-i18n / t() literal / catalog id covered both locales).
+- [x] Wiring: howto body, street captions w/ localized building names, shop item names via `tOr()` fallback, t-shadow cleanup (8 renames incl. rAF time chain, verified end-to-end).
+- [x] 782 tests green; TH smoke (howto/street/shop screenshots) + sweep 10/10. Follow-ups: MILESTONES growth-card strings still unlocalized; TH brand "ถนนนำโชค" + all new keys pending native review; fc.noThai has no live repro (0 words lack Thai).
+
 ## Street restyle round (2026-07-08)
 
 Plan: [2026-07-08-street-restyle.md](../superpowers/plans/2026-07-08-street-restyle.md). Branch `feat/street-restyle`.
