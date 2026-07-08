@@ -516,6 +516,7 @@
     "bg-quest",
     "bg-battle",
     "bg-market",
+    "bg-street",
     "bg-temple",
     "bg-bamboo",
     "bg-harbor-night",
@@ -1154,6 +1155,7 @@
       { id: "bg-market", file: "bg-market.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "css:#cv gradient", note: "vector placeholder \u2014 regenerate per GENERATION-PROMPTS-v5" },
       { id: "bg-temple", file: "bg-temple.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "css:#cv gradient", note: "vector placeholder \u2014 regenerate per GENERATION-PROMPTS-v5" },
       { id: "bg-bamboo", file: "bg-bamboo.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "css:#cv gradient", note: "vector placeholder \u2014 regenerate per GENERATION-PROMPTS-v5" },
+      { id: "bg-street", file: "bg-street.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintStreetBase", note: "warm-daylight village street \u2014 see GENERATION-PROMPTS-P0-copypaste.md" },
       { id: "lantern", file: "lantern.png", type: "decor", status: "integrated", priority: "P2", w: 256, h: 384, fallback: "css:none (decor)" },
       { id: "cloud", file: "cloud.png", type: "decor", status: "integrated", priority: "P2", w: 512, h: 256, fallback: "css:none (decor)" },
       { id: "coin", file: "coin.png", type: "decor", status: "integrated", priority: "P2", w: 128, h: 128, fallback: "canvas:coin-vector" },
@@ -1907,6 +1909,13 @@
     const nextB = BUILDINGS.find((b) => b.lv > level) || null;
     const next = nextB ? { lv: nextB.lv, name: nextB.name } : null;
     return { unlocked, total, next };
+  }
+  function streetMetrics(w, h) {
+    const unit = Math.min(h * 0.3, w * 0.105);
+    const backY = 0.86;
+    const frontY = 1;
+    const backScale = 0.78;
+    return { unit, backY, frontY, backScale };
   }
 
   // src/icons.js
@@ -4439,15 +4448,26 @@
     const sc = scv.getContext("2d");
     sc.setTransform(dpr, 0, 0, dpr, 0, 0);
     sc.clearRect(0, 0, w, h);
-    paintStreetBase(sc, w, h);
+    const bg = sprite("bg-street");
+    if (bg) drawCoverImage(sc, bg, 0, 0, w, h);
+    else paintStreetBase(sc, w, h);
     const gy = h - 10;
     const level = levelForXp(xp);
     const pieces = streetPieces(level, shopState.owned, shopState.tiers || {});
-    drawStreetPads(sc, w, gy, h, pieces);
+    const m = streetMetrics(w, h);
+    const backGy = gy - h * (1 - m.backY);
+    drawStreetPads(sc, w, gy, h, pieces, m);
     for (const p of pieces) {
+      if (p.kind !== "building") continue;
+      const x = p.slot * w, basis = m.unit * m.backScale;
+      drawContactShadow(sc, x, backGy, basis);
+      drawStreetBuilding(sc, p.id, x, backGy, basis);
+    }
+    for (const p of pieces) {
+      if (p.kind === "building") continue;
       const x = p.slot * w;
-      if (p.kind === "building") drawStreetBuilding(sc, p.id, x, gy, h);
-      else drawTieredDeco(sc, p, x, gy, h);
+      drawContactShadow(sc, x, gy, m.unit);
+      drawTieredDeco(sc, p, x, gy, m.unit);
     }
     const mImg = sprite("maneki");
     const mp = Math.min(h * 0.62, 48);
@@ -4466,73 +4486,91 @@
   }
   function paintStreetBase(c, w, h) {
     const sky = c.createLinearGradient(0, 0, 0, h);
-    sky.addColorStop(0, "#160b2a");
-    sky.addColorStop(0.58, "#2a1232");
-    sky.addColorStop(1, "#5a1d18");
+    sky.addColorStop(0, "#5DAADD");
+    sky.addColorStop(0.55, "#BFE0F2");
+    sky.addColorStop(1, "#FBF5E8");
     c.fillStyle = sky;
     c.fillRect(0, 0, w, h);
-    c.fillStyle = "rgba(255,231,144,.86)";
+    c.fillStyle = "rgba(242,188,87,.32)";
     c.beginPath();
-    c.arc(w * 0.82, h * 0.24, h * 0.12, 0, Math.PI * 2);
+    c.arc(w * 0.16, h * 0.2, h * 0.22, 0, Math.PI * 2);
     c.fill();
-    c.fillStyle = "rgba(245,197,24,.7)";
-    for (const [fx, fy, r] of [[0.16, 0.18, 1.2], [0.31, 0.28, 1], [0.46, 0.16, 1.4], [0.66, 0.3, 1.1], [0.92, 0.42, 1]]) {
+    c.fillStyle = "rgba(242,188,87,.88)";
+    c.beginPath();
+    c.arc(w * 0.16, h * 0.2, h * 0.13, 0, Math.PI * 2);
+    c.fill();
+    c.fillStyle = "rgba(251,245,232,.7)";
+    for (const [fx, fy, rx, ry] of [[0.42, 0.14, 0.055, 0.022], [0.58, 0.09, 0.04, 0.017], [0.8, 0.17, 0.05, 0.02], [0.27, 0.26, 0.038, 0.016]]) {
       c.beginPath();
-      c.arc(w * fx, h * fy, r, 0, Math.PI * 2);
+      c.ellipse(w * fx, h * fy, w * rx, h * ry, 0, 0, Math.PI * 2);
       c.fill();
     }
-    c.fillStyle = "rgba(18,12,24,.58)";
+    c.fillStyle = "rgba(50,119,94,.55)";
     c.beginPath();
-    c.moveTo(0, h * 0.58);
-    c.lineTo(w * 0.16, h * 0.42);
-    c.lineTo(w * 0.3, h * 0.57);
-    c.lineTo(w * 0.48, h * 0.37);
-    c.lineTo(w * 0.72, h * 0.58);
-    c.lineTo(w, h * 0.43);
-    c.lineTo(w, h);
-    c.lineTo(0, h);
+    c.moveTo(0, h * 0.62);
+    c.lineTo(w * 0.18, h * 0.5);
+    c.lineTo(w * 0.38, h * 0.6);
+    c.lineTo(w * 0.6, h * 0.46);
+    c.lineTo(w * 0.82, h * 0.58);
+    c.lineTo(w, h * 0.5);
+    c.lineTo(w, h * 0.74);
+    c.lineTo(0, h * 0.74);
     c.closePath();
     c.fill();
-    c.fillStyle = "rgba(92,31,24,.9)";
-    c.fillRect(0, h * 0.64, w, h * 0.36);
-    c.strokeStyle = "rgba(245,197,24,.24)";
-    c.lineWidth = 1;
-    for (let y = h * 0.7; y < h; y += h * 0.12) {
-      c.beginPath();
-      c.moveTo(0, y);
-      c.lineTo(w, y);
-      c.stroke();
-    }
-    for (let x = -w * 0.1; x < w; x += w * 0.14) {
-      c.beginPath();
-      c.moveTo(x, h);
-      c.lineTo(x + w * 0.07, h * 0.66);
-      c.stroke();
-    }
-    c.strokeStyle = "rgba(245,197,24,.55)";
+    c.fillStyle = "rgba(50,119,94,.7)";
+    c.beginPath();
+    c.moveTo(0, h * 0.7);
+    c.lineTo(w * 0.22, h * 0.6);
+    c.lineTo(w * 0.44, h * 0.68);
+    c.lineTo(w * 0.66, h * 0.58);
+    c.lineTo(w * 0.88, h * 0.66);
+    c.lineTo(w, h * 0.62);
+    c.lineTo(w, h * 0.82);
+    c.lineTo(0, h * 0.82);
+    c.closePath();
+    c.fill();
+    const roadY = h * 0.8;
+    c.fillStyle = "#EAC796";
+    c.fillRect(0, roadY, w, h - roadY);
+    c.strokeStyle = "#846043";
     c.lineWidth = 2;
     c.beginPath();
-    c.moveTo(0, h - 10);
-    c.lineTo(w, h - 10);
+    c.moveTo(0, roadY);
+    c.lineTo(w, roadY);
     c.stroke();
-    c.fillStyle = "rgba(245,197,24,.12)";
-    c.fillRect(0, h * 0.62, w, h * 0.05);
   }
-  function drawStreetPads(c, w, gy, h, pieces) {
+  function drawContactShadow(c, x, y, basis) {
+    c.save();
+    c.fillStyle = "rgba(46,42,36,.12)";
+    c.beginPath();
+    c.ellipse(x, y + basis * 0.05, basis * 0.5, basis * 0.12, 0, 0, Math.PI * 2);
+    c.fill();
+    c.restore();
+  }
+  function drawStreetPads(c, w, gy, h, pieces, m) {
     const occupied = new Set(pieces.map((p) => p.slot.toFixed(2)));
-    const slots = [0.18, 0.34, 0.5, 0.66, 0.82, 0.1, 0.26, 0.42, 0.58, 0.74];
-    for (const slot of slots) {
-      if (occupied.has(slot.toFixed(2))) continue;
-      const x = slot * w, pw = h * 0.34;
+    const backGy = gy - h * (1 - m.backY);
+    const drawPad = (x, y, basis) => {
+      const pw = basis * 0.9, ph = basis * 0.16;
       c.fillStyle = "rgba(255,214,95,.08)";
       c.beginPath();
-      c.ellipse(x, gy + 1, pw, h * 0.055, 0, 0, Math.PI * 2);
+      c.ellipse(x, y + 1, pw, ph, 0, 0, Math.PI * 2);
       c.fill();
       c.strokeStyle = "rgba(245,197,24,.16)";
       c.lineWidth = 1;
       c.beginPath();
-      c.ellipse(x, gy + 1, pw, h * 0.055, 0, 0, Math.PI * 2);
+      c.ellipse(x, y + 1, pw, ph, 0, 0, Math.PI * 2);
       c.stroke();
+    };
+    const buildingSlots = [0.18, 0.34, 0.5, 0.66, 0.82];
+    const decoSlots = [0.1, 0.26, 0.42, 0.58, 0.74];
+    for (const slot of buildingSlots) {
+      if (occupied.has(slot.toFixed(2))) continue;
+      drawPad(slot * w, backGy, m.unit * m.backScale);
+    }
+    for (const slot of decoSlots) {
+      if (occupied.has(slot.toFixed(2))) continue;
+      drawPad(slot * w, gy, m.unit);
     }
   }
   function drawStreetBuilding(c, id, x, gy, h) {
@@ -4543,10 +4581,10 @@
     c.shadowBlur = 6;
     switch (id) {
       case "lantern-post":
-        c.fillStyle = "#2e1030";
+        c.fillStyle = "#846043";
         roundRectOn(c, -3, -bh, 6, bh, 2);
         c.fill();
-        c.strokeStyle = "#f5c518";
+        c.strokeStyle = "#F2BC57";
         c.lineWidth = 1.6;
         c.beginPath();
         c.moveTo(0, -bh);
@@ -4556,55 +4594,55 @@
         c.beginPath();
         c.ellipse(bw * 0.43, -bh * 0.74, bw * 0.18, bw * 0.23, 0, 0, Math.PI * 2);
         c.fill();
-        c.fillStyle = "#f5c518";
+        c.fillStyle = "#F2BC57";
         c.fillRect(bw * 0.34, -bh * 0.98, bw * 0.18, 3);
         c.fillRect(bw * 0.36, -bh * 0.52, bw * 0.14, 3);
         break;
       case "coin-bank":
-        c.fillStyle = "#2e1030";
+        c.fillStyle = "#846043";
         roundRectOn(c, -bw / 2, -bh, bw, bh, 4);
         c.fill();
-        c.fillStyle = "#8a2a24";
+        c.fillStyle = "#E69777";
         c.fillRect(-bw * 0.55, -bh, bw * 1.1, bh * 0.16);
-        c.fillStyle = "#f5c518";
+        c.fillStyle = "#F2BC57";
         c.beginPath();
         c.arc(0, -bh * 0.58, bw * 0.2, 0, Math.PI * 2);
         c.fill();
-        c.fillStyle = "#8a2a24";
+        c.fillStyle = "#2E2A24";
         c.font = `700 ${Math.round(bw * 0.22)}px serif`;
         c.textAlign = "center";
         c.fillText("$", 0, -bh * 0.5);
-        c.fillStyle = "rgba(255,244,224,.72)";
+        c.fillStyle = "rgba(251,245,232,.72)";
         c.fillRect(-bw * 0.34, -bh * 0.28, bw * 0.68, bh * 0.05);
         break;
       case "tailor":
-        c.fillStyle = "#2e1030";
+        c.fillStyle = "#846043";
         roundRectOn(c, -bw / 2, -bh * 0.85, bw, bh * 0.85, 4);
         c.fill();
         c.fillStyle = "#c1272d";
         c.fillRect(-bw / 2 - 5, -bh * 0.85 - 9, bw + 10, 9);
-        c.fillStyle = "rgba(255,244,224,.18)";
+        c.fillStyle = "rgba(251,245,232,.18)";
         c.fillRect(-bw * 0.42, -bh * 0.79, bw * 0.84, bh * 0.13);
-        c.fillStyle = "#f5c518";
+        c.fillStyle = "#F2BC57";
         c.fillRect(-bw * 0.18, -bh * 0.55, bw * 0.14, bh * 0.14);
         c.fillRect(bw * 0.04, -bh * 0.55, bw * 0.14, bh * 0.14);
         break;
       case "kitten-cafe":
-        c.fillStyle = "#2e1030";
+        c.fillStyle = "#846043";
         roundRectOn(c, -bw / 2, -bh * 0.75, bw, bh * 0.75, 4);
         c.fill();
-        c.fillStyle = "#8a2a24";
+        c.fillStyle = "#E69777";
         c.beginPath();
         c.moveTo(-bw / 2 - 6, -bh * 0.75);
         c.lineTo(0, -bh);
         c.lineTo(bw / 2 + 6, -bh * 0.75);
         c.closePath();
         c.fill();
-        c.fillStyle = "#f5c518";
+        c.fillStyle = "#F2BC57";
         c.beginPath();
         c.arc(0, -bh * 0.4, bw * 0.16, 0, Math.PI * 2);
         c.fill();
-        c.fillStyle = "#1a0d0d";
+        c.fillStyle = "#2E2A24";
         c.beginPath();
         c.arc(-bw * 0.05, -bh * 0.43, bw * 0.03, 0, Math.PI * 2);
         c.fill();
@@ -4617,9 +4655,9 @@
         c.fillRect(-bw * 0.7, -bh * 1.15, bw * 0.16, bh * 1.15);
         c.fillRect(bw * 0.54, -bh * 1.15, bw * 0.16, bh * 1.15);
         c.fillRect(-bw * 0.7, -bh * 1.15, bw * 1.4, bh * 0.14);
-        c.fillStyle = "#8a2a24";
+        c.fillStyle = "#E69777";
         c.fillRect(-bw * 0.82, -bh * 1.28, bw * 1.64, bh * 0.13);
-        c.fillStyle = "#f5c518";
+        c.fillStyle = "#F2BC57";
         c.beginPath();
         c.arc(0, -bh * 1.08, bw * 0.12, 0, Math.PI * 2);
         c.fill();
@@ -4638,14 +4676,6 @@
   }
   function drawTieredDeco(c, p, x, gy, h) {
     const tier = p.tier || 1;
-    if (tier >= 3) {
-      const dx = h * 0.26;
-      c.save();
-      c.globalAlpha = 0.8;
-      drawStreetDeco(c, p.id, x - dx, gy, h * 0.68);
-      drawStreetDeco(c, p.id, x + dx, gy, h * 0.68);
-      c.restore();
-    }
     if (tier >= 2) {
       c.save();
       c.shadowColor = "rgba(255,214,95,.55)";
@@ -4658,6 +4688,54 @@
     } else {
       drawStreetDeco(c, p.id, x, gy, h);
     }
+    if (tier >= 3) drawCrownAccent(c, p.id, x, gy, h);
+  }
+  var DECO_TOPS = {
+    "red-lantern": 1.6,
+    "noodle-stall": 0.84,
+    "tea-sign": 1.3,
+    "foo-dog": 0.8,
+    "golden-arch": 1.4,
+    "mahjong-table": 0.72,
+    "koi-pond": 0.39,
+    "drum-tower": 1.5,
+    "bubble-tea": 1.34,
+    "paper-umbrella": 1.4,
+    "goldfish-banner": 1.4,
+    "neon-cat-sign": 1.1,
+    "shaved-ice-cart": 0.94,
+    "mooncake-stall": 0.78,
+    "firecracker-arch": 0.82
+  };
+  function drawCrownAccent(c, id, x, gy, basis) {
+    c.save();
+    c.translate(x, gy);
+    const top = -(DECO_TOPS[id] || 1) * basis * 0.32 * 1.15;
+    const poleX = -basis * 0.3;
+    const poleBase = top - basis * 0.12;
+    const poleTip = poleBase - basis * 0.36;
+    c.strokeStyle = "#846043";
+    c.lineWidth = Math.max(1.4, basis * 0.045);
+    c.lineCap = "round";
+    c.beginPath();
+    c.moveTo(poleX, poleBase);
+    c.lineTo(poleX, poleTip);
+    c.stroke();
+    c.fillStyle = "#F2BC57";
+    c.beginPath();
+    c.moveTo(poleX, poleTip);
+    c.lineTo(poleX + basis * 0.18, poleTip + basis * 0.07);
+    c.lineTo(poleX, poleTip + basis * 0.14);
+    c.closePath();
+    c.fill();
+    c.fillStyle = "#FFE08A";
+    const sparkles = [
+      [poleX + basis * 0.42, poleTip - basis * 0.06, basis * 0.06],
+      [poleX + basis * 0.78, poleTip + basis * 0.04, basis * 0.055],
+      [poleX + basis * 0.58, poleTip - basis * 0.26, basis * 0.05]
+    ];
+    for (const [sx, sy, r] of sparkles) drawStarMark(c, sx, sy, r);
+    c.restore();
   }
   function drawStreetDeco(c, id, x, gy, h) {
     const s = h * 0.32;
@@ -4669,7 +4747,7 @@
     }
     switch (id) {
       case "red-lantern":
-        c.strokeStyle = "#8a2a24";
+        c.strokeStyle = "#846043";
         c.lineWidth = 1.5;
         c.beginPath();
         c.moveTo(0, -s * 1.6);
@@ -4679,45 +4757,45 @@
         c.beginPath();
         c.ellipse(0, -s * 0.8, s * 0.32, s * 0.42, 0, 0, Math.PI * 2);
         c.fill();
-        c.fillStyle = "#f5c518";
+        c.fillStyle = "#F2BC57";
         c.fillRect(-2, -s * 0.38, 4, s * 0.12);
         break;
       case "noodle-stall":
-        c.fillStyle = "#5a2c22";
+        c.fillStyle = "#846043";
         roundRectOn(c, -s * 0.48, -s * 0.62, s * 0.96, s * 0.62, 3);
         c.fill();
         c.fillStyle = "#c1272d";
         c.fillRect(-s * 0.56, -s * 0.84, s * 1.12, s * 0.18);
-        c.fillStyle = "#f5c518";
+        c.fillStyle = "#F2BC57";
         c.fillRect(-s * 0.56, -s * 0.84, s * 0.18, s * 0.18);
         c.fillRect(-s * 0.1, -s * 0.84, s * 0.18, s * 0.18);
         c.fillRect(s * 0.36, -s * 0.84, s * 0.2, s * 0.18);
         break;
       case "tea-sign":
-        c.strokeStyle = "#f5c518";
+        c.strokeStyle = "#F2BC57";
         c.lineWidth = 1.5;
         c.beginPath();
         c.moveTo(0, -s * 1.3);
         c.lineTo(0, -s * 0.9);
         c.stroke();
-        c.fillStyle = "#3a1a1a";
+        c.fillStyle = "#846043";
         roundRectOn(c, -s * 0.38, -s * 1.3, s * 0.76, s * 0.32, 3);
         c.fill();
-        c.fillStyle = "#f5c518";
+        c.fillStyle = "#F2BC57";
         c.font = `700 ${Math.round(s * 0.22)}px serif`;
         c.textAlign = "center";
         c.fillText("tea", 0, -s * 1.06);
         break;
       case "foo-dog":
-        c.fillStyle = "#2e1030";
+        c.fillStyle = "#846043";
         c.beginPath();
         c.ellipse(0, -s * 0.3, s * 0.32, s * 0.4, 0, 0, Math.PI * 2);
         c.fill();
-        c.fillStyle = "#f5c518";
+        c.fillStyle = "#F2BC57";
         c.beginPath();
         c.arc(0, -s * 0.62, s * 0.18, 0, Math.PI * 2);
         c.fill();
-        c.fillStyle = "#1a0d0d";
+        c.fillStyle = "#2E2A24";
         c.beginPath();
         c.arc(-s * 0.05, -s * 0.65, s * 0.025, 0, Math.PI * 2);
         c.fill();
@@ -4726,7 +4804,7 @@
         c.fill();
         break;
       case "golden-arch":
-        c.strokeStyle = "#f5c518";
+        c.strokeStyle = "#F2BC57";
         c.lineWidth = 3;
         c.beginPath();
         c.arc(0, -s * 0.5, s * 0.9, Math.PI, 0);
@@ -4737,7 +4815,7 @@
         c.moveTo(s * 0.9, -s * 0.5);
         c.lineTo(s * 0.9, 0);
         c.stroke();
-        c.fillStyle = "rgba(255,244,224,.35)";
+        c.fillStyle = "rgba(251,245,232,.35)";
         c.beginPath();
         c.arc(0, -s * 0.93, s * 0.13, 0, Math.PI * 2);
         c.fill();
@@ -4783,7 +4861,7 @@
         c.beginPath();
         c.ellipse(0, -s * 0.62, s * 0.2, s * 0.24, 0, 0, Math.PI * 2);
         c.fill();
-        c.fillStyle = "#f5c518";
+        c.fillStyle = "#F2BC57";
         c.beginPath();
         c.arc(0, -s * 0.62, s * 0.07, 0, Math.PI * 2);
         c.fill();
@@ -4791,7 +4869,7 @@
       case "bubble-tea":
         c.fillStyle = "#8a5a2c";
         c.fillRect(-s * 0.4, -s * 0.7, s * 0.8, s * 0.7);
-        c.fillStyle = "#f5c518";
+        c.fillStyle = "#F2BC57";
         c.fillRect(-s * 0.48, -s * 0.86, s * 0.96, s * 0.16);
         c.fillStyle = "#e8a9c9";
         c.fillRect(-s * 0.12, -s * 1.2, s * 0.24, s * 0.3);
@@ -4833,7 +4911,7 @@
         c.beginPath();
         c.ellipse(s * 0.2, -s * 1.1, s * 0.3, s * 0.12, 0, 0, Math.PI * 2);
         c.fill();
-        c.fillStyle = "#f5c518";
+        c.fillStyle = "#F2BC57";
         c.beginPath();
         c.moveTo(s * 0.46, -s * 1.1);
         c.lineTo(s * 0.62, -s * 1.2);
@@ -4842,12 +4920,12 @@
         c.fill();
         break;
       case "neon-cat-sign":
-        c.fillStyle = "#23233a";
+        c.fillStyle = "#846043";
         c.fillRect(-s * 0.36, -s * 1.1, s * 0.72, s * 0.8);
         c.strokeStyle = "#7fd7ff";
         c.lineWidth = 2;
         c.strokeRect(-s * 0.36, -s * 1.1, s * 0.72, s * 0.8);
-        c.strokeStyle = "#f5c518";
+        c.strokeStyle = "#F2BC57";
         c.beginPath();
         c.arc(0, -s * 0.72, s * 0.18, 0, Math.PI * 2);
         c.stroke();
@@ -4881,7 +4959,7 @@
         c.fillRect(-s * 0.42, -s * 0.6, s * 0.84, s * 0.6);
         c.fillStyle = "#c1272d";
         c.fillRect(-s * 0.5, -s * 0.78, s, s * 0.18);
-        c.fillStyle = "#f5c518";
+        c.fillStyle = "#F2BC57";
         for (const tx of [-s * 0.26, -s * 0.02, s * 0.2]) {
           c.beginPath();
           c.arc(tx + s * 0.06, -s * 0.42, s * 0.09, 0, Math.PI * 2);
@@ -4896,7 +4974,7 @@
         c.stroke();
         c.fillStyle = "#c1272d";
         for (const [ax, ay] of [[-s * 0.62, -s * 0.2], [s * 0.62, -s * 0.2], [-s * 0.5, -s * 0.62], [s * 0.5, -s * 0.62], [0, -s * 0.82]]) c.fillRect(ax - 2, ay, 4, s * 0.18);
-        c.fillStyle = "#f5c518";
+        c.fillStyle = "#F2BC57";
         c.beginPath();
         c.arc(0, -s * 0.82, s * 0.06, 0, Math.PI * 2);
         c.fill();
