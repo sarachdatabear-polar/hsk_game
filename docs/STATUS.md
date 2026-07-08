@@ -20,6 +20,8 @@
 - **Visual Slice v1** — PRD-exact Home + Battle rebuild + fix round (2026-07-06, PRs #15–#16) → [archive](archive/prd/PRD-visual-slice-v1.md)
 - **v5 "Reference Visual Overhaul + Kind Retention"** — phases 1–5 (2026-07-07, PRs #18–#22) → [PRD lives on](prd/PRD-v5-visual-retention.md) (§8 = v-next roadmap)
 - **v6 Phase 1** — question formats: listen / reverse / tone mastery ladder (2026-07-07, PR #23)
+- **Responsive all-devices round** — short-phone + landscape fixes, permanent 10-viewport gate (2026-07-08, PR #29)
+- **Street restyle** — warm-daylight scene, two-row layout, tier-3 crown accent (2026-07-08)
 - **v7 "Shop Seasons"** — themed catalog, daily stock, season corner, deco tiers + art round (2026-07-08, PR #26) → [archive](archive/prd/PRD-v7-shop-seasons.md)
 
 ## In progress
@@ -30,7 +32,6 @@
 
 1. **Responsive all-devices round** — CSS-only fixes for short viewports + landscape phones, plan ready: [2026-07-07-responsive-all-devices.md](superpowers/plans/2026-07-07-responsive-all-devices.md)
 2. **v7 art follow-ups** (filed in the [v7 plan](superpowers/plans/2026-07-07-v7-shop-seasons.md)): deco prompts + decor manifest rows, per-backdrop procedural scenes, small cleanups (doBuy renderStreet, empty-shelf state, registry-test hardening, art-drop raw pruning policy)
-3. **Street-screen restyle round** — legacy dark canvas + layout crowding with many/tiered decos
 4. **i18n pass 2** — howto body, streak pill, flashcard hints, street caption, HUD titles, item names
 5. **v6 phase 2+** — deeper question types per [PRD-v5 §8](prd/PRD-v5-visual-retention.md) (typed-pinyin recall, cloze, tone minigame)
 6. **Roadmaps not started:** [monetization & production](prd/PRD-monetization-and-production.md) (Supabase accounts, store launch); HSK 3.0 content refresh; social layer; notifications/widget; Android release refresh ([ANDROID_BUILD.md](build/ANDROID_BUILD.md))

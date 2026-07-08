@@ -1,5 +1,14 @@
 # V2/V3/V4 Execution Plan — living checklist
 
+## Street restyle round (2026-07-08)
+
+Plan: [2026-07-08-street-restyle.md](../superpowers/plans/2026-07-08-street-restyle.md). Branch `feat/street-restyle`.
+
+- [x] `streetMetrics(w,h)` pure two-row layout metrics (+7 tests, unit tuned to `min(h*.30, w*.105)` for market-lane density).
+- [x] Warm-daylight `paintStreetBase` (STYLE-TOKENS palette) + `bg-street.png` art hook (planned manifest row, prompt block, sprite-first with procedural fallback).
+- [x] Two depth rows (buildings back/smaller, decos front) + contact shadows + pads per row; tier-3 flanking copies replaced by gold pennant crown + sparkles (`DECO_TOPS` per-id anchor table); building/deco shapes recolored to the warm palette (geometry untouched).
+- [x] 595 tests green; responsive sweep 10/10 throughout. Known follow-ups: maneki occludes slot-.10 deco crown (z-order), painted bg-street.png pending art intake.
+
 ## Responsive all-devices round (2026-07-08)
 
 Plan: [2026-07-07-responsive-all-devices.md](../superpowers/plans/2026-07-07-responsive-all-devices.md). Branch `fix/responsive-all-devices`.
