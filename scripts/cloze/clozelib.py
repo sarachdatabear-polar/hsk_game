@@ -13,7 +13,7 @@ import re
 import sys
 from pathlib import Path
 
-PUNCT = set("，。！？、：；「」『』（）…—·~""'' 0123456789")   # NOT 一二三… — Chinese numerals are HSK vocabulary
+PUNCT = set("“”‘’，。！？、：；「」『』（）…—·~ 0123456789")   # NOT 一二三… — Chinese numerals are HSK vocabulary
 HANZI_RE = re.compile(r"[一-鿿]")
 
 
@@ -41,6 +41,8 @@ def segment(text, vocab):
     (['我', '想', '吃', '苹果'], [])
     >>> segment("我爱X。", {"我"})
     (['我'], ['爱', 'X'])
+    >>> segment("他说：“你好！”", {"他", "说", "你好"})
+    (['他', '说', '你好'], [])
     """
     tokens, unknown, i = [], [], 0
     maxlen = max((len(w) for w in vocab), default=1)
