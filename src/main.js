@@ -925,15 +925,21 @@ function renderTypedInput(word){
     row.className = "tone-row";
     const lab = document.createElement("span");
     lab.className = "tone-label";
-    lab.textContent = letters(sylls[i]);
+    lab.textContent = letters(sylls[i], "ü");   // display form — "nü", not the typeable "nv"
     row.appendChild(lab);
     for(let k = 1; k <= 4; k++){
       const c = document.createElement("button");
       c.className = "chip tone-chip";
       c.textContent = String(k);
+      // a bare "3" is meaningless to a screen reader — name the syllable too
+      c.setAttribute("aria-label", t("battle.toneAria", { syl: lab.textContent, n: k }));
+      c.setAttribute("aria-pressed", "false");
       c.onclick = () => {
         picks[i] = k;
-        row.querySelectorAll(".tone-chip").forEach(x => x.classList.toggle("on", x === c));
+        row.querySelectorAll(".tone-chip").forEach(x => {
+          x.classList.toggle("on", x === c);
+          x.setAttribute("aria-pressed", String(x === c));
+        });
         sync();
       };
       row.appendChild(c);
@@ -944,9 +950,13 @@ function renderTypedInput(word){
   go.textContent = t("battle.typedGo");
   go.disabled = true;
   field.oninput = sync;
+  field.enterKeyHint = "go";
+  field.addEventListener("keydown", e => { if(e.key === "Enter" && !go.disabled) go.click(); });
   go.onclick = () => {
     const g = gradeTyped(word.p, field.value, picks.filter((_, i) => tones[i] > 0));
-    field.disabled = true;
+    // answer()'s guards decide first — a tap that leaks through an overlay
+    // must not reveal the pinyin below. lockOptions() disables the field.
+    if(!answer(go, { correct: g.ok })) return;
     if(!g.ok){
       // kind diff: always show the right pinyin; name what was close
       const diff = document.createElement("div");
@@ -956,7 +966,6 @@ function renderTypedInput(word){
            : g.tonesOk ? " · " + t("battle.typedTonesOk") : "");
       wrap.appendChild(diff);
     }
-    answer(go, { correct: g.ok });
   };
   wrap.appendChild(go);
   box.appendChild(wrap);
@@ -1014,7 +1023,7 @@ function answer(btn, o){
     // shifts it forward like every other absolute performance.now() deadline.
     B.bossStageAt = performance.now() + 500;
     updateHud();
-    return;
+    return true;
   }
   // Every other branch below is a final resolution of this word (correct kill,
   // wrong tap, or — via bite() — a timeout): reveal the translation on the
@@ -1071,6 +1080,7 @@ function answer(btn, o){
     B.feedback = {...feedbackEffect("wrong", z.x, B.h-B.L.ground-44*B.S), until:fxUntil(560)};
   }
   updateHud();
+  return true;   // tap accepted and resolved — callers may reveal follow-up UI
 }
 function scheduleNext(ms){
   B.zombie = null; B.proj = null;

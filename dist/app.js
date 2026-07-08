@@ -173,7 +173,7 @@
     });
   }
   function letters(p, uu = "v") {
-    return [...(p || "").toLowerCase()].map((ch) => TONE_OF[ch] ? TONE_OF[ch].vowel : ch).join("").replace(/ü/g, uu).replace(/[^a-z]/g, "");
+    return [...(p || "").toLowerCase()].map((ch) => TONE_OF[ch] ? TONE_OF[ch].vowel : ch).join("").replace(/ü/g, uu).replace(/[^a-zü]/g, "");
   }
   function gradeTyped(p, typedLetters, toneChoices) {
     const norm = (typedLetters || "").toLowerCase().replace(/ü/g, "v").replace(/[^a-z]/g, "");
@@ -2211,6 +2211,7 @@
       "battle.typedGo": "ATTACK!",
       "battle.typedLettersOk": "letters right \u2014 check the tones!",
       "battle.typedTonesOk": "tones right \u2014 check the spelling!",
+      "battle.toneAria": "tone {n} for {syl}",
       // common
       "common.back": "\u2190 Home",
       "common.backMore": "\u2190 More",
@@ -2440,6 +2441,7 @@
       "battle.typedGo": "\u0E42\u0E08\u0E21\u0E15\u0E35!",
       "battle.typedLettersOk": "\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E16\u0E39\u0E01\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E40\u0E0A\u0E47\u0E04\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C!",
       "battle.typedTonesOk": "\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C\u0E16\u0E39\u0E01\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E40\u0E0A\u0E47\u0E04\u0E15\u0E31\u0E27\u0E2A\u0E30\u0E01\u0E14!",
+      "battle.toneAria": "\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C {n} \u0E02\u0E2D\u0E07 {syl}",
       // common
       "common.back": "\u2190 \u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
       "common.backMore": "\u2190 \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
@@ -3558,15 +3560,20 @@
       row.className = "tone-row";
       const lab = document.createElement("span");
       lab.className = "tone-label";
-      lab.textContent = letters(sylls[i]);
+      lab.textContent = letters(sylls[i], "\xFC");
       row.appendChild(lab);
       for (let k = 1; k <= 4; k++) {
         const c = document.createElement("button");
         c.className = "chip tone-chip";
         c.textContent = String(k);
+        c.setAttribute("aria-label", t("battle.toneAria", { syl: lab.textContent, n: k }));
+        c.setAttribute("aria-pressed", "false");
         c.onclick = () => {
           picks[i] = k;
-          row.querySelectorAll(".tone-chip").forEach((x) => x.classList.toggle("on", x === c));
+          row.querySelectorAll(".tone-chip").forEach((x) => {
+            x.classList.toggle("on", x === c);
+            x.setAttribute("aria-pressed", String(x === c));
+          });
           sync();
         };
         row.appendChild(c);
@@ -3577,16 +3584,19 @@
     go.textContent = t("battle.typedGo");
     go.disabled = true;
     field.oninput = sync;
+    field.enterKeyHint = "go";
+    field.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !go.disabled) go.click();
+    });
     go.onclick = () => {
       const g = gradeTyped(word.p, field.value, picks.filter((_, i) => tones[i] > 0));
-      field.disabled = true;
+      if (!answer(go, { correct: g.ok })) return;
       if (!g.ok) {
         const diff = document.createElement("div");
         diff.className = "boss-prompt";
         diff.textContent = word.p + (g.lettersOk ? " \xB7 " + t("battle.typedLettersOk") : g.tonesOk ? " \xB7 " + t("battle.typedTonesOk") : "");
         wrap.appendChild(diff);
       }
-      answer(go, { correct: g.ok });
     };
     wrap.appendChild(go);
     box.appendChild(wrap);
@@ -3637,7 +3647,7 @@
       lockOptions();
       B.bossStageAt = performance.now() + 500;
       updateHud();
-      return;
+      return true;
     }
     z.revealed = true;
     if (correct) {
@@ -3694,6 +3704,7 @@
       B.feedback = { ...feedbackEffect("wrong", z.x, B.h - B.L.ground - 44 * B.S), until: fxUntil(560) };
     }
     updateHud();
+    return true;
   }
   function scheduleNext(ms) {
     B.zombie = null;
