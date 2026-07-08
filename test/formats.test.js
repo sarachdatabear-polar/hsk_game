@@ -30,9 +30,16 @@ describe("formatFor — the mastery ladder", () => {
     expect(formatFor(word, rec(3), caps)).toBe("reverse");
     expect(formatFor(word, rec(4), caps)).toBe("reverse");
   });
-  it("streak 5+ gets tone recall", () => {
+  it("streak 5-6 get tone recall", () => {
     expect(formatFor(word, rec(5), caps)).toBe("tone");
-    expect(formatFor(word, rec(9), caps)).toBe("tone");
+    expect(formatFor(word, rec(6), caps)).toBe("tone");
+  });
+  it("streak 7+ gets typed recall", () => {
+    expect(formatFor(word, rec(7), caps)).toBe("typed");
+    expect(formatFor(word, rec(12), caps)).toBe("typed");
+  });
+  it("typed works for all-neutral words too (no tone fallback needed)", () => {
+    expect(formatFor(mk("吗", "ma", "question particle", "ไหม"), rec(7), caps)).toBe("typed");
   });
   it("listen downgrades to meaning without audio", () => {
     expect(formatFor(word, rec(1), { audio: false })).toBe("meaning");
@@ -75,5 +82,15 @@ describe("FORMATS registry", () => {
     expect(FORMATS.meaning.audio).toBe("setting");
     expect(FORMATS.reverse.audio).toBe("never");
     expect(FORMATS.tone.audio).toBe("never");
+  });
+});
+
+describe("FORMATS.typed registry shape", () => {
+  it("is an input format: hanzi plaque, no audio, soft-intro, no options", () => {
+    expect(FORMATS.typed.input).toBe(true);
+    expect(FORMATS.typed.plaque).toEqual({ hz: true });
+    expect(FORMATS.typed.audio).toBe("never");
+    expect(FORMATS.typed.intro).toBe("battle.introTyped");
+    expect(FORMATS.typed.buildOptions).toBeUndefined();
   });
 });
