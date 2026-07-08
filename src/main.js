@@ -19,7 +19,7 @@ import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem, dailyStock, seasonStatus, upgradePrice } from "./shop.js";
-import { streetPieces, streetProgress, streetMetrics } from "./street.js";
+import { BUILDINGS, streetPieces, streetProgress, streetMetrics } from "./street.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
@@ -237,7 +237,7 @@ function updateSmartBtn(){
   // below the 8-word minimum, show progress toward it ("6/8") so the disabled
   // button reads as "not enough yet" rather than broken
   setIconLabel(btn, "target", !deck.length ? t("scope.smartReview")
-    : deck.length < 8 ? t("scope.smartReviewProgress", { have: deck.length })
+    : deck.length < 8 ? t("scope.smartReviewProgress", { have: deck.length, min: 8 })
     : t("scope.smartReviewReady", { n: deck.length }));
 }
 $("#go-smart").onclick = ()=>{
@@ -335,12 +335,24 @@ if (document.fonts && document.fonts.load) { document.fonts.load("900 40px 'LC H
 // strings (built in JS) call t() directly at render time.
 function applyStaticI18n(root = document){
   root.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.getAttribute("data-i18n")); });
+  // data-i18n-html: for keys whose value embeds <b> markup (howto.* — see
+  // i18n.js) — same innerHTML route scope.readout/shop.wallet already use for
+  // dynamic strings, just routed through the static walker instead of a
+  // per-call-site innerHTML assignment.
+  root.querySelectorAll("[data-i18n-html]").forEach(el => { el.innerHTML = t(el.getAttribute("data-i18n-html")); });
   root.querySelectorAll("[data-i18n-title]").forEach(el => {
     const v = t(el.getAttribute("data-i18n-title"));
     el.title = v; el.setAttribute("aria-label", v);
   });
   root.querySelectorAll("[data-i18n-ph]").forEach(el => { el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph"))); });
   document.documentElement.lang = getLocale();
+}
+// Localized display name for a shop/street id (t("item."+id) / t("building."+id)),
+// falling back to the English name when the key is missing — t() returns the
+// key string itself when unresolved (see i18n.js), so compare against that.
+function tOr(key, fallback){
+  const v = t(key);
+  return v === key ? fallback : v;
 }
 
 /* ============================== screens ============================== */
@@ -368,16 +380,16 @@ function show(name){
   if(name==="quests"){ renderQuests(); }
 }
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()=>{
-  const t = b.dataset.go;
-  if(t==="scope"){ renderScope(); applyScopeView(); show("scope"); }
-  else if(t==="scope-learn"){ renderScope(); applyScopeView(); show("scope"); }
-  else if(t==="scores"){ renderScores(); show("scores"); }
-  else if(t==="progress"){ renderProgress(); show("progress"); }
-  else if(t==="shop"){ renderShop(); show("shop"); }
-  else if(t==="album"){ renderAlbum(); show("album"); }
+  const tab = b.dataset.go;
+  if(tab==="scope"){ renderScope(); applyScopeView(); show("scope"); }
+  else if(tab==="scope-learn"){ renderScope(); applyScopeView(); show("scope"); }
+  else if(tab==="scores"){ renderScores(); show("scores"); }
+  else if(tab==="progress"){ renderProgress(); show("progress"); }
+  else if(tab==="shop"){ renderShop(); show("shop"); }
+  else if(tab==="album"){ renderAlbum(); show("album"); }
   else {
-    if(t==="home"){ stopBattle(); }   // intro abandonment handled in show()
-    show(t);
+    if(tab==="home"){ stopBattle(); }   // intro abandonment handled in show()
+    show(tab);
   }
 }));
 
@@ -555,7 +567,7 @@ function renderCard(){
       <div class="hint">${t("learn.hintFront", { lv: w.lv, ta: w.ta, tt: w.tt })}</div>`;
     if(settings.autoSpeak) speak(w.h);
   }else{
-    const th = w.t? `<div class="th">${w.t}</div>` : `<div class="th" style="color:var(--muted)">no Thai yet</div>`;
+    const th = w.t? `<div class="th">${w.t}</div>` : `<div class="th" style="color:var(--muted)">${t("fc.noThai")}</div>`;
     c.innerHTML = `<div class="hz" style="font-size:40px">${w.h}</div><div class="py">${w.p}</div>
       <div class="mean">${w.e}${th}</div><div class="hint">${t("learn.hintBack")}</div>`;
   }
@@ -1032,20 +1044,20 @@ function bite(timedOut){
   scheduleNext(1500);   // long enough to read the revealed answer
   updateHud();
 }
-function loop(t){
+function loop(now){
   if(!B.on) return;
   if(B.paused){
     // frozen: keep the rAF alive (resume is a plain unpause, no re-bootstrap)
     // but advance nothing — no motion, no spawns, no expiry, no redraw (the
-    // last frame stays under the overlay). B.lastT tracks t so dt stays sane.
-    B.lastT = t;
+    // last frame stays under the overlay). B.lastT tracks now so dt stays sane.
+    B.lastT = now;
     requestAnimationFrame(loop);
     return;
   }
-  const dt = Math.min(0.05, (t-(B.lastT||t))/1000); B.lastT = t;
+  const dt = Math.min(0.05, (now-(B.lastT||now))/1000); B.lastT = now;
   // boss stage 1 (meaning) -> stage 2 (hanzi) transition, deadline-based so a
   // pause mid-transition can't fire it behind the overlay (see answer()).
-  if(B.bossStageAt && t >= B.bossStageAt){
+  if(B.bossStageAt && now >= B.bossStageAt){
     B.bossStageAt = 0;
     const bz = B.zombie;
     if(bz && bz.frozen && bz.stage === "meaning"){
@@ -1056,7 +1068,7 @@ function loop(t){
     }
   }
   // next word (or end of round) once the field is clear
-  if(!B.zombie && t >= B.nextAt){
+  if(!B.zombie && now >= B.nextAt){
     if(B.lives>0 && B.spawned<B.wordsTotal) spawnZombie();
     else { endBattle(false); return; }
   }
@@ -1070,11 +1082,11 @@ function loop(t){
     }else if(z.state==="dash"){
       z.x -= B.speed*7*dt;
       if(z.x <= B.L.mascotX+B.L.catHalf) bite(false);         // legacy: never assigned, kept for safety
-    }else if(z.state==="happy" && t >= B.dyingUntil){
+    }else if(z.state==="happy" && now >= B.dyingUntil){
       scheduleNext(200);
     }else if(z.state==="wrong"){
       z.x += 24*B.S*dt;
-      if(t >= z.wrongUntil) scheduleNext(350);
+      if(now >= z.wrongUntil) scheduleNext(350);
     }
   }
   if(B.proj && B.zombie){
@@ -1087,12 +1099,12 @@ function loop(t){
   B.floats = B.floats.filter(f=>f.life>0);
   B.flash = Math.max(0, B.flash-2.2*dt);
   B.screenShake = Math.max(0, (B.screenShake || 0)-4*dt);
-  draw(t);
+  draw(now);
   requestAnimationFrame(loop);
 }
 // programmatic canvas backdrops — kept dark/low-contrast so the word banner stays readable
-function paintBackdrop(c, w, h, gy, style, t=0){
-  const pulse = t / 1000;
+function paintBackdrop(c, w, h, gy, style, now=0){
+  const pulse = now / 1000;
   if(style==="market"){
     const g = c.createLinearGradient(0,0,0,h);
     g.addColorStop(0,"#24123c"); g.addColorStop(.58,"#3d1432"); g.addColorStop(1,"#5a1d22");
@@ -1167,11 +1179,11 @@ function drawBackdrop(gy){
   else if(shopState.backdrop) paintBackdrop(ctx, B.w, B.h, gy, shopState.backdrop, performance.now());
   else paintBackdrop(ctx, B.w, B.h, gy, "", performance.now());
 }
-function draw(t){
+function draw(now){
   ctx.clearRect(0,0,B.w,B.h);
   const gy = B.h - B.L.ground;
   const shake = B.screenShake > 0
-    ? Math.sin(t * 0.08) * 5 * B.S * B.screenShake
+    ? Math.sin(now * 0.08) * 5 * B.S * B.screenShake
     : 0;
   if(shake){
     ctx.save();
@@ -1187,10 +1199,10 @@ function draw(t){
   // "happy" during the post-kill victory hop, otherwise a walk-in-place idle
   // (drawCat has no dedicated idle state; "walk" just bobs/steps in place
   // since x never changes here).
-  const hopping = B.mascotHopUntil && t < B.mascotHopUntil;   // little victory hop after a kill
+  const hopping = B.mascotHopUntil && now < B.mascotHopUntil;   // little victory hop after a kill
   const playerState = hopping ? "happy" : "walk";
-  drawCat(ctx, B.L.mascotX, gy + 6*B.S, t, playerState, SKIN_PALETTES[shopState.skin], .9*B.S, B.acc, false);
-  if(B.hasKitten) drawCat(ctx, B.L.mascotX - B.L.catHalf, gy + 6*B.S, t + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.S, [], false);
+  drawCat(ctx, B.L.mascotX, gy + 6*B.S, now, playerState, SKIN_PALETTES[shopState.skin], .9*B.S, B.acc, false);
+  if(B.hasKitten) drawCat(ctx, B.L.mascotX - B.L.catHalf, gy + 6*B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.S, [], false);
   // idle coin icon (left of the player) - coin sprite or vector fallback
   const coinImgIdle = sprite("coin");
   if(coinImgIdle){
@@ -1207,18 +1219,18 @@ function draw(t){
     // resolution (kill/wrong/timeout) reveals everything, as before.
     const fl = FORMATS[z.format || "meaning"].plaque;
     const live = z.state === "walk" && !z.revealed;
-    drawWordPlate(z, { mask: live && !!fl.mask, icon: live && !!fl.icon, py: !live || !!fl.py }, t);
+    drawWordPlate(z, { mask: live && !!fl.mask, icon: live && !!fl.icon, py: !live || !!fl.py }, now);
     // raccoon enemy (was the cat walker) — bosses draw bigger with a gold
     // aura (boss param, not scale — see raccoon.js); no skins/accessories/
     // kitten on it, those moved to the player above.
     const rScale = z.boss ? 1.5*B.S : B.S;
-    drawRaccoon(ctx, z.x, gy + 6*B.S, z.state === "happy" ? t - z.happyAt : t, z.state, rScale, !!z.boss);
+    drawRaccoon(ctx, z.x, gy + 6*B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
     // floating HP bar above its head — cosmetic only. Animates hp -> 0 over
     // the happy/dying window (killZombie snapshots hpAtKill); wrong/timeout
     // never touch hp (the raccoon "wins" that word, no damage).
     let hpFrac = z.hp;
     if(z.state === "happy" && B.dyingUntil){
-      const remain = Math.max(0, B.dyingUntil - t);
+      const remain = Math.max(0, B.dyingUntil - now);
       hpFrac = (z.hpAtKill ?? z.hp) * (remain/250);
     }
     drawHpBar(ctx, z.x, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.S, hpFrac, B.S);
@@ -1280,7 +1292,7 @@ function draw(t){
       ctx.restore();
     }
   }
-  drawFeedbackLayer(t);
+  drawFeedbackLayer(now);
   // hit flash — softened dim-violet (cat wandered off, not combat damage)
   if(B.flash>0){ ctx.fillStyle = `rgba(90,44,80,${(0.30*B.flash).toFixed(3)})`; ctx.fillRect(0,0,B.w,B.h); }
   if(shake) ctx.restore();
@@ -1291,7 +1303,7 @@ function draw(t){
 // call site in draw(), which derives it from FORMATS[z.format].plaque).
 // Order per PRD §4.3/§6.2: pinyin (small, above) -> Hanzi (large) ->
 // translation (reserved space always; filled in only once z.revealed).
-function drawWordPlate(z, vis, t){
+function drawWordPlate(z, vis, now){
   const w = z.w, boss = z.boss, level = w.lv;
   const hanzi = vis.mask ? "？？" : vis.icon ? "🔊" : w.h;
   // pinyin off when: the format hides it (reverse/listen/tone while live), OR the player toggled it off
@@ -1436,7 +1448,7 @@ function drawSpeakerIcon(c, cx, cy, r, color){
   c.beginPath(); c.arc(r*0.05, 0, r*0.98, -Math.PI*0.34, Math.PI*0.34); c.stroke();
   c.restore();
 }
-function drawFeedbackLayer(t){
+function drawFeedbackLayer(now){
   const fb = B.feedback;
   if(!fb) return;
   const kind = fb.kind || fb.type;
@@ -1466,7 +1478,7 @@ function drawFeedbackLayer(t){
     ctx.beginPath(); ctx.arc(fb.x, fb.y, (18 + 44*p)*B.S, 0, Math.PI*2); ctx.stroke();
     ctx.fillStyle = "rgba(255,244,224,.95)";
     for(let i=0;i<10;i++){
-      const a = i*Math.PI*2/10 + t*.004;
+      const a = i*Math.PI*2/10 + now*.004;
       const r = (14 + 42*p)*B.S;
       ctx.beginPath(); ctx.arc(fb.x+Math.cos(a)*r, fb.y+Math.sin(a)*r, 2.2*B.S, 0, Math.PI*2); ctx.fill();
     }
@@ -1753,7 +1765,7 @@ function makeShopRow(item, today){
   const copy = document.createElement("span");
   copy.className = "shop-copy";
   const stars = item.type === "deco" && owned ? " " + "★".repeat(tier) : "";
-  copy.innerHTML = `<b>${item.name}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
+  copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
   left.replaceChildren(preview, copy);
   const btn = document.createElement("button");
   const doBuy = () => {
@@ -1802,18 +1814,18 @@ function makeShopRow(item, today){
 let shopPreviewRaf = 0;
 function startShopPreviewLoop(){
   if(shopPreviewRaf) return;
-  const tick = t => {
+  const tick = now => {
     shopPreviewRaf = 0;
     if(currentScreen !== "shop") return;
     document.querySelectorAll(".shop-preview").forEach(canvas => {
-      if(canvas._shopItem) renderShopPreview(canvas, canvas._shopItem, t);
+      if(canvas._shopItem) renderShopPreview(canvas, canvas._shopItem, now);
     });
     shopPreviewRaf = requestAnimationFrame(tick);
   };
   shopPreviewRaf = requestAnimationFrame(tick);
 }
 
-function renderShopPreview(canvas, item, t=0){
+function renderShopPreview(canvas, item, now=0){
   const w = 96, h = 64;
   const dpr = window.devicePixelRatio || 1;
   canvas.width = Math.round(w*dpr); canvas.height = Math.round(h*dpr);
@@ -1826,11 +1838,11 @@ function renderShopPreview(canvas, item, t=0){
   c.fillStyle = bg; roundRectOn(c,0,0,w,h,10); c.fill();
   c.strokeStyle = "rgba(245,197,24,.28)"; c.lineWidth = 1; roundRectOn(c,.5,.5,w-1,h-1,10); c.stroke();
   if(item.type==="skin"){
-    drawCat(c, w*.52, h+6, t, "walk", SKIN_PALETTES[item.id], .72, [], false);
+    drawCat(c, w*.52, h+6, now, "walk", SKIN_PALETTES[item.id], .72, [], false);
   }else if(item.type==="backdrop"){
     const img = sprite(`bg-${item.id}`);
     if(img) drawCoverImage(c, img, 0, 0, w, h);
-    else paintBackdrop(c, w, h, h-7, item.id, t);
+    else paintBackdrop(c, w, h, h-7, item.id, now);
     c.strokeStyle = "rgba(245,197,24,.55)"; c.lineWidth = 1;
     c.beginPath(); c.moveTo(0,h-8); c.lineTo(w,h-8); c.stroke();
   }else if(item.type==="effect"){
@@ -1918,10 +1930,15 @@ function renderStreet(){
   const cap = $("#street-caption");
   if(!cap) return;
   const prog = streetProgress(level);
-  const nextTxt = prog.next ? `Next: Lv ${prog.next.lv} — ${prog.next.name}` : "All buildings unlocked!";
+  // streetProgress() (street.js, pure/untouched) returns next.name in English
+  // only; look the id back up by level to get a localized building.* label.
+  const nextB = prog.next ? BUILDINGS.find(b => b.lv === prog.next.lv) : null;
+  const nextTxt = prog.next
+    ? t("street.next", { lv: prog.next.lv, name: nextB ? tOr("building."+nextB.id, prog.next.name) : prog.next.name })
+    : t("street.allUnlocked");
   cap.textContent = pieces.length===0
-    ? `Lucky Cat Street — grows as you learn · ${nextTxt}`
-    : `${prog.unlocked}/${prog.total} buildings · ${nextTxt}`;
+    ? t("street.captionEmpty", { next: nextTxt })
+    : t("street.captionProgress", { unlocked: prog.unlocked, total: prog.total, next: nextTxt });
 }
 function paintStreetBase(c, w, h){
   // Warm-daylight village street: cream/sky gradient, soft green hills, sun

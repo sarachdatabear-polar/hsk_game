@@ -1975,6 +1975,10 @@
       "nav.quests": "Quests",
       "nav.more": "More",
       "street.title": "Lucky Cat Street",
+      "street.captionEmpty": "Lucky Cat Street \u2014 grows as you learn \xB7 {next}",
+      "street.captionProgress": "{unlocked}/{total} buildings \xB7 {next}",
+      "street.next": "Next: Lv {lv} \u2014 {name}",
+      "street.allUnlocked": "All buildings unlocked!",
       "quests.title": "Daily Quests",
       // scope
       "scope.title": "Choose your words",
@@ -1994,7 +1998,7 @@
       "scope.cards": "Cards",
       "scope.wordQuest": "Word Quest \xB7 {n}",
       "scope.smartReview": "Smart Review",
-      "scope.smartReviewProgress": "Smart Review \xB7 {have}/8",
+      "scope.smartReviewProgress": "Smart Review \xB7 {have}/{min}",
       "scope.smartReviewReady": "Smart Review \xB7 {n}",
       "scope.readout": "Pool: <b>{count}</b> words \xB7 ~<b>{pct}%</b> of exam text",
       "scope.readoutNoThai": "* {n} long-tail words have no Thai yet \u2014 English shown instead.",
@@ -2012,6 +2016,7 @@
       "learn.count": "{done} done \xB7 {left} left",
       "learn.hintFront": "tap to flip \xB7 HSK{lv} \xB7 in {ta}/{tt} papers",
       "learn.hintBack": "tap to flip back",
+      "fc.noThai": "no Thai yet",
       // results
       "results.roundOver": "Round over",
       "results.missed": "Words you missed",
@@ -2085,9 +2090,61 @@
       "season.summer": "Summer",
       "season.midautumn": "Mid-Autumn",
       "season.cny": "Lunar New Year",
+      // shop items (CATALOG ids, pass 2) — display-name fallback for t("item."+id)
+      "item.midnight": "Midnight",
+      "item.sakura": "Sakura",
+      "item.jade": "Jade",
+      "item.gold": "Gold",
+      "item.market": "Night Market",
+      "item.temple": "Temple Dawn",
+      "item.bamboo": "Bamboo",
+      "item.sakura-fx": "Sakura Petals",
+      "item.firecracker-fx": "Firecrackers",
+      "item.bells": "Temple Bells",
+      "item.arcade": "Arcade",
+      "item.red-lantern": "Red Lantern",
+      "item.noodle-stall": "Noodle Stall",
+      "item.tea-sign": "Tea Sign",
+      "item.foo-dog": "Foo Dog",
+      "item.golden-arch": "Golden Arch",
+      "item.panda": "Panda",
+      "item.ninja": "Ninja",
+      "item.astronaut": "Astronaut",
+      "item.harbor-night": "Harbor Night",
+      "item.snow-festival": "Snow Festival",
+      "item.mahjong-table": "Mahjong Table",
+      "item.koi-pond": "Koi Pond",
+      "item.drum-tower": "Drum Tower",
+      "item.bubble-tea": "Bubble Tea Stand",
+      "item.paper-umbrella": "Paper Umbrella",
+      "item.goldfish-banner": "Goldfish Banner",
+      "item.neon-cat-sign": "Neon Cat Sign",
+      "item.lion-drum": "Lion Dance Drum",
+      "item.star-shower": "Star Shower",
+      "item.beach": "Beach Cat",
+      "item.island-sunset": "Island Sunset",
+      "item.shaved-ice-cart": "Shaved-Ice Cart",
+      "item.mooncake-rabbit": "Mooncake Rabbit",
+      "item.lantern-festival": "Lantern Festival",
+      "item.mooncake-stall": "Mooncake Stall",
+      "item.dragon": "Dragon",
+      "item.dragon-gate": "Dragon Gate",
+      "item.firecracker-arch": "Firecracker Arch",
+      // street buildings (BUILDINGS ids, pass 2) — display-name fallback for t("building."+id)
+      "building.lantern-post": "Lantern Post",
+      "building.coin-bank": "Coin Bank",
+      "building.tailor": "Tailor Shop",
+      "building.kitten-cafe": "Kitten Caf\xE9",
+      "building.emperor-gate": "Emperor's Gate",
       // howto
       "howto.title": "How to play",
+      "howto.intro": "A lucky cat strolls in from the right carrying a <b>Chinese word</b> (with pinyin) on a flag.",
+      "howto.tapMeaning": "Tap the <b>correct meaning</b> and the cat celebrates your answer. The farther away the cat still is, the bigger the practice bonus \u2014 and learning streaks build your score.",
       "howto.oneShot": "You get one shot per word.",
+      "howto.oneShotDetail": "A wrong tap costs a heart \u2014 no second guesses. The correct answer flashes green so you learn it for next time.",
+      "howto.tooSlow": "Too slow counts too: if the cat wanders all the way across without an answer, that costs a heart. Three hearts and the round is over.",
+      "howto.everyWord": "Every word shows <b>pinyin</b> and can be <b>heard aloud</b> \u2014 during the game, in flashcards, and in the missed-words review.",
+      "howto.learnMode": "<b>Learn mode</b> drills the same word pool as flashcards first, so you can study, then play.",
       // battle HUD + pause overlay (M4)
       "battle.round": "Round {label}",
       "battle.pause": "Pause",
@@ -2141,6 +2198,10 @@
       "nav.quests": "\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C",
       "nav.more": "\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
       "street.title": "\u0E16\u0E19\u0E19\u0E19\u0E33\u0E42\u0E0A\u0E04",
+      "street.captionEmpty": "\u0E16\u0E19\u0E19\u0E19\u0E33\u0E42\u0E0A\u0E04 \u2014 \u0E40\u0E15\u0E34\u0E1A\u0E42\u0E15\u0E44\u0E1B\u0E1E\u0E23\u0E49\u0E2D\u0E21\u0E01\u0E32\u0E23\u0E40\u0E23\u0E35\u0E22\u0E19\u0E23\u0E39\u0E49\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13 \xB7 {next}",
+      "street.captionProgress": "{unlocked}/{total} \u0E2D\u0E32\u0E04\u0E32\u0E23 \xB7 {next}",
+      "street.next": "\u0E16\u0E31\u0E14\u0E44\u0E1B: Lv {lv} \u2014 {name}",
+      "street.allUnlocked": "\u0E1B\u0E25\u0E14\u0E25\u0E47\u0E2D\u0E01\u0E2D\u0E32\u0E04\u0E32\u0E23\u0E04\u0E23\u0E1A\u0E17\u0E38\u0E01\u0E2B\u0E25\u0E31\u0E07\u0E41\u0E25\u0E49\u0E27!",
       "quests.title": "\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C\u0E1B\u0E23\u0E30\u0E08\u0E33\u0E27\u0E31\u0E19",
       // scope
       "scope.title": "\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C",
@@ -2160,7 +2221,7 @@
       "scope.cards": "\u0E1A\u0E31\u0E15\u0E23\u0E04\u0E33",
       "scope.wordQuest": "\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C \xB7 {n}",
       "scope.smartReview": "\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E2D\u0E31\u0E08\u0E09\u0E23\u0E34\u0E22\u0E30",
-      "scope.smartReviewProgress": "\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E2D\u0E31\u0E08\u0E09\u0E23\u0E34\u0E22\u0E30 \xB7 {have}/8",
+      "scope.smartReviewProgress": "\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E2D\u0E31\u0E08\u0E09\u0E23\u0E34\u0E22\u0E30 \xB7 {have}/{min}",
       "scope.smartReviewReady": "\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E2D\u0E31\u0E08\u0E09\u0E23\u0E34\u0E22\u0E30 \xB7 {n}",
       "scope.readout": "\u0E04\u0E25\u0E31\u0E07\u0E04\u0E33: <b>{count}</b> \u0E04\u0E33 \xB7 ~<b>{pct}%</b> \u0E02\u0E2D\u0E07\u0E02\u0E49\u0E2D\u0E2A\u0E2D\u0E1A",
       "scope.readoutNoThai": "* \u0E21\u0E35 {n} \u0E04\u0E33\u0E17\u0E35\u0E48\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E20\u0E32\u0E29\u0E32\u0E44\u0E17\u0E22 \u2014 \u0E41\u0E2A\u0E14\u0E07\u0E20\u0E32\u0E29\u0E32\u0E2D\u0E31\u0E07\u0E01\u0E24\u0E29\u0E41\u0E17\u0E19",
@@ -2178,6 +2239,7 @@
       "learn.count": "\u0E17\u0E33\u0E41\u0E25\u0E49\u0E27 {done} \xB7 \u0E40\u0E2B\u0E25\u0E37\u0E2D {left}",
       "learn.hintFront": "\u0E41\u0E15\u0E30\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E1E\u0E25\u0E34\u0E01 \xB7 HSK{lv} \xB7 \u0E1E\u0E1A\u0E43\u0E19 {ta}/{tt} \u0E0A\u0E38\u0E14\u0E02\u0E49\u0E2D\u0E2A\u0E2D\u0E1A",
       "learn.hintBack": "\u0E41\u0E15\u0E30\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E1E\u0E25\u0E34\u0E01\u0E01\u0E25\u0E31\u0E1A",
+      "fc.noThai": "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E20\u0E32\u0E29\u0E32\u0E44\u0E17\u0E22",
       // results
       "results.roundOver": "\u0E08\u0E1A\u0E23\u0E2D\u0E1A",
       "results.missed": "\u0E04\u0E33\u0E17\u0E35\u0E48\u0E15\u0E2D\u0E1A\u0E1C\u0E34\u0E14",
@@ -2251,9 +2313,61 @@
       "season.summer": "\u0E24\u0E14\u0E39\u0E23\u0E49\u0E2D\u0E19",
       "season.midautumn": "\u0E44\u0E2B\u0E27\u0E49\u0E1E\u0E23\u0E30\u0E08\u0E31\u0E19\u0E17\u0E23\u0E4C",
       "season.cny": "\u0E15\u0E23\u0E38\u0E29\u0E08\u0E35\u0E19",
+      // shop items (CATALOG ids, pass 2) — display-name fallback for t("item."+id)
+      "item.midnight": "\u0E40\u0E17\u0E35\u0E48\u0E22\u0E07\u0E04\u0E37\u0E19",
+      "item.sakura": "\u0E0B\u0E32\u0E01\u0E38\u0E23\u0E30",
+      "item.jade": "\u0E2B\u0E22\u0E01",
+      "item.gold": "\u0E17\u0E2D\u0E07\u0E04\u0E33",
+      "item.market": "\u0E15\u0E25\u0E32\u0E14\u0E01\u0E25\u0E32\u0E07\u0E04\u0E37\u0E19",
+      "item.temple": "\u0E23\u0E38\u0E48\u0E07\u0E2D\u0E23\u0E38\u0E13\u0E17\u0E35\u0E48\u0E27\u0E31\u0E14",
+      "item.bamboo": "\u0E44\u0E1C\u0E48",
+      "item.sakura-fx": "\u0E01\u0E25\u0E35\u0E1A\u0E0B\u0E32\u0E01\u0E38\u0E23\u0E30",
+      "item.firecracker-fx": "\u0E1B\u0E23\u0E30\u0E17\u0E31\u0E14",
+      "item.bells": "\u0E23\u0E30\u0E06\u0E31\u0E07\u0E27\u0E31\u0E14",
+      "item.arcade": "\u0E2D\u0E32\u0E23\u0E4C\u0E40\u0E04\u0E14",
+      "item.red-lantern": "\u0E42\u0E04\u0E21\u0E41\u0E14\u0E07",
+      "item.noodle-stall": "\u0E41\u0E1C\u0E07\u0E01\u0E4B\u0E27\u0E22\u0E40\u0E15\u0E35\u0E4B\u0E22\u0E27",
+      "item.tea-sign": "\u0E1B\u0E49\u0E32\u0E22\u0E0A\u0E32",
+      "item.foo-dog": "\u0E2A\u0E34\u0E07\u0E42\u0E15\u0E2B\u0E34\u0E19",
+      "item.golden-arch": "\u0E0B\u0E38\u0E49\u0E21\u0E1B\u0E23\u0E30\u0E15\u0E39\u0E17\u0E2D\u0E07",
+      "item.panda": "\u0E41\u0E1E\u0E19\u0E14\u0E49\u0E32",
+      "item.ninja": "\u0E19\u0E34\u0E19\u0E08\u0E32",
+      "item.astronaut": "\u0E19\u0E31\u0E01\u0E1A\u0E34\u0E19\u0E2D\u0E27\u0E01\u0E32\u0E28",
+      "item.harbor-night": "\u0E17\u0E48\u0E32\u0E40\u0E23\u0E37\u0E2D\u0E22\u0E32\u0E21\u0E04\u0E48\u0E33\u0E04\u0E37\u0E19",
+      "item.snow-festival": "\u0E40\u0E17\u0E28\u0E01\u0E32\u0E25\u0E2B\u0E34\u0E21\u0E30",
+      "item.mahjong-table": "\u0E42\u0E15\u0E4A\u0E30\u0E44\u0E1E\u0E48\u0E19\u0E01\u0E01\u0E23\u0E30\u0E08\u0E2D\u0E01",
+      "item.koi-pond": "\u0E1A\u0E48\u0E2D\u0E1B\u0E25\u0E32\u0E04\u0E32\u0E23\u0E4C\u0E1B",
+      "item.drum-tower": "\u0E2B\u0E2D\u0E01\u0E25\u0E2D\u0E07",
+      "item.bubble-tea": "\u0E23\u0E49\u0E32\u0E19\u0E0A\u0E32\u0E19\u0E21\u0E44\u0E02\u0E48\u0E21\u0E38\u0E01",
+      "item.paper-umbrella": "\u0E23\u0E48\u0E21\u0E01\u0E23\u0E30\u0E14\u0E32\u0E29",
+      "item.goldfish-banner": "\u0E18\u0E07\u0E1B\u0E25\u0E32\u0E17\u0E2D\u0E07",
+      "item.neon-cat-sign": "\u0E1B\u0E49\u0E32\u0E22\u0E44\u0E1F\u0E41\u0E21\u0E27\u0E19\u0E35\u0E2D\u0E2D\u0E19",
+      "item.lion-drum": "\u0E01\u0E25\u0E2D\u0E07\u0E40\u0E0A\u0E34\u0E14\u0E2A\u0E34\u0E07\u0E42\u0E15",
+      "item.star-shower": "\u0E1D\u0E19\u0E14\u0E32\u0E27",
+      "item.beach": "\u0E41\u0E21\u0E27\u0E0A\u0E32\u0E22\u0E2B\u0E32\u0E14",
+      "item.island-sunset": "\u0E1E\u0E23\u0E30\u0E2D\u0E32\u0E17\u0E34\u0E15\u0E22\u0E4C\u0E15\u0E01\u0E17\u0E35\u0E48\u0E40\u0E01\u0E32\u0E30",
+      "item.shaved-ice-cart": "\u0E23\u0E16\u0E40\u0E02\u0E47\u0E19\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07\u0E44\u0E2A",
+      "item.mooncake-rabbit": "\u0E01\u0E23\u0E30\u0E15\u0E48\u0E32\u0E22\u0E02\u0E19\u0E21\u0E44\u0E2B\u0E27\u0E49\u0E1E\u0E23\u0E30\u0E08\u0E31\u0E19\u0E17\u0E23\u0E4C",
+      "item.lantern-festival": "\u0E40\u0E17\u0E28\u0E01\u0E32\u0E25\u0E42\u0E04\u0E21\u0E44\u0E1F",
+      "item.mooncake-stall": "\u0E41\u0E1C\u0E07\u0E02\u0E19\u0E21\u0E44\u0E2B\u0E27\u0E49\u0E1E\u0E23\u0E30\u0E08\u0E31\u0E19\u0E17\u0E23\u0E4C",
+      "item.dragon": "\u0E21\u0E31\u0E07\u0E01\u0E23",
+      "item.dragon-gate": "\u0E1B\u0E23\u0E30\u0E15\u0E39\u0E21\u0E31\u0E07\u0E01\u0E23",
+      "item.firecracker-arch": "\u0E0B\u0E38\u0E49\u0E21\u0E1B\u0E23\u0E30\u0E17\u0E31\u0E14",
+      // street buildings (BUILDINGS ids, pass 2) — display-name fallback for t("building."+id)
+      "building.lantern-post": "\u0E40\u0E2A\u0E32\u0E42\u0E04\u0E21\u0E44\u0E1F",
+      "building.coin-bank": "\u0E18\u0E19\u0E32\u0E04\u0E32\u0E23\u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D",
+      "building.tailor": "\u0E23\u0E49\u0E32\u0E19\u0E15\u0E31\u0E14\u0E40\u0E2A\u0E37\u0E49\u0E2D",
+      "building.kitten-cafe": "\u0E04\u0E32\u0E40\u0E1F\u0E48\u0E25\u0E39\u0E01\u0E41\u0E21\u0E27",
+      "building.emperor-gate": "\u0E1B\u0E23\u0E30\u0E15\u0E39\u0E08\u0E31\u0E01\u0E23\u0E1E\u0E23\u0E23\u0E14\u0E34",
       // howto
       "howto.title": "\u0E27\u0E34\u0E18\u0E35\u0E40\u0E25\u0E48\u0E19",
+      "howto.intro": "\u0E41\u0E21\u0E27\u0E19\u0E33\u0E42\u0E0A\u0E04\u0E40\u0E14\u0E34\u0E19\u0E40\u0E02\u0E49\u0E32\u0E21\u0E32\u0E08\u0E32\u0E01\u0E14\u0E49\u0E32\u0E19\u0E02\u0E27\u0E32 \u0E1E\u0E23\u0E49\u0E2D\u0E21\u0E18\u0E07\u0E17\u0E35\u0E48\u0E21\u0E35<b>\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E08\u0E35\u0E19</b> (\u0E1E\u0E23\u0E49\u0E2D\u0E21\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19)",
+      "howto.tapMeaning": "\u0E41\u0E15\u0E30<b>\u0E04\u0E27\u0E32\u0E21\u0E2B\u0E21\u0E32\u0E22\u0E17\u0E35\u0E48\u0E16\u0E39\u0E01\u0E15\u0E49\u0E2D\u0E07</b> \u0E41\u0E25\u0E49\u0E27\u0E41\u0E21\u0E27\u0E08\u0E30\u0E09\u0E25\u0E2D\u0E07\u0E04\u0E33\u0E15\u0E2D\u0E1A\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13 \u0E22\u0E34\u0E48\u0E07\u0E41\u0E21\u0E27\u0E2D\u0E22\u0E39\u0E48\u0E44\u0E01\u0E25\u0E40\u0E17\u0E48\u0E32\u0E44\u0E23 \u0E42\u0E1A\u0E19\u0E31\u0E2A\u0E01\u0E47\u0E22\u0E34\u0E48\u0E07\u0E21\u0E32\u0E01\u0E02\u0E36\u0E49\u0E19 \u2014 \u0E41\u0E25\u0E30\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E01\u0E32\u0E23\u0E40\u0E23\u0E35\u0E22\u0E19\u0E23\u0E39\u0E49\u0E0A\u0E48\u0E27\u0E22\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E04\u0E30\u0E41\u0E19\u0E19",
       "howto.oneShot": "\u0E15\u0E2D\u0E1A\u0E44\u0E14\u0E49\u0E04\u0E23\u0E31\u0E49\u0E07\u0E40\u0E14\u0E35\u0E22\u0E27\u0E15\u0E48\u0E2D\u0E04\u0E33",
+      "howto.oneShotDetail": "\u0E41\u0E15\u0E30\u0E1C\u0E34\u0E14\u0E40\u0E2A\u0E35\u0E22\u0E2B\u0E31\u0E27\u0E43\u0E08\u0E44\u0E1B\u0E2B\u0E19\u0E36\u0E48\u0E07\u0E14\u0E27\u0E07 \u2014 \u0E44\u0E21\u0E48\u0E21\u0E35\u0E42\u0E2D\u0E01\u0E32\u0E2A\u0E41\u0E01\u0E49\u0E15\u0E31\u0E27 \u0E04\u0E33\u0E15\u0E2D\u0E1A\u0E17\u0E35\u0E48\u0E16\u0E39\u0E01\u0E15\u0E49\u0E2D\u0E07\u0E08\u0E30\u0E01\u0E30\u0E1E\u0E23\u0E34\u0E1A\u0E2A\u0E35\u0E40\u0E02\u0E35\u0E22\u0E27\u0E43\u0E2B\u0E49\u0E04\u0E38\u0E13\u0E08\u0E33\u0E44\u0E27\u0E49\u0E43\u0E0A\u0E49\u0E04\u0E23\u0E31\u0E49\u0E07\u0E15\u0E48\u0E2D\u0E44\u0E1B",
+      "howto.tooSlow": "\u0E0A\u0E49\u0E32\u0E40\u0E01\u0E34\u0E19\u0E44\u0E1B\u0E01\u0E47\u0E40\u0E2A\u0E35\u0E22\u0E2B\u0E31\u0E27\u0E43\u0E08\u0E40\u0E2B\u0E21\u0E37\u0E2D\u0E19\u0E01\u0E31\u0E19 \u0E2B\u0E32\u0E01\u0E41\u0E21\u0E27\u0E40\u0E14\u0E34\u0E19\u0E02\u0E49\u0E32\u0E21\u0E08\u0E2D\u0E44\u0E1B\u0E42\u0E14\u0E22\u0E44\u0E21\u0E48\u0E21\u0E35\u0E04\u0E33\u0E15\u0E2D\u0E1A \u0E08\u0E30\u0E40\u0E2A\u0E35\u0E22\u0E2B\u0E31\u0E27\u0E43\u0E08\u0E2B\u0E19\u0E36\u0E48\u0E07\u0E14\u0E27\u0E07 \u0E04\u0E23\u0E1A\u0E2A\u0E32\u0E21\u0E14\u0E27\u0E07\u0E08\u0E1A\u0E23\u0E2D\u0E1A\u0E17\u0E31\u0E19\u0E17\u0E35",
+      "howto.everyWord": "\u0E17\u0E38\u0E01\u0E04\u0E33\u0E41\u0E2A\u0E14\u0E07<b>\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19</b>\u0E41\u0E25\u0E30\u0E2A\u0E32\u0E21\u0E32\u0E23\u0E16<b>\u0E1F\u0E31\u0E07\u0E40\u0E2A\u0E35\u0E22\u0E07\u0E44\u0E14\u0E49</b> \u2014 \u0E17\u0E31\u0E49\u0E07\u0E23\u0E30\u0E2B\u0E27\u0E48\u0E32\u0E07\u0E40\u0E25\u0E48\u0E19\u0E40\u0E01\u0E21 \u0E43\u0E19\u0E1A\u0E31\u0E15\u0E23\u0E04\u0E33 \u0E41\u0E25\u0E30\u0E15\u0E2D\u0E19\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E04\u0E33\u0E17\u0E35\u0E48\u0E15\u0E2D\u0E1A\u0E1C\u0E34\u0E14",
+      "howto.learnMode": "<b>\u0E42\u0E2B\u0E21\u0E14\u0E40\u0E23\u0E35\u0E22\u0E19\u0E23\u0E39\u0E49</b>\u0E1D\u0E36\u0E01\u0E04\u0E25\u0E31\u0E07\u0E04\u0E33\u0E40\u0E14\u0E35\u0E22\u0E27\u0E01\u0E31\u0E1A\u0E1A\u0E31\u0E15\u0E23\u0E04\u0E33\u0E01\u0E48\u0E2D\u0E19 \u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E43\u0E2B\u0E49\u0E04\u0E38\u0E13\u0E44\u0E14\u0E49\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E01\u0E48\u0E2D\u0E19\u0E40\u0E23\u0E34\u0E48\u0E21\u0E40\u0E25\u0E48\u0E19",
       // battle HUD + pause overlay (M4)
       "battle.round": "\u0E23\u0E2D\u0E1A {label}",
       "battle.pause": "\u0E2B\u0E22\u0E38\u0E14\u0E0A\u0E31\u0E48\u0E27\u0E04\u0E23\u0E32\u0E27",
@@ -2662,7 +2776,7 @@
     const deck = smartDeck(masteryStore, pool, Date.now());
     const btn = $("#go-smart");
     btn.disabled = deck.length < 8;
-    setIconLabel(btn, "target", !deck.length ? t("scope.smartReview") : deck.length < 8 ? t("scope.smartReviewProgress", { have: deck.length }) : t("scope.smartReviewReady", { n: deck.length }));
+    setIconLabel(btn, "target", !deck.length ? t("scope.smartReview") : deck.length < 8 ? t("scope.smartReviewProgress", { have: deck.length, min: 8 }) : t("scope.smartReviewReady", { n: deck.length }));
   }
   $("#go-smart").onclick = () => {
     const deck = smartDeck(masteryStore, pool, Date.now());
@@ -2748,6 +2862,9 @@
     root.querySelectorAll("[data-i18n]").forEach((el) => {
       el.textContent = t(el.getAttribute("data-i18n"));
     });
+    root.querySelectorAll("[data-i18n-html]").forEach((el) => {
+      el.innerHTML = t(el.getAttribute("data-i18n-html"));
+    });
     root.querySelectorAll("[data-i18n-title]").forEach((el) => {
       const v = t(el.getAttribute("data-i18n-title"));
       el.title = v;
@@ -2757,6 +2874,10 @@
       el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph")));
     });
     document.documentElement.lang = getLocale();
+  }
+  function tOr(key, fallback) {
+    const v = t(key);
+    return v === key ? fallback : v;
   }
   var currentScreen = "home";
   function updateNav(name) {
@@ -2787,32 +2908,32 @@
     }
   }
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => {
-    const t2 = b.dataset.go;
-    if (t2 === "scope") {
+    const tab = b.dataset.go;
+    if (tab === "scope") {
       renderScope();
       applyScopeView();
       show("scope");
-    } else if (t2 === "scope-learn") {
+    } else if (tab === "scope-learn") {
       renderScope();
       applyScopeView();
       show("scope");
-    } else if (t2 === "scores") {
+    } else if (tab === "scores") {
       renderScores();
       show("scores");
-    } else if (t2 === "progress") {
+    } else if (tab === "progress") {
       renderProgress();
       show("progress");
-    } else if (t2 === "shop") {
+    } else if (tab === "shop") {
       renderShop();
       show("shop");
-    } else if (t2 === "album") {
+    } else if (tab === "album") {
       renderAlbum();
       show("album");
     } else {
-      if (t2 === "home") {
+      if (tab === "home") {
         stopBattle();
       }
-      show(t2);
+      show(tab);
     }
   }));
   function renderScope() {
@@ -3006,7 +3127,7 @@
       <div class="hint">${t("learn.hintFront", { lv: w.lv, ta: w.ta, tt: w.tt })}</div>`;
       if (settings.autoSpeak) speak(w.h);
     } else {
-      const th = w.t ? `<div class="th">${w.t}</div>` : `<div class="th" style="color:var(--muted)">no Thai yet</div>`;
+      const th = w.t ? `<div class="th">${w.t}</div>` : `<div class="th" style="color:var(--muted)">${t("fc.noThai")}</div>`;
       c.innerHTML = `<div class="hz" style="font-size:40px">${w.h}</div><div class="py">${w.p}</div>
       <div class="mean">${w.e}${th}</div><div class="hint">${t("learn.hintBack")}</div>`;
     }
@@ -3495,16 +3616,16 @@
     scheduleNext(1500);
     updateHud();
   }
-  function loop(t2) {
+  function loop(now) {
     if (!B.on) return;
     if (B.paused) {
-      B.lastT = t2;
+      B.lastT = now;
       requestAnimationFrame(loop);
       return;
     }
-    const dt = Math.min(0.05, (t2 - (B.lastT || t2)) / 1e3);
-    B.lastT = t2;
-    if (B.bossStageAt && t2 >= B.bossStageAt) {
+    const dt = Math.min(0.05, (now - (B.lastT || now)) / 1e3);
+    B.lastT = now;
+    if (B.bossStageAt && now >= B.bossStageAt) {
       B.bossStageAt = 0;
       const bz = B.zombie;
       if (bz && bz.frozen && bz.stage === "meaning") {
@@ -3515,7 +3636,7 @@
         B.locked = false;
       }
     }
-    if (!B.zombie && t2 >= B.nextAt) {
+    if (!B.zombie && now >= B.nextAt) {
       if (B.lives > 0 && B.spawned < B.wordsTotal) spawnZombie();
       else {
         endBattle(false);
@@ -3532,11 +3653,11 @@
       } else if (z.state === "dash") {
         z.x -= B.speed * 7 * dt;
         if (z.x <= B.L.mascotX + B.L.catHalf) bite(false);
-      } else if (z.state === "happy" && t2 >= B.dyingUntil) {
+      } else if (z.state === "happy" && now >= B.dyingUntil) {
         scheduleNext(200);
       } else if (z.state === "wrong") {
         z.x += 24 * B.S * dt;
-        if (t2 >= z.wrongUntil) scheduleNext(350);
+        if (now >= z.wrongUntil) scheduleNext(350);
       }
     }
     if (B.proj && B.zombie) {
@@ -3557,11 +3678,11 @@
     B.floats = B.floats.filter((f) => f.life > 0);
     B.flash = Math.max(0, B.flash - 2.2 * dt);
     B.screenShake = Math.max(0, (B.screenShake || 0) - 4 * dt);
-    draw(t2);
+    draw(now);
     requestAnimationFrame(loop);
   }
-  function paintBackdrop(c, w, h, gy, style, t2 = 0) {
-    const pulse = t2 / 1e3;
+  function paintBackdrop(c, w, h, gy, style, now = 0) {
+    const pulse = now / 1e3;
     if (style === "market") {
       const g = c.createLinearGradient(0, 0, 0, h);
       g.addColorStop(0, "#24123c");
@@ -3666,10 +3787,10 @@
     else if (shopState.backdrop) paintBackdrop(ctx2, B.w, B.h, gy, shopState.backdrop, performance.now());
     else paintBackdrop(ctx2, B.w, B.h, gy, "", performance.now());
   }
-  function draw(t2) {
+  function draw(now) {
     ctx2.clearRect(0, 0, B.w, B.h);
     const gy = B.h - B.L.ground;
-    const shake = B.screenShake > 0 ? Math.sin(t2 * 0.08) * 5 * B.S * B.screenShake : 0;
+    const shake = B.screenShake > 0 ? Math.sin(now * 0.08) * 5 * B.S * B.screenShake : 0;
     if (shake) {
       ctx2.save();
       ctx2.translate(shake, 0);
@@ -3682,10 +3803,10 @@
     ctx2.lineTo(B.w, gy + 12);
     ctx2.stroke();
     ctx2.textAlign = "center";
-    const hopping = B.mascotHopUntil && t2 < B.mascotHopUntil;
+    const hopping = B.mascotHopUntil && now < B.mascotHopUntil;
     const playerState = hopping ? "happy" : "walk";
-    drawCat(ctx2, B.L.mascotX, gy + 6 * B.S, t2, playerState, SKIN_PALETTES[shopState.skin], 0.9 * B.S, B.acc, false);
-    if (B.hasKitten) drawCat(ctx2, B.L.mascotX - B.L.catHalf, gy + 6 * B.S, t2 + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5 * B.S, [], false);
+    drawCat(ctx2, B.L.mascotX, gy + 6 * B.S, now, playerState, SKIN_PALETTES[shopState.skin], 0.9 * B.S, B.acc, false);
+    if (B.hasKitten) drawCat(ctx2, B.L.mascotX - B.L.catHalf, gy + 6 * B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5 * B.S, [], false);
     const coinImgIdle = sprite("coin");
     if (coinImgIdle) {
       ctx2.drawImage(coinImgIdle, 4 * B.S, gy - 22 * B.S, B.L.coinPx, B.L.coinPx);
@@ -3696,12 +3817,12 @@
     if (z) {
       const fl = FORMATS[z.format || "meaning"].plaque;
       const live = z.state === "walk" && !z.revealed;
-      drawWordPlate(z, { mask: live && !!fl.mask, icon: live && !!fl.icon, py: !live || !!fl.py }, t2);
+      drawWordPlate(z, { mask: live && !!fl.mask, icon: live && !!fl.icon, py: !live || !!fl.py }, now);
       const rScale = z.boss ? 1.5 * B.S : B.S;
-      drawRaccoon(ctx2, z.x, gy + 6 * B.S, z.state === "happy" ? t2 - z.happyAt : t2, z.state, rScale, !!z.boss);
+      drawRaccoon(ctx2, z.x, gy + 6 * B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
       let hpFrac = z.hp;
       if (z.state === "happy" && B.dyingUntil) {
-        const remain = Math.max(0, B.dyingUntil - t2);
+        const remain = Math.max(0, B.dyingUntil - now);
         hpFrac = (z.hpAtKill ?? z.hp) * (remain / 250);
       }
       drawHpBar(ctx2, z.x, gy + 6 * B.S - RACCOON_HEIGHT * rScale, 46 * B.S, hpFrac, B.S);
@@ -3778,14 +3899,14 @@
         ctx2.restore();
       }
     }
-    drawFeedbackLayer(t2);
+    drawFeedbackLayer(now);
     if (B.flash > 0) {
       ctx2.fillStyle = `rgba(90,44,80,${(0.3 * B.flash).toFixed(3)})`;
       ctx2.fillRect(0, 0, B.w, B.h);
     }
     if (shake) ctx2.restore();
   }
-  function drawWordPlate(z, vis, t2) {
+  function drawWordPlate(z, vis, now) {
     const w = z.w, boss = z.boss, level = w.lv;
     const hanzi = vis.mask ? "\uFF1F\uFF1F" : vis.icon ? "\u{1F50A}" : w.h;
     const pinyin = !vis.py || !settings.showPinyin ? "" : w.p;
@@ -3937,7 +4058,7 @@
     c.stroke();
     c.restore();
   }
-  function drawFeedbackLayer(t2) {
+  function drawFeedbackLayer(now) {
     const fb = B.feedback;
     if (!fb) return;
     const kind = fb.kind || fb.type;
@@ -3967,7 +4088,7 @@
       ctx2.stroke();
       ctx2.fillStyle = "rgba(255,244,224,.95)";
       for (let i = 0; i < 10; i++) {
-        const a = i * Math.PI * 2 / 10 + t2 * 4e-3;
+        const a = i * Math.PI * 2 / 10 + now * 4e-3;
         const r = (14 + 42 * p) * B.S;
         ctx2.beginPath();
         ctx2.arc(fb.x + Math.cos(a) * r, fb.y + Math.sin(a) * r, 2.2 * B.S, 0, Math.PI * 2);
@@ -4266,7 +4387,7 @@
     const copy = document.createElement("span");
     copy.className = "shop-copy";
     const stars = item.type === "deco" && owned ? " " + "\u2605".repeat(tier) : "";
-    copy.innerHTML = `<b>${item.name}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
+    copy.innerHTML = `<b>${tOr("item." + item.id, item.name)}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
     left.replaceChildren(preview, copy);
     const btn = document.createElement("button");
     const doBuy = () => {
@@ -4323,17 +4444,17 @@
   var shopPreviewRaf = 0;
   function startShopPreviewLoop() {
     if (shopPreviewRaf) return;
-    const tick = (t2) => {
+    const tick = (now) => {
       shopPreviewRaf = 0;
       if (currentScreen !== "shop") return;
       document.querySelectorAll(".shop-preview").forEach((canvas) => {
-        if (canvas._shopItem) renderShopPreview(canvas, canvas._shopItem, t2);
+        if (canvas._shopItem) renderShopPreview(canvas, canvas._shopItem, now);
       });
       shopPreviewRaf = requestAnimationFrame(tick);
     };
     shopPreviewRaf = requestAnimationFrame(tick);
   }
-  function renderShopPreview(canvas, item, t2 = 0) {
+  function renderShopPreview(canvas, item, now = 0) {
     const w = 96, h = 64;
     const dpr = window.devicePixelRatio || 1;
     canvas.width = Math.round(w * dpr);
@@ -4354,11 +4475,11 @@
     roundRectOn(c, 0.5, 0.5, w - 1, h - 1, 10);
     c.stroke();
     if (item.type === "skin") {
-      drawCat(c, w * 0.52, h + 6, t2, "walk", SKIN_PALETTES[item.id], 0.72, [], false);
+      drawCat(c, w * 0.52, h + 6, now, "walk", SKIN_PALETTES[item.id], 0.72, [], false);
     } else if (item.type === "backdrop") {
       const img2 = sprite(`bg-${item.id}`);
       if (img2) drawCoverImage(c, img2, 0, 0, w, h);
-      else paintBackdrop(c, w, h, h - 7, item.id, t2);
+      else paintBackdrop(c, w, h, h - 7, item.id, now);
       c.strokeStyle = "rgba(245,197,24,.55)";
       c.lineWidth = 1;
       c.beginPath();
@@ -4481,8 +4602,9 @@
     const cap = $("#street-caption");
     if (!cap) return;
     const prog = streetProgress(level);
-    const nextTxt = prog.next ? `Next: Lv ${prog.next.lv} \u2014 ${prog.next.name}` : "All buildings unlocked!";
-    cap.textContent = pieces.length === 0 ? `Lucky Cat Street \u2014 grows as you learn \xB7 ${nextTxt}` : `${prog.unlocked}/${prog.total} buildings \xB7 ${nextTxt}`;
+    const nextB = prog.next ? BUILDINGS.find((b) => b.lv === prog.next.lv) : null;
+    const nextTxt = prog.next ? t("street.next", { lv: prog.next.lv, name: nextB ? tOr("building." + nextB.id, prog.next.name) : prog.next.name }) : t("street.allUnlocked");
+    cap.textContent = pieces.length === 0 ? t("street.captionEmpty", { next: nextTxt }) : t("street.captionProgress", { unlocked: prog.unlocked, total: prog.total, next: nextTxt });
   }
   function paintStreetBase(c, w, h) {
     const sky = c.createLinearGradient(0, 0, 0, h);
