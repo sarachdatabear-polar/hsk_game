@@ -18,7 +18,7 @@ import { defaultQuestState, noteQuestEvent, questStatus } from "./quests.js";
 import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
-import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem, dailyStock, seasonStatus, upgradePrice } from "./shop.js";
+import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import { BUILDINGS, streetPieces, streetProgress, streetMetrics } from "./street.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
@@ -1717,9 +1717,14 @@ function renderShop(){
   for(const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, decoBox]) b.innerHTML = "";
 
   // Today's Stock — the 3 featured pool items; once owned they live in their type section
-  for(const id of dailyStock(today)){
+  const stock = unownedDailyStock(today, shopState);
+  for(const id of stock){
     const item = CATALOG.find(i => i.id === id);
-    if(item && !shopState.owned.includes(id)) dailyBox.appendChild(makeShopRow(item, today));
+    if(item) dailyBox.appendChild(makeShopRow(item, today));
+  }
+  if(!stock.length){
+    // all featured items owned — cosmetic empty state instead of a bare shelf
+    dailyBox.innerHTML = `<div class="scorerow" style="color:var(--muted)">${t("shop.dailyAllOwned")}</div>`;
   }
 
   // Season Corner — active set is buyable; off-season shows the next set's teaser
@@ -1773,7 +1778,10 @@ function makeShopRow(item, today){
     if(!r.ok) return;
     wallet = r.wallet; shopState = r.shop;
     store.set("wallet", wallet); store.set("shop", shopState);
-    updateWalletChip(); renderShop(); renderStreet();
+    // no renderStreet() here: the street canvas is display:none while the
+    // shop screen is up (renderStreet would no-op) and show("street") always
+    // re-renders on entry, so a bought deco appears the moment it can be seen.
+    updateWalletChip(); renderShop();
   };
   if(item.type === "deco"){
     // Owning a deco displays it on the street; re-buys upgrade its tier (v7 F4).
@@ -1886,7 +1894,7 @@ function renderStreet(){
   const scv = $("#street-cv");
   if(!scv) return;
   const w = scv.clientWidth, h = scv.clientHeight;
-  if(!w || !h) return;   // hidden (display:none) — next show("home") redraws
+  if(!w || !h) return;   // hidden (display:none) — next show("street") redraws
   const dpr = window.devicePixelRatio||1;
   scv.width = Math.round(w*dpr); scv.height = Math.round(h*dpr);
   const sc = scv.getContext("2d");
