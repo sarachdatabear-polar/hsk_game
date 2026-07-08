@@ -246,7 +246,7 @@ hanzi,sentence,en,th,d1,d2,d3,source
 忙,我很忙，没有时间休息。,I'm very busy and have no time to rest.,ฉันยุ่งมาก ไม่มีเวลาพักผ่อน,高,贵,新,ai
 机场,他在机场等飞机。,He is waiting for the plane at the airport.,เขากำลังรอเครื่องบินอยู่ที่สนามบิน,商店,医院,饭店,ai
 真,天气真好！,The weather is really nice!,อากาศดีจริงๆ,猫,走,唱歌,tatoeba
-两,爸爸和妈妈是两人。,Dad and Mom are two people.,พ่อกับแม่เป็นสองคน,猫,很,高,ai
+两,爸爸和妈妈是两人。,Dad and Mom are two people.,พ่อกับแม่เป็นสองคน,猫,很,冷,ai
 从,您从哪儿来的？,Where have you come from?,คุณมาจากที่ไหน,猫,好吃,唱歌,tatoeba
 别,请别在教室里吃东西。,Please don't eat in the classroom.,กรุณาอย่ากินอาหารในห้องเรียน,猫,水,高,ai
 走,时间不早了，我得走了。,It's getting late — I have to go.,ดึกแล้ว ฉันต้องไปแล้ว,高,猫,房间,ai
@@ -361,7 +361,7 @@ hanzi,sentence,en,th,d1,d2,d3,source
 阴,天很阴，要下雨了。,The sky is overcast; it's going to rain.,ท้องฟ้าครึ้มมาก ฝนกำลังจะตก,累,忙,贵,ai
 阴天,今天是阴天，可能要下雨。,Today is cloudy; it might rain.,วันนี้ท้องฟ้าครึ้ม อาจจะมีฝนตก,报纸,眼睛,医院,ai
 鱼,鱼在水里游。,Fish swim in the water.,ปลาว่ายอยู่ในน้ำ,报纸,椅子,咖啡,ai
-儿,猫儿在椅子上睡觉。,The cat is sleeping on the chair.,แมวน้อยนอนหลับอยู่บนเก้าอี้,报纸,门,药,tatoeba
+儿,猫儿在椅子上睡觉。,The kitty is sleeping on the chair.,แมวน้อยนอนหลับอยู่บนเก้าอี้,报纸,门,药,ai
 公共汽车,我坐公共汽车去上班。,I take the bus to work.,ฉันนั่งรถเมล์ไปทำงาน,报纸,眼睛,米饭,ai
 出,他出名了。,He became famous.,เขามีชื่อเสียงแล้ว,洗,门,笑,tatoeba
 刘,刘先生住在北京。,Mr. Liu lives in Beijing.,คุณหลิวอาศัยอยู่ที่ปักกิ่ง,报纸,眼睛,米饭,ai
