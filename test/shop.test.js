@@ -1,5 +1,22 @@
 import { describe, it, expect } from "vitest";
-import { CATALOG, defaultShop, canAfford, buy, equipItem, SEASONS, dailyStock, nextFeaturedIn, isAvailable, seasonStatus, upgradePrice } from "../src/shop.js";
+import { CATALOG, defaultShop, canAfford, buy, equipItem, SEASONS, dailyStock, nextFeaturedIn, isAvailable, seasonStatus, upgradePrice, unownedDailyStock } from "../src/shop.js";
+
+describe("unownedDailyStock", () => {
+  it("returns today's stock minus owned items, in stock order", () => {
+    const stock = dailyStock("2026-07-08");
+    const shop = { ...defaultShop(), owned: [stock[1]] };
+    expect(unownedDailyStock("2026-07-08", shop)).toEqual([stock[0], stock[2]]);
+  });
+
+  it("returns the full stock for a fresh shop", () => {
+    expect(unownedDailyStock("2026-07-08", defaultShop())).toEqual(dailyStock("2026-07-08"));
+  });
+
+  it("returns [] when every featured item is owned (empty-shelf case)", () => {
+    const shop = { ...defaultShop(), owned: dailyStock("2026-07-08") };
+    expect(unownedDailyStock("2026-07-08", shop)).toEqual([]);
+  });
+});
 
 describe("shop", () => {
   it("defaultShop shape", () => {
