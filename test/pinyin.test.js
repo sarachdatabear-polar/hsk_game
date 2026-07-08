@@ -67,6 +67,10 @@ describe("syllables / syllableTones / letters (v6 phase 2 typed)", () => {
     expect(letters("nǚ", "v")).toEqual("nv");
     expect(letters("nǚ", "u")).toEqual("nu");
   });
+  it('letters keeps ü for display labels (uu = "ü")', () => {
+    expect(letters("nǚ", "ü")).toEqual("nü");
+    expect(letters("lǜsè", "ü")).toEqual("lüse");
+  });
 });
 
 describe("gradeTyped", () => {

@@ -42,13 +42,14 @@ export function syllableTones(p) {
 }
 
 // Tone-stripped lowercase letters with separators removed; ü maps to `uu`
-// so the player may type either "v" or "u" for it.
+// so the player may type either "v" or "u" for it — or pass uu = "ü" to keep
+// it verbatim for display labels (the tone-row label must read "nü", not "nv").
 export function letters(p, uu = "v") {
   return [...(p || "").toLowerCase()]
     .map(ch => (TONE_OF[ch] ? TONE_OF[ch].vowel : ch))
     .join("")
     .replace(/ü/g, uu)
-    .replace(/[^a-z]/g, "");
+    .replace(/[^a-zü]/g, "");
 }
 
 // Grade a typed answer. toneChoices is aligned to the NON-neutral syllables
