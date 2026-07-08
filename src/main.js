@@ -19,7 +19,7 @@ import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem, dailyStock, seasonStatus, upgradePrice } from "./shop.js";
-import { streetPieces, streetProgress } from "./street.js";
+import { BUILDINGS, streetPieces, streetProgress, streetMetrics } from "./street.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
@@ -237,7 +237,7 @@ function updateSmartBtn(){
   // below the 8-word minimum, show progress toward it ("6/8") so the disabled
   // button reads as "not enough yet" rather than broken
   setIconLabel(btn, "target", !deck.length ? t("scope.smartReview")
-    : deck.length < 8 ? t("scope.smartReviewProgress", { have: deck.length })
+    : deck.length < 8 ? t("scope.smartReviewProgress", { have: deck.length, min: 8 })
     : t("scope.smartReviewReady", { n: deck.length }));
 }
 $("#go-smart").onclick = ()=>{
@@ -335,12 +335,24 @@ if (document.fonts && document.fonts.load) { document.fonts.load("900 40px 'LC H
 // strings (built in JS) call t() directly at render time.
 function applyStaticI18n(root = document){
   root.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.getAttribute("data-i18n")); });
+  // data-i18n-html: for keys whose value embeds <b> markup (howto.* — see
+  // i18n.js) — same innerHTML route scope.readout/shop.wallet already use for
+  // dynamic strings, just routed through the static walker instead of a
+  // per-call-site innerHTML assignment.
+  root.querySelectorAll("[data-i18n-html]").forEach(el => { el.innerHTML = t(el.getAttribute("data-i18n-html")); });
   root.querySelectorAll("[data-i18n-title]").forEach(el => {
     const v = t(el.getAttribute("data-i18n-title"));
     el.title = v; el.setAttribute("aria-label", v);
   });
   root.querySelectorAll("[data-i18n-ph]").forEach(el => { el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph"))); });
   document.documentElement.lang = getLocale();
+}
+// Localized display name for a shop/street id (t("item."+id) / t("building."+id)),
+// falling back to the English name when the key is missing — t() returns the
+// key string itself when unresolved (see i18n.js), so compare against that.
+function tOr(key, fallback){
+  const v = t(key);
+  return v === key ? fallback : v;
 }
 
 /* ============================== screens ============================== */
@@ -368,16 +380,16 @@ function show(name){
   if(name==="quests"){ renderQuests(); }
 }
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()=>{
-  const t = b.dataset.go;
-  if(t==="scope"){ renderScope(); applyScopeView(); show("scope"); }
-  else if(t==="scope-learn"){ renderScope(); applyScopeView(); show("scope"); }
-  else if(t==="scores"){ renderScores(); show("scores"); }
-  else if(t==="progress"){ renderProgress(); show("progress"); }
-  else if(t==="shop"){ renderShop(); show("shop"); }
-  else if(t==="album"){ renderAlbum(); show("album"); }
+  const tab = b.dataset.go;
+  if(tab==="scope"){ renderScope(); applyScopeView(); show("scope"); }
+  else if(tab==="scope-learn"){ renderScope(); applyScopeView(); show("scope"); }
+  else if(tab==="scores"){ renderScores(); show("scores"); }
+  else if(tab==="progress"){ renderProgress(); show("progress"); }
+  else if(tab==="shop"){ renderShop(); show("shop"); }
+  else if(tab==="album"){ renderAlbum(); show("album"); }
   else {
-    if(t==="home"){ stopBattle(); }   // intro abandonment handled in show()
-    show(t);
+    if(tab==="home"){ stopBattle(); }   // intro abandonment handled in show()
+    show(tab);
   }
 }));
 
@@ -555,7 +567,7 @@ function renderCard(){
       <div class="hint">${t("learn.hintFront", { lv: w.lv, ta: w.ta, tt: w.tt })}</div>`;
     if(settings.autoSpeak) speak(w.h);
   }else{
-    const th = w.t? `<div class="th">${w.t}</div>` : `<div class="th" style="color:var(--muted)">no Thai yet</div>`;
+    const th = w.t? `<div class="th">${w.t}</div>` : `<div class="th" style="color:var(--muted)">${t("fc.noThai")}</div>`;
     c.innerHTML = `<div class="hz" style="font-size:40px">${w.h}</div><div class="py">${w.p}</div>
       <div class="mean">${w.e}${th}</div><div class="hint">${t("learn.hintBack")}</div>`;
   }
@@ -876,7 +888,10 @@ function renderQuestion(word, format, promptKey){
   }
   for(const o of FORMATS[format].buildOptions(word, deck, scope.lang, Math.random)){
     const b = document.createElement("button");
-    b.innerHTML = o.label + (o.sub? `<span class="th">${o.sub}</span>`:"");
+    // Label wrapped in its own span (not just a bare text node) so short
+    // viewports can -webkit-line-clamp it specifically — an ellipsis on the
+    // primary answer only, never a silent symmetric crop across label+sub.
+    b.innerHTML = `<span class="opt-label">${o.label}</span>` + (o.sub? `<span class="th">${o.sub}</span>`:"");
     b._correct = !!o.correct;
     b.onclick = ()=>answer(b, o);
     box.appendChild(b);
@@ -1029,20 +1044,20 @@ function bite(timedOut){
   scheduleNext(1500);   // long enough to read the revealed answer
   updateHud();
 }
-function loop(t){
+function loop(now){
   if(!B.on) return;
   if(B.paused){
     // frozen: keep the rAF alive (resume is a plain unpause, no re-bootstrap)
     // but advance nothing — no motion, no spawns, no expiry, no redraw (the
-    // last frame stays under the overlay). B.lastT tracks t so dt stays sane.
-    B.lastT = t;
+    // last frame stays under the overlay). B.lastT tracks now so dt stays sane.
+    B.lastT = now;
     requestAnimationFrame(loop);
     return;
   }
-  const dt = Math.min(0.05, (t-(B.lastT||t))/1000); B.lastT = t;
+  const dt = Math.min(0.05, (now-(B.lastT||now))/1000); B.lastT = now;
   // boss stage 1 (meaning) -> stage 2 (hanzi) transition, deadline-based so a
   // pause mid-transition can't fire it behind the overlay (see answer()).
-  if(B.bossStageAt && t >= B.bossStageAt){
+  if(B.bossStageAt && now >= B.bossStageAt){
     B.bossStageAt = 0;
     const bz = B.zombie;
     if(bz && bz.frozen && bz.stage === "meaning"){
@@ -1053,7 +1068,7 @@ function loop(t){
     }
   }
   // next word (or end of round) once the field is clear
-  if(!B.zombie && t >= B.nextAt){
+  if(!B.zombie && now >= B.nextAt){
     if(B.lives>0 && B.spawned<B.wordsTotal) spawnZombie();
     else { endBattle(false); return; }
   }
@@ -1067,11 +1082,11 @@ function loop(t){
     }else if(z.state==="dash"){
       z.x -= B.speed*7*dt;
       if(z.x <= B.L.mascotX+B.L.catHalf) bite(false);         // legacy: never assigned, kept for safety
-    }else if(z.state==="happy" && t >= B.dyingUntil){
+    }else if(z.state==="happy" && now >= B.dyingUntil){
       scheduleNext(200);
     }else if(z.state==="wrong"){
       z.x += 24*B.S*dt;
-      if(t >= z.wrongUntil) scheduleNext(350);
+      if(now >= z.wrongUntil) scheduleNext(350);
     }
   }
   if(B.proj && B.zombie){
@@ -1084,12 +1099,12 @@ function loop(t){
   B.floats = B.floats.filter(f=>f.life>0);
   B.flash = Math.max(0, B.flash-2.2*dt);
   B.screenShake = Math.max(0, (B.screenShake || 0)-4*dt);
-  draw(t);
+  draw(now);
   requestAnimationFrame(loop);
 }
 // programmatic canvas backdrops — kept dark/low-contrast so the word banner stays readable
-function paintBackdrop(c, w, h, gy, style, t=0){
-  const pulse = t / 1000;
+function paintBackdrop(c, w, h, gy, style, now=0){
+  const pulse = now / 1000;
   if(style==="market"){
     const g = c.createLinearGradient(0,0,0,h);
     g.addColorStop(0,"#24123c"); g.addColorStop(.58,"#3d1432"); g.addColorStop(1,"#5a1d22");
@@ -1164,11 +1179,11 @@ function drawBackdrop(gy){
   else if(shopState.backdrop) paintBackdrop(ctx, B.w, B.h, gy, shopState.backdrop, performance.now());
   else paintBackdrop(ctx, B.w, B.h, gy, "", performance.now());
 }
-function draw(t){
+function draw(now){
   ctx.clearRect(0,0,B.w,B.h);
   const gy = B.h - B.L.ground;
   const shake = B.screenShake > 0
-    ? Math.sin(t * 0.08) * 5 * B.S * B.screenShake
+    ? Math.sin(now * 0.08) * 5 * B.S * B.screenShake
     : 0;
   if(shake){
     ctx.save();
@@ -1184,10 +1199,10 @@ function draw(t){
   // "happy" during the post-kill victory hop, otherwise a walk-in-place idle
   // (drawCat has no dedicated idle state; "walk" just bobs/steps in place
   // since x never changes here).
-  const hopping = B.mascotHopUntil && t < B.mascotHopUntil;   // little victory hop after a kill
+  const hopping = B.mascotHopUntil && now < B.mascotHopUntil;   // little victory hop after a kill
   const playerState = hopping ? "happy" : "walk";
-  drawCat(ctx, B.L.mascotX, gy + 6*B.S, t, playerState, SKIN_PALETTES[shopState.skin], .9*B.S, B.acc, false);
-  if(B.hasKitten) drawCat(ctx, B.L.mascotX - B.L.catHalf, gy + 6*B.S, t + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.S, [], false);
+  drawCat(ctx, B.L.mascotX, gy + 6*B.S, now, playerState, SKIN_PALETTES[shopState.skin], .9*B.S, B.acc, false);
+  if(B.hasKitten) drawCat(ctx, B.L.mascotX - B.L.catHalf, gy + 6*B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.S, [], false);
   // idle coin icon (left of the player) - coin sprite or vector fallback
   const coinImgIdle = sprite("coin");
   if(coinImgIdle){
@@ -1204,18 +1219,18 @@ function draw(t){
     // resolution (kill/wrong/timeout) reveals everything, as before.
     const fl = FORMATS[z.format || "meaning"].plaque;
     const live = z.state === "walk" && !z.revealed;
-    drawWordPlate(z, { mask: live && !!fl.mask, icon: live && !!fl.icon, py: !live || !!fl.py }, t);
+    drawWordPlate(z, { mask: live && !!fl.mask, icon: live && !!fl.icon, py: !live || !!fl.py }, now);
     // raccoon enemy (was the cat walker) — bosses draw bigger with a gold
     // aura (boss param, not scale — see raccoon.js); no skins/accessories/
     // kitten on it, those moved to the player above.
     const rScale = z.boss ? 1.5*B.S : B.S;
-    drawRaccoon(ctx, z.x, gy + 6*B.S, z.state === "happy" ? t - z.happyAt : t, z.state, rScale, !!z.boss);
+    drawRaccoon(ctx, z.x, gy + 6*B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
     // floating HP bar above its head — cosmetic only. Animates hp -> 0 over
     // the happy/dying window (killZombie snapshots hpAtKill); wrong/timeout
     // never touch hp (the raccoon "wins" that word, no damage).
     let hpFrac = z.hp;
     if(z.state === "happy" && B.dyingUntil){
-      const remain = Math.max(0, B.dyingUntil - t);
+      const remain = Math.max(0, B.dyingUntil - now);
       hpFrac = (z.hpAtKill ?? z.hp) * (remain/250);
     }
     drawHpBar(ctx, z.x, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.S, hpFrac, B.S);
@@ -1277,7 +1292,7 @@ function draw(t){
       ctx.restore();
     }
   }
-  drawFeedbackLayer(t);
+  drawFeedbackLayer(now);
   // hit flash — softened dim-violet (cat wandered off, not combat damage)
   if(B.flash>0){ ctx.fillStyle = `rgba(90,44,80,${(0.30*B.flash).toFixed(3)})`; ctx.fillRect(0,0,B.w,B.h); }
   if(shake) ctx.restore();
@@ -1288,7 +1303,7 @@ function draw(t){
 // call site in draw(), which derives it from FORMATS[z.format].plaque).
 // Order per PRD §4.3/§6.2: pinyin (small, above) -> Hanzi (large) ->
 // translation (reserved space always; filled in only once z.revealed).
-function drawWordPlate(z, vis, t){
+function drawWordPlate(z, vis, now){
   const w = z.w, boss = z.boss, level = w.lv;
   const hanzi = vis.mask ? "？？" : vis.icon ? "🔊" : w.h;
   // pinyin off when: the format hides it (reverse/listen/tone while live), OR the player toggled it off
@@ -1433,7 +1448,7 @@ function drawSpeakerIcon(c, cx, cy, r, color){
   c.beginPath(); c.arc(r*0.05, 0, r*0.98, -Math.PI*0.34, Math.PI*0.34); c.stroke();
   c.restore();
 }
-function drawFeedbackLayer(t){
+function drawFeedbackLayer(now){
   const fb = B.feedback;
   if(!fb) return;
   const kind = fb.kind || fb.type;
@@ -1463,7 +1478,7 @@ function drawFeedbackLayer(t){
     ctx.beginPath(); ctx.arc(fb.x, fb.y, (18 + 44*p)*B.S, 0, Math.PI*2); ctx.stroke();
     ctx.fillStyle = "rgba(255,244,224,.95)";
     for(let i=0;i<10;i++){
-      const a = i*Math.PI*2/10 + t*.004;
+      const a = i*Math.PI*2/10 + now*.004;
       const r = (14 + 42*p)*B.S;
       ctx.beginPath(); ctx.arc(fb.x+Math.cos(a)*r, fb.y+Math.sin(a)*r, 2.2*B.S, 0, Math.PI*2); ctx.fill();
     }
@@ -1750,7 +1765,7 @@ function makeShopRow(item, today){
   const copy = document.createElement("span");
   copy.className = "shop-copy";
   const stars = item.type === "deco" && owned ? " " + "★".repeat(tier) : "";
-  copy.innerHTML = `<b>${item.name}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
+  copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
   left.replaceChildren(preview, copy);
   const btn = document.createElement("button");
   const doBuy = () => {
@@ -1799,18 +1814,18 @@ function makeShopRow(item, today){
 let shopPreviewRaf = 0;
 function startShopPreviewLoop(){
   if(shopPreviewRaf) return;
-  const tick = t => {
+  const tick = now => {
     shopPreviewRaf = 0;
     if(currentScreen !== "shop") return;
     document.querySelectorAll(".shop-preview").forEach(canvas => {
-      if(canvas._shopItem) renderShopPreview(canvas, canvas._shopItem, t);
+      if(canvas._shopItem) renderShopPreview(canvas, canvas._shopItem, now);
     });
     shopPreviewRaf = requestAnimationFrame(tick);
   };
   shopPreviewRaf = requestAnimationFrame(tick);
 }
 
-function renderShopPreview(canvas, item, t=0){
+function renderShopPreview(canvas, item, now=0){
   const w = 96, h = 64;
   const dpr = window.devicePixelRatio || 1;
   canvas.width = Math.round(w*dpr); canvas.height = Math.round(h*dpr);
@@ -1823,11 +1838,11 @@ function renderShopPreview(canvas, item, t=0){
   c.fillStyle = bg; roundRectOn(c,0,0,w,h,10); c.fill();
   c.strokeStyle = "rgba(245,197,24,.28)"; c.lineWidth = 1; roundRectOn(c,.5,.5,w-1,h-1,10); c.stroke();
   if(item.type==="skin"){
-    drawCat(c, w*.52, h+6, t, "walk", SKIN_PALETTES[item.id], .72, [], false);
+    drawCat(c, w*.52, h+6, now, "walk", SKIN_PALETTES[item.id], .72, [], false);
   }else if(item.type==="backdrop"){
     const img = sprite(`bg-${item.id}`);
     if(img) drawCoverImage(c, img, 0, 0, w, h);
-    else paintBackdrop(c, w, h, h-7, item.id, t);
+    else paintBackdrop(c, w, h, h-7, item.id, now);
     c.strokeStyle = "rgba(245,197,24,.55)"; c.lineWidth = 1;
     c.beginPath(); c.moveTo(0,h-8); c.lineTo(w,h-8); c.stroke();
   }else if(item.type==="effect"){
@@ -1877,16 +1892,28 @@ function renderStreet(){
   const sc = scv.getContext("2d");
   sc.setTransform(dpr,0,0,dpr,0,0);
   sc.clearRect(0,0,w,h);
-  paintStreetBase(sc, w, h);
+  const bg = sprite("bg-street");
+  if(bg) drawCoverImage(sc, bg, 0, 0, w, h);
+  else paintStreetBase(sc, w, h);
   const gy = h - 10;
 
   const level = levelForXp(xp);
   const pieces = streetPieces(level, shopState.owned, shopState.tiers || {});
-  drawStreetPads(sc, w, gy, h, pieces);
+  const m = streetMetrics(w, h);
+  const backGy = gy - h * (1 - m.backY);
+  drawStreetPads(sc, w, gy, h, pieces, m);
+  // Painter's order: back row (buildings) fully before front row (decos).
   for(const p of pieces){
+    if(p.kind !== "building") continue;
+    const x = p.slot * w, basis = m.unit * m.backScale;
+    drawContactShadow(sc, x, backGy, basis);
+    drawStreetBuilding(sc, p.id, x, backGy, basis);
+  }
+  for(const p of pieces){
+    if(p.kind === "building") continue;
     const x = p.slot * w;
-    if(p.kind==="building") drawStreetBuilding(sc, p.id, x, gy, h);
-    else drawTieredDeco(sc, p, x, gy, h);
+    drawContactShadow(sc, x, gy, m.unit);
+    drawTieredDeco(sc, p, x, gy, m.unit);
   }
 
   // mascot - maneki sprite or vector fallback, always far left on the ground
@@ -1903,41 +1930,80 @@ function renderStreet(){
   const cap = $("#street-caption");
   if(!cap) return;
   const prog = streetProgress(level);
-  const nextTxt = prog.next ? `Next: Lv ${prog.next.lv} — ${prog.next.name}` : "All buildings unlocked!";
+  // streetProgress() (street.js, pure/untouched) returns next.name in English
+  // only; look the id back up by level to get a localized building.* label.
+  const nextB = prog.next ? BUILDINGS.find(b => b.lv === prog.next.lv) : null;
+  const nextTxt = prog.next
+    ? t("street.next", { lv: prog.next.lv, name: nextB ? tOr("building."+nextB.id, prog.next.name) : prog.next.name })
+    : t("street.allUnlocked");
   cap.textContent = pieces.length===0
-    ? `Lucky Cat Street — grows as you learn · ${nextTxt}`
-    : `${prog.unlocked}/${prog.total} buildings · ${nextTxt}`;
+    ? t("street.captionEmpty", { next: nextTxt })
+    : t("street.captionProgress", { unlocked: prog.unlocked, total: prog.total, next: nextTxt });
 }
 function paintStreetBase(c, w, h){
+  // Warm-daylight village street: cream/sky gradient, soft green hills, sun
+  // upper-left, sand road along the bottom fifth. Deterministic (fixed
+  // positions, no Math.random) so it matches the bg-street.png art hook.
   const sky = c.createLinearGradient(0,0,0,h);
-  sky.addColorStop(0, "#160b2a"); sky.addColorStop(.58, "#2a1232"); sky.addColorStop(1, "#5a1d18");
+  sky.addColorStop(0, "#5DAADD"); sky.addColorStop(.55, "#BFE0F2"); sky.addColorStop(1, "#FBF5E8");
   c.fillStyle = sky; c.fillRect(0,0,w,h);
-  c.fillStyle = "rgba(255,231,144,.86)";
-  c.beginPath(); c.arc(w*.82, h*.24, h*.12, 0, Math.PI*2); c.fill();
-  c.fillStyle = "rgba(245,197,24,.7)";
-  for(const [fx,fy,r] of [[.16,.18,1.2],[.31,.28,1],[.46,.16,1.4],[.66,.3,1.1],[.92,.42,1]]){ c.beginPath(); c.arc(w*fx,h*fy,r,0,Math.PI*2); c.fill(); }
-  c.fillStyle = "rgba(18,12,24,.58)";
-  c.beginPath(); c.moveTo(0,h*.58); c.lineTo(w*.16,h*.42); c.lineTo(w*.3,h*.57); c.lineTo(w*.48,h*.37); c.lineTo(w*.72,h*.58); c.lineTo(w,h*.43); c.lineTo(w,h); c.lineTo(0,h); c.closePath(); c.fill();
-  c.fillStyle = "rgba(92,31,24,.9)";
-  c.fillRect(0,h*.64,w,h*.36);
-  c.strokeStyle = "rgba(245,197,24,.24)"; c.lineWidth = 1;
-  for(let y=h*.7;y<h;y+=h*.12){ c.beginPath(); c.moveTo(0,y); c.lineTo(w,y); c.stroke(); }
-  for(let x=-w*.1;x<w;x+=w*.14){ c.beginPath(); c.moveTo(x,h); c.lineTo(x+w*.07,h*.66); c.stroke(); }
-  c.strokeStyle = "rgba(245,197,24,.55)"; c.lineWidth = 2;
-  c.beginPath(); c.moveTo(0,h-10); c.lineTo(w,h-10); c.stroke();
-  c.fillStyle = "rgba(245,197,24,.12)";
-  c.fillRect(0,h*.62,w,h*.05);
+
+  // sun disc, upper-left (project light rule), with a soft outer glow
+  c.fillStyle = "rgba(242,188,87,.32)";
+  c.beginPath(); c.arc(w*.16, h*.2, h*.22, 0, Math.PI*2); c.fill();
+  c.fillStyle = "rgba(242,188,87,.88)";
+  c.beginPath(); c.arc(w*.16, h*.2, h*.13, 0, Math.PI*2); c.fill();
+
+  // faint cream cloud blobs, fixed positions
+  c.fillStyle = "rgba(251,245,232,.7)";
+  for(const [fx,fy,rx,ry] of [[.42,.14,.055,.022],[.58,.09,.04,.017],[.8,.17,.05,.02],[.27,.26,.038,.016]]){
+    c.beginPath(); c.ellipse(w*fx, h*fy, w*rx, h*ry, 0, 0, Math.PI*2); c.fill();
+  }
+
+  // two soft green hill bands, 55-70% alpha
+  c.fillStyle = "rgba(50,119,94,.55)";
+  c.beginPath();
+  c.moveTo(0,h*.62); c.lineTo(w*.18,h*.5); c.lineTo(w*.38,h*.6); c.lineTo(w*.6,h*.46); c.lineTo(w*.82,h*.58); c.lineTo(w,h*.5);
+  c.lineTo(w,h*.74); c.lineTo(0,h*.74); c.closePath(); c.fill();
+
+  c.fillStyle = "rgba(50,119,94,.7)";
+  c.beginPath();
+  c.moveTo(0,h*.7); c.lineTo(w*.22,h*.6); c.lineTo(w*.44,h*.68); c.lineTo(w*.66,h*.58); c.lineTo(w*.88,h*.66); c.lineTo(w,h*.62);
+  c.lineTo(w,h*.82); c.lineTo(0,h*.82); c.closePath(); c.fill();
+
+  // sand road, bottom fifth, with a warm edge line
+  const roadY = h*.8;
+  c.fillStyle = "#EAC796";
+  c.fillRect(0, roadY, w, h - roadY);
+  c.strokeStyle = "#846043"; c.lineWidth = 2;
+  c.beginPath(); c.moveTo(0, roadY); c.lineTo(w, roadY); c.stroke();
 }
-function drawStreetPads(c, w, gy, h, pieces){
+// Soft contact-shadow ellipse under an occupied piece, at its row line.
+function drawContactShadow(c, x, y, basis){
+  c.save();
+  c.fillStyle = "rgba(46,42,36,.12)";
+  c.beginPath(); c.ellipse(x, y + basis*.05, basis*.5, basis*.12, 0, 0, Math.PI*2); c.fill();
+  c.restore();
+}
+function drawStreetPads(c, w, gy, h, pieces, m){
   const occupied = new Set(pieces.map(p => p.slot.toFixed(2)));
-  const slots = [.18,.34,.5,.66,.82,.10,.26,.42,.58,.74];
-  for(const slot of slots){
-    if(occupied.has(slot.toFixed(2))) continue;
-    const x = slot*w, pw = h*.34;
+  const backGy = gy - h * (1 - m.backY);
+  const drawPad = (x, y, basis) => {
+    const pw = basis*.9, ph = basis*.16;
     c.fillStyle = "rgba(255,214,95,.08)";
-    c.beginPath(); c.ellipse(x, gy+1, pw, h*.055, 0, 0, Math.PI*2); c.fill();
+    c.beginPath(); c.ellipse(x, y+1, pw, ph, 0, 0, Math.PI*2); c.fill();
     c.strokeStyle = "rgba(245,197,24,.16)"; c.lineWidth = 1;
-    c.beginPath(); c.ellipse(x, gy+1, pw, h*.055, 0, 0, Math.PI*2); c.stroke();
+    c.beginPath(); c.ellipse(x, y+1, pw, ph, 0, 0, Math.PI*2); c.stroke();
+  };
+  const buildingSlots = [.18,.34,.5,.66,.82];
+  const decoSlots = [.10,.26,.42,.58,.74];
+  for(const slot of buildingSlots){
+    if(occupied.has(slot.toFixed(2))) continue;
+    drawPad(slot*w, backGy, m.unit * m.backScale);
+  }
+  for(const slot of decoSlots){
+    if(occupied.has(slot.toFixed(2))) continue;
+    drawPad(slot*w, gy, m.unit);
   }
 }
 // Each piece is a small, distinct dark-shape-with-gold/red-accent group,
@@ -2018,41 +2084,41 @@ function drawStreetBuilding(c, id, x, gy, h){
   c.shadowBlur = 6;
   switch(id){
     case "lantern-post":
-      c.fillStyle = "#2e1030"; roundRectOn(c,-3,-bh,6,bh,2); c.fill();
-      c.strokeStyle = "#f5c518"; c.lineWidth = 1.6;
+      c.fillStyle = "#846043"; roundRectOn(c,-3,-bh,6,bh,2); c.fill();
+      c.strokeStyle = "#F2BC57"; c.lineWidth = 1.6;
       c.beginPath(); c.moveTo(0,-bh); c.quadraticCurveTo(bw*.26,-bh*1.06,bw*.42,-bh*.86); c.stroke();
       c.fillStyle = "#c1272d"; c.beginPath(); c.ellipse(bw*.43,-bh*.74,bw*.18,bw*.23,0,0,Math.PI*2); c.fill();
-      c.fillStyle = "#f5c518"; c.fillRect(bw*.34,-bh*.98,bw*.18,3); c.fillRect(bw*.36,-bh*.52,bw*.14,3);
+      c.fillStyle = "#F2BC57"; c.fillRect(bw*.34,-bh*.98,bw*.18,3); c.fillRect(bw*.36,-bh*.52,bw*.14,3);
       break;
     case "coin-bank":
-      c.fillStyle = "#2e1030"; roundRectOn(c,-bw/2,-bh,bw,bh,4); c.fill();
-      c.fillStyle = "#8a2a24"; c.fillRect(-bw*.55,-bh,bw*1.1,bh*.16);
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0, -bh*.58, bw*.2, 0, Math.PI*2); c.fill();
-      c.fillStyle = "#8a2a24"; c.font = `700 ${Math.round(bw*.22)}px serif`; c.textAlign = "center";
+      c.fillStyle = "#846043"; roundRectOn(c,-bw/2,-bh,bw,bh,4); c.fill();
+      c.fillStyle = "#E69777"; c.fillRect(-bw*.55,-bh,bw*1.1,bh*.16);
+      c.fillStyle = "#F2BC57"; c.beginPath(); c.arc(0, -bh*.58, bw*.2, 0, Math.PI*2); c.fill();
+      c.fillStyle = "#2E2A24"; c.font = `700 ${Math.round(bw*.22)}px serif`; c.textAlign = "center";
       c.fillText("$", 0, -bh*.5);
-      c.fillStyle = "rgba(255,244,224,.72)"; c.fillRect(-bw*.34,-bh*.28,bw*.68,bh*.05);
+      c.fillStyle = "rgba(251,245,232,.72)"; c.fillRect(-bw*.34,-bh*.28,bw*.68,bh*.05);
       break;
     case "tailor":
-      c.fillStyle = "#2e1030"; roundRectOn(c,-bw/2, -bh*.85, bw, bh*.85, 4); c.fill();
+      c.fillStyle = "#846043"; roundRectOn(c,-bw/2, -bh*.85, bw, bh*.85, 4); c.fill();
       c.fillStyle = "#c1272d"; c.fillRect(-bw/2-5, -bh*.85-9, bw+10, 9);
-      c.fillStyle = "rgba(255,244,224,.18)"; c.fillRect(-bw*.42,-bh*.79,bw*.84,bh*.13);
-      c.fillStyle = "#f5c518";
+      c.fillStyle = "rgba(251,245,232,.18)"; c.fillRect(-bw*.42,-bh*.79,bw*.84,bh*.13);
+      c.fillStyle = "#F2BC57";
       c.fillRect(-bw*.18, -bh*.55, bw*.14, bh*.14); c.fillRect(bw*.04, -bh*.55, bw*.14, bh*.14);
       break;
     case "kitten-cafe":
-      c.fillStyle = "#2e1030"; roundRectOn(c,-bw/2, -bh*.75, bw, bh*.75, 4); c.fill();
-      c.fillStyle = "#8a2a24";
+      c.fillStyle = "#846043"; roundRectOn(c,-bw/2, -bh*.75, bw, bh*.75, 4); c.fill();
+      c.fillStyle = "#E69777";
       c.beginPath(); c.moveTo(-bw/2-6,-bh*.75); c.lineTo(0,-bh); c.lineTo(bw/2+6,-bh*.75); c.closePath(); c.fill();
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-bh*.4,bw*.16,0,Math.PI*2); c.fill();
-      c.fillStyle = "#1a0d0d"; c.beginPath(); c.arc(-bw*.05,-bh*.43,bw*.03,0,Math.PI*2); c.fill(); c.beginPath(); c.arc(bw*.05,-bh*.43,bw*.03,0,Math.PI*2); c.fill();
+      c.fillStyle = "#F2BC57"; c.beginPath(); c.arc(0,-bh*.4,bw*.16,0,Math.PI*2); c.fill();
+      c.fillStyle = "#2E2A24"; c.beginPath(); c.arc(-bw*.05,-bh*.43,bw*.03,0,Math.PI*2); c.fill(); c.beginPath(); c.arc(bw*.05,-bh*.43,bw*.03,0,Math.PI*2); c.fill();
       break;
     case "emperor-gate":
       c.fillStyle = "#c1272d";
       c.fillRect(-bw*.7, -bh*1.15, bw*.16, bh*1.15);
       c.fillRect(bw*.54, -bh*1.15, bw*.16, bh*1.15);
       c.fillRect(-bw*.7, -bh*1.15, bw*1.4, bh*.14);
-      c.fillStyle = "#8a2a24"; c.fillRect(-bw*.82,-bh*1.28,bw*1.64,bh*.13);
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-bh*1.08,bw*.12,0,Math.PI*2); c.fill();
+      c.fillStyle = "#E69777"; c.fillRect(-bw*.82,-bh*1.28,bw*1.64,bh*.13);
+      c.fillStyle = "#F2BC57"; c.beginPath(); c.arc(0,-bh*1.08,bw*.12,0,Math.PI*2); c.fill();
       break;
   }
   c.restore();
@@ -2066,13 +2132,6 @@ function drawStarMark(c, x, y, r){
 }
 function drawTieredDeco(c, p, x, gy, h){
   const tier = p.tier || 1;
-  if(tier >= 3){
-    const dx = h * .26;
-    c.save(); c.globalAlpha = .8;
-    drawStreetDeco(c, p.id, x - dx, gy, h * .68);
-    drawStreetDeco(c, p.id, x + dx, gy, h * .68);
-    c.restore();
-  }
   if(tier >= 2){
     c.save();
     c.shadowColor = "rgba(255,214,95,.55)"; c.shadowBlur = 12;
@@ -2082,6 +2141,43 @@ function drawTieredDeco(c, p, x, gy, h){
   }else{
     drawStreetDeco(c, p.id, x, gy, h);
   }
+  if(tier >= 3) drawCrownAccent(c, p.id, x, gy, h);
+}
+// Top of each deco shape in units of s (= basis*.32), from drawStreetDeco
+// geometry; used to plant the tier-3 crown at the piece's actual top.
+const DECO_TOPS = {
+  "red-lantern": 1.6, "noodle-stall": .84, "tea-sign": 1.3, "foo-dog": .8,
+  "golden-arch": 1.4, "mahjong-table": .72, "koi-pond": .39, "drum-tower": 1.5,
+  "bubble-tea": 1.34, "paper-umbrella": 1.4, "goldfish-banner": 1.4,
+  "neon-cat-sign": 1.1, "shaved-ice-cart": .94, "mooncake-stall": .78,
+  "firecracker-arch": .82,
+};
+// Tier-3 crown: a small gold pennant on a wood pole planted above the piece's
+// top-left, plus three tiny star sparkles arced above. Deterministic (no
+// randomness) so it renders identically every frame.
+function drawCrownAccent(c, id, x, gy, basis){
+  c.save(); c.translate(x, gy);
+  // piece top: shape top in s-units, scaled by the tier-2 1.15x enlargement
+  const top = -(DECO_TOPS[id] || 1) * basis * .32 * 1.15;
+  const poleX = -basis * .3;
+  const poleBase = top - basis * .12;
+  const poleTip = poleBase - basis * .36;
+  c.strokeStyle = "#846043"; c.lineWidth = Math.max(1.4, basis * .045); c.lineCap = "round";
+  c.beginPath(); c.moveTo(poleX, poleBase); c.lineTo(poleX, poleTip); c.stroke();
+  c.fillStyle = "#F2BC57";
+  c.beginPath();
+  c.moveTo(poleX, poleTip);
+  c.lineTo(poleX + basis*.18, poleTip + basis*.07);
+  c.lineTo(poleX, poleTip + basis*.14);
+  c.closePath(); c.fill();
+  c.fillStyle = "#FFE08A";
+  const sparkles = [
+    [poleX + basis*.42, poleTip - basis*.06, basis*.06],
+    [poleX + basis*.78, poleTip + basis*.04, basis*.055],
+    [poleX + basis*.58, poleTip - basis*.26, basis*.05],
+  ];
+  for(const [sx, sy, r] of sparkles) drawStarMark(c, sx, sy, r);
+  c.restore();
 }
 function drawStreetDeco(c, id, x, gy, h){
   const s = h*.32;
@@ -2092,31 +2188,31 @@ function drawStreetDeco(c, id, x, gy, h){
   }
   switch(id){
     case "red-lantern":
-      c.strokeStyle = "#8a2a24"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(0,-s*1.6); c.lineTo(0,-s*1.1); c.stroke();
+      c.strokeStyle = "#846043"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(0,-s*1.6); c.lineTo(0,-s*1.1); c.stroke();
       c.fillStyle = "#c1272d"; c.beginPath(); c.ellipse(0,-s*.8,s*.32,s*.42,0,0,Math.PI*2); c.fill();
-      c.fillStyle = "#f5c518"; c.fillRect(-2,-s*.38,4,s*.12);
+      c.fillStyle = "#F2BC57"; c.fillRect(-2,-s*.38,4,s*.12);
       break;
     case "noodle-stall":
-      c.fillStyle = "#5a2c22"; roundRectOn(c,-s*.48,-s*.62,s*.96,s*.62,3); c.fill();
+      c.fillStyle = "#846043"; roundRectOn(c,-s*.48,-s*.62,s*.96,s*.62,3); c.fill();
       c.fillStyle = "#c1272d"; c.fillRect(-s*.56,-s*.84,s*1.12,s*.18);
-      c.fillStyle = "#f5c518"; c.fillRect(-s*.56,-s*.84,s*.18,s*.18); c.fillRect(-s*.1,-s*.84,s*.18,s*.18); c.fillRect(s*.36,-s*.84,s*.2,s*.18);
+      c.fillStyle = "#F2BC57"; c.fillRect(-s*.56,-s*.84,s*.18,s*.18); c.fillRect(-s*.1,-s*.84,s*.18,s*.18); c.fillRect(s*.36,-s*.84,s*.2,s*.18);
       break;
     case "tea-sign":
-      c.strokeStyle = "#f5c518"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(0,-s*1.3); c.lineTo(0,-s*.9); c.stroke();
-      c.fillStyle = "#3a1a1a"; roundRectOn(c,-s*.38,-s*1.3,s*.76,s*.32,3); c.fill();
-      c.fillStyle = "#f5c518"; c.font = `700 ${Math.round(s*.22)}px serif`; c.textAlign = "center";
+      c.strokeStyle = "#F2BC57"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(0,-s*1.3); c.lineTo(0,-s*.9); c.stroke();
+      c.fillStyle = "#846043"; roundRectOn(c,-s*.38,-s*1.3,s*.76,s*.32,3); c.fill();
+      c.fillStyle = "#F2BC57"; c.font = `700 ${Math.round(s*.22)}px serif`; c.textAlign = "center";
       c.fillText("tea", 0, -s*1.06);
       break;
     case "foo-dog":
-      c.fillStyle = "#2e1030"; c.beginPath(); c.ellipse(0,-s*.3,s*.32,s*.4,0,0,Math.PI*2); c.fill();
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-s*.62,s*.18,0,Math.PI*2); c.fill();
-      c.fillStyle = "#1a0d0d"; c.beginPath(); c.arc(-s*.05,-s*.65,s*.025,0,Math.PI*2); c.fill(); c.beginPath(); c.arc(s*.05,-s*.65,s*.025,0,Math.PI*2); c.fill();
+      c.fillStyle = "#846043"; c.beginPath(); c.ellipse(0,-s*.3,s*.32,s*.4,0,0,Math.PI*2); c.fill();
+      c.fillStyle = "#F2BC57"; c.beginPath(); c.arc(0,-s*.62,s*.18,0,Math.PI*2); c.fill();
+      c.fillStyle = "#2E2A24"; c.beginPath(); c.arc(-s*.05,-s*.65,s*.025,0,Math.PI*2); c.fill(); c.beginPath(); c.arc(s*.05,-s*.65,s*.025,0,Math.PI*2); c.fill();
       break;
     case "golden-arch":
-      c.strokeStyle = "#f5c518"; c.lineWidth = 3;
+      c.strokeStyle = "#F2BC57"; c.lineWidth = 3;
       c.beginPath(); c.arc(0,-s*.5, s*.9, Math.PI, 0); c.stroke();
       c.beginPath(); c.moveTo(-s*.9,-s*.5); c.lineTo(-s*.9,0); c.moveTo(s*.9,-s*.5); c.lineTo(s*.9,0); c.stroke();
-      c.fillStyle = "rgba(255,244,224,.35)"; c.beginPath(); c.arc(0,-s*.93,s*.13,0,Math.PI*2); c.fill();
+      c.fillStyle = "rgba(251,245,232,.35)"; c.beginPath(); c.arc(0,-s*.93,s*.13,0,Math.PI*2); c.fill();
       break;
     case "mahjong-table":
       c.fillStyle = "#2f7d4f"; c.fillRect(-s*.5,-s*.55,s,s*.16);
@@ -2134,11 +2230,11 @@ function drawStreetDeco(c, id, x, gy, h){
       c.fillStyle = "#8a5a2c"; c.fillRect(-s*.34,-s*1.15,s*.68,s*1.15);
       c.fillStyle = "#c1272d"; c.beginPath(); c.moveTo(-s*.48,-s*1.15); c.lineTo(0,-s*1.5); c.lineTo(s*.48,-s*1.15); c.closePath(); c.fill();
       c.beginPath(); c.ellipse(0,-s*.62,s*.2,s*.24,0,0,Math.PI*2); c.fill();
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-s*.62,s*.07,0,Math.PI*2); c.fill();
+      c.fillStyle = "#F2BC57"; c.beginPath(); c.arc(0,-s*.62,s*.07,0,Math.PI*2); c.fill();
       break;
     case "bubble-tea":
       c.fillStyle = "#8a5a2c"; c.fillRect(-s*.4,-s*.7,s*.8,s*.7);
-      c.fillStyle = "#f5c518"; c.fillRect(-s*.48,-s*.86,s*.96,s*.16);
+      c.fillStyle = "#F2BC57"; c.fillRect(-s*.48,-s*.86,s*.96,s*.16);
       c.fillStyle = "#e8a9c9"; c.fillRect(-s*.12,-s*1.2,s*.24,s*.3);
       c.strokeStyle = "#5a3a1c"; c.lineWidth = 2; c.beginPath(); c.moveTo(0,-s*1.2); c.lineTo(s*.06,-s*1.34); c.stroke();
       break;
@@ -2151,12 +2247,12 @@ function drawStreetDeco(c, id, x, gy, h){
     case "goldfish-banner":
       c.strokeStyle = "#8a5a2c"; c.lineWidth = 2; c.beginPath(); c.moveTo(0,0); c.lineTo(0,-s*1.4); c.stroke();
       c.fillStyle = "#e8734a"; c.beginPath(); c.ellipse(s*.2,-s*1.1,s*.3,s*.12,0,0,Math.PI*2); c.fill();
-      c.fillStyle = "#f5c518"; c.beginPath(); c.moveTo(s*.46,-s*1.1); c.lineTo(s*.62,-s*1.2); c.lineTo(s*.62,-s*1.0); c.closePath(); c.fill();
+      c.fillStyle = "#F2BC57"; c.beginPath(); c.moveTo(s*.46,-s*1.1); c.lineTo(s*.62,-s*1.2); c.lineTo(s*.62,-s*1.0); c.closePath(); c.fill();
       break;
     case "neon-cat-sign":
-      c.fillStyle = "#23233a"; c.fillRect(-s*.36,-s*1.1,s*.72,s*.8);
+      c.fillStyle = "#846043"; c.fillRect(-s*.36,-s*1.1,s*.72,s*.8);
       c.strokeStyle = "#7fd7ff"; c.lineWidth = 2; c.strokeRect(-s*.36,-s*1.1,s*.72,s*.8);
-      c.strokeStyle = "#f5c518"; c.beginPath(); c.arc(0,-s*.72,s*.18,0,Math.PI*2); c.stroke();
+      c.strokeStyle = "#F2BC57"; c.beginPath(); c.arc(0,-s*.72,s*.18,0,Math.PI*2); c.stroke();
       c.beginPath(); c.moveTo(-s*.14,-s*.86); c.lineTo(-s*.06,-s*.98); c.moveTo(s*.14,-s*.86); c.lineTo(s*.06,-s*.98); c.stroke();
       break;
     case "shaved-ice-cart":
@@ -2170,7 +2266,7 @@ function drawStreetDeco(c, id, x, gy, h){
     case "mooncake-stall":
       c.fillStyle = "#8a5a2c"; c.fillRect(-s*.42,-s*.6,s*.84,s*.6);
       c.fillStyle = "#c1272d"; c.fillRect(-s*.5,-s*.78,s,s*.18);
-      c.fillStyle = "#f5c518";
+      c.fillStyle = "#F2BC57";
       for(const tx of [-s*.26,-s*.02,s*.2]){ c.beginPath(); c.arc(tx+s*.06,-s*.42,s*.09,0,Math.PI*2); c.fill(); }
       break;
     case "firecracker-arch":
@@ -2178,7 +2274,7 @@ function drawStreetDeco(c, id, x, gy, h){
       c.beginPath(); c.arc(0,-s*.2,s*.62,Math.PI,0); c.stroke();
       c.fillStyle = "#c1272d";
       for(const [ax,ay] of [[-s*.62,-s*.2],[s*.62,-s*.2],[-s*.5,-s*.62],[s*.5,-s*.62],[0,-s*.82]]) c.fillRect(ax-2,ay,4,s*.18);
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-s*.82,s*.06,0,Math.PI*2); c.fill();
+      c.fillStyle = "#F2BC57"; c.beginPath(); c.arc(0,-s*.82,s*.06,0,Math.PI*2); c.fill();
       break;
   }
   c.restore();

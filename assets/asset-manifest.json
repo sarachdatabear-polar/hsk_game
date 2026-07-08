@@ -68,6 +68,7 @@
     { "id": "bg-market", "file": "bg-market.png", "type": "background", "status": "integrated", "priority": "P0", "w": 1024, "h": 512, "fallback": "css:#cv gradient", "note": "vector placeholder — regenerate per GENERATION-PROMPTS-v5" },
     { "id": "bg-temple", "file": "bg-temple.png", "type": "background", "status": "integrated", "priority": "P0", "w": 1024, "h": 512, "fallback": "css:#cv gradient", "note": "vector placeholder — regenerate per GENERATION-PROMPTS-v5" },
     { "id": "bg-bamboo", "file": "bg-bamboo.png", "type": "background", "status": "integrated", "priority": "P0", "w": 1024, "h": 512, "fallback": "css:#cv gradient", "note": "vector placeholder — regenerate per GENERATION-PROMPTS-v5" },
+    { "id": "bg-street", "file": "bg-street.png", "type": "background", "status": "planned", "priority": "P0", "w": 1024, "h": 512, "fallback": "canvas:paintStreetBase", "note": "warm-daylight village street — see GENERATION-PROMPTS-P0-copypaste.md" },
     { "id": "lantern", "file": "lantern.png", "type": "decor", "status": "integrated", "priority": "P2", "w": 256, "h": 384, "fallback": "css:none (decor)" },
     { "id": "cloud", "file": "cloud.png", "type": "decor", "status": "integrated", "priority": "P2", "w": 512, "h": 256, "fallback": "css:none (decor)" },
     { "id": "coin", "file": "coin.png", "type": "decor", "status": "integrated", "priority": "P2", "w": 128, "h": 128, "fallback": "canvas:coin-vector" },

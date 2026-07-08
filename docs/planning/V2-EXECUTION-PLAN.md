@@ -1,5 +1,32 @@
 # V2/V3/V4 Execution Plan — living checklist
 
+## i18n pass 2 (2026-07-08)
+
+Plan: [2026-07-08-i18n-pass-2.md](../superpowers/plans/2026-07-08-i18n-pass-2.md). Branch `feat/i18n-pass-2`.
+
+- [x] 56 new keys EN+TH (howto.* w/ inline <b> via opt-in `data-i18n-html`, street.* captions, item.* ×39, building.* ×5, fc.noThai) + `{min}` param fix; static-usage guard test (every data-i18n / t() literal / catalog id covered both locales).
+- [x] Wiring: howto body, street captions w/ localized building names, shop item names via `tOr()` fallback, t-shadow cleanup (8 renames incl. rAF time chain, verified end-to-end).
+- [x] 782 tests green; TH smoke (howto/street/shop screenshots) + sweep 10/10. Follow-ups: MILESTONES growth-card strings still unlocalized; TH brand "ถนนนำโชค" + all new keys pending native review; fc.noThai has no live repro (0 words lack Thai).
+
+## Street restyle round (2026-07-08)
+
+Plan: [2026-07-08-street-restyle.md](../superpowers/plans/2026-07-08-street-restyle.md). Branch `feat/street-restyle`.
+
+- [x] `streetMetrics(w,h)` pure two-row layout metrics (+7 tests, unit tuned to `min(h*.30, w*.105)` for market-lane density).
+- [x] Warm-daylight `paintStreetBase` (STYLE-TOKENS palette) + `bg-street.png` art hook (planned manifest row, prompt block, sprite-first with procedural fallback).
+- [x] Two depth rows (buildings back/smaller, decos front) + contact shadows + pads per row; tier-3 flanking copies replaced by gold pennant crown + sparkles (`DECO_TOPS` per-id anchor table); building/deco shapes recolored to the warm palette (geometry untouched).
+- [x] 595 tests green; responsive sweep 10/10 throughout. Known follow-ups: maneki occludes slot-.10 deco crown (z-order), painted bg-street.png pending art intake.
+
+## Responsive all-devices round (2026-07-08)
+
+Plan: [2026-07-07-responsive-all-devices.md](../superpowers/plans/2026-07-07-responsive-all-devices.md). Branch `fix/responsive-all-devices`.
+
+- [x] Short-portrait battle fit (≤620px): compact grid + `.opt-label` ellipsis clamp; cascade-order bug found (media block must sit AFTER base rules).
+- [x] Landscape phones (≤500px height): HUD strip + canvas|answers side-by-side, home START in-fold; `#s-battle.on` scoping (bare ID selector beat `.screen{display:none}`).
+- [x] Landscape tap targets raised to the 36px floor.
+- [x] Mid-tier (≤700px portrait) gloss clamp stabilizes 360×640 (flexbox+line-clamp needs `flex-shrink:0` on the clamped label).
+- [x] Permanent gate `scripts/responsive-sweep.mjs`: 10 viewports × home/shop/battle, ancestor-clip-aware; 10/10 stable across repeated runs. 588 tests green throughout.
+
 ## v7 "Shop Seasons" (2026-07-07)
 
 Spec: [PRD-v7-shop-seasons.md](../archive/prd/PRD-v7-shop-seasons.md). Branch
@@ -138,6 +165,7 @@ Spec: [PRD-v4-street.md](../archive/prd/PRD-v4-street.md) (shipped, archived). H
 3. New keys namespaced `nbhsk.*` (`wallet`, `shop`, `daily`; mastery gains optional `ls` field).
 4. Pure logic in small modules with vitest tests; `main.js` only wires DOM/canvas.
 5. No new npm dependencies. Playable at 360×640 portrait.
+6. Before each release PR, run `node scripts/responsive-sweep.mjs` (needs `npm i --no-save playwright-core` + Edge, and `npm run serve` in another shell) — the permanent 10-viewport home/shop/battle regression sweep.
 
 ## Session log
 

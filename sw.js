@@ -2,7 +2,7 @@
 // A worker registered from pwa/ would be scoped to /pwa/ and could not serve the
 // app shell offline, since static hosts (GitHub Pages) don't send
 // Service-Worker-Allowed to widen scope. Paths below are root-relative.
-const SHELL = "nbhsk-shell-v30";
+const SHELL = "nbhsk-shell-v33";
 const AUDIO = "nbhsk-audio-v1";
 const PRECACHE = [
   "index.html", "dist/app.js", "data/words.js", "audio/index.json",
@@ -33,6 +33,18 @@ const PRECACHE = [
   "assets/cat-gold-happy.png",
   "assets/cat-boss-walk.png",
   "assets/cat-boss-happy.png",
+  "assets/cat-astronaut-walk.png",
+  "assets/cat-astronaut-happy.png",
+  "assets/cat-beach-walk.png",
+  "assets/cat-beach-happy.png",
+  "assets/cat-dragon-walk.png",
+  "assets/cat-dragon-happy.png",
+  "assets/cat-mooncake-walk.png",
+  "assets/cat-mooncake-happy.png",
+  "assets/cat-ninja-walk.png",
+  "assets/cat-ninja-happy.png",
+  "assets/cat-panda-walk.png",
+  "assets/cat-panda-happy.png",
   "assets/raccoon-walk.png",
   "assets/raccoon-happy.png",
   "assets/cat-portrait.png",
@@ -44,6 +56,12 @@ const PRECACHE = [
   "assets/bg-results.webp",
   "assets/bg-temple.png",
   "assets/bg-bamboo.png",
+  "assets/bg-street.png",
+  "assets/bg-dragon-gate.png",
+  "assets/bg-harbor-night.png",
+  "assets/bg-island-sunset.png",
+  "assets/bg-lantern-festival.png",
+  "assets/bg-snow-festival.png",
   "assets/ui-button-primary.svg",
   "assets/ui-button-secondary.svg",
   "assets/ui-button-neutral.svg",

@@ -1,0 +1,368 @@
+#!/usr/bin/env node
+// Permanent viewport regression harness — drives home/shop/battle at the
+// standard device matrix and reports overflow / clipped controls / tap-target
+// / scroll regressions. Promoted from the throwaway probes used in the
+// responsive-all-devices round (.superpowers/sdd/responsive-sweep.mjs +
+// resp-battle-probe.mjs).
+//
+// Usage:
+//   npm run serve                       # in another shell — python http.server on :8000
+//   node scripts/responsive-sweep.mjs           # full 10-viewport x 3-screen sweep
+//   node scripts/responsive-sweep.mjs --battle 390x844   # single-shot battle probe
+//
+// Requires: npm i --no-save playwright-core, and Microsoft Edge installed
+// (uses channel:"msedge" so it doesn't need a separate browser download).
+import { chromium } from "playwright-core";
+import http from "node:http";
+
+const BASE_URL = "http://localhost:8000";
+const TOL = 1; // px tolerance for viewport-edge comparisons
+
+// [name, width, height] — matches the device matrix agreed for this round.
+const VIEWPORTS = [
+  ["se-320", 320, 568],
+  ["fold-344", 344, 882],
+  ["s-360", 360, 640],
+  ["tall-360", 360, 800],
+  ["iph-390", 390, 844],
+  ["andr-412", 412, 915],
+  ["land-640", 640, 360],
+  ["land-844", 844, 390],
+  ["tab-768", 768, 1024],
+  ["desk-1280", 1280, 800],
+];
+
+// ---------------------------------------------------------------------------
+// In-page helpers (installed via addInitScript so they exist before any of
+// the app's own scripts run, and are available to every page.evaluate call).
+// ---------------------------------------------------------------------------
+function installPageHelpers() {
+  window.__resp = {
+    // Intersect an element's own rect with the clipping rect of every
+    // ancestor whose computed overflow actually clips (hidden/clip/scroll/
+    // auto). This is the fix for the false-positive where a naive
+    // `rect.bottom > innerHeight` check flags something like the
+    // -webkit-line-clamp'd .opt-label span: the span's own box can report a
+    // rect that pokes past the viewport, but its parent button clips it with
+    // overflow:hidden, so nothing is actually visibly overflowing.
+    effectiveVisibleRect(el) {
+      const r = el.getBoundingClientRect();
+      const rect = { top: r.top, left: r.left, right: r.right, bottom: r.bottom };
+      let node = el.parentElement;
+      while (node && node.nodeType === 1) {
+        const cs = getComputedStyle(node);
+        const clipRe = /(hidden|scroll|auto|clip)/;
+        const clipsY = clipRe.test(cs.overflowY) || clipRe.test(cs.overflow);
+        const clipsX = clipRe.test(cs.overflowX) || clipRe.test(cs.overflow);
+        if (clipsY || clipsX) {
+          const ar = node.getBoundingClientRect();
+          if (clipsY) {
+            rect.top = Math.max(rect.top, ar.top);
+            rect.bottom = Math.min(rect.bottom, ar.bottom);
+          }
+          if (clipsX) {
+            rect.left = Math.max(rect.left, ar.left);
+            rect.right = Math.min(rect.right, ar.right);
+          }
+        }
+        node = node.parentElement;
+      }
+      return rect;
+    },
+    // True only if the element still has a positive-area visible rect after
+    // ancestor-clip intersection, AND that visible rect's bottom edge is
+    // still past the viewport. Elements with zero visible area (already
+    // fully hidden by an ancestor clip) are skipped, not flagged.
+    isClippedBelowViewport(el, innerHeight, tol) {
+      const rect = this.effectiveVisibleRect(el);
+      const w = rect.right - rect.left;
+      const h = rect.bottom - rect.top;
+      if (w <= 0 || h <= 0) return false;
+      return rect.bottom > innerHeight + tol;
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Per-screen probe: overflow-x, elements past left/right edge, tap targets
+// under 36px, and (battle only) ancestor-aware clipped-below count.
+// ---------------------------------------------------------------------------
+function probeScreen([screenName, tol]) {
+  const doc = document.documentElement;
+  const overflowX = doc.scrollWidth > window.innerWidth + tol;
+
+  const wide = [...document.querySelectorAll("body *")]
+    .filter(el => el.offsetParent !== null)
+    .filter(el => {
+      const r = el.getBoundingClientRect();
+      if (r.width <= 0 || r.height <= 0) return false;
+      return r.right > window.innerWidth + tol || r.left < -tol;
+    })
+    .slice(0, 5)
+    .map(el => el.id || el.className?.toString().slice(0, 30) || el.tagName);
+
+  const small = [...document.querySelectorAll(".screen:not([hidden]) button, .nav-bar button")]
+    .filter(el => el.offsetParent !== null)
+    .filter(el => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && (r.height < 36 || r.width < 36);
+    })
+    .slice(0, 5)
+    .map(el => {
+      const r = el.getBoundingClientRect();
+      const label = (el.textContent || el.className.toString()).trim().slice(0, 16);
+      return `${label}(${Math.round(r.width)}x${Math.round(r.height)})`;
+    });
+
+  let clippedBelow = 0;
+  if (screenName === "battle") {
+    clippedBelow = [...document.querySelectorAll("#s-battle *")]
+      .filter(el => el.offsetParent !== null)
+      .filter(el => window.__resp.isClippedBelowViewport(el, window.innerHeight, tol)).length;
+  }
+
+  return { overflowX, wide, small, clippedBelow };
+}
+
+function probeStartInFold(tol) {
+  const b = document.querySelector("#home-start");
+  if (!b) return "missing";
+  const r = b.getBoundingClientRect();
+  if (r.width <= 0 || r.height <= 0) return "hidden";
+  return r.top >= -tol && r.bottom <= window.innerHeight + tol ? "in-fold" : "below-fold";
+}
+
+function probeBattle(tol) {
+  const cv = document.querySelector("#cv");
+  const cvRect = cv?.getBoundingClientRect();
+  const cvSize = cvRect ? { w: Math.round(cvRect.width), h: Math.round(cvRect.height) } : null;
+
+  const optBtns = [...document.querySelectorAll("#opts button")];
+  const visibleOptBtns = optBtns.filter(b => {
+    const r = b.getBoundingClientRect();
+    return (
+      r.width > 0 &&
+      r.height > 0 &&
+      r.top >= -tol &&
+      r.left >= -tol &&
+      r.bottom <= window.innerHeight + tol &&
+      r.right <= window.innerWidth + tol
+    );
+  });
+
+  const pauseBtn = document.querySelector("#hud-pause");
+  let pauseOnScreen = false;
+  if (pauseBtn) {
+    const r = pauseBtn.getBoundingClientRect();
+    pauseOnScreen =
+      r.width > 0 &&
+      r.height > 0 &&
+      r.top >= -tol &&
+      r.left >= -tol &&
+      r.bottom <= window.innerHeight + tol &&
+      r.right <= window.innerWidth + tol;
+  }
+
+  const doc = document.documentElement;
+  const scrollNeeded =
+    doc.scrollHeight > window.innerHeight + tol || doc.scrollWidth > window.innerWidth + tol;
+
+  return {
+    cvSize,
+    optBtnCount: optBtns.length,
+    visibleOptBtnCount: visibleOptBtns.length,
+    pauseOnScreen,
+    scrollNeeded,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Navigation helpers shared by the full sweep and the --battle single-shot.
+// ---------------------------------------------------------------------------
+async function preparePage(browser, width, height) {
+  const page = await browser.newPage({ viewport: { width, height } });
+  const errs = [];
+  page.on("pageerror", e => errs.push(e.message));
+  await page.addInitScript(installPageHelpers);
+  await page.addInitScript(() => {
+    localStorage.setItem("nbhsk.introDone", "true");
+    localStorage.setItem("nbhsk.locale", '"en"');
+    localStorage.setItem("nbhsk.wallet", "5000");
+  });
+  await page.goto(`${BASE_URL}/index.html`, { waitUntil: "load" });
+  await page.waitForTimeout(700);
+  return { page, errs };
+}
+
+async function goToShop(page) {
+  await page.evaluate(() => document.querySelector('[data-go="shop"]')?.click());
+  await page.waitForTimeout(250);
+}
+
+async function goToBattle(page) {
+  await page.evaluate(() => document.querySelector('[data-go="home"]')?.click());
+  await page.waitForTimeout(200);
+  await page.evaluate(() => document.querySelector("#home-start")?.scrollIntoView());
+  await page.evaluate(() => document.querySelector("#home-start")?.click());
+  await page.waitForTimeout(900);
+}
+
+// ---------------------------------------------------------------------------
+// Server reachability check — the harness never starts the server itself
+// (the user runs `npm run serve` in another shell); fail fast with a clear
+// message rather than letting every page.goto() time out one by one.
+// ---------------------------------------------------------------------------
+async function assertServerReachable() {
+  // Deliberately uses node:http rather than global fetch()/undici: Node 24's
+  // undici client crashes the whole process with an uncaught
+  // `assert(!this.paused)` when talking to Python's http.server (HTTP/1.0,
+  // connection: close). node:http doesn't hit that path.
+  const reachable = await new Promise(resolve => {
+    const req = http.get(`${BASE_URL}/index.html`, res => {
+      res.resume();
+      resolve(res.statusCode >= 200 && res.statusCode < 400);
+    });
+    req.on("error", () => resolve(false));
+    req.setTimeout(3000, () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
+  if (!reachable) {
+    console.error(
+      `responsive-sweep: cannot reach ${BASE_URL}/index.html.\n` +
+        `Start the server first in another shell: npm run serve`
+    );
+    process.exit(1);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Full sweep: home + shop + battle at all 10 viewports.
+// ---------------------------------------------------------------------------
+async function runFullSweep() {
+  await assertServerReachable();
+  const browser = await chromium.launch({ channel: "msedge", headless: true });
+  const lines = [];
+  let anyFail = false;
+
+  for (const [name, width, height] of VIEWPORTS) {
+    const { page, errs } = await preparePage(browser, width, height);
+
+    const home = await page.evaluate(probeScreen, ["home", TOL]);
+    const startVisible = await page.evaluate(probeStartInFold, TOL);
+
+    await goToShop(page);
+    const shop = await page.evaluate(probeScreen, ["shop", TOL]);
+
+    await goToBattle(page);
+    const battle = await page.evaluate(probeScreen, ["battle", TOL]);
+    const battleInfo = await page.evaluate(probeBattle, TOL);
+
+    const isLandscape = height <= 500;
+    const isShortPortrait = height <= 620;
+    const scrollAssertApplies = isLandscape || isShortPortrait;
+
+    const failures = [];
+    if (home.overflowX) failures.push("home overflow-x");
+    if (shop.overflowX) failures.push("shop overflow-x");
+    if (battle.overflowX) failures.push("battle overflow-x");
+    if (startVisible !== "in-fold") failures.push(`start=${startVisible}`);
+    if (home.small.length) failures.push(`home small-taps:[${home.small}]`);
+    if (shop.small.length) failures.push(`shop small-taps:[${shop.small}]`);
+    if (battle.small.length) failures.push(`battle small-taps:[${battle.small}]`);
+    if (home.wide.length) failures.push(`home wide:[${home.wide}]`);
+    if (shop.wide.length) failures.push(`shop wide:[${shop.wide}]`);
+    if (battle.wide.length) failures.push(`battle wide:[${battle.wide}]`);
+    if (battle.clippedBelow > 0) failures.push(`battle clipped-below=${battle.clippedBelow}`);
+    if (!battleInfo.cvSize) failures.push("battle #cv missing");
+    else if (battleInfo.cvSize.h < 160) failures.push(`battle #cv height=${battleInfo.cvSize.h}<160`);
+    if (battleInfo.optBtnCount !== 4) failures.push(`battle #opts count=${battleInfo.optBtnCount}!=4`);
+    else if (battleInfo.visibleOptBtnCount !== 4)
+      failures.push(`battle #opts visible=${battleInfo.visibleOptBtnCount}/4`);
+    if (!battleInfo.pauseOnScreen) failures.push("battle pause off-screen");
+    if (scrollAssertApplies && battleInfo.scrollNeeded)
+      failures.push(`battle scroll needed (${isLandscape ? "landscape" : "short-portrait"})`);
+    if (errs.length) failures.push(`JSERR:${errs[0]}`);
+
+    const status = failures.length ? "FAIL" : "PASS";
+    if (failures.length) anyFail = true;
+
+    lines.push(
+      `[${status}] ${name} (${width}x${height}): start=${startVisible}` +
+        ` cv=${battleInfo.cvSize ? `${battleInfo.cvSize.w}x${battleInfo.cvSize.h}` : "none"}` +
+        ` opts=${battleInfo.visibleOptBtnCount}/${battleInfo.optBtnCount}` +
+        ` pause=${battleInfo.pauseOnScreen ? "on" : "OFF"}` +
+        (failures.length ? ` | FAILURES: ${failures.join("; ")}` : "")
+    );
+
+    await page.close();
+  }
+
+  await browser.close();
+  console.log(lines.join("\n"));
+  console.log(
+    `\n${lines.filter(l => l.startsWith("[PASS]")).length}/${VIEWPORTS.length} viewports passed`
+  );
+  process.exit(anyFail ? 1 : 0);
+}
+
+// ---------------------------------------------------------------------------
+// --battle WxH: single-shot battle-screen probe at one custom viewport.
+// ---------------------------------------------------------------------------
+async function runBattleSingleShot(spec) {
+  const m = /^(\d+)x(\d+)$/.exec(spec);
+  if (!m) {
+    console.error(`responsive-sweep: --battle expects WxH, e.g. --battle 390x844 (got "${spec}")`);
+    process.exit(1);
+  }
+  const width = Number(m[1]);
+  const height = Number(m[2]);
+
+  await assertServerReachable();
+  const browser = await chromium.launch({ channel: "msedge", headless: true });
+  const { page, errs } = await preparePage(browser, width, height);
+
+  await goToBattle(page);
+  const battle = await page.evaluate(probeScreen, ["battle", TOL]);
+  const battleInfo = await page.evaluate(probeBattle, TOL);
+
+  const isLandscape = height <= 500;
+  const isShortPortrait = height <= 620;
+  const scrollAssertApplies = isLandscape || isShortPortrait;
+
+  const failures = [];
+  if (battle.overflowX) failures.push("battle overflow-x");
+  if (battle.small.length) failures.push(`small-taps:[${battle.small}]`);
+  if (battle.wide.length) failures.push(`wide:[${battle.wide}]`);
+  if (battle.clippedBelow > 0) failures.push(`clipped-below=${battle.clippedBelow}`);
+  if (!battleInfo.cvSize) failures.push("#cv missing");
+  else if (battleInfo.cvSize.h < 160) failures.push(`#cv height=${battleInfo.cvSize.h}<160`);
+  if (battleInfo.optBtnCount !== 4) failures.push(`#opts count=${battleInfo.optBtnCount}!=4`);
+  else if (battleInfo.visibleOptBtnCount !== 4)
+    failures.push(`#opts visible=${battleInfo.visibleOptBtnCount}/4`);
+  if (!battleInfo.pauseOnScreen) failures.push("pause off-screen");
+  if (scrollAssertApplies && battleInfo.scrollNeeded)
+    failures.push(`scroll needed (${isLandscape ? "landscape" : "short-portrait"})`);
+  if (errs.length) failures.push(`JSERR:${errs[0]}`);
+
+  console.log(
+    `[${failures.length ? "FAIL" : "PASS"}] battle ${width}x${height}: ` +
+      `cv=${battleInfo.cvSize ? `${battleInfo.cvSize.w}x${battleInfo.cvSize.h}` : "none"}` +
+      ` opts=${battleInfo.visibleOptBtnCount}/${battleInfo.optBtnCount}` +
+      ` pause=${battleInfo.pauseOnScreen ? "on" : "OFF"}` +
+      (failures.length ? ` | FAILURES: ${failures.join("; ")}` : "")
+  );
+
+  await page.close();
+  await browser.close();
+  process.exit(failures.length ? 1 : 0);
+}
+
+// ---------------------------------------------------------------------------
+const battleArgIdx = process.argv.indexOf("--battle");
+if (battleArgIdx !== -1) {
+  await runBattleSingleShot(process.argv[battleArgIdx + 1]);
+} else {
+  await runFullSweep();
+}
