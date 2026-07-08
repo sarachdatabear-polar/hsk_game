@@ -19,7 +19,7 @@ import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem, dailyStock, seasonStatus, upgradePrice } from "./shop.js";
-import { streetPieces, streetProgress } from "./street.js";
+import { streetPieces, streetProgress, streetMetrics } from "./street.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
@@ -1887,11 +1887,21 @@ function renderStreet(){
 
   const level = levelForXp(xp);
   const pieces = streetPieces(level, shopState.owned, shopState.tiers || {});
-  drawStreetPads(sc, w, gy, h, pieces);
+  const m = streetMetrics(w, h);
+  const backGy = gy - h * (1 - m.backY);
+  drawStreetPads(sc, w, gy, h, pieces, m);
+  // Painter's order: back row (buildings) fully before front row (decos).
   for(const p of pieces){
+    if(p.kind !== "building") continue;
+    const x = p.slot * w, basis = m.unit * m.backScale;
+    drawContactShadow(sc, x, backGy, basis);
+    drawStreetBuilding(sc, p.id, x, backGy, basis);
+  }
+  for(const p of pieces){
+    if(p.kind === "building") continue;
     const x = p.slot * w;
-    if(p.kind==="building") drawStreetBuilding(sc, p.id, x, gy, h);
-    else drawTieredDeco(sc, p, x, gy, h);
+    drawContactShadow(sc, x, gy, m.unit);
+    drawTieredDeco(sc, p, x, gy, m.unit);
   }
 
   // mascot - maneki sprite or vector fallback, always far left on the ground
@@ -1951,16 +1961,32 @@ function paintStreetBase(c, w, h){
   c.strokeStyle = "#846043"; c.lineWidth = 2;
   c.beginPath(); c.moveTo(0, roadY); c.lineTo(w, roadY); c.stroke();
 }
-function drawStreetPads(c, w, gy, h, pieces){
+// Soft contact-shadow ellipse under an occupied piece, at its row line.
+function drawContactShadow(c, x, y, basis){
+  c.save();
+  c.fillStyle = "rgba(46,42,36,.12)";
+  c.beginPath(); c.ellipse(x, y + basis*.05, basis*.5, basis*.12, 0, 0, Math.PI*2); c.fill();
+  c.restore();
+}
+function drawStreetPads(c, w, gy, h, pieces, m){
   const occupied = new Set(pieces.map(p => p.slot.toFixed(2)));
-  const slots = [.18,.34,.5,.66,.82,.10,.26,.42,.58,.74];
-  for(const slot of slots){
-    if(occupied.has(slot.toFixed(2))) continue;
-    const x = slot*w, pw = h*.34;
+  const backGy = gy - h * (1 - m.backY);
+  const drawPad = (x, y, basis) => {
+    const pw = basis*.9, ph = basis*.16;
     c.fillStyle = "rgba(255,214,95,.08)";
-    c.beginPath(); c.ellipse(x, gy+1, pw, h*.055, 0, 0, Math.PI*2); c.fill();
+    c.beginPath(); c.ellipse(x, y+1, pw, ph, 0, 0, Math.PI*2); c.fill();
     c.strokeStyle = "rgba(245,197,24,.16)"; c.lineWidth = 1;
-    c.beginPath(); c.ellipse(x, gy+1, pw, h*.055, 0, 0, Math.PI*2); c.stroke();
+    c.beginPath(); c.ellipse(x, y+1, pw, ph, 0, 0, Math.PI*2); c.stroke();
+  };
+  const buildingSlots = [.18,.34,.5,.66,.82];
+  const decoSlots = [.10,.26,.42,.58,.74];
+  for(const slot of buildingSlots){
+    if(occupied.has(slot.toFixed(2))) continue;
+    drawPad(slot*w, backGy, m.unit * m.backScale);
+  }
+  for(const slot of decoSlots){
+    if(occupied.has(slot.toFixed(2))) continue;
+    drawPad(slot*w, gy, m.unit);
   }
 }
 // Each piece is a small, distinct dark-shape-with-gold/red-accent group,
@@ -2041,41 +2067,41 @@ function drawStreetBuilding(c, id, x, gy, h){
   c.shadowBlur = 6;
   switch(id){
     case "lantern-post":
-      c.fillStyle = "#2e1030"; roundRectOn(c,-3,-bh,6,bh,2); c.fill();
-      c.strokeStyle = "#f5c518"; c.lineWidth = 1.6;
+      c.fillStyle = "#846043"; roundRectOn(c,-3,-bh,6,bh,2); c.fill();
+      c.strokeStyle = "#F2BC57"; c.lineWidth = 1.6;
       c.beginPath(); c.moveTo(0,-bh); c.quadraticCurveTo(bw*.26,-bh*1.06,bw*.42,-bh*.86); c.stroke();
       c.fillStyle = "#c1272d"; c.beginPath(); c.ellipse(bw*.43,-bh*.74,bw*.18,bw*.23,0,0,Math.PI*2); c.fill();
-      c.fillStyle = "#f5c518"; c.fillRect(bw*.34,-bh*.98,bw*.18,3); c.fillRect(bw*.36,-bh*.52,bw*.14,3);
+      c.fillStyle = "#F2BC57"; c.fillRect(bw*.34,-bh*.98,bw*.18,3); c.fillRect(bw*.36,-bh*.52,bw*.14,3);
       break;
     case "coin-bank":
-      c.fillStyle = "#2e1030"; roundRectOn(c,-bw/2,-bh,bw,bh,4); c.fill();
-      c.fillStyle = "#8a2a24"; c.fillRect(-bw*.55,-bh,bw*1.1,bh*.16);
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0, -bh*.58, bw*.2, 0, Math.PI*2); c.fill();
-      c.fillStyle = "#8a2a24"; c.font = `700 ${Math.round(bw*.22)}px serif`; c.textAlign = "center";
+      c.fillStyle = "#846043"; roundRectOn(c,-bw/2,-bh,bw,bh,4); c.fill();
+      c.fillStyle = "#E69777"; c.fillRect(-bw*.55,-bh,bw*1.1,bh*.16);
+      c.fillStyle = "#F2BC57"; c.beginPath(); c.arc(0, -bh*.58, bw*.2, 0, Math.PI*2); c.fill();
+      c.fillStyle = "#2E2A24"; c.font = `700 ${Math.round(bw*.22)}px serif`; c.textAlign = "center";
       c.fillText("$", 0, -bh*.5);
-      c.fillStyle = "rgba(255,244,224,.72)"; c.fillRect(-bw*.34,-bh*.28,bw*.68,bh*.05);
+      c.fillStyle = "rgba(251,245,232,.72)"; c.fillRect(-bw*.34,-bh*.28,bw*.68,bh*.05);
       break;
     case "tailor":
-      c.fillStyle = "#2e1030"; roundRectOn(c,-bw/2, -bh*.85, bw, bh*.85, 4); c.fill();
+      c.fillStyle = "#846043"; roundRectOn(c,-bw/2, -bh*.85, bw, bh*.85, 4); c.fill();
       c.fillStyle = "#c1272d"; c.fillRect(-bw/2-5, -bh*.85-9, bw+10, 9);
-      c.fillStyle = "rgba(255,244,224,.18)"; c.fillRect(-bw*.42,-bh*.79,bw*.84,bh*.13);
-      c.fillStyle = "#f5c518";
+      c.fillStyle = "rgba(251,245,232,.18)"; c.fillRect(-bw*.42,-bh*.79,bw*.84,bh*.13);
+      c.fillStyle = "#F2BC57";
       c.fillRect(-bw*.18, -bh*.55, bw*.14, bh*.14); c.fillRect(bw*.04, -bh*.55, bw*.14, bh*.14);
       break;
     case "kitten-cafe":
-      c.fillStyle = "#2e1030"; roundRectOn(c,-bw/2, -bh*.75, bw, bh*.75, 4); c.fill();
-      c.fillStyle = "#8a2a24";
+      c.fillStyle = "#846043"; roundRectOn(c,-bw/2, -bh*.75, bw, bh*.75, 4); c.fill();
+      c.fillStyle = "#E69777";
       c.beginPath(); c.moveTo(-bw/2-6,-bh*.75); c.lineTo(0,-bh); c.lineTo(bw/2+6,-bh*.75); c.closePath(); c.fill();
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-bh*.4,bw*.16,0,Math.PI*2); c.fill();
-      c.fillStyle = "#1a0d0d"; c.beginPath(); c.arc(-bw*.05,-bh*.43,bw*.03,0,Math.PI*2); c.fill(); c.beginPath(); c.arc(bw*.05,-bh*.43,bw*.03,0,Math.PI*2); c.fill();
+      c.fillStyle = "#F2BC57"; c.beginPath(); c.arc(0,-bh*.4,bw*.16,0,Math.PI*2); c.fill();
+      c.fillStyle = "#2E2A24"; c.beginPath(); c.arc(-bw*.05,-bh*.43,bw*.03,0,Math.PI*2); c.fill(); c.beginPath(); c.arc(bw*.05,-bh*.43,bw*.03,0,Math.PI*2); c.fill();
       break;
     case "emperor-gate":
       c.fillStyle = "#c1272d";
       c.fillRect(-bw*.7, -bh*1.15, bw*.16, bh*1.15);
       c.fillRect(bw*.54, -bh*1.15, bw*.16, bh*1.15);
       c.fillRect(-bw*.7, -bh*1.15, bw*1.4, bh*.14);
-      c.fillStyle = "#8a2a24"; c.fillRect(-bw*.82,-bh*1.28,bw*1.64,bh*.13);
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-bh*1.08,bw*.12,0,Math.PI*2); c.fill();
+      c.fillStyle = "#E69777"; c.fillRect(-bw*.82,-bh*1.28,bw*1.64,bh*.13);
+      c.fillStyle = "#F2BC57"; c.beginPath(); c.arc(0,-bh*1.08,bw*.12,0,Math.PI*2); c.fill();
       break;
   }
   c.restore();
@@ -2089,13 +2115,6 @@ function drawStarMark(c, x, y, r){
 }
 function drawTieredDeco(c, p, x, gy, h){
   const tier = p.tier || 1;
-  if(tier >= 3){
-    const dx = h * .26;
-    c.save(); c.globalAlpha = .8;
-    drawStreetDeco(c, p.id, x - dx, gy, h * .68);
-    drawStreetDeco(c, p.id, x + dx, gy, h * .68);
-    c.restore();
-  }
   if(tier >= 2){
     c.save();
     c.shadowColor = "rgba(255,214,95,.55)"; c.shadowBlur = 12;
@@ -2105,6 +2124,43 @@ function drawTieredDeco(c, p, x, gy, h){
   }else{
     drawStreetDeco(c, p.id, x, gy, h);
   }
+  if(tier >= 3) drawCrownAccent(c, p.id, x, gy, h);
+}
+// Top of each deco shape in units of s (= basis*.32), from drawStreetDeco
+// geometry; used to plant the tier-3 crown at the piece's actual top.
+const DECO_TOPS = {
+  "red-lantern": 1.6, "noodle-stall": .84, "tea-sign": 1.3, "foo-dog": .8,
+  "golden-arch": 1.4, "mahjong-table": .72, "koi-pond": .39, "drum-tower": 1.5,
+  "bubble-tea": 1.34, "paper-umbrella": 1.4, "goldfish-banner": 1.4,
+  "neon-cat-sign": 1.1, "shaved-ice-cart": .94, "mooncake-stall": .78,
+  "firecracker-arch": .82,
+};
+// Tier-3 crown: a small gold pennant on a wood pole planted above the piece's
+// top-left, plus three tiny star sparkles arced above. Deterministic (no
+// randomness) so it renders identically every frame.
+function drawCrownAccent(c, id, x, gy, basis){
+  c.save(); c.translate(x, gy);
+  // piece top: shape top in s-units, scaled by the tier-2 1.15x enlargement
+  const top = -(DECO_TOPS[id] || 1) * basis * .32 * 1.15;
+  const poleX = -basis * .3;
+  const poleBase = top - basis * .12;
+  const poleTip = poleBase - basis * .36;
+  c.strokeStyle = "#846043"; c.lineWidth = Math.max(1.4, basis * .045); c.lineCap = "round";
+  c.beginPath(); c.moveTo(poleX, poleBase); c.lineTo(poleX, poleTip); c.stroke();
+  c.fillStyle = "#F2BC57";
+  c.beginPath();
+  c.moveTo(poleX, poleTip);
+  c.lineTo(poleX + basis*.18, poleTip + basis*.07);
+  c.lineTo(poleX, poleTip + basis*.14);
+  c.closePath(); c.fill();
+  c.fillStyle = "#FFE08A";
+  const sparkles = [
+    [poleX + basis*.42, poleTip - basis*.06, basis*.06],
+    [poleX + basis*.78, poleTip + basis*.04, basis*.055],
+    [poleX + basis*.58, poleTip - basis*.26, basis*.05],
+  ];
+  for(const [sx, sy, r] of sparkles) drawStarMark(c, sx, sy, r);
+  c.restore();
 }
 function drawStreetDeco(c, id, x, gy, h){
   const s = h*.32;
@@ -2115,31 +2171,31 @@ function drawStreetDeco(c, id, x, gy, h){
   }
   switch(id){
     case "red-lantern":
-      c.strokeStyle = "#8a2a24"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(0,-s*1.6); c.lineTo(0,-s*1.1); c.stroke();
+      c.strokeStyle = "#846043"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(0,-s*1.6); c.lineTo(0,-s*1.1); c.stroke();
       c.fillStyle = "#c1272d"; c.beginPath(); c.ellipse(0,-s*.8,s*.32,s*.42,0,0,Math.PI*2); c.fill();
-      c.fillStyle = "#f5c518"; c.fillRect(-2,-s*.38,4,s*.12);
+      c.fillStyle = "#F2BC57"; c.fillRect(-2,-s*.38,4,s*.12);
       break;
     case "noodle-stall":
-      c.fillStyle = "#5a2c22"; roundRectOn(c,-s*.48,-s*.62,s*.96,s*.62,3); c.fill();
+      c.fillStyle = "#846043"; roundRectOn(c,-s*.48,-s*.62,s*.96,s*.62,3); c.fill();
       c.fillStyle = "#c1272d"; c.fillRect(-s*.56,-s*.84,s*1.12,s*.18);
-      c.fillStyle = "#f5c518"; c.fillRect(-s*.56,-s*.84,s*.18,s*.18); c.fillRect(-s*.1,-s*.84,s*.18,s*.18); c.fillRect(s*.36,-s*.84,s*.2,s*.18);
+      c.fillStyle = "#F2BC57"; c.fillRect(-s*.56,-s*.84,s*.18,s*.18); c.fillRect(-s*.1,-s*.84,s*.18,s*.18); c.fillRect(s*.36,-s*.84,s*.2,s*.18);
       break;
     case "tea-sign":
-      c.strokeStyle = "#f5c518"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(0,-s*1.3); c.lineTo(0,-s*.9); c.stroke();
-      c.fillStyle = "#3a1a1a"; roundRectOn(c,-s*.38,-s*1.3,s*.76,s*.32,3); c.fill();
-      c.fillStyle = "#f5c518"; c.font = `700 ${Math.round(s*.22)}px serif`; c.textAlign = "center";
+      c.strokeStyle = "#F2BC57"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(0,-s*1.3); c.lineTo(0,-s*.9); c.stroke();
+      c.fillStyle = "#846043"; roundRectOn(c,-s*.38,-s*1.3,s*.76,s*.32,3); c.fill();
+      c.fillStyle = "#F2BC57"; c.font = `700 ${Math.round(s*.22)}px serif`; c.textAlign = "center";
       c.fillText("tea", 0, -s*1.06);
       break;
     case "foo-dog":
-      c.fillStyle = "#2e1030"; c.beginPath(); c.ellipse(0,-s*.3,s*.32,s*.4,0,0,Math.PI*2); c.fill();
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-s*.62,s*.18,0,Math.PI*2); c.fill();
-      c.fillStyle = "#1a0d0d"; c.beginPath(); c.arc(-s*.05,-s*.65,s*.025,0,Math.PI*2); c.fill(); c.beginPath(); c.arc(s*.05,-s*.65,s*.025,0,Math.PI*2); c.fill();
+      c.fillStyle = "#846043"; c.beginPath(); c.ellipse(0,-s*.3,s*.32,s*.4,0,0,Math.PI*2); c.fill();
+      c.fillStyle = "#F2BC57"; c.beginPath(); c.arc(0,-s*.62,s*.18,0,Math.PI*2); c.fill();
+      c.fillStyle = "#2E2A24"; c.beginPath(); c.arc(-s*.05,-s*.65,s*.025,0,Math.PI*2); c.fill(); c.beginPath(); c.arc(s*.05,-s*.65,s*.025,0,Math.PI*2); c.fill();
       break;
     case "golden-arch":
-      c.strokeStyle = "#f5c518"; c.lineWidth = 3;
+      c.strokeStyle = "#F2BC57"; c.lineWidth = 3;
       c.beginPath(); c.arc(0,-s*.5, s*.9, Math.PI, 0); c.stroke();
       c.beginPath(); c.moveTo(-s*.9,-s*.5); c.lineTo(-s*.9,0); c.moveTo(s*.9,-s*.5); c.lineTo(s*.9,0); c.stroke();
-      c.fillStyle = "rgba(255,244,224,.35)"; c.beginPath(); c.arc(0,-s*.93,s*.13,0,Math.PI*2); c.fill();
+      c.fillStyle = "rgba(251,245,232,.35)"; c.beginPath(); c.arc(0,-s*.93,s*.13,0,Math.PI*2); c.fill();
       break;
     case "mahjong-table":
       c.fillStyle = "#2f7d4f"; c.fillRect(-s*.5,-s*.55,s,s*.16);
@@ -2157,11 +2213,11 @@ function drawStreetDeco(c, id, x, gy, h){
       c.fillStyle = "#8a5a2c"; c.fillRect(-s*.34,-s*1.15,s*.68,s*1.15);
       c.fillStyle = "#c1272d"; c.beginPath(); c.moveTo(-s*.48,-s*1.15); c.lineTo(0,-s*1.5); c.lineTo(s*.48,-s*1.15); c.closePath(); c.fill();
       c.beginPath(); c.ellipse(0,-s*.62,s*.2,s*.24,0,0,Math.PI*2); c.fill();
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-s*.62,s*.07,0,Math.PI*2); c.fill();
+      c.fillStyle = "#F2BC57"; c.beginPath(); c.arc(0,-s*.62,s*.07,0,Math.PI*2); c.fill();
       break;
     case "bubble-tea":
       c.fillStyle = "#8a5a2c"; c.fillRect(-s*.4,-s*.7,s*.8,s*.7);
-      c.fillStyle = "#f5c518"; c.fillRect(-s*.48,-s*.86,s*.96,s*.16);
+      c.fillStyle = "#F2BC57"; c.fillRect(-s*.48,-s*.86,s*.96,s*.16);
       c.fillStyle = "#e8a9c9"; c.fillRect(-s*.12,-s*1.2,s*.24,s*.3);
       c.strokeStyle = "#5a3a1c"; c.lineWidth = 2; c.beginPath(); c.moveTo(0,-s*1.2); c.lineTo(s*.06,-s*1.34); c.stroke();
       break;
@@ -2174,12 +2230,12 @@ function drawStreetDeco(c, id, x, gy, h){
     case "goldfish-banner":
       c.strokeStyle = "#8a5a2c"; c.lineWidth = 2; c.beginPath(); c.moveTo(0,0); c.lineTo(0,-s*1.4); c.stroke();
       c.fillStyle = "#e8734a"; c.beginPath(); c.ellipse(s*.2,-s*1.1,s*.3,s*.12,0,0,Math.PI*2); c.fill();
-      c.fillStyle = "#f5c518"; c.beginPath(); c.moveTo(s*.46,-s*1.1); c.lineTo(s*.62,-s*1.2); c.lineTo(s*.62,-s*1.0); c.closePath(); c.fill();
+      c.fillStyle = "#F2BC57"; c.beginPath(); c.moveTo(s*.46,-s*1.1); c.lineTo(s*.62,-s*1.2); c.lineTo(s*.62,-s*1.0); c.closePath(); c.fill();
       break;
     case "neon-cat-sign":
-      c.fillStyle = "#23233a"; c.fillRect(-s*.36,-s*1.1,s*.72,s*.8);
+      c.fillStyle = "#846043"; c.fillRect(-s*.36,-s*1.1,s*.72,s*.8);
       c.strokeStyle = "#7fd7ff"; c.lineWidth = 2; c.strokeRect(-s*.36,-s*1.1,s*.72,s*.8);
-      c.strokeStyle = "#f5c518"; c.beginPath(); c.arc(0,-s*.72,s*.18,0,Math.PI*2); c.stroke();
+      c.strokeStyle = "#F2BC57"; c.beginPath(); c.arc(0,-s*.72,s*.18,0,Math.PI*2); c.stroke();
       c.beginPath(); c.moveTo(-s*.14,-s*.86); c.lineTo(-s*.06,-s*.98); c.moveTo(s*.14,-s*.86); c.lineTo(s*.06,-s*.98); c.stroke();
       break;
     case "shaved-ice-cart":
@@ -2193,7 +2249,7 @@ function drawStreetDeco(c, id, x, gy, h){
     case "mooncake-stall":
       c.fillStyle = "#8a5a2c"; c.fillRect(-s*.42,-s*.6,s*.84,s*.6);
       c.fillStyle = "#c1272d"; c.fillRect(-s*.5,-s*.78,s,s*.18);
-      c.fillStyle = "#f5c518";
+      c.fillStyle = "#F2BC57";
       for(const tx of [-s*.26,-s*.02,s*.2]){ c.beginPath(); c.arc(tx+s*.06,-s*.42,s*.09,0,Math.PI*2); c.fill(); }
       break;
     case "firecracker-arch":
@@ -2201,7 +2257,7 @@ function drawStreetDeco(c, id, x, gy, h){
       c.beginPath(); c.arc(0,-s*.2,s*.62,Math.PI,0); c.stroke();
       c.fillStyle = "#c1272d";
       for(const [ax,ay] of [[-s*.62,-s*.2],[s*.62,-s*.2],[-s*.5,-s*.62],[s*.5,-s*.62],[0,-s*.82]]) c.fillRect(ax-2,ay,4,s*.18);
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-s*.82,s*.06,0,Math.PI*2); c.fill();
+      c.fillStyle = "#F2BC57"; c.beginPath(); c.arc(0,-s*.82,s*.06,0,Math.PI*2); c.fill();
       break;
   }
   c.restore();
