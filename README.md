@@ -38,3 +38,9 @@ npm run apk:release  # build a signed release APK
 ```
 
 See `docs/build/ANDROID_BUILD.md` for full signing and release instructions.
+
+## Data credits
+
+- Some example sentences from [Tatoeba](https://tatoeba.org) (CC-BY 2.0 FR),
+  filtered and adapted; the rest AI-generated and curated in
+  `data/cloze-sentences.csv`.

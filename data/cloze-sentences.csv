@@ -1,0 +1,496 @@
+hanzi,sentence,en,th,d1,d2,d3,source
+苹果,我想吃苹果。,I want to eat an apple.,ฉันอยากกินแอปเปิ้ล,老师,商店,水,ai
+商店,他去商店买东西。,He goes to the store to buy things.,เขาไปที่ร้านค้าเพื่อซื้อของ,苹果,老师,水,ai
+老师,我们的老师很好。,Our teacher is very good.,ครูของพวกเราดีมาก,去,想,说,ai
+喝,你想喝什么？,What do you want to drink?,คุณอยากดื่มอะไร,水,大,家,ai
+朋友,他是我的好朋友。,He is my good friend.,เขาเป็นเพื่อนที่ดีของฉัน,来,坐,写,ai
+你,你有车吗？,Do you have a car?,คุณมีรถไหม,很,太,了,tatoeba
+我,我是中国人。,I am Chinese.,ฉันเป็นคนจีน,很,太,吗,tatoeba
+了,昨天下雨了。,It rained yesterday.,เมื่อวานฝนตก,水,书,菜,tatoeba
+的,这是我的书。,This is my book.,นี่คือหนังสือของฉัน,很,去,吃,tatoeba
+很,今天很热。,It is very hot today.,วันนี้ร้อนมาก,书,去,猫,tatoeba
+去,我去学校。,I go to school.,ฉันไปโรงเรียน,书,水,猫,tatoeba
+好,天气很好。,The weather is nice.,อากาศดีมาก,书,去,买,tatoeba
+是,她是医生。,She is a doctor.,เธอเป็นหมอ,很,了,吗,tatoeba
+吗,你是学生吗？,Are you a student?,คุณเป็นนักเรียนใช่ไหม,很,去,大,ai
+在,他在医院。,He is at the hospital.,เขาอยู่ที่โรงพยาบาล,很,了,吗,tatoeba
+他,他是医生。,He is a doctor.,เขาเป็นหมอ,很,太,吗,tatoeba
+下午,我们下午去学校。,We go to school in the afternoon.,ตอนบ่ายพวกเราไปโรงเรียน,了,吗,呢,ai
+什么,这是什么？,What is this?,นี่คืออะไร,很,去,买,tatoeba
+不,我不喜欢猫。,I don't like cats.,ฉันไม่ชอบแมว,了,吗,呢,ai
+想,我想看电影。,I want to watch a movie.,ฉันอยากดูหนัง,很,太,了,ai
+买,他在买苹果。,He is buying apples.,เขากำลังซื้อแอปเปิ้ล,书,水,猫,tatoeba
+高兴,我很高兴。,I am very happy.,ฉันดีใจมาก,书,去,买,tatoeba
+书,桌子上有书。,There is a book on the table.,บนโต๊ะมีหนังสือ,去,坐,买,ai
+医院,医院在哪里？,Where is the hospital?,โรงพยาบาลอยู่ที่ไหน,去,了,吗,ai
+水果,我喜欢水果。,I like fruit.,ฉันชอบผลไม้,很,太,都,tatoeba
+多,他多大了？,How old is he?,เขาอายุเท่าไหร่แล้ว,书,坐,买,tatoeba
+她,她认识我。,She knows me.,เธอรู้จักฉัน,很,太,了,tatoeba
+家,我爱这个家。,I love this home.,ฉันรักบ้านนี้,去,坐,买,ai
+会,你会来吗？,Will you come?,คุณจะมาไหม,书,水,猫,tatoeba
+吃,我吃米饭。,I eat rice.,ฉันกินข้าว,书,水,猫,ai
+学校,学校在北京。,The school is in Beijing.,โรงเรียนอยู่ที่ปักกิ่ง,去,了,吗,ai
+水,我喝了水。,I drank the water.,ฉันดื่มน้ำแล้ว,去,坐,买,tatoeba
+电视,你有电视吗？,Do you have a TV?,คุณมีโทรทัศน์ไหม,坐,买,喝,tatoeba
+认识,我认识他。,I know him.,ฉันรู้จักเขา,书,水,家,tatoeba
+这,这是猫吗？,Is this a cat?,นี่คือแมวใช่ไหม,去,了,很,tatoeba
+叫,你叫什么？,What is your name?,คุณชื่ออะไร,书,水,家,tatoeba
+喜欢,我喜欢猫。,I like cats.,ฉันชอบแมว,书,水,家,tatoeba
+本,这是本汉语书。,This is a Chinese book.,นี่คือหนังสือภาษาจีนเล่มหนึ่ง,很,去,吃,tatoeba
+谢谢,很好，谢谢你。,"Very good, thank you.",ดีมาก ขอบคุณ,水,家,猫,ai
+坐,坐出租车吧。,Let's take a taxi.,นั่งแท็กซี่กันเถอะ,书,水,猫,tatoeba
+看,他们在看。,They are watching.,พวกเขากำลังดูอยู่,书,水,猫,tatoeba
+一些,你有一些书。,You have some books.,คุณมีหนังสืออยู่บ้าง,很,去,吃,tatoeba
+先生,先生，谢谢你。,"Thank you, sir.",ท่านครับ ขอบคุณ,吗,了,呢,ai
+名字,你叫什么名字？,What is your name?,คุณชื่ออะไร,去,坐,买,tatoeba
+飞机,我看见飞机。,I see an airplane.,ฉันเห็นเครื่องบิน,去,坐,买,ai
+昨天,昨天很热。,It was hot yesterday.,เมื่อวานร้อนมาก,去,了,吗,ai
+谁,那人是谁？,Who is that person?,คนนั้นคือใคร,很,去,了,tatoeba
+怎么样,天气怎么样？,How is the weather?,อากาศเป็นอย่างไรบ้าง,很,去,吃,tatoeba
+李,那是小李的书。,That is Xiao Li's book.,นั่นคือหนังสือของเสี่ยวหลี่,去,坐,买,tatoeba
+哪里,你住哪里？,Where do you live?,คุณอาศัยอยู่ที่ไหน,很,书,水,tatoeba
+汉语,我学习汉语。,I study Chinese.,ฉันเรียนภาษาจีน,很,太,都,tatoeba
+北京,他在北京工作。,He works in Beijing.,เขาทำงานที่ปักกิ่ง,去,了,吗,tatoeba
+同学,我们是同学。,We are classmates.,พวกเราเป็นเพื่อนร่วมชั้น,去,坐,买,tatoeba
+个,我是个学生。,I am a student.,ฉันเป็นนักเรียนคนหนึ่ง,很,去,吃,tatoeba
+来,我们来了。,We have come.,พวกเรามาแล้ว,书,水,猫,tatoeba
+爸爸,爸爸在哪里？,Where is dad?,พ่ออยู่ที่ไหน,去,了,吗,tatoeba
+下,猫在椅子下。,The cat is under the chair.,แมวอยู่ใต้เก้าอี้,去,吗,水,ai
+人,这个人很好。,This person is very nice.,คนนี้ดีมาก,去,坐,买,ai
+妈妈,妈妈喜欢猫。,Mom likes cats.,แม่ชอบแมว,去,了,吗,ai
+我们,我们是学生。,We are students.,พวกเราเป็นนักเรียน,很,太,了,ai
+怎么,你怎么了？,What is wrong with you?,คุณเป็นอะไรไป,很,书,水,tatoeba
+月,这个月很热。,This month is very hot.,เดือนนี้ร้อนมาก,去,坐,买,ai
+医生,我是医生。,I am a doctor.,ฉันเป็นหมอ,去,坐,买,tatoeba
+岁,他三岁了。,He is three years old.,เขาอายุสามขวบแล้ว,去,坐,买,tatoeba
+哪儿,你去哪儿？,Where are you going?,คุณจะไปที่ไหน,很,书,水,tatoeba
+小姐,小姐，请坐。,"Miss, please sit.",คุณผู้หญิง เชิญนั่ง,吗,了,呢,ai
+工作,他在工作。,He is working.,เขากำลังทำงาน,书,水,猫,tatoeba
+椅子,我买了椅子。,I bought a chair.,ฉันซื้อเก้าอี้แล้ว,去,坐,喝,ai
+爱,我不爱你。,I don't love you.,ฉันไม่รักคุณ,书,水,家,tatoeba
+电话,电话是多少？,What is the phone number?,เบอร์โทรศัพท์คืออะไร,去,坐,吗,ai
+中国,我喜欢中国。,I like China.,ฉันชอบประเทศจีน,很,太,都,tatoeba
+天气,北京的天气很好。,Beijing's weather is nice.,อากาศที่ปักกิ่งดีมาก,去,坐,吗,ai
+没,我们没水。,We have no water.,พวกเราไม่มีน้ำ,很,太,都,tatoeba
+王,王先生是医生。,Mr. Wang is a doctor.,คุณหวังเป็นหมอ,去,了,吗,ai
+请,请坐这里。,Please sit here.,เชิญนั่งที่นี่,吗,了,呢,ai
+那个,那个人是谁？,Who is that person?,คนนั้นคือใคร,很,去,了,tatoeba
+和,我和他是朋友。,He and I are friends.,ฉันกับเขาเป็นเพื่อนกัน,很,去,吃,tatoeba
+这个,这个多少？,How much is this?,อันนี้เท่าไหร่,去,吃,坐,tatoeba
+年,这些年很好。,These years have been good.,หลายปีมานี้ดีมาก,去,坐,买,ai
+住,他住这儿。,He lives here.,เขาอาศัยอยู่ที่นี่,了,吗,吧,ai
+写,你们在写什么？,What are you writing?,พวกคุณกำลังเขียนอะไร,书,水,猫,tatoeba
+出租车,出租车在哪儿？,Where is the taxi?,แท็กซี่อยู่ที่ไหน,买,吃,了,ai
+听,你们在听吗？,Are you listening?,พวกคุณกำลังฟังอยู่ไหม,书,水,猫,tatoeba
+喂,喂，你是谁？,"Hello, who are you?",ฮัลโหล คุณเป็นใคร,吗,了,呢,ai
+女儿,她是我女儿。,She is my daughter.,เธอเป็นลูกสาวของฉัน,去,坐,买,tatoeba
+学习,他学习汉语。,He studies Chinese.,เขาเรียนภาษาจีน,书,水,猫,tatoeba
+学生,你是学生。,You are a student.,คุณเป็นนักเรียน,去,坐,买,tatoeba
+打,她打了他。,She hit him.,เธอตีเขา,书,水,猫,tatoeba
+现在,我们现在去吧。,Let's go now.,พวกเราไปกันตอนนี้เถอะ,很,了,呢,tatoeba
+说,你说什么？,What did you say?,คุณพูดว่าอะไร,书,水,猫,tatoeba
+一,零在一前面。,Zero comes before one.,ศูนย์อยู่หน้าหนึ่ง,去,吗,坐,tatoeba
+再见,老师，再见。,"Goodbye, teacher.",ลาก่อนครับคุณครู,书,水,猫,ai
+大,这个太大了。,This one is too big.,อันนี้ใหญ่เกินไป,书,去,买,ai
+太,你太漂亮了！,You are so beautiful!,คุณสวยเหลือเกิน,书,去,买,tatoeba
+对不起,对不起，我不去。,"Sorry, I'm not going.",ขอโทษ ฉันไม่ไป,吗,了,呢,ai
+有,他有电脑。,He has a computer.,เขามีคอมพิวเตอร์,书,水,菜,ai
+热,这里很热。,It is very hot here.,ที่นี่ร้อนมาก,书,去,买,ai
+电影,我去看电影。,I'm going to watch a movie.,ฉันไปดูหนัง,坐,买,喝,tatoeba
+都,我们都喜欢她。,We all like her.,พวกเราทุกคนชอบเธอ,了,吗,呢,tatoeba
+饭店,我在饭店吃菜。,I eat at the restaurant.,ฉันกินอาหารที่ร้านอาหาร,书,水,猫,ai
+今天,今天下雨。,It is raining today.,วันนี้ฝนตก,去,了,吗,tatoeba
+呢,你妈妈呢？,Where is your mom?,แล้วแม่ของคุณล่ะ,很,书,水,tatoeba
+块,这个几块？,How many yuan is this?,อันนี้กี่หยวน,很,去,吃,tatoeba
+小,这个不小。,This one is not small.,อันนี้ไม่เล็ก,书,水,菜,ai
+上午,你明天上午吃什么？,What will you eat tomorrow morning?,พรุ่งนี้ตอนเช้าคุณจะกินอะไร,书,水,猫,tatoeba
+中午,中午吃米饭。,Eat rice at noon.,ตอนเที่ยงกินข้าว,很,太,吗,ai
+做,你在做什么？,What are you doing?,คุณกำลังทำอะไร,猫,书,钱,tatoeba
+前面,猫在你前面。,The cat is in front of you.,แมวอยู่ข้างหน้าคุณ,很,太,漂亮,ai
+多少,这个杯子多少钱？,How much is this cup?,ถ้วยนี้ราคาเท่าไหร่,很,吃,漂亮,ai
+客气,你太客气了。,You are too polite.,คุณเกรงใจเกินไป,猫,书,钱,ai
+时候,什么时候回来？,When are you coming back?,จะกลับมาเมื่อไหร่,很,太,吗,ai
+杯子,这是谁的杯子？,Whose cup is this?,นี่ถ้วยของใคร,吃,很,睡觉,tatoeba
+桌子,书在桌子上。,The book is on the table.,หนังสืออยู่บนโต๊ะ,吃,很,漂亮,tatoeba
+漂亮,你女儿漂亮吗？,Is your daughter pretty?,ลูกสาวคุณสวยไหม,猫,书,钱,ai
+睡觉,她在睡觉。,She is sleeping.,เธอกำลังนอนหลับ,冷,热,大,tatoeba
+能,你能看吗？,Can you see?,คุณมองเห็นไหม,很,猫,书,tatoeba
+菜,这是中国菜。,This is Chinese food.,นี่คืออาหารจีน,吃,喝,很,tatoeba
+衣服,我买衣服了。,I bought clothes.,ฉันซื้อเสื้อผ้าแล้ว,吃,喝,很,ai
+这儿,我住在这儿。,I live here.,ฉันอาศัยอยู่ที่นี่,吃,很,漂亮,tatoeba
+猫,我没有猫。,I don't have a cat.,ฉันไม่มีแมว,冷,大,漂亮,tatoeba
+米饭,我在吃米饭。,I am eating rice.,ฉันกำลังกินข้าว,很,去,冷,tatoeba
+你们,你们去哪里？,Where are you going?,พวกคุณจะไปไหน,很,太,吗,tatoeba
+点,他说九点了。,He said it's nine o'clock.,เขาบอกว่าเก้าโมงแล้ว,很,猫,吃,tatoeba
+下雨,明天会下雨。,It will rain tomorrow.,พรุ่งนี้ฝนจะตก,猫,书,很,ai
+冷,今天很冷。,It's cold today.,วันนี้หนาวมาก,猫,书,吃,tatoeba
+后面,猫在桌子后面。,The cat is behind the table.,แมวอยู่หลังโต๊ะ,很,太,漂亮,ai
+字,这个字怎么写？,How do you write this character?,ตัวอักษรนี้เขียนยังไง,吃,很,去,ai
+少,这里的人少。,There are few people here.,ที่นี่คนน้อย,猫,书,吗,ai
+开,火车开了吗？,Has the train left?,รถไฟออกแล้วหรือยัง,猫,书,很,ai
+明天,他明天会来。,He will come tomorrow.,พรุ่งนี้เขาจะมา,猫,书,吗,tatoeba
+星期六,星期日的前面是星期六。,Before Sunday is Saturday.,ก่อนวันอาทิตย์คือวันเสาร์,吃,很,去,ai
+没关系,没关系，谢谢。,"It's okay, thanks.",ไม่เป็นไร ขอบคุณ,吃,很,去,ai
+没有,他没有钱。,He has no money.,เขาไม่มีเงิน,很,太,吗,tatoeba
+茶,这是我的茶。,This is my tea.,นี่คือชาของฉัน,吃,很,漂亮,ai
+饭,饭在桌子上。,The food is on the table.,อาหารอยู่บนโต๊ะ,吃,很,吗,ai
+饭馆儿,这个饭馆儿不大。,This restaurant is not big.,ร้านอาหารนี้ไม่ใหญ่,吃,去,漂亮,ai
+上,水在桌子上吗？,Is the water on the table?,น้ำอยู่บนโต๊ะไหม,很,漂亮,太,ai
+狗,那是我的狗。,That is my dog.,นั่นคือหมาของฉัน,吃,很,睡觉,ai
+里,杯子里有水。,There is water in the cup.,ในถ้วยมีน้ำ,吃,很,漂亮,tatoeba
+钱,这些书多少钱？,How much are these books?,หนังสือพวกนี้ราคาเท่าไหร่,吃,很,去,ai
+东西,她去买东西。,She goes shopping.,เธอไปซื้อของ,很,漂亮,吗,tatoeba
+儿子,我认识你儿子。,I know your son.,ฉันรู้จักลูกชายของคุณ,吃,很,去,tatoeba
+分钟,九分钟后见。,See you in nine minutes.,เจอกันในอีกเก้านาที,猫,书,很,ai
+后,九点后回来。,Come back after nine.,กลับมาหลังเก้าโมง,很,猫,吃,ai
+回,我想回学校。,I want to go back to school.,ฉันอยากกลับไปโรงเรียน,猫,书,很,ai
+回来,他回来了。,He came back.,เขากลับมาแล้ว,猫,书,吗,tatoeba
+天,今年有多少天？,How many days are in this year?,ปีนี้มีกี่วัน,吃,很,去,ai
+火车站,这是火车站吗？,Is this the train station?,นี่คือสถานีรถไฟใช่ไหม,吃,很,漂亮,tatoeba
+点儿,我想喝点儿茶。,I want to drink a little tea.,ฉันอยากดื่มชาสักหน่อย,猫,书,很,ai
+电脑,这是我的电脑。,This is my computer.,นี่คือคอมพิวเตอร์ของฉัน,吃,很,睡觉,tatoeba
+看见,我今天看见她了。,I saw her today.,วันนี้ฉันเห็นเธอ,猫,书,很,tatoeba
+读,请读这个字。,Please read this character.,กรุณาอ่านตัวอักษรนี้,猫,很,漂亮,ai
+车,你有车吗？,Do you have a car?,คุณมีรถไหม,很,太,冷,tatoeba
+这么,这么多东西！,So many things!,ของเยอะขนาดนี้,猫,吃,吗,ai
+这些,这些是我的书。,These are my books.,พวกนี้คือหนังสือของฉัน,吃,很,吗,tatoeba
+那儿,那儿没有猫。,There is no cat there.,ที่นั่นไม่มีแมว,吃,很,吗,tatoeba
+雨,今天雨太大。,The rain is too heavy today.,วันนี้ฝนตกหนักเกินไป,吃,去,吗,ai
+关系,我们的关系很好。,Our relationship is good.,ความสัมพันธ์ของเราดี,吃,去,漂亮,ai
+哪,你爸爸在哪？,Where is your dad?,พ่อของคุณอยู่ไหน,很,漂亮,太,tatoeba
+一点儿,我买一点儿苹果。,I bought some apples.,ฉันซื้อแอปเปิ้ลนิดหน่อย,吃,很,去,tatoeba
+三,二的后面是三。,After two comes three.,หลังจากสองคือสาม,吃,很,漂亮,ai
+下面,钱在书下面。,The money is under the book.,เงินอยู่ใต้หนังสือ,很,太,漂亮,ai
+书店,我去书店买书。,I go to the bookstore to buy books.,ฉันไปร้านหนังสือเพื่อซื้อหนังสือ,吃,很,漂亮,ai
+今年,今年天气很好。,The weather is good this year.,ปีนี้อากาศดี,吃,去,吗,ai
+他们,他们在看。,They are watching.,พวกเขากำลังดู,吃,很,吗,tatoeba
+几,你几岁了？,How old are you?,คุณอายุเท่าไหร่,很,吃,漂亮,tatoeba
+前,睡觉前看猫。,Look at the cat before sleeping.,ดูแมวก่อนนอน,书,很,吗,ai
+哪个,哪个是我的？,Which one is mine?,อันไหนของฉัน,吃,很,吗,tatoeba
+块儿,那块儿有猫。,There is a cat over there.,ตรงนั้นมีแมว,吃,很,漂亮,ai
+张,我们有多少张椅子？,How many chairs do we have?,เรามีเก้าอี้กี่ตัว,吃,很,漂亮,tatoeba
+日,今天几月几日？,What is the date today?,วันนี้วันที่เท่าไหร่,吃,很,漂亮,ai
+星期,今天星期几？,What day is it today?,วันนี้วันอะไร,吃,很,漂亮,tatoeba
+星期五,星期四的后面是星期五。,After Thursday is Friday.,หลังวันพฤหัสบดีคือวันศุกร์,吃,很,去,ai
+电影院,昨天我去电影院。,I went to the cinema yesterday.,เมื่อวานฉันไปโรงหนัง,很,漂亮,吗,tatoeba
+见,谁想见我？,Who wants to see me?,ใครอยากเจอฉัน,猫,很,漂亮,tatoeba
+说话,她不说话。,She doesn't talk.,เธอไม่พูด,猫,书,吗,tatoeba
+这里,他在这里。,He is here.,เขาอยู่ที่นี่,很,漂亮,太,tatoeba
+那,那是什么？,What is that?,นั่นคืออะไร,很,漂亮,吗,tatoeba
+零,零在一前面。,Zero comes before one.,ศูนย์อยู่ก่อนหนึ่ง,吃,很,吗,tatoeba
+回去,我不回去。,I won't go back.,ฉันจะไม่กลับไป,猫,书,吗,tatoeba
+七,这个星期有七天。,This week has seven days.,สัปดาห์นี้มีเจ็ดวัน,吃,很,漂亮,ai
+九,九在十的前面。,Nine comes before ten.,เก้าอยู่หน้าสิบ,吃,很,漂亮,ai
+二,二月很冷。,February is cold.,เดือนกุมภาพันธ์อากาศหนาว,吃,去,漂亮,ai
+些,我买了些衣服。,I bought some clothes.,ฉันซื้อเสื้อผ้ามาบ้าง,吃,去,猫,tatoeba
+做好,饭做好了。,The food is ready.,อาหารทำเสร็จแล้ว,猫,书,很,tatoeba
+十,九的后面是十。,After nine comes ten.,หลังจากเก้าคือสิบ,吃,很,漂亮,ai
+十几,十的后面是十几。,After ten come the teens.,หลังจากสิบคือสิบกว่า,吃,很,漂亮,ai
+号,今天是几号？,What's the date today?,วันนี้วันที่เท่าไหร่,吃,很,漂亮,tatoeba
+吧,坐出租车吧。,Let's take a taxi.,นั่งแท็กซี่กันเถอะ,很,猫,漂亮,tatoeba
+听见,我没听见。,I didn't hear it.,ฉันไม่ได้ยิน,很,漂亮,吗,tatoeba
+四,三的后面是四。,After three comes four.,หลังจากสามคือสี่,吃,很,漂亮,ai
+大学,我去上大学。,I go to university.,ฉันไปเรียนมหาวิทยาลัย,吃,很,漂亮,tatoeba
+她们,她们在说什么？,What are they saying?,พวกเธอกำลังพูดอะไร,吃,很,吗,tatoeba
+好多,我有好多朋友。,I have many friends.,ฉันมีเพื่อนเยอะมาก,很,漂亮,吗,tatoeba
+学,你在学什么？,What are you studying?,คุณกำลังเรียนอะไร,猫,很,漂亮,tatoeba
+学会,你怎么学会说话的？,How did you learn to speak?,คุณเรียนพูดได้ยังไง,猫,很,漂亮,tatoeba
+家里,家里有猫。,There is a cat at home.,ที่บ้านมีแมว,很,漂亮,吗,ai
+星期三,星期二的后面是星期三。,After Tuesday is Wednesday.,หลังวันอังคารคือวันพุธ,吃,很,去,ai
+星期二,星期三的前面是星期二。,Before Wednesday is Tuesday.,ก่อนวันพุธคือวันอังคาร,吃,很,去,ai
+星期四,星期五的前面是星期四。,Before Friday is Thursday.,ก่อนวันศุกร์คือวันพฤหัสบดี,吃,很,去,ai
+星期日,星期六的后面是星期日。,After Saturday is Sunday.,หลังวันเสาร์คือวันอาทิตย์,吃,很,去,ai
+火车,火车来了！,The train is coming!,รถไฟมาแล้ว,吃,很,吗,tatoeba
+看看,我想看看。,I want to have a look.,ฉันอยากดูหน่อย,很,漂亮,吗,tatoeba
+茶杯,茶杯里有茶。,There is tea in the teacup.,ในถ้วยชามีชา,吃,很,漂亮,ai
+里面,杯子里面有水。,There is water inside the cup.,ในถ้วยมีน้ำ,吃,很,漂亮,tatoeba
+要,我要咖啡，谢谢。,"I'd like coffee, thanks.",ขอกาแฟค่ะ ขอบคุณ,猫,高,从,ai
+还,我还没吃。,I haven't eaten yet.,ฉันยังไม่ได้กินเลย,猫,高,快乐,tatoeba
+得,他说得对。,What he says is right.,เขาพูดถูกแล้ว,猫,水,家,ai
+就,他一到家就睡觉了。,"As soon as he got home, he went to sleep.",พอถึงบ้านปุ๊บเขาก็นอนเลย,猫,水,高,ai
+您,老师，您要喝什么？,"Teacher, what would you like to drink?",คุณครูคะ คุณจะดื่มอะไรดีคะ,很,太,从,ai
+每,他每星期都去游泳。,He goes swimming every week.,เขาไปว่ายน้ำทุกสัปดาห์,猫,新,高,ai
+到,我从早上工作到晚上。,I work from morning till night.,ฉันทำงานตั้งแต่เช้าจนถึงค่ำ,猫,高,快乐,ai
+也,我是学生，他也是学生。,"I am a student, and he is a student too.",ฉันเป็นนักเรียน เขาก็เป็นนักเรียนเหมือนกัน,水,岁,猫,ai
+分,现在八点零三分。,It's 8:03 right now.,ตอนนี้เวลาแปดนาฬิกาสามนาที,岁,个,猫,ai
+已经,已经十点了，快睡觉吧。,It's already ten o'clock — hurry and go to sleep.,สิบนาฬิกาแล้ว รีบไปนอนเถอะ,学校,牛奶,快乐,ai
+时间,现在没有时间了，快走吧。,There's no time now — hurry up and go.,ตอนนี้ไม่มีเวลาแล้ว รีบไปกันเถอะ,高,颜色,姓,ai
+红色,西瓜里面是红色的。,The inside of a watermelon is red.,ข้างในแตงโมเป็นสีแดง,医院,唱歌,跑步,ai
+给,请给我一个苹果。,Please give me an apple.,ขอแอปเปิ้ลให้ฉันหนึ่งลูก,看,走,家,ai
+跳,你能跳多高？,How high can you jump?,คุณกระโดดได้สูงแค่ไหน,吃,喝,说,tatoeba
+再,先学走，再学跑。,Learn to walk before you run.,เรียนเดินก่อน แล้วค่อยเรียนวิ่ง,猫,水果,高,tatoeba
+开始,电影八点开始。,The movie starts at eight.,หนังเริ่มตอนแปดโมง,好吃,下雨,睡觉,ai
+教室,学生们在教室里上课。,The students are having class in the classroom.,นักเรียนกำลังเรียนอยู่ในห้องเรียน,商店,医院,桌子,tatoeba
+非常,他跑得非常快。,He runs very fast.,เขาวิ่งเร็วมาก,牛奶,医生,桌子,tatoeba
+颜色,红色和白色都是颜色。,Red and white are both colors.,สีแดงและสีขาวต่างก็เป็นสี,水果,天气,医院,ai
+快,火车快到了。,The train is almost here.,รถไฟใกล้จะถึงแล้ว,高,贵,新,ai
+次,我去过北京四次。,I have been to Beijing four times.,ฉันเคยไปปักกิ่งมาสี่ครั้ง,猫,高,冷,ai
+贵,这么贵！能便宜些吗？,So expensive! Can you make it cheaper?,แพงจัง ลดราคาหน่อยได้ไหม,忙,高,远,tatoeba
+但是,现在正在下雨，但是我想出去。,"It is raining right now, but I want to go out.",ตอนนี้ฝนกำลังตก แต่ฉันอยากออกไปข้างนอก,苹果,椅子,学校,tatoeba
+房间,105号房间在哪里？,Where is Room 105?,ห้อง 105 อยู่ที่ไหน,好吃,唱歌,快,tatoeba
+跳舞,她会唱歌，也会跳舞。,"She can sing, and she can dance too.",เธอร้องเพลงได้ แล้วก็เต้นรำได้ด้วย,牛奶,椅子,快乐,ai
+可以,我可以坐这儿吗？,May I sit here?,ฉันนั่งตรงนี้ได้ไหม,猫,高,快乐,ai
+最,你是最快的。,You are the fastest.,คุณเร็วที่สุด,猫,唱歌,从,tatoeba
+踢,我昨天踢了足球。,I played soccer yesterday.,เมื่อวานฉันเล่นเตะฟุตบอล,喝,问,说,tatoeba
+但,我想去，但我没有时间。,"I want to go, but I don't have time.",ฉันอยากไป แต่ฉันไม่มีเวลา,苹果,唱歌,漂亮,ai
+好吃,这个西瓜真好吃。,This watermelon is really delicious.,แตงโมลูกนี้อร่อยจริงๆ,高,忙,远,tatoeba
+篮球,他很高，篮球打得很好。,He is very tall and plays basketball very well.,เขาตัวสูงมาก เล่นบาสเกตบอลเก่งมาก,牛奶,快乐,颜色,ai
+足球,他足球踢得很好。,He plays soccer very well.,เขาเตะฟุตบอลเก่งมาก,牛奶,米饭,雨,ai
+运动,游泳是很好的运动。,Swimming is a very good sport.,การว่ายน้ำเป็นการออกกำลังกายที่ดีมาก,学校,天气,医院,ai
+一下,请你等一下，我就来。,Please wait a moment — I'm coming right away.,กรุณารอสักครู่ ฉันมาเดี๋ยวนี้แหละ,漂亮,贵,冷,ai
+游泳,他在水里游泳。,He is swimming in the water.,เขากำลังว่ายน้ำอยู่ในน้ำ,唱歌,上课,学习,ai
+白色,牛奶是白色的。,Milk is white.,นมเป็นสีขาว,忙,唱歌,高,ai
+远,到机场有多远？,How far is it to the airport?,ไปสนามบินไกลแค่ไหน,猫,牛奶,房间,tatoeba
+黑色,晚上的天是黑色的。,"At night, the sky is black.",ตอนกลางคืนท้องฟ้าเป็นสีดำ,忙,牛奶,椅子,ai
+对,他对我很好。,He is very good to me.,เขาดีกับฉันมาก,猫,学校,唱歌,tatoeba
+忙,我很忙，没有时间休息。,I'm very busy and have no time to rest.,ฉันยุ่งมาก ไม่มีเวลาพักผ่อน,高,贵,新,ai
+机场,他在机场等飞机。,He is waiting for the plane at the airport.,เขากำลังรอเครื่องบินอยู่ที่สนามบิน,商店,医院,饭店,ai
+真,天气真好！,The weather is really nice!,อากาศดีจริงๆ,猫,走,唱歌,tatoeba
+两,爸爸和妈妈是两人。,Dad and Mom are two people.,พ่อกับแม่เป็นสองคน,猫,很,冷,ai
+从,您从哪儿来的？,Where have you come from?,คุณมาจากที่ไหน,猫,好吃,唱歌,tatoeba
+别,请别在教室里吃东西。,Please don't eat in the classroom.,กรุณาอย่ากินอาหารในห้องเรียน,猫,水,高,ai
+走,时间不早了，我得走了。,It's getting late — I have to go.,ดึกแล้ว ฉันต้องไปแล้ว,高,猫,房间,ai
+比,他比我高。,He is taller than me.,เขาสูงกว่าฉัน,猫,水,唱歌,tatoeba
+弟弟,弟弟比我小，哥哥比我大。,"My little brother is younger than me, and my big brother is older.",น้องชายอายุน้อยกว่าฉัน ส่วนพี่ชายอายุมากกว่าฉัน,快,唱歌,好吃,ai
+知道,你知道他的名字吗？,Do you know his name?,คุณรู้จักชื่อของเขาไหม,猫,高,下雨,ai
+等,别走，等我一下！,Don't go — wait for me a moment!,อย่าเพิ่งไป รอฉันแป๊บหนึ่ง,高,猫,好吃,ai
+高,弟弟比爸爸还高。,My little brother is even taller than Dad.,น้องชายตัวสูงยิ่งกว่าพ่ออีก,好吃,新,贵,ai
+男,您的孩子是男是女？,Is your child a boy or a girl?,ลูกของคุณเป็นผู้ชายหรือผู้หญิง,大,猫,高,tatoeba
+羊肉,这个饭店的羊肉很好吃。,The mutton at this restaurant is delicious.,เนื้อแกะของร้านอาหารนี้อร่อยมาก,椅子,电视,医生,ai
+希望,我希望你明天能来。,I hope you can come tomorrow.,ฉันหวังว่าพรุ่งนี้คุณจะมาได้,猫,好吃,快,ai
+休息,我太累了，想休息一下。,I'm so tired — I want to rest a bit.,ฉันเหนื่อยมาก อยากพักสักหน่อย,好吃,学校,漂亮,ai
+觉得,我觉得这个电影很好看。,I think this movie is very good.,ฉันคิดว่าหนังเรื่องนี้ดูสนุกมาก,猫,雨,桌子,ai
+找,我的猫呢？我去找它。,Where's my cat? I'll go look for it.,แมวของฉันอยู่ไหน ฉันจะไปหามัน,喝,高,快乐,ai
+左边,我的左边是他，右边是她。,"On my left is him, and on my right is her.",ด้านซ้ายของฉันคือเขา ด้านขวาคือเธอ,猫,唱歌,好吃,ai
+游,鱼在水里游。,The fish swims in the water.,ปลาว่ายอยู่ในน้ำ,说话,上课,跑步,ai
+完,我吃完了就去学校。,I'll go to school as soon as I finish eating.,กินเสร็จแล้วฉันก็ไปโรงเรียนเลย,快乐,高,雨,ai
+小时,我昨天睡了十个小时。,I slept for ten hours yesterday.,เมื่อคืนฉันนอนไปสิบชั่วโมง,猫,苹果,房间,ai
+公司,他在哪家公司工作？,What company does he work at?,เขาทำงานที่บริษัทไหน,唱歌,好吃,快,tatoeba
+大家,大家早上好。,"Good morning, everybody.",อรุณสวัสดิ์ทุกคน,好吃,快,雨,tatoeba
+帮助,我不懂，请你帮助我。,I don't understand — please help me.,ฉันไม่เข้าใจ ช่วยฉันหน่อย,高,快乐,走,ai
+新,去年的衣服小了，我要买新的。,Last year's clothes are too small — I want to buy new ones.,เสื้อผ้าปีที่แล้วเล็กไปแล้ว ฉันจะซื้อตัวใหม่,猫,牛奶,唱歌,ai
+可能,他没来上课，可能生病了。,He didn't come to class — maybe he's sick.,เขาไม่มาเรียน อาจจะป่วยก็ได้,苹果,唱歌,高,ai
+姓,老师，您贵姓？,"Teacher, may I ask your surname?",คุณครูคะ ไม่ทราบว่านามสกุลอะไรคะ,高,猫,快,ai
+所以,我很累，所以早睡了。,"I was very tired, so I went to bed early.",ฉันเหนื่อยมาก ก็เลยนอนเร็ว,苹果,猫,漂亮,tatoeba
+送,我送你去机场吧。,Let me take you to the airport.,ให้ฉันไปส่งคุณที่สนามบินนะ,高,好吃,雨,ai
+元,这杯咖啡十元。,This cup of coffee is ten yuan.,กาแฟแก้วนี้ราคาสิบหยวน,岁,猫,快,ai
+离,我的家离学校很近。,My house is very close to the school.,บ้านของฉันอยู่ใกล้โรงเรียนมาก,猫,好吃,唱歌,tatoeba
+一起,明天我们一起去看电影。,Tomorrow we'll go see a movie together.,พรุ่งนี้พวกเราไปดูหนังด้วยกันนะ,猫,高,快乐,ai
+玩儿,孩子们都爱玩儿。,Children all love to play.,เด็กๆ ล้วนชอบเล่น,贵,新,慢,ai
+累,我工作了十个小时，太累了。,I worked for ten hours — I'm so tired.,ฉันทำงานสิบชั่วโมง เหนื่อยมากเลย,新,贵,好吃,ai
+丈夫,她是我的妻子，我是她的丈夫。,"She is my wife, and I am her husband.",เธอเป็นภรรยาของฉัน ฉันเป็นสามีของเธอ,苹果,机场,牛奶,ai
+外面,外面在下雪。,It's snowing outside.,ข้างนอกหิมะกำลังตก,牛奶,唱歌,好吃,tatoeba
+着,门开着呢。,The door is open.,ประตูเปิดอยู่,猫,高,水,ai
+件,那件衣服真漂亮。,That piece of clothing is really pretty.,เสื้อตัวนั้นสวยจริงๆ,猫,唱歌,忙,ai
+懂,我懂你的意思。,I understand what you mean.,ฉันเข้าใจที่คุณหมายถึง,猫,高,下雨,tatoeba
+牛奶,猫在喝你的牛奶。,The cat is drinking your milk.,แมวกำลังกินนมของคุณอยู่,苹果,椅子,米饭,tatoeba
+便宜,一元一个，真便宜！,One yuan each — how cheap!,อันละหนึ่งหยวน ถูกจริงๆ,忙,远,累,ai
+准备,我在准备明天的考试。,I'm preparing for tomorrow's exam.,ฉันกำลังเตรียมตัวสอบสำหรับวันพรุ่งนี้,喝,走,高,ai
+快乐,生日快乐！,Happy birthday!,สุขสันต์วันเกิด,好吃,漂亮,忙,tatoeba
+慢,我听不懂，请说慢一些。,I can't understand — please speak more slowly.,ฉันฟังไม่เข้าใจ กรุณาพูดช้าลงหน่อย,贵,忙,远,ai
+让,让我看看。,Let me have a look.,ให้ฉันดูหน่อยสิ,猫,苹果,快,tatoeba
+去年,今年雪比去年下得多。,It snowed more this year than last year.,ปีนี้หิมะตกมากกว่าปีที่แล้ว,猫,好吃,高,tatoeba
+唱歌,生日的时候，我们一起唱歌。,"On birthdays, we sing together.",ตอนวันเกิด พวกเราร้องเพลงด้วยกัน,牛奶,椅子,高,ai
+孩子,她的孩子今年八岁了。,Her child is eight years old this year.,ลูกของเธอปีนี้อายุแปดขวบแล้ว,房间,牛奶,米饭,ai
+手机,我的手机没电了。,My cell phone is out of battery.,มือถือของฉันแบตหมดแล้ว,牛奶,米饭,椅子,tatoeba
+问,这个我不懂，你去问老师吧。,I don't understand this — go ask the teacher.,อันนี้ฉันไม่เข้าใจ คุณไปถามคุณครูเถอะ,喝,高,下雨,ai
+鸡蛋,我早上吃了一个鸡蛋。,I ate an egg this morning.,เมื่อเช้าฉันกินไข่ไปหนึ่งฟอง,椅子,学校,快乐,ai
+意思,我不懂这个字的意思。,I don't understand the meaning of this character.,ฉันไม่เข้าใจความหมายของตัวอักษรตัวนี้,猫,牛奶,快,ai
+早上,我早上七点起床。,I get up at seven in the morning.,ฉันตื่นนอนตอนเจ็ดโมงเช้า,好吃,猫,高,ai
+介绍,我来介绍一下，这是我朋友。,Let me introduce — this is my friend.,ขอแนะนำหน่อย นี่คือเพื่อนของฉัน,高,猫,快乐,ai
+旁边,坐我旁边。,Sit next to me.,นั่งข้างๆ ฉันสิ,好吃,牛奶,唱歌,tatoeba
+生病,他生病了，不能来上课。,He is sick and can't come to class.,เขาป่วย มาเรียนไม่ได้,牛奶,房间,好吃,ai
+第一,他跑得最快，是第一。,He runs the fastest — he's number one.,เขาวิ่งเร็วที่สุด ได้ที่หนึ่ง,好吃,牛奶,房间,ai
+雪,外面很冷，还下着雪。,"It's cold outside, and it's still snowing.",ข้างนอกหนาวมาก แล้วหิมะก็ยังตกอยู่,猫,牛奶,唱歌,ai
+题,老师，这个题怎么做？,"Teacher, how do I do this problem?",คุณครูคะ ข้อนี้ทำยังไงคะ,冷,快,远,ai
+西瓜,西瓜是最大的水果。,The watermelon is the biggest fruit.,แตงโมเป็นผลไม้ที่ใหญ่ที่สุด,牛奶,椅子,医院,ai
+起床,我早上七点起床。,I get up at seven in the morning.,ฉันตื่นนอนตอนเจ็ดโมงเช้า,报纸,眼睛,便宜,ai
+路,我问问路。,I'll ask for directions.,ฉันจะไปถามทาง,洗,累,睡,tatoeba
+近,我的家离学校很近。,My home is close to the school.,บ้านฉันอยู่ใกล้โรงเรียน,医院,报纸,米饭,ai
+穿,穿上衣服吧。,Put your clothes on.,ใส่เสื้อผ้าซะ,喝,睡,跑,ai
+过,你试过吗？,Have you ever tried it?,คุณเคยลองไหม,门,船,红,tatoeba
+出去,弟弟出去了。,My younger brother went out.,น้องชายออกไปข้างนอกแล้ว,报纸,眼睛,咖啡,tatoeba
+告诉,我想告诉你。,I want to tell you.,ฉันอยากบอกคุณ,报纸,眼睛,门,ai
+妹妹,这是我妹妹。,This is my younger sister.,นี่คือน้องสาวฉัน,洗,累,跑,ai
+手表,我的手表是新的。,My watch is new.,นาฬิกาข้อมือของฉันเป็นของใหม่,洗,睡,累,ai
+旅游,他们一起去旅游。,They go traveling together.,พวกเขาไปเที่ยวด้วยกัน,累,忙,红,ai
+考试,我在准备考试。,I'm preparing for the exam.,ฉันกำลังเตรียมตัวสอบ,累,红,便宜,ai
+船,你的船不大。,Your boat is not big.,เรือของคุณไม่ใหญ่,洗,睡,跑,tatoeba
+事,这是我的事。,This is my own business.,นี่คือเรื่องของฉัน,洗,累,跑,ai
+卖,他在商店卖水果。,He sells fruit at the store.,เขาขายผลไม้ที่ร้าน,红,累,晴天,ai
+眼睛,她有大眼睛。,She has big eyes.,เธอมีดวงตาโต,洗,累,跑,ai
+身体,他的身体很好。,He is in good health.,สุขภาพของเขาดีมาก,洗,睡,累,tatoeba
+门,请开一下门。,Please open the door.,ช่วยเปิดประตูหน่อย,累,红,晚,ai
+问题,我有一个问题。,I have a question.,ฉันมีคำถามหนึ่งข้อ,累,红,晚,ai
+不错,这个电影不错。,This movie is pretty good.,หนังเรื่องนี้ดีทีเดียว,累,晚,忙,ai
+姐姐,这是我姐姐，她很高。,This is my older sister; she's tall.,นี่คือพี่สาวฉัน เธอสูงมาก,洗,累,晴天,ai
+时,你几时下班？,When do you get off work?,คุณเลิกงานกี่โมง,门,船,红,tatoeba
+跑,小猫跑了。,The kitten ran off.,ลูกแมววิ่งหนีไปแล้ว,报纸,眼睛,门,ai
+哥哥,我哥哥比我大。,My older brother is older than me.,พี่ชายฉันอายุมากกว่าฉัน,洗,累,晴天,ai
+因为,因为下雨，我不去。,"Because it's raining, I'm not going.",เพราะฝนตก ฉันเลยไม่ไป,报纸,眼睛,门,ai
+妻子,这是我的妻子。,This is my wife.,นี่คือภรรยาของฉัน,洗,累,跑,tatoeba
+它,小猫在这儿，它是我的。,The kitten is here; it's mine.,ลูกแมวอยู่ตรงนี้ มันเป็นของฉัน,报纸,门,洗,ai
+报纸,爸爸在看报纸。,Dad is reading the newspaper.,พ่อกำลังอ่านหนังสือพิมพ์,洗,累,晚,ai
+晚上,晚上我去跑步。,In the evening I go running.,ตอนกลางคืนฉันไปวิ่ง,洗,累,红,ai
+晴天,今天没有雨，是个晴天。,There's no rain today; it's a sunny day.,วันนี้ไม่มีฝน เป็นวันที่อากาศแจ่มใส,报纸,眼睛,洗,ai
+杯,来杯咖啡吗？,Would you like a cup of coffee?,รับกาแฟสักแก้วไหม,洗,累,门,tatoeba
+自行车,这是我的新自行车。,This is my new bicycle.,นี่คือจักรยานคันใหม่ของฉัน,洗,累,笑,ai
+进,老师进了教室。,The teacher entered the classroom.,คุณครูเข้าไปในห้องเรียน,报纸,眼睛,门,ai
+长,这个铅笔很长。,This pencil is very long.,ดินสอแท่งนี้ยาวมาก,累,晚,忙,ai
+上班,爸爸八点上班。,Dad goes to work at eight.,พ่อไปทำงานตอนแปดโมง,报纸,眼睛,门,ai
+事情,我要做一些事情。,I want to do some things.,ฉันอยากทำบางสิ่งบางอย่าง,洗,累,红,ai
+晚,现在很晚了。,It's very late now.,ตอนนี้ดึกมากแล้ว,报纸,眼睛,门,ai
+晴,今天没有雨，天很晴。,There's no rain today; the sky is clear.,วันนี้ไม่มีฝน ท้องฟ้าแจ่มใส,报纸,洗,累,ai
+有意思,这个电影很有意思。,This movie is very interesting.,หนังเรื่องนี้น่าสนใจมาก,累,晚,忙,ai
+欢迎,欢迎你们来这儿。,"Welcome, come here.",ยินดีต้อนรับ เชิญมาทางนี้,报纸,累,红,ai
+洗,他正在洗他的车。,He is washing his car.,เขากำลังล้างรถของเขา,报纸,累,睡,tatoeba
+生日,今天是我的生日。,Today is my birthday.,วันนี้เป็นวันเกิดของฉัน,报纸,眼睛,门,tatoeba
+杨,杨老师很忙。,Teacher Yang is very busy.,อาจารย์หยางยุ่งมาก,报纸,眼睛,门,ai
+上课,我们九点上课。,We have class at nine o'clock.,พวกเราเข้าเรียนตอนเก้าโมง,报纸,眼睛,门,ai
+同学们,同学们都来了。,The classmates have all arrived.,เพื่อนร่วมชั้นมากันครบแล้ว,报纸,眼睛,洗,ai
+咖啡,咖啡是冷的。,The coffee is cold.,กาแฟเย็นชืด,洗,累,笑,tatoeba
+回答,请回答我的问题。,Please answer my question.,กรุณาตอบคำถามของฉัน,报纸,累,红,ai
+宾馆,我们住在宾馆。,We are staying at the hotel.,พวกเราพักอยู่ที่โรงแรม,报纸,眼睛,洗,ai
+服务员,他是这里的服务员。,He is the waiter here.,เขาเป็นพนักงานเสิร์ฟที่นี่,报纸,洗,累,ai
+笑,大家都笑了。,Everybody laughed.,ทุกคนหัวเราะ,报纸,眼睛,门,ai
+药,我吃了药就好了。,I felt better after taking the medicine.,ฉันกินยาแล้วก็หายดี,报纸,眼睛,门,ai
+走路,她走路上班。,She walks to work.,เธอเดินไปทำงาน,报纸,眼睛,鸡蛋,tatoeba
+跑步,他早上去跑步。,He goes running in the morning.,เขาไปวิ่งตอนเช้า,报纸,眼睛,贵,ai
+这样,这样做吧。,Let's do it this way.,ทำแบบนี้แหละ,报纸,累,门,tatoeba
+铅笔,我没有铅笔，不能写。,"I don't have a pencil, so I can't write.",ฉันไม่มีดินสอ เลยเขียนไม่ได้,米饭,医院,牛奶,ai
+阴,天很阴，要下雨了。,The sky is overcast; it's going to rain.,ท้องฟ้าครึ้มมาก ฝนกำลังจะตก,累,忙,贵,ai
+阴天,今天是阴天，可能要下雨。,Today is cloudy; it might rain.,วันนี้ท้องฟ้าครึ้ม อาจจะมีฝนตก,报纸,眼睛,医院,ai
+鱼,鱼在水里游。,Fish swim in the water.,ปลาว่ายอยู่ในน้ำ,报纸,椅子,咖啡,ai
+儿,猫儿在椅子上睡觉。,The kitty is sleeping on the chair.,แมวน้อยนอนหลับอยู่บนเก้าอี้,报纸,门,药,ai
+公共汽车,我坐公共汽车去上班。,I take the bus to work.,ฉันนั่งรถเมล์ไปทำงาน,报纸,眼睛,米饭,ai
+出,他出名了。,He became famous.,เขามีชื่อเสียงแล้ว,洗,门,笑,tatoeba
+刘,刘先生住在北京。,Mr. Liu lives in Beijing.,คุณหลิวอาศัยอยู่ที่ปักกิ่ง,报纸,眼睛,米饭,ai
+哥,他是我哥。,He's my older brother.,เขาเป็นพี่ชายของฉัน,洗,笑,累,ai
+小猫,小猫在桌子下睡觉。,The kitten is sleeping under the table.,ลูกแมวนอนหลับอยู่ใต้โต๊ะ,报纸,咖啡,药,ai
+帮,帮我一下。,Help me a moment.,ช่วยฉันหน่อย,报纸,眼睛,米饭,tatoeba
+早,我起床早。,I got up early.,ฉันตื่นนอนแต่เช้า,报纸,门,米饭,tatoeba
+正在,他正在游泳。,He is swimming right now.,เขากำลังว่ายน้ำอยู่,报纸,眼睛,药,tatoeba
+课,我明天有课。,I have class tomorrow.,พรุ่งนี้ฉันมีเรียน,累,忙,贵,tatoeba
+错,我读错了。,I read it wrong.,ฉันอ่านผิด,眼睛,门,药,tatoeba
+下雪,天很冷，外面下雪了。,It's very cold; it's snowing outside.,อากาศหนาวมาก ข้างนอกหิมะตกแล้ว,报纸,眼睛,牛奶,ai
+右边,书店不在左边，在右边。,The bookstore isn't on the left; it's on the right.,ร้านหนังสือไม่ได้อยู่ทางซ้าย อยู่ทางขวา,报纸,累,贵,ai
+姐,我姐是医生。,My older sister is a doctor.,พี่สาวฉันเป็นหมอ,报纸,门,咖啡,ai
+汉字,这个汉字怎么写？,How do you write this Chinese character?,ตัวอักษรจีนตัวนี้เขียนยังไง,米饭,咖啡,牛奶,ai
+白,雪是白的。,Snow is white.,หิมะมีสีขาว,报纸,门,咖啡,ai
+百,九十在一百前面。,Ninety comes before one hundred.,เก้าสิบอยู่ก่อนหน้าหนึ่งร้อย,报纸,累,咖啡,ai
+睡,他睡了八个小时。,He slept for eight hours.,เขานอนหลับไปแปดชั่วโมง,报纸,咖啡,门,ai
+票,我有三张票。,I have three tickets.,ฉันมีตั๋วสามใบ,咖啡,医院,牛奶,tatoeba
+考,我考得很好。,I did well on the test.,ฉันสอบได้ดีมาก,报纸,眼睛,米饭,tatoeba
+面条儿,我中午吃了面条儿。,I ate noodles at noon.,ตอนเที่ยงฉันกินบะหมี่,报纸,椅子,门,ai
+斤,多少钱一斤？,How much for half a kilo?,ครึ่งกิโลราคาเท่าไหร่,报纸,累,洗,tatoeba
+球,他踢了一个球。,He kicked a ball.,เขาเตะลูกบอลลูกหนึ่ง,报纸,眼睛,米饭,ai
+一千,一千比一百大。,One thousand is bigger than one hundred.,หนึ่งพันมากกว่าหนึ่งร้อย,报纸,累,咖啡,ai
+下班,我今天下班很晚。,I got off work very late today.,วันนี้ฉันเลิกงานดึกมาก,报纸,眼睛,米饭,ai
+不能,我不能说。,I can't say.,ฉันพูดไม่ได้,报纸,眼睛,咖啡,tatoeba
+为,他为她工作。,He works for her.,เขาทำงานเพื่อเธอ,报纸,米饭,药,tatoeba
+买好,妈妈买好了菜。,Mom has finished buying the groceries.,แม่ซื้อกับข้าวเสร็จแล้ว,报纸,眼睛,医院,ai
+们,学生们回来了。,The students have returned.,นักเรียนทั้งหลายกลับมาแล้ว,报纸,咖啡,药,tatoeba
+去过,你去过上海吗？,Have you ever been to Shanghai?,คุณเคยไปเซี่ยงไฮ้ไหม,报纸,眼睛,米饭,tatoeba
+后天,今天是星期一，后天是星期三。,Today is Monday; the day after tomorrow is Wednesday.,วันนี้วันจันทร์ มะรืนนี้เป็นวันพุธ,报纸,眼睛,门,ai
+向,我向妈妈学习。,I learn from my mom.,ฉันเรียนรู้จากแม่,报纸,米饭,药,tatoeba
+听说,我听说你病了。,I heard you were sick.,ฉันได้ยินมาว่าคุณป่วย,报纸,眼睛,咖啡,tatoeba
+咖啡馆,我们在咖啡馆见吧。,Let's meet at the coffee shop.,เราเจอกันที่ร้านกาแฟนะ,眼睛,牛奶,药,ai
+女,您的孩子是男是女？,Is your child a boy or a girl?,ลูกของคุณเป็นผู้ชายหรือผู้หญิง,报纸,累,门,tatoeba
+好好,好好休息吧！,Have a good rest!,พักผ่อนให้เต็มที่นะ,报纸,眼睛,米饭,tatoeba
+好玩儿,北京好玩儿吗？,Is Beijing fun?,ปักกิ่งสนุกไหม,报纸,眼睛,米饭,ai
+孩子们,孩子们，起床了！,"Children, wake up!",เด็กๆ ตื่นได้แล้ว,米饭,椅子,咖啡,tatoeba
+房子,我住的房子很新。,The house I live in is very new.,บ้านที่ฉันอยู่ใหม่มาก,洗,累,贵,ai
+红,苹果是红的。,Apples are red.,แอปเปิ้ลมีสีแดง,报纸,唱歌,医院,ai
+茶馆,我们在茶馆喝了茶。,We drank tea at the teahouse.,พวกเราดื่มชาที่ร้านน้ำชา,眼睛,药,鸡蛋,ai
+虽然,虽然很晚了，但是我不累。,"Although it's very late, I'm not tired.",ถึงจะดึกมากแล้ว แต่ฉันก็ไม่เหนื่อย,眼睛,米饭,药,ai
+这边,您到这边来！,Come over here!,เชิญมาทางนี้,眼睛,牛奶,累,tatoeba
+问问,我问问路。,I'll ask for directions.,ฉันจะถามทาง,漂亮,报纸,眼睛,tatoeba
+小雨,外面下小雨，不大。,"It's drizzling outside, not heavy.",ข้างนอกฝนตกปรอยๆ ไม่หนัก,报纸,眼睛,漂亮,ai
+店,这个店卖水果。,This shop sells fruit.,ร้านนี้ขายผลไม้,猫,门,报纸,ai
+男朋友,她的男朋友很高。,Her boyfriend is tall.,แฟนหนุ่มของเธอสูง,漂亮,唱歌,跑步,ai
+笑笑,对我笑笑吧。,Give me a smile.,ยิ้มให้ฉันหน่อยสิ,漂亮,眼睛,报纸,ai
+一个,再来一个！,Another one!,เอาอีกอันสิ!,很,猫,报纸,tatoeba
+上海,我是上海人。,I'm from Shanghai.,ฉันเป็นคนเซี่ยงไฮ้,报纸,眼睛,漂亮,tatoeba
+上面,书在桌子上面。,The book is on top of the table.,หนังสืออยู่บนโต๊ะ,很,报纸,漂亮,ai
+下课,下课了吗？,Is class over?,เลิกเรียนหรือยัง?,漂亮,报纸,眼睛,tatoeba
+不下,人太多，坐不下。,"There are too many people, we can't all sit.",คนเยอะเกินไป นั่งไม่พอ,漂亮,报纸,眼睛,ai
+不到,我做不到。,I can't do it.,ฉันทำไม่ได้,漂亮,报纸,眼睛,tatoeba
+中,我喜欢在雨中跑步。,I like running in the rain.,ฉันชอบวิ่งกลางสายฝน,报纸,眼睛,漂亮,tatoeba
+中学,他在中学学习。,He studies at middle school.,เขาเรียนอยู่ที่โรงเรียนมัธยม,报纸,眼睛,漂亮,ai
+九百,八百、九百、一千。,"Eight hundred, nine hundred, one thousand.",แปดร้อย เก้าร้อย หนึ่งพัน,猫,门,报纸,ai
+人们,我爱这里的人们。,I love the people here.,ฉันรักผู้คนที่นี่,忙,累,高,tatoeba
+先,先谢谢了。,Thanks in advance.,ขอบคุณล่วงหน้า,报纸,眼睛,漂亮,tatoeba
+八,八点多了。,It's past eight o'clock.,แปดโมงกว่าแล้ว,猫,门,报纸,tatoeba
+六七,这里有六七个学生。,There are six or seven students here.,ที่นี่มีนักเรียนอยู่หกเจ็ดคน,猫,门,报纸,ai
+几家,这里有几家店。,There are a few shops here.,ที่นี่มีร้านค้าอยู่ไม่กี่ร้าน,漂亮,眼睛,报纸,ai
+出来,她从家里跑了出来。,She ran out of the house.,เธอวิ่งออกมาจากบ้าน,报纸,眼睛,漂亮,tatoeba
+出院,他病好了，可以出院了。,He's recovered and can leave the hospital.,เขาหายป่วยแล้ว ออกจากโรงพยาบาลได้แล้ว,漂亮,报纸,眼睛,ai
+千,百的后面是千。,After hundred comes thousand.,หลังจากร้อยคือพัน,吃,很,漂亮,ai
+卖完,鸡蛋也卖完了。,The eggs are sold out too.,ไข่ก็ขายหมดแล้วเหมือนกัน,漂亮,眼睛,门,tatoeba
+去不去,你明天去不去？,Are you going tomorrow or not?,พรุ่งนี้คุณจะไปไหม?,报纸,眼睛,门,ai
+名,三名学生来了。,Three students came.,นักเรียนสามคนมาแล้ว,报纸,眼睛,漂亮,ai
+向上,他向上看。,He looks up.,เขามองขึ้นข้างบน,报纸,眼睛,漂亮,ai
+听不懂,我听不懂你。,I can't understand you.,ฉันฟังคุณไม่เข้าใจ,漂亮,报纸,眼睛,tatoeba
+听到,你听到没有！,Did you hear me?,คุณได้ยินไหม!,漂亮,报纸,眼睛,tatoeba
+听听,说来听听。,Tell me about it.,เล่ามาให้ฟังหน่อยสิ,漂亮,报纸,眼睛,tatoeba
+坐下,请坐下休息。,Please sit down and rest.,เชิญนั่งพักก่อน,漂亮,报纸,眼睛,ai
+大人,你现在是大人了。,You're an adult now.,ตอนนี้คุณเป็นผู้ใหญ่แล้ว,眼睛,报纸,门,tatoeba
+大米,大米是白色的。,Rice is white.,ข้าวสารเป็นสีขาว,唱歌,跑步,天气,ai
+天天,那样的事天天都有。,That kind of thing happens every day.,เรื่องแบบนั้นเกิดขึ้นทุกวัน,报纸,眼睛,漂亮,tatoeba
+女孩儿,那个女孩儿真漂亮。,That girl is really pretty.,เด็กผู้หญิงคนนั้นสวยจริงๆ,唱歌,跑步,睡觉,ai
+女朋友,他没有女朋友。,He has no girlfriend.,เขาไม่มีแฟนสาว,漂亮,唱歌,跑步,tatoeba
+好喝,这杯茶很好喝。,This cup of tea is delicious.,ชาถ้วยนี้อร่อยมาก,忙,累,高,tatoeba
+好看,他的书很好看。,His book is very good.,หนังสือของเขาน่าอ่านมาก,忙,累,高,ai
+好笑,这个电影很好笑。,This movie is very funny.,หนังเรื่องนี้ตลกมาก,忙,累,高,ai
+妹,我没有姐妹。,I don't have any sisters.,ฉันไม่มีพี่สาวน้องสาว,报纸,眼睛,门,tatoeba
+学好,我要学好汉语。,I want to master Chinese.,ฉันอยากเรียนภาษาจีนให้เก่ง,漂亮,报纸,眼睛,ai
+小学,他在小学学习。,He studies at primary school.,เขาเรียนอยู่ที่โรงเรียนประถม,漂亮,报纸,眼睛,ai
+小学生,我是小学生。,I'm a primary school student.,ฉันเป็นนักเรียนประถม,报纸,眼睛,门,tatoeba
+小狗,小狗喜欢跑。,The puppy likes to run.,ลูกหมาชอบวิ่ง,报纸,眼睛,门,ai
+小鱼,大鱼吃小鱼。,Big fish eat little fish.,ปลาใหญ่กินปลาเล็ก,报纸,眼睛,门,tatoeba
+床,这张床不大。,This bed is not big.,เตียงนี้ไม่ใหญ่,天气,唱歌,医院,ai
+店里,他回店里去了。,He went back to the store.,เขากลับไปที่ร้านแล้ว,漂亮,报纸,眼睛,tatoeba
+往,大家在往哪跑？,Where's everyone running to?,ทุกคนกำลังวิ่งไปทางไหนกัน?,漂亮,报纸,眼睛,tatoeba
+想到,我想到了一个人。,I thought of someone.,ฉันนึกถึงคนคนหนึ่งขึ้นมา,漂亮,报纸,眼睛,ai
+打不开,这个门打不开。,This door won't open.,ประตูบานนี้เปิดไม่ออก,漂亮,报纸,眼睛,ai
+找到,我得找到他。,I have to find him.,ฉันต้องหาเขาให้เจอ,漂亮,报纸,眼睛,tatoeba
+新年,一月一日是新年。,January 1st is New Year.,วันที่ 1 มกราคมคือวันปีใหม่,报纸,眼睛,门,ai
+明年,今年的后面是明年。,After this year comes next year.,ถัดจากปีนี้คือปีหน้า,吃,很,去,ai
+星期一,星期日的后面是星期一。,After Sunday comes Monday.,ถัดจากวันอาทิตย์คือวันจันทร์,吃,很,去,ai
+晚饭,我们晚饭吃什么？,What are we having for dinner?,อาหารเย็นพวกเรากินอะไรดี?,报纸,眼睛,门,tatoeba
+最大,七、八、九，九最大。,"Seven, eight, nine — nine is the biggest.",เจ็ด แปด เก้า — เก้าใหญ่ที่สุด,漂亮,报纸,眼睛,ai
+有点儿,我今天有点儿累。,I'm a bit tired today.,วันนี้ฉันเหนื่อยนิดหน่อย,报纸,眼睛,漂亮,ai
+机,哪里有电话机？,Where is there a telephone?,มีเครื่องโทรศัพท์อยู่ที่ไหน?,漂亮,门,眼睛,tatoeba
+歌,这歌叫什么名字？,What's the name of this song?,เพลงนี้ชื่ออะไร?,很,从,吗,tatoeba
+正,外面正下雨呢。,It's raining outside right now.,ข้างนอกฝนกำลังตกอยู่พอดี,猫,门,报纸,ai
+水果店,我在水果店买苹果。,I buy apples at the fruit shop.,ฉันซื้อแอปเปิ้ลที่ร้านผลไม้,漂亮,报纸,眼睛,ai
+汽车站,我在汽车站等车。,I wait for the bus at the bus station.,ฉันรอรถอยู่ที่ป้ายรถเมล์,漂亮,报纸,眼睛,ai
+电,我的手机没电了。,My phone is out of battery.,มือถือของฉันแบตหมดแล้ว,漂亮,报纸,眼睛,tatoeba
+电影票,他们在买电影票。,They're buying movie tickets.,พวกเขากำลังซื้อตั๋วหนัง,漂亮,眼睛,门,tatoeba
+病,他可能病了。,He may be sick.,เขาอาจจะป่วย,漂亮,报纸,门,tatoeba
+看不懂,这个字我看不懂。,I can't read this character.,ตัวอักษรตัวนี้ฉันอ่านไม่เข้าใจ,漂亮,报纸,眼睛,ai
+看过,你去看过医生了吗？,Have you been to see a doctor?,คุณไปหาหมอมาหรือยัง?,漂亮,报纸,眼睛,tatoeba
+真的,是真的吗？,Is it true?,จริงหรือเปล่า?,很,太,从,tatoeba
+笑一笑,请笑一笑！,Please smile!,ยิ้มหน่อยสิ!,漂亮,报纸,眼睛,tatoeba
+第三,一、二、三，三是第三。,"One, two, three — three is the third.",หนึ่ง สอง สาม — สามคือลำดับที่สาม,漂亮,报纸,眼睛,ai
+第二次,我昨天来过，今天是第二次。,I came yesterday; today is the second time.,เมื่อวานฉันมาแล้ว วันนี้เป็นครั้งที่สอง,漂亮,报纸,眼睛,ai
+第五,星期五是一个星期的第五天。,Friday is the fifth day of the week.,วันศุกร์เป็นวันที่ห้าของสัปดาห์,漂亮,报纸,眼睛,ai
+等等,请等等，我就来。,"Please wait a moment, I'm coming.",รอเดี๋ยวนะ ฉันมาแล้ว,漂亮,报纸,眼睛,ai
+肉,我吃肉了。,I ate the meat.,ฉันกินเนื้อแล้ว,门,报纸,椅子,tatoeba
+药店,我去药店买药。,I go to the pharmacy to buy medicine.,ฉันไปซื้อยาที่ร้านขายยา,漂亮,报纸,眼睛,ai
+表,这表不走了。,This watch has stopped.,นาฬิกาเรือนนี้ไม่เดินแล้ว,漂亮,报纸,眼睛,tatoeba
+见到,见到你真好。,It's really good to see you.,ดีจริงๆ ที่ได้เจอคุณ,漂亮,报纸,眼睛,tatoeba
+试,她试过了。,She has tried.,เธอลองแล้ว,漂亮,报纸,眼睛,tatoeba
+话,我不喜欢那些话。,I don't like those words.,ฉันไม่ชอบคำพูดพวกนั้น,很,从,吗,ai
+赵,我们老师姓赵。,Our teacher's surname is Zhao.,คุณครูของพวกเราแซ่จ้าว,漂亮,报纸,眼睛,ai
+起,他不早起。,He doesn't get up early.,เขาไม่ตื่นเช้า,漂亮,报纸,眼睛,tatoeba
+起来,听起来不错。,Sounds good.,ฟังดูดีเลย,漂亮,报纸,眼睛,tatoeba
+路上,他在路上。,He is on the way.,เขาอยู่ระหว่างทาง,很,太,从,tatoeba
+踢进,他踢进了一个球。,He kicked in a goal.,เขาเตะบอลเข้าไปหนึ่งลูก,漂亮,报纸,眼睛,ai
+进去,让我进去。,Let me in.,ให้ฉันเข้าไปหน่อย,漂亮,报纸,眼睛,tatoeba
+那些,那些是她的。,Those are hers.,พวกนั้นเป็นของเธอ,很,吗,从,tatoeba
+那样,那样是错的。,That way is wrong.,แบบนั้นมันผิด,很,吗,从,tatoeba
+那边,我一个人去那边。,I'm going there alone.,ฉันไปที่นั่นคนเดียว,漂亮,报纸,眼睛,tatoeba
+面,我在吃面。,I am eating noodles.,ฉันกำลังกินบะหมี่,门,报纸,椅子,tatoeba
+黄色,我喜欢黄色。,I like yellow.,ฉันชอบสีเหลือง,很,太,从,tatoeba
+黑,天快黑了。,It's getting dark.,ฟ้าใกล้จะมืดแล้ว,报纸,眼睛,门,tatoeba
