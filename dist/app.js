@@ -1155,29 +1155,39 @@
       { id: "bg-market", file: "bg-market.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "css:#cv gradient", note: "vector placeholder \u2014 regenerate per GENERATION-PROMPTS-v5" },
       { id: "bg-temple", file: "bg-temple.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "css:#cv gradient", note: "vector placeholder \u2014 regenerate per GENERATION-PROMPTS-v5" },
       { id: "bg-bamboo", file: "bg-bamboo.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "css:#cv gradient", note: "vector placeholder \u2014 regenerate per GENERATION-PROMPTS-v5" },
-      { id: "bg-street", file: "bg-street.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintStreetBase", note: "warm-daylight village street \u2014 see GENERATION-PROMPTS-P0-copypaste.md" },
+      { id: "bg-street", file: "bg-street.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintStreetBase", note: "warm-daylight village street \u2014 see GENERATION-PROMPTS-P0-copypaste.md" },
       { id: "lantern", file: "lantern.png", type: "decor", status: "integrated", priority: "P2", w: 256, h: 384, fallback: "css:none (decor)" },
       { id: "cloud", file: "cloud.png", type: "decor", status: "integrated", priority: "P2", w: 512, h: 256, fallback: "css:none (decor)" },
       { id: "coin", file: "coin.png", type: "decor", status: "integrated", priority: "P2", w: 128, h: 128, fallback: "canvas:coin-vector" },
       { id: "raccoon-walk", file: "raccoon-walk.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawRaccoon" },
       { id: "raccoon-happy", file: "raccoon-happy.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawRaccoon" },
-      { id: "cat-panda-walk", file: "cat-panda-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-panda-happy", file: "cat-panda-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-ninja-walk", file: "cat-ninja-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-ninja-happy", file: "cat-ninja-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-astronaut-walk", file: "cat-astronaut-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-astronaut-happy", file: "cat-astronaut-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-beach-walk", file: "cat-beach-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-beach-happy", file: "cat-beach-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-mooncake-walk", file: "cat-mooncake-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-mooncake-happy", file: "cat-mooncake-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-dragon-walk", file: "cat-dragon-walk.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-dragon-happy", file: "cat-dragon-happy.png", type: "sprite-sheet", status: "planned", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "bg-harbor-night", file: "bg-harbor-night.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
-      { id: "bg-snow-festival", file: "bg-snow-festival.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
-      { id: "bg-island-sunset", file: "bg-island-sunset.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
-      { id: "bg-lantern-festival", file: "bg-lantern-festival.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
-      { id: "bg-dragon-gate", file: "bg-dragon-gate.png", type: "background", status: "planned", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" }
+      { id: "cat-panda-walk", file: "cat-panda-walk.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-panda-happy", file: "cat-panda-happy.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-ninja-walk", file: "cat-ninja-walk.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-ninja-happy", file: "cat-ninja-happy.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-astronaut-walk", file: "cat-astronaut-walk.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-astronaut-happy", file: "cat-astronaut-happy.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-beach-walk", file: "cat-beach-walk.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-beach-happy", file: "cat-beach-happy.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-mooncake-walk", file: "cat-mooncake-walk.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-mooncake-happy", file: "cat-mooncake-happy.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-dragon-walk", file: "cat-dragon-walk.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "cat-dragon-happy", file: "cat-dragon-happy.png", type: "sprite-sheet", status: "integrated", priority: "P0", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
+      { id: "bg-harbor-night", file: "bg-harbor-night.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
+      { id: "bg-snow-festival", file: "bg-snow-festival.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
+      { id: "bg-island-sunset", file: "bg-island-sunset.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
+      { id: "bg-lantern-festival", file: "bg-lantern-festival.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
+      { id: "bg-dragon-gate", file: "bg-dragon-gate.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
+      { id: "deco-mahjong-table", file: "deco-mahjong-table.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco", note: "v7 street decos \u2014 prompts in GENERATION-PROMPTS-P0-copypaste.md 'v7 street deco batch'; sprite-draw wiring lands with the art round" },
+      { id: "deco-koi-pond", file: "deco-koi-pond.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-drum-tower", file: "deco-drum-tower.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-bubble-tea", file: "deco-bubble-tea.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-paper-umbrella", file: "deco-paper-umbrella.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-goldfish-banner", file: "deco-goldfish-banner.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-neon-cat-sign", file: "deco-neon-cat-sign.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-shaved-ice-cart", file: "deco-shaved-ice-cart.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-mooncake-stall", file: "deco-mooncake-stall.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-firecracker-arch", file: "deco-firecracker-arch.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" }
     ],
     required_icons: [
       "home",
@@ -1769,6 +1779,9 @@
     const d = dayIndex(dateStr);
     return [0, 1, 2].map((i) => pool2[((d * 3 + i) % pool2.length + pool2.length) % pool2.length].id);
   }
+  function unownedDailyStock(dateStr, shop) {
+    return dailyStock(dateStr).filter((id) => !shop.owned.includes(id));
+  }
   function inWindow(dateStr, from, to) {
     const [, m, d] = dateStr.split("-").map(Number);
     const md = m * 100 + d, lo = from[0] * 100 + from[1], hi = to[0] * 100 + to[1];
@@ -2082,6 +2095,7 @@
       "shop.coins": "{coins} coins",
       "shop.daily": "Today's Stock",
       "shop.dailyNote": "New stock at midnight",
+      "shop.dailyAllOwned": "All stocked up! Fresh finds at midnight \u{1F319}",
       "shop.season": "Season Corner",
       "shop.seasonUntil": "Available until {date}",
       "shop.seasonReturns": "\u{1F3EE} {name} set returns {date}",
@@ -2305,6 +2319,7 @@
       "shop.coins": "{coins} \u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D",
       "shop.daily": "\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49",
       "shop.dailyNote": "\u0E02\u0E2D\u0E07\u0E43\u0E2B\u0E21\u0E48\u0E21\u0E32\u0E15\u0E2D\u0E19\u0E40\u0E17\u0E35\u0E48\u0E22\u0E07\u0E04\u0E37\u0E19",
+      "shop.dailyAllOwned": "\u0E21\u0E35\u0E04\u0E23\u0E1A\u0E17\u0E38\u0E01\u0E0A\u0E34\u0E49\u0E19\u0E41\u0E25\u0E49\u0E27! \u0E02\u0E2D\u0E07\u0E43\u0E2B\u0E21\u0E48\u0E21\u0E32\u0E15\u0E2D\u0E19\u0E40\u0E17\u0E35\u0E48\u0E22\u0E07\u0E04\u0E37\u0E19 \u{1F319}",
       "shop.season": "\u0E21\u0E38\u0E21\u0E40\u0E17\u0E28\u0E01\u0E32\u0E25",
       "shop.seasonUntil": "\u0E21\u0E35\u0E16\u0E36\u0E07 {date}",
       "shop.seasonReturns": "\u{1F3EE} \u0E40\u0E0B\u0E47\u0E15 {name} \u0E08\u0E30\u0E01\u0E25\u0E31\u0E1A\u0E21\u0E32 {date}",
@@ -4350,9 +4365,13 @@
     const dailyBox = $("#shop-daily"), seasonBox = $("#shop-season");
     const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), decoBox = $("#shop-street");
     for (const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, decoBox]) b.innerHTML = "";
-    for (const id of dailyStock(today)) {
+    const stock = unownedDailyStock(today, shopState);
+    for (const id of stock) {
       const item = CATALOG.find((i) => i.id === id);
-      if (item && !shopState.owned.includes(id)) dailyBox.appendChild(makeShopRow(item, today));
+      if (item) dailyBox.appendChild(makeShopRow(item, today));
+    }
+    if (!stock.length) {
+      dailyBox.innerHTML = `<div class="scorerow" style="color:var(--muted)">${t("shop.dailyAllOwned")}</div>`;
     }
     const st = seasonStatus(today);
     const seasonNote = $("#shop-season-note");
@@ -4399,7 +4418,6 @@
       store.set("shop", shopState);
       updateWalletChip();
       renderShop();
-      renderStreet();
     };
     if (item.type === "deco") {
       if (!owned) {

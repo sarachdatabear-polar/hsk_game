@@ -91,6 +91,12 @@ export function dailyStock(dateStr) {
   return [0, 1, 2].map(i => pool[(((d * 3 + i) % pool.length) + pool.length) % pool.length].id);
 }
 
+// Today's featured ids the player doesn't own yet — exactly what the
+// Today's Stock shelf shows ([] = show the all-stocked-up empty state).
+export function unownedDailyStock(dateStr, shop) {
+  return dailyStock(dateStr).filter(id => !shop.owned.includes(id));
+}
+
 // Days until `id` is next featured (0 = today). null for non-pool ids.
 export function nextFeaturedIn(id, dateStr) {
   const item = CATALOG.find(i => i.id === id);

@@ -194,3 +194,80 @@ side-view battle-lane composition as the existing four backdrops above.
 > Warm daylight storybook illustration for a cozy mobile Chinese-learning game, polished mobile-game quality, storybook watercolor–flat hybrid with soft edges and gentle painted texture (no gradients harsher than soft daylight falloff). Palette locked to: primary green #32775E, sky blue #5DAADD, sun yellow #F2BC57, coral #E69777, warm brown #846043, soft gray #B2AEA9, paper cream #FBF5E8, deep teal #1F4D4A, light sand #EAC796, ink #2E2A24 — warm, slightly muted, never pure black, never pure white, never neon. Soft warm daylight from the UPPER LEFT, soft contact shadows down-right. Materials: paper, carved wood, rope, ceramic, cloth, leafy plants. Round friendly shapes, clean silhouettes, consistent medium line weight. No text or lettering of any kind.
 > Sunny village street viewed side-on for a cute home-screen backdrop, wide 16:9 landscape, 1024×512. Cream sky brightening toward the horizon, soft rolling green hills far behind, a light sand road running along the bottom fifth of the image where small building and decor pieces will be placed. Low detail in the middle band — keep it airy and uncluttered, not a busy market street. No characters or people anywhere in the scene.
 > Strictly avoid: photorealism, neon, casino glitter, black-and-gold framing, cold gray UI chrome, sharp corners, horror mood, human characters, any lettering or calligraphy, watermark, night sky, dense clutter in the middle band.
+
+---
+
+# v7 street deco batch — 10 shop decos (P1)
+
+The tier-2/tier-3 street decos from v7 Shop Seasons ship with procedural
+vector fallbacks; these prompts replace them with real art. (The v7 plan's
+follow-up note said "11 new decos" — the actual count in `DECO_IDS` is 10:
+3 permanent + 4 daily-pool + 3 seasonal.)
+
+Square / 1:1 output is fine for all of them — intake crops to the subject and
+fits it into a 512×512 bottom-anchored box. Name downloads `deco-<id>.png`
+(e.g. `deco-koi-pond.png`), drop into `art-drop/`, run
+`python3 scripts/intake_art.py`. These draw at roughly 40–90 px on the street,
+so silhouettes must stay chunky and readable — one clear object, no fine
+detail. Sprite-draw wiring in `drawTieredDeco` lands together with the first
+installed deco so it can be sized against real art.
+
+## deco-mahjong-table.png — street deco, 512×512, transparent
+
+> Warm daylight storybook illustration, storybook watercolor–flat hybrid with soft edges, polished mobile-game quality. Palette locked to: primary green #32775E, sky blue #5DAADD, sun yellow #F2BC57, coral #E69777, warm brown #846043, soft gray #B2AEA9, paper cream #FBF5E8, deep teal #1F4D4A, light sand #EAC796, ink #2E2A24 — warm, slightly muted, never neon.
+> A single cute low square wooden mahjong table game asset on a plain solid pure-white background, centered, sitting on the ground. Warm brown carved wood frame, deep-teal felt top, a few neat stacks of small blank cream tiles and two little round stools tucked at the sides. Round friendly shapes, clean chunky silhouette, medium line weight. Tiles are completely blank — absolutely no characters, dots or symbols on them.
+> Strictly avoid: any lettering or Chinese characters, tile markings, photorealism, neon, drop shadow, background scenery, people or animals, watermark.
+
+## deco-koi-pond.png — street deco, 512×512, transparent
+
+> Warm daylight storybook illustration, storybook watercolor–flat hybrid with soft edges, polished mobile-game quality. Palette locked to: primary green #32775E, sky blue #5DAADD, sun yellow #F2BC57, coral #E69777, warm brown #846043, soft gray #B2AEA9, paper cream #FBF5E8, deep teal #1F4D4A, light sand #EAC796, ink #2E2A24 — warm, slightly muted, never neon.
+> A single cute round garden koi pond game asset on a plain solid pure-white background, centered, sitting on the ground, viewed from a slight three-quarter angle so the water surface shows. Smooth soft-gray stone rim, calm sky-blue water, two friendly koi (one coral, one cream with sun-yellow patches) and a couple of small green lily pads. Clean chunky silhouette, round friendly shapes.
+> Strictly avoid: any lettering, photorealism, neon, realistic water reflections, drop shadow, background scenery, fountain spray, people or animals besides the koi, watermark.
+
+## deco-drum-tower.png — street deco, 512×512, transparent
+
+> Warm daylight storybook illustration, storybook watercolor–flat hybrid with soft edges, polished mobile-game quality. Palette locked to: primary green #32775E, sky blue #5DAADD, sun yellow #F2BC57, coral #E69777, warm brown #846043, soft gray #B2AEA9, paper cream #FBF5E8, deep teal #1F4D4A, light sand #EAC796, ink #2E2A24 — warm, slightly muted, never neon.
+> A single cute miniature wooden drum tower game asset on a plain solid pure-white background, centered, standing on the ground, portrait orientation. Two short stories of warm brown carved wood with a gently curved deep-teal tiled roof, a big round coral drum with cream drumhead hanging under the top roof, small rope details. Round friendly shapes, clean chunky silhouette.
+> Strictly avoid: any lettering or calligraphy, photorealism, neon, gold metallic trim, drop shadow, background scenery, people, watermark.
+
+## deco-bubble-tea.png — street deco, 512×512, transparent
+
+> Warm daylight storybook illustration, storybook watercolor–flat hybrid with soft edges, polished mobile-game quality. Palette locked to: primary green #32775E, sky blue #5DAADD, sun yellow #F2BC57, coral #E69777, warm brown #846043, soft gray #B2AEA9, paper cream #FBF5E8, deep teal #1F4D4A, light sand #EAC796, ink #2E2A24 — warm, slightly muted, never neon.
+> A single cute small wooden bubble-tea stand game asset on a plain solid pure-white background, centered, sitting on the ground. Little warm brown counter cart with a scalloped coral-and-cream cloth awning, two oversized cream cups with sun-yellow lids and fat straws on the counter, a small blank hanging shop flag. Round friendly shapes, clean chunky silhouette.
+> Strictly avoid: any lettering or logos on cups or flag, photorealism, neon, drop shadow, background scenery, people, watermark.
+
+## deco-paper-umbrella.png — street deco, 512×512, transparent
+
+> Warm daylight storybook illustration, storybook watercolor–flat hybrid with soft edges, polished mobile-game quality. Palette locked to: primary green #32775E, sky blue #5DAADD, sun yellow #F2BC57, coral #E69777, warm brown #846043, soft gray #B2AEA9, paper cream #FBF5E8, deep teal #1F4D4A, light sand #EAC796, ink #2E2A24 — warm, slightly muted, never neon.
+> A single cute open oil-paper parasol game asset on a plain solid pure-white background, centered, standing upright on the ground leaning in a small wooden stand, portrait orientation. Coral and cream paper panels with a soft sun-yellow rim, warm brown bamboo ribs and handle. Completely plain paper panels. Round friendly shape, clean chunky silhouette.
+> Strictly avoid: any lettering, painted flowers or scenes on the paper, photorealism, neon, drop shadow, background scenery, a person holding it, watermark.
+
+## deco-goldfish-banner.png — street deco, 512×512, transparent
+
+> Warm daylight storybook illustration, storybook watercolor–flat hybrid with soft edges, polished mobile-game quality. Palette locked to: primary green #32775E, sky blue #5DAADD, sun yellow #F2BC57, coral #E69777, warm brown #846043, soft gray #B2AEA9, paper cream #FBF5E8, deep teal #1F4D4A, light sand #EAC796, ink #2E2A24 — warm, slightly muted, never neon.
+> A single cute goldfish streamer banner game asset on a plain solid pure-white background, centered, portrait orientation: a warm brown bamboo pole standing on a small base with one plump coral-and-cream cloth goldfish windsock swimming from its top, tail rippling, plus a short sun-yellow ribbon. Round friendly shapes, clean chunky silhouette.
+> Strictly avoid: any lettering, photorealism, neon, drop shadow, background scenery, sky or clouds, people, watermark.
+
+## deco-neon-cat-sign.png — street deco, 512×512, transparent
+
+> Warm evening storybook illustration, storybook watercolor–flat hybrid with soft edges, polished mobile-game quality. Palette locked to: primary green #32775E, sky blue #5DAADD, sun yellow #F2BC57, coral #E69777, warm brown #846043, soft gray #B2AEA9, paper cream #FBF5E8, deep teal #1F4D4A, light sand #EAC796, ink #2E2A24 — warm, slightly muted, never true neon colors.
+> A single cute glowing cat-sign game asset on a plain solid pure-white background, centered, portrait orientation: a deep-teal wooden signboard on a short post, carrying a simplified sitting lucky-cat outline drawn as a soft glowing sun-yellow and coral tube light, one paw raised. The glow is warm and cozy like a paper lantern, not electric. Round friendly shapes, clean chunky silhouette.
+> Strictly avoid: real neon colors (electric pink, cyan, purple), any lettering or characters, photorealism, glare or lens flares, drop shadow, background scenery, watermark.
+
+## deco-shaved-ice-cart.png — street deco, 512×512, transparent
+
+> Warm daylight storybook illustration, storybook watercolor–flat hybrid with soft edges, polished mobile-game quality. Palette locked to: primary green #32775E, sky blue #5DAADD, sun yellow #F2BC57, coral #E69777, warm brown #846043, soft gray #B2AEA9, paper cream #FBF5E8, deep teal #1F4D4A, light sand #EAC796, ink #2E2A24 — warm, slightly muted, never neon.
+> A single cute small wooden shaved-ice cart game asset on a plain solid pure-white background, centered, sitting on the ground. Little warm brown cart on two wheels with a sky-blue and cream striped canopy, a big fluffy mound of shaved ice in a cream bowl on top drizzled with coral and sun-yellow syrup, a small hand crank at the side. Round friendly shapes, clean chunky silhouette — summer treat mood.
+> Strictly avoid: any lettering or price signs, photorealism, neon, drop shadow, background scenery, people, watermark.
+
+## deco-mooncake-stall.png — street deco, 512×512, transparent
+
+> Warm evening storybook illustration, storybook watercolor–flat hybrid with soft edges, polished mobile-game quality. Palette locked to: primary green #32775E, sky blue #5DAADD, sun yellow #F2BC57, coral #E69777, warm brown #846043, soft gray #B2AEA9, paper cream #FBF5E8, deep teal #1F4D4A, light sand #EAC796, ink #2E2A24 — warm, slightly muted, never neon.
+> A single cute small wooden mooncake stall game asset on a plain solid pure-white background, centered, sitting on the ground. Warm brown counter stall with a deep-teal cloth awning, neat pyramids of plump round sun-yellow mooncakes with a simple scalloped flower pattern pressed on top, one small warm paper lantern hanging from the awning corner. Mooncake tops carry only the scalloped flower pattern — no characters. Round friendly shapes, clean chunky silhouette.
+> Strictly avoid: any lettering or Chinese characters stamped on mooncakes or signs, red-and-gold festival styling, photorealism, neon, drop shadow, background scenery, people, watermark.
+
+## deco-firecracker-arch.png — street deco, 512×512, transparent
+
+> Warm daylight storybook illustration, storybook watercolor–flat hybrid with soft edges, polished mobile-game quality. Palette locked to: primary green #32775E, sky blue #5DAADD, sun yellow #F2BC57, coral #E69777, warm brown #846043, soft gray #B2AEA9, paper cream #FBF5E8, deep teal #1F4D4A, light sand #EAC796, ink #2E2A24 — warm, slightly muted, never neon.
+> A single cute festive archway game asset on a plain solid pure-white background, centered, standing on the ground: a rounded warm brown bamboo arch with two strings of plump coral firecracker rolls hanging down its sides, tied with sun-yellow ribbon bows, a small cream paper pinwheel at the top. Festive but soft — no flames, no explosion. Round friendly shapes, clean chunky silhouette.
+> Strictly avoid: fire, sparks, smoke or explosions, red-only color scheme, gold metallic trim, any lettering or Chinese characters, photorealism, neon, drop shadow, background scenery, people, watermark.

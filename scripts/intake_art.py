@@ -14,11 +14,19 @@ Usage:
   python3 scripts/intake_art.py                  # everything in ~/Desktop/hsk-art-drop
   python3 scripts/intake_art.py path/to/img.png  # specific file(s)
   python3 scripts/intake_art.py --install bg-market.png:cand-02
+  python3 scripts/intake_art.py --prune          # list settled targets' leftovers
+  python3 scripts/intake_art.py --prune --yes    # ...and delete them
 
 Raw files must start with the target asset name (`bg-market (2).png` is fine).
 Each raw file becomes drop/processed/<target>/cand-NN/<target>.png and is run
 through scripts/qa_asset.py. `--install target:cand-NN` copies a winner into
 assets/.
+
+Pruning policy: a target is "settled" once assets/<target> is byte-identical
+to one of its processed candidates (i.e. a winner was installed). --prune
+removes that target's candidate dirs and its raw drops — git history keeps
+them browsable. Targets whose asset doesn't match any candidate (hand-edited,
+regenerated elsewhere, or not yet installed) are never touched.
 """
 import json
 import re
@@ -204,7 +212,38 @@ def install(spec):
                     ROOT / "assets" / target])
 
 
+def prune(delete):
+    """Remove candidates + raws for every settled target (see module docstring)."""
+    processed = DROP / "processed"
+    doomed = []
+    for tdir in sorted(processed.iterdir()) if processed.is_dir() else []:
+        target = tdir.name
+        asset = ROOT / "assets" / target
+        if not tdir.is_dir() or not asset.exists():
+            continue
+        installed = asset.read_bytes()
+        if not any(c.is_file() and c.read_bytes() == installed
+                   for c in tdir.glob("cand-*/" + target)):
+            continue  # no candidate matches assets/ — not settled, keep everything
+        doomed.append(tdir)
+        doomed += [p for p in DROP.iterdir()
+                   if p.is_file() and p.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp")
+                   and find_target(p) == target]
+    if not doomed:
+        print("nothing to prune — no settled targets with leftovers")
+        return
+    for p in doomed:
+        print(("rm -r  " if p.is_dir() else "rm     ") + str(p.relative_to(ROOT)))
+        if delete:
+            shutil.rmtree(p) if p.is_dir() else p.unlink()
+    print(f"{'deleted' if delete else 'would delete'} {len(doomed)} paths"
+          + ("" if delete else " — re-run with --yes to delete"))
+
+
 def main(argv):
+    if argv[:1] == ["--prune"]:
+        prune(delete="--yes" in argv[1:])
+        return
     if argv[:1] == ["--install"]:
         for spec in argv[1:]:
             install(spec)
