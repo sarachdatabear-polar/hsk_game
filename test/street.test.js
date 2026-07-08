@@ -102,16 +102,16 @@ describe("streetMetrics", () => {
     expect(m).toHaveProperty("backScale");
   });
 
-  it("unit is the minimum of h*0.30 and w*0.062", () => {
+  it("unit is the minimum of h*0.30 and w*0.105", () => {
     // h-bound case: tall canvas (300w, 400h)
-    // unit = Math.min(400 * 0.30, 300 * 0.062) = Math.min(120, 18.6) = 18.6
+    // unit = Math.min(400 * 0.30, 300 * 0.105) = Math.min(120, 31.5) = 31.5
     const tall = streetMetrics(300, 400);
-    expect(tall.unit).toBeCloseTo(Math.min(120, 18.6), 5);
+    expect(tall.unit).toBeCloseTo(Math.min(120, 31.5), 5);
 
     // w-bound case: wide canvas (1000w, 200h)
-    // unit = Math.min(200 * 0.30, 1000 * 0.062) = Math.min(60, 62) = 60
+    // unit = Math.min(200 * 0.30, 1000 * 0.105) = Math.min(60, 105) = 60
     const wide = streetMetrics(1000, 200);
-    expect(wide.unit).toBeCloseTo(Math.min(60, 62), 5);
+    expect(wide.unit).toBeCloseTo(Math.min(60, 105), 5);
   });
 
   it("backY and frontY are constant fractions", () => {
