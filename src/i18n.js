@@ -228,6 +228,11 @@ export const STRINGS = {
     "battle.introListen": "New: listen first! Play the sound and tap the meaning you hear.",
     "battle.introReverse": "New: you know this word — now pick its hanzi from the meaning!",
     "battle.introTone": "New: tone check! Tap the pinyin with the right tone marks.",
+    "battle.introTyped": "Master level! Type the pinyin yourself — letters first, then tap each tone.",
+    "battle.typedPlaceholder": "type the pinyin letters",
+    "battle.typedGo": "ATTACK!",
+    "battle.typedLettersOk": "letters right — check the tones!",
+    "battle.typedTonesOk": "tones right — check the spelling!",
     // common
     "common.back": "← Home",
     "common.backMore": "← More",
@@ -451,6 +456,11 @@ export const STRINGS = {
     "battle.introListen": "ใหม่: ฟังก่อนนะ! กดฟังเสียงแล้วแตะความหมายที่ได้ยิน",
     "battle.introReverse": "ใหม่: คำนี้คุ้นแล้ว — เลือกตัวอักษรจีนจากความหมายเลย!",
     "battle.introTone": "ใหม่: เช็ควรรณยุกต์! แตะพินอินที่มีวรรณยุกต์ถูกต้อง",
+    "battle.introTyped": "ด่านมาสเตอร์! พิมพ์พินอินเอง — พิมพ์ตัวอักษรก่อน แล้วแตะวรรณยุกต์ของแต่ละพยางค์",
+    "battle.typedPlaceholder": "พิมพ์ตัวอักษรพินอิน",
+    "battle.typedGo": "โจมตี!",
+    "battle.typedLettersOk": "ตัวอักษรถูกแล้ว — เช็ควรรณยุกต์!",
+    "battle.typedTonesOk": "วรรณยุกต์ถูกแล้ว — เช็คตัวสะกด!",
     // common
     "common.back": "← หน้าหลัก",
     "common.backMore": "← เพิ่มเติม",

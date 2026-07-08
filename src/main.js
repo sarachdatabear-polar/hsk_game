@@ -1,6 +1,7 @@
 "use strict";
 import { buildPool, coveragePct, scopeKey, meaning as meaningOf, normalizeLen, modeKey, scopeSummary } from "./pool.js";
 import { formatFor, FORMATS } from "./formats.js";
+import { gradeTyped, syllables, syllableTones, letters } from "./pinyin.js";
 import { killPoints } from "./scoring.js";
 import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus } from "./fx.js";
 import { sfx } from "./sfx.js";
@@ -865,6 +866,8 @@ function spawnZombie(){
   B.speedBase *= 1.03;
   B.speed = B.speedBase * (B.w/380);
 }
+// v6p2: typed questions slow the walker — recall under pressure, not panic.
+const TYPED_WALK_FACTOR = 0.4;
 // One renderer for every question format. Options come back from the FORMATS
 // registry as plain data; promptKey (boss stage 2 / regular reverse) adds the
 // full-width prompt row above the grid, reusing the boss-prompt styling.
@@ -879,6 +882,7 @@ function renderQuestion(word, format, promptKey){
     prompt.textContent = t(promptKey, { meaning: m.main });
     box.appendChild(prompt);
   }
+  if(FORMATS[format].input){ renderTypedInput(word); return; }
   if(format === "listen"){
     const rp = document.createElement("button");
     rp.className = "replay";
@@ -896,6 +900,66 @@ function renderQuestion(word, format, promptKey){
     b.onclick = ()=>answer(b, o);
     box.appendChild(b);
   }
+}
+// v6p2 typed-pinyin input: letters field (native keyboard) + one tone row per
+// non-neutral syllable + attack button. Grading is pure (pinyin.js); the
+// result routes through the same answer() flow as a tapped option.
+function renderTypedInput(word){
+  const box = $("#opts");
+  const wrap = document.createElement("div");
+  wrap.className = "typed-box";
+  const field = document.createElement("input");
+  field.type = "text";
+  field.className = "typed-letters";
+  field.placeholder = t("battle.typedPlaceholder");
+  field.autocapitalize = "off"; field.autocomplete = "off";
+  field.spellcheck = false; field.setAttribute("autocorrect", "off");
+  wrap.appendChild(field);
+  const sylls = syllables(word.p), tones = syllableTones(word.p);
+  const picks = tones.map(() => 0);
+  const go = document.createElement("button");
+  const sync = () => { go.disabled = !field.value.trim() || tones.some((tn, i) => tn > 0 && !picks[i]); };
+  tones.forEach((tn, i) => {
+    if(!tn) return;                     // neutral syllable — nothing to pick
+    const row = document.createElement("div");
+    row.className = "tone-row";
+    const lab = document.createElement("span");
+    lab.className = "tone-label";
+    lab.textContent = letters(sylls[i]);
+    row.appendChild(lab);
+    for(let k = 1; k <= 4; k++){
+      const c = document.createElement("button");
+      c.className = "chip tone-chip";
+      c.textContent = String(k);
+      c.onclick = () => {
+        picks[i] = k;
+        row.querySelectorAll(".tone-chip").forEach(x => x.classList.toggle("on", x === c));
+        sync();
+      };
+      row.appendChild(c);
+    }
+    wrap.appendChild(row);
+  });
+  go.className = "typed-go";
+  go.textContent = t("battle.typedGo");
+  go.disabled = true;
+  field.oninput = sync;
+  go.onclick = () => {
+    const g = gradeTyped(word.p, field.value, picks.filter((_, i) => tones[i] > 0));
+    field.disabled = true;
+    if(!g.ok){
+      // kind diff: always show the right pinyin; name what was close
+      const diff = document.createElement("div");
+      diff.className = "boss-prompt";
+      diff.textContent = word.p
+        + (g.lettersOk ? " · " + t("battle.typedLettersOk")
+           : g.tonesOk ? " · " + t("battle.typedTonesOk") : "");
+      wrap.appendChild(diff);
+    }
+    answer(go, { correct: g.ok });
+  };
+  wrap.appendChild(go);
+  box.appendChild(wrap);
 }
 function showFormatIntro(key){
   $("#fi-text").textContent = t(key);
@@ -918,7 +982,7 @@ function showFormatIntro(key){
 }
 function lockOptions(){
   B.locked = true;
-  document.querySelectorAll("#opts button").forEach(b=>b.disabled = true);
+  document.querySelectorAll("#opts button, #opts input").forEach(b=>b.disabled = true);
 }
 function revealCorrect(){
   document.querySelectorAll("#opts button").forEach(b=>{
@@ -1076,7 +1140,7 @@ function loop(now){
   if(z){
     if(z.state==="walk"){
       if(!z.frozen){
-        z.x -= B.speed*(z.boss?bossSpeedFactor:1)*dt;
+        z.x -= B.speed*(z.boss?bossSpeedFactor:1)*(z.format==="typed"?TYPED_WALK_FACTOR:1)*dt;
         if(z.x <= B.L.mascotX+B.L.catHalf) bite(true);          // too slow — cat got there
       }
     }else if(z.state==="dash"){

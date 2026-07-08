@@ -163,6 +163,26 @@
     });
     return chars.join("");
   }
+  function syllables(p) {
+    return (p || "").split(/[\s']+/).filter(Boolean);
+  }
+  function syllableTones(p) {
+    return syllables(p).map((s) => {
+      const slots = toneSlots(s);
+      return slots.length ? slots[0].tone : 0;
+    });
+  }
+  function letters(p, uu = "v") {
+    return [...(p || "").toLowerCase()].map((ch) => TONE_OF[ch] ? TONE_OF[ch].vowel : ch).join("").replace(/ü/g, uu).replace(/[^a-z]/g, "");
+  }
+  function gradeTyped(p, typedLetters, toneChoices) {
+    const norm = (typedLetters || "").toLowerCase().replace(/ü/g, "v").replace(/[^a-z]/g, "");
+    const lettersOk = norm === letters(p, "v") || norm === letters(p, "u");
+    const want = syllableTones(p).filter((t2) => t2 > 0);
+    const got = toneChoices || [];
+    const tonesOk = want.length === got.length && want.every((t2, i) => t2 === got[i]);
+    return { ok: lettersOk && tonesOk, lettersOk, tonesOk };
+  }
   function shuffle2(a, rand) {
     for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(rand() * (i + 1));
@@ -197,7 +217,7 @@
   }
   function formatFor(word, rec, caps = { audio: true }) {
     const r = rec && rec.r || 0;
-    let f = r >= 5 ? "tone" : r >= 3 ? "reverse" : r >= 1 ? "listen" : "meaning";
+    let f = r >= 7 ? "typed" : r >= 5 ? "tone" : r >= 3 ? "reverse" : r >= 1 ? "listen" : "meaning";
     if (f === "listen" && !caps.audio) f = "meaning";
     if (f === "tone" && toneSlots(word.p).length === 0) f = "meaning";
     return f;
@@ -248,6 +268,15 @@
           rand
         );
       }
+    },
+    typed: {
+      plaque: { hz: true },
+      // hanzi only; pinyin would be the answer
+      audio: "never",
+      // hearing the word would give it away
+      intro: "battle.introTyped",
+      input: true
+      // main.js renders the typed input UI, not option buttons
     }
   };
 
@@ -2163,6 +2192,11 @@
       "battle.introListen": "New: listen first! Play the sound and tap the meaning you hear.",
       "battle.introReverse": "New: you know this word \u2014 now pick its hanzi from the meaning!",
       "battle.introTone": "New: tone check! Tap the pinyin with the right tone marks.",
+      "battle.introTyped": "Master level! Type the pinyin yourself \u2014 letters first, then tap each tone.",
+      "battle.typedPlaceholder": "type the pinyin letters",
+      "battle.typedGo": "ATTACK!",
+      "battle.typedLettersOk": "letters right \u2014 check the tones!",
+      "battle.typedTonesOk": "tones right \u2014 check the spelling!",
       // common
       "common.back": "\u2190 Home",
       "common.backMore": "\u2190 More",
@@ -2386,6 +2420,11 @@
       "battle.introListen": "\u0E43\u0E2B\u0E21\u0E48: \u0E1F\u0E31\u0E07\u0E01\u0E48\u0E2D\u0E19\u0E19\u0E30! \u0E01\u0E14\u0E1F\u0E31\u0E07\u0E40\u0E2A\u0E35\u0E22\u0E07\u0E41\u0E25\u0E49\u0E27\u0E41\u0E15\u0E30\u0E04\u0E27\u0E32\u0E21\u0E2B\u0E21\u0E32\u0E22\u0E17\u0E35\u0E48\u0E44\u0E14\u0E49\u0E22\u0E34\u0E19",
       "battle.introReverse": "\u0E43\u0E2B\u0E21\u0E48: \u0E04\u0E33\u0E19\u0E35\u0E49\u0E04\u0E38\u0E49\u0E19\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E40\u0E25\u0E37\u0E2D\u0E01\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E08\u0E35\u0E19\u0E08\u0E32\u0E01\u0E04\u0E27\u0E32\u0E21\u0E2B\u0E21\u0E32\u0E22\u0E40\u0E25\u0E22!",
       "battle.introTone": "\u0E43\u0E2B\u0E21\u0E48: \u0E40\u0E0A\u0E47\u0E04\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C! \u0E41\u0E15\u0E30\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19\u0E17\u0E35\u0E48\u0E21\u0E35\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C\u0E16\u0E39\u0E01\u0E15\u0E49\u0E2D\u0E07",
+      "battle.introTyped": "\u0E14\u0E48\u0E32\u0E19\u0E21\u0E32\u0E2A\u0E40\u0E15\u0E2D\u0E23\u0E4C! \u0E1E\u0E34\u0E21\u0E1E\u0E4C\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19\u0E40\u0E2D\u0E07 \u2014 \u0E1E\u0E34\u0E21\u0E1E\u0E4C\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E01\u0E48\u0E2D\u0E19 \u0E41\u0E25\u0E49\u0E27\u0E41\u0E15\u0E30\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C\u0E02\u0E2D\u0E07\u0E41\u0E15\u0E48\u0E25\u0E30\u0E1E\u0E22\u0E32\u0E07\u0E04\u0E4C",
+      "battle.typedPlaceholder": "\u0E1E\u0E34\u0E21\u0E1E\u0E4C\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E1E\u0E34\u0E19\u0E2D\u0E34\u0E19",
+      "battle.typedGo": "\u0E42\u0E08\u0E21\u0E15\u0E35!",
+      "battle.typedLettersOk": "\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E16\u0E39\u0E01\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E40\u0E0A\u0E47\u0E04\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C!",
+      "battle.typedTonesOk": "\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C\u0E16\u0E39\u0E01\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E40\u0E0A\u0E47\u0E04\u0E15\u0E31\u0E27\u0E2A\u0E30\u0E01\u0E14!",
       // common
       "common.back": "\u2190 \u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
       "common.backMore": "\u2190 \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
@@ -3448,6 +3487,7 @@
     B.speedBase *= 1.03;
     B.speed = B.speedBase * (B.w / 380);
   }
+  var TYPED_WALK_FACTOR = 0.4;
   function renderQuestion(word, format, promptKey) {
     const deck = B.deck.length >= 8 ? B.deck : pool;
     const box = $("#opts");
@@ -3458,6 +3498,10 @@
       prompt.className = "boss-prompt";
       prompt.textContent = t(promptKey, { meaning: m.main });
       box.appendChild(prompt);
+    }
+    if (FORMATS[format].input) {
+      renderTypedInput(word);
+      return;
     }
     if (format === "listen") {
       const rp = document.createElement("button");
@@ -3473,6 +3517,64 @@
       b.onclick = () => answer(b, o);
       box.appendChild(b);
     }
+  }
+  function renderTypedInput(word) {
+    const box = $("#opts");
+    const wrap = document.createElement("div");
+    wrap.className = "typed-box";
+    const field = document.createElement("input");
+    field.type = "text";
+    field.className = "typed-letters";
+    field.placeholder = t("battle.typedPlaceholder");
+    field.autocapitalize = "off";
+    field.autocomplete = "off";
+    field.spellcheck = false;
+    field.setAttribute("autocorrect", "off");
+    wrap.appendChild(field);
+    const sylls = syllables(word.p), tones = syllableTones(word.p);
+    const picks = tones.map(() => 0);
+    const go = document.createElement("button");
+    const sync = () => {
+      go.disabled = !field.value.trim() || tones.some((tn, i) => tn > 0 && !picks[i]);
+    };
+    tones.forEach((tn, i) => {
+      if (!tn) return;
+      const row = document.createElement("div");
+      row.className = "tone-row";
+      const lab = document.createElement("span");
+      lab.className = "tone-label";
+      lab.textContent = letters(sylls[i]);
+      row.appendChild(lab);
+      for (let k = 1; k <= 4; k++) {
+        const c = document.createElement("button");
+        c.className = "chip tone-chip";
+        c.textContent = String(k);
+        c.onclick = () => {
+          picks[i] = k;
+          row.querySelectorAll(".tone-chip").forEach((x) => x.classList.toggle("on", x === c));
+          sync();
+        };
+        row.appendChild(c);
+      }
+      wrap.appendChild(row);
+    });
+    go.className = "typed-go";
+    go.textContent = t("battle.typedGo");
+    go.disabled = true;
+    field.oninput = sync;
+    go.onclick = () => {
+      const g = gradeTyped(word.p, field.value, picks.filter((_, i) => tones[i] > 0));
+      field.disabled = true;
+      if (!g.ok) {
+        const diff = document.createElement("div");
+        diff.className = "boss-prompt";
+        diff.textContent = word.p + (g.lettersOk ? " \xB7 " + t("battle.typedLettersOk") : g.tonesOk ? " \xB7 " + t("battle.typedTonesOk") : "");
+        wrap.appendChild(diff);
+      }
+      answer(go, { correct: g.ok });
+    };
+    wrap.appendChild(go);
+    box.appendChild(wrap);
   }
   function showFormatIntro(key) {
     $("#fi-text").textContent = t(key);
@@ -3494,7 +3596,7 @@
   }
   function lockOptions() {
     B.locked = true;
-    document.querySelectorAll("#opts button").forEach((b) => b.disabled = true);
+    document.querySelectorAll("#opts button, #opts input").forEach((b) => b.disabled = true);
   }
   function revealCorrect() {
     document.querySelectorAll("#opts button").forEach((b) => {
@@ -3647,7 +3749,7 @@
     if (z) {
       if (z.state === "walk") {
         if (!z.frozen) {
-          z.x -= B.speed * (z.boss ? bossSpeedFactor : 1) * dt;
+          z.x -= B.speed * (z.boss ? bossSpeedFactor : 1) * (z.format === "typed" ? TYPED_WALK_FACTOR : 1) * dt;
           if (z.x <= B.L.mascotX + B.L.catHalf) bite(true);
         }
       } else if (z.state === "dash") {
