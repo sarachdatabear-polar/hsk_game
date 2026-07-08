@@ -234,6 +234,7 @@ export const STRINGS = {
     "battle.typedGo": "ATTACK!",
     "battle.typedLettersOk": "letters right — check the tones!",
     "battle.typedTonesOk": "tones right — check the spelling!",
+    "battle.toneAria": "tone {n} for {syl}",
     // common
     "common.back": "← Home",
     "common.backMore": "← More",
@@ -463,6 +464,7 @@ export const STRINGS = {
     "battle.typedGo": "โจมตี!",
     "battle.typedLettersOk": "ตัวอักษรถูกแล้ว — เช็ควรรณยุกต์!",
     "battle.typedTonesOk": "วรรณยุกต์ถูกแล้ว — เช็คตัวสะกด!",
+    "battle.toneAria": "วรรณยุกต์ {n} ของ {syl}",
     // common
     "common.back": "← หน้าหลัก",
     "common.backMore": "← เพิ่มเติม",
