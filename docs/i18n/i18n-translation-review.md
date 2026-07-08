@@ -6,7 +6,7 @@ native Thai speaker before store launch. Focus areas:
 - Consistency of "เหรียญ" (coins) and level/quest terminology.
 - Interpolation reads correctly with real numbers ({n}, {score}, {acc}).
 - No clipping in narrow buttons on small screens.
-- Keep translations plain text — a few strings are injected as HTML; never add markup beyond the existing `<b>` tags in `scope.readout` / `shop.wallet`.
+- Keep translations plain text — a few strings are injected as HTML; never add markup beyond the existing `<b>` tags in `scope.readout` / `shop.wallet` / `howto.*` (the latter render via `data-i18n-html` on `#s-howto`, not the plain-text `data-i18n` walker).
 
 Update `STRINGS.th` in `src/i18n.js`; the `i18n.test.js` coverage test guarantees
 no key is dropped. Run `npm run build` after edits.
