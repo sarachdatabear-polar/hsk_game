@@ -36,7 +36,7 @@
 ## Planned
 
 1. **Release cut to live** — merge `development` (PR #39 typed-polish) to `main`; bump SHELL, live-smoke verify. Small enough to ride with the next feature round.
-2. **v6 phase 3** — remaining question types per [PRD-v5 §8](prd/PRD-v5-visual-retention.md): cloze (needs a sentence-data pipeline — brainstorm first) and the tone minigame.
+2. **v6 phase 3** — cloze **shipped**: pipeline+data (PR #41) and the gameplay format (`feat/v6-cloze-gameplay`: `src/cloze.js`, ladder rung 7–8, blanked-sentence prompt row, 0.6× walk, tests) both done. Remaining per [PRD-v5 §8](prd/PRD-v5-visual-retention.md): the tone minigame.
 3. **Roadmaps not started:** [monetization & production](prd/PRD-monetization-and-production.md) (Supabase accounts, store launch); HSK 3.0 content refresh; social layer; notifications/widget; Android release refresh ([ANDROID_BUILD.md](build/ANDROID_BUILD.md))
 
 ## Doc map

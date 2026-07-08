@@ -5,7 +5,7 @@
 const SHELL = "nbhsk-shell-v35";
 const AUDIO = "nbhsk-audio-v1";
 const PRECACHE = [
-  "index.html", "dist/app.js", "data/words.js", "audio/index.json",
+  "index.html", "dist/app.js", "data/words.js", "data/cloze.js", "audio/index.json",
   "pwa/manifest.webmanifest", "pwa/icons/icon-192.png", "pwa/icons/icon-512.png",
   // art assets — tolerant: missing files are silently skipped so a partial
   // asset drop never bricks an offline install

@@ -2,6 +2,7 @@
 import { buildPool, coveragePct, scopeKey, meaning as meaningOf, normalizeLen, modeKey, scopeSummary } from "./pool.js";
 import { formatFor, FORMATS } from "./formats.js";
 import { gradeTyped, syllables, syllableTones, letters } from "./pinyin.js";
+import { clozeFor } from "./cloze.js";
 import { killPoints } from "./scoring.js";
 import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus } from "./fx.js";
 import { sfx } from "./sfx.js";
@@ -33,6 +34,15 @@ import { journeyNodes, currentNodeId } from "./journey.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
+// v6 phase 3: cloze sentence data + baked distractors, loaded via a <script>
+// tag before dist/app.js. Undefined on file:// if the tag is missing → the
+// cloze format never triggers (caps.cloze returns false for every word).
+const CLOZE = window.HSK_CLOZE || {};
+// hanzi → full record, over the WHOLE dataset (not the scoped pool). Cloze
+// distractors may be words outside a top-N scope, so their pinyin subs must
+// resolve here. Built once at boot.
+const BY_HANZI = {};
+for (const lv of Object.values(D.levels)) for (const w of lv) BY_HANZI[w.h] = w;
 const $ = s => document.querySelector(s);
 // Accessibility (§11): read once at boot. When set, feedback-stamp effects
 // (drawFeedbackLayer) get half the on-screen duration and the hit-flash
@@ -848,7 +858,7 @@ function spawnZombie(){
   // v6 ladder: per-word format from the mastery streak. Bosses keep their own
   // two-stage ritual and the A4 intro battle stays meaning-only.
   z.format = (z.boss || introPhase === "battle") ? "meaning"
-    : formatFor(w, masteryStore[w.h], { audio: audioAvailable(w.h) });
+    : formatFor(w, masteryStore[w.h], { audio: audioAvailable(w.h), cloze: x => x.h in CLOZE });
   // v6 soft-intro: the first-ever appearance of a format freezes the walker,
   // the guide explains it in one line, and that word can never cost a life.
   const introKey = FORMATS[z.format].intro;
@@ -868,6 +878,22 @@ function spawnZombie(){
 }
 // v6p2: typed questions slow the walker — recall under pressure, not panic.
 const TYPED_WALK_FACTOR = 0.4;
+// v6p3: cloze is tap-answer but demands reading time — gentler than typed.
+const CLOZE_WALK_FACTOR = 0.6;
+// Append the 4 option buttons for a plain-data option list. Shared by every
+// tap-answer format (the cloze branch and the generic branch both call it).
+function renderOptionButtons(box, opts){
+  for(const o of opts){
+    const b = document.createElement("button");
+    // Label wrapped in its own span (not just a bare text node) so short
+    // viewports can -webkit-line-clamp it specifically — an ellipsis on the
+    // primary answer only, never a silent symmetric crop across label+sub.
+    b.innerHTML = `<span class="opt-label">${o.label}</span>` + (o.sub? `<span class="th">${o.sub}</span>`:"");
+    b._correct = !!o.correct;
+    b.onclick = ()=>answer(b, o);
+    box.appendChild(b);
+  }
+}
 // One renderer for every question format. Options come back from the FORMATS
 // registry as plain data; promptKey (boss stage 2 / regular reverse) adds the
 // full-width prompt row above the grid, reusing the boss-prompt styling.
@@ -875,6 +901,28 @@ function renderQuestion(word, format, promptKey){
   const deck = B.deck.length >= 8 ? B.deck : pool;
   const box = $("#opts");
   box.innerHTML = "";
+  // v6p3 cloze: a blanked sentence + translation prompt row, then tap 1 of 4
+  // hanzi. Distractors are baked in the data and their pinyin subs resolve
+  // over the full dataset (BY_HANZI), not the scoped pool.
+  if(format === "cloze"){
+    const c = clozeFor(word, CLOZE);
+    const prompt = document.createElement("div");
+    prompt.className = "boss-prompt cloze-prompt";
+    const sent = document.createElement("div");
+    sent.className = "cloze-sentence";
+    sent.textContent = c ? c.text : "___";
+    prompt.appendChild(sent);
+    const tr = document.createElement("div");
+    tr.className = "cloze-trans";
+    tr.textContent = !c ? ""
+      : scope.lang === "th" ? c.th
+      : scope.lang === "both" ? (c.th ? c.en + " · " + c.th : c.en)
+      : c.en;
+    prompt.appendChild(tr);
+    box.appendChild(prompt);
+    renderOptionButtons(box, FORMATS.cloze.buildOptions(word, c || { d: [] }, BY_HANZI, Math.random));
+    return;
+  }
   if(promptKey){
     const m = meaningOf(word, scope.lang);
     const prompt = document.createElement("div");
@@ -890,16 +938,7 @@ function renderQuestion(word, format, promptKey){
     rp.onclick = ()=> speak(word.h);   // never locked — replay is always allowed
     box.appendChild(rp);
   }
-  for(const o of FORMATS[format].buildOptions(word, deck, scope.lang, Math.random)){
-    const b = document.createElement("button");
-    // Label wrapped in its own span (not just a bare text node) so short
-    // viewports can -webkit-line-clamp it specifically — an ellipsis on the
-    // primary answer only, never a silent symmetric crop across label+sub.
-    b.innerHTML = `<span class="opt-label">${o.label}</span>` + (o.sub? `<span class="th">${o.sub}</span>`:"");
-    b._correct = !!o.correct;
-    b.onclick = ()=>answer(b, o);
-    box.appendChild(b);
-  }
+  renderOptionButtons(box, FORMATS[format].buildOptions(word, deck, scope.lang, Math.random));
 }
 // v6p2 typed-pinyin input: letters field (native keyboard) + one tone row per
 // non-neutral syllable + attack button. Grading is pure (pinyin.js); the
@@ -1150,7 +1189,7 @@ function loop(now){
   if(z){
     if(z.state==="walk"){
       if(!z.frozen){
-        z.x -= B.speed*(z.boss?bossSpeedFactor:1)*(z.format==="typed"?TYPED_WALK_FACTOR:1)*dt;
+        z.x -= B.speed*(z.boss?bossSpeedFactor:1)*(z.format==="typed"?TYPED_WALK_FACTOR:z.format==="cloze"?CLOZE_WALK_FACTOR:1)*dt;
         if(z.x <= B.L.mascotX+B.L.catHalf) bite(true);          // too slow — cat got there
       }
     }else if(z.state==="dash"){

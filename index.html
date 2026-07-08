@@ -379,6 +379,12 @@
   .boss-prompt{grid-column:1/-1; text-align:center; font-weight:800; font-size:14px;
     color:var(--lc-brown); background-color:var(--lc-cream); border:1.5px solid var(--lc-brown);
     border-radius:10px; padding:8px 10px;}
+  /* v6p3 cloze: the blanked sentence (bigger hanzi) over a muted translation.
+     17px keeps hanzi legible while staying gentle on landscape height (the
+     boss-prompt row is 14px). Verify with the responsive sweep before release. */
+  .cloze-sentence{font-size:17px; line-height:1.35; letter-spacing:.02em;}
+  .cloze-trans{margin-top:3px; font-weight:600; font-size:12px; opacity:.75;}
+  .cloze-trans:empty{display:none;}
   #opts .replay{grid-column:1/-1; font-weight:800; padding:8px 0;}
   /* v6p2 typed-pinyin input: #opts-prefixed selectors on the button-shaped
      pieces (tone-chip, typed-go) so they out-specificity the base
@@ -1047,6 +1053,7 @@
       in flashcards, and in the missed-words review.</p>
     <p class="howto" data-i18n-html="howto.learnMode"><b>Learn mode</b> drills the same word pool as flashcards first, so you can
       study, then play.</p>
+    <p class="howto" data-i18n="howto.attribution">Some example sentences from Tatoeba (tatoeba.org), CC-BY 2.0 FR.</p>
   </div>
 
   <!-- BOTTOM NAV -->
@@ -1060,6 +1067,7 @@
 </div>
 
 <script src="data/words.js"></script>
+<script src="data/cloze.js"></script>
 <script src="dist/app.js"></script>
 </body>
 </html>
