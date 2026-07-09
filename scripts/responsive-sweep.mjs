@@ -138,6 +138,20 @@ function probeScreen([screenName, tol]) {
   return { overflowX, wide, small, clippedBelow };
 }
 
+// nav-reachable: the bottom tab bar must be fully inside the viewport at the
+// current scroll position. Trivially true on screens whose document fits the
+// viewport; on tall documents (shop catalog) it requires the bar to stick.
+function probeNavReachable(tol) {
+  const nav = document.querySelector("#bottom-nav");
+  if (!nav) return "missing";
+  const r = nav.getBoundingClientRect();
+  if (r.width <= 0 || r.height <= 0) return "hidden";
+  const inView = r.top < window.innerHeight && r.bottom <= window.innerHeight + tol;
+  return inView
+    ? "in-view"
+    : `out(top=${Math.round(r.top)},bottom=${Math.round(r.bottom)},ih=${window.innerHeight})`;
+}
+
 function probeStartInFold(tol) {
   const b = document.querySelector("#home-start");
   if (!b) return "missing";
@@ -265,9 +279,42 @@ async function runFullSweep() {
 
     const home = await page.evaluate(probeScreen, ["home", TOL]);
     const startVisible = await page.evaluate(probeStartInFold, TOL);
+    const overscrollY = await page.evaluate(
+      () => getComputedStyle(document.documentElement).overscrollBehaviorY
+    );
 
     await goToShop(page);
     const shop = await page.evaluate(probeScreen, ["shop", TOL]);
+
+    // nav-reachable: on shop the tab bar must be inside the viewport both at
+    // the top of the document and after scrolling to the middle of the (tall)
+    // catalog — persistent nav, not "scroll the whole catalog to find it".
+    // Trivially passes on viewports where the shop document fits.
+    const navAtTop = await page.evaluate(probeNavReachable, TOL);
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight / 2));
+    await page.waitForTimeout(100);
+    const navAtMid = await page.evaluate(probeNavReachable, TOL);
+    await page.evaluate(() => window.scrollTo(0, 0));
+
+    // stale-scroll: scroll to the bottom of shop, then navigate to progress
+    // via show() — the document scroll position must reset to 0, not carry
+    // over from the previous screen (both screens ride the shared document
+    // scroller; there's no per-screen scroll container). Progress (rather
+    // than home) is used as the target because it's tall enough that the
+    // browser doesn't clamp the carried-over scrollY back to 0 on its own,
+    // which would mask the bug. One portrait phone viewport is enough — this
+    // isn't viewport-size-dependent.
+    let staleScrollY = null;
+    if (name === "s-360") {
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      await page.evaluate(() => document.querySelector('[data-go="progress"]')?.click());
+      await page.waitForTimeout(150);
+      staleScrollY = await page.evaluate(() => window.scrollY);
+      // Restore to home for the rest of this viewport's flow (goToBattle
+      // clicks home again anyway, but keep this probe self-contained).
+      await page.evaluate(() => document.querySelector('[data-go="home"]')?.click());
+      await page.waitForTimeout(100);
+    }
 
     await goToBattle(page);
     const battle = await page.evaluate(probeScreen, ["battle", TOL]);
@@ -289,6 +336,11 @@ async function runFullSweep() {
     if (shop.wide.length) failures.push(`shop wide:[${shop.wide}]`);
     if (battle.wide.length) failures.push(`battle wide:[${battle.wide}]`);
     if (battle.clippedBelow > 0) failures.push(`battle clipped-below=${battle.clippedBelow}`);
+    if (overscrollY !== "none") failures.push(`overscroll-behavior-y=${overscrollY}`);
+    if (navAtTop !== "in-view") failures.push(`shop nav-unreachable@top:${navAtTop}`);
+    if (navAtMid !== "in-view") failures.push(`shop nav-unreachable@mid:${navAtMid}`);
+    if (staleScrollY !== null && staleScrollY > 1)
+      failures.push(`stale-scroll: shop->progress scrollY=${staleScrollY}`);
     if (!battleInfo.cvSize) failures.push("battle #cv missing");
     else if (battleInfo.cvSize.h < 160) failures.push(`battle #cv height=${battleInfo.cvSize.h}<160`);
     if (battleInfo.optBtnCount !== 4) failures.push(`battle #opts count=${battleInfo.optBtnCount}!=4`);

@@ -406,6 +406,10 @@ function show(name){
   document.querySelectorAll(".screen").forEach(el=>el.classList.remove("on"));
   $("#s-"+name).classList.add("on");
   updateNav(name);
+  // All screens share the single document scroller (no per-screen scroll
+  // container) — reset it on every switch so a scrolled-down previous
+  // screen never leaks its position into the next one.
+  window.scrollTo(0, 0);
   if(name==="home"){ renderHome(); }
   if(name==="street"){ renderStreet(); }
   if(name==="quests"){ renderQuests(); }
