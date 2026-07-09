@@ -19,6 +19,11 @@ the backend be stood up and reviewed independently of client work.
 3. Enable the auth providers the PRD calls for: anonymous (guest), Google,
    Apple, email magic-link (§6.1).
 
+The script is **idempotent** — tables/indexes are `if not exists`, the trigger
+uses `create or replace`, and each policy is dropped-if-exists before create —
+so re-running it is safe as the schema evolves. (Requires Postgres 14+, which
+Supabase satisfies.)
+
 ## Design guardrails (do not violate)
 
 - **Offline-first:** the app must stay fully playable as a guest with no

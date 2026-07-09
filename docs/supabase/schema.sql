@@ -44,7 +44,7 @@ create table if not exists public.profiles (
   updated_at   timestamptz not null default now()
 );
 
-create trigger profiles_touch before update on public.profiles
+create or replace trigger profiles_touch before update on public.profiles
   for each row execute function public.touch_updated_at();
 
 -- ---------------------------------------------------------------------------
@@ -64,7 +64,7 @@ create table if not exists public.progress (
   updated_at timestamptz not null default now()
 );
 
-create trigger progress_touch before update on public.progress
+create or replace trigger progress_touch before update on public.progress
   for each row execute function public.touch_updated_at();
 
 -- ---------------------------------------------------------------------------
@@ -81,7 +81,7 @@ create table if not exists public.wallet (
   updated_at        timestamptz not null default now()
 );
 
-create trigger wallet_touch before update on public.wallet
+create or replace trigger wallet_touch before update on public.wallet
   for each row execute function public.touch_updated_at();
 
 -- ---------------------------------------------------------------------------
@@ -125,24 +125,29 @@ alter table public.entitlements enable row level security;
 alter table public.ledger       enable row level security;
 
 -- profiles: full self access.
+drop policy if exists profiles_self on public.profiles;
 create policy profiles_self on public.profiles
   for all using (auth.uid() = id) with check (auth.uid() = id);
 
 -- progress: full self access (local-first gameplay reconciles its own row).
+drop policy if exists progress_self on public.progress;
 create policy progress_self on public.progress
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- wallet: user may read + reconcile EARNED coins on their own row. The daily
 -- cap and purchased-coin authority are enforced server-side (Edge Function /
 -- trigger); this policy is the client surface for local-first earned balance.
+drop policy if exists wallet_self on public.wallet;
 create policy wallet_self on public.wallet
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- entitlements: READ-ONLY for the owner. No client insert/update/delete —
 -- only the webhook (service_role) writes here. (§7.2)
+drop policy if exists entitlements_read_self on public.entitlements;
 create policy entitlements_read_self on public.entitlements
   for select using (auth.uid() = user_id);
 
 -- ledger: READ-ONLY for the owner; writes are service_role only.
+drop policy if exists ledger_read_self on public.ledger;
 create policy ledger_read_self on public.ledger
   for select using (auth.uid() = user_id);
