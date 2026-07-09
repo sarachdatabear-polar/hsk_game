@@ -44,9 +44,10 @@
     return "HSK" + scope2.levels.join("+") + (scope2.core ? "\xB7HY" : "") + (scope2.newOnly ? "\xB7NEW" : "") + (scope2.topN ? "\xB7top" + scope2.topN : "");
   }
   function meaning(w, lang) {
-    if (lang === "en") return { main: w.e, sub: "" };
-    if (lang === "th") return w.t ? { main: w.t, sub: "" } : { main: w.e + " *", sub: "" };
-    return { main: w.e, sub: w.t || "" };
+    const e = (w.e || "").replace(/ \+ /g, " \xB7 ");
+    if (lang === "en") return { main: e, sub: "" };
+    if (lang === "th") return w.t ? { main: w.t, sub: "" } : { main: e + " *", sub: "" };
+    return { main: e, sub: w.t || "" };
   }
   function normalizeLen(v) {
     if (v === null || v === void 0 || v === "") return 20;
@@ -2096,6 +2097,7 @@
       "scope.english": "English",
       "scope.both": "Both",
       "scope.sessionLen": "Session length",
+      "scope.advanced": "Advanced options",
       "scope.custom": "Custom",
       "scope.customPh": "5\u2013500",
       "scope.endless": "Endless",
@@ -2345,6 +2347,7 @@
       "scope.english": "\u0E2D\u0E31\u0E07\u0E01\u0E24\u0E29",
       "scope.both": "\u0E17\u0E31\u0E49\u0E07\u0E2A\u0E2D\u0E07",
       "scope.sessionLen": "\u0E08\u0E33\u0E19\u0E27\u0E19\u0E04\u0E33\u0E15\u0E48\u0E2D\u0E23\u0E2D\u0E1A",
+      "scope.advanced": "\u0E15\u0E31\u0E27\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E02\u0E31\u0E49\u0E19\u0E2A\u0E39\u0E07",
       "scope.custom": "\u0E01\u0E33\u0E2B\u0E19\u0E14\u0E40\u0E2D\u0E07",
       "scope.customPh": "5\u2013500",
       "scope.endless": "\u0E44\u0E21\u0E48\u0E08\u0E33\u0E01\u0E31\u0E14",
@@ -4183,7 +4186,7 @@
     ctx2.textAlign = "center";
     const hopping = B.mascotHopUntil && now < B.mascotHopUntil;
     const playerState = hopping ? "happy" : "walk";
-    drawCat(ctx2, B.L.mascotX, gy + 6 * B.S, now, playerState, SKIN_PALETTES[shopState.skin], 0.9 * B.S, B.acc, false);
+    drawCat(ctx2, B.L.mascotX, gy + 6 * B.S, now, playerState, SKIN_PALETTES[shopState.skin], 1 * B.S, B.acc, false);
     if (B.hasKitten) drawCat(ctx2, B.L.mascotX - B.L.catHalf, gy + 6 * B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5 * B.S, [], false);
     const coinImgIdle = sprite("coin");
     if (coinImgIdle) {
@@ -4196,7 +4199,7 @@
       const fl = FORMATS[z.format || "meaning"].plaque;
       const live = z.state === "walk" && !z.revealed;
       drawWordPlate(z, { mask: live && !!fl.mask, icon: live && !!fl.icon, py: !live || !!fl.py }, now);
-      const rScale = z.boss ? 1.5 * B.S : B.S;
+      const rScale = z.boss ? 1.7 * B.S : 1.25 * B.S;
       drawRaccoon(ctx2, z.x, gy + 6 * B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
       let hpFrac = z.hp;
       if (z.state === "happy" && B.dyingUntil) {
@@ -4860,6 +4863,9 @@
       drawCat(c, w * 0.52, h + 6, now, "walk", SKIN_PALETTES[item.id], 0.72, [], false);
     } else if (item.type === "backdrop") {
       const img2 = sprite(`bg-${item.id}`);
+      c.save();
+      roundRectOn(c, 0, 0, w, h, 10);
+      c.clip();
       if (img2) drawCoverImage(c, img2, 0, 0, w, h);
       else paintBackdrop(c, w, h, h - 7, item.id, now);
       c.strokeStyle = "rgba(245,197,24,.55)";
@@ -4867,6 +4873,11 @@
       c.beginPath();
       c.moveTo(0, h - 8);
       c.lineTo(w, h - 8);
+      c.stroke();
+      c.restore();
+      c.strokeStyle = "rgba(245,197,24,.5)";
+      c.lineWidth = 1;
+      roundRectOn(c, 0.5, 0.5, w - 1, h - 1, 10);
       c.stroke();
     } else if (item.type === "effect") {
       if (item.id === "sakura-fx") {

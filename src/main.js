@@ -1440,7 +1440,7 @@ function draw(now){
   // since x never changes here).
   const hopping = B.mascotHopUntil && now < B.mascotHopUntil;   // little victory hop after a kill
   const playerState = hopping ? "happy" : "walk";
-  drawCat(ctx, B.L.mascotX, gy + 6*B.S, now, playerState, SKIN_PALETTES[shopState.skin], .9*B.S, B.acc, false);
+  drawCat(ctx, B.L.mascotX, gy + 6*B.S, now, playerState, SKIN_PALETTES[shopState.skin], 1.0*B.S, B.acc, false);
   if(B.hasKitten) drawCat(ctx, B.L.mascotX - B.L.catHalf, gy + 6*B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.S, [], false);
   // idle coin icon (left of the player) - coin sprite or vector fallback
   const coinImgIdle = sprite("coin");
@@ -1462,7 +1462,7 @@ function draw(now){
     // raccoon enemy (was the cat walker) — bosses draw bigger with a gold
     // aura (boss param, not scale — see raccoon.js); no skins/accessories/
     // kitten on it, those moved to the player above.
-    const rScale = z.boss ? 1.5*B.S : B.S;
+    const rScale = z.boss ? 1.7*B.S : 1.25*B.S;   // F8: bigger actors read the approaching threat (bite line = catHalf, unchanged)
     drawRaccoon(ctx, z.x, gy + 6*B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
     // floating HP bar above its head — cosmetic only. Animates hp -> 0 over
     // the happy/dying window (killZombie snapshots hpAtKill); wrong/timeout
@@ -2088,11 +2088,17 @@ function renderShopPreview(canvas, item, now=0){
   if(item.type==="skin"){
     drawCat(c, w*.52, h+6, now, "walk", SKIN_PALETTES[item.id], .72, [], false);
   }else if(item.type==="backdrop"){
+    // F7: clip the cover image to the same rounded tile and re-apply the gold
+    // frame, so backdrop photos share the framed treatment of the icon tiles
+    // (they used to paint square-cornered over the border → uneven grid).
     const img = sprite(`bg-${item.id}`);
+    c.save(); roundRectOn(c,0,0,w,h,10); c.clip();
     if(img) drawCoverImage(c, img, 0, 0, w, h);
     else paintBackdrop(c, w, h, h-7, item.id, now);
     c.strokeStyle = "rgba(245,197,24,.55)"; c.lineWidth = 1;
     c.beginPath(); c.moveTo(0,h-8); c.lineTo(w,h-8); c.stroke();
+    c.restore();
+    c.strokeStyle = "rgba(245,197,24,.5)"; c.lineWidth = 1; roundRectOn(c,.5,.5,w-1,h-1,10); c.stroke();
   }else if(item.type==="effect"){
     if(item.id==="sakura-fx"){
       c.fillStyle = "#f6a8c8";

@@ -37,9 +37,14 @@ export function scopeKey(scope) {
 }
 
 export function meaning(w, lang) {
-  if (lang === "en") return { main: w.e, sub: "" };
-  if (lang === "th") return w.t ? { main: w.t, sub: "" } : { main: w.e + " *", sub: "" };
-  return { main: w.e, sub: w.t || "" };
+  // F9: ~21% of glosses join compound components with " + " ("nine + hundred"),
+  // which reads like markup. Display them with a middot separator — a pure
+  // presentation change; the underlying data (w.e) is untouched. A full
+  // natural-gloss rewrite remains a larger, owner-reviewed content pass.
+  const e = (w.e || "").replace(/ \+ /g, " · ");
+  if (lang === "en") return { main: e, sub: "" };
+  if (lang === "th") return w.t ? { main: w.t, sub: "" } : { main: e + " *", sub: "" };
+  return { main: e, sub: w.t || "" };
 }
 
 // Session length: how many words a "round" battle spawns before it ends.

@@ -109,6 +109,13 @@
     background-image:linear-gradient(180deg,var(--lc-green-hi),var(--lc-green) 60%,var(--lc-green-deep));
     color:var(--lc-cream); font-weight:700;}
   .chip.preset{background:transparent; border-style:dashed; color:var(--muted); font-weight:500;}
+  /* F10: Advanced-options disclosure on the scope screen */
+  .scope-advanced{margin:6px 0 2px;}
+  .scope-advanced>summary{list-style:none; cursor:pointer; display:inline-flex; align-items:center; gap:8px;
+    font-size:13px; font-weight:700; letter-spacing:.02em; color:var(--lc-teal); padding:10px 2px; min-height:44px;}
+  .scope-advanced>summary::-webkit-details-marker{display:none;}
+  .scope-advanced>summary::before{content:"▸"; font-size:12px; transition:transform .15s ease;}
+  .scope-advanced[open]>summary::before{transform:rotate(90deg);}
   #len-custom{width:86px; padding:9px 14px; border-radius:999px; background:var(--chip);
     color:var(--ink); font-size:15px; font-weight:600; border:1px solid var(--panel-border); text-align:center;}
   #len-custom:focus{outline:none; border-color:var(--lc-sky);}
@@ -916,6 +923,10 @@
       <button class="chip preset" data-preset="4,5,6">HSK4–6</button>
       <button class="chip preset" data-preset="1,2,3,4,5,6">HSK1–6</button>
     </div>
+    <!-- F10: power controls behind an Advanced disclosure so a newcomer can
+         just pick a level and Start on sensible defaults (All · Both · 20). -->
+    <details class="scope-advanced">
+    <summary data-i18n="scope.advanced">Advanced options</summary>
     <div class="sect" data-i18n="scope.filters">Filters</div>
     <div class="chips">
       <button class="chip" id="f-core" data-i18n="scope.highYield">High-yield only</button>
@@ -942,6 +953,7 @@
       <button class="chip" data-len="custom"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#pencil"></use></svg><span data-i18n="scope.custom">Custom</span></span></button>
       <input id="len-custom" type="number" inputmode="numeric" min="5" max="500" placeholder="5–500" data-i18n-ph="scope.customPh" hidden>
     </div>
+    </details>
     <div class="readout" id="readout"></div>
     <div class="startrow">
       <button class="big primary" id="go-battle"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span>Word Quest · 20</span></span></button>
