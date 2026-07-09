@@ -70,7 +70,11 @@ reveal row). No new art assets.
 
 - **Home entry:** a `.sec-btn data-go="tones"` in the Home secondary row
   (next to Flashcards/Shop). Disabled (with `home.tonesDisabledHint`) when
-  `!audioAvailableAny()` — a tiny helper: any MP3 in the index OR a TTS voice.
+  `tonePool(pool, hasMp3).length === 0` — i.e. no MP3-backed eligible words in
+  scope (consistent with the "reliable tone only" `hasMp3` gate above; TTS
+  presence is deliberately NOT enough). Because `mp3Set` fills asynchronously
+  after boot, `renderHome()` re-runs when `audio/index.json` resolves so the
+  gate reflects real availability, not the empty-set default.
 - **Route:** in the `[data-go]` handler, `else if(tab==="tones"){ startToneRound(); show("tones"); }`.
 - **Round state** (module-local, like `B` for battle): current question, index,
   score, streak, `len` (10). `startToneRound()` builds the eligible pool from

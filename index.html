@@ -398,6 +398,26 @@
   #opts .tone-chip.on{background-color:var(--lc-success); color:var(--lc-cream); border-color:var(--lc-success-deep);}
   #opts .typed-go{font-weight:700; padding:12px; border-radius:14px;}
   #opts .typed-go:disabled{opacity:.45;}
+  /* v6p3 Tone Trainer (#s-tones) — standalone tone-discrimination minigame.
+     Reuses the .chip/.tone-chip visual language (bumped up to a big 2x2 grid,
+     same idea as the battle #opts answer grid) and .boss-prompt styling for
+     the reveal/result row. No new art. */
+  .tones-replay{display:flex; align-items:center; justify-content:center; gap:8px;
+    font-size:18px; margin-top:10px; width:100%;}
+  #tones-options{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px;}
+  #tones-options .tone-chip{min-height:68px; font-size:26px; font-weight:800;
+    display:flex; align-items:center; justify-content:center;}
+  #tones-options .tone-chip.good{background-color:var(--lc-success); color:var(--lc-cream);
+    border-color:var(--lc-success-deep);}
+  #tones-options .tone-chip.bad{background-color:var(--lc-error); color:var(--lc-cream);
+    border-color:var(--lc-error-border);}
+  #tones-options .tone-chip:disabled{opacity:.65;}
+  #tones-options .tone-chip:disabled.good,
+  #tones-options .tone-chip:disabled.bad{opacity:1;}
+  #tones-reveal{margin-top:14px;}
+  #tones-reveal .boss-prompt{margin-bottom:10px;}
+  #tones-reveal .hz{font-size:40px; text-align:center; display:block;}
+  #tones-reveal .py{font-size:18px; color:var(--lc-brown); text-align:center; display:block; margin-top:2px;}
   /* results */
   .bignum{font-size:52px; text-align:center; color:var(--lc-green); font-weight:800; margin:6px 0;
     font-family:'LC Latin',"Segoe UI",sans-serif;}
@@ -789,6 +809,7 @@
       <button class="sec-btn" data-go="scope-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg><span data-i18n="home.flashcards">Flashcards</span></span></button>
       <button class="sec-btn" id="go-smart"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#target"></use></svg><span data-i18n="home.smart">Smart Review</span></span></button>
       <button class="sec-btn" data-go="shop"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#shop"></use></svg><span data-i18n="home.shop">Shop</span></span></button>
+      <button class="sec-btn" data-go="tones" id="home-tones-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg><span data-i18n="home.tones">Tone Trainer</span></span></button>
     </div>
   </div>
 
@@ -980,6 +1001,20 @@
       <button class="big primary" id="r-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span data-i18n="results.playAgain">Play again</span></span></button>
     </div>
     <button class="big" style="margin-top:10px" data-go="home" data-i18n="results.home">Home</button>
+  </div>
+
+  <!-- TONE TRAINER (v6 phase 3 — standalone tone-discrimination minigame;
+       tone *perception* (aural), distinct from the battle `tone` ladder rung
+       which trains visual pinyin recall. Reuses per-word MP3s only — see
+       tone_gym.js/audio.js hasMp3 for the "reliable tone" gate. ) -->
+  <div class="screen festive" id="s-tones">
+    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
+    <h2 data-i18n="tones.title">Tone Trainer</h2>
+    <div class="readout" id="tones-progress"></div>
+    <p class="sub" data-i18n="tones.instruction">Which tone did you hear?</p>
+    <button class="big tones-replay" id="tones-replay">🔊 <span data-i18n="tones.replay">Play it again</span></button>
+    <div id="tones-options"></div>
+    <div id="tones-reveal"></div>
   </div>
 
   <!-- SCORES -->
