@@ -688,8 +688,16 @@ function answerTone(picked, btn){
   // the [data-go] "tones" route): without this, tapping Home during the
   // reveal window lets the timer fire nextToneQuestion() on the hidden
   // screen, playing audio over Home (and crediting rewards early on the
-  // last question).
-  TG.advanceTimer = setTimeout(()=>{ TG.advanceTimer = null; if(currentScreen === "tones") nextToneQuestion(); }, fxDuration(900));
+  // last question). But if the answer just graded WAS the last question
+  // (TG.i >= TG.len, the same check nextToneQuestion would make), tapping
+  // Home must still credit the round's coins/XP — endToneRound only touches
+  // the hidden #tones-* DOM and is idempotent (TG.ended), so it's safe to
+  // run off-screen; startToneRound resets that DOM on re-entry.
+  TG.advanceTimer = setTimeout(()=>{
+    TG.advanceTimer = null;
+    if(currentScreen === "tones") nextToneQuestion();
+    else if(TG.i >= TG.len) endToneRound();
+  }, fxDuration(900));
 }
 // Light rewards (design spec §3): +1 coin and +1 XP per correct answer,
 // counted toward the daily streak — deliberately NOT recordAnswer/mastery.
