@@ -561,13 +561,13 @@ document.querySelectorAll("#preset-chips .chip").forEach(c=>c.onclick = ()=>{
 });
 $("#go-battle").onclick  = ()=>startBattle("round");
 $("#go-endless").onclick = ()=>startBattle("endless");
-$("#go-learn").onclick   = ()=>{ learnDeck = null; startLearn(); };
+$("#go-learn").onclick   = ()=>{ learnDeck = null; startLearn("home"); };
 
 /* ============================== flashcards ============================== */
 const fc = {deck:[], i:0, flipped:false, done:0, total:0};
-function startLearn(){
+function startLearn(returnTo = "home"){
   const src = learnDeck && learnDeck.length ? learnDeck : pool;
-  fc.fromMisses = !!(learnDeck && learnDeck.length);  // came from a battle's "review misses"
+  fc.returnTo = returnTo;   // screen to land on when the deck runs out
   fc.deck = shuffle(src.slice(0, 400));       // session cap keeps it sane
   fc.i = 0; fc.done = 0; fc.total = fc.deck.length; fc.flipped = false;
   show("learn");
@@ -582,7 +582,7 @@ function endLearn(){
     startBattle("round");
     return;
   }
-  show(fc.fromMisses ? "results" : "home");
+  show(fc.returnTo || "home");
 }
 function renderCard(){
   const w = fc.deck[fc.i];
@@ -1900,7 +1900,7 @@ function endBattle(quit){
     list.appendChild(row);
   }
   $("#r-review").style.display = B.misses.length? "block":"none";
-  $("#r-review").onclick = ()=>{ learnDeck = B.misses.slice(); startLearn(); };
+  $("#r-review").onclick = ()=>{ learnDeck = B.misses.slice(); startLearn("results"); };
   $("#r-fight-miss").style.display = B.misses.length >= 2 ? "block" : "none";
   $("#r-fight-miss").onclick = ()=>{ battleDeckOverride = B.misses.slice(); startBattle("round"); };
   $("#r-again").onclick = ()=>startBattle(lastMode);
@@ -2654,7 +2654,7 @@ function renderNeedsWork(){
   const showBtns = weak.length >= 2;
   $("#nw-review").style.display = showBtns ? "block" : "none";
   $("#nw-fight").style.display = showBtns ? "block" : "none";
-  $("#nw-review").onclick = ()=>{ learnDeck = weak.slice(); startLearn(); };
+  $("#nw-review").onclick = ()=>{ learnDeck = weak.slice(); startLearn("progress"); };
   $("#nw-fight").onclick = ()=>{ battleDeckOverride = weak.slice(); startBattle("round"); };
 }
 
