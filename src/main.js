@@ -639,6 +639,14 @@ function nextToneQuestion(){
   renderToneQuestion();
   speak(TG.q.word.h);
 }
+// Mandarin tone pitch-contours drawn in a 44×30 box (Chao 5-level shape):
+// 1 high-level, 2 rising, 3 low-dipping, 4 falling.
+const TONE_CURVE = {
+  1: "M4,7 H40",
+  2: "M5,24 L39,6",
+  3: "M5,11 L17,25 L39,5",
+  4: "M5,5 L39,24",
+};
 function renderToneQuestion(){
   const prog = $("#tones-progress");
   if(prog) prog.textContent = t("tones.progress", { i: TG.i, n: TG.len });
@@ -649,7 +657,12 @@ function renderToneQuestion(){
   for(let k=1;k<=4;k++){
     const b = document.createElement("button");
     b.className = "chip tone-chip";
-    b.textContent = t("tones.tone"+k);
+    // number + pitch-contour glyph (level / rising / dipping / falling) — a
+    // clearer read than the tiny spacing tone marks it replaces.
+    b.innerHTML = `<span class="tone-num">${t("tones.tone"+k)}</span>` +
+      `<svg class="tone-curve" viewBox="0 0 44 30" aria-hidden="true">` +
+      `<path d="${TONE_CURVE[k]}" fill="none" stroke="currentColor" stroke-width="3.4" ` +
+      `stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     b.setAttribute("aria-label", t("tones.toneAria", { n: k }));
     b._correct = k === TG.q.tone;
     b.onclick = ()=>answerTone(k, b);
