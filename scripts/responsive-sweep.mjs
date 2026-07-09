@@ -14,6 +14,20 @@
 // (uses channel:"msedge" so it doesn't need a separate browser download).
 import { chromium } from "playwright-core";
 import http from "node:http";
+import { existsSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+
+// Prefer Edge (Windows dev box); fall back to the playwright-cached chromium
+// (VPS — `npx playwright install chromium`). PW_CHROMIUM overrides both.
+function launchOpts() {
+  const explicit = process.env.PW_CHROMIUM;
+  if (explicit) return { executablePath: explicit, headless: true };
+  const cached = join(homedir(), ".cache/ms-playwright/chromium-1228/chrome-linux64/chrome");
+  if (process.platform !== "win32" && existsSync(cached))
+    return { executablePath: cached, headless: true };
+  return { channel: "msedge", headless: true };
+}
 
 const BASE_URL = "http://localhost:8000";
 const TOL = 1; // px tolerance for viewport-edge comparisons
@@ -242,7 +256,7 @@ async function assertServerReachable() {
 // ---------------------------------------------------------------------------
 async function runFullSweep() {
   await assertServerReachable();
-  const browser = await chromium.launch({ channel: "msedge", headless: true });
+  const browser = await chromium.launch(launchOpts());
   const lines = [];
   let anyFail = false;
 
@@ -320,7 +334,7 @@ async function runBattleSingleShot(spec) {
   const height = Number(m[2]);
 
   await assertServerReachable();
-  const browser = await chromium.launch({ channel: "msedge", headless: true });
+  const browser = await chromium.launch(launchOpts());
   const { page, errs } = await preparePage(browser, width, height);
 
   await goToBattle(page);
