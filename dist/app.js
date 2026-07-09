@@ -573,14 +573,6 @@
   var SPRITE_NAMES = [
     "cat-walk",
     "cat-happy",
-    "cat-midnight-walk",
-    "cat-midnight-happy",
-    "cat-sakura-walk",
-    "cat-sakura-happy",
-    "cat-jade-walk",
-    "cat-jade-happy",
-    "cat-gold-walk",
-    "cat-gold-happy",
     "cat-panda-walk",
     "cat-panda-happy",
     "cat-ninja-walk",
@@ -1233,14 +1225,6 @@
       { id: "vfx-orb-red", file: "vfx-orb-red.svg", type: "effect", status: "integrated", priority: "P1", w: 220, h: 220, anchor: "center", fallback: "canvas:feedbackEffect" },
       { id: "vfx-orb-blue", file: "vfx-orb-blue.svg", type: "effect", status: "integrated", priority: "P1", w: 220, h: 220, anchor: "center", fallback: "canvas:feedbackEffect" },
       { id: "vfx-orb-gold", file: "vfx-orb-gold.svg", type: "effect", status: "integrated", priority: "P1", w: 220, h: 220, anchor: "center", fallback: "canvas:feedbackEffect" },
-      { id: "cat-midnight-walk", file: "cat-midnight-walk.png", type: "sprite-sheet", status: "integrated", priority: "P1", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-midnight-happy", file: "cat-midnight-happy.png", type: "sprite-sheet", status: "integrated", priority: "P1", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-sakura-walk", file: "cat-sakura-walk.png", type: "sprite-sheet", status: "integrated", priority: "P1", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-sakura-happy", file: "cat-sakura-happy.png", type: "sprite-sheet", status: "integrated", priority: "P1", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-jade-walk", file: "cat-jade-walk.png", type: "sprite-sheet", status: "integrated", priority: "P1", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-jade-happy", file: "cat-jade-happy.png", type: "sprite-sheet", status: "integrated", priority: "P1", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-gold-walk", file: "cat-gold-walk.png", type: "sprite-sheet", status: "integrated", priority: "P1", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
-      { id: "cat-gold-happy", file: "cat-gold-happy.png", type: "sprite-sheet", status: "integrated", priority: "P1", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+SKIN_PALETTES" },
       { id: "cat-boss-walk", file: "cat-boss-walk.png", type: "sprite-sheet", status: "integrated", priority: "P1", w: 1536, h: 256, frames: 6, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+boss" },
       { id: "cat-boss-happy", file: "cat-boss-happy.png", type: "sprite-sheet", status: "integrated", priority: "P1", w: 1024, h: 256, frames: 4, frameWidth: 256, frameHeight: 256, anchor: "bottom-center", fallback: "canvas:drawCat+boss" },
       { id: "bg-battle", file: "bg-battle.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "css:#cv gradient", note: "legacy night-festival art with baked-in text \u2014 P0 regeneration per GENERATION-PROMPTS-v5" },
@@ -1733,10 +1717,6 @@
 
   // src/shop.js
   var CATALOG = [
-    { id: "midnight", name: "Midnight", price: 500, type: "skin" },
-    { id: "sakura", name: "Sakura", price: 1500, type: "skin" },
-    { id: "jade", name: "Jade", price: 2500, type: "skin" },
-    { id: "gold", name: "Gold", price: 5e3, type: "skin" },
     { id: "market", name: "Night Market", price: 1e3, type: "backdrop" },
     { id: "temple", name: "Temple Dawn", price: 2e3, type: "backdrop" },
     { id: "bamboo", name: "Bamboo", price: 3e3, type: "backdrop" },
@@ -1777,42 +1757,6 @@
     { id: "firecracker-arch", name: "Firecracker Arch", price: 6e3, type: "deco", season: "cny", maxTier: 3 }
   ];
   var SKIN_PALETTES = {
-    midnight: {
-      sprite: "cat-midnight",
-      body: "#2a2a30",
-      head: "#35353c",
-      ear: "#35353c",
-      inner: "#6a6a78",
-      leg: "#1c1c22",
-      filter: "grayscale(1) brightness(.5)"
-    },
-    sakura: {
-      sprite: "cat-sakura",
-      body: "#f6c6d8",
-      head: "#fbdce8",
-      ear: "#fbdce8",
-      inner: "#e8608a",
-      leg: "#e0a0b8",
-      filter: "hue-rotate(300deg) saturate(.75) brightness(1.15)"
-    },
-    jade: {
-      sprite: "cat-jade",
-      body: "#2f9e5a",
-      head: "#3fbf70",
-      ear: "#3fbf70",
-      inner: "#eec94a",
-      leg: "#1f7040",
-      filter: "hue-rotate(85deg) saturate(.8)"
-    },
-    gold: {
-      sprite: "cat-gold",
-      body: "#e3a80e",
-      head: "#ffd75e",
-      ear: "#ffd75e",
-      inner: "#fff4e0",
-      leg: "#9c6b00",
-      filter: "saturate(1.6) brightness(1.25) contrast(1.05)"
-    },
     panda: {
       sprite: "cat-panda",
       body: "#f4f4f0",
@@ -2218,10 +2162,6 @@
       "season.midautumn": "Mid-Autumn",
       "season.cny": "Lunar New Year",
       // shop items (CATALOG ids, pass 2) — display-name fallback for t("item."+id)
-      "item.midnight": "Midnight",
-      "item.sakura": "Sakura",
-      "item.jade": "Jade",
-      "item.gold": "Gold",
       "item.market": "Night Market",
       "item.temple": "Temple Dawn",
       "item.bamboo": "Bamboo",
@@ -2479,10 +2419,6 @@
       "season.midautumn": "\u0E44\u0E2B\u0E27\u0E49\u0E1E\u0E23\u0E30\u0E08\u0E31\u0E19\u0E17\u0E23\u0E4C",
       "season.cny": "\u0E15\u0E23\u0E38\u0E29\u0E08\u0E35\u0E19",
       // shop items (CATALOG ids, pass 2) — display-name fallback for t("item."+id)
-      "item.midnight": "\u0E40\u0E17\u0E35\u0E48\u0E22\u0E07\u0E04\u0E37\u0E19",
-      "item.sakura": "\u0E0B\u0E32\u0E01\u0E38\u0E23\u0E30",
-      "item.jade": "\u0E2B\u0E22\u0E01",
-      "item.gold": "\u0E17\u0E2D\u0E07\u0E04\u0E33",
       "item.market": "\u0E15\u0E25\u0E32\u0E14\u0E01\u0E25\u0E32\u0E07\u0E04\u0E37\u0E19",
       "item.temple": "\u0E23\u0E38\u0E48\u0E07\u0E2D\u0E23\u0E38\u0E13\u0E17\u0E35\u0E48\u0E27\u0E31\u0E14",
       "item.bamboo": "\u0E44\u0E1C\u0E48",
@@ -5007,7 +4943,14 @@
         c.fill();
       }
     } else {
-      drawStreetDeco(c, item.id, w * 0.5, h - 5, h);
+      const dimg = sprite("deco-" + item.id);
+      if (dimg) {
+        const s = Math.min((h - 10) / dimg.height, (w - 18) / dimg.width);
+        const dw = dimg.width * s, dh = dimg.height * s;
+        c.drawImage(dimg, (w - dw) / 2, h - 5 - dh, dw, dh);
+      } else {
+        drawStreetDeco(c, item.id, w * 0.5, h - 5, h);
+      }
     }
   }
   function renderStreet() {

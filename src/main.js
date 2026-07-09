@@ -2137,7 +2137,18 @@ function renderShopPreview(canvas, item, now=0){
       c.beginPath(); c.arc(60,38,5,0,Math.PI*2); c.fill();
     }
   }else{
-    drawStreetDeco(c, item.id, w*.5, h-5, h);
+    // deco: fit the painted sprite inside the tile with padding. drawStreetDeco's
+    // street scale (DECO_SPRITE_SCALE 1.5) is sized for the street ground and
+    // overflows/clips in this small 96x64 preview tile. Vector fallback (no PNG
+    // yet) keeps the street draw until real art lands.
+    const dimg = sprite("deco-" + item.id);
+    if(dimg){
+      const s = Math.min((h-10)/dimg.height, (w-18)/dimg.width);
+      const dw = dimg.width*s, dh = dimg.height*s;
+      c.drawImage(dimg, (w-dw)/2, h-5-dh, dw, dh);
+    }else{
+      drawStreetDeco(c, item.id, w*.5, h-5, h);
+    }
   }
 }
 
