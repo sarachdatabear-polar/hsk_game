@@ -1,15 +1,15 @@
 # Lucky Cat HSK — Status
 
 **Last updated:** 2026-07-09
-**TL;DR:** Live on `main` at **SHELL v38** — v6 phase 3 plus today's release train (deco PNG art, UX-audit quest/layout fixes, shop-preview art). Two fixes sit on **open PRs** (#55 shop deco-tile fit, #56 remove 4 old skins). The big unstarted item is **monetization / store production**. Next owner task: **generate the 10 street-deco art files**.
+**TL;DR:** Live on `main` at **SHELL v40** — v6 phase 3 plus today's full release train, now including the shop deco-tile fit (#55) and removal of the 4 old skins (#56). Nothing pending to merge. The big unstarted item is **monetization / store production**. Next owner task: **generate the 10 street-deco art files**.
 
 ## Where the game is
 
 | Tier | State |
 |---|---|
-| **Live on `main` / GitHub Pages** | SHELL **v38** (released 2026-07-09 via #54). Everything below, plus today's train: **deco PNG art** — 5 legacy street decos as real art with vector fallback (#50); **UX-audit fixes** — quest-row frame no longer clips text + Street/Quests/More top-align instead of floating (#51); **shop preview tiles** — effect/soundpack previews fill the tile (#53); **UI polish** audit F1–F10 (#44); **v6 phase 3** — cloze fill-in-the-blank (#41/#42) + Tone Trainer (#43). Earlier: i18n completeness (#46), Monetization P0 foundations (#47), street deco auto-arrange (#48), v5/v6/v7, responsive round, season art. |
-| **Merged to `development`, unreleased** | No unreleased **code** — `development` == `main` at v38, ahead only by docs. |
-| **On feature branches (open PRs → `development`)** | **#55** — shop deco-tile fit: painted decos fit the preview tile instead of overflowing at street scale (SHELL v39). **#56** — full removal of the 4 old recolor skins midnight/sakura/jade/gold (SHELL v40). Both tests-green and ready to merge. |
+| **Live on `main` / GitHub Pages** | SHELL **v40** (released 2026-07-09). Today's train: **shop deco-tile fit** — painted decos fit the preview tile (#55); **removed 4 old recolor skins** midnight/sakura/jade/gold, owners degrade to the default cat (#56); **deco PNG art** — 5 legacy street decos as real art with vector fallback (#50); **UX-audit fixes** — quest-row frame no longer clips text + Street/Quests/More top-align (#51); **shop preview tiles** — effect/soundpack previews fill the tile (#53); **UI polish** audit F1–F10 (#44); **v6 phase 3** — cloze (#41/#42) + Tone Trainer (#43). Earlier: i18n completeness (#46), Monetization P0 foundations (#47), street deco auto-arrange (#48), v5/v6/v7, responsive round, season art. |
+| **Merged to `development`, unreleased** | Nothing — `development` == `main` at v40. |
+| **On feature branches** | None — all merged. |
 
 ## Done
 
@@ -34,23 +34,22 @@
 - **Street deco auto-arrange** — even, tier-aware, provably-non-overlapping deco layout (2026-07-09, PR #48)
 - **Street deco PNG art** — 5 legacy decos rendered as real art with vector fallback (2026-07-09, PR #50)
 - **UX/UI audit round** ([ux-audit-2026-07-09.md](planning/ux-audit-2026-07-09.md)) — Chromium screenshot sweep; shipped fixes: quest-row frame clip + top-align sparse screens (PR #51), shop effect/soundpack preview fill (PR #53). Remaining findings are in **Planned** below.
+- **Shop deco-tile fit** — painted deco sprites fit the shop preview tile instead of overflowing at street scale (2026-07-09, PR #55)
+- **Removed 4 deprecated skins** — midnight/sakura/jade/gold fully removed (catalog, palettes, i18n, sprites, manifest, precache, art); owners degrade gracefully to the default cat (2026-07-09, PR #56)
 
 ## In progress
 
-- **PR #55** — shop deco-tile fit (painted decos fit the preview tile). Ready, tests green.
-- **PR #56** — remove the 4 old recolor skins (midnight/sakura/jade/gold); owners degrade gracefully to the default cat. Ready, tests green.
-- No other active branches.
+- Nothing on branches. All merged and released (SHELL v40).
 
 ## Planned
 
 Ordered by priority. `(owner)` = needs a human action Claude can't do; `(needs direction)` = Claude can build once you pick an approach; `(Claude-ready)` = actionable now.
 
-1. **Merge the two open PRs + cut a release** `(owner)` — merge #55 then #56 into `development`; whichever lands second, bump its `SHELL` to the next free number (they're v39/v40). Then cut `development` → `main` and live-smoke-verify. Small, no dependencies.
-2. **Generate the 10 street-deco art files** `(owner)` — prompts ready in [`art-drop/REMAINING-DECO-PROMPTS.md`](../art-drop/REMAINING-DECO-PROMPTS.md) (and the v7 batch in [GENERATION-PROMPTS-P0-copypaste.md](art/GENERATION-PROMPTS-P0-copypaste.md)). Ids: mahjong-table, koi-pond, drum-tower, bubble-tea, paper-umbrella, goldfish-banner, neon-cat-sign, shaved-ice-cart, mooncake-stall, firecracker-arch. Save each as `deco-<id>.png` → `art-drop/` → `python3 scripts/intake_art.py`. Until then those shop tiles show tiny vector placeholders; once installed they auto-use the fitted preview from #55.
-3. **UX-audit remaining polish** `(needs direction)` — deferred items from [ux-audit-2026-07-09.md](planning/ux-audit-2026-07-09.md), each a design call: (a) **Tone Trainer glyphs** — the `1 ˉ / 2 ´` labels read small/floaty; alt = `mā má mǎ mà` or a pitch-contour icon; (b) **desktop phone-column** — the game is a ~640px column on bare cream at ≥1024px; add a backdrop treatment or leave it; (c) **dark theme** — currently light-only; build a second palette or skip. Pick a direction per item and Claude ships it.
-4. **Monetization P0 — account-gated slices** `(owner)` — the no-accounts slices are done (#46/#47). Remaining P0 needs the owner: stand up the Supabase project (apply [`docs/supabase/schema.sql`](supabase/schema.sql)), register RevenueCat products + AdMob, add the iOS/Capacitor target, get the privacy policy legally reviewed. Then **P1 (ads)** wires AdMob into the built `src/monetization/interstitial-policy.js`. Provider abstraction/mock + results UI + client clamp are deferred until the SDKs exist. See [PRD](prd/PRD-monetization-and-production.md).
-5. **Native Thai review of UI strings** `(owner)` — incl. the i18n pass-2/3 additions ([i18n-translation-review.md](i18n/i18n-translation-review.md)).
-6. **Roadmaps not started** — HSK 3.0 content refresh; social layer; notifications/widget; Android release refresh ([ANDROID_BUILD.md](build/ANDROID_BUILD.md)). Optional: deco reorder self-expression; a display cap / second row when the deco catalog grows past ~15.
+1. **Generate the 10 street-deco art files** `(owner)` — prompts ready in [`art-drop/REMAINING-DECO-PROMPTS.md`](../art-drop/REMAINING-DECO-PROMPTS.md) (and the v7 batch in [GENERATION-PROMPTS-P0-copypaste.md](art/GENERATION-PROMPTS-P0-copypaste.md)). Ids: mahjong-table, koi-pond, drum-tower, bubble-tea, paper-umbrella, goldfish-banner, neon-cat-sign, shaved-ice-cart, mooncake-stall, firecracker-arch. Save each as `deco-<id>.png` → `art-drop/` → `python3 scripts/intake_art.py`. Until then those shop tiles show tiny vector placeholders; once installed they auto-use the fitted preview from #55.
+2. **UX-audit remaining polish** `(needs direction)` — deferred items from [ux-audit-2026-07-09.md](planning/ux-audit-2026-07-09.md), each a design call: (a) **Tone Trainer glyphs** — the `1 ˉ / 2 ´` labels read small/floaty; alt = `mā má mǎ mà` or a pitch-contour icon; (b) **desktop phone-column** — the game is a ~640px column on bare cream at ≥1024px; add a backdrop treatment or leave it; (c) **dark theme** — currently light-only; build a second palette or skip. Pick a direction per item and Claude ships it.
+3. **Monetization P0 — account-gated slices** `(owner)` — the no-accounts slices are done (#46/#47). Remaining P0 needs the owner: stand up the Supabase project (apply [`docs/supabase/schema.sql`](supabase/schema.sql)), register RevenueCat products + AdMob, add the iOS/Capacitor target, get the privacy policy legally reviewed. Then **P1 (ads)** wires AdMob into the built `src/monetization/interstitial-policy.js`. Provider abstraction/mock + results UI + client clamp are deferred until the SDKs exist. See [PRD](prd/PRD-monetization-and-production.md).
+4. **Native Thai review of UI strings** `(owner)` — incl. the i18n pass-2/3 additions ([i18n-translation-review.md](i18n/i18n-translation-review.md)).
+5. **Roadmaps not started** — HSK 3.0 content refresh; social layer; notifications/widget; Android release refresh ([ANDROID_BUILD.md](build/ANDROID_BUILD.md)). Optional: deco reorder self-expression; a display cap / second row when the deco catalog grows past ~15.
 
 ## Doc map
 
