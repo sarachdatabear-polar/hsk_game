@@ -3055,6 +3055,7 @@
     document.querySelectorAll(".screen").forEach((el) => el.classList.remove("on"));
     $("#s-" + name).classList.add("on");
     updateNav(name);
+    window.scrollTo(0, 0);
     if (name === "home") {
       renderHome();
     }
