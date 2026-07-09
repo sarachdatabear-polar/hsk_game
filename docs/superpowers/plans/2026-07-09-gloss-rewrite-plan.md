@@ -30,8 +30,21 @@ unique-hanzi count).
 - **Sample for owner review ready:** `docs/gloss-sample-for-review.md` — 94
   drafted glosses across every bucket. Headline from the sample: **29% had a
   factually *wrong* source gloss** (现代文学→"Hyundai", names glossed char-by-
-  char), confirming this is correctness work, not formatting. Awaiting Jordan's
-  style calibration + review-cadence call before the full 2,938-hanzi pass.
+  char), confirming this is correctness work, not formatting. **Style approved
+  by Jordan.**
+
+- **FULL PASS DONE (2026-07-09).** All 2,938 unique-hanzi glosses rewritten →
+  `data/gloss-overrides.json`; applied via the build, all 3,417 ` + ` entries
+  now 0, 1,383 tests pass. Method (per advisor — matched model to risk): 3 Opus
+  workers did the knowledge-heavy buckets (3+ part / grammatical / affix, 420),
+  6 Sonnet workers the easy 2-part bulk (2,387), I did numbers+reduplication
+  (37) and kept my 94. Every worker emitted a confidence flag. Mechanical QA
+  over all 2,938: 0 residual ` + `, 0 empty, 0 meta-language leaks, 0 over-long.
+  **255 flagged (222 med + 33 low)** for owner review in
+  `docs/gloss-review-flagged.md`. Applied on `feat/ui-polish-1`; **NOT merged /
+  deployed — gated on Jordan's correctness sign-off** (style ≠ ship approval).
+  Known residue: some entries are pipeline **fragments** clipped mid-phrase
+  (一小, 是从) — a source dedup issue, not a gloss issue; glossed literally + flagged.
 
 ## Root cause — this is a data-quality bug, not a formatting bug
 
