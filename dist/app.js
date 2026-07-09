@@ -4183,8 +4183,8 @@
     ctx2.textAlign = "center";
     const hopping = B.mascotHopUntil && now < B.mascotHopUntil;
     const playerState = hopping ? "happy" : "walk";
-    drawCat(ctx2, B.L.mascotX, gy + 6 * B.S, now, playerState, SKIN_PALETTES[shopState.skin], 0.9 * B.S, B.acc, false);
-    if (B.hasKitten) drawCat(ctx2, B.L.mascotX - B.L.catHalf, gy + 6 * B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5 * B.S, [], false);
+    drawCat(ctx2, B.L.mascotX, gy + 6 * B.S, now, playerState, SKIN_PALETTES[shopState.skin], 0.9 * B.L.mascotS, B.acc, false);
+    if (B.hasKitten) drawCat(ctx2, B.L.mascotX - B.L.catHalf, gy + 6 * B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5 * B.L.mascotS, [], false);
     const coinImgIdle = sprite("coin");
     if (coinImgIdle) {
       ctx2.drawImage(coinImgIdle, 4 * B.S, gy - 22 * B.S, B.L.coinPx, B.L.coinPx);
@@ -4196,14 +4196,14 @@
       const fl = FORMATS[z.format || "meaning"].plaque;
       const live = z.state === "walk" && !z.revealed;
       drawWordPlate(z, { mask: live && !!fl.mask, icon: live && !!fl.icon, py: !live || !!fl.py }, now);
-      const rScale = z.boss ? 1.5 * B.S : B.S;
+      const rScale = z.boss ? 1.5 * B.L.mascotS : B.L.mascotS;
       drawRaccoon(ctx2, z.x, gy + 6 * B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
       let hpFrac = z.hp;
       if (z.state === "happy" && B.dyingUntil) {
         const remain = Math.max(0, B.dyingUntil - now);
         hpFrac = (z.hpAtKill ?? z.hp) * (remain / 250);
       }
-      drawHpBar(ctx2, z.x, gy + 6 * B.S - RACCOON_HEIGHT * rScale, 46 * B.S, hpFrac, B.S);
+      drawHpBar(ctx2, z.x, gy + 6 * B.S - RACCOON_HEIGHT * rScale, 46 * B.L.mascotS, hpFrac, B.L.mascotS);
     } else {
       B.plaqueRect = null;
     }

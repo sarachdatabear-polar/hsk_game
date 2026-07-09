@@ -1473,8 +1473,8 @@ function draw(now){
   // since x never changes here).
   const hopping = B.mascotHopUntil && now < B.mascotHopUntil;   // little victory hop after a kill
   const playerState = hopping ? "happy" : "walk";
-  drawCat(ctx, B.L.mascotX, gy + 6*B.S, now, playerState, SKIN_PALETTES[shopState.skin], .9*B.S, B.acc, false);
-  if(B.hasKitten) drawCat(ctx, B.L.mascotX - B.L.catHalf, gy + 6*B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.S, [], false);
+  drawCat(ctx, B.L.mascotX, gy + 6*B.S, now, playerState, SKIN_PALETTES[shopState.skin], .9*B.L.mascotS, B.acc, false);
+  if(B.hasKitten) drawCat(ctx, B.L.mascotX - B.L.catHalf, gy + 6*B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.L.mascotS, [], false);
   // idle coin icon (left of the player) - coin sprite or vector fallback
   const coinImgIdle = sprite("coin");
   if(coinImgIdle){
@@ -1495,7 +1495,7 @@ function draw(now){
     // raccoon enemy (was the cat walker) — bosses draw bigger with a gold
     // aura (boss param, not scale — see raccoon.js); no skins/accessories/
     // kitten on it, those moved to the player above.
-    const rScale = z.boss ? 1.5*B.S : B.S;
+    const rScale = z.boss ? 1.5*B.L.mascotS : B.L.mascotS;
     drawRaccoon(ctx, z.x, gy + 6*B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
     // floating HP bar above its head — cosmetic only. Animates hp -> 0 over
     // the happy/dying window (killZombie snapshots hpAtKill); wrong/timeout
@@ -1505,7 +1505,7 @@ function draw(now){
       const remain = Math.max(0, B.dyingUntil - now);
       hpFrac = (z.hpAtKill ?? z.hp) * (remain/250);
     }
-    drawHpBar(ctx, z.x, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.S, hpFrac, B.S);
+    drawHpBar(ctx, z.x, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.L.mascotS, hpFrac, B.L.mascotS);
   }else{
     B.plaqueRect = null;   // no word on screen — the canvas click/keydown handlers no-op
   }
