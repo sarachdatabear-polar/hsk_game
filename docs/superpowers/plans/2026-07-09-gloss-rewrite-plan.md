@@ -13,8 +13,25 @@ junk for a big slice of the learning content. **Content quality is the
 product differentiator**, so this is worth doing properly, not blind-massaging.
 
 **Scope (authoritative, from shipped `data/words.json`): 3,417 entries carry
-` + ` — 15.5% of 22,027.** (The earlier "2,938 / 21%" was a different cut;
-3,417 is the real shipped number.)
+` + ` — 15.5% of 22,027.** These span **2,938 unique hanzi** (gloss is a
+property of the word, so the override map is keyed by hanzi and is 2,938 rows;
+one fix can clean several entries — the earlier "2,938" figure was this
+unique-hanzi count).
+
+## Progress (2026-07-09, branch `feat/ui-polish-1`)
+
+- **Build plumbing landed + verified.** `build_game_data.py` now loads an
+  optional `data/gloss-overrides.json` (hanzi → clean gloss) and swaps it in
+  **only when the source still carries ` + `** — so a future clean pipeline
+  rebuild is never clobbered, and the default (no file) path reproduces
+  `data/words.js` byte-identically. Verified end-to-end: a 94-entry test map
+  cleaned 119 rows (94 hanzi × repeats) with correct output; data reverted so
+  nothing unreviewed shipped.
+- **Sample for owner review ready:** `docs/gloss-sample-for-review.md` — 94
+  drafted glosses across every bucket. Headline from the sample: **29% had a
+  factually *wrong* source gloss** (现代文学→"Hyundai", names glossed char-by-
+  char), confirming this is correctness work, not formatting. Awaiting Jordan's
+  style calibration + review-cadence call before the full 2,938-hanzi pass.
 
 ## Root cause — this is a data-quality bug, not a formatting bug
 

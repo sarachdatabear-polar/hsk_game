@@ -36,6 +36,27 @@ OVERRIDES = {
     "蔡": {"e": "Cai (a surname)", "t": "ไช่ (แซ่)"},
 }
 
+# Natural-gloss overrides: a curated hanzi -> clean English gloss map that
+# replaces the auto-generated char-by-char glosses (the ones still carrying a
+# " + " join, e.g. "nine + hundred"). Kept as an external, reviewable JSON file
+# (data/gloss-overrides.json) rather than inline because it is large (~2,938
+# entries). Format: {"九百": "nine hundred", ...} — a bare string, or
+# {"九百": {"e": "nine hundred"}} is also accepted. Absent file => no-op.
+# See docs/superpowers/plans/2026-07-09-gloss-rewrite-plan.md.
+GLOSS_OVERRIDES_PATH = OUT_DIR / "gloss-overrides.json"
+
+
+def load_gloss_overrides() -> dict:
+    if not GLOSS_OVERRIDES_PATH.exists():
+        return {}
+    data = json.loads(GLOSS_OVERRIDES_PATH.read_text(encoding="utf-8"))
+    out = {}
+    for hanzi, val in data.items():
+        gloss = val if isinstance(val, str) else (val or {}).get("e", "")
+        if gloss.strip():
+            out[hanzi.strip()] = gloss.strip()
+    return out
+
 
 def load_supplement() -> dict:
     if not SUPPLEMENT.exists():
@@ -51,7 +72,8 @@ REQUIRED_FIELDS = (
 )
 
 
-def read_level(level: int, supplement: dict) -> list[dict]:
+def read_level(level: int, supplement: dict, gloss_overrides: dict = None) -> list[dict]:
+    gloss_overrides = gloss_overrides or {}
     path = SRC_DIR / f"HSK{level}_words-to-remember_bilingual.csv"
     words = []
     with open(path, encoding="utf-8-sig", newline="") as fh:
@@ -73,6 +95,11 @@ def read_level(level: int, supplement: dict) -> list[dict]:
             english = row["english"].strip()
             if "e" in fix and (not english or english == hanzi):
                 row["english"] = fix["e"]
+            # Natural-gloss override: swap a curated learner gloss in for the
+            # char-by-char auto-gloss. Guarded on the " + " marker so a future
+            # clean pipeline rebuild is never clobbered by a stale override.
+            if " + " in row["english"] and hanzi in gloss_overrides:
+                row["english"] = gloss_overrides[hanzi]
             pinyin = row["pinyin"].strip()
             if "p" in fix and not pinyin:
                 row["pinyin"] = fix["p"]
@@ -105,7 +132,10 @@ def main() -> int:
     supplement = load_supplement()
     if supplement:
         print(f"thai supplement: {len(supplement)} words loaded from {SUPPLEMENT.name}")
-    levels = {str(n): read_level(n, supplement) for n in LEVELS}
+    gloss_overrides = load_gloss_overrides()
+    if gloss_overrides:
+        print(f"gloss overrides: {len(gloss_overrides)} entries from {GLOSS_OVERRIDES_PATH.name}")
+    levels = {str(n): read_level(n, supplement, gloss_overrides) for n in LEVELS}
 
     manifest = {"levels": {}}
     for n in LEVELS:
