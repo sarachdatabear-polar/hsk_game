@@ -26,6 +26,10 @@ export const SPRITE_NAMES = [
   // street decos — PNG art with a canvas (drawStreetDeco) vector fallback
   "deco-red-lantern", "deco-noodle-stall", "deco-tea-sign",
   "deco-foo-dog", "deco-golden-arch",
+  "deco-mahjong-table", "deco-koi-pond", "deco-drum-tower",
+  "deco-bubble-tea", "deco-paper-umbrella", "deco-goldfish-banner",
+  "deco-neon-cat-sign", "deco-shaved-ice-cart", "deco-mooncake-stall",
+  "deco-firecracker-arch",
   "fx-correct", "fx-wrong", "fx-critical", "fx-level-up",
   "vfx-orb-green", "vfx-orb-red", "vfx-orb-blue", "vfx-orb-gold",
   "ui-word-plaque",

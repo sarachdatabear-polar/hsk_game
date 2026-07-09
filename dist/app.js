@@ -608,6 +608,16 @@
     "deco-tea-sign",
     "deco-foo-dog",
     "deco-golden-arch",
+    "deco-mahjong-table",
+    "deco-koi-pond",
+    "deco-drum-tower",
+    "deco-bubble-tea",
+    "deco-paper-umbrella",
+    "deco-goldfish-banner",
+    "deco-neon-cat-sign",
+    "deco-shaved-ice-cart",
+    "deco-mooncake-stall",
+    "deco-firecracker-arch",
     "fx-correct",
     "fx-wrong",
     "fx-critical",
@@ -1259,16 +1269,16 @@
       { id: "deco-tea-sign", file: "deco-tea-sign.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
       { id: "deco-foo-dog", file: "deco-foo-dog.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
       { id: "deco-golden-arch", file: "deco-golden-arch.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
-      { id: "deco-mahjong-table", file: "deco-mahjong-table.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco", note: "v7 street decos \u2014 prompts in GENERATION-PROMPTS-P0-copypaste.md 'v7 street deco batch'; sprite-draw wiring lands with the art round" },
-      { id: "deco-koi-pond", file: "deco-koi-pond.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
-      { id: "deco-drum-tower", file: "deco-drum-tower.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
-      { id: "deco-bubble-tea", file: "deco-bubble-tea.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
-      { id: "deco-paper-umbrella", file: "deco-paper-umbrella.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
-      { id: "deco-goldfish-banner", file: "deco-goldfish-banner.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
-      { id: "deco-neon-cat-sign", file: "deco-neon-cat-sign.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
-      { id: "deco-shaved-ice-cart", file: "deco-shaved-ice-cart.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
-      { id: "deco-mooncake-stall", file: "deco-mooncake-stall.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
-      { id: "deco-firecracker-arch", file: "deco-firecracker-arch.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" }
+      { id: "deco-mahjong-table", file: "deco-mahjong-table.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco", note: "v7 street decos \u2014 prompts in GENERATION-PROMPTS-P0-copypaste.md 'v7 street deco batch'; sprite-draw wiring lands with the art round" },
+      { id: "deco-koi-pond", file: "deco-koi-pond.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-drum-tower", file: "deco-drum-tower.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-bubble-tea", file: "deco-bubble-tea.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-paper-umbrella", file: "deco-paper-umbrella.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-goldfish-banner", file: "deco-goldfish-banner.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-neon-cat-sign", file: "deco-neon-cat-sign.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-shaved-ice-cart", file: "deco-shaved-ice-cart.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-mooncake-stall", file: "deco-mooncake-stall.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-firecracker-arch", file: "deco-firecracker-arch.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" }
     ],
     required_icons: [
       "home",
@@ -2243,10 +2253,10 @@
       "tones.instruction": "Which tone did you hear?",
       "tones.replay": "Play it again",
       "tones.progress": "{i} / {n}",
-      "tones.tone1": "1 \u02C9",
-      "tones.tone2": "2 \xB4",
-      "tones.tone3": "3 \u02C7",
-      "tones.tone4": "4 \u02CB",
+      "tones.tone1": "1",
+      "tones.tone2": "2",
+      "tones.tone3": "3",
+      "tones.tone4": "4",
       "tones.toneAria": "Tone {n}",
       "tones.roundDone": "Round done!",
       "tones.score": "{score} / {total} correct",
@@ -2500,10 +2510,10 @@
       "tones.instruction": "\u0E04\u0E38\u0E13\u0E44\u0E14\u0E49\u0E22\u0E34\u0E19\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C\u0E2D\u0E30\u0E44\u0E23",
       "tones.replay": "\u0E1F\u0E31\u0E07\u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07",
       "tones.progress": "{i} / {n}",
-      "tones.tone1": "1 \u02C9",
-      "tones.tone2": "2 \xB4",
-      "tones.tone3": "3 \u02C7",
-      "tones.tone4": "4 \u02CB",
+      "tones.tone1": "1",
+      "tones.tone2": "2",
+      "tones.tone3": "3",
+      "tones.tone4": "4",
       "tones.toneAria": "\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C {n}",
       "tones.roundDone": "\u0E08\u0E1A\u0E23\u0E2D\u0E1A\u0E41\u0E25\u0E49\u0E27!",
       "tones.score": "\u0E16\u0E39\u0E01 {score} \u0E08\u0E32\u0E01 {total}",
@@ -3329,6 +3339,12 @@
     renderToneQuestion();
     speak(TG.q.word.h);
   }
+  var TONE_CURVE = {
+    1: "M4,7 H40",
+    2: "M5,24 L39,6",
+    3: "M5,11 L17,25 L39,5",
+    4: "M5,5 L39,24"
+  };
   function renderToneQuestion() {
     const prog = $("#tones-progress");
     if (prog) prog.textContent = t("tones.progress", { i: TG.i, n: TG.len });
@@ -3339,7 +3355,7 @@
     for (let k = 1; k <= 4; k++) {
       const b = document.createElement("button");
       b.className = "chip tone-chip";
-      b.textContent = t("tones.tone" + k);
+      b.innerHTML = `<span class="tone-num">${t("tones.tone" + k)}</span><svg class="tone-curve" viewBox="0 0 44 30" aria-hidden="true"><path d="${TONE_CURVE[k]}" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       b.setAttribute("aria-label", t("tones.toneAria", { n: k }));
       b._correct = k === TG.q.tone;
       b.onclick = () => answerTone(k, b);

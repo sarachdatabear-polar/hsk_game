@@ -49,6 +49,13 @@
     font-family:'LC Latin','LC Thai',"Segoe UI",system-ui,-apple-system,"Noto Sans","Noto Sans Thai",sans-serif;}
   #app{max-width:520px; margin:0 auto; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
+  /* Wide screens: the app is a fixed ~520px column. Fill the bare cream margins
+     with a warm ambient vignette and lift the column as an intentional "device"
+     panel, instead of leaving it floating in an empty void. */
+  @media (min-width:900px){
+    body{background:radial-gradient(1100px 780px at 50% 30%, #FFFBF1 0%, var(--lc-cream) 46%, #ECDEC0 100%) fixed;}
+    #app{background:var(--lc-cream); box-shadow:0 12px 64px rgba(122,90,68,.16);}
+  }
   .screen{display:none; flex:1; flex-direction:column; padding:16px;}
   .screen.on{display:flex;}
   /* Street/Quests/More hold only a little content. Top-align them like every
@@ -417,7 +424,11 @@
     font-size:18px; margin-top:10px; width:100%;}
   #tones-options{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px;}
   #tones-options .tone-chip{min-height:68px; font-size:26px; font-weight:800;
-    display:flex; align-items:center; justify-content:center;}
+    display:flex; align-items:center; justify-content:center; gap:12px;}
+  #tones-options .tone-num{font-size:30px; line-height:1;}
+  /* pitch-contour glyph — inherits the button text colour (ink → cream on
+     good/bad) via stroke:currentColor, so it stays legible in every state */
+  #tones-options .tone-curve{width:46px; height:30px; flex:none;}
   #tones-options .tone-chip.good{background-color:var(--lc-success); color:var(--lc-cream);
     border-color:var(--lc-success-deep);}
   #tones-options .tone-chip.bad{background-color:var(--lc-error); color:var(--lc-cream);
@@ -787,6 +798,8 @@
     .tones-replay{margin-top:5px; font-size:14px; min-height:34px;}
     #tones-options{grid-template-columns:repeat(4,1fr); gap:8px; margin-top:8px;}
     #tones-options .tone-chip{min-height:46px; font-size:20px;}
+    #tones-options .tone-num{font-size:22px;}
+    #tones-options .tone-curve{width:38px; height:24px;}
     #tones-reveal{margin-top:8px;}
     #tones-reveal .boss-prompt{margin-bottom:5px;}
     #tones-reveal .hz{font-size:26px;}
