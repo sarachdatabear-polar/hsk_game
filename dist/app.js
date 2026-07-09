@@ -1980,10 +1980,11 @@
   var BUILDING_SLOTS = [0.18, 0.34, 0.5, 0.66, 0.82];
   var DECO_BAND = { left: 0.15, right: 0.97 };
   var BASE_DECO_W = 0.13;
+  var TIER_MAX_FACTOR = 1.15;
   function decoLayout(count) {
     const span = DECO_BAND.right - DECO_BAND.left;
     const cell = span / count;
-    const scale = Math.min(1, cell / BASE_DECO_W);
+    const scale = Math.min(1, cell / (BASE_DECO_W * TIER_MAX_FACTOR));
     const out = [];
     for (let i = 0; i < count; i++) {
       out.push({ slot: DECO_BAND.left + (i + 0.5) * cell, scale });

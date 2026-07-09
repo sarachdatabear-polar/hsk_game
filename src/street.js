@@ -32,13 +32,17 @@ const DECO_BAND = { left: 0.15, right: 0.97 }; // usable front-row band; left ma
 // Tier-1 deco footprint as a fraction of street width (art + padding). Sets the
 // count at which decos start shrinking: full scale while a cell is >= this.
 export const BASE_DECO_W = 0.13;
+// Tier-2/3 upgrades enlarge the drawn silhouette 1.15x (main.js drawTieredDeco).
+// The layout budgets for the worst case so an all-max-tier street never overlaps.
+export const TIER_MAX_FACTOR = 1.15;
 
 // Even "centered-cell" layout for `count` decos: equal end margins, equal gaps,
-// uniform scale = min(1, cell/BASE_DECO_W) so each footprint fits its own cell.
+// uniform scale so each footprint — at its largest possible (max-tier) draw
+// size — fits its own cell.
 function decoLayout(count) {
   const span = DECO_BAND.right - DECO_BAND.left;
   const cell = span / count;
-  const scale = Math.min(1, cell / BASE_DECO_W);
+  const scale = Math.min(1, cell / (BASE_DECO_W * TIER_MAX_FACTOR));
   const out = [];
   for (let i = 0; i < count; i++) {
     out.push({ slot: DECO_BAND.left + (i + 0.5) * cell, scale });

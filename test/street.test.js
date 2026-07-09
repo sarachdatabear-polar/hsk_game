@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { BUILDINGS, DECO_IDS, BASE_DECO_W, streetPieces, streetProgress, streetMetrics } from "../src/street.js";
+import { BUILDINGS, DECO_IDS, BASE_DECO_W, TIER_MAX_FACTOR, streetPieces, streetProgress, streetMetrics } from "../src/street.js";
 import { MILESTONES } from "../src/growth.js";
 
 describe("street", () => {
@@ -110,8 +110,8 @@ describe("street deco auto-arrange (even distribution, never overlaps)", () => {
     expect(pieces.find(p => p.kind === "building").scale).toBeUndefined();
   });
 
-  it("a comfortable count (<=6) draws decos at full scale", () => {
-    for (let n = 1; n <= 6; n++) {
+  it("a comfortable count (<=5) draws decos at full scale", () => {
+    for (let n = 1; n <= 5; n++) {
       const decos = decosOf(streetPieces(1, DECO_IDS.slice(0, n)));
       expect(decos.every(d => d.scale === 1)).toBe(true);
     }
@@ -122,15 +122,16 @@ describe("street deco auto-arrange (even distribution, never overlaps)", () => {
     expect(decos.every(d => d.scale < 1)).toBe(true);
   });
 
-  it("decos never overlap for any owned count 1..15", () => {
+  it("decos never overlap for any owned count 1..15 — even all at max tier", () => {
     for (let n = 1; n <= DECO_IDS.length; n++) {
       const decos = decosOf(streetPieces(1, DECO_IDS.slice(0, n)));
       expect(decos.length).toBe(n);
-      // sorted ascending by slot, adjacent footprints must not overlap:
-      // centre gap >= average of the two half-widths + half-widths => >= footprint (uniform scale)
+      // Worst case: every deco upgraded, so its drawn footprint is
+      // scale * BASE_DECO_W * TIER_MAX_FACTOR. Adjacent centre gaps must clear
+      // that for the guarantee to hold at the real established-player end-state.
       for (let i = 0; i + 1 < decos.length; i++) {
         const gap = decos[i + 1].slot - decos[i].slot;
-        const fp = ((decos[i].scale + decos[i + 1].scale) / 2) * BASE_DECO_W;
+        const fp = ((decos[i].scale + decos[i + 1].scale) / 2) * BASE_DECO_W * TIER_MAX_FACTOR;
         expect(gap + 1e-9).toBeGreaterThanOrEqual(fp);
       }
     }
