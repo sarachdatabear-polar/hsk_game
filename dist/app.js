@@ -320,6 +320,23 @@
     }
   };
 
+  // src/tone_gym.js
+  function toneEligible(word, hasAudio) {
+    return syllables(word.p).length === 1 && syllableTones(word.p)[0] > 0 && hasAudio(word.h);
+  }
+  function tonePool(pool2, hasAudio) {
+    return (pool2 || []).filter((w) => toneEligible(w, hasAudio));
+  }
+  function toneQuestion(pool2, hasAudio, rand) {
+    const eligible = tonePool(pool2, hasAudio);
+    if (!eligible.length) return null;
+    const word = eligible[Math.floor(rand() * eligible.length)];
+    return { word, tone: syllableTones(word.p)[0] };
+  }
+  function gradeTone(question, picked) {
+    return !!question && question.tone === picked;
+  }
+
   // src/scoring.js
   function killPoints(combo, distFrac) {
     const distBonus = Math.round(8 * Math.max(0, Math.min(1, distFrac)));
@@ -1652,6 +1669,9 @@
   var base = "audio/";
   var zhVoice = null;
   var current = null;
+  function hasMp3(hanzi) {
+    return mp3Set.has(hanzi);
+  }
   function initAudio(indexArray, baseUrl = "audio/") {
     mp3Set = new Set(indexArray || []);
     base = baseUrl;
@@ -2031,6 +2051,8 @@
       // home
       "home.smart": "Smart Review",
       "home.flashcards": "Flashcards",
+      "home.tones": "Tone Trainer",
+      "home.tonesDisabledHint": "Needs sound",
       "home.shop": "Shop",
       "home.best": "Best Sessions",
       "home.progress": "Progress",
@@ -2254,6 +2276,21 @@
       "battle.typedLettersOk": "letters right \u2014 check the tones!",
       "battle.typedTonesOk": "tones right \u2014 check the spelling!",
       "battle.toneAria": "tone {n} for {syl}",
+      // tones (v6 phase 3: standalone tone-discrimination minigame)
+      "tones.title": "Tone Trainer",
+      "tones.instruction": "Which tone did you hear?",
+      "tones.replay": "Play it again",
+      "tones.progress": "{i} / {n}",
+      "tones.tone1": "1 \u02C9",
+      "tones.tone2": "2 \xB4",
+      "tones.tone3": "3 \u02C7",
+      "tones.tone4": "4 \u02CB",
+      "tones.toneAria": "Tone {n}",
+      "tones.roundDone": "Round done!",
+      "tones.score": "{score} / {total} correct",
+      "tones.bestStreak": "Best streak: {n}",
+      "tones.reward": "+{coins} coins \xB7 +{xp} XP",
+      "tones.again": "Play again",
       // common
       "common.back": "\u2190 Home",
       "common.backMore": "\u2190 More",
@@ -2263,6 +2300,8 @@
       // home
       "home.smart": "\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E2D\u0E31\u0E08\u0E09\u0E23\u0E34\u0E22\u0E30",
       "home.flashcards": "\u0E1A\u0E31\u0E15\u0E23\u0E04\u0E33",
+      "home.tones": "\u0E1D\u0E36\u0E01\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C",
+      "home.tonesDisabledHint": "\u0E15\u0E49\u0E2D\u0E07\u0E40\u0E1B\u0E34\u0E14\u0E40\u0E2A\u0E35\u0E22\u0E07",
       "home.shop": "\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32",
       "home.best": "\u0E2A\u0E16\u0E34\u0E15\u0E34\u0E14\u0E35\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14",
       "home.progress": "\u0E04\u0E27\u0E32\u0E21\u0E04\u0E37\u0E1A\u0E2B\u0E19\u0E49\u0E32",
@@ -2486,6 +2525,21 @@
       "battle.typedLettersOk": "\u0E15\u0E31\u0E27\u0E2D\u0E31\u0E01\u0E29\u0E23\u0E16\u0E39\u0E01\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E40\u0E0A\u0E47\u0E04\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C!",
       "battle.typedTonesOk": "\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C\u0E16\u0E39\u0E01\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E40\u0E0A\u0E47\u0E04\u0E15\u0E31\u0E27\u0E2A\u0E30\u0E01\u0E14!",
       "battle.toneAria": "\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C {n} \u0E02\u0E2D\u0E07 {syl}",
+      // tones (v6 phase 3: standalone tone-discrimination minigame)
+      "tones.title": "\u0E1D\u0E36\u0E01\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C",
+      "tones.instruction": "\u0E04\u0E38\u0E13\u0E44\u0E14\u0E49\u0E22\u0E34\u0E19\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C\u0E2D\u0E30\u0E44\u0E23",
+      "tones.replay": "\u0E1F\u0E31\u0E07\u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07",
+      "tones.progress": "{i} / {n}",
+      "tones.tone1": "1 \u02C9",
+      "tones.tone2": "2 \xB4",
+      "tones.tone3": "3 \u02C7",
+      "tones.tone4": "4 \u02CB",
+      "tones.toneAria": "\u0E27\u0E23\u0E23\u0E13\u0E22\u0E38\u0E01\u0E15\u0E4C {n}",
+      "tones.roundDone": "\u0E08\u0E1A\u0E23\u0E2D\u0E1A\u0E41\u0E25\u0E49\u0E27!",
+      "tones.score": "\u0E16\u0E39\u0E01 {score} \u0E08\u0E32\u0E01 {total}",
+      "tones.bestStreak": "\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07\u0E2A\u0E39\u0E07\u0E2A\u0E38\u0E14 {n} \u0E04\u0E23\u0E31\u0E49\u0E07",
+      "tones.reward": "+{coins} \u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D \xB7 +{xp} XP",
+      "tones.again": "\u0E40\u0E25\u0E48\u0E19\u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07",
       // common
       "common.back": "\u2190 \u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
       "common.backMore": "\u2190 \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
@@ -2909,6 +2963,13 @@
     if (hint) hint.hidden = startable;
     const chip = $("#home-scope-chip");
     if (chip) chip.textContent = scopeChipLabel();
+    const tonesBtn = $("#home-tones-btn");
+    if (tonesBtn) {
+      const enabled = tonePool(pool, hasMp3).length > 0;
+      tonesBtn.disabled = !enabled;
+      tonesBtn.title = enabled ? "" : t("home.tonesDisabledHint");
+      tonesBtn.setAttribute("aria-label", enabled ? t("home.tones") : t("home.tones") + " \u2014 " + t("home.tonesDisabledHint"));
+    }
   }
   $("#home-start").onclick = () => {
     if (pool.length < 8) return;
@@ -2954,7 +3015,9 @@
     }
     return a;
   }
-  fetch("audio/index.json").then((r) => r.json()).then((ix) => initAudio(ix)).catch(() => initAudio([]));
+  fetch("audio/index.json").then((r) => r.json()).then((ix) => initAudio(ix)).catch(() => initAudio([])).finally(() => {
+    if (currentScreen === "home") renderHome();
+  });
   loadSprites();
   preload();
   if (document.fonts && document.fonts.load) {
@@ -3032,6 +3095,9 @@
     } else if (tab === "album") {
       renderAlbum();
       show("album");
+    } else if (tab === "tones") {
+      startToneRound();
+      show("tones");
     } else {
       if (tab === "home") {
         stopBattle();
@@ -3264,6 +3330,123 @@
   }
   $("#fc-know").onclick = () => nextCard(false);
   $("#fc-again").onclick = () => nextCard(true);
+  var TG = { pool: [], q: null, i: 0, len: 10, score: 0, streak: 0, bestStreak: 0, locked: false, advanceTimer: null, ended: false };
+  function startToneRound() {
+    clearTimeout(TG.advanceTimer);
+    TG.advanceTimer = null;
+    TG.pool = tonePool(pool, hasMp3);
+    TG.i = 0;
+    TG.score = 0;
+    TG.streak = 0;
+    TG.bestStreak = 0;
+    TG.q = null;
+    TG.locked = false;
+    TG.ended = false;
+    nextToneQuestion();
+  }
+  function nextToneQuestion() {
+    if (TG.i >= TG.len) {
+      endToneRound();
+      return;
+    }
+    TG.i++;
+    TG.q = toneQuestion(TG.pool, hasMp3, Math.random);
+    if (!TG.q) {
+      endToneRound();
+      return;
+    }
+    TG.locked = false;
+    renderToneQuestion();
+    speak(TG.q.word.h);
+  }
+  function renderToneQuestion() {
+    const prog = $("#tones-progress");
+    if (prog) prog.textContent = t("tones.progress", { i: TG.i, n: TG.len });
+    const reveal = $("#tones-reveal");
+    if (reveal) reveal.innerHTML = "";
+    const box = $("#tones-options");
+    box.innerHTML = "";
+    for (let k = 1; k <= 4; k++) {
+      const b = document.createElement("button");
+      b.className = "chip tone-chip";
+      b.textContent = t("tones.tone" + k);
+      b.setAttribute("aria-label", t("tones.toneAria", { n: k }));
+      b._correct = k === TG.q.tone;
+      b.onclick = () => answerTone(k, b);
+      box.appendChild(b);
+    }
+  }
+  function answerTone(picked, btn) {
+    if (TG.locked || !TG.q) return;
+    TG.locked = true;
+    const q = TG.q;
+    const ok = gradeTone(q, picked);
+    document.querySelectorAll("#tones-options button").forEach((b) => {
+      b.disabled = true;
+      if (b._correct) b.classList.add("good");
+    });
+    if (!ok) btn.classList.add("bad");
+    if (ok) {
+      TG.score++;
+      TG.streak++;
+      TG.bestStreak = Math.max(TG.bestStreak, TG.streak);
+      sfx.kill();
+    } else {
+      TG.streak = 0;
+      sfx.wrong();
+    }
+    const reveal = $("#tones-reveal");
+    if (reveal) reveal.innerHTML = `<div class="boss-prompt"><span class="hz">${q.word.h}</span><span class="py">${q.word.p}</span></div>`;
+    TG.advanceTimer = setTimeout(() => {
+      TG.advanceTimer = null;
+      if (currentScreen === "tones") nextToneQuestion();
+    }, fxDuration(900));
+  }
+  function endToneRound() {
+    if (TG.ended) return;
+    TG.ended = true;
+    clearTimeout(TG.advanceTimer);
+    TG.advanceTimer = null;
+    const box = $("#tones-options");
+    if (box) box.innerHTML = "";
+    const prog = $("#tones-progress");
+    if (prog) prog.textContent = "";
+    wallet += TG.score;
+    store.set("wallet", wallet);
+    updateWalletChip();
+    addXp(TG.score);
+    noteDaily(TG.score);
+    const reveal = $("#tones-reveal");
+    if (!reveal) return;
+    reveal.innerHTML = "";
+    const done = document.createElement("div");
+    done.className = "boss-prompt";
+    done.textContent = t("tones.roundDone");
+    reveal.appendChild(done);
+    const scoreLine = document.createElement("p");
+    scoreLine.className = "sub";
+    scoreLine.textContent = t("tones.score", { score: TG.score, total: TG.len });
+    reveal.appendChild(scoreLine);
+    const streakLine = document.createElement("p");
+    streakLine.className = "sub";
+    streakLine.textContent = t("tones.bestStreak", { n: TG.bestStreak });
+    reveal.appendChild(streakLine);
+    if (TG.score > 0) {
+      const rewardLine = document.createElement("p");
+      rewardLine.className = "sub";
+      rewardLine.textContent = t("tones.reward", { coins: TG.score, xp: TG.score });
+      reveal.appendChild(rewardLine);
+    }
+    const again = document.createElement("button");
+    again.className = "big primary";
+    again.id = "tones-again";
+    again.textContent = t("tones.again");
+    again.onclick = () => startToneRound();
+    reveal.appendChild(again);
+  }
+  $("#tones-replay").onclick = () => {
+    if (TG.q) speak(TG.q.word.h);
+  };
   var cv = $("#cv");
   var ctx2 = cv.getContext("2d");
   var B = { on: false };
