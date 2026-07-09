@@ -5,12 +5,7 @@
    a fixed px value is derived from the measured canvas size instead. Reference
    size ~380x480 (today's typical canvas) keeps current phones looking
    unchanged; clamped so tiny/huge canvases don't shrink/blow up the HUD text
-   past readable limits.
-
-   Three scales, one per concern:
-   - S       scene geometry (ground, positions, HUD text, floaters).
-   - textS   word plaque (hanzi/pinyin/translation), width-driven.
-   - mascotS sprite scale for cat/raccoon with a 0.85 floor and 1.2x boost. */
+   past readable limits. */
 export function uiScale(w, h) {
   const s = Math.min(h / 480, w / 380);
   return Math.max(0.7, Math.min(1.8, s));

@@ -1474,7 +1474,9 @@ function draw(now){
   const hopping = B.mascotHopUntil && now < B.mascotHopUntil;   // little victory hop after a kill
   const playerState = hopping ? "happy" : "walk";
   drawCat(ctx, B.L.mascotX, gy + 6*B.S, now, playerState, SKIN_PALETTES[shopState.skin], .9*B.L.mascotS, B.acc, false);
-  if(B.hasKitten) drawCat(ctx, B.L.mascotX - B.L.catHalf, gy + 6*B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.L.mascotS, [], false);
+  // catHalf grew with mascotS while mascotX stayed on S, so clamp the kitten on-canvas.
+  const kittenX = Math.max(16*B.L.mascotS + 2, B.L.mascotX - B.L.catHalf);
+  if(B.hasKitten) drawCat(ctx, kittenX, gy + 6*B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.L.mascotS, [], false);
   // idle coin icon (left of the player) - coin sprite or vector fallback
   const coinImgIdle = sprite("coin");
   if(coinImgIdle){

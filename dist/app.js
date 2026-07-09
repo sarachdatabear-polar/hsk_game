@@ -4184,7 +4184,8 @@
     const hopping = B.mascotHopUntil && now < B.mascotHopUntil;
     const playerState = hopping ? "happy" : "walk";
     drawCat(ctx2, B.L.mascotX, gy + 6 * B.S, now, playerState, SKIN_PALETTES[shopState.skin], 0.9 * B.L.mascotS, B.acc, false);
-    if (B.hasKitten) drawCat(ctx2, B.L.mascotX - B.L.catHalf, gy + 6 * B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5 * B.L.mascotS, [], false);
+    const kittenX = Math.max(16 * B.L.mascotS + 2, B.L.mascotX - B.L.catHalf);
+    if (B.hasKitten) drawCat(ctx2, kittenX, gy + 6 * B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5 * B.L.mascotS, [], false);
     const coinImgIdle = sprite("coin");
     if (coinImgIdle) {
       ctx2.drawImage(coinImgIdle, 4 * B.S, gy - 22 * B.S, B.L.coinPx, B.L.coinPx);

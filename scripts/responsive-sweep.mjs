@@ -359,10 +359,12 @@ async function runFullSweep() {
     if (!battleInfo.pauseOnScreen) failures.push("battle pause off-screen");
     if (scrollAssertApplies && battleInfo.scrollNeeded)
       failures.push(`battle scroll needed (${isLandscape ? "landscape" : "short-portrait"})`);
-    // 56px is the PRD portrait-phone floor; landscape battle canvases are
-    // height-starved by design (the answers grid claims a full-height
-    // column) and only need to clear the 48px absolute readability floor.
-    const hanziFloor = portraitVp && cvRect.w >= 360 ? 56 : 48;
+    // 56px is the PRD portrait-phone floor keyed on viewport width — canvas-width
+    // keying let the 360-wide motivating case fall into the tautological 48
+    // branch that can never fire; landscape battle canvases are height-starved
+    // by design (the answers grid claims a full-height column) and only need
+    // to clear the 48px absolute readability floor.
+    const hanziFloor = (portraitVp && width >= 360) ? 56 : 48;
     if (L.hanziPx < hanziFloor)
       failures.push(
         `battle hanzi=${L.hanziPx.toFixed(1)}<${hanziFloor} (cv ${Math.round(cvRect.w)}x${Math.round(cvRect.h)})`
