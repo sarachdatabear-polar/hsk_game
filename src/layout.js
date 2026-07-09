@@ -11,24 +11,34 @@ export function uiScale(w, h) {
   return Math.max(0.7, Math.min(1.8, s));
 }
 
-/* Derived battle-layout constants, all proportional to uiScale(w,h).
-   ground/mascotX/catHalf drive positioning (bite threshold, kitten trail
-   offset); the *Px fields are font/sprite sizes for the draw loop. */
+/* Three scales, one per concern:
+   - S       scene geometry (ground, positions, HUD text, floaters) — unchanged.
+   - textS   word plaque (hanzi/pinyin/translation). Width-driven so a short
+             canvas no longer shrinks the hanzi: at a 360-wide viewport the
+             old min(h/480, w/380) bottomed out at the 0.7 floor -> 42px hanzi,
+             failing the PRD "hanzi >= 56 CSS px at 390-wide" spirit on the
+             most common Android width. h/260 is only a guard so the plaque
+             (~2.05*hanziPx tall with both translation rows) can't outgrow a
+             very short canvas. Floor is 0.75 (48px hanzi) so even
+             height-starved landscape battle canvases stay readable.
+   - mascotS S with a 0.85 floor and a 1.2x boost: the cat/raccoon read as
+             the protagonists, not garnish, on every phone size. catHalf
+             (bite threshold, kitten offset) follows it so gameplay geometry
+             matches the visible sprite. */
 export function layout(w, h) {
   const S = uiScale(w, h);
+  const textS = Math.max(0.75, Math.min(1.8, Math.min(w / 380, h / 260)));
+  const mascotS = Math.min(2.1, Math.max(S, 0.85) * 1.2);
   return {
     S,
+    textS,
+    mascotS,
     ground: 30 * S,
     mascotX: 52 * S,
-    catHalf: 34 * S,
-    // 60 (not 44): at a 390 CSS-px-wide viewport the battle canvas measures
-    // ~366px after screen padding, giving S ~0.96 (width-bound, see uiScale) —
-    // 44*0.96 ~ 42px fails the PRD §10 "Hanzi >= 56 CSS px at 390-wide" floor;
-    // 60*0.96 ~ 58px clears it.
-    hanziPx: 60 * S,
-    pinyinPx: 18 * S,
+    catHalf: 34 * mascotS,
+    hanziPx: 64 * textS,
+    pinyinPx: 18 * textS,
     floaterPx: 20 * S,
-    mascotPx: 48 * S,
     coinPx: 20 * S
   };
 }

@@ -1473,8 +1473,10 @@ function draw(now){
   // since x never changes here).
   const hopping = B.mascotHopUntil && now < B.mascotHopUntil;   // little victory hop after a kill
   const playerState = hopping ? "happy" : "walk";
-  drawCat(ctx, B.L.mascotX, gy + 6*B.S, now, playerState, SKIN_PALETTES[shopState.skin], .9*B.S, B.acc, false);
-  if(B.hasKitten) drawCat(ctx, B.L.mascotX - B.L.catHalf, gy + 6*B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.S, [], false);
+  drawCat(ctx, B.L.mascotX, gy + 6*B.S, now, playerState, SKIN_PALETTES[shopState.skin], .9*B.L.mascotS, B.acc, false);
+  // catHalf grew with mascotS while mascotX stayed on S, so clamp the kitten on-canvas.
+  const kittenX = Math.max(16*B.L.mascotS + 2, B.L.mascotX - B.L.catHalf);
+  if(B.hasKitten) drawCat(ctx, kittenX, gy + 6*B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.L.mascotS, [], false);
   // idle coin icon (left of the player) - coin sprite or vector fallback
   const coinImgIdle = sprite("coin");
   if(coinImgIdle){
@@ -1495,7 +1497,7 @@ function draw(now){
     // raccoon enemy (was the cat walker) — bosses draw bigger with a gold
     // aura (boss param, not scale — see raccoon.js); no skins/accessories/
     // kitten on it, those moved to the player above.
-    const rScale = z.boss ? 1.5*B.S : B.S;
+    const rScale = z.boss ? 1.5*B.L.mascotS : B.L.mascotS;
     drawRaccoon(ctx, z.x, gy + 6*B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
     // floating HP bar above its head — cosmetic only. Animates hp -> 0 over
     // the happy/dying window (killZombie snapshots hpAtKill); wrong/timeout
@@ -1505,7 +1507,7 @@ function draw(now){
       const remain = Math.max(0, B.dyingUntil - now);
       hpFrac = (z.hpAtKill ?? z.hp) * (remain/250);
     }
-    drawHpBar(ctx, z.x, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.S, hpFrac, B.S);
+    drawHpBar(ctx, z.x, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.L.mascotS, hpFrac, B.L.mascotS);
   }else{
     B.plaqueRect = null;   // no word on screen — the canvas click/keydown handlers no-op
   }
@@ -1588,24 +1590,25 @@ function drawWordPlate(z, vis, now){
   const bounce = (!REDUCED_MOTION && B.plaqueHitAt)
     ? plaqueBounce(performance.now() - B.plaqueHitAt) : 0;
   const wy = Math.round(B.h * 0.36) + Math.round(bounce);
+  const T = B.L.textS;   // plaque metrics scale with the width-driven text scale
   ctx.save();
   ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK);
-  const textW = Math.max(ctx.measureText(hanzi).width, 74*B.S);
-  const spkR = 12*B.S;
-  const lw = Math.min(B.w - 24*B.S, textW + 56*B.S + spkR*2.2);
+  const textW = Math.max(ctx.measureText(hanzi).width, 74*T);
+  const spkR = 12*T;
+  const lw = Math.min(B.w - 24*T, textW + 56*T + spkR*2.2);
   // Stacked rows, top to bottom: pinyin (if shown) -> Hanzi -> translation.
   // The translation row's height is reserved unconditionally (same whether
   // revealed or not) so the plaque never resizes/jumps at reveal time.
-  const padV = 10*B.S;
-  const pinyinH = pinyin ? 22*B.S : 0;
+  const padV = 10*T;
+  const pinyinH = pinyin ? 22*T : 0;
   const hanziH = B.L.hanziPx * 1.05;
-  const transH = (showSub ? 40 : 24) * B.S;
+  const transH = (showSub ? 40 : 24) * T;
   const lh = padV*2 + pinyinH + hanziH + transH;
   const x = B.w/2 - lw/2, y = wy - lh/2;
   const plaqueImg = sprite("ui-word-plaque");
   if(plaqueImg){
     // 9-slice so the gold rim + notched frame stay crisp at any plaque size
-    const di = Math.min(20*B.S, lw/3, lh/3);
+    const di = Math.min(20*T, lw/3, lh/3);
     for(const r of nineSliceRects(560, 320, 48, x, y, lw, lh, di)){
       ctx.drawImage(plaqueImg, r.sx, r.sy, r.sw, r.sh, r.dx, r.dy, r.dw, r.dh);
     }
@@ -1613,25 +1616,25 @@ function drawWordPlate(z, vis, now){
     // vector fallback: cream paper plaque (education-first reference): matte
     // paper, warm-brown border, corner ticks — hanzi/pinyin stay dynamic text
     ctx.shadowColor = "rgba(60,40,20,.32)";
-    ctx.shadowBlur = 12*B.S;
-    ctx.shadowOffsetY = 4*B.S;
+    ctx.shadowBlur = 12*T;
+    ctx.shadowOffsetY = 4*T;
     const paper = ctx.createLinearGradient(0,y,0,y+lh);
     paper.addColorStop(0,"rgba(253,246,227,.97)");
     paper.addColorStop(1,"rgba(243,230,198,.97)");
     ctx.fillStyle = paper;
-    roundRect(x,y,lw,lh,14*B.S); ctx.fill();
+    roundRect(x,y,lw,lh,14*T); ctx.fill();
     ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
     ctx.strokeStyle = boss ? "#D8A93A" : "#B98F55";
-    ctx.lineWidth = 2.6*B.S;
-    roundRect(x+1.3*B.S,y+1.3*B.S,lw-2.6*B.S,lh-2.6*B.S,13*B.S); ctx.stroke();
+    ctx.lineWidth = 2.6*T;
+    roundRect(x+1.3*T,y+1.3*T,lw-2.6*T,lh-2.6*T,13*T); ctx.stroke();
     ctx.strokeStyle = "rgba(231,211,166,.9)";
-    ctx.lineWidth = 1.2*B.S;
-    roundRect(x+6*B.S,y+6*B.S,lw-12*B.S,lh-12*B.S,9*B.S); ctx.stroke();
+    ctx.lineWidth = 1.2*T;
+    roundRect(x+6*T,y+6*T,lw-12*T,lh-12*T,9*T); ctx.stroke();
     // corner ticks
     ctx.strokeStyle = "#C29B5F";
-    ctx.lineWidth = 1.8*B.S;
+    ctx.lineWidth = 1.8*T;
     ctx.lineCap = "round";
-    const tk = 5*B.S, ti = 10*B.S;
+    const tk = 5*T, ti = 10*T;
     ctx.beginPath();
     ctx.moveTo(x+ti, y+ti+tk); ctx.lineTo(x+ti, y+ti); ctx.lineTo(x+ti+tk, y+ti);
     ctx.moveTo(x+lw-ti-tk, y+ti); ctx.lineTo(x+lw-ti, y+ti); ctx.lineTo(x+lw-ti, y+ti+tk);
@@ -1658,40 +1661,40 @@ function drawWordPlate(z, vis, now){
   const midY = cy + (showSub ? transH*0.32 : transH/2);
   if(revealed){
     const m = meaningOf(w, scope.lang);
-    ctx.font = fontString(700, 15*B.S, LATIN_STACK);
+    ctx.font = fontString(700, 15*T, LATIN_STACK);
     ctx.fillStyle = "#2F6B4F";
     ctx.fillText(m.main, B.w/2, midY);
     if(showSub && m.sub){
-      ctx.font = fontString(600, 13*B.S, LATIN_STACK);
+      ctx.font = fontString(600, 13*T, LATIN_STACK);
       ctx.fillStyle = "#5C7A68";
       ctx.fillText(m.sub, B.w/2, cy + transH*0.74);
     }
   }else{
     ctx.strokeStyle = "rgba(140,95,42,.32)";
-    ctx.lineWidth = Math.max(1.4, 2*B.S);
-    ctx.setLineDash([4*B.S, 4*B.S]);
-    ctx.beginPath(); ctx.moveTo(B.w/2-44*B.S, midY); ctx.lineTo(B.w/2+44*B.S, midY); ctx.stroke();
+    ctx.lineWidth = Math.max(1.4, 2*T);
+    ctx.setLineDash([4*T, 4*T]);
+    ctx.beginPath(); ctx.moveTo(B.w/2-44*T, midY); ctx.lineTo(B.w/2+44*T, midY); ctx.stroke();
     if(showSub){
       const y2 = cy + transH*0.74;
-      ctx.beginPath(); ctx.moveTo(B.w/2-30*B.S, y2); ctx.lineTo(B.w/2+30*B.S, y2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(B.w/2-30*T, y2); ctx.lineTo(B.w/2+30*T, y2); ctx.stroke();
     }
     ctx.setLineDash([]);
   }
   ctx.textBaseline = "alphabetic";
   if(level){
     // dark-green level tag (reference TAG)
-    ctx.font = fontString(700, 10*B.S, LATIN_STACK);
+    ctx.font = fontString(700, 10*T, LATIN_STACK);
     const tagText = `HSK ${level}`;
-    const tw = ctx.measureText(tagText).width + 12*B.S;
-    const th = 16*B.S;
+    const tw = ctx.measureText(tagText).width + 12*T;
+    const th = 16*T;
     ctx.fillStyle = "#2F6B4F";
-    roundRect(x+8*B.S, y-th*.45, tw, th, th/2); ctx.fill();
+    roundRect(x+8*T, y-th*.45, tw, th, th/2); ctx.fill();
     ctx.strokeStyle = "#1E4634";
-    ctx.lineWidth = 1.2*B.S;
-    roundRect(x+8*B.S, y-th*.45, tw, th, th/2); ctx.stroke();
+    ctx.lineWidth = 1.2*T;
+    roundRect(x+8*T, y-th*.45, tw, th, th/2); ctx.stroke();
     ctx.fillStyle = "#F2EDDE";
     ctx.textAlign = "left";
-    ctx.fillText(tagText, x+14*B.S, y-th*.45 + th*.7);
+    ctx.fillText(tagText, x+14*T, y-th*.45 + th*.7);
   }
   // speaker icon, right edge of the plaque, vertically centered — also the
   // visual affordance for the click/keyboard hit-test set up on #cv below.
@@ -1699,7 +1702,7 @@ function drawWordPlate(z, vis, now){
   // advertise a disabled affordance) and when the plaque is already showing
   // the big 🔊-as-hanzi (listen format live) to avoid two speaker glyphs.
   if(canReplayAudio(z) && !vis.icon){
-    drawSpeakerIcon(ctx, x + lw - spkR - 10*B.S, y + lh/2, spkR, boss ? "#7A4E0C" : "#8C5F2A");
+    drawSpeakerIcon(ctx, x + lw - spkR - 10*T, y + lh/2, spkR, boss ? "#7A4E0C" : "#8C5F2A");
   }
   B.plaqueRect = {x, y, w: lw, h: lh};
   ctx.restore();
