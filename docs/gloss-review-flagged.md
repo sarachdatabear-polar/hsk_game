@@ -2,7 +2,13 @@
 
 **2938 unique-hanzi glosses rewritten** (covering all 3,417 `+` entries; now 0 remain). All 1,383 tests pass. Applied on branch `feat/ui-polish-1` — **not merged to main**.
 
-You do **not** need to read all 2938. Review just the **255 flagged** below (the rest are high-confidence). The full map is `data/gloss-overrides.json`.
+You do **not** need to read all 2938. Review the **255 flagged** below. The other
+2,683 are "high-confidence" — meaning **no worker flagged them**, not that they're
+independently verified; your sign-off on those is trust, not proof. To calibrate that
+trust I hand-audited a random **45 of the high-confidence set** (Sonnet-generated, the
+weakest model) against hanzi+pinyin: **0 real errors** (one awkward wording). So the
+bulk is sound, but if you want extra assurance, spot-read a few more from
+`data/gloss-overrides.json` (the full map).
 
 Reading: **hanzi | old (broken) | → new gloss | note**. These flagged ones matter most: a *confidently-worded but wrong* gloss is worse than obvious junk (the learner trusts it), so these — not the high-confidence bulk — are where a wrong meaning could hide. Tell me any to change.
 
@@ -324,6 +330,17 @@ Idioms, aspect, ordinals, names — a window so you can gauge the hard set witho
 | 从那以后 | from + that + after | **from then on** |
 | 视觉暂留 | sight + temporary + to leave a messa | **persistence of vision** |
 | 那句话 | that + sentence + dialect | **that sentence; those words** |
+
+## Gameplay safety check (distractors)
+
+Rewording can make two words share a gloss, which `distractors.js` excludes from
+being each other's wrong-answers. Measured: same-gloss collisions rose **+132
+words (0.6%)**, all **genuine synonyms** (此次/这次 → "this time"; 看清/看清楚 →
+"to see clearly"; 孩子/小孩/儿童 → "child"). Largest cluster is 9 words out of
+~10,000 in the level, so no question becomes unanswerable. No action needed.
+
+Separate pre-existing smell (NOT from this rewrite): single characters like 上, 个
+carry a useless "used in" gloss. Worth a future cleanup, out of scope here.
 
 ## Owner-default decisions I baked in (veto any)
 
