@@ -24,15 +24,15 @@ describe("shop", () => {
   });
 
   it("canAfford true/false by wallet", () => {
-    expect(canAfford(500, "midnight")).toBe(true);
-    expect(canAfford(499, "midnight")).toBe(false);
+    expect(canAfford(300, "midnight")).toBe(true);
+    expect(canAfford(299, "midnight")).toBe(false);
     expect(canAfford(9999, "unknown")).toBe(false);
   });
 
   it("buy success deducts price and adds to owned", () => {
     const r = buy(1000, defaultShop(), "midnight");
     expect(r.ok).toBe(true);
-    expect(r.wallet).toBe(500);
+    expect(r.wallet).toBe(700);
     expect(r.shop.owned).toEqual(["midnight"]);
   });
 
@@ -59,7 +59,7 @@ describe("shop", () => {
   });
 
   it("never goes negative — exact price leaves 0, not less", () => {
-    const r = buy(500, defaultShop(), "midnight");
+    const r = buy(300, defaultShop(), "midnight");
     expect(r.ok).toBe(true);
     expect(r.wallet).toBe(0);
     expect(r.wallet).toBeGreaterThanOrEqual(0);
@@ -175,11 +175,11 @@ describe("shop", () => {
     const decos = CATALOG.filter(i => i.type === "deco");
     expect(decos.length).toBe(15);
     expect(decos.map(i => i.id)).toEqual(["red-lantern", "noodle-stall", "tea-sign", "foo-dog", "golden-arch", "mahjong-table", "koi-pond", "drum-tower", "bubble-tea", "paper-umbrella", "goldfish-banner", "neon-cat-sign", "shaved-ice-cart", "mooncake-stall", "firecracker-arch"]);
-    expect(decos.map(i => i.price)).toEqual([800, 1500, 2200, 3000, 5000, 4000, 6000, 9000, 2500, 1800, 2200, 3500, 4500, 5000, 6000]);
+    expect(decos.map(i => i.price)).toEqual([450, 1500, 2200, 3000, 5000, 4000, 6000, 9000, 2500, 900, 2200, 3500, 4500, 5000, 6000]);
   });
 
   it("buying a deco adds it to owned", () => {
-    const r = buy(800, defaultShop(), "red-lantern");
+    const r = buy(450, defaultShop(), "red-lantern");
     expect(r.ok).toBe(true);
     expect(r.wallet).toBe(0);
     expect(r.shop.owned).toEqual(["red-lantern"]);
@@ -216,7 +216,7 @@ describe("shop", () => {
       "bubble-tea", "paper-umbrella", "goldfish-banner",
       "neon-cat-sign", "lion-drum", "star-shower",
     ]);
-    expect(pool.map(i => i.price)).toEqual([2500, 1800, 2200, 3500, 4500, 3000]);
+    expect(pool.map(i => i.price)).toEqual([2500, 900, 2200, 3500, 4500, 3000]);
     expect(pool.find(i => i.id === "lion-drum").type).toBe("soundpack");
     expect(pool.find(i => i.id === "star-shower").type).toBe("effect");
   });
@@ -319,26 +319,26 @@ describe("shop v7 availability", () => {
 });
 
 describe("shop v7 tiers", () => {
-  const lantern = CATALOG.find(i => i.id === "red-lantern"); // 800, deco, maxTier 3
+  const lantern = CATALOG.find(i => i.id === "red-lantern"); // 450, deco, maxTier 3
 
   it("defaultShop includes an empty tiers map", () => {
     expect(defaultShop().tiers).toEqual({});
   });
 
   it("upgradePrice: 1.5x then 2.5x base; null when maxed or not tierable", () => {
-    expect(upgradePrice(lantern, 1)).toBe(1200);
-    expect(upgradePrice(lantern, 2)).toBe(2000);
+    expect(upgradePrice(lantern, 1)).toBe(675);
+    expect(upgradePrice(lantern, 2)).toBe(1125);
     expect(upgradePrice(lantern, 3)).toBe(null);
     expect(upgradePrice(CATALOG.find(i => i.id === "gold"), 1)).toBe(null);
   });
 
   it("re-buying an owned deco upgrades its tier and charges upgradePrice", () => {
     let shop = { ...defaultShop(), owned: ["red-lantern"] };
-    let r = buy(1200, shop, "red-lantern");
+    let r = buy(675, shop, "red-lantern");
     expect(r.ok).toBe(true);
     expect(r.wallet).toBe(0);
     expect(r.shop.tiers).toEqual({ "red-lantern": 2 });
-    r = buy(2000, r.shop, "red-lantern");
+    r = buy(1125, r.shop, "red-lantern");
     expect(r.shop.tiers).toEqual({ "red-lantern": 3 });
     expect(buy(99999, r.shop, "red-lantern").ok).toBe(false); // maxed
   });
@@ -346,14 +346,14 @@ describe("shop v7 tiers", () => {
   it("upgrade fails when wallet is short; inputs not mutated", () => {
     const shop = { ...defaultShop(), owned: ["red-lantern"] };
     const before = JSON.stringify(shop);
-    const r = buy(1199, shop, "red-lantern");
+    const r = buy(674, shop, "red-lantern");
     expect(r.ok).toBe(false);
     expect(JSON.stringify(shop)).toBe(before);
   });
 
   it("legacy shop object without a tiers field upgrades cleanly (old-save load)", () => {
     const legacy = { owned: ["red-lantern"], skin: "", backdrop: "", effect: "", soundpack: "" };
-    const r = buy(1200, legacy, "red-lantern");
+    const r = buy(675, legacy, "red-lantern");
     expect(r.ok).toBe(true);
     expect(r.shop.tiers).toEqual({ "red-lantern": 2 });
   });
