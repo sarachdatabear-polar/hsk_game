@@ -81,6 +81,11 @@ function noteAnswer(hanzi, correct){
 let wallet = store.get("wallet", 0);
 let shopState = Object.assign(defaultShop(), store.get("shop", {}));
 function updateWalletChip(){ setPill($("#home-wallet"), "secondary-coin", wallet.toLocaleString()); }
+// Re-arm window (ms): a deco buy synchronously re-renders its row as an
+// "Upgrade" button at the same coordinates, so a double-tap's second tap
+// can land on it and charge the upgrade too — see makeShopRow.
+const SHOP_REARM_MS = 400;
+let justBought = null;   // {id, at} — item + moment of the most recent purchase
 
 /* ============================== cat growth (xp/levels/accessories) ============================== */
 let xp = store.get("xp", 0);
@@ -2041,6 +2046,7 @@ function makeShopRow(item, today){
     if(!r.ok) return;
     wallet = r.wallet; shopState = r.shop;
     store.set("wallet", wallet); store.set("shop", shopState);
+    justBought = { id: item.id, at: performance.now() };
     // no renderStreet() here: the street canvas is display:none while the
     // shop screen is up (renderStreet would no-op) and show("street") always
     // re-renders on entry, so a bought deco appears the moment it can be seen.
@@ -2063,6 +2069,17 @@ function makeShopRow(item, today){
       btn.className = "chip on";
       btn.textContent = t("shop.maxed");
       btn.disabled = true;
+    }
+    // this row's buy button was just replaced (Buy -> Upgrade, same spot) by
+    // the purchase that owns this item — briefly re-disable it so a fast
+    // second tap of a double-tap doesn't also charge the upgrade.
+    if(justBought && justBought.id === item.id){
+      const elapsed = performance.now() - justBought.at;
+      if(elapsed < SHOP_REARM_MS){
+        const wasDisabled = btn.disabled;
+        btn.disabled = true;
+        setTimeout(()=>{ btn.disabled = wasDisabled; }, SHOP_REARM_MS - elapsed);
+      }
     }
   }else{
     btn.className = "chip" + (equipped ? " on" : "");
