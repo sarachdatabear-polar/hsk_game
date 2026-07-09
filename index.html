@@ -379,6 +379,12 @@
   .boss-prompt{grid-column:1/-1; text-align:center; font-weight:800; font-size:14px;
     color:var(--lc-brown); background-color:var(--lc-cream); border:1.5px solid var(--lc-brown);
     border-radius:10px; padding:8px 10px;}
+  /* v6p3 cloze: the blanked sentence (bigger hanzi) over a muted translation.
+     17px keeps hanzi legible while staying gentle on landscape height (the
+     boss-prompt row is 14px). Verify with the responsive sweep before release. */
+  .cloze-sentence{font-size:17px; line-height:1.35; letter-spacing:.02em;}
+  .cloze-trans{margin-top:3px; font-weight:600; font-size:12px; opacity:.75;}
+  .cloze-trans:empty{display:none;}
   #opts .replay{grid-column:1/-1; font-weight:800; padding:8px 0;}
   /* v6p2 typed-pinyin input: #opts-prefixed selectors on the button-shaped
      pieces (tone-chip, typed-go) so they out-specificity the base
@@ -392,6 +398,26 @@
   #opts .tone-chip.on{background-color:var(--lc-success); color:var(--lc-cream); border-color:var(--lc-success-deep);}
   #opts .typed-go{font-weight:700; padding:12px; border-radius:14px;}
   #opts .typed-go:disabled{opacity:.45;}
+  /* v6p3 Tone Trainer (#s-tones) — standalone tone-discrimination minigame.
+     Reuses the .chip/.tone-chip visual language (bumped up to a big 2x2 grid,
+     same idea as the battle #opts answer grid) and .boss-prompt styling for
+     the reveal/result row. No new art. */
+  .tones-replay{display:flex; align-items:center; justify-content:center; gap:8px;
+    font-size:18px; margin-top:10px; width:100%;}
+  #tones-options{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px;}
+  #tones-options .tone-chip{min-height:68px; font-size:26px; font-weight:800;
+    display:flex; align-items:center; justify-content:center;}
+  #tones-options .tone-chip.good{background-color:var(--lc-success); color:var(--lc-cream);
+    border-color:var(--lc-success-deep);}
+  #tones-options .tone-chip.bad{background-color:var(--lc-error); color:var(--lc-cream);
+    border-color:var(--lc-error-border);}
+  #tones-options .tone-chip:disabled{opacity:.65;}
+  #tones-options .tone-chip:disabled.good,
+  #tones-options .tone-chip:disabled.bad{opacity:1;}
+  #tones-reveal{margin-top:14px;}
+  #tones-reveal .boss-prompt{margin-bottom:10px;}
+  #tones-reveal .hz{font-size:40px; text-align:center; display:block;}
+  #tones-reveal .py{font-size:18px; color:var(--lc-brown); text-align:center; display:block; margin-top:2px;}
   /* results */
   .bignum{font-size:52px; text-align:center; color:var(--lc-green); font-weight:800; margin:6px 0;
     font-family:'LC Latin',"Segoe UI",sans-serif;}
@@ -733,6 +759,23 @@
     #bottom-nav{margin-top:3px; padding:2px 3px;}
     .nav-btn{min-height:28px; padding:1px 2px; gap:1px; font-size:9px;}
     .nav-btn .asset-icon{width:16px; height:16px;}
+    /* ---- tone trainer ---- */
+    /* Short landscape can't stack a 2x2 tone grid + big reveal under the
+       replay button without pushing tones 3/4 below the fold (caught by the
+       responsive sweep). Compact everything and lay the four tones out in a
+       single short row so all four stay tappable in-fold. */
+    #s-tones{padding:5px 12px 4px; overflow-y:auto;}
+    #s-tones h2{margin:2px 0; font-size:18px;}
+    #s-tones .sub{margin:2px 0; font-size:11px;}
+    #tones-progress{margin:1px 0;}
+    .tones-replay{margin-top:5px; font-size:14px; min-height:34px;}
+    #tones-options{grid-template-columns:repeat(4,1fr); gap:8px; margin-top:8px;}
+    #tones-options .tone-chip{min-height:46px; font-size:20px;}
+    #tones-reveal{margin-top:8px;}
+    #tones-reveal .boss-prompt{margin-bottom:5px;}
+    #tones-reveal .hz{font-size:26px;}
+    #tones-reveal .py{font-size:14px;}
+    #tones-reveal .sub{margin:2px 0;}
   }
 </style>
 </head>
@@ -783,6 +826,7 @@
       <button class="sec-btn" data-go="scope-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg><span data-i18n="home.flashcards">Flashcards</span></span></button>
       <button class="sec-btn" id="go-smart"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#target"></use></svg><span data-i18n="home.smart">Smart Review</span></span></button>
       <button class="sec-btn" data-go="shop"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#shop"></use></svg><span data-i18n="home.shop">Shop</span></span></button>
+      <button class="sec-btn" data-go="tones" id="home-tones-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg><span data-i18n="home.tones">Tone Trainer</span></span></button>
     </div>
   </div>
 
@@ -976,6 +1020,20 @@
     <button class="big" style="margin-top:10px" data-go="home" data-i18n="results.home">Home</button>
   </div>
 
+  <!-- TONE TRAINER (v6 phase 3 — standalone tone-discrimination minigame;
+       tone *perception* (aural), distinct from the battle `tone` ladder rung
+       which trains visual pinyin recall. Reuses per-word MP3s only — see
+       tone_gym.js/audio.js hasMp3 for the "reliable tone" gate. ) -->
+  <div class="screen festive" id="s-tones">
+    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
+    <h2 data-i18n="tones.title">Tone Trainer</h2>
+    <div class="readout" id="tones-progress"></div>
+    <p class="sub" data-i18n="tones.instruction">Which tone did you hear?</p>
+    <button class="big tones-replay" id="tones-replay">🔊 <span data-i18n="tones.replay">Play it again</span></button>
+    <div id="tones-options"></div>
+    <div id="tones-reveal"></div>
+  </div>
+
   <!-- SCORES -->
   <div class="screen festive" id="s-scores">
     <button class="back" data-go="more" data-i18n="common.backMore">← More</button>
@@ -1047,6 +1105,7 @@
       in flashcards, and in the missed-words review.</p>
     <p class="howto" data-i18n-html="howto.learnMode"><b>Learn mode</b> drills the same word pool as flashcards first, so you can
       study, then play.</p>
+    <p class="howto" data-i18n="howto.attribution">Some example sentences from Tatoeba (tatoeba.org), CC-BY 2.0 FR.</p>
   </div>
 
   <!-- BOTTOM NAV -->
@@ -1060,6 +1119,7 @@
 </div>
 
 <script src="data/words.js"></script>
+<script src="data/cloze.js"></script>
 <script src="dist/app.js"></script>
 </body>
 </html>

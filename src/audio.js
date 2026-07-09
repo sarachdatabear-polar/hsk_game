@@ -5,6 +5,9 @@ let base = "audio/";
 let zhVoice = null;
 let current = null;
 
+// Bundled-MP3 presence — reliable tone (browser TTS can't be trusted for tones).
+export function hasMp3(hanzi){ return mp3Set.has(hanzi); }
+
 export function initAudio(indexArray, baseUrl = "audio/") {
   mp3Set = new Set(indexArray || []);
   base = baseUrl;

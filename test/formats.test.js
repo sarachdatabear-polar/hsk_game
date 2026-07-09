@@ -34,12 +34,27 @@ describe("formatFor — the mastery ladder", () => {
     expect(formatFor(word, rec(5), caps)).toBe("tone");
     expect(formatFor(word, rec(6), caps)).toBe("tone");
   });
-  it("streak 7+ gets typed recall", () => {
+  it("streak 7-8 with a cloze sentence get cloze recall", () => {
+    const capsCloze = { audio: true, cloze: w => w.h === "你好" };
+    expect(formatFor(word, rec(7), capsCloze)).toBe("cloze");
+    expect(formatFor(word, rec(8), capsCloze)).toBe("cloze");
+  });
+  it("streak 7-8 fall back to typed when the word has no sentence", () => {
+    const noSentence = { audio: true, cloze: () => false };
+    expect(formatFor(word, rec(7), noSentence)).toBe("typed");
+    expect(formatFor(word, rec(8), noSentence)).toBe("typed");
+  });
+  it("a partial caps object (no cloze fn) reads as no-sentence → typed, not a crash", () => {
     expect(formatFor(word, rec(7), caps)).toBe("typed");
-    expect(formatFor(word, rec(12), caps)).toBe("typed");
+    expect(formatFor(word, rec(8), caps)).toBe("typed");
+  });
+  it("streak 9+ always gets typed recall, even with a cloze sentence", () => {
+    const capsCloze = { audio: true, cloze: () => true };
+    expect(formatFor(word, rec(9), capsCloze)).toBe("typed");
+    expect(formatFor(word, rec(12), capsCloze)).toBe("typed");
   });
   it("typed works for all-neutral words too (no tone fallback needed)", () => {
-    expect(formatFor(mk("吗", "ma", "question particle", "ไหม"), rec(7), caps)).toBe("typed");
+    expect(formatFor(mk("吗", "ma", "question particle", "ไหม"), rec(9), caps)).toBe("typed");
   });
   it("listen downgrades to meaning without audio", () => {
     expect(formatFor(word, rec(1), { audio: false })).toBe("meaning");
@@ -92,5 +107,23 @@ describe("FORMATS.typed registry shape", () => {
     expect(FORMATS.typed.audio).toBe("never");
     expect(FORMATS.typed.intro).toBe("battle.introTyped");
     expect(FORMATS.typed.buildOptions).toBeUndefined();
+  });
+});
+
+describe("FORMATS.cloze registry shape", () => {
+  it("masks the plaque, never speaks, has a soft-intro and a sentence prompt", () => {
+    expect(FORMATS.cloze.plaque).toEqual({ mask: true });
+    expect(FORMATS.cloze.audio).toBe("never");
+    expect(FORMATS.cloze.intro).toBe("battle.introCloze");
+    expect(FORMATS.cloze.prompt).toBe("cloze");
+  });
+  it("buildOptions delegates to clozeOptions (target + baked distractors)", () => {
+    const byHanzi = { "你好": word, "谢谢": deck[1], "水": deck[2], "大": deck[3] };
+    const entry = { d: ["谢谢", "水", "大"] };
+    const opts = FORMATS.cloze.buildOptions(word, entry, byHanzi, firstRand);
+    expect(opts).toHaveLength(4);
+    expect(opts.filter(o => o.correct)).toHaveLength(1);
+    expect(opts.find(o => o.correct)).toEqual(
+      expect.objectContaining({ label: "你好", sub: "nǐ hǎo" }));
   });
 });

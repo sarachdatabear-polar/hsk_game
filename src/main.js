@@ -2,6 +2,8 @@
 import { buildPool, coveragePct, scopeKey, meaning as meaningOf, normalizeLen, modeKey, scopeSummary } from "./pool.js";
 import { formatFor, FORMATS } from "./formats.js";
 import { gradeTyped, syllables, syllableTones, letters } from "./pinyin.js";
+import { clozeFor } from "./cloze.js";
+import { tonePool, toneQuestion, gradeTone } from "./tone_gym.js";
 import { killPoints } from "./scoring.js";
 import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus } from "./fx.js";
 import { sfx } from "./sfx.js";
@@ -17,7 +19,7 @@ import { wordWeight, smartDeck, weakWords } from "./srs.js";
 import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
 import { defaultQuestState, noteQuestEvent, questStatus } from "./quests.js";
 import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
-import { initAudio, speak, audioAvailable } from "./audio.js";
+import { initAudio, speak, audioAvailable, hasMp3 } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import { BUILDINGS, streetPieces, streetProgress, streetMetrics } from "./street.js";
@@ -33,6 +35,15 @@ import { journeyNodes, currentNodeId } from "./journey.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
+// v6 phase 3: cloze sentence data + baked distractors, loaded via a <script>
+// tag before dist/app.js. Undefined on file:// if the tag is missing → the
+// cloze format never triggers (caps.cloze returns false for every word).
+const CLOZE = window.HSK_CLOZE || {};
+// hanzi → full record, over the WHOLE dataset (not the scoped pool). Cloze
+// distractors may be words outside a top-N scope, so their pinyin subs must
+// resolve here. Built once at boot.
+const BY_HANZI = {};
+for (const lv of Object.values(D.levels)) for (const w of lv) BY_HANZI[w.h] = w;
 const $ = s => document.querySelector(s);
 // Accessibility (§11): read once at boot. When set, feedback-stamp effects
 // (drawFeedbackLayer) get half the on-screen duration and the hit-flash
@@ -276,6 +287,16 @@ function renderHome(){
   if(hint) hint.hidden = startable;
   const chip = $("#home-scope-chip");
   if(chip) chip.textContent = scopeChipLabel();
+  // v6p3 Tone Trainer: hidden/greyed when the scoped pool has no MP3-backed
+  // eligible words (e.g. file:// where audio/index.json can't be fetched) —
+  // TTS-only tone training would be misleading, so we hide rather than mislead.
+  const tonesBtn = $("#home-tones-btn");
+  if(tonesBtn){
+    const enabled = tonePool(pool, hasMp3).length > 0;
+    tonesBtn.disabled = !enabled;
+    tonesBtn.title = enabled ? "" : t("home.tonesDisabledHint");
+    tonesBtn.setAttribute("aria-label", enabled ? t("home.tones") : t("home.tones") + " — " + t("home.tonesDisabledHint"));
+  }
 }
 // A4: START launches the smart choice — Smart Review when >=8 weak/due words,
 // else a normal round over the configured scope. The scope chip next to it
@@ -322,7 +343,11 @@ function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.rand
 /* ============================== audio (pre-recorded mp3 first, Web Speech fallback) ============================== */
 // index.json lists which words have a bundled mp3; fetch fails silently on file://
 // (keeping TTS-only), which is fine per the file:// constraint.
-fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>initAudio([]));
+fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>initAudio([]))
+  // mp3Set fills in asynchronously here, AFTER the synchronous boot renderHome()
+  // has already run with an empty set — refresh Home so the Tone Trainer entry
+  // gate (which reads hasMp3) reflects real audio availability, not the default.
+  .finally(()=>{ if(currentScreen === "home") renderHome(); });
 
 /* ============================== sprite preload ============================== */
 loadSprites();
@@ -388,6 +413,7 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
   else if(tab==="progress"){ renderProgress(); show("progress"); }
   else if(tab==="shop"){ renderShop(); show("shop"); }
   else if(tab==="album"){ renderAlbum(); show("album"); }
+  else if(tab==="tones"){ startToneRound(); show("tones"); }
   else {
     if(tab==="home"){ stopBattle(); }   // intro abandonment handled in show()
     show(tab);
@@ -586,6 +612,116 @@ function nextCard(keep){
 }
 $("#fc-know").onclick  = ()=>nextCard(false);
 $("#fc-again").onclick = ()=>nextCard(true);
+
+/* ============================== tone trainer (v6p3) ============================== */
+// Standalone tone-*discrimination* minigame (design spec 2026-07-09): hear a
+// single-syllable word, tap the tone 1-4. Distinct from the battle `tone`
+// ladder rung (visual pinyin recall). Light rewards only — counts toward
+// daily activity + a little XP/coin, but never touches mastery/SRS (tone
+// accuracy != meaning recall), mirroring `B` (battle state) but far simpler.
+const TG = {pool:[], q:null, i:0, len:10, score:0, streak:0, bestStreak:0, locked:false, advanceTimer:null, ended:false};
+function startToneRound(){
+  // Kill any auto-advance timer still pending from a previous round (the player
+  // can tap Home mid-reveal, then re-enter — without this, the orphan timer's
+  // currentScreen guard would pass against the NEW round, skipping a question
+  // or double-firing endToneRound. See the guarded setTimeout in answerTone.
+  clearTimeout(TG.advanceTimer); TG.advanceTimer = null;
+  TG.pool = tonePool(pool, hasMp3);
+  TG.i = 0; TG.score = 0; TG.streak = 0; TG.bestStreak = 0; TG.q = null; TG.locked = false; TG.ended = false;
+  nextToneQuestion();
+}
+function nextToneQuestion(){
+  if(TG.i >= TG.len){ endToneRound(); return; }
+  TG.i++;
+  TG.q = toneQuestion(TG.pool, hasMp3, Math.random);
+  if(!TG.q){ endToneRound(); return; }   // pool ran out/empty — end early rather than crash
+  TG.locked = false;
+  renderToneQuestion();
+  speak(TG.q.word.h);
+}
+function renderToneQuestion(){
+  const prog = $("#tones-progress");
+  if(prog) prog.textContent = t("tones.progress", { i: TG.i, n: TG.len });
+  const reveal = $("#tones-reveal");
+  if(reveal) reveal.innerHTML = "";
+  const box = $("#tones-options");
+  box.innerHTML = "";
+  for(let k=1;k<=4;k++){
+    const b = document.createElement("button");
+    b.className = "chip tone-chip";
+    b.textContent = t("tones.tone"+k);
+    b.setAttribute("aria-label", t("tones.toneAria", { n: k }));
+    b._correct = k === TG.q.tone;
+    b.onclick = ()=>answerTone(k, b);
+    box.appendChild(b);
+  }
+}
+function answerTone(picked, btn){
+  if(TG.locked || !TG.q) return;
+  TG.locked = true;
+  const q = TG.q;
+  const ok = gradeTone(q, picked);
+  document.querySelectorAll("#tones-options button").forEach(b=>{
+    b.disabled = true;
+    if(b._correct) b.classList.add("good");
+  });
+  if(!ok) btn.classList.add("bad");
+  if(ok){ TG.score++; TG.streak++; TG.bestStreak = Math.max(TG.bestStreak, TG.streak); sfx.kill(); }
+  else { TG.streak = 0; sfx.wrong(); }
+  const reveal = $("#tones-reveal");
+  if(reveal) reveal.innerHTML = `<div class="boss-prompt"><span class="hz">${q.word.h}</span><span class="py">${q.word.p}</span></div>`;
+  // Guard the deferred advance only (not nextToneQuestion itself, which the
+  // very first call needs to run while currentScreen is still "home" — see
+  // the [data-go] "tones" route): without this, tapping Home during the
+  // reveal window lets the timer fire nextToneQuestion() on the hidden
+  // screen, playing audio over Home (and crediting rewards early on the
+  // last question).
+  TG.advanceTimer = setTimeout(()=>{ TG.advanceTimer = null; if(currentScreen === "tones") nextToneQuestion(); }, fxDuration(900));
+}
+// Light rewards (design spec §3): +1 coin and +1 XP per correct answer,
+// counted toward the daily streak — deliberately NOT recordAnswer/mastery.
+function endToneRound(){
+  if(TG.ended) return;   // idempotent — rewards must credit exactly once per round
+  TG.ended = true;
+  clearTimeout(TG.advanceTimer); TG.advanceTimer = null;
+  const box = $("#tones-options");
+  if(box) box.innerHTML = "";
+  const prog = $("#tones-progress");
+  if(prog) prog.textContent = "";
+  wallet += TG.score;
+  store.set("wallet", wallet);
+  updateWalletChip();
+  addXp(TG.score);
+  noteDaily(TG.score);
+  const reveal = $("#tones-reveal");
+  if(!reveal) return;
+  reveal.innerHTML = "";
+  const done = document.createElement("div");
+  done.className = "boss-prompt";
+  done.textContent = t("tones.roundDone");
+  reveal.appendChild(done);
+  const scoreLine = document.createElement("p");
+  scoreLine.className = "sub";
+  scoreLine.textContent = t("tones.score", { score: TG.score, total: TG.len });
+  reveal.appendChild(scoreLine);
+  const streakLine = document.createElement("p");
+  streakLine.className = "sub";
+  streakLine.textContent = t("tones.bestStreak", { n: TG.bestStreak });
+  reveal.appendChild(streakLine);
+  if(TG.score > 0){
+    const rewardLine = document.createElement("p");
+    rewardLine.className = "sub";
+    rewardLine.textContent = t("tones.reward", { coins: TG.score, xp: TG.score });
+    reveal.appendChild(rewardLine);
+  }
+  const again = document.createElement("button");
+  again.className = "big primary";
+  again.id = "tones-again";
+  again.textContent = t("tones.again");
+  again.onclick = ()=>startToneRound();
+  reveal.appendChild(again);
+}
+$("#tones-replay").onclick = ()=>{ if(TG.q) speak(TG.q.word.h); };   // never locked — replay is always allowed
 
 /* ============================== battle ============================== */
 /* Lucky-cat pattern: side view, one cat walks in from the right toward
@@ -848,7 +984,7 @@ function spawnZombie(){
   // v6 ladder: per-word format from the mastery streak. Bosses keep their own
   // two-stage ritual and the A4 intro battle stays meaning-only.
   z.format = (z.boss || introPhase === "battle") ? "meaning"
-    : formatFor(w, masteryStore[w.h], { audio: audioAvailable(w.h) });
+    : formatFor(w, masteryStore[w.h], { audio: audioAvailable(w.h), cloze: x => x.h in CLOZE });
   // v6 soft-intro: the first-ever appearance of a format freezes the walker,
   // the guide explains it in one line, and that word can never cost a life.
   const introKey = FORMATS[z.format].intro;
@@ -868,6 +1004,22 @@ function spawnZombie(){
 }
 // v6p2: typed questions slow the walker — recall under pressure, not panic.
 const TYPED_WALK_FACTOR = 0.4;
+// v6p3: cloze is tap-answer but demands reading time — gentler than typed.
+const CLOZE_WALK_FACTOR = 0.6;
+// Append the 4 option buttons for a plain-data option list. Shared by every
+// tap-answer format (the cloze branch and the generic branch both call it).
+function renderOptionButtons(box, opts){
+  for(const o of opts){
+    const b = document.createElement("button");
+    // Label wrapped in its own span (not just a bare text node) so short
+    // viewports can -webkit-line-clamp it specifically — an ellipsis on the
+    // primary answer only, never a silent symmetric crop across label+sub.
+    b.innerHTML = `<span class="opt-label">${o.label}</span>` + (o.sub? `<span class="th">${o.sub}</span>`:"");
+    b._correct = !!o.correct;
+    b.onclick = ()=>answer(b, o);
+    box.appendChild(b);
+  }
+}
 // One renderer for every question format. Options come back from the FORMATS
 // registry as plain data; promptKey (boss stage 2 / regular reverse) adds the
 // full-width prompt row above the grid, reusing the boss-prompt styling.
@@ -875,6 +1027,28 @@ function renderQuestion(word, format, promptKey){
   const deck = B.deck.length >= 8 ? B.deck : pool;
   const box = $("#opts");
   box.innerHTML = "";
+  // v6p3 cloze: a blanked sentence + translation prompt row, then tap 1 of 4
+  // hanzi. Distractors are baked in the data and their pinyin subs resolve
+  // over the full dataset (BY_HANZI), not the scoped pool.
+  if(format === "cloze"){
+    const c = clozeFor(word, CLOZE);
+    const prompt = document.createElement("div");
+    prompt.className = "boss-prompt cloze-prompt";
+    const sent = document.createElement("div");
+    sent.className = "cloze-sentence";
+    sent.textContent = c ? c.text : "___";
+    prompt.appendChild(sent);
+    const tr = document.createElement("div");
+    tr.className = "cloze-trans";
+    tr.textContent = !c ? ""
+      : scope.lang === "th" ? c.th
+      : scope.lang === "both" ? (c.th ? c.en + " · " + c.th : c.en)
+      : c.en;
+    prompt.appendChild(tr);
+    box.appendChild(prompt);
+    renderOptionButtons(box, FORMATS.cloze.buildOptions(word, c || { d: [] }, BY_HANZI, Math.random));
+    return;
+  }
   if(promptKey){
     const m = meaningOf(word, scope.lang);
     const prompt = document.createElement("div");
@@ -890,16 +1064,7 @@ function renderQuestion(word, format, promptKey){
     rp.onclick = ()=> speak(word.h);   // never locked — replay is always allowed
     box.appendChild(rp);
   }
-  for(const o of FORMATS[format].buildOptions(word, deck, scope.lang, Math.random)){
-    const b = document.createElement("button");
-    // Label wrapped in its own span (not just a bare text node) so short
-    // viewports can -webkit-line-clamp it specifically — an ellipsis on the
-    // primary answer only, never a silent symmetric crop across label+sub.
-    b.innerHTML = `<span class="opt-label">${o.label}</span>` + (o.sub? `<span class="th">${o.sub}</span>`:"");
-    b._correct = !!o.correct;
-    b.onclick = ()=>answer(b, o);
-    box.appendChild(b);
-  }
+  renderOptionButtons(box, FORMATS[format].buildOptions(word, deck, scope.lang, Math.random));
 }
 // v6p2 typed-pinyin input: letters field (native keyboard) + one tone row per
 // non-neutral syllable + attack button. Grading is pure (pinyin.js); the
@@ -1150,7 +1315,7 @@ function loop(now){
   if(z){
     if(z.state==="walk"){
       if(!z.frozen){
-        z.x -= B.speed*(z.boss?bossSpeedFactor:1)*(z.format==="typed"?TYPED_WALK_FACTOR:1)*dt;
+        z.x -= B.speed*(z.boss?bossSpeedFactor:1)*(z.format==="typed"?TYPED_WALK_FACTOR:z.format==="cloze"?CLOZE_WALK_FACTOR:1)*dt;
         if(z.x <= B.L.mascotX+B.L.catHalf) bite(true);          // too slow — cat got there
       }
     }else if(z.state==="dash"){

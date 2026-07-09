@@ -1,15 +1,15 @@
 # Lucky Cat HSK — Status
 
-**Last updated:** 2026-07-08
-**TL;DR:** Everything through v6 phase 2 (typed-pinyin recall) and the v7 follow-ups is live (release PRs #35 + #38, 2026-07-08). One small round — typed-polish (PR #39) — is merged to `development` awaiting the next release cut.
+**Last updated:** 2026-07-09
+**TL;DR:** **v6 phase 3 shipped.** Release cut 2026-07-09 (SHELL v36) carries the full cloze format (#41/#42) and the Tone Trainer minigame (#43) live. All v5/v6/v7 now on `main`.
 
 ## Where the game is
 
 | Tier | State |
 |---|---|
-| **Live on `main` / GitHub Pages** | Released 2026-07-08 (PR #38, SHELL v35): all of v5/v6/v7 plus responsive round, street restyle, i18n pass 2, v7 season art (PR #35 cut), v7 follow-ups (#36), and v6 phase 2 typed-pinyin recall (#37). |
-| **Merged to `development`, unreleased** | 1 round ahead of `main`: typed-polish (PR #39) — Enter-to-submit, pause-leak guard, nü labels, a11y tone chips. |
-| **On feature branches** | None — all work is merged to `development`. |
+| **Live on `main` / GitHub Pages** | Released 2026-07-09 (SHELL **v36**): everything below plus **v6 phase 3** — cloze fill-in-the-blank (#41 data + #42 gameplay) and the **Tone Trainer** tone-discrimination minigame (#43). Prior release 2026-07-08 (PR #38, v35): v5/v6.2/v7, responsive round, street restyle, i18n pass 2, season art, typed-pinyin recall. |
+| **Merged to `development`, unreleased** | None — `development` is in sync with `main` at this cut. |
+| **On feature branches** | None. |
 
 ## Done
 
@@ -36,7 +36,7 @@
 ## Planned
 
 1. **Release cut to live** — merge `development` (PR #39 typed-polish) to `main`; bump SHELL, live-smoke verify. Small enough to ride with the next feature round.
-2. **v6 phase 3** — remaining question types per [PRD-v5 §8](prd/PRD-v5-visual-retention.md): cloze (needs a sentence-data pipeline — brainstorm first) and the tone minigame.
+2. **v6 phase 3 — DONE.** Cloze shipped (data #41 + gameplay #42, merged to `development`). Tone Trainer — standalone tone-discrimination minigame (`src/tone_gym.js`, `#s-tones` screen, MP3-only pool, light rewards) — on `feat/v6-tone-trainer` / **PR #43** awaiting merge. Both parked v6 question types now built; listening-first rounds remain the only parked item from [PRD-v5 §8](prd/PRD-v5-visual-retention.md).
 3. **Roadmaps not started:** [monetization & production](prd/PRD-monetization-and-production.md) (Supabase accounts, store launch); HSK 3.0 content refresh; social layer; notifications/widget; Android release refresh ([ANDROID_BUILD.md](build/ANDROID_BUILD.md))
 
 ## Doc map
