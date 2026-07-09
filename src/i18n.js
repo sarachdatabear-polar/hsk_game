@@ -171,10 +171,6 @@ export const STRINGS = {
     "season.midautumn": "Mid-Autumn",
     "season.cny": "Lunar New Year",
     // shop items (CATALOG ids, pass 2) — display-name fallback for t("item."+id)
-    "item.midnight": "Midnight",
-    "item.sakura": "Sakura",
-    "item.jade": "Jade",
-    "item.gold": "Gold",
     "item.market": "Night Market",
     "item.temple": "Temple Dawn",
     "item.bamboo": "Bamboo",
@@ -432,10 +428,6 @@ export const STRINGS = {
     "season.midautumn": "ไหว้พระจันทร์",
     "season.cny": "ตรุษจีน",
     // shop items (CATALOG ids, pass 2) — display-name fallback for t("item."+id)
-    "item.midnight": "เที่ยงคืน",
-    "item.sakura": "ซากุระ",
-    "item.jade": "หยก",
-    "item.gold": "ทองคำ",
     "item.market": "ตลาดกลางคืน",
     "item.temple": "รุ่งอรุณที่วัด",
     "item.bamboo": "ไผ่",

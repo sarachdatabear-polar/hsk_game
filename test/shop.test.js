@@ -24,32 +24,32 @@ describe("shop", () => {
   });
 
   it("canAfford true/false by wallet", () => {
-    expect(canAfford(500, "midnight")).toBe(true);
-    expect(canAfford(499, "midnight")).toBe(false);
+    expect(canAfford(8000, "panda")).toBe(true);
+    expect(canAfford(7999, "panda")).toBe(false);
     expect(canAfford(9999, "unknown")).toBe(false);
   });
 
   it("buy success deducts price and adds to owned", () => {
-    const r = buy(1000, defaultShop(), "midnight");
+    const r = buy(8500, defaultShop(), "panda");
     expect(r.ok).toBe(true);
     expect(r.wallet).toBe(500);
-    expect(r.shop.owned).toEqual(["midnight"]);
+    expect(r.shop.owned).toEqual(["panda"]);
   });
 
   it("buy fails on insufficient funds, wallet unchanged", () => {
     const shop = defaultShop();
-    const r = buy(100, shop, "midnight");
+    const r = buy(100, shop, "panda");
     expect(r.ok).toBe(false);
     expect(r.wallet).toBe(100);
     expect(r.shop).toEqual(shop);
   });
 
   it("buy fails on duplicate purchase", () => {
-    const owned = { ...defaultShop(), owned: ["midnight"] };
-    const r = buy(10000, owned, "midnight");
+    const owned = { ...defaultShop(), owned: ["panda"] };
+    const r = buy(10000, owned, "panda");
     expect(r.ok).toBe(false);
     expect(r.wallet).toBe(10000);
-    expect(r.shop.owned).toEqual(["midnight"]);
+    expect(r.shop.owned).toEqual(["panda"]);
   });
 
   it("buy fails on unknown id", () => {
@@ -59,7 +59,7 @@ describe("shop", () => {
   });
 
   it("never goes negative — exact price leaves 0, not less", () => {
-    const r = buy(500, defaultShop(), "midnight");
+    const r = buy(8000, defaultShop(), "panda");
     expect(r.ok).toBe(true);
     expect(r.wallet).toBe(0);
     expect(r.wallet).toBeGreaterThanOrEqual(0);
@@ -68,32 +68,32 @@ describe("shop", () => {
   it("buy does not mutate input wallet/shop", () => {
     const shop = defaultShop();
     const before = JSON.stringify(shop);
-    buy(1000, shop, "midnight");
+    buy(8500, shop, "panda");
     expect(JSON.stringify(shop)).toBe(before);
   });
 
   it("equipItem equips an owned item into its type slot", () => {
-    const shop = { owned: ["midnight", "market"], skin: "", backdrop: "" };
-    let s = equipItem(shop, "midnight");
-    expect(s.skin).toBe("midnight");
+    const shop = { owned: ["panda", "market"], skin: "", backdrop: "" };
+    let s = equipItem(shop, "panda");
+    expect(s.skin).toBe("panda");
     s = equipItem(s, "market");
     expect(s.backdrop).toBe("market");
   });
 
   it("equipItem is a no-op for an unowned item", () => {
     const shop = defaultShop();
-    const s = equipItem(shop, "midnight");
+    const s = equipItem(shop, "panda");
     expect(s).toEqual(shop);
   });
 
   it("equipItem is a no-op for an unknown id", () => {
-    const shop = { owned: ["midnight"], skin: "midnight", backdrop: "" };
+    const shop = { owned: ["panda"], skin: "panda", backdrop: "" };
     const s = equipItem(shop, "nonexistent");
     expect(s).toEqual(shop);
   });
 
   it("equipItem('', type) clears that slot", () => {
-    const shop = { owned: ["midnight", "market"], skin: "midnight", backdrop: "market" };
+    const shop = { owned: ["panda", "market"], skin: "panda", backdrop: "market" };
     const s1 = equipItem(shop, "", "skin");
     expect(s1.skin).toBe("");
     expect(s1.backdrop).toBe("market");
@@ -102,22 +102,22 @@ describe("shop", () => {
   });
 
   it("equipItem does not mutate input shop", () => {
-    const shop = { owned: ["midnight"], skin: "", backdrop: "" };
+    const shop = { owned: ["panda"], skin: "", backdrop: "" };
     const before = JSON.stringify(shop);
-    equipItem(shop, "midnight");
+    equipItem(shop, "panda");
     expect(JSON.stringify(shop)).toBe(before);
   });
 
-  it("CATALOG has 10 skins, 8 backdrops, 3 effects, and 3 soundpacks with expected ids/prices", () => {
+  it("CATALOG has 6 skins, 8 backdrops, 3 effects, and 3 soundpacks with expected ids/prices", () => {
     const skins = CATALOG.filter(i => i.type === "skin");
     const backdrops = CATALOG.filter(i => i.type === "backdrop");
     const effects = CATALOG.filter(i => i.type === "effect");
     const soundpacks = CATALOG.filter(i => i.type === "soundpack");
-    expect(skins.length).toBe(10);
+    expect(skins.length).toBe(6);
     expect(backdrops.length).toBe(8);
     expect(effects.length).toBe(3);
     expect(soundpacks.length).toBe(3);
-    expect(skins.map(i => i.id)).toEqual(["midnight", "sakura", "jade", "gold", "panda", "ninja", "astronaut", "beach", "mooncake-rabbit", "dragon"]);
+    expect(skins.map(i => i.id)).toEqual(["panda", "ninja", "astronaut", "beach", "mooncake-rabbit", "dragon"]);
     expect(backdrops.map(i => i.id)).toEqual(["market", "temple", "bamboo", "harbor-night", "snow-festival", "island-sunset", "lantern-festival", "dragon-gate"]);
     expect(effects.map(i => i.id)).toEqual(["sakura-fx", "firecracker-fx", "star-shower"]);
     expect(soundpacks.map(i => i.id)).toEqual(["bells", "arcade", "lion-drum"]);
@@ -329,7 +329,7 @@ describe("shop v7 tiers", () => {
     expect(upgradePrice(lantern, 1)).toBe(1200);
     expect(upgradePrice(lantern, 2)).toBe(2000);
     expect(upgradePrice(lantern, 3)).toBe(null);
-    expect(upgradePrice(CATALOG.find(i => i.id === "gold"), 1)).toBe(null);
+    expect(upgradePrice(CATALOG.find(i => i.id === "panda"), 1)).toBe(null);
   });
 
   it("re-buying an owned deco upgrades its tier and charges upgradePrice", () => {
@@ -359,8 +359,8 @@ describe("shop v7 tiers", () => {
   });
 
   it("re-buying an owned non-deco still fails", () => {
-    const shop = { ...defaultShop(), owned: ["midnight"] };
-    expect(buy(99999, shop, "midnight").ok).toBe(false);
+    const shop = { ...defaultShop(), owned: ["panda"] };
+    expect(buy(99999, shop, "panda").ok).toBe(false);
   });
 
   it("gated first purchases respect availability; upgrades do not need the window", () => {
