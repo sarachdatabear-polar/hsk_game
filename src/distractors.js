@@ -37,10 +37,15 @@ function sameMeaning(a, b) {
   return ta.some(t => tb.includes(t));
 }
 
-export function pickDistractors(pool, target, rand = Math.random) {
+// fullPool widens the search when pool itself is a small custom deck (e.g. a
+// "Fight weak words" review of near-synonyms): a meaning-homogeneous deck can
+// have <3 non-conflicting candidates even pool-wide, so fullPool (the scoped
+// level pool by default) is the last fallback rather than re-filtering pool again.
+export function pickDistractors(pool, target, rand = Math.random, fullPool = pool) {
   const i = pool.findIndex(w => w.h === target.h);
   const ok = w => w.h !== target.h && !sameMeaning(w.e, target.e) && !(target.t && w.t === target.t);
   let cands = pool.slice(Math.max(0, i - 40), i + 41).filter(ok);
   if (cands.length < 3) cands = pool.filter(ok);
+  if (cands.length < 3) cands = fullPool.filter(ok);
   return shuffle([...cands], rand).slice(0, 3);
 }
