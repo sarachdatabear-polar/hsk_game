@@ -312,7 +312,17 @@
     background-color:var(--lc-sand); color:var(--lc-ink);
     border:2px solid var(--lc-brown); border-image:var(--f-ui-button-neutral, none); border-radius:14px; min-height:68px;
     box-shadow:inset 0 2px 0 rgba(255,255,255,.45), inset 0 -3px 0 rgba(120,80,40,.28), 0 2px 6px rgba(36,26,16,.18);
+    max-height:140px;
     overflow-wrap:anywhere;}
+  /* Base-tier gloss clamp: grid-auto-rows:1fr sizes ALL four buttons to the
+     tallest one, so a single rare 4-5 line gloss inflated every row to ~150px
+     on tall phones (412x915 measured 149px), squeezing the canvas above it.
+     Clamp the label to 3 lines at every size — the ≤700px tiers below override
+     with their tighter caps via source order, exactly as before.
+     flex-shrink:0 stops flex compressing the clamp box to a fractional line
+     count (mid-line clip, no ellipsis) — same guard as the 700px tier. */
+  #opts button .opt-label{display:-webkit-box; -webkit-box-orient:vertical;
+    -webkit-line-clamp:3; overflow:hidden; flex-shrink:0; width:100%;}
   #opts button .th{display:block; color:var(--lc-brown); font-size:15px; font-weight:600; margin-top:2px;}
   /* reveal states never rely on color alone (§11): a ✓/✕ affix rides along
      with the green/coral fill + the game's existing sound/haptic/motion. */

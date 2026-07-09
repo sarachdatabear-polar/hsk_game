@@ -1142,19 +1142,18 @@
   }
   function layout(w, h) {
     const S = uiScale(w, h);
+    const textS = Math.max(0.75, Math.min(1.8, Math.min(w / 380, h / 260)));
+    const mascotS = Math.min(2.1, Math.max(S, 0.85) * 1.2);
     return {
       S,
+      textS,
+      mascotS,
       ground: 30 * S,
       mascotX: 52 * S,
-      catHalf: 34 * S,
-      // 60 (not 44): at a 390 CSS-px-wide viewport the battle canvas measures
-      // ~366px after screen padding, giving S ~0.96 (width-bound, see uiScale) —
-      // 44*0.96 ~ 42px fails the PRD §10 "Hanzi >= 56 CSS px at 390-wide" floor;
-      // 60*0.96 ~ 58px clears it.
-      hanziPx: 60 * S,
-      pinyinPx: 18 * S,
+      catHalf: 34 * mascotS,
+      hanziPx: 64 * textS,
+      pinyinPx: 18 * textS,
       floaterPx: 20 * S,
-      mascotPx: 48 * S,
       coinPx: 20 * S
     };
   }
@@ -4184,8 +4183,9 @@
     ctx2.textAlign = "center";
     const hopping = B.mascotHopUntil && now < B.mascotHopUntil;
     const playerState = hopping ? "happy" : "walk";
-    drawCat(ctx2, B.L.mascotX, gy + 6 * B.S, now, playerState, SKIN_PALETTES[shopState.skin], 0.9 * B.S, B.acc, false);
-    if (B.hasKitten) drawCat(ctx2, B.L.mascotX - B.L.catHalf, gy + 6 * B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5 * B.S, [], false);
+    drawCat(ctx2, B.L.mascotX, gy + 6 * B.S, now, playerState, SKIN_PALETTES[shopState.skin], 0.9 * B.L.mascotS, B.acc, false);
+    const kittenX = Math.max(16 * B.L.mascotS + 2, B.L.mascotX - B.L.catHalf);
+    if (B.hasKitten) drawCat(ctx2, kittenX, gy + 6 * B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5 * B.L.mascotS, [], false);
     const coinImgIdle = sprite("coin");
     if (coinImgIdle) {
       ctx2.drawImage(coinImgIdle, 4 * B.S, gy - 22 * B.S, B.L.coinPx, B.L.coinPx);
@@ -4197,14 +4197,14 @@
       const fl = FORMATS[z.format || "meaning"].plaque;
       const live = z.state === "walk" && !z.revealed;
       drawWordPlate(z, { mask: live && !!fl.mask, icon: live && !!fl.icon, py: !live || !!fl.py }, now);
-      const rScale = z.boss ? 1.5 * B.S : B.S;
+      const rScale = z.boss ? 1.5 * B.L.mascotS : B.L.mascotS;
       drawRaccoon(ctx2, z.x, gy + 6 * B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
       let hpFrac = z.hp;
       if (z.state === "happy" && B.dyingUntil) {
         const remain = Math.max(0, B.dyingUntil - now);
         hpFrac = (z.hpAtKill ?? z.hp) * (remain / 250);
       }
-      drawHpBar(ctx2, z.x, gy + 6 * B.S - RACCOON_HEIGHT * rScale, 46 * B.S, hpFrac, B.S);
+      drawHpBar(ctx2, z.x, gy + 6 * B.S - RACCOON_HEIGHT * rScale, 46 * B.L.mascotS, hpFrac, B.L.mascotS);
     } else {
       B.plaqueRect = null;
     }
@@ -4293,47 +4293,48 @@
     const showSub = scope.lang === "both";
     const bounce = !REDUCED_MOTION && B.plaqueHitAt ? plaqueBounce(performance.now() - B.plaqueHitAt) : 0;
     const wy = Math.round(B.h * 0.36) + Math.round(bounce);
+    const T = B.L.textS;
     ctx2.save();
     ctx2.font = fontString(700, B.L.hanziPx, HANZI_STACK);
-    const textW = Math.max(ctx2.measureText(hanzi).width, 74 * B.S);
-    const spkR = 12 * B.S;
-    const lw = Math.min(B.w - 24 * B.S, textW + 56 * B.S + spkR * 2.2);
-    const padV = 10 * B.S;
-    const pinyinH = pinyin ? 22 * B.S : 0;
+    const textW = Math.max(ctx2.measureText(hanzi).width, 74 * T);
+    const spkR = 12 * T;
+    const lw = Math.min(B.w - 24 * T, textW + 56 * T + spkR * 2.2);
+    const padV = 10 * T;
+    const pinyinH = pinyin ? 22 * T : 0;
     const hanziH = B.L.hanziPx * 1.05;
-    const transH = (showSub ? 40 : 24) * B.S;
+    const transH = (showSub ? 40 : 24) * T;
     const lh = padV * 2 + pinyinH + hanziH + transH;
     const x = B.w / 2 - lw / 2, y = wy - lh / 2;
     const plaqueImg = sprite("ui-word-plaque");
     if (plaqueImg) {
-      const di = Math.min(20 * B.S, lw / 3, lh / 3);
+      const di = Math.min(20 * T, lw / 3, lh / 3);
       for (const r of nineSliceRects(560, 320, 48, x, y, lw, lh, di)) {
         ctx2.drawImage(plaqueImg, r.sx, r.sy, r.sw, r.sh, r.dx, r.dy, r.dw, r.dh);
       }
     } else {
       ctx2.shadowColor = "rgba(60,40,20,.32)";
-      ctx2.shadowBlur = 12 * B.S;
-      ctx2.shadowOffsetY = 4 * B.S;
+      ctx2.shadowBlur = 12 * T;
+      ctx2.shadowOffsetY = 4 * T;
       const paper = ctx2.createLinearGradient(0, y, 0, y + lh);
       paper.addColorStop(0, "rgba(253,246,227,.97)");
       paper.addColorStop(1, "rgba(243,230,198,.97)");
       ctx2.fillStyle = paper;
-      roundRect(x, y, lw, lh, 14 * B.S);
+      roundRect(x, y, lw, lh, 14 * T);
       ctx2.fill();
       ctx2.shadowBlur = 0;
       ctx2.shadowOffsetY = 0;
       ctx2.strokeStyle = boss ? "#D8A93A" : "#B98F55";
-      ctx2.lineWidth = 2.6 * B.S;
-      roundRect(x + 1.3 * B.S, y + 1.3 * B.S, lw - 2.6 * B.S, lh - 2.6 * B.S, 13 * B.S);
+      ctx2.lineWidth = 2.6 * T;
+      roundRect(x + 1.3 * T, y + 1.3 * T, lw - 2.6 * T, lh - 2.6 * T, 13 * T);
       ctx2.stroke();
       ctx2.strokeStyle = "rgba(231,211,166,.9)";
-      ctx2.lineWidth = 1.2 * B.S;
-      roundRect(x + 6 * B.S, y + 6 * B.S, lw - 12 * B.S, lh - 12 * B.S, 9 * B.S);
+      ctx2.lineWidth = 1.2 * T;
+      roundRect(x + 6 * T, y + 6 * T, lw - 12 * T, lh - 12 * T, 9 * T);
       ctx2.stroke();
       ctx2.strokeStyle = "#C29B5F";
-      ctx2.lineWidth = 1.8 * B.S;
+      ctx2.lineWidth = 1.8 * T;
       ctx2.lineCap = "round";
-      const tk = 5 * B.S, ti = 10 * B.S;
+      const tk = 5 * T, ti = 10 * T;
       ctx2.beginPath();
       ctx2.moveTo(x + ti, y + ti + tk);
       ctx2.lineTo(x + ti, y + ti);
@@ -4365,50 +4366,50 @@
     const midY = cy + (showSub ? transH * 0.32 : transH / 2);
     if (revealed) {
       const m = meaning(w, scope.lang);
-      ctx2.font = fontString(700, 15 * B.S, LATIN_STACK);
+      ctx2.font = fontString(700, 15 * T, LATIN_STACK);
       ctx2.fillStyle = "#2F6B4F";
       ctx2.fillText(m.main, B.w / 2, midY);
       if (showSub && m.sub) {
-        ctx2.font = fontString(600, 13 * B.S, LATIN_STACK);
+        ctx2.font = fontString(600, 13 * T, LATIN_STACK);
         ctx2.fillStyle = "#5C7A68";
         ctx2.fillText(m.sub, B.w / 2, cy + transH * 0.74);
       }
     } else {
       ctx2.strokeStyle = "rgba(140,95,42,.32)";
-      ctx2.lineWidth = Math.max(1.4, 2 * B.S);
-      ctx2.setLineDash([4 * B.S, 4 * B.S]);
+      ctx2.lineWidth = Math.max(1.4, 2 * T);
+      ctx2.setLineDash([4 * T, 4 * T]);
       ctx2.beginPath();
-      ctx2.moveTo(B.w / 2 - 44 * B.S, midY);
-      ctx2.lineTo(B.w / 2 + 44 * B.S, midY);
+      ctx2.moveTo(B.w / 2 - 44 * T, midY);
+      ctx2.lineTo(B.w / 2 + 44 * T, midY);
       ctx2.stroke();
       if (showSub) {
         const y2 = cy + transH * 0.74;
         ctx2.beginPath();
-        ctx2.moveTo(B.w / 2 - 30 * B.S, y2);
-        ctx2.lineTo(B.w / 2 + 30 * B.S, y2);
+        ctx2.moveTo(B.w / 2 - 30 * T, y2);
+        ctx2.lineTo(B.w / 2 + 30 * T, y2);
         ctx2.stroke();
       }
       ctx2.setLineDash([]);
     }
     ctx2.textBaseline = "alphabetic";
     if (level) {
-      ctx2.font = fontString(700, 10 * B.S, LATIN_STACK);
+      ctx2.font = fontString(700, 10 * T, LATIN_STACK);
       const tagText = `HSK ${level}`;
-      const tw = ctx2.measureText(tagText).width + 12 * B.S;
-      const th = 16 * B.S;
+      const tw = ctx2.measureText(tagText).width + 12 * T;
+      const th = 16 * T;
       ctx2.fillStyle = "#2F6B4F";
-      roundRect(x + 8 * B.S, y - th * 0.45, tw, th, th / 2);
+      roundRect(x + 8 * T, y - th * 0.45, tw, th, th / 2);
       ctx2.fill();
       ctx2.strokeStyle = "#1E4634";
-      ctx2.lineWidth = 1.2 * B.S;
-      roundRect(x + 8 * B.S, y - th * 0.45, tw, th, th / 2);
+      ctx2.lineWidth = 1.2 * T;
+      roundRect(x + 8 * T, y - th * 0.45, tw, th, th / 2);
       ctx2.stroke();
       ctx2.fillStyle = "#F2EDDE";
       ctx2.textAlign = "left";
-      ctx2.fillText(tagText, x + 14 * B.S, y - th * 0.45 + th * 0.7);
+      ctx2.fillText(tagText, x + 14 * T, y - th * 0.45 + th * 0.7);
     }
     if (canReplayAudio(z) && !vis.icon) {
-      drawSpeakerIcon(ctx2, x + lw - spkR - 10 * B.S, y + lh / 2, spkR, boss ? "#7A4E0C" : "#8C5F2A");
+      drawSpeakerIcon(ctx2, x + lw - spkR - 10 * T, y + lh / 2, spkR, boss ? "#7A4E0C" : "#8C5F2A");
     }
     B.plaqueRect = { x, y, w: lw, h: lh };
     ctx2.restore();
