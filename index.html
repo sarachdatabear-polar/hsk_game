@@ -51,10 +51,11 @@
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
   .screen{display:none; flex:1; flex-direction:column; padding:16px;}
   .screen.on{display:flex;}
-  /* F4: Street/Quests/More hold only a little content — centering it vertically
-     balances the whitespace on a tall phone instead of a top-weighted void.
-     (These screens are short and fixed, so centering never clips.) */
-  #s-street.on, #s-quests.on, #s-more.on{justify-content:center;}
+  /* Street/Quests/More hold only a little content. Top-align them like every
+     other screen: a header pinned to the top reads as intentional, whereas
+     vertical centering floated the header to mid-screen on tall phones and
+     desktop (a void *above* the title that looked half-loaded). */
+  #s-street.on, #s-quests.on, #s-more.on{justify-content:flex-start;}
   /* A3: soft enter transition on every screen change (~200ms). The global
      prefers-reduced-motion rule truncates all animations, so reduced = instant. */
   .screen.on{animation:screen-in 200ms ease-out;}
@@ -465,9 +466,9 @@
   #quest-panel{width:100%; max-width:320px; margin:10px auto 0; display:flex; flex-direction:column; gap:5px;
     border-image:var(--f-ui-panel, none);}
   .quest-row{display:flex; align-items:center; gap:6px; font-size:12.5px; line-height:1.3;
-    border:1px solid var(--panel-border); border-radius:10px; padding:6px 10px; color:var(--ink);}
+    border:1px solid var(--panel-border); border-radius:10px; padding:8px 22px; color:var(--ink);}
   .quest-row.done{opacity:.6;}
-  .quest-row .qd{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .quest-row .qd{flex:1; min-width:0;}
   .quest-row .qp{color:var(--muted); font-size:11.5px; white-space:nowrap;}
   .quest-row .qr{color:var(--lc-green); font-weight:700; white-space:nowrap;}
   .misslist,
