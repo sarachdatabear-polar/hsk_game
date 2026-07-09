@@ -236,3 +236,60 @@ describe("daily: kind streak (B1 rest days)", () => {
     expect(streakInfo(d, "2026-07-12").streak).toBe(0);
   });
 });
+
+describe("streak freezes (retention pack)", () => {
+  const base = (last, streak) => ({ last, streak, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" });
+  it("old call shape unchanged: no 4th arg -> freezesUsed 0, rest-day logic as before", () => {
+    const d = noteActivity(base("2026-07-06", 5), "2026-07-08", 20);
+    expect(d.freezesUsed).toBe(0);
+    expect(d.streak).toBe(6);            // rest day covers the one missed day
+    expect(d.restDay).toBe("2026-07-07");
+  });
+  it("one missed day, rest already spent this week -> one freeze covers it", () => {
+    const d = { ...base("2026-07-06", 5), restWeek: "2026-07-06" };   // Mon 2026-07-06 week spent
+    const r = noteActivity(d, "2026-07-08", 20, 2);
+    expect(r.streak).toBe(6);
+    expect(r.freezesUsed).toBe(1);
+    expect(r.restDay).toBe(d.restDay || "");   // rest untouched
+  });
+  it("one missed day, rest spent, zero freezes -> streak resets to 1", () => {
+    const d = { ...base("2026-07-06", 5), restWeek: "2026-07-06" };
+    const r = noteActivity(d, "2026-07-08", 20, 0);
+    expect(r.streak).toBe(1);
+    expect(r.freezesUsed).toBe(0);
+  });
+  it("two missed days -> rest covers the first, one freeze covers the second", () => {
+    const r = noteActivity(base("2026-07-06", 5), "2026-07-09", 20, 1);
+    expect(r.streak).toBe(6);
+    expect(r.freezesUsed).toBe(1);
+    expect(r.restDay).toBe("2026-07-07");
+  });
+  it("two missed days, rest spent -> two freezes", () => {
+    const d = { ...base("2026-07-06", 5), restWeek: "2026-07-06" };
+    const r = noteActivity(d, "2026-07-09", 20, 2);
+    expect(r.streak).toBe(6);
+    expect(r.freezesUsed).toBe(2);
+  });
+  it("two missed days, rest spent, one freeze -> not enough, reset", () => {
+    const d = { ...base("2026-07-06", 5), restWeek: "2026-07-06" };
+    const r = noteActivity(d, "2026-07-09", 20, 1);
+    expect(r.streak).toBe(1);
+    expect(r.freezesUsed).toBe(0);       // never burn freezes on a lost cause
+  });
+  it("three missed days are never coverable", () => {
+    const r = noteActivity(base("2026-07-06", 9), "2026-07-10", 20, 2);
+    expect(r.streak).toBe(1);
+    expect(r.freezesUsed).toBe(0);
+  });
+  it("freezes only rescue streaks >= 3 when the rest day would not (same kindness rule)", () => {
+    // streak 2: rest day ineligible (needs >= 3), but a paid freeze works at ANY streak length
+    const r = noteActivity(base("2026-07-06", 2), "2026-07-08", 20, 2);
+    expect(r.streak).toBe(3);            // gap uncovered by rest; freeze DOES cover it
+    expect(r.freezesUsed).toBe(1);
+  });
+  it("streakInfo shows the chain alive when owned freezes could cover the gap", () => {
+    const d = { ...base("2026-07-06", 5), restWeek: "2026-07-06" };
+    expect(streakInfo(d, "2026-07-08", 0).streak).toBe(0);
+    expect(streakInfo(d, "2026-07-08", 1).streak).toBe(5);
+  });
+});
