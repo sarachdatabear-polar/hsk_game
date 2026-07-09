@@ -22,6 +22,7 @@ Finished and superseded docs move to [`archive/`](archive/README.md) (run
 
 ## 📌 `planning/` — Living checklists & status
 - [V2-EXECUTION-PLAN.md](planning/V2-EXECUTION-PLAN.md) — cross-session technical log across v2–v7
+- [ux-audit-2026-07-09.md](planning/ux-audit-2026-07-09.md) — Chromium screenshot UX/UI audit; shipped fixes + deferred polish (tracked in STATUS Planned)
 
 ## 🔧 `build/` — Build & release
 - [ANDROID_BUILD.md](build/ANDROID_BUILD.md) — Capacitor → APK build/signing guide
