@@ -2388,7 +2388,10 @@ function drawTieredDeco(c, p, x, gy, h){
   }else{
     drawStreetDeco(c, p.id, x, gy, h);
   }
-  if(tier >= 3) drawCrownAccent(c, p.id, x, gy, h);
+  // Crown accent is calibrated to the vector geometry (DECO_TOPS); on a PNG
+  // sprite it would land mid-art, so tier-3 PNG decos show via the enlarge+glow
+  // only. Reposition-for-sprite is a later polish.
+  if(tier >= 3 && !sprite("deco-" + p.id)) drawCrownAccent(c, p.id, x, gy, h);
 }
 // Top of each deco shape in units of s (= basis*.32), from drawStreetDeco
 // geometry; used to plant the tier-3 crown at the piece's actual top.
@@ -2426,7 +2429,21 @@ function drawCrownAccent(c, id, x, gy, basis){
   for(const [sx, sy, r] of sparkles) drawStarMark(c, sx, sy, r);
   c.restore();
 }
+// PNG draw size for a deco sprite, as a multiple of the deco basis h,
+// bottom-anchored. COUPLED to street.js BASE_DECO_W, which must budget for this
+// box so the auto-arrange never overlaps: BASE_DECO_W ≳ DECO_SPRITE_SCALE * 0.105
+// (0.105 = streetMetrics w-bound unit fraction). Bump both together.
+const DECO_SPRITE_SCALE = 1.5;
 function drawStreetDeco(c, id, x, gy, h){
+  // Prefer the PNG art when loaded; fall back to the vector shape otherwise
+  // (manifest: decor + fallback "canvas:drawStreetDeco"). Any caller tier
+  // enlargement / glow already in the ctx transform applies to the sprite too.
+  const img = sprite("deco-" + id);
+  if(img){
+    const sz = h * DECO_SPRITE_SCALE;
+    c.drawImage(img, x - sz/2, gy - sz, sz, sz);
+    return;
+  }
   const s = h*.32;
   c.save(); c.translate(x, gy);
   if(!c.shadowBlur){                       // keep caller-set glow (tiered decos)

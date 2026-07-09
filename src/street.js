@@ -29,9 +29,12 @@ const BUILDING_SLOTS = [.18, .34, .5, .66, .82];
 // game curates the layout so it always looks intentional and the art always
 // reads cleanly, rather than asking the player to place pieces by hand.
 const DECO_BAND = { left: 0.15, right: 0.97 }; // usable front-row band; left margin clears the maneki mascot
-// Tier-1 deco footprint as a fraction of street width (art + padding). Sets the
-// count at which decos start shrinking: full scale while a cell is >= this.
-export const BASE_DECO_W = 0.13;
+// Tier-1 deco footprint as a fraction of street width. Budgets for the PNG
+// sprite draw box (main.js DECO_SPRITE_SCALE * streetMetrics w-bound unit
+// fraction 0.105 ≈ 0.158, + padding), the largest a deco draws — the vector
+// fallback is smaller. Sets the count at which decos start shrinking (full
+// scale while a cell is >= this). COUPLED to DECO_SPRITE_SCALE.
+export const BASE_DECO_W = 0.17;
 // Tier-2/3 upgrades enlarge the drawn silhouette 1.15x (main.js drawTieredDeco).
 // The layout budgets for the worst case so an all-max-tier street never overlaps.
 export const TIER_MAX_FACTOR = 1.15;

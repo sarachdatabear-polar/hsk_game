@@ -94,6 +94,11 @@
     { "id": "bg-lantern-festival", "file": "bg-lantern-festival.png", "type": "background", "status": "integrated", "priority": "P0", "w": 1024, "h": 512, "fallback": "canvas:paintBackdrop-default" },
     { "id": "bg-dragon-gate", "file": "bg-dragon-gate.png", "type": "background", "status": "integrated", "priority": "P0", "w": 1024, "h": 512, "fallback": "canvas:paintBackdrop-default" },
 
+    { "id": "deco-red-lantern", "file": "deco-red-lantern.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "bottom-center", "fallback": "canvas:drawStreetDeco", "note": "v4 legacy decos — PNG art round; sprite-draw wiring lands with this round, vector drawStreetDeco stays as fallback" },
+    { "id": "deco-noodle-stall", "file": "deco-noodle-stall.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "bottom-center", "fallback": "canvas:drawStreetDeco" },
+    { "id": "deco-tea-sign", "file": "deco-tea-sign.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "bottom-center", "fallback": "canvas:drawStreetDeco" },
+    { "id": "deco-foo-dog", "file": "deco-foo-dog.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "bottom-center", "fallback": "canvas:drawStreetDeco" },
+    { "id": "deco-golden-arch", "file": "deco-golden-arch.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "bottom-center", "fallback": "canvas:drawStreetDeco" },
     { "id": "deco-mahjong-table", "file": "deco-mahjong-table.png", "type": "decor", "status": "planned", "priority": "P1", "w": 512, "h": 512, "anchor": "bottom-center", "fallback": "canvas:drawStreetDeco", "note": "v7 street decos — prompts in GENERATION-PROMPTS-P0-copypaste.md 'v7 street deco batch'; sprite-draw wiring lands with the art round" },
     { "id": "deco-koi-pond", "file": "deco-koi-pond.png", "type": "decor", "status": "planned", "priority": "P1", "w": 512, "h": 512, "anchor": "bottom-center", "fallback": "canvas:drawStreetDeco" },
     { "id": "deco-drum-tower", "file": "deco-drum-tower.png", "type": "decor", "status": "planned", "priority": "P1", "w": 512, "h": 512, "anchor": "bottom-center", "fallback": "canvas:drawStreetDeco" },

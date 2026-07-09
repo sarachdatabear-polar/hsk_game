@@ -27,6 +27,9 @@ export const SPRITE_NAMES = [
   "bg-temple", "bg-bamboo",
   "bg-harbor-night", "bg-snow-festival", "bg-island-sunset",
   "bg-lantern-festival", "bg-dragon-gate",
+  // street decos — PNG art with a canvas (drawStreetDeco) vector fallback
+  "deco-red-lantern", "deco-noodle-stall", "deco-tea-sign",
+  "deco-foo-dog", "deco-golden-arch",
   "fx-correct", "fx-wrong", "fx-critical", "fx-level-up",
   "vfx-orb-green", "vfx-orb-red", "vfx-orb-blue", "vfx-orb-gold",
   "ui-word-plaque",

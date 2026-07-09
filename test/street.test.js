@@ -110,8 +110,8 @@ describe("street deco auto-arrange (even distribution, never overlaps)", () => {
     expect(pieces.find(p => p.kind === "building").scale).toBeUndefined();
   });
 
-  it("a comfortable count (<=5) draws decos at full scale", () => {
-    for (let n = 1; n <= 5; n++) {
+  it("a comfortable count (<=4) draws decos at full scale", () => {
+    for (let n = 1; n <= 4; n++) {
       const decos = decosOf(streetPieces(1, DECO_IDS.slice(0, n)));
       expect(decos.every(d => d.scale === 1)).toBe(true);
     }

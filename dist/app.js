@@ -610,6 +610,12 @@
     "bg-island-sunset",
     "bg-lantern-festival",
     "bg-dragon-gate",
+    // street decos — PNG art with a canvas (drawStreetDeco) vector fallback
+    "deco-red-lantern",
+    "deco-noodle-stall",
+    "deco-tea-sign",
+    "deco-foo-dog",
+    "deco-golden-arch",
     "fx-correct",
     "fx-wrong",
     "fx-critical",
@@ -1264,6 +1270,11 @@
       { id: "bg-island-sunset", file: "bg-island-sunset.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
       { id: "bg-lantern-festival", file: "bg-lantern-festival.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
       { id: "bg-dragon-gate", file: "bg-dragon-gate.png", type: "background", status: "integrated", priority: "P0", w: 1024, h: 512, fallback: "canvas:paintBackdrop-default" },
+      { id: "deco-red-lantern", file: "deco-red-lantern.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco", note: "v4 legacy decos \u2014 PNG art round; sprite-draw wiring lands with this round, vector drawStreetDeco stays as fallback" },
+      { id: "deco-noodle-stall", file: "deco-noodle-stall.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-tea-sign", file: "deco-tea-sign.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-foo-dog", file: "deco-foo-dog.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "deco-golden-arch", file: "deco-golden-arch.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
       { id: "deco-mahjong-table", file: "deco-mahjong-table.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco", note: "v7 street decos \u2014 prompts in GENERATION-PROMPTS-P0-copypaste.md 'v7 street deco batch'; sprite-draw wiring lands with the art round" },
       { id: "deco-koi-pond", file: "deco-koi-pond.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
       { id: "deco-drum-tower", file: "deco-drum-tower.png", type: "decor", status: "planned", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
@@ -1979,7 +1990,7 @@
   ];
   var BUILDING_SLOTS = [0.18, 0.34, 0.5, 0.66, 0.82];
   var DECO_BAND = { left: 0.15, right: 0.97 };
-  var BASE_DECO_W = 0.13;
+  var BASE_DECO_W = 0.17;
   var TIER_MAX_FACTOR = 1.15;
   function decoLayout(count) {
     const span = DECO_BAND.right - DECO_BAND.left;
@@ -5210,7 +5221,7 @@
     } else {
       drawStreetDeco(c, p.id, x, gy, h);
     }
-    if (tier >= 3) drawCrownAccent(c, p.id, x, gy, h);
+    if (tier >= 3 && !sprite("deco-" + p.id)) drawCrownAccent(c, p.id, x, gy, h);
   }
   var DECO_TOPS = {
     "red-lantern": 1.6,
@@ -5259,7 +5270,14 @@
     for (const [sx, sy, r] of sparkles) drawStarMark(c, sx, sy, r);
     c.restore();
   }
+  var DECO_SPRITE_SCALE = 1.5;
   function drawStreetDeco(c, id, x, gy, h) {
+    const img2 = sprite("deco-" + id);
+    if (img2) {
+      const sz = h * DECO_SPRITE_SCALE;
+      c.drawImage(img2, x - sz / 2, gy - sz, sz, sz);
+      return;
+    }
     const s = h * 0.32;
     c.save();
     c.translate(x, gy);
