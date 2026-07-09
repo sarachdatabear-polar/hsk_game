@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { CATALOG, defaultShop, canAfford, buy, equipItem, SEASONS, dailyStock, nextFeaturedIn, isAvailable, seasonStatus, upgradePrice, unownedDailyStock } from "../src/shop.js";
+import { CATALOG, defaultShop, canAfford, buy, equipItem, SEASONS, dailyStock, nextFeaturedIn, isAvailable, seasonStatus, upgradePrice, unownedDailyStock, buyConsumable } from "../src/shop.js";
 
 describe("unownedDailyStock", () => {
   it("returns today's stock minus owned items, in stock order", () => {
@@ -393,5 +393,46 @@ describe("shop v7 tiers", () => {
     expect(f.cap).toBe(2);
     expect(f.pool).toBeUndefined();
     expect(f.season).toBeUndefined();
+  });
+});
+
+describe("buyConsumable", () => {
+  const freeze = CATALOG.find(i => i.id === "streak-freeze"); // 600 coins, cap 2
+
+  it("happy path decrements wallet and increments count", () => {
+    const r = buyConsumable(freeze, 1000, 0);
+    expect(r).toEqual({ ok: true, wallet: 400, count: 1 });
+  });
+
+  it("cap reached -> {ok:false, reason:'cap'}, no wallet/count change implied", () => {
+    const r = buyConsumable(freeze, 5000, 2);
+    expect(r).toEqual({ ok: false, reason: "cap" });
+  });
+
+  it("insufficient coins -> reason 'coins'", () => {
+    const r = buyConsumable(freeze, 599, 0);
+    expect(r).toEqual({ ok: false, reason: "coins" });
+  });
+
+  it("non-consumable item -> reason 'not-consumable'", () => {
+    const panda = CATALOG.find(i => i.id === "panda");
+    const r = buyConsumable(panda, 99999, 0);
+    expect(r).toEqual({ ok: false, reason: "not-consumable" });
+  });
+
+  it("null/undefined item -> reason 'not-consumable'", () => {
+    expect(buyConsumable(null, 1000, 0)).toEqual({ ok: false, reason: "not-consumable" });
+    expect(buyConsumable(undefined, 1000, 0)).toEqual({ ok: false, reason: "not-consumable" });
+  });
+
+  it("second buy (count=1) succeeds and reaches the cap count", () => {
+    const r = buyConsumable(freeze, 1000, 1);
+    expect(r).toEqual({ ok: true, wallet: 400, count: 2 });
+  });
+
+  it("does not mutate the item argument", () => {
+    const before = JSON.stringify(freeze);
+    buyConsumable(freeze, 1000, 0);
+    expect(JSON.stringify(freeze)).toBe(before);
   });
 });

@@ -7,7 +7,7 @@
 // battle.* (M4 HUD round capsule + pause overlay), fc.* (flashcard-only
 // strings not shared with learn.*), item.* (shop.js CATALOG id -> display
 // name, t("item."+id)), building.* (street.js BUILDINGS id -> display name,
-// t("building."+id)).
+// t("building."+id)), toast.* (retention pack — main.js's floating toast()).
 
 export const STRINGS = {
   en: {
@@ -24,6 +24,7 @@ export const STRINGS = {
     "home.settings": "Settings",
     "home.streakTitle": "Study Streak",
     "home.streakDays": "{n} days",
+    "home.freezes": "{n} freeze(s)",
     "home.start": "START",
     "home.startHint": "Need at least 8 words in scope to start — widen it below.",
     "home.scopeWords": "{n} words",
@@ -34,6 +35,8 @@ export const STRINGS = {
     "progress.levelRow": "{pct} mastered · {seen}/{total} seen",
     "common.playAudio": "Play audio",
     "battle.critical": "CRITICAL!",
+    // toast (retention pack — main.js's floating toast())
+    "toast.freeze-used": "Streak Freeze used — your {n}-day streak is safe",
     "milestone.scarf": "Red scarf",
     "milestone.coin": "Gold coin charm",
     "milestone.outfit": "Chinese outfit",
@@ -283,6 +286,7 @@ export const STRINGS = {
     "home.settings": "ตั้งค่า",
     "home.streakTitle": "เรียนต่อเนื่อง",
     "home.streakDays": "{n} วัน",
+    "home.freezes": "น้ำแข็ง {n} ชิ้น",   // TH: needs native review
     "home.start": "เริ่ม",
     "home.startHint": "ต้องมีคำอย่างน้อย 8 คำในขอบเขตจึงจะเริ่มได้ — ขยายขอบเขตด้านล่าง",
     "home.scopeWords": "{n} คำ",
@@ -293,6 +297,7 @@ export const STRINGS = {
     "progress.levelRow": "{pct} เชี่ยวชาญ · เห็น {seen}/{total}",
     "common.playAudio": "เล่นเสียง",
     "battle.critical": "CRITICAL!",
+    "toast.freeze-used": "ใช้น้ำแข็งพิทักษ์สตรีคแล้ว — สตรีค {n} วันของคุณยังอยู่",   // TH: needs native review
     "milestone.scarf": "ผ้าพันคอสีแดง",
     "milestone.coin": "เครื่องรางเหรียญทอง",
     "milestone.outfit": "ชุดจีน",

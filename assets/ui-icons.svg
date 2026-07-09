@@ -130,6 +130,10 @@
   <symbol id="streak" viewBox="0 0 24 24">
     <path d="M13 3c3 3 5 6 5 10a6 6 0 0 1-12 0c0-3 2-5 4-7-.2 2 .5 3.4 2 4 .3-2 .6-4.5 1-7z" fill="currentColor"/>
   </symbol>
+  <symbol id="freeze" viewBox="0 0 24 24">
+    <path d="M12 4v16M5 8l14 8M5 16l14-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <path d="M12 7l-2.2 1.3M12 7l2.2 1.3M12 17l-2.2-1.3M12 17l2.2-1.3M7.5 9.7L6 8.8M7.5 9.7l-.6 2.3M16.5 9.7l.6 2.3M16.5 9.7l1.5-.9M7.5 14.3l-1.5.9M7.5 14.3l-.6-2.3M16.5 14.3l.6-2.3M16.5 14.3l1.5.9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
   <symbol id="heart" viewBox="0 0 24 24">
     <path d="M12 20s-7-4.5-9-9a4.4 4.4 0 0 1 7-5 4.4 4.4 0 0 1 7 5c-2 4.5-9 9-9 9z" fill="currentColor"/>
   </symbol>

@@ -180,6 +180,18 @@ export function buy(wallet, shop, id, dateStr) {
   };
 }
 
+// Consumables are counted, not owned: repurchase allowed below the item cap.
+// buy()'s owned-check would permanently block a repurchase after the first
+// (it treats any owned non-deco id as a one-time purchase), so a capped
+// consumable needs its own pure path — never routed through buy()/owned/
+// equipItem(). Caller owns persistence of the count (e.g. nbhsk.freezes).
+export function buyConsumable(item, wallet, count) {
+  if (!item || item.type !== "consumable") return { ok: false, reason: "not-consumable" };
+  if (count >= item.cap) return { ok: false, reason: "cap" };
+  if (wallet < item.price) return { ok: false, reason: "coins" };
+  return { ok: true, wallet: wallet - item.price, count: count + 1 };
+}
+
 // type is only consulted when id is "" (clears that slot); for a real id the
 // slot is looked up from the catalog, so callers normally omit it.
 export function equipItem(shop, id, type) {

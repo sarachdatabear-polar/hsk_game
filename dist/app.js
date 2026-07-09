@@ -1513,24 +1513,40 @@
     d.setUTCDate(d.getUTCDate() - dow);
     return d.toISOString().slice(0, 10);
   }
-  function noteActivity(daily2, dateStr, count) {
+  function noteActivity(daily2, dateStr, count, freezes2 = 0) {
     const before = daily2.today.date === dateStr ? daily2.today.resolved : 0;
     const resolved = before + count;
     const today = { date: dateStr, resolved };
     let { last, streak } = daily2;
     let restWeek = daily2.restWeek || "";
     let restDay = daily2.restDay || "";
+    let freezesUsed = 0;
     const crossedNow = before < GOAL && resolved >= GOAL;
     if (crossedNow && last !== dateStr) {
       if (isYesterday(last, dateStr)) {
         streak += 1;
       } else {
-        const missed = last ? addDays(last, 1) : "";
-        const covered = streak >= 3 && missed !== "" && addDays(last, 2) === dateStr && // exactly one missed day
-        weekStart(missed) !== restWeek;
-        if (covered) {
-          restWeek = weekStart(missed);
-          restDay = missed;
+        const missed = [];
+        if (last) {
+          let d = addDays(last, 1);
+          while (d && d !== dateStr && missed.length < 3) {
+            missed.push(d);
+            d = addDays(d, 1);
+          }
+        }
+        let restUsedDay = "";
+        let uncovered = 0;
+        for (const day of missed) {
+          if (!restUsedDay && streak >= 3 && weekStart(day) !== restWeek) restUsedDay = day;
+          else uncovered += 1;
+        }
+        const coverable = last !== "" && missed.length >= 1 && missed.length <= 2 && uncovered <= freezes2;
+        if (coverable) {
+          if (restUsedDay) {
+            restWeek = weekStart(restUsedDay);
+            restDay = restUsedDay;
+          }
+          freezesUsed = uncovered;
           streak += 1;
         } else {
           streak = 1;
@@ -1538,14 +1554,26 @@
       }
       last = dateStr;
     }
-    return { last, streak, today, restWeek, restDay };
+    return { last, streak, today, restWeek, restDay, freezesUsed };
   }
-  function streakInfo(daily2, dateStr) {
+  function streakInfo(daily2, dateStr, freezes2 = 0) {
     const todayResolved = daily2.today.date === dateStr ? daily2.today.resolved : 0;
     const restWeek = daily2.restWeek || "";
     const restDay = daily2.restDay || "";
-    const missed = daily2.last ? addDays(daily2.last, 1) : "";
-    const coverableGap = daily2.last !== "" && addDays(daily2.last, 2) === dateStr && daily2.streak >= 3 && weekStart(missed) !== restWeek;
+    const missed = [];
+    if (daily2.last && daily2.last !== dateStr && !isYesterday(daily2.last, dateStr)) {
+      let d = addDays(daily2.last, 1);
+      while (d && d !== dateStr && missed.length < 3) {
+        missed.push(d);
+        d = addDays(d, 1);
+      }
+    }
+    let restUsable = false, uncovered = 0;
+    for (const day of missed) {
+      if (!restUsable && daily2.streak >= 3 && weekStart(day) !== restWeek) restUsable = true;
+      else uncovered += 1;
+    }
+    const coverableGap = daily2.last !== "" && missed.length >= 1 && missed.length <= 2 && uncovered <= freezes2;
     const chainAlive = daily2.last === dateStr || isYesterday(daily2.last, dateStr) || coverableGap;
     return {
       streak: chainAlive ? daily2.streak : 0,
@@ -1748,6 +1776,7 @@
     { id: "tea-sign", name: "Tea Sign", price: 2200, type: "deco", maxTier: 3 },
     { id: "foo-dog", name: "Foo Dog", price: 3e3, type: "deco", maxTier: 3 },
     { id: "golden-arch", name: "Golden Arch", price: 5e3, type: "deco", maxTier: 3 },
+    { id: "streak-freeze", name: "Streak Freeze", price: 600, type: "consumable", cap: 2 },
     // ---- v7 permanent prestige band (PRD v7 F1) ----
     { id: "panda", name: "Panda", price: 8e3, type: "skin" },
     { id: "ninja", name: "Ninja", price: 12e3, type: "skin" },
@@ -1918,6 +1947,12 @@
       shop: { ...shop, owned: [...shop.owned, id] }
     };
   }
+  function buyConsumable(item, wallet2, count) {
+    if (!item || item.type !== "consumable") return { ok: false, reason: "not-consumable" };
+    if (count >= item.cap) return { ok: false, reason: "cap" };
+    if (wallet2 < item.price) return { ok: false, reason: "coins" };
+    return { ok: true, wallet: wallet2 - item.price, count: count + 1 };
+  }
   function equipItem(shop, id, type) {
     if (!id) return type === "skin" || type === "backdrop" || type === "effect" || type === "soundpack" ? { ...shop, [type]: "" } : shop;
     const item = byId(id);
@@ -2034,6 +2069,7 @@
       "home.settings": "Settings",
       "home.streakTitle": "Study Streak",
       "home.streakDays": "{n} days",
+      "home.freezes": "{n} freeze(s)",
       "home.start": "START",
       "home.startHint": "Need at least 8 words in scope to start \u2014 widen it below.",
       "home.scopeWords": "{n} words",
@@ -2044,6 +2080,8 @@
       "progress.levelRow": "{pct} mastered \xB7 {seen}/{total} seen",
       "common.playAudio": "Play audio",
       "battle.critical": "CRITICAL!",
+      // toast (retention pack — main.js's floating toast())
+      "toast.freeze-used": "Streak Freeze used \u2014 your {n}-day streak is safe",
       "milestone.scarf": "Red scarf",
       "milestone.coin": "Gold coin charm",
       "milestone.outfit": "Chinese outfit",
@@ -2176,6 +2214,7 @@
       "shop.seasonUntil": "Available until {date}",
       "shop.seasonReturns": "\u{1F3EE} {name} set returns {date}",
       "shop.upgrade": "Upgrade {stars} ({coins})",
+      "shop.owned-count": "Owned: {n}/{cap}",
       "shop.maxed": "\u2605\u2605\u2605",
       "season.summer": "Summer",
       "season.midautumn": "Mid-Autumn",
@@ -2193,6 +2232,7 @@
       "item.tea-sign": "Tea Sign",
       "item.foo-dog": "Foo Dog",
       "item.golden-arch": "Golden Arch",
+      "item.streak-freeze": "Streak Freeze",
       "item.panda": "Panda",
       "item.ninja": "Ninja",
       "item.astronaut": "Astronaut",
@@ -2291,6 +2331,8 @@
       "home.settings": "\u0E15\u0E31\u0E49\u0E07\u0E04\u0E48\u0E32",
       "home.streakTitle": "\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07",
       "home.streakDays": "{n} \u0E27\u0E31\u0E19",
+      "home.freezes": "\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07 {n} \u0E0A\u0E34\u0E49\u0E19",
+      // TH: needs native review
       "home.start": "\u0E40\u0E23\u0E34\u0E48\u0E21",
       "home.startHint": "\u0E15\u0E49\u0E2D\u0E07\u0E21\u0E35\u0E04\u0E33\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E19\u0E49\u0E2D\u0E22 8 \u0E04\u0E33\u0E43\u0E19\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E08\u0E36\u0E07\u0E08\u0E30\u0E40\u0E23\u0E34\u0E48\u0E21\u0E44\u0E14\u0E49 \u2014 \u0E02\u0E22\u0E32\u0E22\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E14\u0E49\u0E32\u0E19\u0E25\u0E48\u0E32\u0E07",
       "home.scopeWords": "{n} \u0E04\u0E33",
@@ -2301,6 +2343,8 @@
       "progress.levelRow": "{pct} \u0E40\u0E0A\u0E35\u0E48\u0E22\u0E27\u0E0A\u0E32\u0E0D \xB7 \u0E40\u0E2B\u0E47\u0E19 {seen}/{total}",
       "common.playAudio": "\u0E40\u0E25\u0E48\u0E19\u0E40\u0E2A\u0E35\u0E22\u0E07",
       "battle.critical": "CRITICAL!",
+      "toast.freeze-used": "\u0E43\u0E0A\u0E49\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07\u0E1E\u0E34\u0E17\u0E31\u0E01\u0E29\u0E4C\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E2A\u0E15\u0E23\u0E35\u0E04 {n} \u0E27\u0E31\u0E19\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E22\u0E31\u0E07\u0E2D\u0E22\u0E39\u0E48",
+      // TH: needs native review
       "milestone.scarf": "\u0E1C\u0E49\u0E32\u0E1E\u0E31\u0E19\u0E04\u0E2D\u0E2A\u0E35\u0E41\u0E14\u0E07",
       "milestone.coin": "\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E23\u0E32\u0E07\u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D\u0E17\u0E2D\u0E07",
       "milestone.outfit": "\u0E0A\u0E38\u0E14\u0E08\u0E35\u0E19",
@@ -2433,6 +2477,8 @@
       "shop.seasonUntil": "\u0E21\u0E35\u0E16\u0E36\u0E07 {date}",
       "shop.seasonReturns": "\u{1F3EE} \u0E40\u0E0B\u0E47\u0E15 {name} \u0E08\u0E30\u0E01\u0E25\u0E31\u0E1A\u0E21\u0E32 {date}",
       "shop.upgrade": "\u0E2D\u0E31\u0E1B\u0E40\u0E01\u0E23\u0E14 {stars} ({coins})",
+      "shop.owned-count": "\u0E21\u0E35\u0E2D\u0E22\u0E39\u0E48: {n}/{cap}",
+      // TH: needs native review
       "shop.maxed": "\u2605\u2605\u2605",
       "season.summer": "\u0E24\u0E14\u0E39\u0E23\u0E49\u0E2D\u0E19",
       "season.midautumn": "\u0E44\u0E2B\u0E27\u0E49\u0E1E\u0E23\u0E30\u0E08\u0E31\u0E19\u0E17\u0E23\u0E4C",
@@ -2450,6 +2496,8 @@
       "item.tea-sign": "\u0E1B\u0E49\u0E32\u0E22\u0E0A\u0E32",
       "item.foo-dog": "\u0E2A\u0E34\u0E07\u0E42\u0E15\u0E2B\u0E34\u0E19",
       "item.golden-arch": "\u0E0B\u0E38\u0E49\u0E21\u0E1B\u0E23\u0E30\u0E15\u0E39\u0E17\u0E2D\u0E07",
+      "item.streak-freeze": "\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07\u0E1E\u0E34\u0E17\u0E31\u0E01\u0E29\u0E4C\u0E2A\u0E15\u0E23\u0E35\u0E04",
+      // TH: needs native review
       "item.panda": "\u0E41\u0E1E\u0E19\u0E14\u0E49\u0E32",
       "item.ninja": "\u0E19\u0E34\u0E19\u0E08\u0E32",
       "item.astronaut": "\u0E19\u0E31\u0E01\u0E1A\u0E34\u0E19\u0E2D\u0E27\u0E01\u0E32\u0E28",
@@ -2770,6 +2818,7 @@
   }
   var SHOP_REARM_MS = 400;
   var justBought = null;
+  var freezes = Math.min(2, Number(store.get("freezes")) || 0);
   var xp = store.get("xp", 0);
   function updateLevelChip() {
     const el = $("#home-level");
@@ -2806,7 +2855,7 @@
   function updateStreakChip() {
     const el = $("#home-streak");
     if (!el) return;
-    const info = streakInfo(daily, todayStr());
+    const info = streakInfo(daily, todayStr(), freezes);
     const title = el.querySelector(".streak-title");
     const count = el.querySelector(".streak-count");
     const bar = el.querySelector(".streak-bar i");
@@ -2819,10 +2868,38 @@
       if (info.restNote) note.textContent = t("streak.restUsed", { n: info.streak });
     }
     el.classList.toggle("goal-met", info.goalMet);
+    const freezeChip = $("#streak-freeze-chip");
+    if (freezeChip) {
+      freezeChip.style.display = freezes > 0 ? "flex" : "none";
+      const label = freezeChip.querySelector(".freeze-count");
+      if (label) label.textContent = t("home.freezes", { n: freezes });
+    }
+  }
+  var toastTimer = 0;
+  function toast(msg) {
+    clearTimeout(toastTimer);
+    let el = document.getElementById("toast-pop");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "toast-pop";
+      el.className = "toast-pop";
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    requestAnimationFrame(() => el.classList.add("show"));
+    toastTimer = setTimeout(() => {
+      el.classList.remove("show");
+    }, 2600);
   }
   function noteDaily(count) {
-    daily = noteActivity(daily, todayStr(), count);
+    const r = noteActivity(daily, todayStr(), count, freezes);
+    daily = { last: r.last, streak: r.streak, today: r.today, restWeek: r.restWeek, restDay: r.restDay };
     store.set("daily", daily);
+    if (r.freezesUsed > 0) {
+      freezes = Math.max(0, freezes - r.freezesUsed);
+      store.set("freezes", freezes);
+      toast(t("toast.freeze-used", { n: r.streak }));
+    }
     updateStreakChip();
   }
   var questState = Object.assign(defaultQuestState(), store.get("quests", {}));
@@ -4771,7 +4848,8 @@
     const copy = document.createElement("span");
     copy.className = "shop-copy";
     const stars = item.type === "deco" && owned ? " " + "\u2605".repeat(tier) : "";
-    copy.innerHTML = `<b>${tOr("item." + item.id, item.name)}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
+    const ownedCount = item.type === "consumable" ? `<small>${t("shop.owned-count", { n: freezes, cap: item.cap })}</small>` : "";
+    copy.innerHTML = `<b>${tOr("item." + item.id, item.name)}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
     left.replaceChildren(preview, copy);
     const btn = document.createElement("button");
     const doBuy = () => {
@@ -4785,7 +4863,33 @@
       updateWalletChip();
       renderShop();
     };
-    if (item.type === "deco") {
+    if (item.type === "consumable") {
+      btn.className = "chip buy-chip";
+      btn.textContent = t("shop.buy");
+      btn.disabled = freezes >= item.cap || wallet < item.price;
+      btn.onclick = () => {
+        const r = buyConsumable(item, wallet, freezes);
+        if (!r.ok) return;
+        wallet = r.wallet;
+        freezes = r.count;
+        store.set("wallet", wallet);
+        store.set("freezes", freezes);
+        justBought = { id: item.id, at: performance.now() };
+        updateWalletChip();
+        updateStreakChip();
+        renderShop();
+      };
+      if (justBought && justBought.id === item.id) {
+        const elapsed = performance.now() - justBought.at;
+        if (elapsed < SHOP_REARM_MS) {
+          const wasDisabled = btn.disabled;
+          btn.disabled = true;
+          setTimeout(() => {
+            btn.disabled = wasDisabled;
+          }, SHOP_REARM_MS - elapsed);
+        }
+      }
+    } else if (item.type === "deco") {
       if (!owned) {
         btn.className = "chip buy-chip";
         btn.textContent = t("shop.buy");

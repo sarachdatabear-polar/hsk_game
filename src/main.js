@@ -21,7 +21,7 @@ import { defaultQuestState, noteQuestEvent, questStatus } from "./quests.js";
 import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable, hasMp3 } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
-import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
+import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import { BUILDINGS, streetPieces, streetProgress, streetMetrics, DECO_SPRITE_SCALE } from "./street.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
@@ -86,6 +86,9 @@ function updateWalletChip(){ setPill($("#home-wallet"), "secondary-coin", wallet
 // can land on it and charge the upgrade too — see makeShopRow.
 const SHOP_REARM_MS = 400;
 let justBought = null;   // {id, at} — item + moment of the most recent purchase
+// Owned streak-freeze count (0-2, retention pack). Counted, not owned — never
+// routed through shopState.owned/buy()/equipItem() (see shop.js buyConsumable).
+let freezes = Math.min(2, Number(store.get("freezes")) || 0);
 
 /* ============================== cat growth (xp/levels/accessories) ============================== */
 let xp = store.get("xp", 0);
@@ -133,7 +136,7 @@ daily.today = Object.assign({date:"", resolved:0}, daily.today);
 function updateStreakChip(){
   const el = $("#home-streak");
   if(!el) return;
-  const info = streakInfo(daily, todayStr());
+  const info = streakInfo(daily, todayStr(), freezes);
   const title = el.querySelector(".streak-title");
   const count = el.querySelector(".streak-count");
   const bar = el.querySelector(".streak-bar i");
@@ -146,10 +149,42 @@ function updateStreakChip(){
     if(info.restNote) note.textContent = t("streak.restUsed", { n: info.streak });
   }
   el.classList.toggle("goal-met", info.goalMet);
+  // retention pack: small "N freeze(s)" chip, shown only while any are owned
+  const freezeChip = $("#streak-freeze-chip");
+  if(freezeChip){
+    freezeChip.style.display = freezes > 0 ? "flex" : "none";
+    const label = freezeChip.querySelector(".freeze-count");
+    if(label) label.textContent = t("home.freezes", { n: freezes });
+  }
+}
+// Minimal floating toast (retention pack) — freeze-used is a rare single
+// event, so no queue/stacking: a second call while one is showing just
+// replaces it. Appended to <body> (outside #app/.screen) so it survives the
+// show("home")/show("results") screen swap that follows noteDaily().
+let toastTimer = 0;
+function toast(msg){
+  clearTimeout(toastTimer);
+  let el = document.getElementById("toast-pop");
+  if(!el){
+    el = document.createElement("div");
+    el.id = "toast-pop";
+    el.className = "toast-pop";
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  requestAnimationFrame(()=> el.classList.add("show"));
+  toastTimer = setTimeout(()=>{ el.classList.remove("show"); }, 2600);
 }
 function noteDaily(count){
-  daily = noteActivity(daily, todayStr(), count);
+  const r = noteActivity(daily, todayStr(), count, freezes);
+  // persist the same shape as before — freezesUsed is transient, not stored
+  daily = { last: r.last, streak: r.streak, today: r.today, restWeek: r.restWeek, restDay: r.restDay };
   store.set("daily", daily);
+  if(r.freezesUsed > 0){
+    freezes = Math.max(0, freezes - r.freezesUsed);
+    store.set("freezes", freezes);
+    toast(t("toast.freeze-used", { n: r.streak }));
+  }
   updateStreakChip();
 }
 
@@ -2045,7 +2080,8 @@ function makeShopRow(item, today){
   const copy = document.createElement("span");
   copy.className = "shop-copy";
   const stars = item.type === "deco" && owned ? " " + "★".repeat(tier) : "";
-  copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
+  const ownedCount = item.type === "consumable" ? `<small>${t("shop.owned-count", { n: freezes, cap: item.cap })}</small>` : "";
+  copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
   left.replaceChildren(preview, copy);
   const btn = document.createElement("button");
   const doBuy = () => {
@@ -2059,7 +2095,32 @@ function makeShopRow(item, today){
     // re-renders on entry, so a bought deco appears the moment it can be seen.
     updateWalletChip(); renderShop();
   };
-  if(item.type === "deco"){
+  if(item.type === "consumable"){
+    // Counted, not owned (task-2 review carry-forward): never touches
+    // shopState.owned/buy()/equipItem() — buyConsumable + nbhsk.freezes only.
+    btn.className = "chip buy-chip";
+    btn.textContent = t("shop.buy");
+    btn.disabled = freezes >= item.cap || wallet < item.price;
+    btn.onclick = () => {
+      const r = buyConsumable(item, wallet, freezes);
+      if(!r.ok) return;
+      wallet = r.wallet; freezes = r.count;
+      store.set("wallet", wallet); store.set("freezes", freezes);
+      justBought = { id: item.id, at: performance.now() };
+      updateWalletChip(); updateStreakChip(); renderShop();
+    };
+    // same double-tap re-arm guard as the deco branch below: the row
+    // re-renders in place (still "Buy", possibly now disabled at cap) and a
+    // fast second tap shouldn't land before the player sees the new state.
+    if(justBought && justBought.id === item.id){
+      const elapsed = performance.now() - justBought.at;
+      if(elapsed < SHOP_REARM_MS){
+        const wasDisabled = btn.disabled;
+        btn.disabled = true;
+        setTimeout(()=>{ btn.disabled = wasDisabled; }, SHOP_REARM_MS - elapsed);
+      }
+    }
+  }else if(item.type === "deco"){
     // Owning a deco displays it on the street; re-buys upgrade its tier (v7 F4).
     if(!owned){
       btn.className = "chip buy-chip";
