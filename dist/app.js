@@ -4904,71 +4904,107 @@
       c.stroke();
     } else if (item.type === "effect") {
       if (item.id === "sakura-fx") {
-        c.fillStyle = "#f6a8c8";
-        for (const [x, y, r] of [[18, 15, 0], [31, 24, 0.9], [43, 13, -0.5], [24, 31, 0.4]]) {
+        for (const [x, y, r, col] of [
+          [16, 18, -0.3, "#f6a8c8"],
+          [36, 13, 0.5, "#f9c6da"],
+          [56, 22, -0.6, "#f6a8c8"],
+          [76, 15, 0.3, "#f9c6da"],
+          [26, 42, 0.4, "#f9c6da"],
+          [48, 48, -0.4, "#f6a8c8"],
+          [68, 44, 0.7, "#f6a8c8"],
+          [84, 34, -0.2, "#f9c6da"]
+        ]) {
+          c.fillStyle = col;
           c.beginPath();
-          c.ellipse(x, y, 5, 2.6, r, 0, Math.PI * 2);
+          c.ellipse(x, y, 6, 3, r, 0, Math.PI * 2);
           c.fill();
         }
       } else if (item.id === "star-shower") {
         c.fillStyle = "#ffe08a";
-        for (const [x, y, r] of [[18, 14, 4], [33, 22, 5], [44, 12, 3], [25, 30, 3.5]]) drawStarMark(c, x, y, r);
+        for (const [x, y, r] of [
+          [18, 16, 4.5],
+          [40, 11, 3],
+          [60, 20, 5],
+          [80, 13, 3.5],
+          [28, 42, 3.5],
+          [50, 46, 5],
+          [72, 42, 4],
+          [88, 30, 2.6]
+        ]) drawStarMark(c, x, y, r);
       } else {
+        const cx = 48, cy = 32;
+        c.strokeStyle = "#ffcf5a";
+        c.lineWidth = 2;
+        c.lineCap = "round";
+        for (let a = 0; a < 8; a++) {
+          const ang = a * Math.PI / 4;
+          c.beginPath();
+          c.moveTo(cx + Math.cos(ang) * 9, cy + Math.sin(ang) * 9);
+          c.lineTo(cx + Math.cos(ang) * 25, cy + Math.sin(ang) * 22);
+          c.stroke();
+        }
         c.fillStyle = "#e04040";
         c.beginPath();
-        c.arc(24, 22, 8, 0, Math.PI * 2);
+        c.arc(cx, cy, 9, 0, Math.PI * 2);
         c.fill();
         c.fillStyle = "#fff4c0";
-        for (const [x, y] of [[15, 12], [38, 13], [42, 30], [18, 32], [31, 21]]) {
+        c.beginPath();
+        c.arc(cx, cy, 4, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#ffe08a";
+        for (let a = 0; a < 8; a++) {
+          const ang = a * Math.PI / 4 + Math.PI / 8;
           c.beginPath();
-          c.arc(x, y, 2.8, 0, Math.PI * 2);
+          c.arc(cx + Math.cos(ang) * 24, cy + Math.sin(ang) * 20, 2, 0, Math.PI * 2);
           c.fill();
         }
       }
     } else if (item.type === "soundpack") {
-      c.strokeStyle = item.id === "bells" ? "#f5c518" : "#7fd7ff";
       c.lineWidth = 2.5;
       c.lineCap = "round";
       if (item.id === "bells") {
         c.fillStyle = "#f5c518";
         c.beginPath();
-        c.arc(30, 19, 10, Math.PI, 0);
-        c.lineTo(42, 30);
-        c.lineTo(18, 30);
+        c.arc(48, 26, 15, Math.PI, 0);
+        c.lineTo(65, 44);
+        c.lineTo(31, 44);
         c.closePath();
         c.fill();
         c.fillStyle = "#3a2200";
         c.beginPath();
-        c.arc(30, 30, 2.6, 0, Math.PI * 2);
+        c.arc(48, 44, 3.6, 0, Math.PI * 2);
         c.fill();
       } else if (item.id === "lion-drum") {
         c.fillStyle = "#c1272d";
         c.beginPath();
-        c.ellipse(28, 24, 12, 9, 0, 0, Math.PI * 2);
+        c.ellipse(48, 36, 18, 13, 0, 0, Math.PI * 2);
         c.fill();
         c.fillStyle = "#f5c518";
-        c.fillRect(16, 20, 24, 3);
+        c.fillRect(30, 30, 36, 4);
         c.strokeStyle = "#7a1c14";
-        c.lineWidth = 2;
+        c.lineWidth = 2.5;
         c.beginPath();
-        c.moveTo(20, 10);
-        c.lineTo(26, 19);
-        c.moveTo(38, 10);
-        c.lineTo(32, 19);
+        c.moveTo(30, 12);
+        c.lineTo(40, 28);
+        c.moveTo(66, 12);
+        c.lineTo(56, 28);
         c.stroke();
       } else {
+        c.strokeStyle = "#7fd7ff";
+        c.lineWidth = 3;
         c.beginPath();
-        c.moveTo(16, 29);
-        c.lineTo(16, 14);
-        c.lineTo(39, 10);
-        c.lineTo(39, 25);
+        c.moveTo(34, 44);
+        c.lineTo(34, 16);
+        c.lineTo(64, 10);
+        c.lineTo(64, 38);
         c.stroke();
+        c.fillStyle = "#7fd7ff";
         c.beginPath();
-        c.arc(14, 31, 4, 0, Math.PI * 2);
-        c.stroke();
+        c.arc(30, 44, 5, 0, Math.PI * 2);
+        c.fill();
         c.beginPath();
-        c.arc(37, 27, 4, 0, Math.PI * 2);
-        c.stroke();
+        c.arc(60, 38, 5, 0, Math.PI * 2);
+        c.fill();
       }
     } else {
       drawStreetDeco(c, item.id, w * 0.5, h - 5, h);
