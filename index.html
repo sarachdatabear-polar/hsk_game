@@ -49,6 +49,13 @@
     font-family:'LC Latin','LC Thai',"Segoe UI",system-ui,-apple-system,"Noto Sans","Noto Sans Thai",sans-serif;}
   #app{max-width:520px; margin:0 auto; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
+  /* Wide screens: the app is a fixed ~520px column. Fill the bare cream margins
+     with a warm ambient vignette and lift the column as an intentional "device"
+     panel, instead of leaving it floating in an empty void. */
+  @media (min-width:900px){
+    body{background:radial-gradient(1100px 780px at 50% 30%, #FFFBF1 0%, var(--lc-cream) 46%, #ECDEC0 100%) fixed;}
+    #app{background:var(--lc-cream); box-shadow:0 12px 64px rgba(122,90,68,.16);}
+  }
   .screen{display:none; flex:1; flex-direction:column; padding:16px;}
   .screen.on{display:flex;}
   /* Street/Quests/More hold only a little content. Top-align them like every
