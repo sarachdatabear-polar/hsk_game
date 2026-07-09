@@ -87,3 +87,35 @@ export function questStatus(state, dateStr) {
     done: sameDay ? state.done.includes(q.id) : false,
   }));
 }
+
+// ---- Monthly layer (retention pack): daily-quest completions accumulate
+// into one calendar-month quest with a coin reward + album badge. Pure;
+// caller owns persistence (nbhsk.monthly) and feeds completedCount from
+// noteQuestEvent's `completed` array.
+export const MONTHLY_TARGET = 40;
+export const MONTHLY_REWARD = 1500;
+
+export function monthKey(dateStr) { return (dateStr || "").slice(0, 7); }
+
+export function defaultMonthly() { return { month: "", done: 0, claimed: false }; }
+
+export function noteMonthlyProgress(m, dateStr, completedCount) {
+  const month = monthKey(dateStr);
+  const rollover = m.month !== month;
+  const done = Math.min(MONTHLY_TARGET, (rollover ? 0 : m.done) + completedCount);
+  return { month, done, claimed: rollover ? false : m.claimed };
+}
+
+export function monthlyStatus(m, dateStr) {
+  const same = m.month === monthKey(dateStr);
+  const done = same ? m.done : 0;
+  return { done, target: MONTHLY_TARGET, reward: MONTHLY_REWARD,
+           complete: done >= MONTHLY_TARGET, claimed: same ? m.claimed : false };
+}
+
+export function claimMonthly(m) {
+  if (m.done >= MONTHLY_TARGET && !m.claimed) {
+    return { state: { ...m, claimed: true }, earned: MONTHLY_REWARD };
+  }
+  return { state: m, earned: 0 };
+}

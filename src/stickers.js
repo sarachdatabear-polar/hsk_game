@@ -8,7 +8,7 @@ import { isMastered } from "./mastery.js";
 
 export const TOP_NS = [100, 300, 500];
 export const MILESTONE_PCTS = [25, 50, 75, 100];
-export const EVENT_STICKERS = ["welcome", "first-boss", "streak-7", "streak-30"];
+export const EVENT_STICKERS = ["welcome", "first-boss", "streak-7", "streak-30", "monthly-40"];
 
 export function defaultStickers() {
   return { earned: {}, queue: [] };   // earned: sticker id -> "YYYY-MM-DD"
@@ -84,6 +84,7 @@ export function evaluateAwards(state, defs, facts, dateStr) {
       else if (d.event === "first-boss" && facts.bossDefeated) award(d.id);
       else if (d.event === "streak-7" && facts.streak >= 7) award(d.id);
       else if (d.event === "streak-30" && facts.streak >= 30) award(d.id);
+      else if (d.event === "monthly-40" && facts.monthlyDone >= 40) award(d.id);
     }
   }
   return { earned, queue };
