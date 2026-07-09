@@ -81,6 +81,11 @@ function noteAnswer(hanzi, correct){
 let wallet = store.get("wallet", 0);
 let shopState = Object.assign(defaultShop(), store.get("shop", {}));
 function updateWalletChip(){ setPill($("#home-wallet"), "secondary-coin", wallet.toLocaleString()); }
+// Re-arm window (ms): a deco buy synchronously re-renders its row as an
+// "Upgrade" button at the same coordinates, so a double-tap's second tap
+// can land on it and charge the upgrade too — see makeShopRow.
+const SHOP_REARM_MS = 400;
+let justBought = null;   // {id, at} — item + moment of the most recent purchase
 
 /* ============================== cat growth (xp/levels/accessories) ============================== */
 let xp = store.get("xp", 0);
@@ -561,13 +566,13 @@ document.querySelectorAll("#preset-chips .chip").forEach(c=>c.onclick = ()=>{
 });
 $("#go-battle").onclick  = ()=>startBattle("round");
 $("#go-endless").onclick = ()=>startBattle("endless");
-$("#go-learn").onclick   = ()=>{ learnDeck = null; startLearn(); };
+$("#go-learn").onclick   = ()=>{ learnDeck = null; startLearn("home"); };
 
 /* ============================== flashcards ============================== */
 const fc = {deck:[], i:0, flipped:false, done:0, total:0};
-function startLearn(){
+function startLearn(returnTo = "home"){
   const src = learnDeck && learnDeck.length ? learnDeck : pool;
-  fc.fromMisses = !!(learnDeck && learnDeck.length);  // came from a battle's "review misses"
+  fc.returnTo = returnTo;   // screen to land on when the deck runs out
   fc.deck = shuffle(src.slice(0, 400));       // session cap keeps it sane
   fc.i = 0; fc.done = 0; fc.total = fc.deck.length; fc.flipped = false;
   show("learn");
@@ -582,7 +587,7 @@ function endLearn(){
     startBattle("round");
     return;
   }
-  show(fc.fromMisses ? "results" : "home");
+  show(fc.returnTo || "home");
 }
 function renderCard(){
   const w = fc.deck[fc.i];
@@ -688,8 +693,16 @@ function answerTone(picked, btn){
   // the [data-go] "tones" route): without this, tapping Home during the
   // reveal window lets the timer fire nextToneQuestion() on the hidden
   // screen, playing audio over Home (and crediting rewards early on the
-  // last question).
-  TG.advanceTimer = setTimeout(()=>{ TG.advanceTimer = null; if(currentScreen === "tones") nextToneQuestion(); }, fxDuration(900));
+  // last question). But if the answer just graded WAS the last question
+  // (TG.i >= TG.len, the same check nextToneQuestion would make), tapping
+  // Home must still credit the round's coins/XP — endToneRound only touches
+  // the hidden #tones-* DOM and is idempotent (TG.ended), so it's safe to
+  // run off-screen; startToneRound resets that DOM on re-entry.
+  TG.advanceTimer = setTimeout(()=>{
+    TG.advanceTimer = null;
+    if(currentScreen === "tones") nextToneQuestion();
+    else if(TG.i >= TG.len) endToneRound();
+  }, fxDuration(900));
 }
 // Light rewards (design spec §3): +1 coin and +1 XP per correct answer,
 // counted toward the daily streak — deliberately NOT recordAnswer/mastery.
@@ -834,6 +847,7 @@ function startBattle(mode){
   B.nextAt = 0; B.lastT = 0; B.locked = false; B.bossStageAt = 0;
   B.paused = false; B.pausedAt = 0;
   $("#pause-overlay").classList.remove("on");
+  $("#format-intro").classList.remove("on");   // a quit mid soft-intro must not carry it into the next battle
   questToasts = [];
   B.levelUps = [];
   const acc0 = accessoriesFor(levelForXp(xp));
@@ -1077,7 +1091,9 @@ function renderQuestion(word, format, promptKey){
     rp.onclick = ()=> speak(word.h);   // never locked — replay is always allowed
     box.appendChild(rp);
   }
-  renderOptionButtons(box, FORMATS[format].buildOptions(word, deck, scope.lang, Math.random));
+  // small custom decks (miss/weak-word review) can be meaning-homogeneous —
+  // pass the full scoped pool as the widening source for distractors.
+  renderOptionButtons(box, FORMATS[format].buildOptions(word, deck, scope.lang, Math.random, pool));
 }
 // v6p2 typed-pinyin input: letters field (native keyboard) + one tone row per
 // non-neutral syllable + attack button. Grading is pure (pinyin.js); the
@@ -1897,7 +1913,7 @@ function endBattle(quit){
     list.appendChild(row);
   }
   $("#r-review").style.display = B.misses.length? "block":"none";
-  $("#r-review").onclick = ()=>{ learnDeck = B.misses.slice(); startLearn(); };
+  $("#r-review").onclick = ()=>{ learnDeck = B.misses.slice(); startLearn("results"); };
   $("#r-fight-miss").style.display = B.misses.length >= 2 ? "block" : "none";
   $("#r-fight-miss").onclick = ()=>{ battleDeckOverride = B.misses.slice(); startBattle("round"); };
   $("#r-again").onclick = ()=>startBattle(lastMode);
@@ -2030,6 +2046,7 @@ function makeShopRow(item, today){
     if(!r.ok) return;
     wallet = r.wallet; shopState = r.shop;
     store.set("wallet", wallet); store.set("shop", shopState);
+    justBought = { id: item.id, at: performance.now() };
     // no renderStreet() here: the street canvas is display:none while the
     // shop screen is up (renderStreet would no-op) and show("street") always
     // re-renders on entry, so a bought deco appears the moment it can be seen.
@@ -2052,6 +2069,17 @@ function makeShopRow(item, today){
       btn.className = "chip on";
       btn.textContent = t("shop.maxed");
       btn.disabled = true;
+    }
+    // this row's buy button was just replaced (Buy -> Upgrade, same spot) by
+    // the purchase that owns this item — briefly re-disable it so a fast
+    // second tap of a double-tap doesn't also charge the upgrade.
+    if(justBought && justBought.id === item.id){
+      const elapsed = performance.now() - justBought.at;
+      if(elapsed < SHOP_REARM_MS){
+        const wasDisabled = btn.disabled;
+        btn.disabled = true;
+        setTimeout(()=>{ btn.disabled = wasDisabled; }, SHOP_REARM_MS - elapsed);
+      }
     }
   }else{
     btn.className = "chip" + (equipped ? " on" : "");
@@ -2651,7 +2679,7 @@ function renderNeedsWork(){
   const showBtns = weak.length >= 2;
   $("#nw-review").style.display = showBtns ? "block" : "none";
   $("#nw-fight").style.display = showBtns ? "block" : "none";
-  $("#nw-review").onclick = ()=>{ learnDeck = weak.slice(); startLearn(); };
+  $("#nw-review").onclick = ()=>{ learnDeck = weak.slice(); startLearn("progress"); };
   $("#nw-fight").onclick = ()=>{ battleDeckOverride = weak.slice(); startBattle("round"); };
 }
 

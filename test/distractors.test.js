@@ -100,6 +100,37 @@ describe("pickDistractors", () => {
     expect(d.map(w => w.h)).toContain("单");
   });
 
+  it("widens to fullPool when a small custom deck is meaning-homogeneous", () => {
+    // Simulates a "Fight weak words" deck (main.js: B.deck.length < 8 falls back
+    // to pool, but >=8 custom decks are passed through as-is): all but one
+    // non-target word here shares the content token "examine" with the target,
+    // so the scoped-deck fallback (pool.filter(ok)) alone can't find 3 distractors.
+    const target = mk("查", "to examine", "A", 100);
+    const deck = [
+      target,
+      mk("察", "to examine carefully", "B", 90),   // shares "examine" -> excluded
+      mk("核", "examine and verify", "C", 80),      // shares "examine" -> excluded
+      mk("审", "to examine in detail", "D", 70),    // shares "examine" -> excluded
+      mk("验", "carefully examine", "E", 60),       // shares "examine" -> excluded
+      mk("视", "examine closely", "F", 50),          // shares "examine" -> excluded
+      mk("勘", "examine thoroughly", "G", 40),       // shares "examine" -> excluded
+      mk("水", "water", "H", 30),                    // only non-excluded word in deck
+    ];
+    const fullPool = [
+      ...deck,
+      mk("吃", "to eat", "I", 20),
+      mk("睡", "to sleep", "J", 19),
+      mk("大", "big", "K", 18),
+      mk("狗", "dog", "L", 17),
+    ];
+    const d = pickDistractors(deck, target, firstRand, fullPool);
+    expect(d).toHaveLength(3);
+    expect(d.map(w => w.h)).not.toContain("查");
+    for (const w of d) {
+      expect(w.e.split(";")[0].toLowerCase()).not.toContain("examine");
+    }
+  });
+
   it("ignores parenthesized text so \"Liao (a surname)\" matches \"surname Liao\"", () => {
     const liaoPool = [
       mk("廖", "Liao (a surname)", "A", 100), // target

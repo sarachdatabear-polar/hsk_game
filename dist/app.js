@@ -126,11 +126,12 @@
     }
     return ta.some((t2) => tb.includes(t2));
   }
-  function pickDistractors(pool2, target, rand = Math.random) {
+  function pickDistractors(pool2, target, rand = Math.random, fullPool = pool2) {
     const i = pool2.findIndex((w) => w.h === target.h);
     const ok = (w) => w.h !== target.h && !sameMeaning(w.e, target.e) && !(target.t && w.t === target.t);
     let cands = pool2.slice(Math.max(0, i - 40), i + 41).filter(ok);
     if (cands.length < 3) cands = pool2.filter(ok);
+    if (cands.length < 3) cands = fullPool.filter(ok);
     return shuffle([...cands], rand).slice(0, 3);
   }
 
@@ -249,8 +250,8 @@
     if (f === "cloze" && !(caps.cloze && caps.cloze(word))) f = "typed";
     return f;
   }
-  function meaningOptions(word, deck, lang, rand) {
-    return shuffle3([word, ...pickDistractors(deck, word, rand)], rand).map((o) => {
+  function meaningOptions(word, deck, lang, rand, fullPool = deck) {
+    return shuffle3([word, ...pickDistractors(deck, word, rand, fullPool)], rand).map((o) => {
       const m = meaning(o, lang);
       return { label: m.main, sub: m.sub, correct: o.h === word.h };
     });
@@ -276,8 +277,8 @@
       audio: "never",
       // audio would say the answer
       intro: "battle.introReverse",
-      buildOptions(word, deck, lang, rand) {
-        return shuffle3([word, ...pickDistractors(deck, word, rand)], rand).map((o) => ({ label: o.h, sub: o.p, correct: o.h === word.h }));
+      buildOptions(word, deck, lang, rand, fullPool = deck) {
+        return shuffle3([word, ...pickDistractors(deck, word, rand, fullPool)], rand).map((o) => ({ label: o.h, sub: o.p, correct: o.h === word.h }));
       }
     },
     tone: {
@@ -2768,6 +2769,8 @@
   function updateWalletChip() {
     setPill($("#home-wallet"), "secondary-coin", wallet.toLocaleString());
   }
+  var SHOP_REARM_MS = 400;
+  var justBought = null;
   var xp = store.get("xp", 0);
   function updateLevelChip() {
     const el = $("#home-level");
@@ -3249,12 +3252,12 @@
   $("#go-endless").onclick = () => startBattle("endless");
   $("#go-learn").onclick = () => {
     learnDeck = null;
-    startLearn();
+    startLearn("home");
   };
   var fc = { deck: [], i: 0, flipped: false, done: 0, total: 0 };
-  function startLearn() {
+  function startLearn(returnTo = "home") {
     const src = learnDeck && learnDeck.length ? learnDeck : pool;
-    fc.fromMisses = !!(learnDeck && learnDeck.length);
+    fc.returnTo = returnTo;
     fc.deck = shuffle4(src.slice(0, 400));
     fc.i = 0;
     fc.done = 0;
@@ -3270,7 +3273,7 @@
       startBattle("round");
       return;
     }
-    show(fc.fromMisses ? "results" : "home");
+    show(fc.returnTo || "home");
   }
   function renderCard() {
     const w = fc.deck[fc.i];
@@ -3395,6 +3398,7 @@
     TG.advanceTimer = setTimeout(() => {
       TG.advanceTimer = null;
       if (currentScreen === "tones") nextToneQuestion();
+      else if (TG.i >= TG.len) endToneRound();
     }, fxDuration(900));
   }
   function endToneRound() {
@@ -3548,6 +3552,7 @@
     B.paused = false;
     B.pausedAt = 0;
     $("#pause-overlay").classList.remove("on");
+    $("#format-intro").classList.remove("on");
     questToasts = [];
     B.levelUps = [];
     const acc0 = accessoriesFor(levelForXp(xp));
@@ -3778,7 +3783,7 @@
       rp.onclick = () => speak(word.h);
       box.appendChild(rp);
     }
-    renderOptionButtons(box, FORMATS[format].buildOptions(word, deck, scope.lang, Math.random));
+    renderOptionButtons(box, FORMATS[format].buildOptions(word, deck, scope.lang, Math.random, pool));
   }
   function renderTypedInput(word) {
     const box = $("#opts");
@@ -4659,7 +4664,7 @@
     $("#r-review").style.display = B.misses.length ? "block" : "none";
     $("#r-review").onclick = () => {
       learnDeck = B.misses.slice();
-      startLearn();
+      startLearn("results");
     };
     $("#r-fight-miss").style.display = B.misses.length >= 2 ? "block" : "none";
     $("#r-fight-miss").onclick = () => {
@@ -4774,6 +4779,7 @@
       shopState = r.shop;
       store.set("wallet", wallet);
       store.set("shop", shopState);
+      justBought = { id: item.id, at: performance.now() };
       updateWalletChip();
       renderShop();
     };
@@ -4793,6 +4799,16 @@
         btn.className = "chip on";
         btn.textContent = t("shop.maxed");
         btn.disabled = true;
+      }
+      if (justBought && justBought.id === item.id) {
+        const elapsed = performance.now() - justBought.at;
+        if (elapsed < SHOP_REARM_MS) {
+          const wasDisabled = btn.disabled;
+          btn.disabled = true;
+          setTimeout(() => {
+            btn.disabled = wasDisabled;
+          }, SHOP_REARM_MS - elapsed);
+        }
       }
     } else {
       btn.className = "chip" + (equipped ? " on" : "");
@@ -5608,7 +5624,7 @@
     $("#nw-fight").style.display = showBtns ? "block" : "none";
     $("#nw-review").onclick = () => {
       learnDeck = weak.slice();
-      startLearn();
+      startLearn("progress");
     };
     $("#nw-fight").onclick = () => {
       battleDeckOverride = weak.slice();
