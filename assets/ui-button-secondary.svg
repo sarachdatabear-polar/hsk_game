@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="380" height="98" viewBox="0 0 380 98">
 <defs>
   <linearGradient id="f" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#7FB9EA"/><stop offset="0.45" stop-color="#4E96D9"/><stop offset="1" stop-color="#3D7FBE"/>
+    <stop offset="0" stop-color="#59AC81"/><stop offset="0.45" stop-color="#40946A"/><stop offset="1" stop-color="#327A55"/>
   </linearGradient>
   <linearGradient id="r" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#2F6FA8"/><stop offset="1" stop-color="#1F4C74"/>
+    <stop offset="0" stop-color="#276B4B"/><stop offset="1" stop-color="#194D35"/>
   </linearGradient>
   <filter id="d" x="-10%" y="-10%" width="120%" height="130%">
     <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#5a4010" flood-opacity="0.3"/>
@@ -16,5 +16,5 @@
 <path d="M 30 20 H 350 M 30 74 H 350 M 20 30 V 64 M 360 30 V 64
          M 30 20 Q 20 20 20 30 M 350 20 Q 360 20 360 30
          M 30 74 Q 20 74 20 64 M 350 74 Q 360 74 360 64"
-      fill="none" stroke="#CFE6F7" stroke-width="2.5" stroke-linecap="round" opacity="0.85"/>
+      fill="none" stroke="#BFE4D0" stroke-width="2.5" stroke-linecap="round" opacity="0.85"/>
 </svg>

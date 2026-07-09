@@ -51,6 +51,10 @@
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
   .screen{display:none; flex:1; flex-direction:column; padding:16px;}
   .screen.on{display:flex;}
+  /* F4: Street/Quests/More hold only a little content — centering it vertically
+     balances the whitespace on a tall phone instead of a top-weighted void.
+     (These screens are short and fixed, so centering never clips.) */
+  #s-street.on, #s-quests.on, #s-more.on{justify-content:center;}
   /* A3: soft enter transition on every screen change (~200ms). The global
      prefers-reduced-motion rule truncates all animations, so reduced = instant. */
   .screen.on{animation:screen-in 200ms ease-out;}
@@ -98,6 +102,12 @@
     border-image:var(--f-ui-tag, none);}
   :root.has-ui-tag .chip.on{background:none; border-color:transparent; border-radius:14px; color:var(--lc-cream);}
   .chip:disabled{opacity:.45;}
+  /* F2: an affordable Buy/Upgrade reads as an actionable green button; an
+     unaffordable one falls through to the dimmed tan chip above, so what you
+     can afford is obvious at a glance. */
+  .chip.buy-chip:not(:disabled){background-color:var(--lc-green); border-color:var(--lc-green-deep);
+    background-image:linear-gradient(180deg,var(--lc-green-hi),var(--lc-green) 60%,var(--lc-green-deep));
+    color:var(--lc-cream); font-weight:700;}
   .chip.preset{background:transparent; border-style:dashed; color:var(--muted); font-weight:500;}
   #len-custom{width:86px; padding:9px 14px; border-radius:999px; background:var(--chip);
     color:var(--ink); font-size:15px; font-weight:600; border:1px solid var(--panel-border); text-align:center;}
@@ -537,10 +547,14 @@
   .gear-btn:active{transform:scale(.94);}
   .gear-btn .asset-icon{width:20px; height:20px;}
 
-  .brand-title{text-align:center; margin:6px 0 2px; line-height:1.05;}
+  /* Soft scrim behind the wordmark so it stays legible over the busy hero art
+     (F1): the gold "LUCKY CAT" line used to wash into the bright sky. */
+  .brand-title{text-align:center; margin:6px 0 2px; line-height:1.05; padding:8px 16px 10px;
+    background:radial-gradient(ellipse 72% 128% at 50% 47%, rgba(38,30,16,.36) 0%, rgba(38,30,16,.16) 54%, rgba(38,30,16,0) 78%);}
   .brand-sub{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800; font-size:clamp(15px,4.6vw,21px);
-    color:var(--lc-sun); letter-spacing:.08em; text-shadow:0 2px 3px rgba(46,42,36,.4);}
-  .brand-cn{font-size:12px; font-weight:400; color:var(--lc-cream); opacity:.7; letter-spacing:.05em; margin-left:6px;}
+    color:var(--lc-sun); letter-spacing:.08em; text-shadow:0 1px 0 var(--lc-brown), 0 2px 6px rgba(38,30,16,.6);}
+  .brand-cn{font-size:12px; font-weight:400; color:var(--lc-cream); opacity:.85; letter-spacing:.05em; margin-left:6px;
+    text-shadow:0 1px 3px rgba(38,30,16,.6);}
   .brand-main{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800;
     font-size:clamp(44px,15vw,62px); color:var(--lc-cream);
     text-shadow:0 3px 0 var(--lc-brown), 0 6px 12px rgba(46,42,36,.4);
@@ -672,9 +686,10 @@
       transition-duration:.001ms !important;}}
   :focus-visible{outline:3px solid var(--lc-sky); outline-offset:2px; border-radius:4px;}
   .screen.festive h2{position:relative; padding:12px 10px;}
+  .screen.festive h2{color:var(--lc-green-deep);}
   .screen.festive h2::before{
     content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
-    background:url("assets/cloud.png") left center/auto 2.4em no-repeat; opacity:.3;}
+    background:url("assets/cloud.png") left center/auto 2.4em no-repeat; opacity:.16;}
   #s-results h2::before{background-position:center;}
 
   /* Landscape phones (Task 2, responsive round): height is the scarce axis,
@@ -737,7 +752,7 @@
     .xp-bar{width:52px;}
     .gear-btn{width:36px; height:36px; min-width:36px;}
     .gear-btn .asset-icon{width:16px; height:16px;}
-    .brand-title{margin:2px 0 0;}
+    .brand-title{margin:2px 0 0; padding:2px 14px 3px;}
     .brand-sub{font-size:11px;}
     .brand-cn{font-size:9px;}
     .brand-main{font-size:22px;}
