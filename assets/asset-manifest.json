@@ -100,7 +100,11 @@
     { "id": "deco-neon-cat-sign", "file": "deco-neon-cat-sign.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "bottom-center", "fallback": "canvas:drawStreetDeco" },
     { "id": "deco-shaved-ice-cart", "file": "deco-shaved-ice-cart.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "bottom-center", "fallback": "canvas:drawStreetDeco" },
     { "id": "deco-mooncake-stall", "file": "deco-mooncake-stall.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "bottom-center", "fallback": "canvas:drawStreetDeco" },
-    { "id": "deco-firecracker-arch", "file": "deco-firecracker-arch.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "bottom-center", "fallback": "canvas:drawStreetDeco" }
+    { "id": "deco-firecracker-arch", "file": "deco-firecracker-arch.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "bottom-center", "fallback": "canvas:drawStreetDeco" },
+    { "id": "tile-sakura-fx", "file": "tile-sakura-fx.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 240, "h": 160, "note": "shop effect/soundpack preview tile (full-bleed cover)" },
+    { "id": "tile-firecracker-fx", "file": "tile-firecracker-fx.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 240, "h": 160, "note": "shop effect/soundpack preview tile (full-bleed cover)" },
+    { "id": "tile-star-shower", "file": "tile-star-shower.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 240, "h": 160, "note": "shop effect/soundpack preview tile (full-bleed cover)" },
+    { "id": "tile-bells", "file": "tile-bells.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 240, "h": 160, "note": "shop effect/soundpack preview tile (full-bleed cover)" }
   ],
   "required_icons": [
     "home", "flashcards", "audio", "muted", "progress", "streak",

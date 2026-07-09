@@ -618,6 +618,11 @@
     "deco-shaved-ice-cart",
     "deco-mooncake-stall",
     "deco-firecracker-arch",
+    // shop effect/soundpack preview tiles (full-bleed painted art)
+    "tile-sakura-fx",
+    "tile-firecracker-fx",
+    "tile-star-shower",
+    "tile-bells",
     "fx-correct",
     "fx-wrong",
     "fx-critical",
@@ -1278,7 +1283,11 @@
       { id: "deco-neon-cat-sign", file: "deco-neon-cat-sign.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
       { id: "deco-shaved-ice-cart", file: "deco-shaved-ice-cart.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
       { id: "deco-mooncake-stall", file: "deco-mooncake-stall.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
-      { id: "deco-firecracker-arch", file: "deco-firecracker-arch.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" }
+      { id: "deco-firecracker-arch", file: "deco-firecracker-arch.png", type: "decor", status: "integrated", priority: "P1", w: 512, h: 512, anchor: "bottom-center", fallback: "canvas:drawStreetDeco" },
+      { id: "tile-sakura-fx", file: "tile-sakura-fx.png", type: "decor", status: "integrated", priority: "P1", w: 240, h: 160, note: "shop effect/soundpack preview tile (full-bleed cover)" },
+      { id: "tile-firecracker-fx", file: "tile-firecracker-fx.png", type: "decor", status: "integrated", priority: "P1", w: 240, h: 160, note: "shop effect/soundpack preview tile (full-bleed cover)" },
+      { id: "tile-star-shower", file: "tile-star-shower.png", type: "decor", status: "integrated", priority: "P1", w: 240, h: 160, note: "shop effect/soundpack preview tile (full-bleed cover)" },
+      { id: "tile-bells", file: "tile-bells.png", type: "decor", status: "integrated", priority: "P1", w: 240, h: 160, note: "shop effect/soundpack preview tile (full-bleed cover)" }
     ],
     required_icons: [
       "home",
@@ -4842,6 +4851,21 @@
     c.lineWidth = 1;
     roundRectOn(c, 0.5, 0.5, w - 1, h - 1, 10);
     c.stroke();
+    if (item.type === "effect" || item.type === "soundpack") {
+      const timg = sprite("tile-" + item.id);
+      if (timg) {
+        c.save();
+        roundRectOn(c, 0, 0, w, h, 10);
+        c.clip();
+        drawCoverImage(c, timg, 0, 0, w, h);
+        c.restore();
+        c.strokeStyle = "rgba(245,197,24,.28)";
+        c.lineWidth = 1;
+        roundRectOn(c, 0.5, 0.5, w - 1, h - 1, 10);
+        c.stroke();
+        return;
+      }
+    }
     if (item.type === "skin") {
       drawCat(c, w * 0.52, h + 6, now, "walk", SKIN_PALETTES[item.id], 0.72, [], false);
     } else if (item.type === "backdrop") {

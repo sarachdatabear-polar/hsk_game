@@ -39,6 +39,7 @@
 - **10 street-deco art files** — owner-generated art intaken + integrated; all 15 decos render in shop + street (2026-07-09, PR #59)
 - **Tone Trainer pitch-contour glyphs** — replaced the tiny spacing tone marks with Chao-5-level contours (2026-07-09, PR #60)
 - **Desktop ambient backdrop** — warm vignette + column lift so the wide-screen column reads as an intentional panel (2026-07-09, PR #61)
+- **Shop effect/soundpack tile art (4 of 6)** — painted full-bleed tiles for sakura-fx, firecracker-fx, star-shower, bells replace the procedural previews; arcade + lion-drum fall back to procedural pending art regen (2026-07-09)
 
 ## In progress
 
@@ -53,7 +54,7 @@ Ordered by priority. `(owner)` = needs a human action Claude can't do; `(needs d
 3. **Roadmaps not started** — HSK 3.0 content refresh; social layer; notifications/widget; Android release refresh ([ANDROID_BUILD.md](build/ANDROID_BUILD.md)). Optional: deco reorder self-expression; a display cap / second row when the deco catalog grows past ~15.
 
 _UX-audit polish complete: tone glyphs (#60) + desktop ambient (#61) shipped; **dark theme decided against** (light-only is fine for this mobile learning game)._
-_Parked: 6 `tile-*.png` effect/soundpack tile art sit in `art-drop/` — replacing the procedural effect/sound previews (#53) with them needs a manifest + shop-preview wiring; do only if desired._
+_Owner task (quick): 4 of the 6 effect/soundpack tiles are shipped. **Regenerate `tile-arcade` + `tile-lion-drum`** on a **soft dark-gray background with a warm golden radial glow** (their current versions are on plain white — light object parts, e.g. the drumhead/grille, mean the white can't be auto-removed cleanly, and white tiles would clash with the dark ones). Drop the 2 new ones in `art-drop/` and Claude wires them into the same tile path._
 
 ## Doc map
 
