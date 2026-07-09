@@ -384,4 +384,14 @@ describe("shop v7 tiers", () => {
     expect(buy(99999, defaultShop(), featured[0], today).ok).toBe(true);
     expect(buy(99999, defaultShop(), absent[0].id, today).ok).toBe(false);
   });
+
+  it("streak-freeze is a capped consumable in the permanent catalog", () => {
+    const f = CATALOG.find(i => i.id === "streak-freeze");
+    expect(f).toBeTruthy();
+    expect(f.type).toBe("consumable");
+    expect(f.price).toBe(600);
+    expect(f.cap).toBe(2);
+    expect(f.pool).toBeUndefined();
+    expect(f.season).toBeUndefined();
+  });
 });

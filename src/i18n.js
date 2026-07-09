@@ -166,6 +166,7 @@ export const STRINGS = {
     "shop.seasonUntil": "Available until {date}",
     "shop.seasonReturns": "🏮 {name} set returns {date}",
     "shop.upgrade": "Upgrade {stars} ({coins})",
+    "shop.owned-count": "Owned: {n}/{cap}",
     "shop.maxed": "★★★",
     "season.summer": "Summer",
     "season.midautumn": "Mid-Autumn",
@@ -183,6 +184,7 @@ export const STRINGS = {
     "item.tea-sign": "Tea Sign",
     "item.foo-dog": "Foo Dog",
     "item.golden-arch": "Golden Arch",
+    "item.streak-freeze": "Streak Freeze",
     "item.panda": "Panda",
     "item.ninja": "Ninja",
     "item.astronaut": "Astronaut",
@@ -423,6 +425,7 @@ export const STRINGS = {
     "shop.seasonUntil": "มีถึง {date}",
     "shop.seasonReturns": "🏮 เซ็ต {name} จะกลับมา {date}",
     "shop.upgrade": "อัปเกรด {stars} ({coins})",
+    "shop.owned-count": "มีอยู่: {n}/{cap}",        // TH: needs native review
     "shop.maxed": "★★★",
     "season.summer": "ฤดูร้อน",
     "season.midautumn": "ไหว้พระจันทร์",
@@ -440,6 +443,7 @@ export const STRINGS = {
     "item.tea-sign": "ป้ายชา",
     "item.foo-dog": "สิงโตหิน",
     "item.golden-arch": "ซุ้มประตูทอง",
+    "item.streak-freeze": "น้ำแข็งพิทักษ์สตรีค",   // TH: needs native review
     "item.panda": "แพนด้า",
     "item.ninja": "นินจา",
     "item.astronaut": "นักบินอวกาศ",

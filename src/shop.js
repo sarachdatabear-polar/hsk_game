@@ -16,6 +16,7 @@ export const CATALOG = [
   { id: "tea-sign",     name: "Tea Sign",      price: 2200, type: "deco", maxTier: 3 },
   { id: "foo-dog",      name: "Foo Dog",       price: 3000, type: "deco", maxTier: 3 },
   { id: "golden-arch",  name: "Golden Arch",   price: 5000, type: "deco", maxTier: 3 },
+  { id: "streak-freeze", name: "Streak Freeze", price: 600, type: "consumable", cap: 2 },
   // ---- v7 permanent prestige band (PRD v7 F1) ----
   { id: "panda",     name: "Panda",     price: 8000,  type: "skin" },
   { id: "ninja",     name: "Ninja",     price: 12000, type: "skin" },
