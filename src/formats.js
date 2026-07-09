@@ -30,8 +30,8 @@ export function formatFor(word, rec, caps = { audio: true }) {
   return f;
 }
 
-function meaningOptions(word, deck, lang, rand) {
-  return shuffle([word, ...pickDistractors(deck, word, rand)], rand).map(o => {
+function meaningOptions(word, deck, lang, rand, fullPool = deck) {
+  return shuffle([word, ...pickDistractors(deck, word, rand, fullPool)], rand).map(o => {
     const m = meaning(o, lang);
     return { label: m.main, sub: m.sub, correct: o.h === word.h };
   });
@@ -54,8 +54,8 @@ export const FORMATS = {
     plaque: { mask: true },    // ？？ like today's boss stage 2
     audio: "never",            // audio would say the answer
     intro: "battle.introReverse",
-    buildOptions(word, deck, lang, rand) {
-      return shuffle([word, ...pickDistractors(deck, word, rand)], rand)
+    buildOptions(word, deck, lang, rand, fullPool = deck) {
+      return shuffle([word, ...pickDistractors(deck, word, rand, fullPool)], rand)
         .map(o => ({ label: o.h, sub: o.p, correct: o.h === word.h }));
     },
   },

@@ -1077,7 +1077,9 @@ function renderQuestion(word, format, promptKey){
     rp.onclick = ()=> speak(word.h);   // never locked — replay is always allowed
     box.appendChild(rp);
   }
-  renderOptionButtons(box, FORMATS[format].buildOptions(word, deck, scope.lang, Math.random));
+  // small custom decks (miss/weak-word review) can be meaning-homogeneous —
+  // pass the full scoped pool as the widening source for distractors.
+  renderOptionButtons(box, FORMATS[format].buildOptions(word, deck, scope.lang, Math.random, pool));
 }
 // v6p2 typed-pinyin input: letters field (native keyboard) + one tone row per
 // non-neutral syllable + attack button. Grading is pure (pinyin.js); the
