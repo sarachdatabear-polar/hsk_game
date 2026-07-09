@@ -2160,8 +2160,9 @@ function renderStreet(){
   for(const p of pieces){
     if(p.kind === "building") continue;
     const x = p.slot * w;
-    drawContactShadow(sc, x, gy, m.unit);
-    drawTieredDeco(sc, p, x, gy, m.unit);
+    const du = m.unit * (p.scale || 1);   // auto-arrange shrinks decos so they never overlap
+    drawContactShadow(sc, x, gy, du);
+    drawTieredDeco(sc, p, x, gy, du);
   }
 
   // mascot - maneki sprite or vector fallback, always far left on the ground
@@ -2243,15 +2244,13 @@ function drawStreetPads(c, w, gy, h, pieces, m){
     c.strokeStyle = "rgba(245,197,24,.16)"; c.lineWidth = 1;
     c.beginPath(); c.ellipse(x, y+1, pw, ph, 0, 0, Math.PI*2); c.stroke();
   };
+  // Ghost "empty plot" pads only for not-yet-unlocked BUILDINGS (a "reach Lv X"
+  // hint). Decos are auto-arranged at dynamic slots now, so fixed deco ghost
+  // pads would sit at the wrong places / under real decos — dropped.
   const buildingSlots = [.18,.34,.5,.66,.82];
-  const decoSlots = [.10,.26,.42,.58,.74];
   for(const slot of buildingSlots){
     if(occupied.has(slot.toFixed(2))) continue;
     drawPad(slot*w, backGy, m.unit * m.backScale);
-  }
-  for(const slot of decoSlots){
-    if(occupied.has(slot.toFixed(2))) continue;
-    drawPad(slot*w, gy, m.unit);
   }
 }
 // Each piece is a small, distinct dark-shape-with-gold/red-accent group,

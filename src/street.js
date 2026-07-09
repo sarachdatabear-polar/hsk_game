@@ -22,21 +22,39 @@ export const DECO_IDS = [
 ];
 
 const BUILDING_SLOTS = [.18, .34, .5, .66, .82];
-// First five match v4 so existing streets do not reshuffle; the ten new
-// fractions fill remaining gaps between buildings.
-const DECO_SLOTS = [
-  .10, .26, .42, .58, .74,
-  .06, .14, .22, .30, .38,
-  .46, .54, .62, .70, .90,
-];
+
+// Decorations are auto-arranged: however many the player owns are spread evenly
+// across the front-row band and scaled so they NEVER overlap, at any count
+// 1..15. The street is a "proud to show" reward showcase, not a builder — the
+// game curates the layout so it always looks intentional and the art always
+// reads cleanly, rather than asking the player to place pieces by hand.
+const DECO_BAND = { left: 0.15, right: 0.97 }; // usable front-row band; left margin clears the maneki mascot
+// Tier-1 deco footprint as a fraction of street width (art + padding). Sets the
+// count at which decos start shrinking: full scale while a cell is >= this.
+export const BASE_DECO_W = 0.13;
+
+// Even "centered-cell" layout for `count` decos: equal end margins, equal gaps,
+// uniform scale = min(1, cell/BASE_DECO_W) so each footprint fits its own cell.
+function decoLayout(count) {
+  const span = DECO_BAND.right - DECO_BAND.left;
+  const cell = span / count;
+  const scale = Math.min(1, cell / BASE_DECO_W);
+  const out = [];
+  for (let i = 0; i < count; i++) {
+    out.push({ slot: DECO_BAND.left + (i + 0.5) * cell, scale });
+  }
+  return out;
+}
 
 export function streetPieces(level, owned, tiers = {}) {
   const pieces = [];
   BUILDINGS.forEach((b, i) => {
     if (level >= b.lv) pieces.push({ id: b.id, kind: "building", slot: BUILDING_SLOTS[i] });
   });
-  DECO_IDS.forEach((id, i) => {
-    if (owned.includes(id)) pieces.push({ id, kind: "deco", slot: DECO_SLOTS[i], tier: tiers[id] || 1 });
+  const ownedDecos = DECO_IDS.filter(id => owned.includes(id)); // canonical order = stable identity
+  const layout = decoLayout(ownedDecos.length);
+  ownedDecos.forEach((id, i) => {
+    pieces.push({ id, kind: "deco", slot: layout[i].slot, tier: tiers[id] || 1, scale: layout[i].scale });
   });
   return pieces.sort((a, b) => a.slot - b.slot);
 }
