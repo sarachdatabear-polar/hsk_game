@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { BUILDINGS, DECO_IDS, streetPieces, streetProgress, streetMetrics } from "../src/street.js";
+import { BUILDINGS, DECO_IDS, BASE_DECO_W, TIER_MAX_FACTOR, streetPieces, streetProgress, streetMetrics } from "../src/street.js";
 import { MILESTONES } from "../src/growth.js";
 
 describe("street", () => {
@@ -90,6 +90,65 @@ describe("street", () => {
   it("two-argument call still works (tiers defaults to {})", () => {
     const pieces = streetPieces(1, ["red-lantern"]);
     expect(pieces[0].tier).toBe(1);
+  });
+});
+
+describe("street deco auto-arrange (even distribution, never overlaps)", () => {
+  const decosOf = pieces => pieces.filter(p => p.kind === "deco");
+
+  it("BASE_DECO_W is a sane footprint fraction", () => {
+    expect(BASE_DECO_W).toBeGreaterThan(0);
+    expect(BASE_DECO_W).toBeLessThan(0.3);
+  });
+
+  it("every deco carries a scale in (0,1]; buildings carry none", () => {
+    const pieces = streetPieces(50, [...DECO_IDS]);
+    for (const d of decosOf(pieces)) {
+      expect(d.scale).toBeGreaterThan(0);
+      expect(d.scale).toBeLessThanOrEqual(1);
+    }
+    expect(pieces.find(p => p.kind === "building").scale).toBeUndefined();
+  });
+
+  it("a comfortable count (<=5) draws decos at full scale", () => {
+    for (let n = 1; n <= 5; n++) {
+      const decos = decosOf(streetPieces(1, DECO_IDS.slice(0, n)));
+      expect(decos.every(d => d.scale === 1)).toBe(true);
+    }
+  });
+
+  it("a crowded count shrinks decos below full scale", () => {
+    const decos = decosOf(streetPieces(1, [...DECO_IDS]));
+    expect(decos.every(d => d.scale < 1)).toBe(true);
+  });
+
+  it("decos never overlap for any owned count 1..15 — even all at max tier", () => {
+    for (let n = 1; n <= DECO_IDS.length; n++) {
+      const decos = decosOf(streetPieces(1, DECO_IDS.slice(0, n)));
+      expect(decos.length).toBe(n);
+      // Worst case: every deco upgraded, so its drawn footprint is
+      // scale * BASE_DECO_W * TIER_MAX_FACTOR. Adjacent centre gaps must clear
+      // that for the guarantee to hold at the real established-player end-state.
+      for (let i = 0; i + 1 < decos.length; i++) {
+        const gap = decos[i + 1].slot - decos[i].slot;
+        const fp = ((decos[i].scale + decos[i + 1].scale) / 2) * BASE_DECO_W * TIER_MAX_FACTOR;
+        expect(gap + 1e-9).toBeGreaterThanOrEqual(fp);
+      }
+    }
+  });
+
+  it("decos stay left-clear of the mascot and inside the street band", () => {
+    for (let n = 1; n <= DECO_IDS.length; n++) {
+      const decos = decosOf(streetPieces(1, DECO_IDS.slice(0, n)));
+      expect(decos[0].slot).toBeGreaterThanOrEqual(0.15);
+      expect(decos[decos.length - 1].slot).toBeLessThanOrEqual(0.97);
+    }
+  });
+
+  it("buildings keep their fixed level-gated slots regardless of decos", () => {
+    const withDecos = streetPieces(50, [...DECO_IDS]).filter(p => p.kind === "building");
+    const bare = streetPieces(50, []);
+    expect(withDecos.map(b => b.slot)).toEqual(bare.map(b => b.slot));
   });
 });
 

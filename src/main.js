@@ -94,7 +94,7 @@ function updateLevelChip(){
   const pct = prog.need ? Math.round(100*prog.into/prog.need) : 100;
   const txt = el.querySelector(".level-text");
   const bar = el.querySelector(".xp-bar i");
-  if(txt) txt.textContent = `Lv ${lv}`;
+  if(txt) txt.textContent = t("home.levelChip", { lv });
   if(bar) bar.style.width = pct + "%";
 }
 function addXp(n){
@@ -1744,9 +1744,9 @@ function drawFeedbackLayer(now){
     ctx.lineJoin = "round";
     ctx.strokeStyle = "#FBF5E8";
     ctx.lineWidth = 4*B.S;
-    ctx.strokeText("CRITICAL!", 0, 0);
+    ctx.strokeText(t("battle.critical"), 0, 0);
     ctx.fillStyle = "#7A4E0C";
-    ctx.fillText("CRITICAL!", 0, 0);
+    ctx.fillText(t("battle.critical"), 0, 0);
     ctx.restore();
   }
   ctx.restore();
@@ -1826,7 +1826,7 @@ function endBattle(quit){
     const from = lu[0].from, to = lu[lu.length-1].to;
     const hit = MILESTONES.filter(m => m.lv > from && m.lv <= to);
     luEl.textContent = hit.length
-      ? t("results.levelUpUnlocked", { lv: to, items: hit.map(m=>m.name).join(", ") })
+      ? t("results.levelUpUnlocked", { lv: to, items: hit.map(m=>tOr("milestone."+m.id, m.name)).join(", ") })
       : t("results.levelUp", { lv: to });
     luEl.style.display = "block";
   }else{
@@ -1879,7 +1879,7 @@ function endBattle(quit){
     row.innerHTML = `<span class="hz">${w.h}</span>
       <span class="det"><span class="py">${w.p}</span> — ${w.e}${w.t? " · "+w.t:""}</span>`;
     const sp = document.createElement("button");
-    sp.className = "sp"; sp.setAttribute("aria-label", "Play audio"); sp.replaceChildren(iconSvg("sound")); sp.onclick = ()=>speak(w.h);
+    sp.className = "sp"; sp.setAttribute("aria-label", t("common.playAudio")); sp.replaceChildren(iconSvg("sound")); sp.onclick = ()=>speak(w.h);
     row.appendChild(sp);
     list.appendChild(row);
   }
@@ -2160,8 +2160,9 @@ function renderStreet(){
   for(const p of pieces){
     if(p.kind === "building") continue;
     const x = p.slot * w;
-    drawContactShadow(sc, x, gy, m.unit);
-    drawTieredDeco(sc, p, x, gy, m.unit);
+    const du = m.unit * (p.scale || 1);   // auto-arrange shrinks decos so they never overlap
+    drawContactShadow(sc, x, gy, du);
+    drawTieredDeco(sc, p, x, gy, du);
   }
 
   // mascot - maneki sprite or vector fallback, always far left on the ground
@@ -2243,15 +2244,13 @@ function drawStreetPads(c, w, gy, h, pieces, m){
     c.strokeStyle = "rgba(245,197,24,.16)"; c.lineWidth = 1;
     c.beginPath(); c.ellipse(x, y+1, pw, ph, 0, 0, Math.PI*2); c.stroke();
   };
+  // Ghost "empty plot" pads only for not-yet-unlocked BUILDINGS (a "reach Lv X"
+  // hint). Decos are auto-arranged at dynamic slots now, so fixed deco ghost
+  // pads would sit at the wrong places / under real decos — dropped.
   const buildingSlots = [.18,.34,.5,.66,.82];
-  const decoSlots = [.10,.26,.42,.58,.74];
   for(const slot of buildingSlots){
     if(occupied.has(slot.toFixed(2))) continue;
     drawPad(slot*w, backGy, m.unit * m.backScale);
-  }
-  for(const slot of decoSlots){
-    if(occupied.has(slot.toFixed(2))) continue;
-    drawPad(slot*w, gy, m.unit);
   }
 }
 // Each piece is a small, distinct dark-shape-with-gold/red-accent group,
@@ -2540,11 +2539,11 @@ function renderGrowthCard(){
   row.className = "scorerow";
   row.style.flexDirection = "column"; row.style.alignItems = "stretch"; row.style.gap = "6px";
   row.innerHTML = `<div style="display:flex; justify-content:space-between">
-      <span>Lucky Cat · Lv ${level}</span>
+      <span>${t("growth.title", { lv: level })}</span>
       <span>${prog.into}/${prog.need} xp</span>
     </div>
     <div class="mbar"><i style="width:${pct}%"></i></div>
-    <div style="color:var(--muted); font-size:12.5px">${nm? `Next: Lv ${nm.lv} — ${nm.name}` : "All milestones unlocked!"}</div>`;
+    <div style="color:var(--muted); font-size:12.5px">${nm ? t("street.next", { lv: nm.lv, name: tOr("milestone."+nm.id, nm.name) }) : t("growth.allUnlocked")}</div>`;
   card.innerHTML = "";
   card.appendChild(row);
 }
@@ -2560,7 +2559,7 @@ function renderProgress(){
     row.style.flexDirection = "column"; row.style.alignItems = "stretch"; row.style.gap = "6px";
     row.innerHTML = `<div style="display:flex; justify-content:space-between">
         <span>HSK${n}</span>
-        <span><b>${m.pct}%</b> mastered · ${m.seen.toLocaleString()}/${words.length.toLocaleString()} seen</span>
+        <span>${t("progress.levelRow", { pct: `<b>${m.pct}%</b>`, seen: m.seen.toLocaleString(), total: words.length.toLocaleString() })}</span>
       </div>
       <div class="mbar"><i style="width:${m.pct}%"></i></div>`;
     box.appendChild(row);
@@ -2580,7 +2579,7 @@ function renderNeedsWork(){
     row.innerHTML = `<span class="hz">${w.h}</span>
       <span class="det"><span class="py">${w.p}</span> — ${w.e}${w.t? " · "+w.t:""}</span>`;
     const sp = document.createElement("button");
-    sp.className = "sp"; sp.setAttribute("aria-label", "Play audio"); sp.replaceChildren(iconSvg("sound")); sp.onclick = ()=>speak(w.h);
+    sp.className = "sp"; sp.setAttribute("aria-label", t("common.playAudio")); sp.replaceChildren(iconSvg("sound")); sp.onclick = ()=>speak(w.h);
     row.appendChild(sp);
     list.appendChild(row);
   }

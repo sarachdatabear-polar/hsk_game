@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { STRINGS } from "../src/i18n.js";
 import { CATALOG } from "../src/shop.js";
 import { BUILDINGS } from "../src/street.js";
+import { MILESTONES } from "../src/growth.js";
 
 // Static-usage guard (i18n pass 2, Task 1): closes the "key referenced but
 // missing" gap in both directions — every key a template/source file points
@@ -79,6 +80,16 @@ describe("shop/street display-name key coverage", () => {
     it(`building.${b.id} exists in EN and TH`, () => {
       expect(`building.${b.id}` in STRINGS.en, `building.${b.id} missing from STRINGS.en`).toBe(true);
       expect(`building.${b.id}` in STRINGS.th, `building.${b.id} missing from STRINGS.th`).toBe(true);
+    });
+  }
+
+  // MILESTONES names are rendered via the computed key tOr("milestone."+id, name)
+  // (growth card + results level-up), which the static literal matcher above
+  // can't enumerate — cover the id-space explicitly, same as CATALOG/BUILDINGS.
+  for (const m of MILESTONES) {
+    it(`milestone.${m.id} exists in EN and TH`, () => {
+      expect(`milestone.${m.id}` in STRINGS.en, `milestone.${m.id} missing from STRINGS.en`).toBe(true);
+      expect(`milestone.${m.id}` in STRINGS.th, `milestone.${m.id} missing from STRINGS.th`).toBe(true);
     });
   }
 });
