@@ -537,10 +537,14 @@
   .gear-btn:active{transform:scale(.94);}
   .gear-btn .asset-icon{width:20px; height:20px;}
 
-  .brand-title{text-align:center; margin:6px 0 2px; line-height:1.05;}
+  /* Soft scrim behind the wordmark so it stays legible over the busy hero art
+     (F1): the gold "LUCKY CAT" line used to wash into the bright sky. */
+  .brand-title{text-align:center; margin:6px 0 2px; line-height:1.05; padding:8px 16px 10px;
+    background:radial-gradient(ellipse 72% 128% at 50% 47%, rgba(38,30,16,.36) 0%, rgba(38,30,16,.16) 54%, rgba(38,30,16,0) 78%);}
   .brand-sub{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800; font-size:clamp(15px,4.6vw,21px);
-    color:var(--lc-sun); letter-spacing:.08em; text-shadow:0 2px 3px rgba(46,42,36,.4);}
-  .brand-cn{font-size:12px; font-weight:400; color:var(--lc-cream); opacity:.7; letter-spacing:.05em; margin-left:6px;}
+    color:var(--lc-sun); letter-spacing:.08em; text-shadow:0 1px 0 var(--lc-brown), 0 2px 6px rgba(38,30,16,.6);}
+  .brand-cn{font-size:12px; font-weight:400; color:var(--lc-cream); opacity:.85; letter-spacing:.05em; margin-left:6px;
+    text-shadow:0 1px 3px rgba(38,30,16,.6);}
   .brand-main{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800;
     font-size:clamp(44px,15vw,62px); color:var(--lc-cream);
     text-shadow:0 3px 0 var(--lc-brown), 0 6px 12px rgba(46,42,36,.4);
@@ -672,9 +676,10 @@
       transition-duration:.001ms !important;}}
   :focus-visible{outline:3px solid var(--lc-sky); outline-offset:2px; border-radius:4px;}
   .screen.festive h2{position:relative; padding:12px 10px;}
+  .screen.festive h2{color:var(--lc-green-deep);}
   .screen.festive h2::before{
     content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
-    background:url("assets/cloud.png") left center/auto 2.4em no-repeat; opacity:.3;}
+    background:url("assets/cloud.png") left center/auto 2.4em no-repeat; opacity:.16;}
   #s-results h2::before{background-position:center;}
 
   /* Landscape phones (Task 2, responsive round): height is the scarce axis,
@@ -737,7 +742,7 @@
     .xp-bar{width:52px;}
     .gear-btn{width:36px; height:36px; min-width:36px;}
     .gear-btn .asset-icon{width:16px; height:16px;}
-    .brand-title{margin:2px 0 0;}
+    .brand-title{margin:2px 0 0; padding:2px 14px 3px;}
     .brand-sub{font-size:11px;}
     .brand-cn{font-size:9px;}
     .brand-main{font-size:22px;}
