@@ -2025,13 +2025,13 @@ function makeShopRow(item, today){
   if(item.type === "deco"){
     // Owning a deco displays it on the street; re-buys upgrade its tier (v7 F4).
     if(!owned){
-      btn.className = "chip";
+      btn.className = "chip buy-chip";
       btn.textContent = t("shop.buy");
       btn.disabled = !canAfford(wallet, item.id);
       btn.onclick = doBuy;
     }else if(item.maxTier && tier < item.maxTier){
       const up = upgradePrice(item, tier);
-      btn.className = "chip";
+      btn.className = "chip buy-chip";
       btn.textContent = t("shop.upgrade", { stars: "★".repeat(tier + 1), coins: up.toLocaleString() });
       btn.disabled = wallet < up;
       btn.onclick = doBuy;
@@ -2048,6 +2048,7 @@ function makeShopRow(item, today){
       btn.textContent = t("shop.equip");
       btn.onclick = ()=>{ shopState = equipItem(shopState, item.id); store.set("shop", shopState); renderShop(); };
     }else{
+      btn.className = "chip buy-chip";
       btn.textContent = t("shop.buy");
       btn.disabled = !canAfford(wallet, item.id);
       btn.onclick = doBuy;

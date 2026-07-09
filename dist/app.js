@@ -2173,7 +2173,7 @@
       "sticker.streak30Hint": "Keep a 30-day study streak",
       "results.newSticker": "New sticker: {name}",
       // shop / collection
-      "shop.title": "Collection",
+      "shop.title": "Shop",
       "shop.skins": "Cat skins",
       "shop.backdrops": "Quest backdrops",
       "shop.effects": "Effects",
@@ -2422,7 +2422,7 @@
       "sticker.streak30Hint": "\u0E23\u0E31\u0E01\u0E29\u0E32\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E01\u0E32\u0E23\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07 30 \u0E27\u0E31\u0E19",
       "results.newSticker": "\u0E2A\u0E15\u0E34\u0E01\u0E40\u0E01\u0E2D\u0E23\u0E4C\u0E43\u0E2B\u0E21\u0E48: {name}",
       // shop / collection
-      "shop.title": "\u0E04\u0E2D\u0E25\u0E40\u0E25\u0E01\u0E0A\u0E31\u0E19",
+      "shop.title": "\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32",
       "shop.skins": "\u0E2A\u0E01\u0E34\u0E19\u0E41\u0E21\u0E27",
       "shop.backdrops": "\u0E09\u0E32\u0E01\u0E2B\u0E25\u0E31\u0E07",
       "shop.effects": "\u0E40\u0E2D\u0E1F\u0E40\u0E1F\u0E01\u0E15\u0E4C",
@@ -4784,13 +4784,13 @@
     };
     if (item.type === "deco") {
       if (!owned) {
-        btn.className = "chip";
+        btn.className = "chip buy-chip";
         btn.textContent = t("shop.buy");
         btn.disabled = !canAfford(wallet, item.id);
         btn.onclick = doBuy;
       } else if (item.maxTier && tier < item.maxTier) {
         const up = upgradePrice(item, tier);
-        btn.className = "chip";
+        btn.className = "chip buy-chip";
         btn.textContent = t("shop.upgrade", { stars: "\u2605".repeat(tier + 1), coins: up.toLocaleString() });
         btn.disabled = wallet < up;
         btn.onclick = doBuy;
@@ -4812,6 +4812,7 @@
           renderShop();
         };
       } else {
+        btn.className = "chip buy-chip";
         btn.textContent = t("shop.buy");
         btn.disabled = !canAfford(wallet, item.id);
         btn.onclick = doBuy;
