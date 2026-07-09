@@ -22,7 +22,7 @@ import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable, hasMp3 } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
-import { BUILDINGS, streetPieces, streetProgress, streetMetrics } from "./street.js";
+import { BUILDINGS, streetPieces, streetProgress, streetMetrics, DECO_SPRITE_SCALE } from "./street.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
@@ -2429,11 +2429,9 @@ function drawCrownAccent(c, id, x, gy, basis){
   for(const [sx, sy, r] of sparkles) drawStarMark(c, sx, sy, r);
   c.restore();
 }
-// PNG draw size for a deco sprite, as a multiple of the deco basis h,
-// bottom-anchored. COUPLED to street.js BASE_DECO_W, which must budget for this
-// box so the auto-arrange never overlaps: BASE_DECO_W ≳ DECO_SPRITE_SCALE * 0.105
-// (0.105 = streetMetrics w-bound unit fraction). Bump both together.
-const DECO_SPRITE_SCALE = 1.5;
+// DECO_SPRITE_SCALE lives in street.js (co-located with BASE_DECO_W so their
+// no-overlap coupling is unit-tested); it's the PNG draw box as a multiple of
+// the deco basis h, bottom-anchored.
 function drawStreetDeco(c, id, x, gy, h){
   // Prefer the PNG art when loaded; fall back to the vector shape otherwise
   // (manifest: decor + fallback "canvas:drawStreetDeco"). Any caller tier

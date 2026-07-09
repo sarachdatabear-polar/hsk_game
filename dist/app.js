@@ -1990,6 +1990,7 @@
   ];
   var BUILDING_SLOTS = [0.18, 0.34, 0.5, 0.66, 0.82];
   var DECO_BAND = { left: 0.15, right: 0.97 };
+  var DECO_SPRITE_SCALE = 1.5;
   var BASE_DECO_W = 0.17;
   var TIER_MAX_FACTOR = 1.15;
   function decoLayout(count) {
@@ -5270,7 +5271,6 @@
     for (const [sx, sy, r] of sparkles) drawStarMark(c, sx, sy, r);
     c.restore();
   }
-  var DECO_SPRITE_SCALE = 1.5;
   function drawStreetDeco(c, id, x, gy, h) {
     const img2 = sprite("deco-" + id);
     if (img2) {
