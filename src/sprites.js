@@ -30,6 +30,8 @@ export const SPRITE_NAMES = [
   "deco-bubble-tea", "deco-paper-umbrella", "deco-goldfish-banner",
   "deco-neon-cat-sign", "deco-shaved-ice-cart", "deco-mooncake-stall",
   "deco-firecracker-arch",
+  // shop effect/soundpack preview tiles (full-bleed painted art)
+  "tile-sakura-fx", "tile-firecracker-fx", "tile-star-shower", "tile-bells",
   "fx-correct", "fx-wrong", "fx-critical", "fx-level-up",
   "vfx-orb-green", "vfx-orb-red", "vfx-orb-blue", "vfx-orb-gold",
   "ui-word-plaque",
