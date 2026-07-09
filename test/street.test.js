@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { BUILDINGS, DECO_IDS, BASE_DECO_W, TIER_MAX_FACTOR, streetPieces, streetProgress, streetMetrics } from "../src/street.js";
+import { BUILDINGS, DECO_IDS, BASE_DECO_W, TIER_MAX_FACTOR, DECO_SPRITE_SCALE, UNIT_FRAC, streetPieces, streetProgress, streetMetrics } from "../src/street.js";
 import { MILESTONES } from "../src/growth.js";
 
 describe("street", () => {
@@ -101,6 +101,13 @@ describe("street deco auto-arrange (even distribution, never overlaps)", () => {
     expect(BASE_DECO_W).toBeLessThan(0.3);
   });
 
+  it("BASE_DECO_W budgets for the PNG draw box so sprites never overlap", () => {
+    // The rendered footprint is DECO_SPRITE_SCALE * UNIT_FRAC (main.js draws the
+    // sprite at that box); the layout must reserve at least that per deco or
+    // crowded streets overlap. Guards a future DECO_SPRITE_SCALE bump.
+    expect(BASE_DECO_W).toBeGreaterThanOrEqual(DECO_SPRITE_SCALE * UNIT_FRAC);
+  });
+
   it("every deco carries a scale in (0,1]; buildings carry none", () => {
     const pieces = streetPieces(50, [...DECO_IDS]);
     for (const d of decosOf(pieces)) {
@@ -110,8 +117,8 @@ describe("street deco auto-arrange (even distribution, never overlaps)", () => {
     expect(pieces.find(p => p.kind === "building").scale).toBeUndefined();
   });
 
-  it("a comfortable count (<=5) draws decos at full scale", () => {
-    for (let n = 1; n <= 5; n++) {
+  it("a comfortable count (<=4) draws decos at full scale", () => {
+    for (let n = 1; n <= 4; n++) {
       const decos = decosOf(streetPieces(1, DECO_IDS.slice(0, n)));
       expect(decos.every(d => d.scale === 1)).toBe(true);
     }
