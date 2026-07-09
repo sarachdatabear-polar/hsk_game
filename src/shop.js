@@ -4,18 +4,18 @@
 import { addDays } from "./daily.js";
 
 export const CATALOG = [
-  { id: "midnight", name: "Midnight",  price: 500,  type: "skin" },
+  { id: "midnight", name: "Midnight",  price: 300,  type: "skin" },
   { id: "sakura",   name: "Sakura",    price: 1500, type: "skin" },
   { id: "jade",     name: "Jade",      price: 2500, type: "skin" },
   { id: "gold",     name: "Gold",      price: 5000, type: "skin" },
-  { id: "market",   name: "Night Market", price: 1000, type: "backdrop" },
+  { id: "market",   name: "Night Market", price: 700, type: "backdrop" },
   { id: "temple",   name: "Temple Dawn",  price: 2000, type: "backdrop" },
   { id: "bamboo",   name: "Bamboo",       price: 3000, type: "backdrop" },
   { id: "sakura-fx",      name: "Sakura Petals", price: 2000, type: "effect" },
   { id: "firecracker-fx", name: "Firecrackers",  price: 3500, type: "effect" },
   { id: "bells",  name: "Temple Bells", price: 2500, type: "soundpack" },
   { id: "arcade", name: "Arcade",       price: 4000, type: "soundpack" },
-  { id: "red-lantern",  name: "Red Lantern",  price: 800,  type: "deco", maxTier: 3 },
+  { id: "red-lantern",  name: "Red Lantern",  price: 450,  type: "deco", maxTier: 3 },
   { id: "noodle-stall", name: "Noodle Stall",  price: 1500, type: "deco", maxTier: 3 },
   { id: "tea-sign",     name: "Tea Sign",      price: 2200, type: "deco", maxTier: 3 },
   { id: "foo-dog",      name: "Foo Dog",       price: 3000, type: "deco", maxTier: 3 },
@@ -31,7 +31,7 @@ export const CATALOG = [
   { id: "drum-tower",    name: "Drum Tower",    price: 9000, type: "deco", maxTier: 3 },
   // ---- v7 Today's Stock daily pool (F2) — buyable only while featured ----
   { id: "bubble-tea",      name: "Bubble Tea Stand", price: 2500, type: "deco", pool: "daily", maxTier: 3 },
-  { id: "paper-umbrella",  name: "Paper Umbrella",   price: 1800, type: "deco", pool: "daily", maxTier: 3 },
+  { id: "paper-umbrella",  name: "Paper Umbrella",   price: 900, type: "deco", pool: "daily", maxTier: 3 },
   { id: "goldfish-banner", name: "Goldfish Banner",  price: 2200, type: "deco", pool: "daily", maxTier: 3 },
   { id: "neon-cat-sign",   name: "Neon Cat Sign",    price: 3500, type: "deco", pool: "daily", maxTier: 3 },
   { id: "lion-drum",       name: "Lion Dance Drum",  price: 4500, type: "soundpack", pool: "daily" },
