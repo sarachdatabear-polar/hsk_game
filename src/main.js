@@ -834,6 +834,7 @@ function startBattle(mode){
   B.nextAt = 0; B.lastT = 0; B.locked = false; B.bossStageAt = 0;
   B.paused = false; B.pausedAt = 0;
   $("#pause-overlay").classList.remove("on");
+  $("#format-intro").classList.remove("on");   // a quit mid soft-intro must not carry it into the next battle
   questToasts = [];
   B.levelUps = [];
   const acc0 = accessoriesFor(levelForXp(xp));
