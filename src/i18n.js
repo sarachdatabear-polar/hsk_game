@@ -124,6 +124,10 @@ export const STRINGS = {
     "quest.perfect1": "Finish a round with no misses",
     "quest.review1": "Play a Smart Review round",
     "quest.learn20": "Mark 20 flashcards as known",
+    // monthly quest layer (retention pack)
+    "quest.monthly.title": "Monthly: {done}/{target} quests",
+    "quest.monthly.claim": "Claim +{reward}",
+    "quest.monthly.badge": "Monthly badge earned!",
     // scores / progress
     "scores.title": "Best Sessions",
     "scores.empty": "No sessions yet — complete a Word Quest.",
@@ -149,6 +153,8 @@ export const STRINGS = {
     "sticker.streak7Hint": "Keep a 7-day study streak",
     "sticker.streak30Name": "30-Day Streak",
     "sticker.streak30Hint": "Keep a 30-day study streak",
+    "sticker.monthlyName": "Monthly Champion",
+    "sticker.monthlyHint": "Finish 40 quests in a month",
     "results.newSticker": "New sticker: {name}",
     // shop / collection
     "shop.title": "Shop",
@@ -385,6 +391,10 @@ export const STRINGS = {
     "quest.perfect1": "จบรอบโดยไม่ตอบผิด",
     "quest.review1": "เล่นรอบทบทวนอัจฉริยะ",
     "quest.learn20": "ทำเครื่องหมายรู้แล้ว 20 บัตร",
+    // monthly quest layer (retention pack)
+    "quest.monthly.title": "รายเดือน: {done}/{target} เควสต์",   // TH: needs native review
+    "quest.monthly.claim": "รับ +{reward}",   // TH: needs native review
+    "quest.monthly.badge": "ได้เหรียญตรารายเดือนแล้ว!",   // TH: needs native review
     // scores / progress
     "scores.title": "สถิติดีที่สุด",
     "scores.empty": "ยังไม่มีสถิติ — เล่นเควสต์คำศัพท์ก่อน",
@@ -410,6 +420,8 @@ export const STRINGS = {
     "sticker.streak7Hint": "รักษาสตรีคการเรียนต่อเนื่อง 7 วัน",
     "sticker.streak30Name": "สตรีค 30 วัน",
     "sticker.streak30Hint": "รักษาสตรีคการเรียนต่อเนื่อง 30 วัน",
+    "sticker.monthlyName": "แชมป์รายเดือน",   // TH: needs native review
+    "sticker.monthlyHint": "ทำเควสต์สำเร็จ 40 ครั้งในหนึ่งเดือน",   // TH: needs native review
     "results.newSticker": "สติกเกอร์ใหม่: {name}",
     // shop / collection
     "shop.title": "ร้านค้า",

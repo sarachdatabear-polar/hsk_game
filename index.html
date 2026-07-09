@@ -496,6 +496,12 @@
   .quest-row .qd{flex:1; min-width:0;}
   .quest-row .qp{color:var(--muted); font-size:11.5px; white-space:nowrap;}
   .quest-row .qr{color:var(--lc-green); font-weight:700; white-space:nowrap;}
+  /* monthly quest bar (retention pack) — same .quest-row card, stacked column */
+  .monthly-row{flex-direction:column; align-items:stretch; gap:6px; padding:10px 16px; margin-bottom:2px;}
+  .monthly-row .mq-top{display:flex; align-items:center; gap:6px;}
+  .monthly-row .mq-top .qd{flex:1; min-width:0; font-weight:600;}
+  .monthly-row .monthly-bar{height:8px;}
+  .monthly-row .monthly-claim{align-self:flex-end; font-size:12px; padding:6px 14px;}
   .misslist,
   .scorelist,
   .quest-row{border-image:var(--f-ui-card-paper, none);}

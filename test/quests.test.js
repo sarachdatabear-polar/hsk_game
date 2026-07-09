@@ -222,4 +222,14 @@ describe("monthly quest layer", () => {
     expect(claimMonthly(r.state).earned).toBe(0);
     expect(claimMonthly({ month: "2026-07", done: 39, claimed: false }).earned).toBe(0);
   });
+  // Pinning test: once claimed, later same-month progress must not un-cap
+  // done past MONTHLY_TARGET or reopen the claim (a second claim must earn 0).
+  it("stays claimed after a post-claim progress note in the same month", () => {
+    let m = { month: "2026-07", done: 40, claimed: false };
+    const claimed = claimMonthly(m);
+    expect(claimed.earned).toBe(1500);
+    m = noteMonthlyProgress(claimed.state, "2026-07-15", 3);
+    expect(m).toEqual({ month: "2026-07", done: 40, claimed: true });
+    expect(claimMonthly(m).earned).toBe(0);
+  });
 });

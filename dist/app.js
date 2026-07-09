@@ -1652,6 +1652,37 @@
       done: sameDay ? state.done.includes(q.id) : false
     }));
   }
+  var MONTHLY_TARGET = 40;
+  var MONTHLY_REWARD = 1500;
+  function monthKey(dateStr) {
+    return (dateStr || "").slice(0, 7);
+  }
+  function defaultMonthly() {
+    return { month: "", done: 0, claimed: false };
+  }
+  function noteMonthlyProgress(m, dateStr, completedCount) {
+    const month = monthKey(dateStr);
+    const rollover = m.month !== month;
+    const done = Math.min(MONTHLY_TARGET, (rollover ? 0 : m.done) + completedCount);
+    return { month, done, claimed: rollover ? false : m.claimed };
+  }
+  function monthlyStatus(m, dateStr) {
+    const same = m.month === monthKey(dateStr);
+    const done = same ? m.done : 0;
+    return {
+      done,
+      target: MONTHLY_TARGET,
+      reward: MONTHLY_REWARD,
+      complete: done >= MONTHLY_TARGET,
+      claimed: same ? m.claimed : false
+    };
+  }
+  function claimMonthly(m) {
+    if (m.done >= MONTHLY_TARGET && !m.claimed) {
+      return { state: { ...m, claimed: true }, earned: MONTHLY_REWARD };
+    }
+    return { state: m, earned: 0 };
+  }
 
   // src/boss.js
   var BOSS_EVERY = 10;
@@ -2169,6 +2200,10 @@
       "quest.perfect1": "Finish a round with no misses",
       "quest.review1": "Play a Smart Review round",
       "quest.learn20": "Mark 20 flashcards as known",
+      // monthly quest layer (retention pack)
+      "quest.monthly.title": "Monthly: {done}/{target} quests",
+      "quest.monthly.claim": "Claim +{reward}",
+      "quest.monthly.badge": "Monthly badge earned!",
       // scores / progress
       "scores.title": "Best Sessions",
       "scores.empty": "No sessions yet \u2014 complete a Word Quest.",
@@ -2194,6 +2229,8 @@
       "sticker.streak7Hint": "Keep a 7-day study streak",
       "sticker.streak30Name": "30-Day Streak",
       "sticker.streak30Hint": "Keep a 30-day study streak",
+      "sticker.monthlyName": "Monthly Champion",
+      "sticker.monthlyHint": "Finish 40 quests in a month",
       "results.newSticker": "New sticker: {name}",
       // shop / collection
       "shop.title": "Shop",
@@ -2432,6 +2469,13 @@
       "quest.perfect1": "\u0E08\u0E1A\u0E23\u0E2D\u0E1A\u0E42\u0E14\u0E22\u0E44\u0E21\u0E48\u0E15\u0E2D\u0E1A\u0E1C\u0E34\u0E14",
       "quest.review1": "\u0E40\u0E25\u0E48\u0E19\u0E23\u0E2D\u0E1A\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E2D\u0E31\u0E08\u0E09\u0E23\u0E34\u0E22\u0E30",
       "quest.learn20": "\u0E17\u0E33\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E2B\u0E21\u0E32\u0E22\u0E23\u0E39\u0E49\u0E41\u0E25\u0E49\u0E27 20 \u0E1A\u0E31\u0E15\u0E23",
+      // monthly quest layer (retention pack)
+      "quest.monthly.title": "\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19: {done}/{target} \u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C",
+      // TH: needs native review
+      "quest.monthly.claim": "\u0E23\u0E31\u0E1A +{reward}",
+      // TH: needs native review
+      "quest.monthly.badge": "\u0E44\u0E14\u0E49\u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D\u0E15\u0E23\u0E32\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E41\u0E25\u0E49\u0E27!",
+      // TH: needs native review
       // scores / progress
       "scores.title": "\u0E2A\u0E16\u0E34\u0E15\u0E34\u0E14\u0E35\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14",
       "scores.empty": "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E2A\u0E16\u0E34\u0E15\u0E34 \u2014 \u0E40\u0E25\u0E48\u0E19\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E01\u0E48\u0E2D\u0E19",
@@ -2457,6 +2501,10 @@
       "sticker.streak7Hint": "\u0E23\u0E31\u0E01\u0E29\u0E32\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E01\u0E32\u0E23\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07 7 \u0E27\u0E31\u0E19",
       "sticker.streak30Name": "\u0E2A\u0E15\u0E23\u0E35\u0E04 30 \u0E27\u0E31\u0E19",
       "sticker.streak30Hint": "\u0E23\u0E31\u0E01\u0E29\u0E32\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E01\u0E32\u0E23\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07 30 \u0E27\u0E31\u0E19",
+      "sticker.monthlyName": "\u0E41\u0E0A\u0E21\u0E1B\u0E4C\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19",
+      // TH: needs native review
+      "sticker.monthlyHint": "\u0E17\u0E33\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 40 \u0E04\u0E23\u0E31\u0E49\u0E07\u0E43\u0E19\u0E2B\u0E19\u0E36\u0E48\u0E07\u0E40\u0E14\u0E37\u0E2D\u0E19",
+      // TH: needs native review
       "results.newSticker": "\u0E2A\u0E15\u0E34\u0E01\u0E40\u0E01\u0E2D\u0E23\u0E4C\u0E43\u0E2B\u0E21\u0E48: {name}",
       // shop / collection
       "shop.title": "\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32",
@@ -2670,7 +2718,7 @@
   // src/stickers.js
   var TOP_NS = [100, 300, 500];
   var MILESTONE_PCTS = [25, 50, 75, 100];
-  var EVENT_STICKERS = ["welcome", "first-boss", "streak-7", "streak-30"];
+  var EVENT_STICKERS = ["welcome", "first-boss", "streak-7", "streak-30", "monthly-40"];
   function defaultStickers() {
     return { earned: {}, queue: [] };
   }
@@ -2734,6 +2782,7 @@
         else if (d.event === "first-boss" && facts.bossDefeated) award(d.id);
         else if (d.event === "streak-7" && facts.streak >= 7) award(d.id);
         else if (d.event === "streak-30" && facts.streak >= 30) award(d.id);
+        else if (d.event === "monthly-40" && facts.monthlyDone >= 40) award(d.id);
       }
     }
     return { earned, queue };
@@ -2904,6 +2953,7 @@
   }
   var questState = Object.assign(defaultQuestState(), store.get("quests", {}));
   var questToasts = [];
+  var monthly = Object.assign(defaultMonthly(), store.get("monthly", {}));
   var st0 = Object.assign(defaultStickers(), store.get("stickers", {}) || {});
   var stickerState = {
     earned: Object.assign({}, st0.earned),
@@ -2917,6 +2967,7 @@
     if (def.event === "welcome") return t("sticker.welcomeName");
     if (def.event === "first-boss") return t("sticker.bossName");
     if (def.event === "streak-7") return t("sticker.streak7Name");
+    if (def.event === "monthly-40") return t("sticker.monthlyName");
     return t("sticker.streak30Name");
   }
   function stickerHint(def) {
@@ -2925,6 +2976,7 @@
     if (def.event === "welcome") return t("sticker.welcomeHint");
     if (def.event === "first-boss") return t("sticker.bossHint");
     if (def.event === "streak-7") return t("sticker.streak7Hint");
+    if (def.event === "monthly-40") return t("sticker.monthlyHint");
     return t("sticker.streak30Hint");
   }
   function stickerIcon(def) {
@@ -2932,6 +2984,7 @@
     if (def.kind === "milestone") return "star";
     if (def.event === "first-boss") return "target";
     if (def.event === "welcome") return "cards";
+    if (def.event === "monthly-40") return "calendar";
     return "streak";
   }
   function renderAlbum() {
@@ -2980,13 +3033,44 @@
       store.set("wallet", wallet);
       updateWalletChip();
     }
-    if (r.completed.length) questToasts.push(...r.completed);
+    if (r.completed.length) {
+      questToasts.push(...r.completed);
+      monthly = noteMonthlyProgress(monthly, todayStr(), r.completed.length);
+      store.set("monthly", monthly);
+    }
     renderQuests();
   }
   function renderQuests() {
     const panel = $("#quest-panel");
     if (!panel) return;
     panel.innerHTML = "";
+    const ms = monthlyStatus(monthly, todayStr());
+    const pct = Math.min(100, Math.round(100 * ms.done / ms.target));
+    const mrow = document.createElement("div");
+    mrow.className = "quest-row monthly-row" + (ms.claimed ? " done" : "");
+    mrow.innerHTML = `<div class="mq-top">
+      <span class="qi">${ms.claimed ? t("quest.status.done") : t("quest.status.open")}</span>
+      <span class="qd">${t("quest.monthly.title", { done: ms.done, target: ms.target })}</span>
+    </div>
+    <div class="mbar monthly-bar"><i style="width:${pct}%"></i></div>`;
+    if (ms.complete && !ms.claimed) {
+      const btn = document.createElement("button");
+      btn.className = "chip buy-chip monthly-claim";
+      btn.textContent = t("quest.monthly.claim", { reward: ms.reward });
+      btn.onclick = () => {
+        const c = claimMonthly(monthly);
+        monthly = c.state;
+        store.set("monthly", monthly);
+        if (c.earned > 0) {
+          wallet += c.earned;
+          store.set("wallet", wallet);
+          updateWalletChip();
+        }
+        renderQuests();
+      };
+      mrow.appendChild(btn);
+    }
+    panel.appendChild(mrow);
     for (const q of questStatus(questState, todayStr())) {
       const row = document.createElement("div");
       row.className = "quest-row" + (q.done ? " done" : "");
@@ -4656,10 +4740,13 @@
         ...scopeFacts(D.levels, masteryStore),
         sessionDone: false,
         bossDefeated: !!B.bossDefeated,
-        streak: streakInfo(daily, todayStr(), freezes).streak
+        streak: streakInfo(daily, todayStr(), freezes).streak,
+        monthlyDone: monthlyStatus(monthly, todayStr()).done
       };
+      const hadMonthlyBadgeQuit = !!stickerState.earned["ev:monthly-40"];
       stickerState = evaluateAwards(stickerState, STICKER_DEFS, quitFacts, todayStr());
       store.set("stickers", stickerState);
+      if (!hadMonthlyBadgeQuit && stickerState.earned["ev:monthly-40"]) toast(t("quest.monthly.badge"));
       show("home");
       return;
     }
@@ -4764,10 +4851,13 @@
       ...scopeFacts(D.levels, masteryStore),
       sessionDone: B.resolved > 0,
       bossDefeated: !!B.bossDefeated,
-      streak: streakInfo(daily, todayStr(), freezes).streak
+      streak: streakInfo(daily, todayStr(), freezes).streak,
+      monthlyDone: monthlyStatus(monthly, todayStr()).done
     };
+    const hadMonthlyBadge = !!stickerState.earned["ev:monthly-40"];
     stickerState = evaluateAwards(stickerState, STICKER_DEFS, stickerFacts, todayStr());
     store.set("stickers", stickerState);
+    if (!hadMonthlyBadge && stickerState.earned["ev:monthly-40"]) toast(t("quest.monthly.badge"));
     const slot = $("#r-sticker-slot");
     const popped = popToast(stickerState);
     if (popped.id) {

@@ -17,7 +17,8 @@ import { recordAnswer, levelMastery } from "./mastery.js";
 import { levelForXp, xpToNext, accessoriesFor, nextMilestone, MILESTONES } from "./growth.js";
 import { wordWeight, smartDeck, weakWords } from "./srs.js";
 import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
-import { defaultQuestState, noteQuestEvent, questStatus } from "./quests.js";
+import { defaultQuestState, noteQuestEvent, questStatus,
+         defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly } from "./quests.js";
 import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable, hasMp3 } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
@@ -192,6 +193,13 @@ function noteDaily(count){
 let questState = Object.assign(defaultQuestState(), store.get("quests", {}));
 let questToasts = [];  // quests completed during the current battle, for the results screen
 
+/* ============================== monthly quest (retention pack) ============================== */
+// Rolls up daily-quest completions into one calendar-month goal with a coin
+// reward + album badge (quests.js owns the pure rollover/cap/claim rules;
+// store.get already JSON.parses, so this mirrors questState's Object.assign
+// pattern rather than the brief's literal snippet, which double-parses).
+let monthly = Object.assign(defaultMonthly(), store.get("monthly", {}));
+
 /* ============================== sticker album (B2) ============================== */
 // earn-only — never purchasable. Persisted immediately on every award so a
 // sticker earned mid-session survives reload (PRD B2 acceptance).
@@ -211,6 +219,7 @@ function stickerLabel(def){
   if(def.event === "welcome") return t("sticker.welcomeName");
   if(def.event === "first-boss") return t("sticker.bossName");
   if(def.event === "streak-7") return t("sticker.streak7Name");
+  if(def.event === "monthly-40") return t("sticker.monthlyName");
   return t("sticker.streak30Name");
 }
 function stickerHint(def){
@@ -219,6 +228,7 @@ function stickerHint(def){
   if(def.event === "welcome") return t("sticker.welcomeHint");
   if(def.event === "first-boss") return t("sticker.bossHint");
   if(def.event === "streak-7") return t("sticker.streak7Hint");
+  if(def.event === "monthly-40") return t("sticker.monthlyHint");
   return t("sticker.streak30Hint");
 }
 function stickerIcon(def){
@@ -226,6 +236,7 @@ function stickerIcon(def){
   if(def.kind === "milestone") return "star";
   if(def.event === "first-boss") return "target";
   if(def.event === "welcome") return "cards";
+  if(def.event === "monthly-40") return "calendar";
   return "streak";
 }
 function renderAlbum(){
@@ -265,13 +276,41 @@ function questEvent(eventId, n=1){
   questState = r.state;
   store.set("quests", questState);
   if(r.earned > 0){ wallet += r.earned; store.set("wallet", wallet); updateWalletChip(); }
-  if(r.completed.length) questToasts.push(...r.completed);
+  if(r.completed.length){
+    questToasts.push(...r.completed);
+    // retention pack: every daily quest completion also feeds the monthly goal
+    monthly = noteMonthlyProgress(monthly, todayStr(), r.completed.length);
+    store.set("monthly", monthly);
+  }
   renderQuests();
 }
 function renderQuests(){
   const panel = $("#quest-panel");
   if(!panel) return;
   panel.innerHTML = "";
+  const ms = monthlyStatus(monthly, todayStr());
+  const pct = Math.min(100, Math.round(100*ms.done/ms.target));
+  const mrow = document.createElement("div");
+  mrow.className = "quest-row monthly-row"+(ms.claimed? " done":"");
+  mrow.innerHTML = `<div class="mq-top">
+      <span class="qi">${ms.claimed? t("quest.status.done") : t("quest.status.open")}</span>
+      <span class="qd">${t("quest.monthly.title", { done: ms.done, target: ms.target })}</span>
+    </div>
+    <div class="mbar monthly-bar"><i style="width:${pct}%"></i></div>`;
+  if(ms.complete && !ms.claimed){
+    const btn = document.createElement("button");
+    btn.className = "chip buy-chip monthly-claim";
+    btn.textContent = t("quest.monthly.claim", { reward: ms.reward });
+    btn.onclick = () => {
+      const c = claimMonthly(monthly);
+      monthly = c.state;
+      store.set("monthly", monthly);
+      if(c.earned > 0){ wallet += c.earned; store.set("wallet", wallet); updateWalletChip(); }
+      renderQuests();
+    };
+    mrow.appendChild(btn);
+  }
+  panel.appendChild(mrow);
   for(const q of questStatus(questState, todayStr())){
     const row = document.createElement("div");
     row.className = "quest-row"+(q.done? " done":"");
@@ -1868,15 +1907,22 @@ function endBattle(quit){
     if(B.score > 0){ wallet += B.score; store.set("wallet", wallet); updateWalletChip(); }
     if(introPhase){ introPhase = null; store.set("introDone", true); }
     // B2: evaluate awards on quit too (a streak-7 crossing must not be lost),
-    // but silently — the toast queue waits for the next real results screen.
+    // but silently — the sticker-slot toast queue waits for the next real
+    // results screen. The monthly badge's floating toast() is a separate,
+    // body-appended overlay (survives the show("home") swap below) — it
+    // still fires here so the badge is announced wherever it actually lands,
+    // even if that's a mid-round quit rather than a finished round.
     const quitFacts = {
       ...scopeFacts(D.levels, masteryStore),
       sessionDone: false,
       bossDefeated: !!B.bossDefeated,
       streak: streakInfo(daily, todayStr(), freezes).streak,
+      monthlyDone: monthlyStatus(monthly, todayStr()).done,
     };
+    const hadMonthlyBadgeQuit = !!stickerState.earned["ev:monthly-40"];
     stickerState = evaluateAwards(stickerState, STICKER_DEFS, quitFacts, todayStr());
     store.set("stickers", stickerState);
+    if(!hadMonthlyBadgeQuit && stickerState.earned["ev:monthly-40"]) toast(t("quest.monthly.badge"));
     show("home"); return;
   }
   noteDaily(B.resolved);
@@ -1979,9 +2025,15 @@ function endBattle(quit){
     sessionDone: B.resolved > 0,
     bossDefeated: !!B.bossDefeated,
     streak: streakInfo(daily, todayStr(), freezes).streak,
+    monthlyDone: monthlyStatus(monthly, todayStr()).done,
   };
+  const hadMonthlyBadge = !!stickerState.earned["ev:monthly-40"];
   stickerState = evaluateAwards(stickerState, STICKER_DEFS, stickerFacts, todayStr());
   store.set("stickers", stickerState);
+  // retention pack: the monthly badge also gets the floating toast() (not
+  // just the results-screen sticker slot below) since it's most likely to
+  // land right as the player finishes the quest that crossed 40/40.
+  if(!hadMonthlyBadge && stickerState.earned["ev:monthly-40"]) toast(t("quest.monthly.badge"));
   const slot = $("#r-sticker-slot");
   const popped = popToast(stickerState);
   if(popped.id){
