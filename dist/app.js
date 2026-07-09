@@ -4656,7 +4656,7 @@
         ...scopeFacts(D.levels, masteryStore),
         sessionDone: false,
         bossDefeated: !!B.bossDefeated,
-        streak: streakInfo(daily, todayStr()).streak
+        streak: streakInfo(daily, todayStr(), freezes).streak
       };
       stickerState = evaluateAwards(stickerState, STICKER_DEFS, quitFacts, todayStr());
       store.set("stickers", stickerState);
@@ -4764,7 +4764,7 @@
       ...scopeFacts(D.levels, masteryStore),
       sessionDone: B.resolved > 0,
       bossDefeated: !!B.bossDefeated,
-      streak: streakInfo(daily, todayStr()).streak
+      streak: streakInfo(daily, todayStr(), freezes).streak
     };
     stickerState = evaluateAwards(stickerState, STICKER_DEFS, stickerFacts, todayStr());
     store.set("stickers", stickerState);
@@ -5104,6 +5104,19 @@
         c.arc(60, 38, 5, 0, Math.PI * 2);
         c.fill();
       }
+    } else if (item.type === "consumable") {
+      c.save();
+      c.translate(48, 32);
+      c.scale(1.9, 1.9);
+      c.translate(-12, -12);
+      c.strokeStyle = "#bfe8ff";
+      c.lineCap = "round";
+      c.lineJoin = "round";
+      c.lineWidth = 2;
+      c.stroke(new Path2D("M12 4v16M5 8l14 8M5 16l14-8"));
+      c.lineWidth = 1.5;
+      c.stroke(new Path2D("M12 7l-2.2 1.3M12 7l2.2 1.3M12 17l-2.2-1.3M12 17l2.2-1.3M7.5 9.7L6 8.8M7.5 9.7l-.6 2.3M16.5 9.7l.6 2.3M16.5 9.7l1.5-.9M7.5 14.3l-1.5.9M7.5 14.3l-.6-2.3M16.5 14.3l.6-2.3M16.5 14.3l1.5.9"));
+      c.restore();
     } else {
       const dimg = sprite("deco-" + item.id);
       if (dimg) {
