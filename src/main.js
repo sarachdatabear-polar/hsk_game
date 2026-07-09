@@ -233,13 +233,19 @@ function renderQuests(){
   if(!panel) return;
   panel.innerHTML = "";
   for(const q of questStatus(questState, todayStr())){
-    const row = document.createElement("div");
-    row.className = "quest-row"+(q.done? " done":"");
-    row.innerHTML = `<span class="qi">${q.done? t("quest.status.done") : t("quest.status.open")}</span>
-      <span class="qd">${t("quest."+q.id)}</span>
-      <span class="qp">${q.progress}/${q.target}</span>
-      <span class="qr">${t("quest.reward", { reward: q.reward })}</span>`;
-    panel.appendChild(row);
+    const pct = q.target ? Math.min(100, Math.round(q.progress / q.target * 100)) : 0;
+    const card = document.createElement("div");
+    card.className = "quest-card"+(q.done? " done":"");
+    card.innerHTML = `<div class="q-head">
+        <span class="qi">${q.done? t("quest.status.done") : t("quest.status.open")}</span>
+        <span class="qr">${t("quest.reward", { reward: q.reward })}</span>
+      </div>
+      <div class="qd">${t("quest."+q.id)}</div>
+      <div class="q-foot">
+        <div class="q-bar"><i style="width:${pct}%"></i></div>
+        <span class="qp">${q.progress} / ${q.target}</span>
+      </div>`;
+    panel.appendChild(card);
   }
 }
 function updateSmartBtn(){

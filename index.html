@@ -51,10 +51,13 @@
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
   .screen{display:none; flex:1; flex-direction:column; padding:16px;}
   .screen.on{display:flex;}
-  /* F4: Street/Quests/More hold only a little content — centering it vertically
-     balances the whitespace on a tall phone instead of a top-weighted void.
-     (These screens are short and fixed, so centering never clips.) */
-  #s-street.on, #s-quests.on, #s-more.on{justify-content:center;}
+  /* F4: secondary screens keep the title at top (like every other screen) and
+     let the content fill/center the remaining height, instead of a top-weighted
+     void or a floating title. Street/Quests fill via flex; More centers its
+     actions in a filling body. */
+  .more-body{flex:1 1 auto; display:flex; flex-direction:column; justify-content:center;
+    gap:16px; width:100%; max-width:440px; margin:0 auto;}
+  .more-body .menu{display:flex; flex-direction:column; gap:12px;}
   /* A3: soft enter transition on every screen change (~200ms). The global
      prefers-reduced-motion rule truncates all animations, so reduced = instant. */
   .screen.on{animation:screen-in 200ms ease-out;}
@@ -148,10 +151,13 @@
   .startrow{display:flex; gap:10px; margin-top:14px;}
   .startrow .big{flex:1; padding:14px 6px; font-size:16px;}
   /* Lucky Cat Street — own screen (M2); DPR-crisp buffer sized by main.js */
-  #street-cv{width:100%; height:min(40vh,320px); display:block; border-radius:12px;
+  /* Street scene fills the screen height (was capped at 320px → looked small
+     on tall phones). renderStreet draws to the canvas clientHeight, so the
+     cover-image scene + relative building placement scale cleanly. */
+  #street-cv{width:100%; flex:1 1 auto; min-height:260px; display:block; border-radius:12px;
     border:2px solid var(--lc-brown);
     box-shadow:0 3px 10px rgba(46,42,36,.22);}
-  #street-caption{color:var(--lc-brown); font-size:12px; text-align:center; margin:4px 0 0;}
+  #street-caption{color:var(--lc-brown); font-size:13px; text-align:center; margin:8px 0 0; flex:0 0 auto;}
   #more-sound.muted{filter:grayscale(1) opacity(.6);}
   /* bottom nav (M2) — deep-teal bar, last child of #app, safe-area padding
      already reserved by #app itself so the bar sits flush above it. */
@@ -468,15 +474,25 @@
   .shop-note{color:var(--muted);font-size:12px;margin:2px 4px 12px}
   .mbar{height:6px; border-radius:999px; background:rgba(132,96,67,.22); border-image:var(--f-ui-progress-track, none); overflow:hidden;}
   .mbar i{display:block; height:100%; background-color:var(--lc-green); background-image:linear-gradient(180deg,var(--lc-green-hi),var(--lc-green) 60%,var(--lc-green-deep)); border-image:var(--f-ui-progress-fill, none); border-radius:999px;}
-  /* daily quests */
-  #quest-panel{width:100%; max-width:320px; margin:10px auto 0; display:flex; flex-direction:column; gap:5px;
-    border-image:var(--f-ui-panel, none);}
-  .quest-row{display:flex; align-items:center; gap:6px; font-size:12.5px; line-height:1.3;
-    border:1px solid var(--panel-border); border-radius:10px; padding:6px 10px; color:var(--ink);}
-  .quest-row.done{opacity:.6;}
-  .quest-row .qd{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .quest-row .qp{color:var(--muted); font-size:11.5px; white-space:nowrap;}
-  .quest-row .qr{color:var(--lc-green); font-weight:700; white-space:nowrap;}
+  /* daily quests — tall cards with a progress bar, distributed to fill the
+     screen (the old thin single-line rows left the page mostly empty). */
+  #quest-panel{width:100%; max-width:440px; margin:0 auto; flex:1 1 auto;
+    display:flex; flex-direction:column; justify-content:space-evenly; gap:16px; padding:12px 0;}
+  .quest-card{display:flex; flex-direction:column; gap:11px; padding:16px 18px; color:var(--ink);
+    background-color:var(--panel-wash); border:1px solid var(--panel-border); border-radius:16px;
+    box-shadow:0 2px 8px rgba(46,42,36,.10);}
+  .quest-card.done{opacity:.62;}
+  .q-head{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .q-head .qi{font-size:10.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase;
+    color:var(--lc-teal); background:var(--chip); border-radius:999px; padding:3px 11px;}
+  .quest-card.done .q-head .qi{color:var(--lc-cream); background:var(--lc-green);}
+  .q-head .qr{font-size:13.5px; font-weight:800; color:var(--lc-green); white-space:nowrap;}
+  .quest-card .qd{font-size:15.5px; font-weight:600; line-height:1.35;}
+  .q-foot{display:flex; align-items:center; gap:12px;}
+  .q-bar{flex:1; height:9px; border-radius:999px; background:rgba(132,96,67,.20); overflow:hidden;}
+  .q-bar>i{display:block; height:100%; border-radius:999px;
+    background-image:linear-gradient(90deg,var(--lc-green),var(--lc-green-hi));}
+  .q-foot .qp{font-size:12.5px; font-weight:700; color:var(--muted); white-space:nowrap; font-variant-numeric:tabular-nums;}
   .misslist,
   .scorelist,
   .quest-row{border-image:var(--f-ui-card-paper, none);}
@@ -890,15 +906,19 @@
   <!-- MORE -->
   <div class="screen festive" id="s-more">
     <h2 data-i18n="nav.more">More</h2>
-    <div class="menu">
-      <button class="big" data-go="scores"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="home.best">Best Sessions</span></span></button>
-      <button class="big" data-go="howto"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#help"></use></svg><span data-i18n="home.howto">How to play</span></span></button>
-      <button class="big" id="more-sound"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#audio"></use></svg><span data-i18n="home.sound">Sound effects</span></span></button>
-    </div>
-    <div class="sect" data-i18n="common.language">Language</div>
-    <div class="chips" id="ui-lang-chips">
-      <button class="chip" data-uilang="en">English</button>
-      <button class="chip" data-uilang="th">ไทย</button>
+    <div class="more-body">
+      <div class="menu">
+        <button class="big" data-go="scores"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="home.best">Best Sessions</span></span></button>
+        <button class="big" data-go="howto"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#help"></use></svg><span data-i18n="home.howto">How to play</span></span></button>
+        <button class="big" id="more-sound"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#audio"></use></svg><span data-i18n="home.sound">Sound effects</span></span></button>
+      </div>
+      <div>
+        <div class="sect" data-i18n="common.language">Language</div>
+        <div class="chips" id="ui-lang-chips">
+          <button class="chip" data-uilang="en">English</button>
+          <button class="chip" data-uilang="th">ไทย</button>
+        </div>
+      </div>
     </div>
   </div>
 
