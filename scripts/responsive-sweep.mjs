@@ -17,6 +17,7 @@ import http from "node:http";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { layout } from "../src/layout.js";
 
 // Prefer Edge (Windows dev box); fall back to the playwright-cached chromium
 // (VPS — `npx playwright install chromium`). PW_CHROMIUM overrides both.
@@ -199,6 +200,9 @@ function probeBattle(tol) {
     cvSize,
     optBtnCount: optBtns.length,
     visibleOptBtnCount: visibleOptBtns.length,
+    optHeights: [...document.querySelectorAll("#opts button")].map(b =>
+      Math.round(b.getBoundingClientRect().height)
+    ),
     pauseOnScreen,
     scrollNeeded,
   };
@@ -319,6 +323,11 @@ async function runFullSweep() {
     await goToBattle(page);
     const battle = await page.evaluate(probeScreen, ["battle", TOL]);
     const battleInfo = await page.evaluate(probeBattle, TOL);
+    const cvRect = await page.evaluate(() => {
+      const r = document.querySelector("#cv").getBoundingClientRect();
+      return { w: r.width, h: r.height };
+    });
+    const L = layout(cvRect.w, cvRect.h);
 
     const isLandscape = height <= 500;
     const isShortPortrait = height <= 620;
@@ -349,6 +358,13 @@ async function runFullSweep() {
     if (!battleInfo.pauseOnScreen) failures.push("battle pause off-screen");
     if (scrollAssertApplies && battleInfo.scrollNeeded)
       failures.push(`battle scroll needed (${isLandscape ? "landscape" : "short-portrait"})`);
+    const hanziFloor = cvRect.w >= 360 ? 56 : 48;
+    if (L.hanziPx < hanziFloor)
+      failures.push(
+        `battle hanzi=${L.hanziPx.toFixed(1)}<${hanziFloor} (cv ${Math.round(cvRect.w)}x${Math.round(cvRect.h)})`
+      );
+    const maxOpt = battleInfo.optHeights.length ? Math.max(...battleInfo.optHeights) : 0;
+    if (maxOpt > 142) failures.push(`battle opt-height=${maxOpt}>142`);
     if (errs.length) failures.push(`JSERR:${errs[0]}`);
 
     const status = failures.length ? "FAIL" : "PASS";
