@@ -2064,6 +2064,18 @@
       "home.start": "START",
       "home.startHint": "Need at least 8 words in scope to start \u2014 widen it below.",
       "home.scopeWords": "{n} words",
+      "home.levelChip": "Lv {lv}",
+      // i18n pass 3 — growth card, milestone names, and previously-hardcoded labels
+      "growth.title": "Lucky Cat \xB7 Lv {lv}",
+      "growth.allUnlocked": "All milestones unlocked!",
+      "progress.levelRow": "{pct} mastered \xB7 {seen}/{total} seen",
+      "common.playAudio": "Play audio",
+      "battle.critical": "CRITICAL!",
+      "milestone.scarf": "Red scarf",
+      "milestone.coin": "Gold coin charm",
+      "milestone.outfit": "Chinese outfit",
+      "milestone.kitten": "Kitten follower",
+      "milestone.emperor": "Emperor crown",
       "streak.restUsed": "\u{1F375} Rest day used \u2014 your {n}-day streak is safe.",
       // first run (A4)
       "welcome.title": "Welcome!",
@@ -2313,6 +2325,18 @@
       "home.start": "\u0E40\u0E23\u0E34\u0E48\u0E21",
       "home.startHint": "\u0E15\u0E49\u0E2D\u0E07\u0E21\u0E35\u0E04\u0E33\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E19\u0E49\u0E2D\u0E22 8 \u0E04\u0E33\u0E43\u0E19\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E08\u0E36\u0E07\u0E08\u0E30\u0E40\u0E23\u0E34\u0E48\u0E21\u0E44\u0E14\u0E49 \u2014 \u0E02\u0E22\u0E32\u0E22\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E14\u0E49\u0E32\u0E19\u0E25\u0E48\u0E32\u0E07",
       "home.scopeWords": "{n} \u0E04\u0E33",
+      "home.levelChip": "Lv {lv}",
+      // i18n pass 3 — NEW strings, best-effort TH pending native review (see docs/i18n)
+      "growth.title": "\u0E41\u0E21\u0E27\u0E19\u0E33\u0E42\u0E0A\u0E04 \xB7 Lv {lv}",
+      "growth.allUnlocked": "\u0E1B\u0E25\u0E14\u0E25\u0E47\u0E2D\u0E01\u0E04\u0E23\u0E1A\u0E17\u0E38\u0E01\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22\u0E41\u0E25\u0E49\u0E27!",
+      "progress.levelRow": "{pct} \u0E40\u0E0A\u0E35\u0E48\u0E22\u0E27\u0E0A\u0E32\u0E0D \xB7 \u0E40\u0E2B\u0E47\u0E19 {seen}/{total}",
+      "common.playAudio": "\u0E40\u0E25\u0E48\u0E19\u0E40\u0E2A\u0E35\u0E22\u0E07",
+      "battle.critical": "CRITICAL!",
+      "milestone.scarf": "\u0E1C\u0E49\u0E32\u0E1E\u0E31\u0E19\u0E04\u0E2D\u0E2A\u0E35\u0E41\u0E14\u0E07",
+      "milestone.coin": "\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E23\u0E32\u0E07\u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D\u0E17\u0E2D\u0E07",
+      "milestone.outfit": "\u0E0A\u0E38\u0E14\u0E08\u0E35\u0E19",
+      "milestone.kitten": "\u0E25\u0E39\u0E01\u0E41\u0E21\u0E27\u0E15\u0E34\u0E14\u0E15\u0E32\u0E21",
+      "milestone.emperor": "\u0E21\u0E07\u0E01\u0E38\u0E0E\u0E08\u0E31\u0E01\u0E23\u0E1E\u0E23\u0E23\u0E14\u0E34",
       "streak.restUsed": "\u{1F375} \u0E43\u0E0A\u0E49\u0E27\u0E31\u0E19\u0E1E\u0E31\u0E01\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E2A\u0E15\u0E23\u0E35\u0E04 {n} \u0E27\u0E31\u0E19\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E22\u0E31\u0E07\u0E1B\u0E25\u0E2D\u0E14\u0E20\u0E31\u0E22",
       // first run (A4)
       "welcome.title": "\u0E22\u0E34\u0E19\u0E14\u0E35\u0E15\u0E49\u0E2D\u0E19\u0E23\u0E31\u0E1A!",
@@ -2788,7 +2812,7 @@
     const pct = prog.need ? Math.round(100 * prog.into / prog.need) : 100;
     const txt = el.querySelector(".level-text");
     const bar = el.querySelector(".xp-bar i");
-    if (txt) txt.textContent = `Lv ${lv}`;
+    if (txt) txt.textContent = t("home.levelChip", { lv });
     if (bar) bar.style.width = pct + "%";
   }
   function addXp(n) {
@@ -4491,9 +4515,9 @@
       ctx2.lineJoin = "round";
       ctx2.strokeStyle = "#FBF5E8";
       ctx2.lineWidth = 4 * B.S;
-      ctx2.strokeText("CRITICAL!", 0, 0);
+      ctx2.strokeText(t("battle.critical"), 0, 0);
       ctx2.fillStyle = "#7A4E0C";
-      ctx2.fillText("CRITICAL!", 0, 0);
+      ctx2.fillText(t("battle.critical"), 0, 0);
       ctx2.restore();
     }
     ctx2.restore();
@@ -4603,7 +4627,7 @@
     if (lu.length) {
       const from = lu[0].from, to = lu[lu.length - 1].to;
       const hit = MILESTONES.filter((m) => m.lv > from && m.lv <= to);
-      luEl.textContent = hit.length ? t("results.levelUpUnlocked", { lv: to, items: hit.map((m) => m.name).join(", ") }) : t("results.levelUp", { lv: to });
+      luEl.textContent = hit.length ? t("results.levelUpUnlocked", { lv: to, items: hit.map((m) => tOr("milestone." + m.id, m.name)).join(", ") }) : t("results.levelUp", { lv: to });
       luEl.style.display = "block";
     } else {
       luEl.style.display = "none";
@@ -4655,7 +4679,7 @@
       <span class="det"><span class="py">${w.p}</span> \u2014 ${w.e}${w.t ? " \xB7 " + w.t : ""}</span>`;
       const sp = document.createElement("button");
       sp.className = "sp";
-      sp.setAttribute("aria-label", "Play audio");
+      sp.setAttribute("aria-label", t("common.playAudio"));
       sp.replaceChildren(iconSvg("sound"));
       sp.onclick = () => speak(w.h);
       row.appendChild(sp);
@@ -5499,11 +5523,11 @@
     row.style.alignItems = "stretch";
     row.style.gap = "6px";
     row.innerHTML = `<div style="display:flex; justify-content:space-between">
-      <span>Lucky Cat \xB7 Lv ${level}</span>
+      <span>${t("growth.title", { lv: level })}</span>
       <span>${prog.into}/${prog.need} xp</span>
     </div>
     <div class="mbar"><i style="width:${pct}%"></i></div>
-    <div style="color:var(--muted); font-size:12.5px">${nm ? `Next: Lv ${nm.lv} \u2014 ${nm.name}` : "All milestones unlocked!"}</div>`;
+    <div style="color:var(--muted); font-size:12.5px">${nm ? t("street.next", { lv: nm.lv, name: tOr("milestone." + nm.id, nm.name) }) : t("growth.allUnlocked")}</div>`;
     card.innerHTML = "";
     card.appendChild(row);
   }
@@ -5521,7 +5545,7 @@
       row.style.gap = "6px";
       row.innerHTML = `<div style="display:flex; justify-content:space-between">
         <span>HSK${n}</span>
-        <span><b>${m.pct}%</b> mastered \xB7 ${m.seen.toLocaleString()}/${words.length.toLocaleString()} seen</span>
+        <span>${t("progress.levelRow", { pct: `<b>${m.pct}%</b>`, seen: m.seen.toLocaleString(), total: words.length.toLocaleString() })}</span>
       </div>
       <div class="mbar"><i style="width:${m.pct}%"></i></div>`;
       box.appendChild(row);
@@ -5542,7 +5566,7 @@
       <span class="det"><span class="py">${w.p}</span> \u2014 ${w.e}${w.t ? " \xB7 " + w.t : ""}</span>`;
       const sp = document.createElement("button");
       sp.className = "sp";
-      sp.setAttribute("aria-label", "Play audio");
+      sp.setAttribute("aria-label", t("common.playAudio"));
       sp.replaceChildren(iconSvg("sound"));
       sp.onclick = () => speak(w.h);
       row.appendChild(sp);

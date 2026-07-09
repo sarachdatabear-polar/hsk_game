@@ -28,6 +28,29 @@ New strings awaiting native-speaker review (v7 Shop Seasons — Task 7):
 | `season.midautumn` | Mid-Autumn | ไหว้พระจันทร์ |
 | `season.cny` | Lunar New Year | ตรุษจีน |
 
+New strings awaiting native-speaker review (i18n pass 3 — extraction of
+previously-hardcoded UI: growth/progress-card labels, milestone accessory names,
+the "CRITICAL!" combo burst, and the speaker-button aria-label). All now render
+through `t()`; the TH below is developer best-effort:
+
+| Key | EN | TH |
+| --- | --- | --- |
+| `home.levelChip` | Lv {lv} | Lv {lv} |
+| `growth.title` | Lucky Cat · Lv {lv} | แมวนำโชค · Lv {lv} |
+| `growth.allUnlocked` | All milestones unlocked! | ปลดล็อกครบทุกเป้าหมายแล้ว! |
+| `progress.levelRow` | {pct} mastered · {seen}/{total} seen | {pct} เชี่ยวชาญ · เห็น {seen}/{total} |
+| `common.playAudio` | Play audio (aria-label) | เล่นเสียง |
+| `battle.critical` | CRITICAL! | CRITICAL! *(kept as the EN game term; reviewer may localize)* |
+| `milestone.scarf` | Red scarf | ผ้าพันคอสีแดง |
+| `milestone.coin` | Gold coin charm | เครื่องรางเหรียญทอง |
+| `milestone.outfit` | Chinese outfit | ชุดจีน |
+| `milestone.kitten` | Kitten follower | ลูกแมวติดตาม |
+| `milestone.emperor` | Emperor crown | มงกุฎจักรพรรดิ |
+
+Note: in `progress.levelRow` the `{pct}` param is injected already wrapped in
+`<b>…%</b>` HTML by the call site — keep the `%`/bold out of the TH string and do
+**not** add markup around `{pct}` (per the HTML-injection caution above).
+
 New strings awaiting native-speaker review (i18n pass 2 — Task 1: howto body, flashcard
 Thai-missing fallback, street caption formats, shop item names, street building names;
 wiring for these lands in Task 2):
