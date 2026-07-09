@@ -759,6 +759,23 @@
     #bottom-nav{margin-top:3px; padding:2px 3px;}
     .nav-btn{min-height:28px; padding:1px 2px; gap:1px; font-size:9px;}
     .nav-btn .asset-icon{width:16px; height:16px;}
+    /* ---- tone trainer ---- */
+    /* Short landscape can't stack a 2x2 tone grid + big reveal under the
+       replay button without pushing tones 3/4 below the fold (caught by the
+       responsive sweep). Compact everything and lay the four tones out in a
+       single short row so all four stay tappable in-fold. */
+    #s-tones{padding:5px 12px 4px; overflow-y:auto;}
+    #s-tones h2{margin:2px 0; font-size:18px;}
+    #s-tones .sub{margin:2px 0; font-size:11px;}
+    #tones-progress{margin:1px 0;}
+    .tones-replay{margin-top:5px; font-size:14px; min-height:34px;}
+    #tones-options{grid-template-columns:repeat(4,1fr); gap:8px; margin-top:8px;}
+    #tones-options .tone-chip{min-height:46px; font-size:20px;}
+    #tones-reveal{margin-top:8px;}
+    #tones-reveal .boss-prompt{margin-bottom:5px;}
+    #tones-reveal .hz{font-size:26px;}
+    #tones-reveal .py{font-size:14px;}
+    #tones-reveal .sub{margin:2px 0;}
   }
 </style>
 </head>
