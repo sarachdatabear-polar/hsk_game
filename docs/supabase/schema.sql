@@ -1,0 +1,148 @@
+-- Lucky Cat HSK — Supabase schema (Monetization & Production PRD §6.2)
+--
+-- STATUS: P0 draft / indicative. Mirrors today's offline-first localStorage
+-- state (the `nbhsk.*` keys) so cloud save is a straight reconcile, not a
+-- redesign. Apply to a fresh Supabase project (SQL editor or `supabase db
+-- push`). Nothing in the game reads/writes these tables yet — cloud sync is a
+-- later P0/P3 slice; this file exists so the backend can be stood up and
+-- reviewed independently of client work.
+--
+-- Design rules carried from the PRD:
+--   * Offline-first: the app stays fully playable as a guest with no network.
+--     These tables are a *mirror*, reconciled on foreground / sign-in / post-
+--     purchase — never the source of truth during play.
+--   * Purchased coins + entitlements are SERVER-authoritative: written only by
+--     the RevenueCat webhook (service_role), never by the client (§3.1, §7.2).
+--   * Earned coins are local-first and reconciled max(local, cloud) within a
+--     server-enforced daily anti-cheat cap (§3.3, §6.3) — that clamp lives in
+--     an Edge Function / trigger, NOT in the client.
+--   * Row-Level Security: a signed-in user can touch only their own rows.
+--
+-- Local-only keys deliberately NOT synced (device preferences / transient UI
+-- state, no cloud value): nbhsk.settings, nbhsk.sfx, nbhsk.scope,
+-- nbhsk.scopeView, nbhsk.formatIntros, nbhsk.introDone.
+
+-- ---------------------------------------------------------------------------
+-- Helper: keep updated_at fresh on write.
+-- ---------------------------------------------------------------------------
+create or replace function public.touch_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+-- ---------------------------------------------------------------------------
+-- profiles — 1 row per user. (PRD §6.2)
+-- ---------------------------------------------------------------------------
+create table if not exists public.profiles (
+  id           uuid primary key references auth.users (id) on delete cascade,
+  display_name text,
+  locale       text default 'en',          -- mirrors nbhsk.locale ('en' | 'th')
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now()
+);
+
+create trigger profiles_touch before update on public.profiles
+  for each row execute function public.touch_updated_at();
+
+-- ---------------------------------------------------------------------------
+-- progress — mirrors the learning/meta-game localStorage keys. (PRD §6.2)
+-- One row per user; each column maps to exactly one nbhsk.* key.
+-- ---------------------------------------------------------------------------
+create table if not exists public.progress (
+  user_id    uuid primary key references auth.users (id) on delete cascade,
+  mastery    jsonb   not null default '{}'::jsonb,  -- nbhsk.mastery  (per-word streak/mastery)
+  xp         integer not null default 0,            -- nbhsk.xp       (growth curve total)
+  streak     integer not null default 0,            -- derived from nbhsk.daily (day streak)
+  daily      jsonb   not null default '{}'::jsonb,   -- nbhsk.daily    (streak/goal/last-played state)
+  quests     jsonb   not null default '{}'::jsonb,   -- nbhsk.quests   (daily quest progress)
+  best       jsonb   not null default '[]'::jsonb,   -- nbhsk.best     (best-session scores)
+  cosmetics  jsonb   not null default '{}'::jsonb,   -- nbhsk.shop     (owned/equipped skins, decos, tiers)
+  stickers   jsonb   not null default '{}'::jsonb,   -- nbhsk.stickers (earned sticker album)
+  updated_at timestamptz not null default now()
+);
+
+create trigger progress_touch before update on public.progress
+  for each row execute function public.touch_updated_at();
+
+-- ---------------------------------------------------------------------------
+-- wallet — coin balance + daily anti-cheat accounting. (PRD §3, §6.2)
+-- `coins` = spendable balance (mirrors nbhsk.wallet, an integer today).
+-- `earned_today` + `earned_today_date` back the server-side daily earn cap;
+-- purchased coins bypass the cap and arrive via the ledger (service_role).
+-- ---------------------------------------------------------------------------
+create table if not exists public.wallet (
+  user_id           uuid primary key references auth.users (id) on delete cascade,
+  coins             integer not null default 0,     -- mirrors nbhsk.wallet
+  earned_today      integer not null default 0,     -- coins earned since earned_today_date (anti-cheat, §3.3)
+  earned_today_date date    not null default current_date,
+  updated_at        timestamptz not null default now()
+);
+
+create trigger wallet_touch before update on public.wallet
+  for each row execute function public.touch_updated_at();
+
+-- ---------------------------------------------------------------------------
+-- entitlements — non-consumable purchases (Supporter, future subs). (PRD §6.2, §7)
+-- WRITTEN BY THE REVENUECAT WEBHOOK ONLY (service_role). The client never
+-- self-grants — RLS below gives users read-only access to their own rows.
+-- ---------------------------------------------------------------------------
+create table if not exists public.entitlements (
+  user_id    uuid  not null references auth.users (id) on delete cascade,
+  product_id text  not null,                    -- e.g. 'supporter'
+  source     text  not null default 'revenuecat',
+  granted_at timestamptz not null default now(),
+  primary key (user_id, product_id)
+);
+
+-- ---------------------------------------------------------------------------
+-- ledger — append-only audit trail for coin deltas (esp. purchased coins).
+-- (PRD §6.2, optional) Purchased-coin rows are service_role only; the trail
+-- makes idempotent, once-only coin-pack credits auditable.
+-- ---------------------------------------------------------------------------
+create table if not exists public.ledger (
+  id         bigint generated always as identity primary key,
+  user_id    uuid    not null references auth.users (id) on delete cascade,
+  delta      integer not null,                 -- +credit / -debit
+  reason     text    not null,                 -- 'coins_m', 'supporter_bonus', 'earned_round', ...
+  created_at timestamptz not null default now()
+);
+
+create index if not exists ledger_user_idx on public.ledger (user_id, created_at desc);
+
+-- ===========================================================================
+-- Row-Level Security — users see/modify only their own rows.
+-- service_role (used by the RevenueCat webhook Edge Function) BYPASSES RLS,
+-- so no explicit service policies are needed for the server-authoritative
+-- writes; the client-facing policies below intentionally omit those paths.
+-- ===========================================================================
+alter table public.profiles     enable row level security;
+alter table public.progress     enable row level security;
+alter table public.wallet       enable row level security;
+alter table public.entitlements enable row level security;
+alter table public.ledger       enable row level security;
+
+-- profiles: full self access.
+create policy profiles_self on public.profiles
+  for all using (auth.uid() = id) with check (auth.uid() = id);
+
+-- progress: full self access (local-first gameplay reconciles its own row).
+create policy progress_self on public.progress
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- wallet: user may read + reconcile EARNED coins on their own row. The daily
+-- cap and purchased-coin authority are enforced server-side (Edge Function /
+-- trigger); this policy is the client surface for local-first earned balance.
+create policy wallet_self on public.wallet
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- entitlements: READ-ONLY for the owner. No client insert/update/delete —
+-- only the webhook (service_role) writes here. (§7.2)
+create policy entitlements_read_self on public.entitlements
+  for select using (auth.uid() = user_id);
+
+-- ledger: READ-ONLY for the owner; writes are service_role only.
+create policy ledger_read_self on public.ledger
+  for select using (auth.uid() = user_id);
