@@ -24,14 +24,15 @@ export function uiScale(w, h) {
              failing the PRD "hanzi >= 56 CSS px at 390-wide" spirit on the
              most common Android width. h/260 is only a guard so the plaque
              (~2.05*hanziPx tall with both translation rows) can't outgrow a
-             very short canvas.
+             very short canvas. Floor is 0.75 (48px hanzi) so even
+             height-starved landscape battle canvases stay readable.
    - mascotS S with a 0.85 floor and a 1.2x boost: the cat/raccoon read as
              the protagonists, not garnish, on every phone size. catHalf
              (bite threshold, kitten offset) follows it so gameplay geometry
              matches the visible sprite. */
 export function layout(w, h) {
   const S = uiScale(w, h);
-  const textS = Math.max(0.72, Math.min(1.8, Math.min(w / 380, h / 260)));
+  const textS = Math.max(0.75, Math.min(1.8, Math.min(w / 380, h / 260)));
   const mascotS = Math.min(2.1, Math.max(S, 0.85) * 1.2);
   return {
     S,

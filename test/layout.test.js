@@ -52,10 +52,10 @@ describe("textS / mascotS (battle-mobile-fit)", () => {
     expect(L.hanziPx).toBeGreaterThanOrEqual(56);   // 64 * 336/380 = 56.59
   });
   it("textS has a height guard so the plaque can't outgrow very short canvases", () => {
-    expect(layout(380, 130).textS).toBe(0.72);      // min(1, 0.5) -> clamped to floor
+    expect(layout(380, 130).textS).toBe(0.75);      // min(1, 0.5) -> clamped to floor
   });
-  it("textS clamps to [0.72, 1.8]", () => {
-    expect(layout(100, 100).textS).toBe(0.72);
+  it("textS clamps to [0.75, 1.8]", () => {
+    expect(layout(100, 100).textS).toBe(0.75);
     expect(layout(2000, 2000).textS).toBe(1.8);
   });
   it("hanziPx and pinyinPx derive from textS", () => {

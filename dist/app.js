@@ -1142,7 +1142,7 @@
   }
   function layout(w, h) {
     const S = uiScale(w, h);
-    const textS = Math.max(0.72, Math.min(1.8, Math.min(w / 380, h / 260)));
+    const textS = Math.max(0.75, Math.min(1.8, Math.min(w / 380, h / 260)));
     const mascotS = Math.min(2.1, Math.max(S, 0.85) * 1.2);
     return {
       S,

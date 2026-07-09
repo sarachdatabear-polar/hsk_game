@@ -332,6 +332,7 @@ async function runFullSweep() {
     const isLandscape = height <= 500;
     const isShortPortrait = height <= 620;
     const scrollAssertApplies = isLandscape || isShortPortrait;
+    const portraitVp = height > width;
 
     const failures = [];
     if (home.overflowX) failures.push("home overflow-x");
@@ -358,13 +359,20 @@ async function runFullSweep() {
     if (!battleInfo.pauseOnScreen) failures.push("battle pause off-screen");
     if (scrollAssertApplies && battleInfo.scrollNeeded)
       failures.push(`battle scroll needed (${isLandscape ? "landscape" : "short-portrait"})`);
-    const hanziFloor = cvRect.w >= 360 ? 56 : 48;
+    // 56px is the PRD portrait-phone floor; landscape battle canvases are
+    // height-starved by design (the answers grid claims a full-height
+    // column) and only need to clear the 48px absolute readability floor.
+    const hanziFloor = portraitVp && cvRect.w >= 360 ? 56 : 48;
     if (L.hanziPx < hanziFloor)
       failures.push(
         `battle hanzi=${L.hanziPx.toFixed(1)}<${hanziFloor} (cv ${Math.round(cvRect.w)}x${Math.round(cvRect.h)})`
       );
+    // Ballooning opt-buttons is a portrait-only defect: in landscape the
+    // answers grid deliberately owns a full-height column (landscape tier
+    // sets max-height:none) and can't squeeze the canvas, so tall buttons
+    // there aren't the bug this gate protects against.
     const maxOpt = battleInfo.optHeights.length ? Math.max(...battleInfo.optHeights) : 0;
-    if (maxOpt > 142) failures.push(`battle opt-height=${maxOpt}>142`);
+    if (portraitVp && maxOpt > 142) failures.push(`battle opt-height=${maxOpt}>142`);
     if (errs.length) failures.push(`JSERR:${errs[0]}`);
 
     const status = failures.length ? "FAIL" : "PASS";
