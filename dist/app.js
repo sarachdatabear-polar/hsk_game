@@ -1978,30 +1978,28 @@
     "firecracker-arch"
   ];
   var BUILDING_SLOTS = [0.18, 0.34, 0.5, 0.66, 0.82];
-  var DECO_SLOTS = [
-    0.1,
-    0.26,
-    0.42,
-    0.58,
-    0.74,
-    0.06,
-    0.14,
-    0.22,
-    0.3,
-    0.38,
-    0.46,
-    0.54,
-    0.62,
-    0.7,
-    0.9
-  ];
+  var DECO_BAND = { left: 0.15, right: 0.97 };
+  var BASE_DECO_W = 0.13;
+  var TIER_MAX_FACTOR = 1.15;
+  function decoLayout(count) {
+    const span = DECO_BAND.right - DECO_BAND.left;
+    const cell = span / count;
+    const scale = Math.min(1, cell / (BASE_DECO_W * TIER_MAX_FACTOR));
+    const out = [];
+    for (let i = 0; i < count; i++) {
+      out.push({ slot: DECO_BAND.left + (i + 0.5) * cell, scale });
+    }
+    return out;
+  }
   function streetPieces(level, owned, tiers = {}) {
     const pieces = [];
     BUILDINGS.forEach((b, i) => {
       if (level >= b.lv) pieces.push({ id: b.id, kind: "building", slot: BUILDING_SLOTS[i] });
     });
-    DECO_IDS.forEach((id, i) => {
-      if (owned.includes(id)) pieces.push({ id, kind: "deco", slot: DECO_SLOTS[i], tier: tiers[id] || 1 });
+    const ownedDecos = DECO_IDS.filter((id) => owned.includes(id));
+    const layout2 = decoLayout(ownedDecos.length);
+    ownedDecos.forEach((id, i) => {
+      pieces.push({ id, kind: "deco", slot: layout2[i].slot, tier: tiers[id] || 1, scale: layout2[i].scale });
     });
     return pieces.sort((a, b) => a.slot - b.slot);
   }
@@ -4993,8 +4991,9 @@
     for (const p of pieces) {
       if (p.kind === "building") continue;
       const x = p.slot * w;
-      drawContactShadow(sc, x, gy, m.unit);
-      drawTieredDeco(sc, p, x, gy, m.unit);
+      const du = m.unit * (p.scale || 1);
+      drawContactShadow(sc, x, gy, du);
+      drawTieredDeco(sc, p, x, gy, du);
     }
     const mImg = sprite("maneki");
     const mp = Math.min(h * 0.62, 48);
@@ -5091,14 +5090,9 @@
       c.stroke();
     };
     const buildingSlots = [0.18, 0.34, 0.5, 0.66, 0.82];
-    const decoSlots = [0.1, 0.26, 0.42, 0.58, 0.74];
     for (const slot of buildingSlots) {
       if (occupied.has(slot.toFixed(2))) continue;
       drawPad(slot * w, backGy, m.unit * m.backScale);
-    }
-    for (const slot of decoSlots) {
-      if (occupied.has(slot.toFixed(2))) continue;
-      drawPad(slot * w, gy, m.unit);
     }
   }
   function drawStreetBuilding(c, id, x, gy, h) {
