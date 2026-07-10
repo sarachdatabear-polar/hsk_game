@@ -624,6 +624,9 @@
     "tile-firecracker-fx",
     "tile-star-shower",
     "tile-bells",
+    "tile-arcade",
+    "tile-lion-drum",
+    "tile-streak-freeze",
     "fx-correct",
     "fx-wrong",
     "fx-critical",
@@ -1287,7 +1290,10 @@
       { id: "tile-sakura-fx", file: "tile-sakura-fx.png", type: "decor", status: "integrated", priority: "P1", w: 240, h: 160, note: "shop effect/soundpack preview tile (full-bleed cover)" },
       { id: "tile-firecracker-fx", file: "tile-firecracker-fx.png", type: "decor", status: "integrated", priority: "P1", w: 240, h: 160, note: "shop effect/soundpack preview tile (full-bleed cover)" },
       { id: "tile-star-shower", file: "tile-star-shower.png", type: "decor", status: "integrated", priority: "P1", w: 240, h: 160, note: "shop effect/soundpack preview tile (full-bleed cover)" },
-      { id: "tile-bells", file: "tile-bells.png", type: "decor", status: "integrated", priority: "P1", w: 240, h: 160, note: "shop effect/soundpack preview tile (full-bleed cover)" }
+      { id: "tile-bells", file: "tile-bells.png", type: "decor", status: "integrated", priority: "P1", w: 240, h: 160, note: "shop effect/soundpack preview tile (full-bleed cover)" },
+      { id: "tile-arcade", file: "tile-arcade.png", type: "decor", status: "integrated", priority: "P1", w: 240, h: 160, note: "shop effect/soundpack preview tile (full-bleed cover)" },
+      { id: "tile-lion-drum", file: "tile-lion-drum.png", type: "decor", status: "integrated", priority: "P1", w: 240, h: 160, note: "shop effect/soundpack preview tile (full-bleed cover)" },
+      { id: "tile-streak-freeze", file: "tile-streak-freeze.png", type: "decor", status: "integrated", priority: "P1", w: 240, h: 160, note: "shop consumable preview tile (full-bleed cover)" }
     ],
     required_icons: [
       "home",
@@ -2403,9 +2409,7 @@
       "home.streakTitle": "\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07",
       "home.streakDays": "{n} \u0E27\u0E31\u0E19",
       "home.freezes": "\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07 {n} \u0E0A\u0E34\u0E49\u0E19",
-      // TH: needs native review
       "home.freeze-one": "\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07 1 \u0E0A\u0E34\u0E49\u0E19",
-      // TH: needs native review
       "home.start": "\u0E40\u0E23\u0E34\u0E48\u0E21",
       "home.startHint": "\u0E15\u0E49\u0E2D\u0E07\u0E21\u0E35\u0E04\u0E33\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E19\u0E49\u0E2D\u0E22 8 \u0E04\u0E33\u0E43\u0E19\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E08\u0E36\u0E07\u0E08\u0E30\u0E40\u0E23\u0E34\u0E48\u0E21\u0E44\u0E14\u0E49 \u2014 \u0E02\u0E22\u0E32\u0E22\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E14\u0E49\u0E32\u0E19\u0E25\u0E48\u0E32\u0E07",
       "home.scopeWords": "{n} \u0E04\u0E33",
@@ -2417,11 +2421,8 @@
       "common.playAudio": "\u0E40\u0E25\u0E48\u0E19\u0E40\u0E2A\u0E35\u0E22\u0E07",
       "battle.critical": "CRITICAL!",
       "toast.freeze-used": "\u0E43\u0E0A\u0E49\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07\u0E1E\u0E34\u0E17\u0E31\u0E01\u0E29\u0E4C\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E2A\u0E15\u0E23\u0E35\u0E04 {n} \u0E27\u0E31\u0E19\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E22\u0E31\u0E07\u0E2D\u0E22\u0E39\u0E48",
-      // TH: needs native review
       "notify.streak.title": "\u0E2D\u0E22\u0E48\u0E32\u0E43\u0E2B\u0E49\u0E2A\u0E15\u0E23\u0E35\u0E04 {n} \u0E27\u0E31\u0E19\u0E2B\u0E25\u0E38\u0E14\u0E19\u0E30!",
-      // TH: needs native review
       "notify.streak.body": "\u0E2D\u0E35\u0E01 {remaining} \u0E04\u0E33\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E01\u0E47\u0E23\u0E2D\u0E14 \u2014 \u0E40\u0E25\u0E48\u0E19\u0E23\u0E2D\u0E1A\u0E2A\u0E31\u0E49\u0E19 \u0E46 \u0E01\u0E47\u0E1E\u0E2D",
-      // TH: needs native review
       "milestone.scarf": "\u0E1C\u0E49\u0E32\u0E1E\u0E31\u0E19\u0E04\u0E2D\u0E2A\u0E35\u0E41\u0E14\u0E07",
       "milestone.coin": "\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E23\u0E32\u0E07\u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D\u0E17\u0E2D\u0E07",
       "milestone.outfit": "\u0E0A\u0E38\u0E14\u0E08\u0E35\u0E19",
@@ -2510,13 +2511,9 @@
       "quest.learn20": "\u0E17\u0E33\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E2B\u0E21\u0E32\u0E22\u0E23\u0E39\u0E49\u0E41\u0E25\u0E49\u0E27 20 \u0E1A\u0E31\u0E15\u0E23",
       // monthly quest layer (retention pack)
       "quest.monthly.title": "\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19: {done}/{target} \u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C",
-      // TH: needs native review
       "quest.monthly.claim": "\u0E23\u0E31\u0E1A +{reward}",
-      // TH: needs native review
       "quest.monthly.badge": "\u0E44\u0E14\u0E49\u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D\u0E15\u0E23\u0E32\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E41\u0E25\u0E49\u0E27!",
-      // TH: needs native review
       "quest.monthly.autoClaimed": "\u0E23\u0E31\u0E1A\u0E23\u0E32\u0E07\u0E27\u0E31\u0E25\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E43\u0E2B\u0E49\u0E04\u0E38\u0E13\u0E41\u0E25\u0E49\u0E27: +{reward} \u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D",
-      // TH: needs native review
       // scores / progress
       "scores.title": "\u0E2A\u0E16\u0E34\u0E15\u0E34\u0E14\u0E35\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14",
       "scores.empty": "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E2A\u0E16\u0E34\u0E15\u0E34 \u2014 \u0E40\u0E25\u0E48\u0E19\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E01\u0E48\u0E2D\u0E19",
@@ -2543,9 +2540,7 @@
       "sticker.streak30Name": "\u0E2A\u0E15\u0E23\u0E35\u0E04 30 \u0E27\u0E31\u0E19",
       "sticker.streak30Hint": "\u0E23\u0E31\u0E01\u0E29\u0E32\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E01\u0E32\u0E23\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07 30 \u0E27\u0E31\u0E19",
       "sticker.monthlyName": "\u0E41\u0E0A\u0E21\u0E1B\u0E4C\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19",
-      // TH: needs native review
       "sticker.monthlyHint": "\u0E17\u0E33\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 40 \u0E04\u0E23\u0E31\u0E49\u0E07\u0E43\u0E19\u0E2B\u0E19\u0E36\u0E48\u0E07\u0E40\u0E14\u0E37\u0E2D\u0E19",
-      // TH: needs native review
       "results.newSticker": "\u0E2A\u0E15\u0E34\u0E01\u0E40\u0E01\u0E2D\u0E23\u0E4C\u0E43\u0E2B\u0E21\u0E48: {name}",
       // shop / collection
       "shop.title": "\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32",
@@ -2554,7 +2549,6 @@
       "shop.effects": "\u0E40\u0E2D\u0E1F\u0E40\u0E1F\u0E01\u0E15\u0E4C",
       "shop.sounds": "\u0E40\u0E2A\u0E35\u0E22\u0E07",
       "shop.supplies": "\u0E02\u0E2D\u0E07\u0E43\u0E0A\u0E49",
-      // TH: needs native review
       "shop.street": "\u0E02\u0E2D\u0E07\u0E15\u0E01\u0E41\u0E15\u0E48\u0E07\u0E16\u0E19\u0E19",
       "shop.wallet": "\u0E01\u0E23\u0E30\u0E40\u0E1B\u0E4B\u0E32\u0E40\u0E07\u0E34\u0E19: <b>{coins}</b> \u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D",
       "shop.buy": "\u0E0B\u0E37\u0E49\u0E2D",
@@ -2569,7 +2563,6 @@
       "shop.seasonReturns": "\u{1F3EE} \u0E40\u0E0B\u0E47\u0E15 {name} \u0E08\u0E30\u0E01\u0E25\u0E31\u0E1A\u0E21\u0E32 {date}",
       "shop.upgrade": "\u0E2D\u0E31\u0E1B\u0E40\u0E01\u0E23\u0E14 {stars} ({coins})",
       "shop.owned-count": "\u0E21\u0E35\u0E2D\u0E22\u0E39\u0E48: {n}/{cap}",
-      // TH: needs native review
       "shop.maxed": "\u2605\u2605\u2605",
       "season.summer": "\u0E24\u0E14\u0E39\u0E23\u0E49\u0E2D\u0E19",
       "season.midautumn": "\u0E44\u0E2B\u0E27\u0E49\u0E1E\u0E23\u0E30\u0E08\u0E31\u0E19\u0E17\u0E23\u0E4C",
@@ -2588,9 +2581,7 @@
       "item.foo-dog": "\u0E2A\u0E34\u0E07\u0E42\u0E15\u0E2B\u0E34\u0E19",
       "item.golden-arch": "\u0E0B\u0E38\u0E49\u0E21\u0E1B\u0E23\u0E30\u0E15\u0E39\u0E17\u0E2D\u0E07",
       "item.streak-freeze": "\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07\u0E1E\u0E34\u0E17\u0E31\u0E01\u0E29\u0E4C\u0E2A\u0E15\u0E23\u0E35\u0E04",
-      // TH: needs native review
       "item.streak-freeze.desc": "\u0E04\u0E23\u0E2D\u0E1A\u0E04\u0E25\u0E38\u0E21\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48\u0E02\u0E32\u0E14\u0E2B\u0E32\u0E22 \u2014 \u0E2A\u0E15\u0E23\u0E35\u0E04\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E22\u0E31\u0E07\u0E2D\u0E22\u0E39\u0E48",
-      // TH: needs native review
       "item.panda": "\u0E41\u0E1E\u0E19\u0E14\u0E49\u0E32",
       "item.ninja": "\u0E19\u0E34\u0E19\u0E08\u0E32",
       "item.astronaut": "\u0E19\u0E31\u0E01\u0E1A\u0E34\u0E19\u0E2D\u0E27\u0E01\u0E32\u0E28",
@@ -5153,7 +5144,7 @@
     c.lineWidth = 1;
     roundRectOn(c, 0.5, 0.5, w - 1, h - 1, 10);
     c.stroke();
-    if (item.type === "effect" || item.type === "soundpack") {
+    if (item.type === "effect" || item.type === "soundpack" || item.type === "consumable") {
       const timg = sprite("tile-" + item.id);
       if (timg) {
         c.save();

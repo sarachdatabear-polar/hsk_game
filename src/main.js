@@ -2298,9 +2298,10 @@ function renderShopPreview(canvas, item, now=0){
   bg.addColorStop(0,"rgba(255,232,150,.16)"); bg.addColorStop(1,"rgba(58,16,16,.72)");
   c.fillStyle = bg; roundRectOn(c,0,0,w,h,10); c.fill();
   c.strokeStyle = "rgba(245,197,24,.28)"; c.lineWidth = 1; roundRectOn(c,.5,.5,w-1,h-1,10); c.stroke();
-  // Effects/soundpacks: prefer full-bleed painted tile art when present, else
-  // fall through to the procedural motif below (some tiles aren't shipped yet).
-  if(item.type==="effect" || item.type==="soundpack"){
+  // Effects/soundpacks/consumables: prefer full-bleed painted tile art when
+  // present, else fall through to the procedural motif below (some tiles
+  // aren't shipped yet).
+  if(item.type==="effect" || item.type==="soundpack" || item.type==="consumable"){
     const timg = sprite("tile-"+item.id);
     if(timg){
       c.save(); roundRectOn(c,0,0,w,h,10); c.clip();

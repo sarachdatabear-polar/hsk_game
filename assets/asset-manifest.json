@@ -104,7 +104,10 @@
     { "id": "tile-sakura-fx", "file": "tile-sakura-fx.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 240, "h": 160, "note": "shop effect/soundpack preview tile (full-bleed cover)" },
     { "id": "tile-firecracker-fx", "file": "tile-firecracker-fx.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 240, "h": 160, "note": "shop effect/soundpack preview tile (full-bleed cover)" },
     { "id": "tile-star-shower", "file": "tile-star-shower.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 240, "h": 160, "note": "shop effect/soundpack preview tile (full-bleed cover)" },
-    { "id": "tile-bells", "file": "tile-bells.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 240, "h": 160, "note": "shop effect/soundpack preview tile (full-bleed cover)" }
+    { "id": "tile-bells", "file": "tile-bells.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 240, "h": 160, "note": "shop effect/soundpack preview tile (full-bleed cover)" },
+    { "id": "tile-arcade", "file": "tile-arcade.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 240, "h": 160, "note": "shop effect/soundpack preview tile (full-bleed cover)" },
+    { "id": "tile-lion-drum", "file": "tile-lion-drum.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 240, "h": 160, "note": "shop effect/soundpack preview tile (full-bleed cover)" },
+    { "id": "tile-streak-freeze", "file": "tile-streak-freeze.png", "type": "decor", "status": "integrated", "priority": "P1", "w": 240, "h": 160, "note": "shop consumable preview tile (full-bleed cover)" }
   ],
   "required_icons": [
     "home", "flashcards", "audio", "muted", "progress", "streak",
