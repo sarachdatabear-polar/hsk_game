@@ -32,7 +32,7 @@ import { navVisibleOn, activeTabFor } from "./nav.js";
 import { roundLabel, comboMultiplier, comboFires } from "./hud.js";
 import { comboGlowTier, plaqueBounce, countUpValue } from "./juice.js";
 import { isFirstRun, introDeck } from "./firstrun.js";
-import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast } from "./stickers.js";
+import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue } from "./stickers.js";
 import { journeyNodes, currentNodeId } from "./journey.js";
 
 /* ============================== data & state ============================== */
@@ -1956,8 +1956,13 @@ function endBattle(quit){
     };
     const hadMonthlyBadgeQuit = !!stickerState.earned["ev:monthly-40"];
     stickerState = evaluateAwards(stickerState, STICKER_DEFS, quitFacts, todayStr());
+    if(!hadMonthlyBadgeQuit && stickerState.earned["ev:monthly-40"]){
+      // announced here once — drop the queued copy so the next results
+      // screen's sticker slot doesn't announce it again
+      toast(t("quest.monthly.badge"));
+      stickerState = dropFromQueue(stickerState, "ev:monthly-40");
+    }
     store.set("stickers", stickerState);
-    if(!hadMonthlyBadgeQuit && stickerState.earned["ev:monthly-40"]) toast(t("quest.monthly.badge"));
     show("home"); return;
   }
   noteDaily(B.resolved);
@@ -2064,11 +2069,15 @@ function endBattle(quit){
   };
   const hadMonthlyBadge = !!stickerState.earned["ev:monthly-40"];
   stickerState = evaluateAwards(stickerState, STICKER_DEFS, stickerFacts, todayStr());
+  // retention pack: the monthly badge gets the floating toast() since it's
+  // most likely to land right as the player finishes the quest that crossed
+  // 40/40 — and ONLY the toast: the queued sticker copy is dropped so the
+  // sticker slot below (and future results screens) won't repeat it.
+  if(!hadMonthlyBadge && stickerState.earned["ev:monthly-40"]){
+    toast(t("quest.monthly.badge"));
+    stickerState = dropFromQueue(stickerState, "ev:monthly-40");
+  }
   store.set("stickers", stickerState);
-  // retention pack: the monthly badge also gets the floating toast() (not
-  // just the results-screen sticker slot below) since it's most likely to
-  // land right as the player finishes the quest that crossed 40/40.
-  if(!hadMonthlyBadge && stickerState.earned["ev:monthly-40"]) toast(t("quest.monthly.badge"));
   const slot = $("#r-sticker-slot");
   const popped = popToast(stickerState);
   if(popped.id){
