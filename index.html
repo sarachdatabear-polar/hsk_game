@@ -53,16 +53,63 @@
      with a warm ambient vignette and lift the column as an intentional "device"
      panel, instead of leaving it floating in an empty void. */
   @media (min-width:900px){
-    body{background:radial-gradient(1100px 780px at 50% 30%, #FFFBF1 0%, var(--lc-cream) 46%, #ECDEC0 100%) fixed;}
+    /* F8: the vignette (layer 1, on top) stays the dominant read so the
+       app column never has to compete with the art for attention; the real
+       home-scene art (layer 2, bg-home.webp — same asset #s-home already
+       uses, already in sw.js PRECACHE) sits faintly behind it so the wide
+       margins read as an inhabited scene rather than a bare gradient. Both
+       layers keep `fixed` (matching the pre-F8 single-layer rule) so the art
+       doesn't scroll against the fixed-position vignette. */
+    body{background:
+      radial-gradient(1100px 780px at 50% 30%, rgba(255,251,241,.92) 0%, rgba(244,236,220,.94) 46%, rgba(236,222,192,.97) 100%) fixed,
+      url("assets/bg-home.webp") center 30%/cover no-repeat fixed var(--lc-cream);}
     #app{background:var(--lc-cream); box-shadow:0 12px 64px rgba(122,90,68,.16);}
   }
   .screen{display:none; flex:1; flex-direction:column; padding:16px;}
   .screen.on{display:flex;}
-  /* Street/More hold only a little content. Top-align them like every
-     other screen: a header pinned to the top reads as intentional, whereas
-     vertical centering floated the header to mid-screen on tall phones and
-     desktop (a void *above* the title that looked half-loaded). */
-  #s-street.on, #s-more.on{justify-content:flex-start;}
+  /* Street holds the merged Daily Quests panel (audit F3, 0b1ee1e) and reads
+     full now — top-align it like every other content-heavy screen: a header
+     pinned to the top reads as intentional, whereas vertical centering
+     floated the header to mid-screen on tall phones and desktop (a void
+     *above* the title that looked half-loaded). More is the one screen left
+     genuinely sparse (three buttons + a language row, no back button to
+     misplace), so it gets true vertical centering instead (audit F3
+     remainder) — see #s-more below. */
+  #s-street.on{justify-content:flex-start;}
+  /* More: only a few controls, nothing to scroll to — center them as a
+     single composed block instead of pinning to the top and leaving a bare
+     void beneath (audit F3). Full `justify-content:center` (not used on
+     Tone Trainer below) is safe here: More has no back button, so nothing
+     gets displaced toward mid-screen. */
+  #s-more{justify-content:center;}
+  /* Tone Trainer (#s-tones): true centering would float its back button to
+     mid-screen (the button is a flex sibling of the quiz content, and
+     justify-content can't pin one item while centering the rest without a
+     wrapper element) — worse than the sparse-void problem it would fix. The
+     usual pseudo-element spacer trick doesn't apply either: .screen.festive
+     already owns ::before/::after for the swaying lantern decor (position:
+     absolute, so a flex property on them is inert — verified empirically).
+     Instead, nudge the whole composition down with extra top padding: back
+     button + header land a little lower, off the very top edge, so the
+     quiz reads as deliberately upper-middle with breathing room above and
+     below rather than jammed flush against the lanterns (audit F3
+     remainder). Bare `#s-tones` (not `.on`-scoped) is deliberate: it matches
+     the landscape override's specificity exactly, so that later block's
+     `padding:5px 12px 4px` (source order, both id-only) still wins under
+     `orientation:landscape` and this doesn't fight its compaction — an
+     `.on`-scoped version would outrank it and break the short-viewport
+     layout despite losing the source-order race.
+     Gated to `min-height:700px` (this file's existing short-viewport
+     threshold, see the battle `max-height:700px` tier above): measured at
+     320x568 the post-reveal `#tones-reveal` block already needs a scroll to
+     fully clear the fold with ZERO extra padding (pre-existing, not
+     introduced here) — stacking 64px on top of that on the smallest
+     supported phones would deepen an existing scroll rather than just add
+     breathing room. Above 700px (iPhone-and-up) there's comfortable slack
+     for both the padding and the reveal. */
+  @media (min-height:700px){
+    #s-tones{padding-top:64px;}
+  }
   /* A3: soft enter transition on every screen change (~200ms). The global
      prefers-reduced-motion rule truncates all animations, so reduced = instant. */
   .screen.on{animation:screen-in 200ms ease-out;}
