@@ -5,7 +5,7 @@
   "description": "HSK vocabulary arcade game - Lucky Cat HSK",
   "scripts": {
     "test": "vitest run",
-    "build": "esbuild src/main.js --bundle --format=iife --outfile=dist/app.js",
+    "build": "esbuild src/main.js --bundle --format=iife --minify --outfile=dist/app.js",
     "assets:validate": "node scripts/validate-assets.mjs",
     "assets:report": "node scripts/asset-report.mjs",
     "assets:shop": "node scripts/generate-shop-assets.mjs",
