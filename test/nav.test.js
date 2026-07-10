@@ -13,6 +13,7 @@ describe("nav", () => {
     it("shows the nav on More sub-screens and shop", () => {
       expect(navVisibleOn("scores")).toBe(true);
       expect(navVisibleOn("howto")).toBe(true);
+      expect(navVisibleOn("account")).toBe(true);
       expect(navVisibleOn("shop")).toBe(true);
     });
     it("hides the nav during battle/learn/scope/results", () => {
@@ -30,9 +31,10 @@ describe("nav", () => {
     it("is the screen itself for each tab", () => {
       for (const s of TABS) expect(activeTabFor(s), s).toBe(s);
     });
-    it("is 'more' for scores/howto", () => {
+    it("is 'more' for scores/howto/account", () => {
       expect(activeTabFor("scores")).toBe("more");
       expect(activeTabFor("howto")).toBe("more");
+      expect(activeTabFor("account")).toBe("more");
     });
     it("is 'home' for shop", () => {
       expect(activeTabFor("shop")).toBe("home");

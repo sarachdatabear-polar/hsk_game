@@ -193,6 +193,12 @@
     border:1px solid var(--panel-border); border-image:var(--f-ui-card-soft, none); font-size:15px;}
   .readout b{color:var(--lc-green);}
   .readout .warn{color:var(--muted); font-size:12.5px; margin-top:4px;}
+  /* Account screen (client-auth round) */
+  #account-panel{display:flex; flex-direction:column; gap:12px; max-width:420px;}
+  .account-explain{color:var(--muted); margin:0;}
+  .account-input{padding:12px 14px; border-radius:12px; border:1px solid var(--panel-border);
+    font:inherit; background:var(--panel-wash); color:var(--ink);}
+  .account-change-email{background:none; border:none; color:var(--muted); text-decoration:underline; font:inherit; padding:4px; cursor:pointer;}
   .startrow{display:flex; gap:10px; margin-top:14px;}
   .startrow .big{flex:1; padding:14px 6px; font-size:16px;}
   /* Lucky Cat Street — own screen (M2); DPR-crisp buffer sized by main.js */
@@ -983,6 +989,7 @@
       <button class="big" data-go="scores"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="home.best">Best Sessions</span></span></button>
       <button class="big" data-go="howto"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#help"></use></svg><span data-i18n="home.howto">How to play</span></span></button>
       <button class="big" id="more-sound"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#audio"></use></svg><span data-i18n="home.sound">Sound effects</span></span></button>
+      <button class="big" data-go="account"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="account.row">Account</span></span></button>
     </div>
     <div class="sect" data-i18n="common.language">Language</div>
     <div class="chips" id="ui-lang-chips">
@@ -1219,6 +1226,13 @@
     <p class="howto" data-i18n-html="howto.learnMode"><b>Learn mode</b> drills the same word pool as flashcards first, so you can
       study, then play.</p>
     <p class="howto" data-i18n="howto.attribution">Some example sentences from Tatoeba (tatoeba.org), CC-BY 2.0 FR.</p>
+  </div>
+
+  <!-- ACCOUNT -->
+  <div class="screen festive" id="s-account">
+    <button class="back" data-go="more" data-i18n="common.backMore">← More</button>
+    <h2 data-i18n="account.title">Account</h2>
+    <div id="account-panel"></div>
   </div>
 
   <!-- BOTTOM NAV -->

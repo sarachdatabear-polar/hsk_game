@@ -34,6 +34,8 @@ import { comboGlowTier, plaqueBounce, countUpValue } from "./juice.js";
 import { isFirstRun, introDeck } from "./firstrun.js";
 import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue } from "./stickers.js";
 import { journeyNodes, currentNodeId } from "./journey.js";
+import { accountState, accountView, canSendCode, codeLooksValid } from "./account.js";
+import { getSession, ensureGuest, sendCode, verifyCode, signOut } from "./cloud.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -378,6 +380,162 @@ $("#go-smart").onclick = ()=>{
   startBattle("round");
 };
 
+/* ============================== account ============================== */
+// UI-flow state only — truth lives in the supabase session (cloud.js) and
+// the pure view model (account.js). lastSentAt feeds the resend cooldown.
+const accountUI = { session: null, phase: "idle", email: "", verifyType: "email", lastSentAt: 0 };
+let accountCooldownTimer = 0;
+
+function accountOnline(){
+  return typeof navigator === "undefined" || navigator.onLine !== false;
+}
+
+function renderAccount(){
+  clearTimeout(accountCooldownTimer);
+  const state = accountState(accountUI.session);
+  const email = (accountUI.session && accountUI.session.user && accountUI.session.user.email) || accountUI.email;
+  const v = accountView(state, { online: accountOnline(), phase: accountUI.phase, email });
+  const p = $("#account-panel");
+  p.innerHTML = "";
+  const status = document.createElement("div");
+  status.className = "sect";
+  status.textContent = t(v.statusKey, v.statusParams);
+  p.appendChild(status);
+  const ex = document.createElement("p");
+  ex.className = "account-explain";
+  ex.textContent = t(v.explainKey);
+  p.appendChild(ex);
+  if(v.showConnect) p.appendChild(accountBtn(t("account.connect"), onAccountConnect));
+  if(v.showEmailForm){
+    const emailInput = accountInput("email", t("account.emailPh"), accountUI.email);
+    p.appendChild(emailInput);
+    p.appendChild(accountBtn(t("account.sendCode"), ()=>onAccountSendCode(emailInput.value)));
+  }
+  if(v.showCodeForm){
+    const code = accountInput("text", t("account.codePh"), "");
+    code.inputMode = "numeric"; code.maxLength = 10; code.autocomplete = "one-time-code";
+    p.appendChild(code);
+    p.appendChild(accountBtn(t("account.verify"), ()=>onAccountVerify(code.value)));
+    p.appendChild(accountResendBtn());
+    p.appendChild(accountChangeEmailBtn());
+  }
+  if(v.showSignOut) p.appendChild(accountBtn(t("account.signOut"), onAccountSignOut));
+}
+
+function accountBtn(label, onclick){
+  const b = document.createElement("button");
+  b.className = "big"; b.textContent = label;
+  b.onclick = async () => {
+    if(b.disabled) return;
+    b.disabled = true;
+    try { await onclick(); } finally { b.disabled = false; }
+  };
+  return b;
+}
+
+function accountInput(type, placeholder, value){
+  const i = document.createElement("input");
+  i.type = type; i.placeholder = placeholder; i.value = value;
+  i.className = "account-input";
+  return i;
+}
+
+function accountResendBtn(){
+  const b = document.createElement("button");
+  b.className = "big account-resend";
+  const tick = ()=>{
+    const r = canSendCode(accountUI.email, accountUI.lastSentAt, Date.now());
+    if(r.ok){ b.disabled = false; b.textContent = t("account.resend"); }
+    else if(r.reason === "cooldown"){
+      b.disabled = true;
+      b.textContent = t("account.resendWait", { s: Math.ceil(r.waitMs / 1000) });
+      accountCooldownTimer = setTimeout(tick, 1000);
+    }
+  };
+  clearTimeout(accountCooldownTimer);
+  tick();
+  // Same re-entry guard as accountBtn(): without it, two rapid clicks right
+  // after the cooldown clears fire two OTP sends (mailer budget ~2/hr) since
+  // accountUI.lastSentAt only updates after the await resolves. On success
+  // renderAccount() rebuilds this button from scratch (this `b` goes stale,
+  // so the finally's re-enable is a harmless no-op); on a failure toast
+  // (offline/network/cooldown) there's no re-render, so finally is what
+  // re-enables this exact button.
+  b.onclick = async () => {
+    if(b.disabled) return;
+    b.disabled = true;
+    try { await onAccountSendCode(accountUI.email); }
+    finally { b.disabled = false; }
+  };
+  return b;
+}
+
+function accountChangeEmailBtn(){
+  const b = document.createElement("button");
+  b.className = "account-change-email";
+  b.textContent = t("account.changeEmail");
+  // Escape hatch for a typo'd email: back to the email form without losing
+  // what was typed (accountUI.email is intentionally left alone — it prefills
+  // the email input for correction, it does not get cleared like sign-out does).
+  b.onclick = ()=>{ accountUI.phase = "idle"; renderAccount(); };
+  return b;
+}
+
+async function refreshAccountSession(){
+  const r = await getSession();
+  if(r.ok){ accountUI.session = r.session; renderAccount(); }
+}
+
+async function onAccountConnect(){
+  const r = await ensureGuest(getLocale());
+  if(r.ok){ accountUI.session = r.session; renderAccount(); }
+  else toast(t("account.err." + (r.reason === "offline" ? "offline" : "network")));
+}
+
+async function onAccountSendCode(email){
+  const gate = canSendCode(email, accountUI.lastSentAt, Date.now());
+  if(!gate.ok){
+    if(gate.reason === "invalid-email") toast(t("account.err.badEmail"));
+    // cooldown: silent by design. The resend button (code phase) shows the
+    // countdown itself. The email form (idle phase) has no such readout, but
+    // sign-out clears lastSentAt, so the only way to reach it with a live
+    // cooldown is "Use a different email" right after a send — an edge case
+    // we accept staying quiet on rather than surfacing a toast for.
+    return;
+  }
+  const r = await sendCode(String(email).trim());
+  if(!r.ok){ toast(t("account.err." + (r.reason === "offline" ? "offline" : "network"))); return; }
+  accountUI.email = String(email).trim();
+  accountUI.verifyType = r.verifyType;
+  accountUI.lastSentAt = Date.now();
+  accountUI.phase = "code";
+  toast(t("account.codeSent"));
+  renderAccount();
+}
+
+async function onAccountVerify(code){
+  if(!codeLooksValid(code)){ toast(t("account.err.badCode")); return; }
+  const r = await verifyCode(accountUI.email, String(code).trim(), accountUI.verifyType, getLocale());
+  if(!r.ok){
+    toast(t("account.err." + (r.reason === "bad-code" ? "badCode" : r.reason === "offline" ? "offline" : "network")));
+    return;
+  }
+  accountUI.session = r.session;
+  accountUI.phase = "idle";
+  toast(t("account.signedIn"));
+  renderAccount();
+}
+
+async function onAccountSignOut(){
+  await signOut();
+  accountUI.session = null;
+  accountUI.phase = "idle";
+  accountUI.email = "";
+  accountUI.lastSentAt = 0;
+  toast(t("account.signedOut"));
+  renderAccount();
+}
+
 /* ============================== home screen (M3) ============================== */
 // Builds the scope chip's label from pool.js's pure scopeSummary() — localizes
 // the filter words here so scopeSummary itself stays i18n-free.
@@ -534,6 +692,7 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
   else if(tab==="shop"){ renderShop(); show("shop"); }
   else if(tab==="album"){ renderAlbum(); show("album"); }
   else if(tab==="tones"){ startToneRound(); show("tones"); }
+  else if(tab==="account"){ renderAccount(); show("account"); refreshAccountSession(); }
   else {
     if(tab==="home"){ stopBattle(); }   // intro abandonment handled in show()
     show(tab);

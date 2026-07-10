@@ -8,7 +8,7 @@ export const TABS = ["home", "street", "progress", "more"];
 
 // Screens that ride "under" the More tab: reachable from More, not tabs
 // themselves, but the nav stays visible (with More highlighted) while on them.
-const MORE_SUBSCREENS = ["scores", "howto"];
+const MORE_SUBSCREENS = ["scores", "howto", "account"];
 
 // Sub-screens that ride under the Progress tab (B2 sticker album).
 const PROGRESS_SUBSCREENS = ["album"];
