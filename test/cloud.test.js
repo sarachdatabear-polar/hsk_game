@@ -88,6 +88,57 @@ describe("sendCode picks the merge-correct channel", () => {
   });
 });
 
+describe("sendCode falls back to OTP sign-in for a returning user (email already exists)", () => {
+  const emailExistsErr = { code: "email_exists", status: 422,
+                           message: "A user with this email address has already been registered" };
+
+  it("updateUser email_exists + otp succeeds -> ok:true, verifyType email", async () => {
+    const calls = { updateUser: [], otp: [] };
+    const client = {
+      auth: {
+        getSession: async () => ({ data: { session: { user: { id: "u1", is_anonymous: true } } } }),
+        updateUser: async (args) => { calls.updateUser.push(args); return { data: {}, error: emailExistsErr }; },
+        signInWithOtp: async (args) => { calls.otp.push(args); return { data: {}, error: null }; },
+      },
+    };
+    __setClientForTests(client);
+    const r = await sendCode("a@b.co");
+    expect(r).toEqual({ ok: true, verifyType: "email" });
+    expect(calls.updateUser).toEqual([{ email: "a@b.co" }]);
+    expect(calls.otp).toEqual([{ email: "a@b.co", options: { shouldCreateUser: true } }]);
+  });
+
+  it("updateUser email_exists + otp also errors -> ok:false, reason:network", async () => {
+    const calls = { updateUser: [], otp: [] };
+    const client = {
+      auth: {
+        getSession: async () => ({ data: { session: { user: { id: "u1", is_anonymous: true } } } }),
+        updateUser: async (args) => { calls.updateUser.push(args); return { data: {}, error: emailExistsErr }; },
+        signInWithOtp: async (args) => { calls.otp.push(args); return { data: {}, error: { status: 500 } }; },
+      },
+    };
+    __setClientForTests(client);
+    const r = await sendCode("a@b.co");
+    expect(r).toEqual({ ok: false, reason: "network" });
+    expect(calls.otp.length).toBe(1);
+  });
+
+  it("updateUser fails with a non-exists error -> reason:network, otp never called (regression guard)", async () => {
+    const calls = { updateUser: [], otp: [] };
+    const client = {
+      auth: {
+        getSession: async () => ({ data: { session: { user: { id: "u1", is_anonymous: true } } } }),
+        updateUser: async (args) => { calls.updateUser.push(args); return { data: {}, error: { status: 500 } }; },
+        signInWithOtp: async (args) => { calls.otp.push(args); return { data: {}, error: null }; },
+      },
+    };
+    __setClientForTests(client);
+    const r = await sendCode("a@b.co");
+    expect(r).toEqual({ ok: false, reason: "network" });
+    expect(calls.otp.length).toBe(0);
+  });
+});
+
 describe("verifyCode", () => {
   it("verifies, upserts profile, returns the session", async () => {
     const { client, calls } = fakeClient();

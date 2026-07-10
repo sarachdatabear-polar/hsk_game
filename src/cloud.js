@@ -33,6 +33,13 @@ function isNetworkAuthError(error) {
     String(error.name || "").includes("Retryable"));
 }
 
+// A guest adding an email that already has an account is a RETURNING user on
+// a new device — fall back to signing in to that account instead of erroring.
+function isEmailExistsError(error) {
+  return !!error && (error.code === "email_exists" || error.status === 422 ||
+    /already.*regist/i.test(String(error.message || "")));
+}
+
 async function currentSession() {
   const { data } = await getClient().auth.getSession();
   return (data && data.session) || null;
@@ -66,6 +73,11 @@ export async function sendCode(email) {
     const { error } = hadGuest
       ? await getClient().auth.updateUser({ email })
       : await getClient().auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+    if (error && hadGuest && isEmailExistsError(error)) {
+      const { error: otpError } = await getClient().auth.signInWithOtp(
+        { email, options: { shouldCreateUser: true } });
+      return otpError ? { ok: false, reason: "network" } : { ok: true, verifyType: "email" };
+    }
     return error ? { ok: false, reason: "network" } : { ok: true, verifyType };
   } catch (e) { return { ok: false, reason: "network" }; }
 }
