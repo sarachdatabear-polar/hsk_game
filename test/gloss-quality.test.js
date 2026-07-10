@@ -14,6 +14,15 @@ describe("gloss quality (audit F7)", () => {
     }
   });
 
+  it("thai glosses contain no mechanical '+' joins at any level", () => {
+    // The thai column is user-facing too — 18 joined rows were fixed in the
+    // 2026-07-10 gloss round (e.g. 城中 'เมืองกำแพง + จีน' → 'ในเมือง').
+    for (const lv of Object.keys(DATA.levels)) {
+      const bad = DATA.levels[lv].filter(w => / \+ |\+ | \+/.test(w.t));
+      expect(bad.map(w => `${lv}:${w.h}:${w.t}`)).toEqual([]);
+    }
+  });
+
   it("no hanzi mixes '+' and non-'+' glosses across levels", () => {
     // A word's gloss should read the same everywhere it recurs — if one level's
     // '+' join was rewritten (audit-v50 gloss fixes), every level sharing that
