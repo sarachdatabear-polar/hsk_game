@@ -69,6 +69,9 @@ export const STRINGS = {
     "account.err.network": "Couldn't reach the cloud — try again",
     "account.err.badEmail": "That email doesn't look right",
     "account.err.badCode": "Wrong or expired code — try again",
+    "account.lastSynced": "Last synced {when}",
+    "account.neverSynced": "Not synced yet",
+    "account.restored": "Progress restored ✓",
     "milestone.scarf": "Red scarf",
     "milestone.coin": "Gold coin charm",
     "milestone.outfit": "Chinese outfit",
@@ -367,6 +370,9 @@ export const STRINGS = {
     "account.err.network": "ติดต่อคลาวด์ไม่ได้ — ลองอีกครั้ง",   // TH: needs native review
     "account.err.badEmail": "อีเมลนี้ดูไม่ถูกต้อง",   // TH: needs native review
     "account.err.badCode": "รหัสผิดหรือหมดอายุ — ลองอีกครั้ง",   // TH: needs native review
+    "account.lastSynced": "ซิงค์ล่าสุด {when}",   // TH: needs native review
+    "account.neverSynced": "ยังไม่ได้ซิงค์",   // TH: needs native review
+    "account.restored": "กู้คืนความคืบหน้าแล้ว ✓",   // TH: needs native review
     "milestone.scarf": "ผ้าพันคอสีแดง",
     "milestone.coin": "เครื่องรางเหรียญทอง",
     "milestone.outfit": "ชุดจีน",
