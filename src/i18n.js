@@ -26,7 +26,8 @@ export const STRINGS = {
     "home.settings": "Settings",
     "home.streakTitle": "Study Streak",
     "home.streakDays": "{n} days",
-    "home.freezes": "{n} freeze(s)",
+    "home.freezes": "{n} freezes",
+    "home.freeze-one": "1 freeze",
     "home.start": "START",
     "home.startHint": "Need at least 8 words in scope to start — widen it below.",
     "home.scopeWords": "{n} words",
@@ -300,6 +301,7 @@ export const STRINGS = {
     "home.streakTitle": "เรียนต่อเนื่อง",
     "home.streakDays": "{n} วัน",
     "home.freezes": "น้ำแข็ง {n} ชิ้น",   // TH: needs native review
+    "home.freeze-one": "น้ำแข็ง 1 ชิ้น",   // TH: needs native review
     "home.start": "เริ่ม",
     "home.startHint": "ต้องมีคำอย่างน้อย 8 คำในขอบเขตจึงจะเริ่มได้ — ขยายขอบเขตด้านล่าง",
     "home.scopeWords": "{n} คำ",

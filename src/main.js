@@ -156,7 +156,7 @@ function updateStreakChip(){
   if(freezeChip){
     freezeChip.style.display = freezes > 0 ? "flex" : "none";
     const label = freezeChip.querySelector(".freeze-count");
-    if(label) label.textContent = t("home.freezes", { n: freezes });
+    if(label) label.textContent = freezes === 1 ? t("home.freeze-one") : t("home.freezes", { n: freezes });
   }
 }
 // Minimal floating toast (retention pack) — freeze-used is a rare single
