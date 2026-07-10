@@ -25,6 +25,14 @@ function offline() {
   return typeof navigator !== "undefined" && navigator.onLine === false;
 }
 
+// supabase-js resolves fetch-level failures as {error} (AuthRetryableFetchError,
+// status 0/5xx) rather than throwing — without this check a network outage
+// during verify would read as "wrong code" to the player.
+function isNetworkAuthError(error) {
+  return !!error && (error.status === 0 || error.status >= 500 ||
+    String(error.name || "").includes("Retryable"));
+}
+
 async function currentSession() {
   const { data } = await getClient().auth.getSession();
   return (data && data.session) || null;
@@ -66,13 +74,15 @@ export async function verifyCode(email, code, verifyType, locale) {
   if (offline()) return { ok: false, reason: "offline" };
   try {
     const { data, error } = await getClient().auth.verifyOtp({ email, token: code, type: verifyType });
-    if (error || !data || !data.session) return { ok: false, reason: "bad-code" };
+    if (error) return { ok: false, reason: isNetworkAuthError(error) ? "network" : "bad-code" };
+    if (!data || !data.session) return { ok: false, reason: "bad-code" };
     await upsertProfile(profileRowFor(data.session.user.id, locale));
     return { ok: true, session: data.session };
   } catch (e) { return { ok: false, reason: "network" }; }
 }
 
 export async function upsertProfile(row) {
+  if (offline()) return { ok: false };
   try {
     const { error } = await getClient().from("profiles").upsert(row);
     return { ok: !error };

@@ -103,6 +103,36 @@ describe("verifyCode", () => {
     expect(await verifyCode("a@b.co", "000000", "email", "en"))
       .toEqual({ ok: false, reason: "bad-code" });
   });
+  it("network error (AuthRetryableFetchError status 0) resolves reason:network", async () => {
+    const client = {
+      auth: {
+        verifyOtp: async () => ({ data: {}, error: { name: "AuthRetryableFetchError", status: 0 } }),
+      },
+    };
+    __setClientForTests(client);
+    expect(await verifyCode("a@b.co", "123456", "email", "en"))
+      .toEqual({ ok: false, reason: "network" });
+  });
+  it("network error (5xx status) resolves reason:network", async () => {
+    const client = {
+      auth: {
+        verifyOtp: async () => ({ data: {}, error: { status: 503 } }),
+      },
+    };
+    __setClientForTests(client);
+    expect(await verifyCode("a@b.co", "123456", "email", "en"))
+      .toEqual({ ok: false, reason: "network" });
+  });
+  it("auth error (403 status) resolves reason:bad-code", async () => {
+    const client = {
+      auth: {
+        verifyOtp: async () => ({ data: {}, error: { status: 403 } }),
+      },
+    };
+    __setClientForTests(client);
+    expect(await verifyCode("a@b.co", "123456", "email", "en"))
+      .toEqual({ ok: false, reason: "bad-code" });
+  });
 });
 
 describe("signOut / upsertProfile never throw", () => {
@@ -112,6 +142,11 @@ describe("signOut / upsertProfile never throw", () => {
   });
   it("upsertProfile resolves ok:false on throw", async () => {
     __setClientForTests({ from: () => ({ upsert: async () => { throw new Error("x"); } }) });
+    expect(await upsertProfile({ id: "u1", locale: "en" })).toEqual({ ok: false });
+  });
+  it("upsertProfile offline-guards and never constructs client", async () => {
+    globalThis.navigator = { onLine: false };
+    __setClientForTests(null);
     expect(await upsertProfile({ id: "u1", locale: "en" })).toEqual({ ok: false });
   });
 });
