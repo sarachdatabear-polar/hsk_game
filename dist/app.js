@@ -1737,12 +1737,23 @@
     try {
       await LN.cancel({ notifications: [{ id: 1001 }] });
       if (!plan.schedule) return;
-      const perm = await LN.requestPermissions();
+      const perm = await LN.checkPermissions();
       if (perm.display !== "granted") return;
       const at = /* @__PURE__ */ new Date();
       at.setHours(plan.hour, 0, 0, 0);
       await LN.schedule({ notifications: [{ id: 1001, title, body, schedule: { at } }] });
     } catch (e) {
+    }
+  }
+  async function requestNotifPermission() {
+    if (!isNative()) return "denied";
+    const LN = plugins().LocalNotifications;
+    if (!LN) return "denied";
+    try {
+      const perm = await LN.requestPermissions();
+      return perm && perm.display ? perm.display : "denied";
+    } catch (e) {
+      return "denied";
     }
   }
   function initNative({ getScreen, goHome }) {
@@ -2403,9 +2414,7 @@
       "home.streakTitle": "\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07",
       "home.streakDays": "{n} \u0E27\u0E31\u0E19",
       "home.freezes": "\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07 {n} \u0E0A\u0E34\u0E49\u0E19",
-      // TH: needs native review
       "home.freeze-one": "\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07 1 \u0E0A\u0E34\u0E49\u0E19",
-      // TH: needs native review
       "home.start": "\u0E40\u0E23\u0E34\u0E48\u0E21",
       "home.startHint": "\u0E15\u0E49\u0E2D\u0E07\u0E21\u0E35\u0E04\u0E33\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E19\u0E49\u0E2D\u0E22 8 \u0E04\u0E33\u0E43\u0E19\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E08\u0E36\u0E07\u0E08\u0E30\u0E40\u0E23\u0E34\u0E48\u0E21\u0E44\u0E14\u0E49 \u2014 \u0E02\u0E22\u0E32\u0E22\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E14\u0E49\u0E32\u0E19\u0E25\u0E48\u0E32\u0E07",
       "home.scopeWords": "{n} \u0E04\u0E33",
@@ -2417,11 +2426,8 @@
       "common.playAudio": "\u0E40\u0E25\u0E48\u0E19\u0E40\u0E2A\u0E35\u0E22\u0E07",
       "battle.critical": "CRITICAL!",
       "toast.freeze-used": "\u0E43\u0E0A\u0E49\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07\u0E1E\u0E34\u0E17\u0E31\u0E01\u0E29\u0E4C\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E2A\u0E15\u0E23\u0E35\u0E04 {n} \u0E27\u0E31\u0E19\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E22\u0E31\u0E07\u0E2D\u0E22\u0E39\u0E48",
-      // TH: needs native review
       "notify.streak.title": "\u0E2D\u0E22\u0E48\u0E32\u0E43\u0E2B\u0E49\u0E2A\u0E15\u0E23\u0E35\u0E04 {n} \u0E27\u0E31\u0E19\u0E2B\u0E25\u0E38\u0E14\u0E19\u0E30!",
-      // TH: needs native review
       "notify.streak.body": "\u0E2D\u0E35\u0E01 {remaining} \u0E04\u0E33\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E01\u0E47\u0E23\u0E2D\u0E14 \u2014 \u0E40\u0E25\u0E48\u0E19\u0E23\u0E2D\u0E1A\u0E2A\u0E31\u0E49\u0E19 \u0E46 \u0E01\u0E47\u0E1E\u0E2D",
-      // TH: needs native review
       "milestone.scarf": "\u0E1C\u0E49\u0E32\u0E1E\u0E31\u0E19\u0E04\u0E2D\u0E2A\u0E35\u0E41\u0E14\u0E07",
       "milestone.coin": "\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E23\u0E32\u0E07\u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D\u0E17\u0E2D\u0E07",
       "milestone.outfit": "\u0E0A\u0E38\u0E14\u0E08\u0E35\u0E19",
@@ -2510,13 +2516,9 @@
       "quest.learn20": "\u0E17\u0E33\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E2B\u0E21\u0E32\u0E22\u0E23\u0E39\u0E49\u0E41\u0E25\u0E49\u0E27 20 \u0E1A\u0E31\u0E15\u0E23",
       // monthly quest layer (retention pack)
       "quest.monthly.title": "\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19: {done}/{target} \u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C",
-      // TH: needs native review
       "quest.monthly.claim": "\u0E23\u0E31\u0E1A +{reward}",
-      // TH: needs native review
       "quest.monthly.badge": "\u0E44\u0E14\u0E49\u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D\u0E15\u0E23\u0E32\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E41\u0E25\u0E49\u0E27!",
-      // TH: needs native review
       "quest.monthly.autoClaimed": "\u0E23\u0E31\u0E1A\u0E23\u0E32\u0E07\u0E27\u0E31\u0E25\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E43\u0E2B\u0E49\u0E04\u0E38\u0E13\u0E41\u0E25\u0E49\u0E27: +{reward} \u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D",
-      // TH: needs native review
       // scores / progress
       "scores.title": "\u0E2A\u0E16\u0E34\u0E15\u0E34\u0E14\u0E35\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14",
       "scores.empty": "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E2A\u0E16\u0E34\u0E15\u0E34 \u2014 \u0E40\u0E25\u0E48\u0E19\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E01\u0E48\u0E2D\u0E19",
@@ -2543,9 +2545,7 @@
       "sticker.streak30Name": "\u0E2A\u0E15\u0E23\u0E35\u0E04 30 \u0E27\u0E31\u0E19",
       "sticker.streak30Hint": "\u0E23\u0E31\u0E01\u0E29\u0E32\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E01\u0E32\u0E23\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07 30 \u0E27\u0E31\u0E19",
       "sticker.monthlyName": "\u0E41\u0E0A\u0E21\u0E1B\u0E4C\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19",
-      // TH: needs native review
       "sticker.monthlyHint": "\u0E17\u0E33\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 40 \u0E04\u0E23\u0E31\u0E49\u0E07\u0E43\u0E19\u0E2B\u0E19\u0E36\u0E48\u0E07\u0E40\u0E14\u0E37\u0E2D\u0E19",
-      // TH: needs native review
       "results.newSticker": "\u0E2A\u0E15\u0E34\u0E01\u0E40\u0E01\u0E2D\u0E23\u0E4C\u0E43\u0E2B\u0E21\u0E48: {name}",
       // shop / collection
       "shop.title": "\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32",
@@ -2554,7 +2554,6 @@
       "shop.effects": "\u0E40\u0E2D\u0E1F\u0E40\u0E1F\u0E01\u0E15\u0E4C",
       "shop.sounds": "\u0E40\u0E2A\u0E35\u0E22\u0E07",
       "shop.supplies": "\u0E02\u0E2D\u0E07\u0E43\u0E0A\u0E49",
-      // TH: needs native review
       "shop.street": "\u0E02\u0E2D\u0E07\u0E15\u0E01\u0E41\u0E15\u0E48\u0E07\u0E16\u0E19\u0E19",
       "shop.wallet": "\u0E01\u0E23\u0E30\u0E40\u0E1B\u0E4B\u0E32\u0E40\u0E07\u0E34\u0E19: <b>{coins}</b> \u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D",
       "shop.buy": "\u0E0B\u0E37\u0E49\u0E2D",
@@ -2569,7 +2568,6 @@
       "shop.seasonReturns": "\u{1F3EE} \u0E40\u0E0B\u0E47\u0E15 {name} \u0E08\u0E30\u0E01\u0E25\u0E31\u0E1A\u0E21\u0E32 {date}",
       "shop.upgrade": "\u0E2D\u0E31\u0E1B\u0E40\u0E01\u0E23\u0E14 {stars} ({coins})",
       "shop.owned-count": "\u0E21\u0E35\u0E2D\u0E22\u0E39\u0E48: {n}/{cap}",
-      // TH: needs native review
       "shop.maxed": "\u2605\u2605\u2605",
       "season.summer": "\u0E24\u0E14\u0E39\u0E23\u0E49\u0E2D\u0E19",
       "season.midautumn": "\u0E44\u0E2B\u0E27\u0E49\u0E1E\u0E23\u0E30\u0E08\u0E31\u0E19\u0E17\u0E23\u0E4C",
@@ -2588,9 +2586,7 @@
       "item.foo-dog": "\u0E2A\u0E34\u0E07\u0E42\u0E15\u0E2B\u0E34\u0E19",
       "item.golden-arch": "\u0E0B\u0E38\u0E49\u0E21\u0E1B\u0E23\u0E30\u0E15\u0E39\u0E17\u0E2D\u0E07",
       "item.streak-freeze": "\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07\u0E1E\u0E34\u0E17\u0E31\u0E01\u0E29\u0E4C\u0E2A\u0E15\u0E23\u0E35\u0E04",
-      // TH: needs native review
       "item.streak-freeze.desc": "\u0E04\u0E23\u0E2D\u0E1A\u0E04\u0E25\u0E38\u0E21\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48\u0E02\u0E32\u0E14\u0E2B\u0E32\u0E22 \u2014 \u0E2A\u0E15\u0E23\u0E35\u0E04\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E22\u0E31\u0E07\u0E2D\u0E22\u0E39\u0E48",
-      // TH: needs native review
       "item.panda": "\u0E41\u0E1E\u0E19\u0E14\u0E49\u0E32",
       "item.ninja": "\u0E19\u0E34\u0E19\u0E08\u0E32",
       "item.astronaut": "\u0E19\u0E31\u0E01\u0E1A\u0E34\u0E19\u0E2D\u0E27\u0E01\u0E32\u0E28",
@@ -3000,10 +2996,16 @@
       toast(t("toast.freeze-used", { n: r.streak }));
     }
     updateStreakChip();
-    if (!wasGoalMet && streakInfo(daily, todayStr(), freezes).goalMet) {
+    const info = streakInfo(daily, todayStr(), freezes);
+    if (!wasGoalMet && info.goalMet) {
       syncStreakReminder({ schedule: false, hour: REMINDER_HOUR, cancel: true }, "", "");
     }
+    if (!notifPermAsked && reminderPlan(info, (/* @__PURE__ */ new Date()).getHours()).schedule) {
+      notifPermAsked = true;
+      requestNotifPermission();
+    }
   }
+  var notifPermAsked = false;
   var questState = Object.assign(defaultQuestState(), store.get("quests", {}));
   var questToasts = [];
   var monthly = Object.assign(defaultMonthly(), store.get("monthly", {}));
