@@ -338,11 +338,6 @@ async function runFullSweep() {
     const navAtMid = await page.evaluate(probeNavReachable, TOL);
     await page.evaluate(() => window.scrollTo(0, 0));
 
-    await goToAccount(page);
-    const account = await page.evaluate(probeScreen, ["account", TOL]);
-    await page.evaluate(() => document.querySelector('[data-go="home"]')?.click());
-    await page.waitForTimeout(100);
-
     // stale-scroll: scroll to the bottom of shop, then navigate to progress
     // via show() — the document scroll position must reset to 0, not carry
     // over from the previous screen (both screens ride the shared document
@@ -362,6 +357,11 @@ async function runFullSweep() {
       await page.evaluate(() => document.querySelector('[data-go="home"]')?.click());
       await page.waitForTimeout(100);
     }
+
+    await goToAccount(page);
+    const account = await page.evaluate(probeScreen, ["account", TOL]);
+    await page.evaluate(() => document.querySelector('[data-go="home"]')?.click());
+    await page.waitForTimeout(100);
 
     await goToBattle(page);
     const battle = await page.evaluate(probeScreen, ["battle", TOL]);
