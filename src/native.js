@@ -26,6 +26,24 @@ export function keepAwake(on) {
   if (ka) (on ? ka.keepAwake() : ka.allowSleep());
 }
 
+// Streak-saver local notification (retention pack). Web/PWA: inert.
+// Android needs @capacitor/local-notifications + POST_NOTIFICATIONS runtime
+// permission (Android 13+) — requestPermissions() on first schedule.
+export async function syncStreakReminder(plan, title, body) {
+  if (!isNative()) return;
+  const LN = plugins().LocalNotifications;
+  if (!LN) return;
+  try {
+    await LN.cancel({ notifications: [{ id: 1001 }] });
+    if (!plan.schedule) return;
+    const perm = await LN.requestPermissions();
+    if (perm.display !== "granted") return;
+    const at = new Date();
+    at.setHours(plan.hour, 0, 0, 0);
+    await LN.schedule({ notifications: [{ id: 1001, title, body, schedule: { at } }] });
+  } catch (e) { /* notification failure must never break gameplay */ }
+}
+
 export function initNative({ getScreen, goHome }) {
   // Plain web/PWA build has no bridge at all -> stay completely inert.
   if (typeof window === "undefined" || !window.Capacitor) return;

@@ -7,7 +7,9 @@
 // battle.* (M4 HUD round capsule + pause overlay), fc.* (flashcard-only
 // strings not shared with learn.*), item.* (shop.js CATALOG id -> display
 // name, t("item."+id)), building.* (street.js BUILDINGS id -> display name,
-// t("building."+id)), toast.* (retention pack — main.js's floating toast()).
+// t("building."+id)), toast.* (retention pack — main.js's floating toast()),
+// notify.* (retention pack — Android streak-saver local notification, see
+// notify.js/native.js).
 
 export const STRINGS = {
   en: {
@@ -37,6 +39,9 @@ export const STRINGS = {
     "battle.critical": "CRITICAL!",
     // toast (retention pack — main.js's floating toast())
     "toast.freeze-used": "Streak Freeze used — your {n}-day streak is safe",
+    // notify (retention pack — Android local notification, see notify.js/native.js)
+    "notify.streak.title": "Don't lose your {n}-day streak!",
+    "notify.streak.body": "{remaining} words keep it alive — a quick round does it.",
     "milestone.scarf": "Red scarf",
     "milestone.coin": "Gold coin charm",
     "milestone.outfit": "Chinese outfit",
@@ -304,6 +309,8 @@ export const STRINGS = {
     "common.playAudio": "เล่นเสียง",
     "battle.critical": "CRITICAL!",
     "toast.freeze-used": "ใช้น้ำแข็งพิทักษ์สตรีคแล้ว — สตรีค {n} วันของคุณยังอยู่",   // TH: needs native review
+    "notify.streak.title": "อย่าให้สตรีค {n} วันหลุดนะ!",   // TH: needs native review
+    "notify.streak.body": "อีก {remaining} คำสตรีคก็รอด — เล่นรอบสั้น ๆ ก็พอ",   // TH: needs native review
     "milestone.scarf": "ผ้าพันคอสีแดง",
     "milestone.coin": "เครื่องรางเหรียญทอง",
     "milestone.outfit": "ชุดจีน",

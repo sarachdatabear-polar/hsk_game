@@ -17,11 +17,12 @@ import { recordAnswer, levelMastery } from "./mastery.js";
 import { levelForXp, xpToNext, accessoriesFor, nextMilestone, MILESTONES } from "./growth.js";
 import { wordWeight, smartDeck, weakWords } from "./srs.js";
 import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
+import { REMINDER_HOUR, reminderPlan } from "./notify.js";
 import { defaultQuestState, noteQuestEvent, questStatus,
          defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly } from "./quests.js";
 import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable, hasMp3 } from "./audio.js";
-import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
+import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import { BUILDINGS, streetPieces, streetProgress, streetMetrics, DECO_SPRITE_SCALE } from "./street.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
@@ -177,6 +178,7 @@ function toast(msg){
   toastTimer = setTimeout(()=>{ el.classList.remove("show"); }, 2600);
 }
 function noteDaily(count){
+  const wasGoalMet = streakInfo(daily, todayStr(), freezes).goalMet;
   const r = noteActivity(daily, todayStr(), count, freezes);
   // persist the same shape as before — freezesUsed is transient, not stored
   daily = { last: r.last, streak: r.streak, today: r.today, restWeek: r.restWeek, restDay: r.restDay };
@@ -187,6 +189,11 @@ function noteDaily(count){
     toast(t("toast.freeze-used", { n: r.streak }));
   }
   updateStreakChip();
+  // retention pack: once today's goal is first met, cancel any pending
+  // streak-saver reminder rather than waiting for the next backgrounding.
+  if(!wasGoalMet && streakInfo(daily, todayStr(), freezes).goalMet){
+    syncStreakReminder({ schedule: false, hour: REMINDER_HOUR, cancel: true }, "", "");
+  }
 }
 
 /* ============================== daily quests ============================== */
@@ -1070,6 +1077,15 @@ function resumeBattle(){
 // timer can't silently expire while the player isn't looking.
 document.addEventListener("visibilitychange", ()=>{
   if(document.hidden && B.on && !B.paused) pauseBattle();
+  // retention pack: leaving the app re-syncs the Android streak-saver
+  // reminder so it reflects today's freshest streak/goal state.
+  if(document.hidden){
+    const inf = streakInfo(daily, todayStr(), freezes);
+    const plan = reminderPlan(inf, new Date().getHours());
+    syncStreakReminder(plan,
+      t("notify.streak.title", { n: inf.streak }),
+      t("notify.streak.body", { remaining: Math.max(0, inf.goal - inf.todayResolved) }));
+  }
 });
 $("#hud-pause").onclick = ()=> pauseBattle();
 $("#pause-resume").onclick = ()=> resumeBattle();

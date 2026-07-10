@@ -1584,6 +1584,13 @@
     };
   }
 
+  // src/notify.js
+  var REMINDER_HOUR = 19;
+  function reminderPlan(info, hourNow) {
+    const schedule = info.streak > 0 && !info.goalMet && hourNow < REMINDER_HOUR;
+    return { schedule, hour: REMINDER_HOUR, cancel: info.goalMet };
+  }
+
   // src/quests.js
   var QUEST_POOL = [
     { id: "correct30", desc: "Answer 30 words correctly", target: 30, reward: 150 },
@@ -1716,6 +1723,21 @@
     awakeOn = on;
     const ka = plugins().KeepAwake;
     if (ka) on ? ka.keepAwake() : ka.allowSleep();
+  }
+  async function syncStreakReminder(plan, title, body) {
+    if (!isNative()) return;
+    const LN = plugins().LocalNotifications;
+    if (!LN) return;
+    try {
+      await LN.cancel({ notifications: [{ id: 1001 }] });
+      if (!plan.schedule) return;
+      const perm = await LN.requestPermissions();
+      if (perm.display !== "granted") return;
+      const at = /* @__PURE__ */ new Date();
+      at.setHours(plan.hour, 0, 0, 0);
+      await LN.schedule({ notifications: [{ id: 1001, title, body, schedule: { at } }] });
+    } catch (e) {
+    }
   }
   function initNative({ getScreen, goHome }) {
     if (typeof window === "undefined" || !window.Capacitor) return;
@@ -2113,6 +2135,9 @@
       "battle.critical": "CRITICAL!",
       // toast (retention pack — main.js's floating toast())
       "toast.freeze-used": "Streak Freeze used \u2014 your {n}-day streak is safe",
+      // notify (retention pack — Android local notification, see notify.js/native.js)
+      "notify.streak.title": "Don't lose your {n}-day streak!",
+      "notify.streak.body": "{remaining} words keep it alive \u2014 a quick round does it.",
       "milestone.scarf": "Red scarf",
       "milestone.coin": "Gold coin charm",
       "milestone.outfit": "Chinese outfit",
@@ -2381,6 +2406,10 @@
       "common.playAudio": "\u0E40\u0E25\u0E48\u0E19\u0E40\u0E2A\u0E35\u0E22\u0E07",
       "battle.critical": "CRITICAL!",
       "toast.freeze-used": "\u0E43\u0E0A\u0E49\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07\u0E1E\u0E34\u0E17\u0E31\u0E01\u0E29\u0E4C\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E2A\u0E15\u0E23\u0E35\u0E04 {n} \u0E27\u0E31\u0E19\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E22\u0E31\u0E07\u0E2D\u0E22\u0E39\u0E48",
+      // TH: needs native review
+      "notify.streak.title": "\u0E2D\u0E22\u0E48\u0E32\u0E43\u0E2B\u0E49\u0E2A\u0E15\u0E23\u0E35\u0E04 {n} \u0E27\u0E31\u0E19\u0E2B\u0E25\u0E38\u0E14\u0E19\u0E30!",
+      // TH: needs native review
+      "notify.streak.body": "\u0E2D\u0E35\u0E01 {remaining} \u0E04\u0E33\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E01\u0E47\u0E23\u0E2D\u0E14 \u2014 \u0E40\u0E25\u0E48\u0E19\u0E23\u0E2D\u0E1A\u0E2A\u0E31\u0E49\u0E19 \u0E46 \u0E01\u0E47\u0E1E\u0E2D",
       // TH: needs native review
       "milestone.scarf": "\u0E1C\u0E49\u0E32\u0E1E\u0E31\u0E19\u0E04\u0E2D\u0E2A\u0E35\u0E41\u0E14\u0E07",
       "milestone.coin": "\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E23\u0E32\u0E07\u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D\u0E17\u0E2D\u0E07",
@@ -2941,6 +2970,7 @@
     }, 2600);
   }
   function noteDaily(count) {
+    const wasGoalMet = streakInfo(daily, todayStr(), freezes).goalMet;
     const r = noteActivity(daily, todayStr(), count, freezes);
     daily = { last: r.last, streak: r.streak, today: r.today, restWeek: r.restWeek, restDay: r.restDay };
     store.set("daily", daily);
@@ -2950,6 +2980,9 @@
       toast(t("toast.freeze-used", { n: r.streak }));
     }
     updateStreakChip();
+    if (!wasGoalMet && streakInfo(daily, todayStr(), freezes).goalMet) {
+      syncStreakReminder({ schedule: false, hour: REMINDER_HOUR, cancel: true }, "", "");
+    }
   }
   var questState = Object.assign(defaultQuestState(), store.get("quests", {}));
   var questToasts = [];
@@ -3857,6 +3890,15 @@
   }
   document.addEventListener("visibilitychange", () => {
     if (document.hidden && B.on && !B.paused) pauseBattle();
+    if (document.hidden) {
+      const inf = streakInfo(daily, todayStr(), freezes);
+      const plan = reminderPlan(inf, (/* @__PURE__ */ new Date()).getHours());
+      syncStreakReminder(
+        plan,
+        t("notify.streak.title", { n: inf.streak }),
+        t("notify.streak.body", { remaining: Math.max(0, inf.goal - inf.todayResolved) })
+      );
+    }
   });
   $("#hud-pause").onclick = () => pauseBattle();
   $("#pause-resume").onclick = () => resumeBattle();
