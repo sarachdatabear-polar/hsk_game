@@ -2119,8 +2119,8 @@ function renderShop(){
   $("#shop-wallet").innerHTML = t("shop.wallet", { coins: wallet.toLocaleString() });
   const today = todayStr();
   const dailyBox = $("#shop-daily"), seasonBox = $("#shop-season");
-  const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), decoBox = $("#shop-street");
-  for(const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, decoBox]) b.innerHTML = "";
+  const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), supBox = $("#shop-supplies"), decoBox = $("#shop-street");
+  for(const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, supBox, decoBox]) b.innerHTML = "";
 
   // Today's Stock — the 3 featured pool items; once owned they live in their type section
   const stock = unownedDailyStock(today, shopState);
@@ -2148,7 +2148,7 @@ function renderShop(){
   // Permanent sections — pool/season items appear here only once owned
   for(const item of CATALOG){
     if((item.pool || item.season) && !shopState.owned.includes(item.id)) continue;
-    const box = item.type==="skin" ? skinBox : item.type==="backdrop" ? bdBox : item.type==="effect" ? fxBox : item.type==="soundpack" ? sndBox : decoBox;
+    const box = item.type==="skin" ? skinBox : item.type==="backdrop" ? bdBox : item.type==="effect" ? fxBox : item.type==="soundpack" ? sndBox : item.type==="consumable" ? supBox : decoBox;
     box.appendChild(makeShopRow(item, today));
   }
   startShopPreviewLoop();
@@ -2160,6 +2160,10 @@ function renderShop(){
 // window in play, so the hardcoded year never affects the output.
 const fmtMonthDay = ([m, d]) =>
   new Date(2026, m - 1, d).toLocaleDateString(getLocale() === "th" ? "th-TH" : "en-US", { month: "short", day: "numeric" });
+
+// Counted consumables live outside shopState.owned; each id maps to its own
+// counter so a future second consumable can never render the freeze count.
+function consumableCount(item){ return item.id === "streak-freeze" ? freezes : 0; }
 
 function makeShopRow(item, today){
   const owned = shopState.owned.includes(item.id);
@@ -2176,7 +2180,7 @@ function makeShopRow(item, today){
   const copy = document.createElement("span");
   copy.className = "shop-copy";
   const stars = item.type === "deco" && owned ? " " + "★".repeat(tier) : "";
-  const ownedCount = item.type === "consumable" ? `<small>${t("shop.owned-count", { n: freezes, cap: item.cap })}</small>` : "";
+  const ownedCount = item.type === "consumable" ? `<small>${t("shop.owned-count", { n: consumableCount(item), cap: item.cap })}</small>` : "";
   copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
   left.replaceChildren(preview, copy);
   const btn = document.createElement("button");
@@ -2196,12 +2200,14 @@ function makeShopRow(item, today){
     // shopState.owned/buy()/equipItem() — buyConsumable + nbhsk.freezes only.
     btn.className = "chip buy-chip";
     btn.textContent = t("shop.buy");
-    btn.disabled = freezes >= item.cap || wallet < item.price;
+    const have = consumableCount(item);
+    btn.disabled = have >= item.cap || wallet < item.price;
     btn.onclick = () => {
-      const r = buyConsumable(item, wallet, freezes);
+      const r = buyConsumable(item, wallet, consumableCount(item));
       if(!r.ok) return;
-      wallet = r.wallet; freezes = r.count;
-      store.set("wallet", wallet); store.set("freezes", freezes);
+      wallet = r.wallet;
+      if(item.id === "streak-freeze"){ freezes = r.count; store.set("freezes", freezes); }
+      store.set("wallet", wallet);
       justBought = { id: item.id, at: performance.now() };
       updateWalletChip(); updateStreakChip(); renderShop();
     };

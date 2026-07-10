@@ -168,6 +168,7 @@ export const STRINGS = {
     "shop.backdrops": "Quest backdrops",
     "shop.effects": "Effects",
     "shop.sounds": "Sounds",
+    "shop.supplies": "Supplies",
     "shop.street": "Street decorations",
     "shop.wallet": "Wallet: <b>{coins}</b> coins",
     "shop.buy": "Buy",
@@ -438,6 +439,7 @@ export const STRINGS = {
     "shop.backdrops": "ฉากหลัง",
     "shop.effects": "เอฟเฟกต์",
     "shop.sounds": "เสียง",
+    "shop.supplies": "ของใช้",   // TH: needs native review
     "shop.street": "ของตกแต่งถนน",
     "shop.wallet": "กระเป๋าเงิน: <b>{coins}</b> เหรียญ",
     "shop.buy": "ซื้อ",
