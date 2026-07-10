@@ -16,6 +16,7 @@ export const CATALOG = [
   { id: "tea-sign",     name: "Tea Sign",      price: 2200, type: "deco", maxTier: 3 },
   { id: "foo-dog",      name: "Foo Dog",       price: 3000, type: "deco", maxTier: 3 },
   { id: "golden-arch",  name: "Golden Arch",   price: 5000, type: "deco", maxTier: 3 },
+  { id: "streak-freeze", name: "Streak Freeze", price: 600, type: "consumable", cap: 2 },
   // ---- v7 permanent prestige band (PRD v7 F1) ----
   { id: "panda",     name: "Panda",     price: 8000,  type: "skin" },
   { id: "ninja",     name: "Ninja",     price: 12000, type: "skin" },
@@ -177,6 +178,18 @@ export function buy(wallet, shop, id, dateStr) {
     wallet: wallet - item.price,
     shop: { ...shop, owned: [...shop.owned, id] },
   };
+}
+
+// Consumables are counted, not owned: repurchase allowed below the item cap.
+// buy()'s owned-check would permanently block a repurchase after the first
+// (it treats any owned non-deco id as a one-time purchase), so a capped
+// consumable needs its own pure path — never routed through buy()/owned/
+// equipItem(). Caller owns persistence of the count (e.g. nbhsk.freezes).
+export function buyConsumable(item, wallet, count) {
+  if (!item || item.type !== "consumable") return { ok: false, reason: "not-consumable" };
+  if (count >= item.cap) return { ok: false, reason: "cap" };
+  if (wallet < item.price) return { ok: false, reason: "coins" };
+  return { ok: true, wallet: wallet - item.price, count: count + 1 };
 }
 
 // type is only consulted when id is "" (clears that slot); for a real id the

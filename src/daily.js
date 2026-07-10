@@ -41,48 +41,71 @@ export function weekStart(dateStr) {
 // first reaches GOAL. Kind streak (B1): with a streak ≥3, exactly one missed
 // day is absorbed by the week's automatic rest day (Mon–Sun); the rest day
 // itself never increments the streak — only the active return day does.
-export function noteActivity(daily, dateStr, count) {
+export function noteActivity(daily, dateStr, count, freezes = 0) {
   const before = daily.today.date === dateStr ? daily.today.resolved : 0;
   const resolved = before + count;
   const today = { date: dateStr, resolved };
   let { last, streak } = daily;
   let restWeek = daily.restWeek || "";
   let restDay = daily.restDay || "";
+  let freezesUsed = 0;
   const crossedNow = before < GOAL && resolved >= GOAL;
   if (crossedNow && last !== dateStr) {
     if (isYesterday(last, dateStr)) {
       streak += 1;
     } else {
-      const missed = last ? addDays(last, 1) : "";
-      const covered = streak >= 3 && missed !== "" &&
-        addDays(last, 2) === dateStr &&            // exactly one missed day
-        weekStart(missed) !== restWeek;             // this week's rest unspent
-      if (covered) {
-        restWeek = weekStart(missed);
-        restDay = missed;
-        streak += 1;                                // the return day counts; the rest day never does
+      // Gap coverage, kindest-first: the week's automatic rest day (free,
+      // needs streak >= 3, one per Mon-Sun week) absorbs one missed day,
+      // then owned freezes (paid, no streak gate) absorb the rest. Gaps of
+      // more than two missed days are never coverable. Freezes are only
+      // consumed when the whole gap is coverable — never on a lost cause.
+      const missed = [];
+      if (last) {
+        let d = addDays(last, 1);
+        while (d && d !== dateStr && missed.length < 3) { missed.push(d); d = addDays(d, 1); }
+      }
+      let restUsedDay = "";
+      let uncovered = 0;
+      for (const day of missed) {
+        if (!restUsedDay && streak >= 3 && weekStart(day) !== restWeek) restUsedDay = day;
+        else uncovered += 1;
+      }
+      const coverable = last !== "" && missed.length >= 1 && missed.length <= 2 && uncovered <= freezes;
+      if (coverable) {
+        if (restUsedDay) { restWeek = weekStart(restUsedDay); restDay = restUsedDay; }
+        freezesUsed = uncovered;
+        streak += 1;                     // the return day counts; covered days never do
       } else {
         streak = 1;
       }
     }
     last = dateStr;
   }
-  return { last, streak, today, restWeek, restDay };
+  return { last, streak, today, restWeek, restDay, freezesUsed };
 }
 
 // {streak, todayResolved, goal, goalMet, restNote} for display. The chain
 // also reads alive across a single missed day that the week's rest day can
 // (or did) cover — so the player never sees a scary 0 before the rest day is
 // even consumed. restNote marks the calm "🍵 rest day used" return day.
-export function streakInfo(daily, dateStr) {
+export function streakInfo(daily, dateStr, freezes = 0) {
   const todayResolved = daily.today.date === dateStr ? daily.today.resolved : 0;
   const restWeek = daily.restWeek || "";
   const restDay = daily.restDay || "";
-  const missed = daily.last ? addDays(daily.last, 1) : "";
   // (a consumed rest day always advances `last` past restDay, so the only
-  //  question is whether the missed day's week still has its rest unspent)
-  const coverableGap = daily.last !== "" && addDays(daily.last, 2) === dateStr &&
-    daily.streak >= 3 && weekStart(missed) !== restWeek;
+  //  question is whether the missed days' coverage — rest first, then owned
+  //  freezes — spans the whole gap; mirrors noteActivity's kindest-first walk)
+  const missed = [];
+  if (daily.last && daily.last !== dateStr && !isYesterday(daily.last, dateStr)) {
+    let d = addDays(daily.last, 1);
+    while (d && d !== dateStr && missed.length < 3) { missed.push(d); d = addDays(d, 1); }
+  }
+  let restUsable = false, uncovered = 0;
+  for (const day of missed) {
+    if (!restUsable && daily.streak >= 3 && weekStart(day) !== restWeek) restUsable = true;
+    else uncovered += 1;
+  }
+  const coverableGap = daily.last !== "" && missed.length >= 1 && missed.length <= 2 && uncovered <= freezes;
   const chainAlive = daily.last === dateStr || isYesterday(daily.last, dateStr) || coverableGap;
   return {
     streak: chainAlive ? daily.streak : 0,

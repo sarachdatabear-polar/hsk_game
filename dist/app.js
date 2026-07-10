@@ -1513,24 +1513,40 @@
     d.setUTCDate(d.getUTCDate() - dow);
     return d.toISOString().slice(0, 10);
   }
-  function noteActivity(daily2, dateStr, count) {
+  function noteActivity(daily2, dateStr, count, freezes2 = 0) {
     const before = daily2.today.date === dateStr ? daily2.today.resolved : 0;
     const resolved = before + count;
     const today = { date: dateStr, resolved };
     let { last, streak } = daily2;
     let restWeek = daily2.restWeek || "";
     let restDay = daily2.restDay || "";
+    let freezesUsed = 0;
     const crossedNow = before < GOAL && resolved >= GOAL;
     if (crossedNow && last !== dateStr) {
       if (isYesterday(last, dateStr)) {
         streak += 1;
       } else {
-        const missed = last ? addDays(last, 1) : "";
-        const covered = streak >= 3 && missed !== "" && addDays(last, 2) === dateStr && // exactly one missed day
-        weekStart(missed) !== restWeek;
-        if (covered) {
-          restWeek = weekStart(missed);
-          restDay = missed;
+        const missed = [];
+        if (last) {
+          let d = addDays(last, 1);
+          while (d && d !== dateStr && missed.length < 3) {
+            missed.push(d);
+            d = addDays(d, 1);
+          }
+        }
+        let restUsedDay = "";
+        let uncovered = 0;
+        for (const day of missed) {
+          if (!restUsedDay && streak >= 3 && weekStart(day) !== restWeek) restUsedDay = day;
+          else uncovered += 1;
+        }
+        const coverable = last !== "" && missed.length >= 1 && missed.length <= 2 && uncovered <= freezes2;
+        if (coverable) {
+          if (restUsedDay) {
+            restWeek = weekStart(restUsedDay);
+            restDay = restUsedDay;
+          }
+          freezesUsed = uncovered;
           streak += 1;
         } else {
           streak = 1;
@@ -1538,14 +1554,26 @@
       }
       last = dateStr;
     }
-    return { last, streak, today, restWeek, restDay };
+    return { last, streak, today, restWeek, restDay, freezesUsed };
   }
-  function streakInfo(daily2, dateStr) {
+  function streakInfo(daily2, dateStr, freezes2 = 0) {
     const todayResolved = daily2.today.date === dateStr ? daily2.today.resolved : 0;
     const restWeek = daily2.restWeek || "";
     const restDay = daily2.restDay || "";
-    const missed = daily2.last ? addDays(daily2.last, 1) : "";
-    const coverableGap = daily2.last !== "" && addDays(daily2.last, 2) === dateStr && daily2.streak >= 3 && weekStart(missed) !== restWeek;
+    const missed = [];
+    if (daily2.last && daily2.last !== dateStr && !isYesterday(daily2.last, dateStr)) {
+      let d = addDays(daily2.last, 1);
+      while (d && d !== dateStr && missed.length < 3) {
+        missed.push(d);
+        d = addDays(d, 1);
+      }
+    }
+    let restUsable = false, uncovered = 0;
+    for (const day of missed) {
+      if (!restUsable && daily2.streak >= 3 && weekStart(day) !== restWeek) restUsable = true;
+      else uncovered += 1;
+    }
+    const coverableGap = daily2.last !== "" && missed.length >= 1 && missed.length <= 2 && uncovered <= freezes2;
     const chainAlive = daily2.last === dateStr || isYesterday(daily2.last, dateStr) || coverableGap;
     return {
       streak: chainAlive ? daily2.streak : 0,
@@ -1554,6 +1582,13 @@
       goalMet: todayResolved >= GOAL,
       restNote: restDay !== "" && isYesterday(restDay, dateStr)
     };
+  }
+
+  // src/notify.js
+  var REMINDER_HOUR = 19;
+  function reminderPlan(info, hourNow) {
+    const schedule = info.streak > 0 && !info.goalMet && hourNow < REMINDER_HOUR;
+    return { schedule, hour: REMINDER_HOUR, cancel: info.goalMet };
   }
 
   // src/quests.js
@@ -1624,6 +1659,37 @@
       done: sameDay ? state.done.includes(q.id) : false
     }));
   }
+  var MONTHLY_TARGET = 40;
+  var MONTHLY_REWARD = 1500;
+  function monthKey(dateStr) {
+    return (dateStr || "").slice(0, 7);
+  }
+  function defaultMonthly() {
+    return { month: "", done: 0, claimed: false };
+  }
+  function noteMonthlyProgress(m, dateStr, completedCount) {
+    const month = monthKey(dateStr);
+    const rollover = m.month !== month;
+    const done = Math.min(MONTHLY_TARGET, (rollover ? 0 : m.done) + completedCount);
+    return { month, done, claimed: rollover ? false : m.claimed };
+  }
+  function monthlyStatus(m, dateStr) {
+    const same = m.month === monthKey(dateStr);
+    const done = same ? m.done : 0;
+    return {
+      done,
+      target: MONTHLY_TARGET,
+      reward: MONTHLY_REWARD,
+      complete: done >= MONTHLY_TARGET,
+      claimed: same ? m.claimed : false
+    };
+  }
+  function claimMonthly(m) {
+    if (m.done >= MONTHLY_TARGET && !m.claimed) {
+      return { state: { ...m, claimed: true }, earned: MONTHLY_REWARD };
+    }
+    return { state: m, earned: 0 };
+  }
 
   // src/boss.js
   var BOSS_EVERY = 10;
@@ -1657,6 +1723,21 @@
     awakeOn = on;
     const ka = plugins().KeepAwake;
     if (ka) on ? ka.keepAwake() : ka.allowSleep();
+  }
+  async function syncStreakReminder(plan, title, body) {
+    if (!isNative()) return;
+    const LN = plugins().LocalNotifications;
+    if (!LN) return;
+    try {
+      await LN.cancel({ notifications: [{ id: 1001 }] });
+      if (!plan.schedule) return;
+      const perm = await LN.requestPermissions();
+      if (perm.display !== "granted") return;
+      const at = /* @__PURE__ */ new Date();
+      at.setHours(plan.hour, 0, 0, 0);
+      await LN.schedule({ notifications: [{ id: 1001, title, body, schedule: { at } }] });
+    } catch (e) {
+    }
   }
   function initNative({ getScreen, goHome }) {
     if (typeof window === "undefined" || !window.Capacitor) return;
@@ -1748,6 +1829,7 @@
     { id: "tea-sign", name: "Tea Sign", price: 2200, type: "deco", maxTier: 3 },
     { id: "foo-dog", name: "Foo Dog", price: 3e3, type: "deco", maxTier: 3 },
     { id: "golden-arch", name: "Golden Arch", price: 5e3, type: "deco", maxTier: 3 },
+    { id: "streak-freeze", name: "Streak Freeze", price: 600, type: "consumable", cap: 2 },
     // ---- v7 permanent prestige band (PRD v7 F1) ----
     { id: "panda", name: "Panda", price: 8e3, type: "skin" },
     { id: "ninja", name: "Ninja", price: 12e3, type: "skin" },
@@ -1918,6 +2000,12 @@
       shop: { ...shop, owned: [...shop.owned, id] }
     };
   }
+  function buyConsumable(item, wallet2, count) {
+    if (!item || item.type !== "consumable") return { ok: false, reason: "not-consumable" };
+    if (count >= item.cap) return { ok: false, reason: "cap" };
+    if (wallet2 < item.price) return { ok: false, reason: "coins" };
+    return { ok: true, wallet: wallet2 - item.price, count: count + 1 };
+  }
   function equipItem(shop, id, type) {
     if (!id) return type === "skin" || type === "backdrop" || type === "effect" || type === "soundpack" ? { ...shop, [type]: "" } : shop;
     const item = byId(id);
@@ -2034,6 +2122,7 @@
       "home.settings": "Settings",
       "home.streakTitle": "Study Streak",
       "home.streakDays": "{n} days",
+      "home.freezes": "{n} freeze(s)",
       "home.start": "START",
       "home.startHint": "Need at least 8 words in scope to start \u2014 widen it below.",
       "home.scopeWords": "{n} words",
@@ -2044,6 +2133,11 @@
       "progress.levelRow": "{pct} mastered \xB7 {seen}/{total} seen",
       "common.playAudio": "Play audio",
       "battle.critical": "CRITICAL!",
+      // toast (retention pack — main.js's floating toast())
+      "toast.freeze-used": "Streak Freeze used \u2014 your {n}-day streak is safe",
+      // notify (retention pack — Android local notification, see notify.js/native.js)
+      "notify.streak.title": "Don't lose your {n}-day streak!",
+      "notify.streak.body": "{remaining} words keep it alive \u2014 a quick round does it.",
       "milestone.scarf": "Red scarf",
       "milestone.coin": "Gold coin charm",
       "milestone.outfit": "Chinese outfit",
@@ -2131,6 +2225,10 @@
       "quest.perfect1": "Finish a round with no misses",
       "quest.review1": "Play a Smart Review round",
       "quest.learn20": "Mark 20 flashcards as known",
+      // monthly quest layer (retention pack)
+      "quest.monthly.title": "Monthly: {done}/{target} quests",
+      "quest.monthly.claim": "Claim +{reward}",
+      "quest.monthly.badge": "Monthly badge earned!",
       // scores / progress
       "scores.title": "Best Sessions",
       "scores.empty": "No sessions yet \u2014 complete a Word Quest.",
@@ -2156,6 +2254,8 @@
       "sticker.streak7Hint": "Keep a 7-day study streak",
       "sticker.streak30Name": "30-Day Streak",
       "sticker.streak30Hint": "Keep a 30-day study streak",
+      "sticker.monthlyName": "Monthly Champion",
+      "sticker.monthlyHint": "Finish 40 quests in a month",
       "results.newSticker": "New sticker: {name}",
       // shop / collection
       "shop.title": "Shop",
@@ -2176,6 +2276,7 @@
       "shop.seasonUntil": "Available until {date}",
       "shop.seasonReturns": "\u{1F3EE} {name} set returns {date}",
       "shop.upgrade": "Upgrade {stars} ({coins})",
+      "shop.owned-count": "Owned: {n}/{cap}",
       "shop.maxed": "\u2605\u2605\u2605",
       "season.summer": "Summer",
       "season.midautumn": "Mid-Autumn",
@@ -2193,6 +2294,7 @@
       "item.tea-sign": "Tea Sign",
       "item.foo-dog": "Foo Dog",
       "item.golden-arch": "Golden Arch",
+      "item.streak-freeze": "Streak Freeze",
       "item.panda": "Panda",
       "item.ninja": "Ninja",
       "item.astronaut": "Astronaut",
@@ -2291,6 +2393,8 @@
       "home.settings": "\u0E15\u0E31\u0E49\u0E07\u0E04\u0E48\u0E32",
       "home.streakTitle": "\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07",
       "home.streakDays": "{n} \u0E27\u0E31\u0E19",
+      "home.freezes": "\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07 {n} \u0E0A\u0E34\u0E49\u0E19",
+      // TH: needs native review
       "home.start": "\u0E40\u0E23\u0E34\u0E48\u0E21",
       "home.startHint": "\u0E15\u0E49\u0E2D\u0E07\u0E21\u0E35\u0E04\u0E33\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E19\u0E49\u0E2D\u0E22 8 \u0E04\u0E33\u0E43\u0E19\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E08\u0E36\u0E07\u0E08\u0E30\u0E40\u0E23\u0E34\u0E48\u0E21\u0E44\u0E14\u0E49 \u2014 \u0E02\u0E22\u0E32\u0E22\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E14\u0E49\u0E32\u0E19\u0E25\u0E48\u0E32\u0E07",
       "home.scopeWords": "{n} \u0E04\u0E33",
@@ -2301,6 +2405,12 @@
       "progress.levelRow": "{pct} \u0E40\u0E0A\u0E35\u0E48\u0E22\u0E27\u0E0A\u0E32\u0E0D \xB7 \u0E40\u0E2B\u0E47\u0E19 {seen}/{total}",
       "common.playAudio": "\u0E40\u0E25\u0E48\u0E19\u0E40\u0E2A\u0E35\u0E22\u0E07",
       "battle.critical": "CRITICAL!",
+      "toast.freeze-used": "\u0E43\u0E0A\u0E49\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07\u0E1E\u0E34\u0E17\u0E31\u0E01\u0E29\u0E4C\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E2A\u0E15\u0E23\u0E35\u0E04 {n} \u0E27\u0E31\u0E19\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E22\u0E31\u0E07\u0E2D\u0E22\u0E39\u0E48",
+      // TH: needs native review
+      "notify.streak.title": "\u0E2D\u0E22\u0E48\u0E32\u0E43\u0E2B\u0E49\u0E2A\u0E15\u0E23\u0E35\u0E04 {n} \u0E27\u0E31\u0E19\u0E2B\u0E25\u0E38\u0E14\u0E19\u0E30!",
+      // TH: needs native review
+      "notify.streak.body": "\u0E2D\u0E35\u0E01 {remaining} \u0E04\u0E33\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E01\u0E47\u0E23\u0E2D\u0E14 \u2014 \u0E40\u0E25\u0E48\u0E19\u0E23\u0E2D\u0E1A\u0E2A\u0E31\u0E49\u0E19 \u0E46 \u0E01\u0E47\u0E1E\u0E2D",
+      // TH: needs native review
       "milestone.scarf": "\u0E1C\u0E49\u0E32\u0E1E\u0E31\u0E19\u0E04\u0E2D\u0E2A\u0E35\u0E41\u0E14\u0E07",
       "milestone.coin": "\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E23\u0E32\u0E07\u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D\u0E17\u0E2D\u0E07",
       "milestone.outfit": "\u0E0A\u0E38\u0E14\u0E08\u0E35\u0E19",
@@ -2388,6 +2498,13 @@
       "quest.perfect1": "\u0E08\u0E1A\u0E23\u0E2D\u0E1A\u0E42\u0E14\u0E22\u0E44\u0E21\u0E48\u0E15\u0E2D\u0E1A\u0E1C\u0E34\u0E14",
       "quest.review1": "\u0E40\u0E25\u0E48\u0E19\u0E23\u0E2D\u0E1A\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E2D\u0E31\u0E08\u0E09\u0E23\u0E34\u0E22\u0E30",
       "quest.learn20": "\u0E17\u0E33\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E2B\u0E21\u0E32\u0E22\u0E23\u0E39\u0E49\u0E41\u0E25\u0E49\u0E27 20 \u0E1A\u0E31\u0E15\u0E23",
+      // monthly quest layer (retention pack)
+      "quest.monthly.title": "\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19: {done}/{target} \u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C",
+      // TH: needs native review
+      "quest.monthly.claim": "\u0E23\u0E31\u0E1A +{reward}",
+      // TH: needs native review
+      "quest.monthly.badge": "\u0E44\u0E14\u0E49\u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D\u0E15\u0E23\u0E32\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E41\u0E25\u0E49\u0E27!",
+      // TH: needs native review
       // scores / progress
       "scores.title": "\u0E2A\u0E16\u0E34\u0E15\u0E34\u0E14\u0E35\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14",
       "scores.empty": "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E2A\u0E16\u0E34\u0E15\u0E34 \u2014 \u0E40\u0E25\u0E48\u0E19\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E01\u0E48\u0E2D\u0E19",
@@ -2413,6 +2530,10 @@
       "sticker.streak7Hint": "\u0E23\u0E31\u0E01\u0E29\u0E32\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E01\u0E32\u0E23\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07 7 \u0E27\u0E31\u0E19",
       "sticker.streak30Name": "\u0E2A\u0E15\u0E23\u0E35\u0E04 30 \u0E27\u0E31\u0E19",
       "sticker.streak30Hint": "\u0E23\u0E31\u0E01\u0E29\u0E32\u0E2A\u0E15\u0E23\u0E35\u0E04\u0E01\u0E32\u0E23\u0E40\u0E23\u0E35\u0E22\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07 30 \u0E27\u0E31\u0E19",
+      "sticker.monthlyName": "\u0E41\u0E0A\u0E21\u0E1B\u0E4C\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19",
+      // TH: needs native review
+      "sticker.monthlyHint": "\u0E17\u0E33\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 40 \u0E04\u0E23\u0E31\u0E49\u0E07\u0E43\u0E19\u0E2B\u0E19\u0E36\u0E48\u0E07\u0E40\u0E14\u0E37\u0E2D\u0E19",
+      // TH: needs native review
       "results.newSticker": "\u0E2A\u0E15\u0E34\u0E01\u0E40\u0E01\u0E2D\u0E23\u0E4C\u0E43\u0E2B\u0E21\u0E48: {name}",
       // shop / collection
       "shop.title": "\u0E23\u0E49\u0E32\u0E19\u0E04\u0E49\u0E32",
@@ -2433,6 +2554,8 @@
       "shop.seasonUntil": "\u0E21\u0E35\u0E16\u0E36\u0E07 {date}",
       "shop.seasonReturns": "\u{1F3EE} \u0E40\u0E0B\u0E47\u0E15 {name} \u0E08\u0E30\u0E01\u0E25\u0E31\u0E1A\u0E21\u0E32 {date}",
       "shop.upgrade": "\u0E2D\u0E31\u0E1B\u0E40\u0E01\u0E23\u0E14 {stars} ({coins})",
+      "shop.owned-count": "\u0E21\u0E35\u0E2D\u0E22\u0E39\u0E48: {n}/{cap}",
+      // TH: needs native review
       "shop.maxed": "\u2605\u2605\u2605",
       "season.summer": "\u0E24\u0E14\u0E39\u0E23\u0E49\u0E2D\u0E19",
       "season.midautumn": "\u0E44\u0E2B\u0E27\u0E49\u0E1E\u0E23\u0E30\u0E08\u0E31\u0E19\u0E17\u0E23\u0E4C",
@@ -2450,6 +2573,8 @@
       "item.tea-sign": "\u0E1B\u0E49\u0E32\u0E22\u0E0A\u0E32",
       "item.foo-dog": "\u0E2A\u0E34\u0E07\u0E42\u0E15\u0E2B\u0E34\u0E19",
       "item.golden-arch": "\u0E0B\u0E38\u0E49\u0E21\u0E1B\u0E23\u0E30\u0E15\u0E39\u0E17\u0E2D\u0E07",
+      "item.streak-freeze": "\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07\u0E1E\u0E34\u0E17\u0E31\u0E01\u0E29\u0E4C\u0E2A\u0E15\u0E23\u0E35\u0E04",
+      // TH: needs native review
       "item.panda": "\u0E41\u0E1E\u0E19\u0E14\u0E49\u0E32",
       "item.ninja": "\u0E19\u0E34\u0E19\u0E08\u0E32",
       "item.astronaut": "\u0E19\u0E31\u0E01\u0E1A\u0E34\u0E19\u0E2D\u0E27\u0E01\u0E32\u0E28",
@@ -2622,7 +2747,7 @@
   // src/stickers.js
   var TOP_NS = [100, 300, 500];
   var MILESTONE_PCTS = [25, 50, 75, 100];
-  var EVENT_STICKERS = ["welcome", "first-boss", "streak-7", "streak-30"];
+  var EVENT_STICKERS = ["welcome", "first-boss", "streak-7", "streak-30", "monthly-40"];
   function defaultStickers() {
     return { earned: {}, queue: [] };
   }
@@ -2686,6 +2811,7 @@
         else if (d.event === "first-boss" && facts.bossDefeated) award(d.id);
         else if (d.event === "streak-7" && facts.streak >= 7) award(d.id);
         else if (d.event === "streak-30" && facts.streak >= 30) award(d.id);
+        else if (d.event === "monthly-40" && facts.monthlyDone >= 40) award(d.id);
       }
     }
     return { earned, queue };
@@ -2770,6 +2896,7 @@
   }
   var SHOP_REARM_MS = 400;
   var justBought = null;
+  var freezes = Math.min(2, Number(store.get("freezes")) || 0);
   var xp = store.get("xp", 0);
   function updateLevelChip() {
     const el = $("#home-level");
@@ -2806,7 +2933,7 @@
   function updateStreakChip() {
     const el = $("#home-streak");
     if (!el) return;
-    const info = streakInfo(daily, todayStr());
+    const info = streakInfo(daily, todayStr(), freezes);
     const title = el.querySelector(".streak-title");
     const count = el.querySelector(".streak-count");
     const bar = el.querySelector(".streak-bar i");
@@ -2819,14 +2946,47 @@
       if (info.restNote) note.textContent = t("streak.restUsed", { n: info.streak });
     }
     el.classList.toggle("goal-met", info.goalMet);
+    const freezeChip = $("#streak-freeze-chip");
+    if (freezeChip) {
+      freezeChip.style.display = freezes > 0 ? "flex" : "none";
+      const label = freezeChip.querySelector(".freeze-count");
+      if (label) label.textContent = t("home.freezes", { n: freezes });
+    }
+  }
+  var toastTimer = 0;
+  function toast(msg) {
+    clearTimeout(toastTimer);
+    let el = document.getElementById("toast-pop");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "toast-pop";
+      el.className = "toast-pop";
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    requestAnimationFrame(() => el.classList.add("show"));
+    toastTimer = setTimeout(() => {
+      el.classList.remove("show");
+    }, 2600);
   }
   function noteDaily(count) {
-    daily = noteActivity(daily, todayStr(), count);
+    const wasGoalMet = streakInfo(daily, todayStr(), freezes).goalMet;
+    const r = noteActivity(daily, todayStr(), count, freezes);
+    daily = { last: r.last, streak: r.streak, today: r.today, restWeek: r.restWeek, restDay: r.restDay };
     store.set("daily", daily);
+    if (r.freezesUsed > 0) {
+      freezes = Math.max(0, freezes - r.freezesUsed);
+      store.set("freezes", freezes);
+      toast(t("toast.freeze-used", { n: r.streak }));
+    }
     updateStreakChip();
+    if (!wasGoalMet && streakInfo(daily, todayStr(), freezes).goalMet) {
+      syncStreakReminder({ schedule: false, hour: REMINDER_HOUR, cancel: true }, "", "");
+    }
   }
   var questState = Object.assign(defaultQuestState(), store.get("quests", {}));
   var questToasts = [];
+  var monthly = Object.assign(defaultMonthly(), store.get("monthly", {}));
   var st0 = Object.assign(defaultStickers(), store.get("stickers", {}) || {});
   var stickerState = {
     earned: Object.assign({}, st0.earned),
@@ -2840,6 +3000,7 @@
     if (def.event === "welcome") return t("sticker.welcomeName");
     if (def.event === "first-boss") return t("sticker.bossName");
     if (def.event === "streak-7") return t("sticker.streak7Name");
+    if (def.event === "monthly-40") return t("sticker.monthlyName");
     return t("sticker.streak30Name");
   }
   function stickerHint(def) {
@@ -2848,6 +3009,7 @@
     if (def.event === "welcome") return t("sticker.welcomeHint");
     if (def.event === "first-boss") return t("sticker.bossHint");
     if (def.event === "streak-7") return t("sticker.streak7Hint");
+    if (def.event === "monthly-40") return t("sticker.monthlyHint");
     return t("sticker.streak30Hint");
   }
   function stickerIcon(def) {
@@ -2855,6 +3017,7 @@
     if (def.kind === "milestone") return "star";
     if (def.event === "first-boss") return "target";
     if (def.event === "welcome") return "cards";
+    if (def.event === "monthly-40") return "calendar";
     return "streak";
   }
   function renderAlbum() {
@@ -2903,13 +3066,44 @@
       store.set("wallet", wallet);
       updateWalletChip();
     }
-    if (r.completed.length) questToasts.push(...r.completed);
+    if (r.completed.length) {
+      questToasts.push(...r.completed);
+      monthly = noteMonthlyProgress(monthly, todayStr(), r.completed.length);
+      store.set("monthly", monthly);
+    }
     renderQuests();
   }
   function renderQuests() {
     const panel = $("#quest-panel");
     if (!panel) return;
     panel.innerHTML = "";
+    const ms = monthlyStatus(monthly, todayStr());
+    const pct = Math.min(100, Math.round(100 * ms.done / ms.target));
+    const mrow = document.createElement("div");
+    mrow.className = "quest-row monthly-row" + (ms.claimed ? " done" : "");
+    mrow.innerHTML = `<div class="mq-top">
+      <span class="qi">${ms.claimed ? t("quest.status.done") : t("quest.status.open")}</span>
+      <span class="qd">${t("quest.monthly.title", { done: ms.done, target: ms.target })}</span>
+    </div>
+    <div class="mbar monthly-bar"><i style="width:${pct}%"></i></div>`;
+    if (ms.complete && !ms.claimed) {
+      const btn = document.createElement("button");
+      btn.className = "chip buy-chip monthly-claim";
+      btn.textContent = t("quest.monthly.claim", { reward: ms.reward });
+      btn.onclick = () => {
+        const c = claimMonthly(monthly);
+        monthly = c.state;
+        store.set("monthly", monthly);
+        if (c.earned > 0) {
+          wallet += c.earned;
+          store.set("wallet", wallet);
+          updateWalletChip();
+        }
+        renderQuests();
+      };
+      mrow.appendChild(btn);
+    }
+    panel.appendChild(mrow);
     for (const q of questStatus(questState, todayStr())) {
       const row = document.createElement("div");
       row.className = "quest-row" + (q.done ? " done" : "");
@@ -3696,6 +3890,15 @@
   }
   document.addEventListener("visibilitychange", () => {
     if (document.hidden && B.on && !B.paused) pauseBattle();
+    if (document.hidden) {
+      const inf = streakInfo(daily, todayStr(), freezes);
+      const plan = reminderPlan(inf, (/* @__PURE__ */ new Date()).getHours());
+      syncStreakReminder(
+        plan,
+        t("notify.streak.title", { n: inf.streak }),
+        t("notify.streak.body", { remaining: Math.max(0, inf.goal - inf.todayResolved) })
+      );
+    }
   });
   $("#hud-pause").onclick = () => pauseBattle();
   $("#pause-resume").onclick = () => resumeBattle();
@@ -4579,10 +4782,13 @@
         ...scopeFacts(D.levels, masteryStore),
         sessionDone: false,
         bossDefeated: !!B.bossDefeated,
-        streak: streakInfo(daily, todayStr()).streak
+        streak: streakInfo(daily, todayStr(), freezes).streak,
+        monthlyDone: monthlyStatus(monthly, todayStr()).done
       };
+      const hadMonthlyBadgeQuit = !!stickerState.earned["ev:monthly-40"];
       stickerState = evaluateAwards(stickerState, STICKER_DEFS, quitFacts, todayStr());
       store.set("stickers", stickerState);
+      if (!hadMonthlyBadgeQuit && stickerState.earned["ev:monthly-40"]) toast(t("quest.monthly.badge"));
       show("home");
       return;
     }
@@ -4687,10 +4893,13 @@
       ...scopeFacts(D.levels, masteryStore),
       sessionDone: B.resolved > 0,
       bossDefeated: !!B.bossDefeated,
-      streak: streakInfo(daily, todayStr()).streak
+      streak: streakInfo(daily, todayStr(), freezes).streak,
+      monthlyDone: monthlyStatus(monthly, todayStr()).done
     };
+    const hadMonthlyBadge = !!stickerState.earned["ev:monthly-40"];
     stickerState = evaluateAwards(stickerState, STICKER_DEFS, stickerFacts, todayStr());
     store.set("stickers", stickerState);
+    if (!hadMonthlyBadge && stickerState.earned["ev:monthly-40"]) toast(t("quest.monthly.badge"));
     const slot = $("#r-sticker-slot");
     const popped = popToast(stickerState);
     if (popped.id) {
@@ -4771,7 +4980,8 @@
     const copy = document.createElement("span");
     copy.className = "shop-copy";
     const stars = item.type === "deco" && owned ? " " + "\u2605".repeat(tier) : "";
-    copy.innerHTML = `<b>${tOr("item." + item.id, item.name)}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
+    const ownedCount = item.type === "consumable" ? `<small>${t("shop.owned-count", { n: freezes, cap: item.cap })}</small>` : "";
+    copy.innerHTML = `<b>${tOr("item." + item.id, item.name)}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
     left.replaceChildren(preview, copy);
     const btn = document.createElement("button");
     const doBuy = () => {
@@ -4785,7 +4995,33 @@
       updateWalletChip();
       renderShop();
     };
-    if (item.type === "deco") {
+    if (item.type === "consumable") {
+      btn.className = "chip buy-chip";
+      btn.textContent = t("shop.buy");
+      btn.disabled = freezes >= item.cap || wallet < item.price;
+      btn.onclick = () => {
+        const r = buyConsumable(item, wallet, freezes);
+        if (!r.ok) return;
+        wallet = r.wallet;
+        freezes = r.count;
+        store.set("wallet", wallet);
+        store.set("freezes", freezes);
+        justBought = { id: item.id, at: performance.now() };
+        updateWalletChip();
+        updateStreakChip();
+        renderShop();
+      };
+      if (justBought && justBought.id === item.id) {
+        const elapsed = performance.now() - justBought.at;
+        if (elapsed < SHOP_REARM_MS) {
+          const wasDisabled = btn.disabled;
+          btn.disabled = true;
+          setTimeout(() => {
+            btn.disabled = wasDisabled;
+          }, SHOP_REARM_MS - elapsed);
+        }
+      }
+    } else if (item.type === "deco") {
       if (!owned) {
         btn.className = "chip buy-chip";
         btn.textContent = t("shop.buy");
@@ -5000,6 +5236,19 @@
         c.arc(60, 38, 5, 0, Math.PI * 2);
         c.fill();
       }
+    } else if (item.type === "consumable") {
+      c.save();
+      c.translate(48, 32);
+      c.scale(1.9, 1.9);
+      c.translate(-12, -12);
+      c.strokeStyle = "#bfe8ff";
+      c.lineCap = "round";
+      c.lineJoin = "round";
+      c.lineWidth = 2;
+      c.stroke(new Path2D("M12 4v16M5 8l14 8M5 16l14-8"));
+      c.lineWidth = 1.5;
+      c.stroke(new Path2D("M12 7l-2.2 1.3M12 7l2.2 1.3M12 17l-2.2-1.3M12 17l2.2-1.3M7.5 9.7L6 8.8M7.5 9.7l-.6 2.3M16.5 9.7l.6 2.3M16.5 9.7l1.5-.9M7.5 14.3l-1.5.9M7.5 14.3l-.6-2.3M16.5 14.3l.6-2.3M16.5 14.3l1.5.9"));
+      c.restore();
     } else {
       const dimg = sprite("deco-" + item.id);
       if (dimg) {

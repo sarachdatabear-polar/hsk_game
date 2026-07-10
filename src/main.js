@@ -17,11 +17,13 @@ import { recordAnswer, levelMastery } from "./mastery.js";
 import { levelForXp, xpToNext, accessoriesFor, nextMilestone, MILESTONES } from "./growth.js";
 import { wordWeight, smartDeck, weakWords } from "./srs.js";
 import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
-import { defaultQuestState, noteQuestEvent, questStatus } from "./quests.js";
+import { REMINDER_HOUR, reminderPlan } from "./notify.js";
+import { defaultQuestState, noteQuestEvent, questStatus,
+         defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly } from "./quests.js";
 import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable, hasMp3 } from "./audio.js";
-import { initNative, hapticKill, hapticWrong, keepAwake } from "./native.js";
-import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
+import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder } from "./native.js";
+import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import { BUILDINGS, streetPieces, streetProgress, streetMetrics, DECO_SPRITE_SCALE } from "./street.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
@@ -86,6 +88,9 @@ function updateWalletChip(){ setPill($("#home-wallet"), "secondary-coin", wallet
 // can land on it and charge the upgrade too — see makeShopRow.
 const SHOP_REARM_MS = 400;
 let justBought = null;   // {id, at} — item + moment of the most recent purchase
+// Owned streak-freeze count (0-2, retention pack). Counted, not owned — never
+// routed through shopState.owned/buy()/equipItem() (see shop.js buyConsumable).
+let freezes = Math.min(2, Number(store.get("freezes")) || 0);
 
 /* ============================== cat growth (xp/levels/accessories) ============================== */
 let xp = store.get("xp", 0);
@@ -133,7 +138,7 @@ daily.today = Object.assign({date:"", resolved:0}, daily.today);
 function updateStreakChip(){
   const el = $("#home-streak");
   if(!el) return;
-  const info = streakInfo(daily, todayStr());
+  const info = streakInfo(daily, todayStr(), freezes);
   const title = el.querySelector(".streak-title");
   const count = el.querySelector(".streak-count");
   const bar = el.querySelector(".streak-bar i");
@@ -146,16 +151,61 @@ function updateStreakChip(){
     if(info.restNote) note.textContent = t("streak.restUsed", { n: info.streak });
   }
   el.classList.toggle("goal-met", info.goalMet);
+  // retention pack: small "N freeze(s)" chip, shown only while any are owned
+  const freezeChip = $("#streak-freeze-chip");
+  if(freezeChip){
+    freezeChip.style.display = freezes > 0 ? "flex" : "none";
+    const label = freezeChip.querySelector(".freeze-count");
+    if(label) label.textContent = t("home.freezes", { n: freezes });
+  }
+}
+// Minimal floating toast (retention pack) — freeze-used is a rare single
+// event, so no queue/stacking: a second call while one is showing just
+// replaces it. Appended to <body> (outside #app/.screen) so it survives the
+// show("home")/show("results") screen swap that follows noteDaily().
+let toastTimer = 0;
+function toast(msg){
+  clearTimeout(toastTimer);
+  let el = document.getElementById("toast-pop");
+  if(!el){
+    el = document.createElement("div");
+    el.id = "toast-pop";
+    el.className = "toast-pop";
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  requestAnimationFrame(()=> el.classList.add("show"));
+  toastTimer = setTimeout(()=>{ el.classList.remove("show"); }, 2600);
 }
 function noteDaily(count){
-  daily = noteActivity(daily, todayStr(), count);
+  const wasGoalMet = streakInfo(daily, todayStr(), freezes).goalMet;
+  const r = noteActivity(daily, todayStr(), count, freezes);
+  // persist the same shape as before — freezesUsed is transient, not stored
+  daily = { last: r.last, streak: r.streak, today: r.today, restWeek: r.restWeek, restDay: r.restDay };
   store.set("daily", daily);
+  if(r.freezesUsed > 0){
+    freezes = Math.max(0, freezes - r.freezesUsed);
+    store.set("freezes", freezes);
+    toast(t("toast.freeze-used", { n: r.streak }));
+  }
   updateStreakChip();
+  // retention pack: once today's goal is first met, cancel any pending
+  // streak-saver reminder rather than waiting for the next backgrounding.
+  if(!wasGoalMet && streakInfo(daily, todayStr(), freezes).goalMet){
+    syncStreakReminder({ schedule: false, hour: REMINDER_HOUR, cancel: true }, "", "");
+  }
 }
 
 /* ============================== daily quests ============================== */
 let questState = Object.assign(defaultQuestState(), store.get("quests", {}));
 let questToasts = [];  // quests completed during the current battle, for the results screen
+
+/* ============================== monthly quest (retention pack) ============================== */
+// Rolls up daily-quest completions into one calendar-month goal with a coin
+// reward + album badge (quests.js owns the pure rollover/cap/claim rules;
+// store.get already JSON.parses, so this mirrors questState's Object.assign
+// pattern rather than the brief's literal snippet, which double-parses).
+let monthly = Object.assign(defaultMonthly(), store.get("monthly", {}));
 
 /* ============================== sticker album (B2) ============================== */
 // earn-only — never purchasable. Persisted immediately on every award so a
@@ -176,6 +226,7 @@ function stickerLabel(def){
   if(def.event === "welcome") return t("sticker.welcomeName");
   if(def.event === "first-boss") return t("sticker.bossName");
   if(def.event === "streak-7") return t("sticker.streak7Name");
+  if(def.event === "monthly-40") return t("sticker.monthlyName");
   return t("sticker.streak30Name");
 }
 function stickerHint(def){
@@ -184,6 +235,7 @@ function stickerHint(def){
   if(def.event === "welcome") return t("sticker.welcomeHint");
   if(def.event === "first-boss") return t("sticker.bossHint");
   if(def.event === "streak-7") return t("sticker.streak7Hint");
+  if(def.event === "monthly-40") return t("sticker.monthlyHint");
   return t("sticker.streak30Hint");
 }
 function stickerIcon(def){
@@ -191,6 +243,7 @@ function stickerIcon(def){
   if(def.kind === "milestone") return "star";
   if(def.event === "first-boss") return "target";
   if(def.event === "welcome") return "cards";
+  if(def.event === "monthly-40") return "calendar";
   return "streak";
 }
 function renderAlbum(){
@@ -230,13 +283,41 @@ function questEvent(eventId, n=1){
   questState = r.state;
   store.set("quests", questState);
   if(r.earned > 0){ wallet += r.earned; store.set("wallet", wallet); updateWalletChip(); }
-  if(r.completed.length) questToasts.push(...r.completed);
+  if(r.completed.length){
+    questToasts.push(...r.completed);
+    // retention pack: every daily quest completion also feeds the monthly goal
+    monthly = noteMonthlyProgress(monthly, todayStr(), r.completed.length);
+    store.set("monthly", monthly);
+  }
   renderQuests();
 }
 function renderQuests(){
   const panel = $("#quest-panel");
   if(!panel) return;
   panel.innerHTML = "";
+  const ms = monthlyStatus(monthly, todayStr());
+  const pct = Math.min(100, Math.round(100*ms.done/ms.target));
+  const mrow = document.createElement("div");
+  mrow.className = "quest-row monthly-row"+(ms.claimed? " done":"");
+  mrow.innerHTML = `<div class="mq-top">
+      <span class="qi">${ms.claimed? t("quest.status.done") : t("quest.status.open")}</span>
+      <span class="qd">${t("quest.monthly.title", { done: ms.done, target: ms.target })}</span>
+    </div>
+    <div class="mbar monthly-bar"><i style="width:${pct}%"></i></div>`;
+  if(ms.complete && !ms.claimed){
+    const btn = document.createElement("button");
+    btn.className = "chip buy-chip monthly-claim";
+    btn.textContent = t("quest.monthly.claim", { reward: ms.reward });
+    btn.onclick = () => {
+      const c = claimMonthly(monthly);
+      monthly = c.state;
+      store.set("monthly", monthly);
+      if(c.earned > 0){ wallet += c.earned; store.set("wallet", wallet); updateWalletChip(); }
+      renderQuests();
+    };
+    mrow.appendChild(btn);
+  }
+  panel.appendChild(mrow);
   for(const q of questStatus(questState, todayStr())){
     const row = document.createElement("div");
     row.className = "quest-row"+(q.done? " done":"");
@@ -996,6 +1077,15 @@ function resumeBattle(){
 // timer can't silently expire while the player isn't looking.
 document.addEventListener("visibilitychange", ()=>{
   if(document.hidden && B.on && !B.paused) pauseBattle();
+  // retention pack: leaving the app re-syncs the Android streak-saver
+  // reminder so it reflects today's freshest streak/goal state.
+  if(document.hidden){
+    const inf = streakInfo(daily, todayStr(), freezes);
+    const plan = reminderPlan(inf, new Date().getHours());
+    syncStreakReminder(plan,
+      t("notify.streak.title", { n: inf.streak }),
+      t("notify.streak.body", { remaining: Math.max(0, inf.goal - inf.todayResolved) }));
+  }
 });
 $("#hud-pause").onclick = ()=> pauseBattle();
 $("#pause-resume").onclick = ()=> resumeBattle();
@@ -1833,15 +1923,22 @@ function endBattle(quit){
     if(B.score > 0){ wallet += B.score; store.set("wallet", wallet); updateWalletChip(); }
     if(introPhase){ introPhase = null; store.set("introDone", true); }
     // B2: evaluate awards on quit too (a streak-7 crossing must not be lost),
-    // but silently — the toast queue waits for the next real results screen.
+    // but silently — the sticker-slot toast queue waits for the next real
+    // results screen. The monthly badge's floating toast() is a separate,
+    // body-appended overlay (survives the show("home") swap below) — it
+    // still fires here so the badge is announced wherever it actually lands,
+    // even if that's a mid-round quit rather than a finished round.
     const quitFacts = {
       ...scopeFacts(D.levels, masteryStore),
       sessionDone: false,
       bossDefeated: !!B.bossDefeated,
-      streak: streakInfo(daily, todayStr()).streak,
+      streak: streakInfo(daily, todayStr(), freezes).streak,
+      monthlyDone: monthlyStatus(monthly, todayStr()).done,
     };
+    const hadMonthlyBadgeQuit = !!stickerState.earned["ev:monthly-40"];
     stickerState = evaluateAwards(stickerState, STICKER_DEFS, quitFacts, todayStr());
     store.set("stickers", stickerState);
+    if(!hadMonthlyBadgeQuit && stickerState.earned["ev:monthly-40"]) toast(t("quest.monthly.badge"));
     show("home"); return;
   }
   noteDaily(B.resolved);
@@ -1943,10 +2040,16 @@ function endBattle(quit){
     ...scopeFacts(D.levels, masteryStore),
     sessionDone: B.resolved > 0,
     bossDefeated: !!B.bossDefeated,
-    streak: streakInfo(daily, todayStr()).streak,
+    streak: streakInfo(daily, todayStr(), freezes).streak,
+    monthlyDone: monthlyStatus(monthly, todayStr()).done,
   };
+  const hadMonthlyBadge = !!stickerState.earned["ev:monthly-40"];
   stickerState = evaluateAwards(stickerState, STICKER_DEFS, stickerFacts, todayStr());
   store.set("stickers", stickerState);
+  // retention pack: the monthly badge also gets the floating toast() (not
+  // just the results-screen sticker slot below) since it's most likely to
+  // land right as the player finishes the quest that crossed 40/40.
+  if(!hadMonthlyBadge && stickerState.earned["ev:monthly-40"]) toast(t("quest.monthly.badge"));
   const slot = $("#r-sticker-slot");
   const popped = popToast(stickerState);
   if(popped.id){
@@ -2045,7 +2148,8 @@ function makeShopRow(item, today){
   const copy = document.createElement("span");
   copy.className = "shop-copy";
   const stars = item.type === "deco" && owned ? " " + "★".repeat(tier) : "";
-  copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>`;
+  const ownedCount = item.type === "consumable" ? `<small>${t("shop.owned-count", { n: freezes, cap: item.cap })}</small>` : "";
+  copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
   left.replaceChildren(preview, copy);
   const btn = document.createElement("button");
   const doBuy = () => {
@@ -2059,7 +2163,32 @@ function makeShopRow(item, today){
     // re-renders on entry, so a bought deco appears the moment it can be seen.
     updateWalletChip(); renderShop();
   };
-  if(item.type === "deco"){
+  if(item.type === "consumable"){
+    // Counted, not owned (task-2 review carry-forward): never touches
+    // shopState.owned/buy()/equipItem() — buyConsumable + nbhsk.freezes only.
+    btn.className = "chip buy-chip";
+    btn.textContent = t("shop.buy");
+    btn.disabled = freezes >= item.cap || wallet < item.price;
+    btn.onclick = () => {
+      const r = buyConsumable(item, wallet, freezes);
+      if(!r.ok) return;
+      wallet = r.wallet; freezes = r.count;
+      store.set("wallet", wallet); store.set("freezes", freezes);
+      justBought = { id: item.id, at: performance.now() };
+      updateWalletChip(); updateStreakChip(); renderShop();
+    };
+    // same double-tap re-arm guard as the deco branch below: the row
+    // re-renders in place (still "Buy", possibly now disabled at cap) and a
+    // fast second tap shouldn't land before the player sees the new state.
+    if(justBought && justBought.id === item.id){
+      const elapsed = performance.now() - justBought.at;
+      if(elapsed < SHOP_REARM_MS){
+        const wasDisabled = btn.disabled;
+        btn.disabled = true;
+        setTimeout(()=>{ btn.disabled = wasDisabled; }, SHOP_REARM_MS - elapsed);
+      }
+    }
+  }else if(item.type === "deco"){
     // Owning a deco displays it on the street; re-buys upgrade its tier (v7 F4).
     if(!owned){
       btn.className = "chip buy-chip";
@@ -2196,6 +2325,19 @@ function renderShopPreview(canvas, item, now=0){
       c.beginPath(); c.arc(30,44,5,0,Math.PI*2); c.fill();
       c.beginPath(); c.arc(60,38,5,0,Math.PI*2); c.fill();
     }
+  }else if(item.type==="consumable"){
+    // streak freeze: same 6-spoke snowflake as ui-icons.svg#freeze, stroked
+    // straight from the symbol's path data (Path2D takes SVG path strings) so
+    // tile and icon can never drift apart. Canvas-drawn like every other
+    // tile — .shop-preview has no DOM/svg overlay layer to composite onto.
+    c.save();
+    c.translate(48, 32); c.scale(1.9, 1.9); c.translate(-12, -12);
+    c.strokeStyle = "#bfe8ff"; c.lineCap = "round"; c.lineJoin = "round";
+    c.lineWidth = 2;
+    c.stroke(new Path2D("M12 4v16M5 8l14 8M5 16l14-8"));
+    c.lineWidth = 1.5;
+    c.stroke(new Path2D("M12 7l-2.2 1.3M12 7l2.2 1.3M12 17l-2.2-1.3M12 17l2.2-1.3M7.5 9.7L6 8.8M7.5 9.7l-.6 2.3M16.5 9.7l.6 2.3M16.5 9.7l1.5-.9M7.5 14.3l-1.5.9M7.5 14.3l-.6-2.3M16.5 14.3l.6-2.3M16.5 14.3l1.5.9"));
+    c.restore();
   }else{
     // deco: fit the painted sprite inside the tile with padding. drawStreetDeco's
     // street scale (DECO_SPRITE_SCALE 1.5) is sized for the street ground and

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   QUEST_POOL, questsForDate, defaultQuestState, noteQuestEvent, questStatus,
+  monthKey, defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, MONTHLY_TARGET, MONTHLY_REWARD,
 } from "../src/quests.js";
 
 describe("quests: questsForDate", () => {
@@ -191,5 +192,44 @@ describe("quests: questStatus", () => {
       expect(correctEntry.progress).toBe(10);
       expect(correctEntry.done).toBe(false);
     }
+  });
+});
+
+describe("monthly quest layer", () => {
+  it("monthKey slices the month", () => expect(monthKey("2026-07-09")).toBe("2026-07"));
+  it("accumulates completions within a month and caps at target", () => {
+    let m = defaultMonthly();
+    m = noteMonthlyProgress(m, "2026-07-09", 2);
+    expect(m).toEqual({ month: "2026-07", done: 2, claimed: false });
+    m = noteMonthlyProgress(m, "2026-07-10", 39);
+    expect(m.done).toBe(40);
+  });
+  it("rolls over on a new month (done and claimed reset)", () => {
+    const m = noteMonthlyProgress({ month: "2026-06", done: 40, claimed: true }, "2026-07-01", 1);
+    expect(m).toEqual({ month: "2026-07", done: 1, claimed: false });
+  });
+  it("status reports zeros for a stale month and completeness at target", () => {
+    expect(monthlyStatus({ month: "2026-06", done: 12, claimed: false }, "2026-07-09").done).toBe(0);
+    const s = monthlyStatus({ month: "2026-07", done: 40, claimed: false }, "2026-07-09");
+    expect(s.complete).toBe(true);
+    expect(s.reward).toBe(1500);
+  });
+  it("claim pays once and only when complete", () => {
+    const done = { month: "2026-07", done: 40, claimed: false };
+    const r = claimMonthly(done);
+    expect(r.earned).toBe(1500);
+    expect(r.state.claimed).toBe(true);
+    expect(claimMonthly(r.state).earned).toBe(0);
+    expect(claimMonthly({ month: "2026-07", done: 39, claimed: false }).earned).toBe(0);
+  });
+  // Pinning test: once claimed, later same-month progress must not un-cap
+  // done past MONTHLY_TARGET or reopen the claim (a second claim must earn 0).
+  it("stays claimed after a post-claim progress note in the same month", () => {
+    let m = { month: "2026-07", done: 40, claimed: false };
+    const claimed = claimMonthly(m);
+    expect(claimed.earned).toBe(1500);
+    m = noteMonthlyProgress(claimed.state, "2026-07-15", 3);
+    expect(m).toEqual({ month: "2026-07", done: 40, claimed: true });
+    expect(claimMonthly(m).earned).toBe(0);
   });
 });

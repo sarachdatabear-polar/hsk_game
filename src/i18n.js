@@ -7,7 +7,9 @@
 // battle.* (M4 HUD round capsule + pause overlay), fc.* (flashcard-only
 // strings not shared with learn.*), item.* (shop.js CATALOG id -> display
 // name, t("item."+id)), building.* (street.js BUILDINGS id -> display name,
-// t("building."+id)).
+// t("building."+id)), toast.* (retention pack — main.js's floating toast()),
+// notify.* (retention pack — Android streak-saver local notification, see
+// notify.js/native.js).
 
 export const STRINGS = {
   en: {
@@ -24,6 +26,7 @@ export const STRINGS = {
     "home.settings": "Settings",
     "home.streakTitle": "Study Streak",
     "home.streakDays": "{n} days",
+    "home.freezes": "{n} freeze(s)",
     "home.start": "START",
     "home.startHint": "Need at least 8 words in scope to start — widen it below.",
     "home.scopeWords": "{n} words",
@@ -34,6 +37,11 @@ export const STRINGS = {
     "progress.levelRow": "{pct} mastered · {seen}/{total} seen",
     "common.playAudio": "Play audio",
     "battle.critical": "CRITICAL!",
+    // toast (retention pack — main.js's floating toast())
+    "toast.freeze-used": "Streak Freeze used — your {n}-day streak is safe",
+    // notify (retention pack — Android local notification, see notify.js/native.js)
+    "notify.streak.title": "Don't lose your {n}-day streak!",
+    "notify.streak.body": "{remaining} words keep it alive — a quick round does it.",
     "milestone.scarf": "Red scarf",
     "milestone.coin": "Gold coin charm",
     "milestone.outfit": "Chinese outfit",
@@ -121,6 +129,10 @@ export const STRINGS = {
     "quest.perfect1": "Finish a round with no misses",
     "quest.review1": "Play a Smart Review round",
     "quest.learn20": "Mark 20 flashcards as known",
+    // monthly quest layer (retention pack)
+    "quest.monthly.title": "Monthly: {done}/{target} quests",
+    "quest.monthly.claim": "Claim +{reward}",
+    "quest.monthly.badge": "Monthly badge earned!",
     // scores / progress
     "scores.title": "Best Sessions",
     "scores.empty": "No sessions yet — complete a Word Quest.",
@@ -146,6 +158,8 @@ export const STRINGS = {
     "sticker.streak7Hint": "Keep a 7-day study streak",
     "sticker.streak30Name": "30-Day Streak",
     "sticker.streak30Hint": "Keep a 30-day study streak",
+    "sticker.monthlyName": "Monthly Champion",
+    "sticker.monthlyHint": "Finish 40 quests in a month",
     "results.newSticker": "New sticker: {name}",
     // shop / collection
     "shop.title": "Shop",
@@ -166,6 +180,7 @@ export const STRINGS = {
     "shop.seasonUntil": "Available until {date}",
     "shop.seasonReturns": "🏮 {name} set returns {date}",
     "shop.upgrade": "Upgrade {stars} ({coins})",
+    "shop.owned-count": "Owned: {n}/{cap}",
     "shop.maxed": "★★★",
     "season.summer": "Summer",
     "season.midautumn": "Mid-Autumn",
@@ -183,6 +198,7 @@ export const STRINGS = {
     "item.tea-sign": "Tea Sign",
     "item.foo-dog": "Foo Dog",
     "item.golden-arch": "Golden Arch",
+    "item.streak-freeze": "Streak Freeze",
     "item.panda": "Panda",
     "item.ninja": "Ninja",
     "item.astronaut": "Astronaut",
@@ -281,6 +297,7 @@ export const STRINGS = {
     "home.settings": "ตั้งค่า",
     "home.streakTitle": "เรียนต่อเนื่อง",
     "home.streakDays": "{n} วัน",
+    "home.freezes": "น้ำแข็ง {n} ชิ้น",   // TH: needs native review
     "home.start": "เริ่ม",
     "home.startHint": "ต้องมีคำอย่างน้อย 8 คำในขอบเขตจึงจะเริ่มได้ — ขยายขอบเขตด้านล่าง",
     "home.scopeWords": "{n} คำ",
@@ -291,6 +308,9 @@ export const STRINGS = {
     "progress.levelRow": "{pct} เชี่ยวชาญ · เห็น {seen}/{total}",
     "common.playAudio": "เล่นเสียง",
     "battle.critical": "CRITICAL!",
+    "toast.freeze-used": "ใช้น้ำแข็งพิทักษ์สตรีคแล้ว — สตรีค {n} วันของคุณยังอยู่",   // TH: needs native review
+    "notify.streak.title": "อย่าให้สตรีค {n} วันหลุดนะ!",   // TH: needs native review
+    "notify.streak.body": "อีก {remaining} คำสตรีคก็รอด — เล่นรอบสั้น ๆ ก็พอ",   // TH: needs native review
     "milestone.scarf": "ผ้าพันคอสีแดง",
     "milestone.coin": "เครื่องรางเหรียญทอง",
     "milestone.outfit": "ชุดจีน",
@@ -378,6 +398,10 @@ export const STRINGS = {
     "quest.perfect1": "จบรอบโดยไม่ตอบผิด",
     "quest.review1": "เล่นรอบทบทวนอัจฉริยะ",
     "quest.learn20": "ทำเครื่องหมายรู้แล้ว 20 บัตร",
+    // monthly quest layer (retention pack)
+    "quest.monthly.title": "รายเดือน: {done}/{target} เควสต์",   // TH: needs native review
+    "quest.monthly.claim": "รับ +{reward}",   // TH: needs native review
+    "quest.monthly.badge": "ได้เหรียญตรารายเดือนแล้ว!",   // TH: needs native review
     // scores / progress
     "scores.title": "สถิติดีที่สุด",
     "scores.empty": "ยังไม่มีสถิติ — เล่นเควสต์คำศัพท์ก่อน",
@@ -403,6 +427,8 @@ export const STRINGS = {
     "sticker.streak7Hint": "รักษาสตรีคการเรียนต่อเนื่อง 7 วัน",
     "sticker.streak30Name": "สตรีค 30 วัน",
     "sticker.streak30Hint": "รักษาสตรีคการเรียนต่อเนื่อง 30 วัน",
+    "sticker.monthlyName": "แชมป์รายเดือน",   // TH: needs native review
+    "sticker.monthlyHint": "ทำเควสต์สำเร็จ 40 ครั้งในหนึ่งเดือน",   // TH: needs native review
     "results.newSticker": "สติกเกอร์ใหม่: {name}",
     // shop / collection
     "shop.title": "ร้านค้า",
@@ -423,6 +449,7 @@ export const STRINGS = {
     "shop.seasonUntil": "มีถึง {date}",
     "shop.seasonReturns": "🏮 เซ็ต {name} จะกลับมา {date}",
     "shop.upgrade": "อัปเกรด {stars} ({coins})",
+    "shop.owned-count": "มีอยู่: {n}/{cap}",        // TH: needs native review
     "shop.maxed": "★★★",
     "season.summer": "ฤดูร้อน",
     "season.midautumn": "ไหว้พระจันทร์",
@@ -440,6 +467,7 @@ export const STRINGS = {
     "item.tea-sign": "ป้ายชา",
     "item.foo-dog": "สิงโตหิน",
     "item.golden-arch": "ซุ้มประตูทอง",
+    "item.streak-freeze": "น้ำแข็งพิทักษ์สตรีค",   // TH: needs native review
     "item.panda": "แพนด้า",
     "item.ninja": "นินจา",
     "item.astronaut": "นักบินอวกาศ",
