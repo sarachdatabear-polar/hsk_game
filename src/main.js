@@ -391,8 +391,10 @@ function accountOnline(){
 }
 
 function renderAccount(){
+  clearTimeout(accountCooldownTimer);
   const state = accountState(accountUI.session);
-  const v = accountView(state, { online: accountOnline(), phase: accountUI.phase, email: accountUI.email });
+  const email = (accountUI.session && accountUI.session.user && accountUI.session.user.email) || accountUI.email;
+  const v = accountView(state, { online: accountOnline(), phase: accountUI.phase, email });
   const p = $("#account-panel");
   p.innerHTML = "";
   const status = document.createElement("div");
@@ -421,7 +423,12 @@ function renderAccount(){
 
 function accountBtn(label, onclick){
   const b = document.createElement("button");
-  b.className = "big"; b.textContent = label; b.onclick = onclick;
+  b.className = "big"; b.textContent = label;
+  b.onclick = async () => {
+    if(b.disabled) return;
+    b.disabled = true;
+    try { await onclick(); } finally { b.disabled = false; }
+  };
   return b;
 }
 
@@ -494,6 +501,7 @@ async function onAccountSignOut(){
   await signOut();
   accountUI.session = null;
   accountUI.phase = "idle";
+  accountUI.email = "";
   toast(t("account.signedOut"));
   renderAccount();
 }
