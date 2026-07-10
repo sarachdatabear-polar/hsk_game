@@ -153,6 +153,23 @@ function probeNavReachable(tol) {
     : `out(top=${Math.round(r.top)},bottom=${Math.round(r.bottom)},ih=${window.innerHeight})`;
 }
 
+// street-quests: after the Daily Quests merge (audit F3), the street screen
+// carries the quest panel (renderQuests() runs alongside renderStreet() in
+// show()) — this must FAIL loudly if #quest-panel ever ends up empty on the
+// street screen, e.g. a regression that drops the renderQuests() call.
+function probeStreetQuests() {
+  const screen = document.querySelector("#s-street");
+  // Scoped to #s-street specifically (not a bare #quest-panel lookup):
+  // renderQuests() runs at boot, so #quest-panel is populated from startup
+  // and stays populated even if it isn't actually nested inside the street
+  // screen — a bare selector would pass regardless of where the panel lives.
+  const panel = document.querySelector("#s-street #quest-panel");
+  return {
+    active: screen?.classList.contains("on") ?? false,
+    questPanelChildren: panel ? panel.children.length : 0,
+  };
+}
+
 function probeStartInFold(tol) {
   const b = document.querySelector("#home-start");
   if (!b) return "missing";
@@ -231,6 +248,11 @@ async function goToShop(page) {
   await page.waitForTimeout(250);
 }
 
+async function goToStreet(page) {
+  await page.evaluate(() => document.querySelector('[data-go="street"]')?.click());
+  await page.waitForTimeout(250);
+}
+
 async function goToBattle(page) {
   await page.evaluate(() => document.querySelector('[data-go="home"]')?.click());
   await page.waitForTimeout(200);
@@ -286,6 +308,15 @@ async function runFullSweep() {
     const overscrollY = await page.evaluate(
       () => getComputedStyle(document.documentElement).overscrollBehaviorY
     );
+
+    // street-quests: street tab must show the merged quest panel (audit F3)
+    // with the bottom nav still reachable — mirrors the shop nav-reachable
+    // probe below.
+    await goToStreet(page);
+    const streetQuests = await page.evaluate(probeStreetQuests);
+    const streetNav = await page.evaluate(probeNavReachable, TOL);
+    await page.evaluate(() => document.querySelector('[data-go="home"]')?.click());
+    await page.waitForTimeout(100);
 
     await goToShop(page);
     const shop = await page.evaluate(probeScreen, ["shop", TOL]);
@@ -347,6 +378,10 @@ async function runFullSweep() {
     if (battle.wide.length) failures.push(`battle wide:[${battle.wide}]`);
     if (battle.clippedBelow > 0) failures.push(`battle clipped-below=${battle.clippedBelow}`);
     if (overscrollY !== "none") failures.push(`overscroll-behavior-y=${overscrollY}`);
+    if (!streetQuests.active) failures.push("street-quests: #s-street not active");
+    if (streetQuests.questPanelChildren < 1)
+      failures.push(`street-quests: #quest-panel empty (children=${streetQuests.questPanelChildren})`);
+    if (streetNav !== "in-view") failures.push(`street-quests: nav-unreachable:${streetNav}`);
     if (navAtTop !== "in-view") failures.push(`shop nav-unreachable@top:${navAtTop}`);
     if (navAtMid !== "in-view") failures.push(`shop nav-unreachable@mid:${navAtMid}`);
     if (staleScrollY !== null && staleScrollY > 1)

@@ -321,6 +321,7 @@ function renderQuests(){
   mrow.innerHTML = `<div class="mq-top">
       <span class="qi">${ms.claimed? t("quest.status.done") : t("quest.status.open")}</span>
       <span class="qd">${t("quest.monthly.title", { done: ms.done, target: ms.target })}</span>
+      <span class="qr">${ms.claimed ? "" : t("quest.reward", { reward: ms.reward })}</span>
     </div>
     <div class="mbar monthly-bar"><i style="width:${pct}%"></i></div>`;
   if(ms.complete && !ms.claimed){
@@ -511,8 +512,7 @@ function show(name){
   // screen never leaks its position into the next one.
   window.scrollTo(0, 0);
   if(name==="home"){ renderHome(); }
-  if(name==="street"){ renderStreet(); }
-  if(name==="quests"){ renderQuests(); }
+  if(name==="street"){ renderStreet(); renderQuests(); }
 }
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()=>{
   const tab = b.dataset.go;
@@ -2181,7 +2181,9 @@ function makeShopRow(item, today){
   copy.className = "shop-copy";
   const stars = item.type === "deco" && owned ? " " + "★".repeat(tier) : "";
   const ownedCount = item.type === "consumable" ? `<small>${t("shop.owned-count", { n: consumableCount(item), cap: item.cap })}</small>` : "";
-  copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
+  const desc = item.type === "consumable" ? tOr("item." + item.id + ".desc", "") : "";
+  const descHtml = desc ? `<small class="item-desc">${desc}</small>` : "";
+  copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}${stars}</b>${descHtml}<small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
   left.replaceChildren(preview, copy);
   const btn = document.createElement("button");
   const doBuy = () => {
