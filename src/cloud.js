@@ -101,6 +101,31 @@ export async function upsertProfile(row) {
   } catch (e) { return { ok: false }; }
 }
 
+// --- cloud-save round: sync-row data access (the only supabase touchpoints
+// for sync; src/sync.js orchestrates, this file talks to the network). ---
+export async function fetchSyncRows(userId) {
+  if (offline()) return { ok: false, reason: "offline" };
+  try {
+    const { data: progress, error: e1 } = await getClient()
+      .from("progress").select("*").eq("user_id", userId).maybeSingle();
+    if (e1) return { ok: false, reason: "network" };
+    const { data: wallet, error: e2 } = await getClient()
+      .from("wallet").select("*").eq("user_id", userId).maybeSingle();
+    if (e2) return { ok: false, reason: "network" };
+    return { ok: true, progress: progress || null, wallet: wallet || null };
+  } catch (e) { return { ok: false, reason: "network" }; }
+}
+
+export async function pushSyncRows(progressRow, walletRow) {
+  if (offline()) return { ok: false };
+  try {
+    const { error: e1 } = await getClient().from("progress").upsert(progressRow);
+    if (e1) return { ok: false };
+    const { error: e2 } = await getClient().from("wallet").upsert(walletRow);
+    return { ok: !e2 };
+  } catch (e) { return { ok: false }; }
+}
+
 export async function signOut() {
   // Local-scope sign-out; local gameplay state is untouched by design.
   try { await getClient().auth.signOut({ scope: "local" }); } catch (e) { /* ignore */ }
