@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { TABS, navVisibleOn, activeTabFor } from "../src/nav.js";
 
 describe("nav", () => {
-  it("has the 5 tabs in nav order", () => {
-    expect(TABS).toEqual(["home", "street", "progress", "quests", "more"]);
+  it("has the 4 tabs in nav order", () => {
+    expect(TABS).toEqual(["home", "street", "progress", "more"]);
   });
 
   describe("navVisibleOn", () => {

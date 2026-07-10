@@ -511,8 +511,7 @@ function show(name){
   // screen never leaks its position into the next one.
   window.scrollTo(0, 0);
   if(name==="home"){ renderHome(); }
-  if(name==="street"){ renderStreet(); }
-  if(name==="quests"){ renderQuests(); }
+  if(name==="street"){ renderStreet(); renderQuests(); }
 }
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()=>{
   const tab = b.dataset.go;
