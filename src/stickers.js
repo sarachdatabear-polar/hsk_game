@@ -95,3 +95,11 @@ export function popToast(state) {
   if (!state.queue.length) return { state, id: null };
   return { state: { earned: state.earned, queue: state.queue.slice(1) }, id: state.queue[0] };
 }
+
+// Remove one id from the toast queue (earned stays). For awards already
+// announced on another surface — e.g. the monthly badge's floating toast —
+// so the results-screen sticker slot doesn't announce them a second time.
+export function dropFromQueue(state, id) {
+  if (!state.queue.includes(id)) return state;
+  return { earned: state.earned, queue: state.queue.filter(q => q !== id) };
+}

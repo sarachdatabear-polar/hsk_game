@@ -119,3 +119,15 @@ export function claimMonthly(m) {
   }
   return { state: m, earned: 0 };
 }
+
+// Rollover settlement: a month that ended complete-but-unclaimed auto-claims
+// its reward instead of forfeiting it. Pure; call BEFORE any other monthly
+// read/write whenever "today" may have left the stored month (boot, quest
+// render, quest event) — noteMonthlyProgress's own rollover would silently
+// wipe the unclaimed state. Same-month and fresh-default states pass through.
+export function settleMonthly(m, dateStr) {
+  const month = monthKey(dateStr);
+  if (m.month === month || m.month === "") return { state: m, earned: 0 };
+  const earned = m.done >= MONTHLY_TARGET && !m.claimed ? MONTHLY_REWARD : 0;
+  return { state: { month, done: 0, claimed: false }, earned };
+}
