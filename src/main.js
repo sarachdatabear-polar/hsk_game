@@ -19,7 +19,7 @@ import { wordWeight, smartDeck, weakWords } from "./srs.js";
 import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
 import { REMINDER_HOUR, reminderPlan } from "./notify.js";
 import { defaultQuestState, noteQuestEvent, questStatus,
-         defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly } from "./quests.js";
+         defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly } from "./quests.js";
 import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable, hasMp3 } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder } from "./native.js";
@@ -207,6 +207,21 @@ let questToasts = [];  // quests completed during the current battle, for the re
 // pattern rather than the brief's literal snippet, which double-parses).
 let monthly = Object.assign(defaultMonthly(), store.get("monthly", {}));
 
+// Auto-claim a month that ended complete-but-unclaimed (follow-up ticket from
+// PR #70). Runs at boot, before every monthly write (questEvent), and on
+// quest render, so the payout lands at the first observation of the new month.
+function settleMonthlyNow(){
+  const r = settleMonthly(monthly, todayStr());
+  if(r.state === monthly) return;
+  monthly = r.state;
+  store.set("monthly", monthly);
+  if(r.earned > 0){
+    wallet += r.earned; store.set("wallet", wallet); updateWalletChip();
+    toast(t("quest.monthly.autoClaimed", { reward: r.earned }));
+  }
+}
+settleMonthlyNow();
+
 /* ============================== sticker album (B2) ============================== */
 // earn-only — never purchasable. Persisted immediately on every award so a
 // sticker earned mid-session survives reload (PRD B2 acceptance).
@@ -285,7 +300,10 @@ function questEvent(eventId, n=1){
   if(r.earned > 0){ wallet += r.earned; store.set("wallet", wallet); updateWalletChip(); }
   if(r.completed.length){
     questToasts.push(...r.completed);
-    // retention pack: every daily quest completion also feeds the monthly goal
+    // retention pack: every daily quest completion also feeds the monthly goal.
+    // Settle first — on a month boundary noteMonthlyProgress would wipe an
+    // unclaimed reward before settleMonthly could see it.
+    settleMonthlyNow();
     monthly = noteMonthlyProgress(monthly, todayStr(), r.completed.length);
     store.set("monthly", monthly);
   }
@@ -294,6 +312,7 @@ function questEvent(eventId, n=1){
 function renderQuests(){
   const panel = $("#quest-panel");
   if(!panel) return;
+  settleMonthlyNow();
   panel.innerHTML = "";
   const ms = monthlyStatus(monthly, todayStr());
   const pct = Math.min(100, Math.round(100*ms.done/ms.target));

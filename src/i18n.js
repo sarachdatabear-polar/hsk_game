@@ -133,6 +133,7 @@ export const STRINGS = {
     "quest.monthly.title": "Monthly: {done}/{target} quests",
     "quest.monthly.claim": "Claim +{reward}",
     "quest.monthly.badge": "Monthly badge earned!",
+    "quest.monthly.autoClaimed": "Monthly reward claimed for you: +{reward} coins",
     // scores / progress
     "scores.title": "Best Sessions",
     "scores.empty": "No sessions yet — complete a Word Quest.",
@@ -402,6 +403,7 @@ export const STRINGS = {
     "quest.monthly.title": "รายเดือน: {done}/{target} เควสต์",   // TH: needs native review
     "quest.monthly.claim": "รับ +{reward}",   // TH: needs native review
     "quest.monthly.badge": "ได้เหรียญตรารายเดือนแล้ว!",   // TH: needs native review
+    "quest.monthly.autoClaimed": "รับรางวัลรายเดือนให้คุณแล้ว: +{reward} เหรียญ",   // TH: needs native review
     // scores / progress
     "scores.title": "สถิติดีที่สุด",
     "scores.empty": "ยังไม่มีสถิติ — เล่นเควสต์คำศัพท์ก่อน",
