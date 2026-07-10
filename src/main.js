@@ -36,6 +36,8 @@ import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dro
 import { journeyNodes, currentNodeId } from "./journey.js";
 import { accountState, accountView, canSendCode, codeLooksValid } from "./account.js";
 import { getSession, ensureGuest, sendCode, verifyCode, signOut } from "./cloud.js";
+import { SYNC_KEYS } from "./merge.js";
+import { reconcile, pushDirty } from "./sync.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -57,7 +59,19 @@ function fxDuration(ms){ return REDUCED_MOTION ? Math.round(ms/2) : ms; }
 function fxUntil(ms){ return performance.now() + fxDuration(ms); }
 const store = {
   get(k, d){ try{ const v = localStorage.getItem("nbhsk."+k); return v===null? d : JSON.parse(v);}catch(e){ return d; } },
-  set(k, v){ try{ localStorage.setItem("nbhsk."+k, JSON.stringify(v)); }catch(e){} }
+  set(k, v){
+    try{ localStorage.setItem("nbhsk."+k, JSON.stringify(v)); }catch(e){}
+    // cloud-save: persist a dirty flag per synced key so a mid-session kill
+    // doesn't forget unpushed changes. Writes only on false->true flips.
+    if(SYNC_KEYS.includes(k)){
+      try{
+        const raw = localStorage.getItem("nbhsk.sync");
+        const meta = raw ? JSON.parse(raw) : { dirty:{}, lastSyncAt:0 };
+        if(!meta.dirty) meta.dirty = {};
+        if(!meta.dirty[k]){ meta.dirty[k] = true; localStorage.setItem("nbhsk.sync", JSON.stringify(meta)); }
+      }catch(e){}
+    }
+  }
 };
 const scope = Object.assign({levels:[3], core:false, newOnly:false, topN:0, lang:"both", sessionLen:20},
                             store.get("scope", {}));
@@ -405,6 +419,15 @@ function renderAccount(){
   ex.className = "account-explain";
   ex.textContent = t(v.explainKey);
   p.appendChild(ex);
+  if(state !== "local"){
+    const sy = document.createElement("p");
+    sy.className = "account-explain";
+    const meta = store.get("sync", null);
+    sy.textContent = meta && meta.lastSyncAt
+      ? t("account.lastSynced", { when: new Date(meta.lastSyncAt).toLocaleString() })
+      : t("account.neverSynced");
+    p.appendChild(sy);
+  }
   if(v.showConnect) p.appendChild(accountBtn(t("account.connect"), onAccountConnect));
   if(v.showEmailForm){
     const emailInput = accountInput("email", t("account.emailPh"), accountUI.email);
@@ -486,9 +509,38 @@ async function refreshAccountSession(){
   if(r.ok){ accountUI.session = r.session; renderAccount(); }
 }
 
+// cloud-save: module-scope caches don't see localStorage writes — after a
+// merge, re-read every synced key the same way boot does.
+function rehydrateFromStore(){
+  masteryStore = store.get("mastery", {});
+  wallet = store.get("wallet", 0);
+  shopState = Object.assign(defaultShop(), store.get("shop", {}));
+  freezes = Math.min(2, Number(store.get("freezes")) || 0);
+  xp = store.get("xp", 0);
+  daily = Object.assign(defaultDaily(), store.get("daily", {}));
+  daily.today = Object.assign({date:"", resolved:0}, daily.today);
+  questState = Object.assign(defaultQuestState(), store.get("quests", {}));
+  monthly = Object.assign(defaultMonthly(), store.get("monthly", {}));
+  const st = Object.assign(defaultStickers(), store.get("stickers", {}) || {});
+  stickerState = { earned: Object.assign({}, st.earned), queue: stickerState.queue };
+  updateWalletChip();
+}
+
+// Reconcile edge: never during an active round (design §3 — merged state must
+// not change mid-battle); the next edge catches up.
+async function syncEdge(reason){
+  if(B.on) return;
+  const r = await reconcile(store, reason);
+  if(r.ok){
+    rehydrateFromStore();
+    renderAccount();
+    if(reason === "sign-in" && r.changed) toast(t("account.restored"));
+  }
+}
+
 async function onAccountConnect(){
   const r = await ensureGuest(getLocale());
-  if(r.ok){ accountUI.session = r.session; renderAccount(); }
+  if(r.ok){ accountUI.session = r.session; renderAccount(); syncEdge("sign-in"); }
   else toast(t("account.err." + (r.reason === "offline" ? "offline" : "network")));
 }
 
@@ -524,6 +576,7 @@ async function onAccountVerify(code){
   accountUI.phase = "idle";
   toast(t("account.signedIn"));
   renderAccount();
+  syncEdge("sign-in");
 }
 
 async function onAccountSignOut(){
@@ -1274,8 +1327,11 @@ document.addEventListener("visibilitychange", ()=>{
     syncStreakReminder(plan,
       t("notify.streak.title", { n: inf.streak }),
       t("notify.streak.body", { remaining: Math.max(0, inf.goal - inf.todayResolved) }));
+    pushDirty(store, "hide");
   }
+  if(!document.hidden) syncEdge("foreground");
 });
+window.addEventListener("online", ()=> syncEdge("online"));
 $("#hud-pause").onclick = ()=> pauseBattle();
 $("#pause-resume").onclick = ()=> resumeBattle();
 $("#pause-quit").onclick = ()=>{ $("#pause-overlay").classList.remove("on"); endBattle(true); };
@@ -2361,6 +2417,7 @@ function makeShopRow(item, today){
     if(!r.ok) return;
     wallet = r.wallet; shopState = r.shop;
     store.set("wallet", wallet); store.set("shop", shopState);
+    pushDirty(store, "purchase");
     justBought = { id: item.id, at: performance.now() };
     // no renderStreet() here: the street canvas is display:none while the
     // shop screen is up (renderStreet would no-op) and show("street") always
@@ -2380,6 +2437,7 @@ function makeShopRow(item, today){
       wallet = r.wallet;
       if(item.id === "streak-freeze"){ freezes = r.count; store.set("freezes", freezes); }
       store.set("wallet", wallet);
+      pushDirty(store, "purchase");
       justBought = { id: item.id, at: performance.now() };
       updateWalletChip(); updateStreakChip(); renderShop();
     };

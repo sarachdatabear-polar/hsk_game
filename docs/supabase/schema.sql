@@ -58,7 +58,8 @@ create table if not exists public.progress (
   streak     integer not null default 0,            -- derived from nbhsk.daily (day streak)
   daily      jsonb   not null default '{}'::jsonb,   -- nbhsk.daily    (streak/goal/last-played state)
   quests     jsonb   not null default '{}'::jsonb,   -- nbhsk.quests   (daily quest progress)
-  best       jsonb   not null default '[]'::jsonb,   -- nbhsk.best     (best-session scores)
+  monthly    jsonb   not null default '{}'::jsonb,   -- nbhsk.monthly  (monthly quest counter, retention pack)
+  best       jsonb   not null default '{}'::jsonb,   -- nbhsk.best     (best-session scores, keyed object)
   cosmetics  jsonb   not null default '{}'::jsonb,   -- nbhsk.shop     (owned/equipped skins, decos, tiers)
   stickers   jsonb   not null default '{}'::jsonb,   -- nbhsk.stickers (earned sticker album)
   updated_at timestamptz not null default now()
@@ -76,6 +77,7 @@ create or replace trigger progress_touch before update on public.progress
 create table if not exists public.wallet (
   user_id           uuid primary key references auth.users (id) on delete cascade,
   coins             integer not null default 0,     -- mirrors nbhsk.wallet
+  freezes           integer not null default 0,     -- nbhsk.freezes (paid consumable, cap 2)
   earned_today      integer not null default 0,     -- coins earned since earned_today_date (anti-cheat, §3.3)
   earned_today_date date    not null default current_date,
   updated_at        timestamptz not null default now()
@@ -151,3 +153,60 @@ create policy entitlements_read_self on public.entitlements
 drop policy if exists ledger_read_self on public.ledger;
 create policy ledger_read_self on public.ledger
   for select using (auth.uid() = user_id);
+
+-- ---------------------------------------------------------------------------
+-- Revision 2026-07-10 (cloud-save round, design doc §1). Idempotent ALTERs
+-- for projects created from the original file, plus the anti-cheat guard.
+-- ---------------------------------------------------------------------------
+alter table public.progress add column if not exists monthly jsonb not null default '{}'::jsonb;
+alter table public.wallet   add column if not exists freezes integer not null default 0;
+alter table public.progress alter column best set default '{}'::jsonb;
+update public.progress set best = '{}'::jsonb where best = '[]'::jsonb;
+
+-- wallet_guard — PRD §3.3 server-side anti-cheat clamp.
+--  * Only positive coin deltas count as earnings; spending is never penalized.
+--  * UPDATE allowance = 25000/day × days since the row was last written
+--    (edge-based sync legitimately delivers several offline days at once).
+--  * INSERT (first-ever sync: account age proves nothing about a long-time
+--    offline player) clamps coins to a lifetime-plausible 100000.
+--  * freezes clamped 0–2 on both paths.
+create or replace function public.wallet_guard()
+returns trigger language plpgsql as $$
+declare
+  earn_cap       constant integer := 25000;
+  first_sync_cap constant integer := 100000;
+  allowance integer;
+  delta     integer;
+  days      integer;
+begin
+  new.freezes := least(greatest(coalesce(new.freezes, 0), 0), 2);
+  new.coins   := greatest(coalesce(new.coins, 0), 0);
+  if tg_op = 'INSERT' then
+    new.coins := least(new.coins, first_sync_cap);
+    new.earned_today := 0;
+    new.earned_today_date := current_date;
+    return new;
+  end if;
+  if old.earned_today_date < current_date then
+    new.earned_today := 0;
+  else
+    new.earned_today := old.earned_today;
+  end if;
+  new.earned_today_date := current_date;
+  delta := new.coins - old.coins;
+  if delta > 0 then
+    days := greatest(1, current_date - old.updated_at::date);
+    allowance := greatest(earn_cap * days - new.earned_today, 0);
+    if delta > allowance then
+      delta := allowance;
+      new.coins := old.coins + delta;
+    end if;
+    new.earned_today := new.earned_today + delta;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists wallet_guard on public.wallet;
+create trigger wallet_guard before insert or update on public.wallet
+  for each row execute function public.wallet_guard();
