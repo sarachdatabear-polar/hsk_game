@@ -43,6 +43,31 @@ export const STRINGS = {
     // notify (retention pack — Android local notification, see notify.js/native.js)
     "notify.streak.title": "Don't lose your {n}-day streak!",
     "notify.streak.body": "{remaining} words keep it alive — a quick round does it.",
+    // account (client-auth round — Account sub-screen off More)
+    "account.row": "Account",
+    "account.title": "Account",
+    "account.status.local": "On this device",
+    "account.status.guest": "Guest account",
+    "account.status.signedIn": "Signed in as {email}",
+    "account.explain.offline": "Cloud accounts need an internet connection — your progress is safe on this device.",
+    "account.explain.local": "Your progress lives on this device. Connect to get ready for cloud backup.",
+    "account.explain.guest": "Connected as a guest. Add your email so your account isn't lost with this device.",
+    "account.explain.signedIn": "Your account is linked. Cloud backup of progress is coming soon.",
+    "account.connect": "Connect",
+    "account.sendCode": "Send code",
+    "account.verify": "Verify",
+    "account.resend": "Resend code",
+    "account.resendWait": "Resend in {s}s",
+    "account.signOut": "Sign out",
+    "account.emailPh": "your@email.com",
+    "account.codePh": "6-digit code",
+    "account.codeSent": "Code sent — check your email",
+    "account.signedIn": "Signed in!",
+    "account.signedOut": "Signed out",
+    "account.err.offline": "No internet connection",
+    "account.err.network": "Couldn't reach the cloud — try again",
+    "account.err.badEmail": "That email doesn't look right",
+    "account.err.badCode": "Wrong or expired code — try again",
     "milestone.scarf": "Red scarf",
     "milestone.coin": "Gold coin charm",
     "milestone.outfit": "Chinese outfit",
@@ -315,6 +340,31 @@ export const STRINGS = {
     "toast.freeze-used": "ใช้น้ำแข็งพิทักษ์สตรีคแล้ว — สตรีค {n} วันของคุณยังอยู่",
     "notify.streak.title": "อย่าให้สตรีค {n} วันหลุดนะ!",
     "notify.streak.body": "อีก {remaining} คำสตรีคก็รอด — เล่นรอบสั้น ๆ ก็พอ",
+    // account (client-auth round)
+    "account.row": "บัญชี",   // TH: needs native review
+    "account.title": "บัญชี",   // TH: needs native review
+    "account.status.local": "อยู่บนเครื่องนี้",   // TH: needs native review
+    "account.status.guest": "บัญชีผู้เยี่ยมชม",   // TH: needs native review
+    "account.status.signedIn": "เข้าสู่ระบบเป็น {email}",   // TH: needs native review
+    "account.explain.offline": "บัญชีคลาวด์ต้องใช้อินเทอร์เน็ต — ความคืบหน้าของคุณยังปลอดภัยบนเครื่องนี้",   // TH: needs native review
+    "account.explain.local": "ความคืบหน้าของคุณอยู่บนเครื่องนี้ เชื่อมต่อเพื่อเตรียมพร้อมสำรองข้อมูลบนคลาวด์",   // TH: needs native review
+    "account.explain.guest": "เชื่อมต่อแบบผู้เยี่ยมชมแล้ว เพิ่มอีเมลเพื่อไม่ให้บัญชีหายไปพร้อมเครื่อง",   // TH: needs native review
+    "account.explain.signedIn": "บัญชีของคุณเชื่อมต่อแล้ว การสำรองความคืบหน้าบนคลาวด์กำลังจะมาเร็ว ๆ นี้",   // TH: needs native review
+    "account.connect": "เชื่อมต่อ",   // TH: needs native review
+    "account.sendCode": "ส่งรหัส",   // TH: needs native review
+    "account.verify": "ยืนยัน",   // TH: needs native review
+    "account.resend": "ส่งรหัสอีกครั้ง",   // TH: needs native review
+    "account.resendWait": "ส่งใหม่ได้ใน {s} วิ",   // TH: needs native review
+    "account.signOut": "ออกจากระบบ",   // TH: needs native review
+    "account.emailPh": "your@email.com",   // TH: needs native review
+    "account.codePh": "รหัส 6 หลัก",   // TH: needs native review
+    "account.codeSent": "ส่งรหัสแล้ว — เช็กอีเมลของคุณ",   // TH: needs native review
+    "account.signedIn": "เข้าสู่ระบบแล้ว!",   // TH: needs native review
+    "account.signedOut": "ออกจากระบบแล้ว",   // TH: needs native review
+    "account.err.offline": "ไม่มีการเชื่อมต่ออินเทอร์เน็ต",   // TH: needs native review
+    "account.err.network": "ติดต่อคลาวด์ไม่ได้ — ลองอีกครั้ง",   // TH: needs native review
+    "account.err.badEmail": "อีเมลนี้ดูไม่ถูกต้อง",   // TH: needs native review
+    "account.err.badCode": "รหัสผิดหรือหมดอายุ — ลองอีกครั้ง",   // TH: needs native review
     "milestone.scarf": "ผ้าพันคอสีแดง",
     "milestone.coin": "เครื่องรางเหรียญทอง",
     "milestone.outfit": "ชุดจีน",
