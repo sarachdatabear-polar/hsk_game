@@ -6,6 +6,7 @@
 import { defaultShop } from "./shop.js";
 import { defaultStickers } from "./stickers.js";
 import { defaultQuestState, defaultMonthly, MONTHLY_TARGET } from "./quests.js";
+import { defaultDaily } from "./daily.js";
 
 export const SYNC_KEYS = ["mastery", "xp", "daily", "quests", "monthly",
   "wallet", "freezes", "shop", "stickers", "best"];
@@ -104,4 +105,59 @@ export function mergeMonthly(a, b) {
   return { month: A.month,
            done: Math.min(MONTHLY_TARGET, Math.max(num(A.done), num(B.done))),
            claimed: !!(A.claimed || B.claimed) };
+}
+
+function daysBetween(a, b) {   // whole days b - a; 0 when either is invalid/empty
+  if (!a || !b) return 0;
+  const da = new Date(a + "T00:00:00Z"), db = new Date(b + "T00:00:00Z");
+  if (isNaN(da) || isNaN(db)) return 0;
+  return Math.round((db - da) / 86400000);
+}
+
+function normDaily(v) {
+  const d = Object.assign(defaultDaily(), v || {});
+  d.today = Object.assign({ date: "", resolved: 0 }, d.today);
+  return d;
+}
+
+function mergeToday(x, y) {
+  if (x.date === y.date) return { date: x.date, resolved: Math.max(num(x.resolved), num(y.resolved)) };
+  return x.date > y.date ? { ...x } : { ...y };
+}
+
+// Chain merge (design §2): the newer-`last` side is the live chain; the older
+// side extends it only when their calendars touch or overlap. Taking a bare
+// max would resurrect long-dead streaks, so a disconnected old chain loses.
+export function mergeDaily(a, b) {
+  const A = normDaily(a), B = normDaily(b);
+  const today = mergeToday(A.today, B.today);
+  if (A.last === B.last) {
+    const base = A.streak >= B.streak ? A : B;
+    return { last: base.last, streak: Math.max(A.streak, B.streak),
+             today, restWeek: base.restWeek, restDay: base.restDay };
+  }
+  const N = A.last > B.last ? A : B;
+  const O = N === A ? B : A;
+  let streak = N.streak;
+  const gap = daysBetween(O.last, N.last);
+  if (O.last && gap >= 1 && gap <= N.streak) {
+    streak = Math.max(N.streak, num(O.streak) + Math.min(N.streak, gap));
+  }
+  return { last: N.last, streak, today, restWeek: N.restWeek, restDay: N.restDay };
+}
+
+export function mergeAll(local, cloud, { shopDirty = false } = {}) {
+  const l = local || {}, c = cloud || {};
+  return {
+    mastery: mergeMastery(l.mastery, c.mastery),
+    xp: mergeXp(l.xp, c.xp),
+    daily: mergeDaily(l.daily, c.daily),
+    quests: mergeQuests(l.quests, c.quests),
+    monthly: mergeMonthly(l.monthly, c.monthly),
+    wallet: mergeWallet(l.wallet, c.wallet),
+    freezes: mergeFreezes(l.freezes, c.freezes),
+    shop: mergeShop(l.shop, c.shop, shopDirty),
+    stickers: mergeStickers(l.stickers, c.stickers),
+    best: mergeBest(l.best, c.best),
+  };
 }
