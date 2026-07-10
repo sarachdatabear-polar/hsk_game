@@ -1690,6 +1690,12 @@
     }
     return { state: m, earned: 0 };
   }
+  function settleMonthly(m, dateStr) {
+    const month = monthKey(dateStr);
+    if (m.month === month || m.month === "") return { state: m, earned: 0 };
+    const earned = m.done >= MONTHLY_TARGET && !m.claimed ? MONTHLY_REWARD : 0;
+    return { state: { month, done: 0, claimed: false }, earned };
+  }
 
   // src/boss.js
   var BOSS_EVERY = 10;
@@ -2122,7 +2128,8 @@
       "home.settings": "Settings",
       "home.streakTitle": "Study Streak",
       "home.streakDays": "{n} days",
-      "home.freezes": "{n} freeze(s)",
+      "home.freezes": "{n} freezes",
+      "home.freeze-one": "1 freeze",
       "home.start": "START",
       "home.startHint": "Need at least 8 words in scope to start \u2014 widen it below.",
       "home.scopeWords": "{n} words",
@@ -2229,6 +2236,7 @@
       "quest.monthly.title": "Monthly: {done}/{target} quests",
       "quest.monthly.claim": "Claim +{reward}",
       "quest.monthly.badge": "Monthly badge earned!",
+      "quest.monthly.autoClaimed": "Monthly reward claimed for you: +{reward} coins",
       // scores / progress
       "scores.title": "Best Sessions",
       "scores.empty": "No sessions yet \u2014 complete a Word Quest.",
@@ -2263,6 +2271,7 @@
       "shop.backdrops": "Quest backdrops",
       "shop.effects": "Effects",
       "shop.sounds": "Sounds",
+      "shop.supplies": "Supplies",
       "shop.street": "Street decorations",
       "shop.wallet": "Wallet: <b>{coins}</b> coins",
       "shop.buy": "Buy",
@@ -2395,6 +2404,8 @@
       "home.streakDays": "{n} \u0E27\u0E31\u0E19",
       "home.freezes": "\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07 {n} \u0E0A\u0E34\u0E49\u0E19",
       // TH: needs native review
+      "home.freeze-one": "\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07 1 \u0E0A\u0E34\u0E49\u0E19",
+      // TH: needs native review
       "home.start": "\u0E40\u0E23\u0E34\u0E48\u0E21",
       "home.startHint": "\u0E15\u0E49\u0E2D\u0E07\u0E21\u0E35\u0E04\u0E33\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E19\u0E49\u0E2D\u0E22 8 \u0E04\u0E33\u0E43\u0E19\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E08\u0E36\u0E07\u0E08\u0E30\u0E40\u0E23\u0E34\u0E48\u0E21\u0E44\u0E14\u0E49 \u2014 \u0E02\u0E22\u0E32\u0E22\u0E02\u0E2D\u0E1A\u0E40\u0E02\u0E15\u0E14\u0E49\u0E32\u0E19\u0E25\u0E48\u0E32\u0E07",
       "home.scopeWords": "{n} \u0E04\u0E33",
@@ -2505,6 +2516,8 @@
       // TH: needs native review
       "quest.monthly.badge": "\u0E44\u0E14\u0E49\u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D\u0E15\u0E23\u0E32\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E41\u0E25\u0E49\u0E27!",
       // TH: needs native review
+      "quest.monthly.autoClaimed": "\u0E23\u0E31\u0E1A\u0E23\u0E32\u0E07\u0E27\u0E31\u0E25\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E43\u0E2B\u0E49\u0E04\u0E38\u0E13\u0E41\u0E25\u0E49\u0E27: +{reward} \u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D",
+      // TH: needs native review
       // scores / progress
       "scores.title": "\u0E2A\u0E16\u0E34\u0E15\u0E34\u0E14\u0E35\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14",
       "scores.empty": "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E2A\u0E16\u0E34\u0E15\u0E34 \u2014 \u0E40\u0E25\u0E48\u0E19\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C\u0E04\u0E33\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E01\u0E48\u0E2D\u0E19",
@@ -2541,6 +2554,8 @@
       "shop.backdrops": "\u0E09\u0E32\u0E01\u0E2B\u0E25\u0E31\u0E07",
       "shop.effects": "\u0E40\u0E2D\u0E1F\u0E40\u0E1F\u0E01\u0E15\u0E4C",
       "shop.sounds": "\u0E40\u0E2A\u0E35\u0E22\u0E07",
+      "shop.supplies": "\u0E02\u0E2D\u0E07\u0E43\u0E0A\u0E49",
+      // TH: needs native review
       "shop.street": "\u0E02\u0E2D\u0E07\u0E15\u0E01\u0E41\u0E15\u0E48\u0E07\u0E16\u0E19\u0E19",
       "shop.wallet": "\u0E01\u0E23\u0E30\u0E40\u0E1B\u0E4B\u0E32\u0E40\u0E07\u0E34\u0E19: <b>{coins}</b> \u0E40\u0E2B\u0E23\u0E35\u0E22\u0E0D",
       "shop.buy": "\u0E0B\u0E37\u0E49\u0E2D",
@@ -2820,6 +2835,10 @@
     if (!state.queue.length) return { state, id: null };
     return { state: { earned: state.earned, queue: state.queue.slice(1) }, id: state.queue[0] };
   }
+  function dropFromQueue(state, id) {
+    if (!state.queue.includes(id)) return state;
+    return { earned: state.earned, queue: state.queue.filter((q) => q !== id) };
+  }
 
   // src/journey.js
   var STAR_THRESHOLDS = [50, 80, 100];
@@ -2950,7 +2969,7 @@
     if (freezeChip) {
       freezeChip.style.display = freezes > 0 ? "flex" : "none";
       const label = freezeChip.querySelector(".freeze-count");
-      if (label) label.textContent = t("home.freezes", { n: freezes });
+      if (label) label.textContent = freezes === 1 ? t("home.freeze-one") : t("home.freezes", { n: freezes });
     }
   }
   var toastTimer = 0;
@@ -2987,6 +3006,19 @@
   var questState = Object.assign(defaultQuestState(), store.get("quests", {}));
   var questToasts = [];
   var monthly = Object.assign(defaultMonthly(), store.get("monthly", {}));
+  function settleMonthlyNow() {
+    const r = settleMonthly(monthly, todayStr());
+    if (r.state === monthly) return;
+    monthly = r.state;
+    store.set("monthly", monthly);
+    if (r.earned > 0) {
+      wallet += r.earned;
+      store.set("wallet", wallet);
+      updateWalletChip();
+      toast(t("quest.monthly.autoClaimed", { reward: r.earned }));
+    }
+  }
+  settleMonthlyNow();
   var st0 = Object.assign(defaultStickers(), store.get("stickers", {}) || {});
   var stickerState = {
     earned: Object.assign({}, st0.earned),
@@ -3068,6 +3100,7 @@
     }
     if (r.completed.length) {
       questToasts.push(...r.completed);
+      settleMonthlyNow();
       monthly = noteMonthlyProgress(monthly, todayStr(), r.completed.length);
       store.set("monthly", monthly);
     }
@@ -3076,6 +3109,7 @@
   function renderQuests() {
     const panel = $("#quest-panel");
     if (!panel) return;
+    settleMonthlyNow();
     panel.innerHTML = "";
     const ms = monthlyStatus(monthly, todayStr());
     const pct = Math.min(100, Math.round(100 * ms.done / ms.target));
@@ -4787,8 +4821,11 @@
       };
       const hadMonthlyBadgeQuit = !!stickerState.earned["ev:monthly-40"];
       stickerState = evaluateAwards(stickerState, STICKER_DEFS, quitFacts, todayStr());
+      if (!hadMonthlyBadgeQuit && stickerState.earned["ev:monthly-40"]) {
+        toast(t("quest.monthly.badge"));
+        stickerState = dropFromQueue(stickerState, "ev:monthly-40");
+      }
       store.set("stickers", stickerState);
-      if (!hadMonthlyBadgeQuit && stickerState.earned["ev:monthly-40"]) toast(t("quest.monthly.badge"));
       show("home");
       return;
     }
@@ -4898,8 +4935,11 @@
     };
     const hadMonthlyBadge = !!stickerState.earned["ev:monthly-40"];
     stickerState = evaluateAwards(stickerState, STICKER_DEFS, stickerFacts, todayStr());
+    if (!hadMonthlyBadge && stickerState.earned["ev:monthly-40"]) {
+      toast(t("quest.monthly.badge"));
+      stickerState = dropFromQueue(stickerState, "ev:monthly-40");
+    }
     store.set("stickers", stickerState);
-    if (!hadMonthlyBadge && stickerState.earned["ev:monthly-40"]) toast(t("quest.monthly.badge"));
     const slot = $("#r-sticker-slot");
     const popped = popToast(stickerState);
     if (popped.id) {
@@ -4937,8 +4977,8 @@
     $("#shop-wallet").innerHTML = t("shop.wallet", { coins: wallet.toLocaleString() });
     const today = todayStr();
     const dailyBox = $("#shop-daily"), seasonBox = $("#shop-season");
-    const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), decoBox = $("#shop-street");
-    for (const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, decoBox]) b.innerHTML = "";
+    const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), supBox = $("#shop-supplies"), decoBox = $("#shop-street");
+    for (const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, supBox, decoBox]) b.innerHTML = "";
     const stock = unownedDailyStock(today, shopState);
     for (const id of stock) {
       const item = CATALOG.find((i) => i.id === id);
@@ -4959,12 +4999,15 @@
     }
     for (const item of CATALOG) {
       if ((item.pool || item.season) && !shopState.owned.includes(item.id)) continue;
-      const box = item.type === "skin" ? skinBox : item.type === "backdrop" ? bdBox : item.type === "effect" ? fxBox : item.type === "soundpack" ? sndBox : decoBox;
+      const box = item.type === "skin" ? skinBox : item.type === "backdrop" ? bdBox : item.type === "effect" ? fxBox : item.type === "soundpack" ? sndBox : item.type === "consumable" ? supBox : decoBox;
       box.appendChild(makeShopRow(item, today));
     }
     startShopPreviewLoop();
   }
   var fmtMonthDay = ([m, d]) => new Date(2026, m - 1, d).toLocaleDateString(getLocale() === "th" ? "th-TH" : "en-US", { month: "short", day: "numeric" });
+  function consumableCount(item) {
+    return item.id === "streak-freeze" ? freezes : 0;
+  }
   function makeShopRow(item, today) {
     const owned = shopState.owned.includes(item.id);
     const equipped = shopState[item.type] === item.id;
@@ -4980,7 +5023,7 @@
     const copy = document.createElement("span");
     copy.className = "shop-copy";
     const stars = item.type === "deco" && owned ? " " + "\u2605".repeat(tier) : "";
-    const ownedCount = item.type === "consumable" ? `<small>${t("shop.owned-count", { n: freezes, cap: item.cap })}</small>` : "";
+    const ownedCount = item.type === "consumable" ? `<small>${t("shop.owned-count", { n: consumableCount(item), cap: item.cap })}</small>` : "";
     copy.innerHTML = `<b>${tOr("item." + item.id, item.name)}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
     left.replaceChildren(preview, copy);
     const btn = document.createElement("button");
@@ -4998,14 +5041,17 @@
     if (item.type === "consumable") {
       btn.className = "chip buy-chip";
       btn.textContent = t("shop.buy");
-      btn.disabled = freezes >= item.cap || wallet < item.price;
+      const have = consumableCount(item);
+      btn.disabled = have >= item.cap || wallet < item.price;
       btn.onclick = () => {
-        const r = buyConsumable(item, wallet, freezes);
+        const r = buyConsumable(item, wallet, consumableCount(item));
         if (!r.ok) return;
         wallet = r.wallet;
-        freezes = r.count;
+        if (item.id === "streak-freeze") {
+          freezes = r.count;
+          store.set("freezes", freezes);
+        }
         store.set("wallet", wallet);
-        store.set("freezes", freezes);
         justBought = { id: item.id, at: performance.now() };
         updateWalletChip();
         updateStreakChip();
