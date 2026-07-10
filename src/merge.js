@@ -49,7 +49,10 @@ export function mergeStickers(a, b) {
 // cloud outfit, but an unsynced re-dress isn't undone by an old cloud row.
 export function mergeShop(a, b, localSlotsDirty) {
   const A = Object.assign(defaultShop(), a || {});
-  if (!b) return A;
+  if (!b) {
+    return { owned: [...(A.owned || [])], skin: A.skin, backdrop: A.backdrop,
+             effect: A.effect, soundpack: A.soundpack, tiers: { ...(A.tiers || {}) } };
+  }
   const B = Object.assign(defaultShop(), b);
   const owned = [...new Set([...(A.owned || []), ...(B.owned || [])])];
   const tiers = {};
@@ -83,7 +86,10 @@ export function mergeMastery(a, b) {
 export function mergeQuests(a, b) {
   const A = Object.assign(defaultQuestState(), a || {});
   const B = Object.assign(defaultQuestState(), b || {});
-  if (A.date !== B.date) return A.date > B.date ? A : B;
+  if (A.date !== B.date) {
+    const w = A.date > B.date ? A : B;
+    return { date: w.date, progress: { ...(w.progress || {}) }, done: [...(w.done || [])] };
+  }
   const progress = {};
   for (const id of new Set([...Object.keys(A.progress || {}), ...Object.keys(B.progress || {})])) {
     progress[id] = Math.max(num((A.progress || {})[id]), num((B.progress || {})[id]));

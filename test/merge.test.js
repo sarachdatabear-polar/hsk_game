@@ -69,6 +69,12 @@ describe("mergeShop", () => {
     expect(mergeShop(local, cloud, true).skin).toBe("skin-a"));
   it("missing cloud row returns normalized local", () =>
     expect(mergeShop(local, null, false)).toEqual(local));
+  it("no-cloud result does not alias input arrays/objects", () => {
+    const m = mergeShop(local, null, false);
+    expect(m).toEqual(local);
+    expect(m.owned).not.toBe(local.owned);
+    expect(m.tiers).not.toBe(local.tiers);
+  });
 });
 
 describe("mergeMastery", () => {
@@ -105,6 +111,13 @@ describe("mergeQuests", () => {
     const newer = { date: "2026-07-10", progress: {}, done: [] };
     expect(mergeQuests(older, newer)).toEqual(newer);
     expect(mergeQuests(newer, older)).toEqual(newer);
+  });
+  it("wholesale winner does not alias its inputs", () => {
+    const newer = { date: "2026-07-10", progress: { a: 1 }, done: ["a"] };
+    const m = mergeQuests(newer, { date: "2026-07-09", progress: {}, done: [] });
+    expect(m).toEqual(newer);
+    expect(m.progress).not.toBe(newer.progress);
+    expect(m.done).not.toBe(newer.done);
   });
 });
 
