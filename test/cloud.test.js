@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { getSession, ensureGuest, sendCode, verifyCode, signOut,
-         upsertProfile, __setClientForTests } from "../src/cloud.js";
+         upsertProfile, fetchSyncRows, pushSyncRows, __setClientForTests } from "../src/cloud.js";
 
 // House pattern (see test/native.test.js): no vi.mock — a hand-rolled fake
 // client + globalThis stubs, reset in beforeEach.
@@ -207,5 +207,65 @@ describe("signOut / upsertProfile never throw", () => {
     globalThis.navigator = { onLine: false };
     expect(await upsertProfile({ id: "u1", locale: "en" })).toEqual({ ok: false });
     expect(calls).toBe(0);
+  });
+});
+
+// Fake with select support for the sync-row reads.
+function fakeSyncClient({ progressRow = null, walletRow = null, failSelect = false, failUpsert = false } = {}) {
+  const calls = { selects: [], upserts: [] };
+  const client = {
+    from: (table) => ({
+      select: () => ({
+        eq: (col, val) => ({
+          maybeSingle: async () => {
+            calls.selects.push({ table, col, val });
+            if (failSelect) return { data: null, error: { message: "boom" } };
+            return { data: table === "progress" ? progressRow : walletRow, error: null };
+          },
+        }),
+      }),
+      upsert: async (row) => {
+        calls.upserts.push({ table, row });
+        return { error: failUpsert ? { message: "boom" } : null };
+      },
+    }),
+  };
+  return { client, calls };
+}
+
+describe("fetchSyncRows", () => {
+  it("offline resolves {ok:false, reason:'offline'}", async () => {
+    globalThis.navigator = { onLine: false };
+    expect(await fetchSyncRows("u1")).toEqual({ ok: false, reason: "offline" });
+  });
+  it("returns both rows (null when absent)", async () => {
+    const p = { user_id: "u1", xp: 5 };
+    const { client, calls } = fakeSyncClient({ progressRow: p, walletRow: null });
+    __setClientForTests(client);
+    expect(await fetchSyncRows("u1")).toEqual({ ok: true, progress: p, wallet: null });
+    expect(calls.selects).toEqual([
+      { table: "progress", col: "user_id", val: "u1" },
+      { table: "wallet", col: "user_id", val: "u1" },
+    ]);
+  });
+  it("select failure resolves {ok:false, reason:'network'} — never throws", async () => {
+    const { client } = fakeSyncClient({ failSelect: true });
+    __setClientForTests(client);
+    expect(await fetchSyncRows("u1")).toEqual({ ok: false, reason: "network" });
+  });
+});
+
+describe("pushSyncRows", () => {
+  it("upserts progress then wallet", async () => {
+    const { client, calls } = fakeSyncClient();
+    __setClientForTests(client);
+    const r = await pushSyncRows({ user_id: "u1", xp: 9 }, { user_id: "u1", coins: 4, freezes: 1 });
+    expect(r).toEqual({ ok: true });
+    expect(calls.upserts.map(u => u.table)).toEqual(["progress", "wallet"]);
+  });
+  it("any upsert failure resolves {ok:false}", async () => {
+    const { client } = fakeSyncClient({ failUpsert: true });
+    __setClientForTests(client);
+    expect(await pushSyncRows({ user_id: "u1" }, { user_id: "u1" })).toEqual({ ok: false });
   });
 });
