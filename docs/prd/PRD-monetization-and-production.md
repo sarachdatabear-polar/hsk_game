@@ -180,7 +180,7 @@ grants are **service-role only** (written by the webhook, never the client).
 ### 6.3 Sync strategy
 - **Local-first:** gameplay writes to `localStorage` immediately (no latency, offline-safe).
 - **Reconcile on:** app foreground, sign-in, and after a purchase.
-- **Conflict resolution:** last-write-wins per field by server timestamp; **coins special-cased** — purchased coins are server-authoritative; earned coins take `max(local, cloud)` within the daily anti-cheat cap.
+- **Conflict resolution:** per-key merge folds (shipped 2026-07-10, supersedes the earlier "last-write-wins per field" plan): cumulative counters (xp/coins/freezes/mastery) take max-never-sum, collections union, equipped cosmetics resolve by dirty-bit LWW, streak chains extend only when calendars touch; coins remain guarded by the server-side `wallet_guard` anti-cheat trigger.
 
 ### 6.4 Compliance surface it introduces
 Storing identifiable data triggers **Thailand PDPA** + **EU GDPR** obligations: privacy
