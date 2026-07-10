@@ -253,6 +253,13 @@ async function goToStreet(page) {
   await page.waitForTimeout(250);
 }
 
+async function goToAccount(page) {
+  await page.evaluate(() => document.querySelector('#bottom-nav [data-go="more"], [data-go="more"]')?.click());
+  await page.waitForTimeout(150);
+  await page.evaluate(() => document.querySelector('#s-more [data-go="account"]')?.click());
+  await page.waitForTimeout(250);
+}
+
 async function goToBattle(page) {
   await page.evaluate(() => document.querySelector('[data-go="home"]')?.click());
   await page.waitForTimeout(200);
@@ -331,6 +338,11 @@ async function runFullSweep() {
     const navAtMid = await page.evaluate(probeNavReachable, TOL);
     await page.evaluate(() => window.scrollTo(0, 0));
 
+    await goToAccount(page);
+    const account = await page.evaluate(probeScreen, ["account", TOL]);
+    await page.evaluate(() => document.querySelector('[data-go="home"]')?.click());
+    await page.waitForTimeout(100);
+
     // stale-scroll: scroll to the bottom of shop, then navigate to progress
     // via show() — the document scroll position must reset to 0, not carry
     // over from the previous screen (both screens ride the shared document
@@ -369,13 +381,16 @@ async function runFullSweep() {
     if (home.overflowX) failures.push("home overflow-x");
     if (shop.overflowX) failures.push("shop overflow-x");
     if (battle.overflowX) failures.push("battle overflow-x");
+    if (account.overflowX) failures.push("account overflow-x");
     if (startVisible !== "in-fold") failures.push(`start=${startVisible}`);
     if (home.small.length) failures.push(`home small-taps:[${home.small}]`);
     if (shop.small.length) failures.push(`shop small-taps:[${shop.small}]`);
     if (battle.small.length) failures.push(`battle small-taps:[${battle.small}]`);
+    if (account.small.length) failures.push(`account small-taps:[${account.small}]`);
     if (home.wide.length) failures.push(`home wide:[${home.wide}]`);
     if (shop.wide.length) failures.push(`shop wide:[${shop.wide}]`);
     if (battle.wide.length) failures.push(`battle wide:[${battle.wide}]`);
+    if (account.wide.length) failures.push(`account wide:[${account.wide}]`);
     if (battle.clippedBelow > 0) failures.push(`battle clipped-below=${battle.clippedBelow}`);
     if (overscrollY !== "none") failures.push(`overscroll-behavior-y=${overscrollY}`);
     if (!streetQuests.active) failures.push("street-quests: #s-street not active");
