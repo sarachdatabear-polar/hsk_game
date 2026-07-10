@@ -60,7 +60,7 @@ export const STRINGS = {
     "account.resendWait": "Resend in {s}s",
     "account.signOut": "Sign out",
     "account.emailPh": "your@email.com",
-    "account.codePh": "6-digit code",
+    "account.codePh": "code from the email",
     "account.codeSent": "Code sent — check your email",
     "account.changeEmail": "Use a different email",
     "account.signedIn": "Signed in!",
@@ -358,7 +358,7 @@ export const STRINGS = {
     "account.resendWait": "ส่งใหม่ได้ใน {s} วิ",   // TH: needs native review
     "account.signOut": "ออกจากระบบ",   // TH: needs native review
     "account.emailPh": "your@email.com",   // TH: needs native review
-    "account.codePh": "รหัส 6 หลัก",   // TH: needs native review
+    "account.codePh": "รหัสจากอีเมล",   // TH: needs native review
     "account.codeSent": "ส่งรหัสแล้ว — เช็กอีเมลของคุณ",   // TH: needs native review
     "account.changeEmail": "ใช้อีเมลอื่น",   // TH: needs native review
     "account.signedIn": "เข้าสู่ระบบแล้ว!",   // TH: needs native review

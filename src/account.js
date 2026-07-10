@@ -40,8 +40,10 @@ export function canSendCode(email, lastSentAt, now) {
   return { ok: true };
 }
 
+// Supabase's OTP length is configurable (6-10) and newer projects default to
+// 8 digits, so we accept the whole range instead of pinning one length.
 export function codeLooksValid(code) {
-  return /^\d{6}$/.test(String(code || "").trim());
+  return /^\d{6,10}$/.test(String(code || "").trim());
 }
 
 export function profileRowFor(userId, locale) {

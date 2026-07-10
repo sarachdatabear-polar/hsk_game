@@ -76,12 +76,12 @@ describe("canSendCode", () => {
 });
 
 describe("codeLooksValid", () => {
-  it("accepts exactly 6 digits (trimmed)", () => {
-    expect(codeLooksValid("123456")).toBe(true);
-    expect(codeLooksValid(" 123456 ")).toBe(true);
+  it("accepts 6-10 digits (trimmed)", () => {
+    for (const c of ["123456", " 123456 ", "1234567", "12345678", "1234567890"])
+      expect(codeLooksValid(c)).toBe(true);
   });
   it("rejects everything else", () => {
-    for (const c of ["12345", "1234567", "12345a", "", null, undefined, "12 456"])
+    for (const c of ["12345", "12345678901", "12345a", "", null, undefined, "12 456"])
       expect(codeLooksValid(c)).toBe(false);
   });
 });

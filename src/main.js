@@ -413,7 +413,7 @@ function renderAccount(){
   }
   if(v.showCodeForm){
     const code = accountInput("text", t("account.codePh"), "");
-    code.inputMode = "numeric"; code.maxLength = 6; code.autocomplete = "one-time-code";
+    code.inputMode = "numeric"; code.maxLength = 10; code.autocomplete = "one-time-code";
     p.appendChild(code);
     p.appendChild(accountBtn(t("account.verify"), ()=>onAccountVerify(code.value)));
     p.appendChild(accountResendBtn());
