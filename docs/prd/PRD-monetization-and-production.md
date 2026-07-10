@@ -116,6 +116,20 @@ The real revenue engine is **rewarded ads (non-payers) + Supporter unlock**.
 
 ## 5. Ads Specification (respectful hybrid)
 
+> **AMENDMENT 2026-07-09 — rewarded-video-first (supersedes interstitial-first P1).**
+> Verified research (docs/planning/2026-07-09-duolingo-comparison.md): Duolingo's ad
+> growth format is opt-in rewarded video tied to a resource, and it deliberately
+> re-freed paid features to protect the free tier; the "ads only after lessons" rule
+> circulating in blogs was refuted. P1 therefore ships rewarded video BEFORE (or
+> instead of) interstitials. Placements, in priority order: (1) post-battle coin
+> doubler, (2) boss retry, (3) +1 streak freeze (respecting the cap-2 economy from
+> the retention pack), (4) timed XP boost. The frequency-cap logic in
+> `src/monetization/interstitial-policy.js` applies to whatever format ships —
+> generalize its naming to ad-policy when it gets wired. Interstitials, if ever
+> added, are P2 and never mid-round. Owner actions (AdMob/RevenueCat registration,
+> SDKs) still gate implementation — this amendment changes the order of what gets
+> built once they exist, not the gating.
+
 ### 5.1 Formats & placement
 
 | Format | Where | Rules |

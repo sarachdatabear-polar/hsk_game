@@ -66,6 +66,15 @@ describe("evaluateAwards", () => {
     expect(s.earned["ev:streak-30"]).toBeUndefined();
   });
 
+  it("monthly-40 awards when monthlyDone >= 40, not below", () => {
+    let s = evaluateAwards(defaultStickers(), defs, { ...baseFacts, monthlyDone: 39 }, "2026-07-07");
+    expect(s.earned["ev:monthly-40"]).toBeUndefined();
+    s = evaluateAwards(defaultStickers(), defs, { ...baseFacts, monthlyDone: 40 }, "2026-07-07");
+    expect(s.earned["ev:monthly-40"]).toBe("2026-07-07");
+    s = evaluateAwards(defaultStickers(), defs, { ...baseFacts, monthlyDone: 50 }, "2026-07-07");
+    expect(s.earned["ev:monthly-40"]).toBe("2026-07-07");
+  });
+
   it("does not mutate the input state", () => {
     const s0 = defaultStickers();
     const snapshot = JSON.parse(JSON.stringify(s0));
