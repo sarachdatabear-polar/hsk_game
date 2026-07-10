@@ -32,6 +32,7 @@ export const SPRITE_NAMES = [
   "deco-firecracker-arch",
   // shop effect/soundpack preview tiles (full-bleed painted art)
   "tile-sakura-fx", "tile-firecracker-fx", "tile-star-shower", "tile-bells",
+  "tile-arcade", "tile-lion-drum", "tile-streak-freeze",
   "fx-correct", "fx-wrong", "fx-critical", "fx-level-up",
   "vfx-orb-green", "vfx-orb-red", "vfx-orb-blue", "vfx-orb-gold",
   "ui-word-plaque",

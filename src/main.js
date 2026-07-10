@@ -22,7 +22,7 @@ import { defaultQuestState, noteQuestEvent, questStatus,
          defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly } from "./quests.js";
 import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable, hasMp3 } from "./audio.js";
-import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder } from "./native.js";
+import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, requestNotifPermission } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import { BUILDINGS, streetPieces, streetProgress, streetMetrics, DECO_SPRITE_SCALE } from "./street.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
@@ -189,12 +189,23 @@ function noteDaily(count){
     toast(t("toast.freeze-used", { n: r.streak }));
   }
   updateStreakChip();
+  const info = streakInfo(daily, todayStr(), freezes);
   // retention pack: once today's goal is first met, cancel any pending
   // streak-saver reminder rather than waiting for the next backgrounding.
-  if(!wasGoalMet && streakInfo(daily, todayStr(), freezes).goalMet){
+  if(!wasGoalMet && info.goalMet){
     syncStreakReminder({ schedule: false, hour: REMINDER_HOUR, cancel: true }, "", "");
   }
+  // Ask for the Android notification permission HERE, in the foreground, the
+  // first time tonight's streak-saver is actually plausible (live streak, goal
+  // not yet met, before the reminder hour). Android 13+ suppresses this dialog
+  // if requested while backgrounding, so the visibilitychange sync only checks
+  // the grant — the prompt has to happen during active play. Once per session.
+  if(!notifPermAsked && reminderPlan(info, new Date().getHours()).schedule){
+    notifPermAsked = true;
+    requestNotifPermission();
+  }
 }
+let notifPermAsked = false;
 
 /* ============================== daily quests ============================== */
 let questState = Object.assign(defaultQuestState(), store.get("quests", {}));
@@ -2298,9 +2309,10 @@ function renderShopPreview(canvas, item, now=0){
   bg.addColorStop(0,"rgba(255,232,150,.16)"); bg.addColorStop(1,"rgba(58,16,16,.72)");
   c.fillStyle = bg; roundRectOn(c,0,0,w,h,10); c.fill();
   c.strokeStyle = "rgba(245,197,24,.28)"; c.lineWidth = 1; roundRectOn(c,.5,.5,w-1,h-1,10); c.stroke();
-  // Effects/soundpacks: prefer full-bleed painted tile art when present, else
-  // fall through to the procedural motif below (some tiles aren't shipped yet).
-  if(item.type==="effect" || item.type==="soundpack"){
+  // Effects/soundpacks/consumables: prefer full-bleed painted tile art when
+  // present, else fall through to the procedural motif below (some tiles
+  // aren't shipped yet).
+  if(item.type==="effect" || item.type==="soundpack" || item.type==="consumable"){
     const timg = sprite("tile-"+item.id);
     if(timg){
       c.save(); roundRectOn(c,0,0,w,h,10); c.clip();

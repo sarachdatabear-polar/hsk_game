@@ -300,8 +300,8 @@ export const STRINGS = {
     "home.settings": "ตั้งค่า",
     "home.streakTitle": "เรียนต่อเนื่อง",
     "home.streakDays": "{n} วัน",
-    "home.freezes": "น้ำแข็ง {n} ชิ้น",   // TH: needs native review
-    "home.freeze-one": "น้ำแข็ง 1 ชิ้น",   // TH: needs native review
+    "home.freezes": "น้ำแข็ง {n} ชิ้น",
+    "home.freeze-one": "น้ำแข็ง 1 ชิ้น",
     "home.start": "เริ่ม",
     "home.startHint": "ต้องมีคำอย่างน้อย 8 คำในขอบเขตจึงจะเริ่มได้ — ขยายขอบเขตด้านล่าง",
     "home.scopeWords": "{n} คำ",
@@ -312,9 +312,9 @@ export const STRINGS = {
     "progress.levelRow": "{pct} เชี่ยวชาญ · เห็น {seen}/{total}",
     "common.playAudio": "เล่นเสียง",
     "battle.critical": "CRITICAL!",
-    "toast.freeze-used": "ใช้น้ำแข็งพิทักษ์สตรีคแล้ว — สตรีค {n} วันของคุณยังอยู่",   // TH: needs native review
-    "notify.streak.title": "อย่าให้สตรีค {n} วันหลุดนะ!",   // TH: needs native review
-    "notify.streak.body": "อีก {remaining} คำสตรีคก็รอด — เล่นรอบสั้น ๆ ก็พอ",   // TH: needs native review
+    "toast.freeze-used": "ใช้น้ำแข็งพิทักษ์สตรีคแล้ว — สตรีค {n} วันของคุณยังอยู่",
+    "notify.streak.title": "อย่าให้สตรีค {n} วันหลุดนะ!",
+    "notify.streak.body": "อีก {remaining} คำสตรีคก็รอด — เล่นรอบสั้น ๆ ก็พอ",
     "milestone.scarf": "ผ้าพันคอสีแดง",
     "milestone.coin": "เครื่องรางเหรียญทอง",
     "milestone.outfit": "ชุดจีน",
@@ -402,10 +402,10 @@ export const STRINGS = {
     "quest.review1": "เล่นรอบทบทวนอัจฉริยะ",
     "quest.learn20": "ทำเครื่องหมายรู้แล้ว 20 บัตร",
     // monthly quest layer (retention pack)
-    "quest.monthly.title": "รายเดือน: {done}/{target} เควสต์",   // TH: needs native review
-    "quest.monthly.claim": "รับ +{reward}",   // TH: needs native review
-    "quest.monthly.badge": "ได้เหรียญตรารายเดือนแล้ว!",   // TH: needs native review
-    "quest.monthly.autoClaimed": "รับรางวัลรายเดือนให้คุณแล้ว: +{reward} เหรียญ",   // TH: needs native review
+    "quest.monthly.title": "รายเดือน: {done}/{target} เควสต์",
+    "quest.monthly.claim": "รับ +{reward}",
+    "quest.monthly.badge": "ได้เหรียญตรารายเดือนแล้ว!",
+    "quest.monthly.autoClaimed": "รับรางวัลรายเดือนให้คุณแล้ว: +{reward} เหรียญ",
     // scores / progress
     "scores.title": "สถิติดีที่สุด",
     "scores.empty": "ยังไม่มีสถิติ — เล่นเควสต์คำศัพท์ก่อน",
@@ -431,8 +431,8 @@ export const STRINGS = {
     "sticker.streak7Hint": "รักษาสตรีคการเรียนต่อเนื่อง 7 วัน",
     "sticker.streak30Name": "สตรีค 30 วัน",
     "sticker.streak30Hint": "รักษาสตรีคการเรียนต่อเนื่อง 30 วัน",
-    "sticker.monthlyName": "แชมป์รายเดือน",   // TH: needs native review
-    "sticker.monthlyHint": "ทำเควสต์สำเร็จ 40 ครั้งในหนึ่งเดือน",   // TH: needs native review
+    "sticker.monthlyName": "แชมป์รายเดือน",
+    "sticker.monthlyHint": "ทำเควสต์สำเร็จ 40 ครั้งในหนึ่งเดือน",
     "results.newSticker": "สติกเกอร์ใหม่: {name}",
     // shop / collection
     "shop.title": "ร้านค้า",
@@ -440,7 +440,7 @@ export const STRINGS = {
     "shop.backdrops": "ฉากหลัง",
     "shop.effects": "เอฟเฟกต์",
     "shop.sounds": "เสียง",
-    "shop.supplies": "ของใช้",   // TH: needs native review
+    "shop.supplies": "ของใช้",
     "shop.street": "ของตกแต่งถนน",
     "shop.wallet": "กระเป๋าเงิน: <b>{coins}</b> เหรียญ",
     "shop.buy": "ซื้อ",
@@ -454,7 +454,7 @@ export const STRINGS = {
     "shop.seasonUntil": "มีถึง {date}",
     "shop.seasonReturns": "🏮 เซ็ต {name} จะกลับมา {date}",
     "shop.upgrade": "อัปเกรด {stars} ({coins})",
-    "shop.owned-count": "มีอยู่: {n}/{cap}",        // TH: needs native review
+    "shop.owned-count": "มีอยู่: {n}/{cap}",
     "shop.maxed": "★★★",
     "season.summer": "ฤดูร้อน",
     "season.midautumn": "ไหว้พระจันทร์",
@@ -472,8 +472,8 @@ export const STRINGS = {
     "item.tea-sign": "ป้ายชา",
     "item.foo-dog": "สิงโตหิน",
     "item.golden-arch": "ซุ้มประตูทอง",
-    "item.streak-freeze": "น้ำแข็งพิทักษ์สตรีค",   // TH: needs native review
-    "item.streak-freeze.desc": "ครอบคลุมวันที่ขาดหาย — สตรีคของคุณยังอยู่",   // TH: needs native review
+    "item.streak-freeze": "น้ำแข็งพิทักษ์สตรีค",
+    "item.streak-freeze.desc": "ครอบคลุมวันที่ขาดหาย — สตรีคของคุณยังอยู่",
     "item.panda": "แพนด้า",
     "item.ninja": "นินจา",
     "item.astronaut": "นักบินอวกาศ",

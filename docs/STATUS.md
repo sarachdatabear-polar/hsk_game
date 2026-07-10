@@ -54,7 +54,7 @@ Ordered by priority. `(owner)` = needs a human action Claude can't do; `(needs d
 3. **Roadmaps not started** — HSK 3.0 content refresh; social layer; notifications/widget; Android release refresh ([ANDROID_BUILD.md](build/ANDROID_BUILD.md)). Optional: deco reorder self-expression; a display cap / second row when the deco catalog grows past ~15.
 
 _UX-audit polish complete: tone glyphs (#60) + desktop ambient (#61) shipped; **dark theme decided against** (light-only is fine for this mobile learning game)._
-_Owner task (quick): 4 of the 6 effect/soundpack tiles are shipped. **Regenerate `tile-arcade` + `tile-lion-drum`** on a **soft dark-gray background with a warm golden radial glow** (their current versions are on plain white — light object parts, e.g. the drumhead/grille, mean the white can't be auto-removed cleanly, and white tiles would clash with the dark ones). Drop the 2 new ones in `art-drop/` and Claude wires them into the same tile path._
+_All 7 shop preview tiles shipped (2026-07-10): the 4 originals plus regenerated `tile-arcade`/`tile-lion-drum` and the new `tile-streak-freeze` consumable tile (audit-v50 F6 closed). Archive note: the 3 final dark-glow raws were pruned before being committed — git history only holds the old white-bg arcade/lion-drum raws; re-drop the originals to `art-drop/` if full-res archival is wanted._
 
 ## Doc map
 

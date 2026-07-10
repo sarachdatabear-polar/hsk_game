@@ -28,7 +28,11 @@ export function keepAwake(on) {
 
 // Streak-saver local notification (retention pack). Web/PWA: inert.
 // Android needs @capacitor/local-notifications + POST_NOTIFICATIONS runtime
-// permission (Android 13+) — requestPermissions() on first schedule.
+// permission (Android 13+). The permission PROMPT must happen in the
+// foreground (requestNotifPermission, called from active play) — Android 13+
+// silently suppresses a permission dialog raised by an app that is leaving the
+// foreground. This background sync therefore only *checks* the existing grant;
+// it never prompts.
 export async function syncStreakReminder(plan, title, body) {
   if (!isNative()) return;
   const LN = plugins().LocalNotifications;
@@ -36,12 +40,27 @@ export async function syncStreakReminder(plan, title, body) {
   try {
     await LN.cancel({ notifications: [{ id: 1001 }] });
     if (!plan.schedule) return;
-    const perm = await LN.requestPermissions();
+    const perm = await LN.checkPermissions();
     if (perm.display !== "granted") return;
     const at = new Date();
     at.setHours(plan.hour, 0, 0, 0);
     await LN.schedule({ notifications: [{ id: 1001, title, body, schedule: { at } }] });
   } catch (e) { /* notification failure must never break gameplay */ }
+}
+
+// Foreground POST_NOTIFICATIONS prompt. Call this while the app is visible
+// (during play) so Android 13+ actually shows the dialog. Idempotent: once the
+// user has decided, Capacitor returns the status without re-showing. Returns
+// the display status ("granted"/"denied"/…); "denied" on plain web where no
+// notification can be shown. Never throws — must not break gameplay.
+export async function requestNotifPermission() {
+  if (!isNative()) return "denied";
+  const LN = plugins().LocalNotifications;
+  if (!LN) return "denied";
+  try {
+    const perm = await LN.requestPermissions();
+    return perm && perm.display ? perm.display : "denied";
+  } catch (e) { return "denied"; }
 }
 
 export function initNative({ getScreen, goHome }) {
