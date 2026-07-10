@@ -144,9 +144,17 @@ describe("signOut / upsertProfile never throw", () => {
     __setClientForTests({ from: () => ({ upsert: async () => { throw new Error("x"); } }) });
     expect(await upsertProfile({ id: "u1", locale: "en" })).toEqual({ ok: false });
   });
-  it("upsertProfile offline-guards and never constructs client", async () => {
+  it("upsertProfile offline-guards and never touches the client", async () => {
+    // A pre-installed spy client (not null) so the assertion actually
+    // distinguishes "guarded before use" from "would've failed via the
+    // client anyway" — with client === null the old version of this test
+    // passed even without the offline check, because getClient() would lazily
+    // construct a real supabase client and its network call would just fail
+    // into the same catch block, still resolving {ok:false}.
+    let calls = 0;
+    __setClientForTests({ from: () => { calls++; return { upsert: async () => ({ error: null }) }; } });
     globalThis.navigator = { onLine: false };
-    __setClientForTests(null);
     expect(await upsertProfile({ id: "u1", locale: "en" })).toEqual({ ok: false });
+    expect(calls).toBe(0);
   });
 });

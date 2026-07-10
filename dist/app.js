@@ -2181,6 +2181,7 @@
       "account.emailPh": "your@email.com",
       "account.codePh": "6-digit code",
       "account.codeSent": "Code sent \u2014 check your email",
+      "account.changeEmail": "Use a different email",
       "account.signedIn": "Signed in!",
       "account.signedOut": "Signed out",
       "account.err.offline": "No internet connection",
@@ -2495,6 +2496,8 @@
       "account.codePh": "\u0E23\u0E2B\u0E31\u0E2A 6 \u0E2B\u0E25\u0E31\u0E01",
       // TH: needs native review
       "account.codeSent": "\u0E2A\u0E48\u0E07\u0E23\u0E2B\u0E31\u0E2A\u0E41\u0E25\u0E49\u0E27 \u2014 \u0E40\u0E0A\u0E47\u0E01\u0E2D\u0E35\u0E40\u0E21\u0E25\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13",
+      // TH: needs native review
+      "account.changeEmail": "\u0E43\u0E0A\u0E49\u0E2D\u0E35\u0E40\u0E21\u0E25\u0E2D\u0E37\u0E48\u0E19",
       // TH: needs native review
       "account.signedIn": "\u0E40\u0E02\u0E49\u0E32\u0E2A\u0E39\u0E48\u0E23\u0E30\u0E1A\u0E1A\u0E41\u0E25\u0E49\u0E27!",
       // TH: needs native review
@@ -23396,9 +23399,9 @@ ${suffix}`;
     p.appendChild(ex);
     if (v.showConnect) p.appendChild(accountBtn(t("account.connect"), onAccountConnect));
     if (v.showEmailForm) {
-      const email2 = accountInput("email", t("account.emailPh"), accountUI.email);
-      p.appendChild(email2);
-      p.appendChild(accountBtn(t("account.sendCode"), () => onAccountSendCode(email2.value)));
+      const emailInput = accountInput("email", t("account.emailPh"), accountUI.email);
+      p.appendChild(emailInput);
+      p.appendChild(accountBtn(t("account.sendCode"), () => onAccountSendCode(emailInput.value)));
     }
     if (v.showCodeForm) {
       const code = accountInput("text", t("account.codePh"), "");
@@ -23408,6 +23411,7 @@ ${suffix}`;
       p.appendChild(code);
       p.appendChild(accountBtn(t("account.verify"), () => onAccountVerify(code.value)));
       p.appendChild(accountResendBtn());
+      p.appendChild(accountChangeEmailBtn());
     }
     if (v.showSignOut) p.appendChild(accountBtn(t("account.signOut"), onAccountSignOut));
   }
@@ -23450,7 +23454,25 @@ ${suffix}`;
     };
     clearTimeout(accountCooldownTimer);
     tick();
-    b.onclick = () => onAccountSendCode(accountUI.email);
+    b.onclick = async () => {
+      if (b.disabled) return;
+      b.disabled = true;
+      try {
+        await onAccountSendCode(accountUI.email);
+      } finally {
+        b.disabled = false;
+      }
+    };
+    return b;
+  }
+  function accountChangeEmailBtn() {
+    const b = document.createElement("button");
+    b.className = "account-change-email";
+    b.textContent = t("account.changeEmail");
+    b.onclick = () => {
+      accountUI.phase = "idle";
+      renderAccount();
+    };
     return b;
   }
   async function refreshAccountSession() {
@@ -23505,6 +23527,7 @@ ${suffix}`;
     accountUI.session = null;
     accountUI.phase = "idle";
     accountUI.email = "";
+    accountUI.lastSentAt = 0;
     toast(t("account.signedOut"));
     renderAccount();
   }

@@ -62,6 +62,7 @@ export const STRINGS = {
     "account.emailPh": "your@email.com",
     "account.codePh": "6-digit code",
     "account.codeSent": "Code sent — check your email",
+    "account.changeEmail": "Use a different email",
     "account.signedIn": "Signed in!",
     "account.signedOut": "Signed out",
     "account.err.offline": "No internet connection",
@@ -359,6 +360,7 @@ export const STRINGS = {
     "account.emailPh": "your@email.com",   // TH: needs native review
     "account.codePh": "รหัส 6 หลัก",   // TH: needs native review
     "account.codeSent": "ส่งรหัสแล้ว — เช็กอีเมลของคุณ",   // TH: needs native review
+    "account.changeEmail": "ใช้อีเมลอื่น",   // TH: needs native review
     "account.signedIn": "เข้าสู่ระบบแล้ว!",   // TH: needs native review
     "account.signedOut": "ออกจากระบบแล้ว",   // TH: needs native review
     "account.err.offline": "ไม่มีการเชื่อมต่ออินเทอร์เน็ต",   // TH: needs native review
