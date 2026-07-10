@@ -92,4 +92,15 @@ describe("shop/street display-name key coverage", () => {
       expect(`milestone.${m.id}` in STRINGS.th, `milestone.${m.id} missing from STRINGS.th`).toBe(true);
     });
   }
+
+  // Consumable description lines (audit F4) are looked up via the computed
+  // key tOr("item."+id+".desc", "") in makeShopRow — like milestone names
+  // above, the static literal matcher can't see it. Unlike item.<id> display
+  // names, a .desc is optional (falls back to "" — no line shown), so this
+  // checks only the one key that's actually shipped rather than looping
+  // every consumable in CATALOG.
+  it("item.streak-freeze.desc exists in EN and TH", () => {
+    expect("item.streak-freeze.desc" in STRINGS.en, "item.streak-freeze.desc missing from STRINGS.en").toBe(true);
+    expect("item.streak-freeze.desc" in STRINGS.th, "item.streak-freeze.desc missing from STRINGS.th").toBe(true);
+  });
 });

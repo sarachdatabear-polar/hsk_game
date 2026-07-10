@@ -2162,7 +2162,6 @@
       "nav.home": "Home",
       "nav.street": "Street",
       "nav.progress": "Progress",
-      "nav.quests": "Quests",
       "nav.more": "More",
       "street.title": "Lucky Cat Street",
       "street.captionEmpty": "Lucky Cat Street \u2014 grows as you learn \xB7 {next}",
@@ -2304,6 +2303,7 @@
       "item.foo-dog": "Foo Dog",
       "item.golden-arch": "Golden Arch",
       "item.streak-freeze": "Streak Freeze",
+      "item.streak-freeze.desc": "Covers a missed day \u2014 your streak survives",
       "item.panda": "Panda",
       "item.ninja": "Ninja",
       "item.astronaut": "Astronaut",
@@ -2439,7 +2439,6 @@
       "nav.home": "\u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01",
       "nav.street": "\u0E16\u0E19\u0E19",
       "nav.progress": "\u0E04\u0E27\u0E32\u0E21\u0E04\u0E37\u0E1A\u0E2B\u0E19\u0E49\u0E32",
-      "nav.quests": "\u0E40\u0E04\u0E27\u0E2A\u0E15\u0E4C",
       "nav.more": "\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
       "street.title": "\u0E16\u0E19\u0E19\u0E19\u0E33\u0E42\u0E0A\u0E04",
       "street.captionEmpty": "\u0E16\u0E19\u0E19\u0E19\u0E33\u0E42\u0E0A\u0E04 \u2014 \u0E40\u0E15\u0E34\u0E1A\u0E42\u0E15\u0E44\u0E1B\u0E1E\u0E23\u0E49\u0E2D\u0E21\u0E01\u0E32\u0E23\u0E40\u0E23\u0E35\u0E22\u0E19\u0E23\u0E39\u0E49\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13 \xB7 {next}",
@@ -2590,6 +2589,8 @@
       "item.golden-arch": "\u0E0B\u0E38\u0E49\u0E21\u0E1B\u0E23\u0E30\u0E15\u0E39\u0E17\u0E2D\u0E07",
       "item.streak-freeze": "\u0E19\u0E49\u0E33\u0E41\u0E02\u0E47\u0E07\u0E1E\u0E34\u0E17\u0E31\u0E01\u0E29\u0E4C\u0E2A\u0E15\u0E23\u0E35\u0E04",
       // TH: needs native review
+      "item.streak-freeze.desc": "\u0E04\u0E23\u0E2D\u0E1A\u0E04\u0E25\u0E38\u0E21\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48\u0E02\u0E32\u0E14\u0E2B\u0E32\u0E22 \u2014 \u0E2A\u0E15\u0E23\u0E35\u0E04\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E22\u0E31\u0E07\u0E2D\u0E22\u0E39\u0E48",
+      // TH: needs native review
       "item.panda": "\u0E41\u0E1E\u0E19\u0E14\u0E49\u0E32",
       "item.ninja": "\u0E19\u0E34\u0E19\u0E08\u0E32",
       "item.astronaut": "\u0E19\u0E31\u0E01\u0E1A\u0E34\u0E19\u0E2D\u0E27\u0E01\u0E32\u0E28",
@@ -2700,7 +2701,7 @@
   }
 
   // src/nav.js
-  var TABS = ["home", "street", "progress", "quests", "more"];
+  var TABS = ["home", "street", "progress", "more"];
   var MORE_SUBSCREENS = ["scores", "howto"];
   var PROGRESS_SUBSCREENS = ["album"];
   var NAV_VISIBLE = /* @__PURE__ */ new Set([...TABS, ...MORE_SUBSCREENS, ...PROGRESS_SUBSCREENS, "shop"]);
@@ -3118,6 +3119,7 @@
     mrow.innerHTML = `<div class="mq-top">
       <span class="qi">${ms.claimed ? t("quest.status.done") : t("quest.status.open")}</span>
       <span class="qd">${t("quest.monthly.title", { done: ms.done, target: ms.target })}</span>
+      <span class="qr">${ms.claimed ? "" : t("quest.reward", { reward: ms.reward })}</span>
     </div>
     <div class="mbar monthly-bar"><i style="width:${pct}%"></i></div>`;
     if (ms.complete && !ms.claimed) {
@@ -3288,8 +3290,6 @@
     }
     if (name === "street") {
       renderStreet();
-    }
-    if (name === "quests") {
       renderQuests();
     }
   }
@@ -5024,7 +5024,9 @@
     copy.className = "shop-copy";
     const stars = item.type === "deco" && owned ? " " + "\u2605".repeat(tier) : "";
     const ownedCount = item.type === "consumable" ? `<small>${t("shop.owned-count", { n: consumableCount(item), cap: item.cap })}</small>` : "";
-    copy.innerHTML = `<b>${tOr("item." + item.id, item.name)}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
+    const desc = item.type === "consumable" ? tOr("item." + item.id + ".desc", "") : "";
+    const descHtml = desc ? `<small class="item-desc">${desc}</small>` : "";
+    copy.innerHTML = `<b>${tOr("item." + item.id, item.name)}${stars}</b>${descHtml}<small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
     left.replaceChildren(preview, copy);
     const btn = document.createElement("button");
     const doBuy = () => {

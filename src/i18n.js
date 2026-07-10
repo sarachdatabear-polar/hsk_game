@@ -60,7 +60,6 @@ export const STRINGS = {
     "nav.home": "Home",
     "nav.street": "Street",
     "nav.progress": "Progress",
-    "nav.quests": "Quests",
     "nav.more": "More",
     "street.title": "Lucky Cat Street",
     "street.captionEmpty": "Lucky Cat Street — grows as you learn · {next}",
@@ -202,6 +201,7 @@ export const STRINGS = {
     "item.foo-dog": "Foo Dog",
     "item.golden-arch": "Golden Arch",
     "item.streak-freeze": "Streak Freeze",
+    "item.streak-freeze.desc": "Covers a missed day — your streak survives",
     "item.panda": "Panda",
     "item.ninja": "Ninja",
     "item.astronaut": "Astronaut",
@@ -332,7 +332,6 @@ export const STRINGS = {
     "nav.home": "หน้าหลัก",
     "nav.street": "ถนน",
     "nav.progress": "ความคืบหน้า",
-    "nav.quests": "เควสต์",
     "nav.more": "เพิ่มเติม",
     "street.title": "ถนนนำโชค",
     "street.captionEmpty": "ถนนนำโชค — เติบโตไปพร้อมการเรียนรู้ของคุณ · {next}",
@@ -474,6 +473,7 @@ export const STRINGS = {
     "item.foo-dog": "สิงโตหิน",
     "item.golden-arch": "ซุ้มประตูทอง",
     "item.streak-freeze": "น้ำแข็งพิทักษ์สตรีค",   // TH: needs native review
+    "item.streak-freeze.desc": "ครอบคลุมวันที่ขาดหาย — สตรีคของคุณยังอยู่",   // TH: needs native review
     "item.panda": "แพนด้า",
     "item.ninja": "นินจา",
     "item.astronaut": "นักบินอวกาศ",

@@ -53,16 +53,63 @@
      with a warm ambient vignette and lift the column as an intentional "device"
      panel, instead of leaving it floating in an empty void. */
   @media (min-width:900px){
-    body{background:radial-gradient(1100px 780px at 50% 30%, #FFFBF1 0%, var(--lc-cream) 46%, #ECDEC0 100%) fixed;}
+    /* F8: the vignette (layer 1, on top) stays the dominant read so the
+       app column never has to compete with the art for attention; the real
+       home-scene art (layer 2, bg-home.webp — same asset #s-home already
+       uses, already in sw.js PRECACHE) sits faintly behind it so the wide
+       margins read as an inhabited scene rather than a bare gradient. Both
+       layers keep `fixed` (matching the pre-F8 single-layer rule) so the art
+       doesn't scroll against the fixed-position vignette. */
+    body{background:
+      radial-gradient(1100px 780px at 50% 30%, rgba(255,251,241,.92) 0%, rgba(244,236,220,.94) 46%, rgba(236,222,192,.97) 100%) fixed,
+      url("assets/bg-home.webp") center 30%/cover no-repeat fixed var(--lc-cream);}
     #app{background:var(--lc-cream); box-shadow:0 12px 64px rgba(122,90,68,.16);}
   }
   .screen{display:none; flex:1; flex-direction:column; padding:16px;}
   .screen.on{display:flex;}
-  /* Street/Quests/More hold only a little content. Top-align them like every
-     other screen: a header pinned to the top reads as intentional, whereas
-     vertical centering floated the header to mid-screen on tall phones and
-     desktop (a void *above* the title that looked half-loaded). */
-  #s-street.on, #s-quests.on, #s-more.on{justify-content:flex-start;}
+  /* Street holds the merged Daily Quests panel (audit F3, 0b1ee1e) and reads
+     full now — top-align it like every other content-heavy screen: a header
+     pinned to the top reads as intentional, whereas vertical centering
+     floated the header to mid-screen on tall phones and desktop (a void
+     *above* the title that looked half-loaded). More is the one screen left
+     genuinely sparse (three buttons + a language row, no back button to
+     misplace), so it gets true vertical centering instead (audit F3
+     remainder) — see #s-more below. */
+  #s-street.on{justify-content:flex-start;}
+  /* More: only a few controls, nothing to scroll to — center them as a
+     single composed block instead of pinning to the top and leaving a bare
+     void beneath (audit F3). Full `justify-content:center` (not used on
+     Tone Trainer below) is safe here: More has no back button, so nothing
+     gets displaced toward mid-screen. */
+  #s-more{justify-content:center;}
+  /* Tone Trainer (#s-tones): true centering would float its back button to
+     mid-screen (the button is a flex sibling of the quiz content, and
+     justify-content can't pin one item while centering the rest without a
+     wrapper element) — worse than the sparse-void problem it would fix. The
+     usual pseudo-element spacer trick doesn't apply either: .screen.festive
+     already owns ::before/::after for the swaying lantern decor (position:
+     absolute, so a flex property on them is inert — verified empirically).
+     Instead, nudge the whole composition down with extra top padding: back
+     button + header land a little lower, off the very top edge, so the
+     quiz reads as deliberately upper-middle with breathing room above and
+     below rather than jammed flush against the lanterns (audit F3
+     remainder). Bare `#s-tones` (not `.on`-scoped) is deliberate: it matches
+     the landscape override's specificity exactly, so that later block's
+     `padding:5px 12px 4px` (source order, both id-only) still wins under
+     `orientation:landscape` and this doesn't fight its compaction — an
+     `.on`-scoped version would outrank it and break the short-viewport
+     layout despite losing the source-order race.
+     Gated to `min-height:700px` (this file's existing short-viewport
+     threshold, see the battle `max-height:700px` tier above): measured at
+     320x568 the post-reveal `#tones-reveal` block already needs a scroll to
+     fully clear the fold with ZERO extra padding (pre-existing, not
+     introduced here) — stacking 64px on top of that on the smallest
+     supported phones would deepen an existing scroll rather than just add
+     breathing room. Above 700px (iPhone-and-up) there's comfortable slack
+     for both the padding and the reveal. */
+  @media (min-height:700px){
+    #s-tones{padding-top:64px;}
+  }
   /* A3: soft enter transition on every screen change (~200ms). The global
      prefers-reduced-motion rule truncates all animations, so reduced = instant. */
   .screen.on{animation:screen-in 200ms ease-out;}
@@ -204,9 +251,8 @@
   .hud-pill{display:inline-flex; align-items:center; gap:4px; background:var(--panel-wash); min-width:0;
     color:var(--ink); border-radius:999px; padding:4px 10px; border:1px solid var(--panel-border); font-weight:700; font-size:14px;
     box-shadow:0 2px 6px rgba(46,42,36,.10); white-space:nowrap;}
-  /* round-counter capsule: blue per PRD §6.2 (Round X/Y). Ink text on the sky
-     fill is ~5.6:1 contrast (teal text would be only ~3.7:1 — below 4.5:1). */
-  .hud-round-pill{background-color:var(--lc-sky); border-color:var(--lc-teal); color:var(--lc-ink); font-weight:800;}
+  /* round-counter capsule — palette tan (amends PRD §6.2's blue) */
+  .hud-round-pill{font-weight:800;}
   .hud-round{width:44px; height:44px; min-width:44px; border-radius:50%; background:var(--panel-wash);
     color:var(--ink); border:1px solid var(--panel-border); border-image:var(--f-ui-badge-mastery, none); font-size:18px; cursor:pointer;
     display:flex; align-items:center; justify-content:center; flex:0 0 auto;
@@ -224,9 +270,9 @@
   .pause-panel{width:min(320px,88vw); background-color:var(--lc-cream); border:3px solid var(--lc-brown);
     border-radius:20px; padding:20px 18px; display:flex; flex-direction:column; gap:12px;
     box-shadow:0 12px 28px rgba(0,0,0,.4);}
-  .pause-title{margin:0; text-align:center; font-family:'LC Latin',"Segoe UI",sans-serif;
+  .pause-title{margin:0; text-align:center; font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif;
     font-weight:800; font-size:20px; color:var(--lc-ink);}
-  .pause-resume{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800; font-size:19px;
+  .pause-resume{font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif; font-weight:800; font-size:19px;
     color:var(--lc-brown); background-color:var(--lc-sun);
     background-image:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun) 55%,var(--lc-sun-deep));
     border:3px solid var(--lc-brown); border-radius:16px; padding:12px 8px; min-height:52px;
@@ -252,7 +298,7 @@
   .pause-toggle.on .pt-state{background-color:var(--lc-success); color:var(--lc-cream);}
   /* darker shade of --lc-error so the cream label clears 4.5:1 (the raw token
      only reaches ~3.8:1 with small text) */
-  .pause-quit{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:700; font-size:14px; color:var(--lc-cream);
+  .pause-quit{font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif; font-weight:700; font-size:14px; color:var(--lc-cream);
     background-color:var(--lc-coral-deep); border:2px solid var(--lc-error-deep); border-radius:14px;
     padding:10px 8px; min-height:46px;}
   .pause-quit:active{transform:scale(.97);}
@@ -288,7 +334,7 @@
     margin-top:8px; padding:6px 12px; min-height:30px;
     background-color:var(--lc-cream); border:1.5px solid var(--lc-brown); border-radius:14px;}
   #combo-strip.hidden{visibility:hidden;}
-  .combo-strip-label{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800; font-size:12.5px;
+  .combo-strip-label{font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif; font-weight:800; font-size:12.5px;
     letter-spacing:.04em; color:var(--lc-brown); white-space:nowrap;}
   .combo-strip-label b{font-size:14px; color:var(--lc-ink);}
   .combo-strip-fires{display:flex; align-items:center; gap:3px;}
@@ -456,7 +502,7 @@
   #tones-reveal .py{font-size:18px; color:var(--lc-brown); text-align:center; display:block; margin-top:2px;}
   /* results */
   .bignum{font-size:52px; text-align:center; color:var(--lc-green); font-weight:800; margin:6px 0;
-    font-family:'LC Latin',"Segoe UI",sans-serif;}
+    font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif;}
   /* A3: celebrating cat above the results title; gentle bob (reduced-motion
      rule freezes it). Friendly token — never a jackpot/coin-shower. */
   .r-cat{display:block; width:96px; height:96px; margin:2px auto 0;
@@ -484,6 +530,7 @@
   .shop-copy{display:flex; flex-direction:column; gap:2px; min-width:0;}
   .shop-copy b{font-size:15.5px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .shop-copy small{font-size:12px; color:var(--muted);}
+  .shop-copy .item-desc{display:block; color:var(--muted);}
   .shop-note{color:var(--muted);font-size:12px;margin:2px 4px 12px}
   .mbar{height:6px; border-radius:999px; background:rgba(132,96,67,.22); border-image:var(--f-ui-progress-track, none); overflow:hidden;}
   .mbar i{display:block; height:100%; background-color:var(--lc-green); background-image:linear-gradient(180deg,var(--lc-green-hi),var(--lc-green) 60%,var(--lc-green-deep)); border-image:var(--f-ui-progress-fill, none); border-radius:999px;}
@@ -562,7 +609,7 @@
   .home-status{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:2px;}
   .status-cap{display:flex; align-items:center; gap:8px; min-height:44px; padding:4px 14px 4px 4px;
     border-radius:999px; box-shadow:inset 0 1px 0 rgba(255,255,255,.45), 0 3px 8px rgba(31,77,74,.28);}
-  .level-cap{background-color:var(--lc-sky); border:2px solid var(--lc-teal); color:var(--lc-teal);}
+  .level-cap{background-color:var(--lc-teal); border:2px solid var(--lc-sun); color:var(--lc-cream);}
   .level-avatar{width:34px; height:34px; border-radius:50%; border:2px solid var(--lc-cream);
     background:var(--lc-cream); object-fit:cover; flex:0 0 auto;}
   .level-info{display:flex; flex-direction:column; gap:3px; min-width:66px;}
@@ -583,11 +630,11 @@
      (F1): the gold "LUCKY CAT" line used to wash into the bright sky. */
   .brand-title{text-align:center; margin:6px 0 2px; line-height:1.05; padding:8px 16px 10px;
     background:radial-gradient(ellipse 72% 128% at 50% 47%, rgba(38,30,16,.36) 0%, rgba(38,30,16,.16) 54%, rgba(38,30,16,0) 78%);}
-  .brand-sub{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800; font-size:clamp(15px,4.6vw,21px);
+  .brand-sub{font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif; font-weight:800; font-size:clamp(15px,4.6vw,21px);
     color:var(--lc-sun); letter-spacing:.08em; text-shadow:0 1px 0 var(--lc-brown), 0 2px 6px rgba(38,30,16,.6);}
   .brand-cn{font-size:12px; font-weight:400; color:var(--lc-cream); opacity:.85; letter-spacing:.05em; margin-left:6px;
     text-shadow:0 1px 3px rgba(38,30,16,.6);}
-  .brand-main{font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800;
+  .brand-main{font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif; font-weight:800;
     font-size:clamp(44px,15vw,62px); color:var(--lc-cream);
     text-shadow:0 3px 0 var(--lc-brown), 0 6px 12px rgba(46,42,36,.4);
     display:flex; align-items:center; justify-content:center; gap:8px;}
@@ -678,7 +725,7 @@
     font-weight:800; font-size:12.5px; padding:8px 12px; min-height:40px; flex:0 0 auto;}
 
   .home-cta{display:flex; align-items:stretch; gap:10px; margin:8px 0 2px;}
-  .start-btn{flex:1 1 62%; font-family:'LC Latin',"Segoe UI",sans-serif; font-weight:800;
+  .start-btn{flex:1 1 62%; font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif; font-weight:800;
     font-size:21px; letter-spacing:.05em; color:var(--lc-brown);
     background-color:var(--lc-sun);
     background-image:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun) 55%,var(--lc-sun-deep));
@@ -920,16 +967,12 @@
     </div>
   </div>
 
-  <!-- STREET -->
+  <!-- STREET (+ daily quests, merged per 2026-07-10 audit F3) -->
   <div class="screen festive" id="s-street">
     <h2 data-i18n="street.title">Lucky Cat Street</h2>
     <canvas id="street-cv"></canvas>
     <div id="street-caption"></div>
-  </div>
-
-  <!-- QUESTS -->
-  <div class="screen festive" id="s-quests">
-    <h2 data-i18n="quests.title">Daily Quests</h2>
+    <div class="sect" data-i18n="quests.title">Daily Quests</div>
     <div id="quest-panel"></div>
   </div>
 
@@ -1183,7 +1226,6 @@
     <button class="nav-btn" data-go="home" data-tab="home"><svg class="asset-icon"><use href="assets/ui-icons.svg#home"></use></svg><span data-i18n="nav.home">Home</span></button>
     <button class="nav-btn" data-go="street" data-tab="street"><svg class="asset-icon"><use href="assets/ui-icons.svg#street"></use></svg><span data-i18n="nav.street">Street</span></button>
     <button class="nav-btn" data-go="progress" data-tab="progress"><svg class="asset-icon"><use href="assets/ui-icons.svg#progress"></use></svg><span data-i18n="nav.progress">Progress</span></button>
-    <button class="nav-btn" data-go="quests" data-tab="quests"><svg class="asset-icon"><use href="assets/ui-icons.svg#quests"></use></svg><span data-i18n="nav.quests">Quests</span></button>
     <button class="nav-btn" data-go="more" data-tab="more"><svg class="asset-icon"><use href="assets/ui-icons.svg#more"></use></svg><span data-i18n="nav.more">More</span></button>
   </nav>
 </div>
