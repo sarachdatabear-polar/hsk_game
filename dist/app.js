@@ -1743,12 +1743,23 @@
     try {
       await LN.cancel({ notifications: [{ id: 1001 }] });
       if (!plan.schedule) return;
-      const perm = await LN.requestPermissions();
+      const perm = await LN.checkPermissions();
       if (perm.display !== "granted") return;
       const at = /* @__PURE__ */ new Date();
       at.setHours(plan.hour, 0, 0, 0);
       await LN.schedule({ notifications: [{ id: 1001, title, body, schedule: { at } }] });
     } catch (e) {
+    }
+  }
+  async function requestNotifPermission() {
+    if (!isNative()) return "denied";
+    const LN = plugins().LocalNotifications;
+    if (!LN) return "denied";
+    try {
+      const perm = await LN.requestPermissions();
+      return perm && perm.display ? perm.display : "denied";
+    } catch (e) {
+      return "denied";
     }
   }
   function initNative({ getScreen, goHome }) {
@@ -2991,10 +3002,16 @@
       toast(t("toast.freeze-used", { n: r.streak }));
     }
     updateStreakChip();
-    if (!wasGoalMet && streakInfo(daily, todayStr(), freezes).goalMet) {
+    const info = streakInfo(daily, todayStr(), freezes);
+    if (!wasGoalMet && info.goalMet) {
       syncStreakReminder({ schedule: false, hour: REMINDER_HOUR, cancel: true }, "", "");
     }
+    if (!notifPermAsked && reminderPlan(info, (/* @__PURE__ */ new Date()).getHours()).schedule) {
+      notifPermAsked = true;
+      requestNotifPermission();
+    }
   }
+  var notifPermAsked = false;
   var questState = Object.assign(defaultQuestState(), store.get("quests", {}));
   var questToasts = [];
   var monthly = Object.assign(defaultMonthly(), store.get("monthly", {}));

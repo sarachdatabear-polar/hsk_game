@@ -1,7 +1,22 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { isNative, nextBackScreen, hapticKill, keepAwake } from "../src/native.js";
+import { isNative, nextBackScreen, hapticKill, keepAwake,
+         syncStreakReminder, requestNotifPermission } from "../src/native.js";
 
 beforeEach(() => { delete globalThis.window; });
+
+// Fake Capacitor native runtime with a spyable LocalNotifications plugin.
+// display is the value checkPermissions/requestPermissions report back.
+function mockNative(display) {
+  const calls = { cancel: 0, check: 0, request: 0, schedule: [] };
+  const LN = {
+    cancel: async () => { calls.cancel++; },
+    checkPermissions: async () => { calls.check++; return { display }; },
+    requestPermissions: async () => { calls.request++; return { display }; },
+    schedule: async (opts) => { calls.schedule.push(opts); },
+  };
+  globalThis.window = { Capacitor: { isNativePlatform: () => true, Plugins: { LocalNotifications: LN } } };
+  return calls;
+}
 
 describe("nextBackScreen", () => {
   it("sub-screens go back to home", () => {
@@ -28,5 +43,63 @@ describe("web runtime is inert", () => {
   it("haptics/keepAwake are silent no-ops on web", () => {
     globalThis.window = {};
     expect(() => { hapticKill(); keepAwake(true); keepAwake(false); }).not.toThrow();
+  });
+});
+
+describe("syncStreakReminder (background: schedules but never prompts)", () => {
+  const plan = { schedule: true, hour: 19, cancel: false };
+
+  it("schedules the reminder when permission is already granted", async () => {
+    const calls = mockNative("granted");
+    await syncStreakReminder(plan, "title", "body");
+    expect(calls.cancel).toBe(1);
+    expect(calls.schedule.length).toBe(1);
+    expect(calls.schedule[0].notifications[0].id).toBe(1001);
+  });
+
+  it("NEVER calls requestPermissions from the background sync", async () => {
+    const calls = mockNative("granted");
+    await syncStreakReminder(plan, "t", "b");
+    expect(calls.request).toBe(0);   // background must not prompt (Android 13+ suppresses it)
+    expect(calls.check).toBe(1);     // it may only *check* existing permission
+  });
+
+  it("cancels but does not schedule when permission is not granted", async () => {
+    const calls = mockNative("denied");
+    await syncStreakReminder(plan, "t", "b");
+    expect(calls.cancel).toBe(1);
+    expect(calls.schedule.length).toBe(0);
+    expect(calls.request).toBe(0);
+  });
+
+  it("cancels and returns without checking permission when plan says not to schedule", async () => {
+    const calls = mockNative("granted");
+    await syncStreakReminder({ schedule: false, hour: 19, cancel: true }, "t", "b");
+    expect(calls.cancel).toBe(1);
+    expect(calls.schedule.length).toBe(0);
+  });
+
+  it("is a silent no-op on web (no Capacitor)", async () => {
+    globalThis.window = {};
+    await expect(syncStreakReminder(plan, "t", "b")).resolves.toBeUndefined();
+  });
+});
+
+describe("requestNotifPermission (foreground prompt)", () => {
+  it("prompts via requestPermissions and returns the display status", async () => {
+    const calls = mockNative("granted");
+    const display = await requestNotifPermission();
+    expect(calls.request).toBe(1);
+    expect(display).toBe("granted");
+  });
+
+  it("reports denial back to the caller", async () => {
+    mockNative("denied");
+    expect(await requestNotifPermission()).toBe("denied");
+  });
+
+  it("is inert on web — returns 'denied' and does not throw", async () => {
+    globalThis.window = {};
+    await expect(requestNotifPermission()).resolves.toBe("denied");
   });
 });
