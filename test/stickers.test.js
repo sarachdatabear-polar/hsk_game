@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  defaultStickers, scopeNodes, stickerDefs, scopeFacts, evaluateAwards, popToast,
+  defaultStickers, scopeNodes, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue,
   TOP_NS, MILESTONE_PCTS, EVENT_STICKERS,
 } from "../src/stickers.js";
 
@@ -93,5 +93,20 @@ describe("popToast", () => {
     expect(p2.id).toBe("b");
     const p3 = popToast(p2.state);
     expect(p3.id).toBe(null);
+  });
+});
+
+describe("dropFromQueue", () => {
+  it("removes only the given id and keeps earned intact", () => {
+    const s = { earned: { "ev:monthly-40": "2026-07-10", "ev:welcome": "2026-07-01" },
+                queue: ["ev:welcome", "ev:monthly-40"] };
+    const r = dropFromQueue(s, "ev:monthly-40");
+    expect(r.queue).toEqual(["ev:welcome"]);
+    expect(r.earned).toEqual(s.earned);
+    expect(s.queue).toHaveLength(2); // no input mutation
+  });
+  it("is a no-op when the id is not queued", () => {
+    const s = { earned: {}, queue: ["ev:welcome"] };
+    expect(dropFromQueue(s, "ev:monthly-40")).toBe(s);
   });
 });

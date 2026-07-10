@@ -19,7 +19,7 @@ import { wordWeight, smartDeck, weakWords } from "./srs.js";
 import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
 import { REMINDER_HOUR, reminderPlan } from "./notify.js";
 import { defaultQuestState, noteQuestEvent, questStatus,
-         defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly } from "./quests.js";
+         defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly } from "./quests.js";
 import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable, hasMp3 } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder } from "./native.js";
@@ -32,7 +32,7 @@ import { navVisibleOn, activeTabFor } from "./nav.js";
 import { roundLabel, comboMultiplier, comboFires } from "./hud.js";
 import { comboGlowTier, plaqueBounce, countUpValue } from "./juice.js";
 import { isFirstRun, introDeck } from "./firstrun.js";
-import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast } from "./stickers.js";
+import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue } from "./stickers.js";
 import { journeyNodes, currentNodeId } from "./journey.js";
 
 /* ============================== data & state ============================== */
@@ -156,7 +156,7 @@ function updateStreakChip(){
   if(freezeChip){
     freezeChip.style.display = freezes > 0 ? "flex" : "none";
     const label = freezeChip.querySelector(".freeze-count");
-    if(label) label.textContent = t("home.freezes", { n: freezes });
+    if(label) label.textContent = freezes === 1 ? t("home.freeze-one") : t("home.freezes", { n: freezes });
   }
 }
 // Minimal floating toast (retention pack) — freeze-used is a rare single
@@ -206,6 +206,21 @@ let questToasts = [];  // quests completed during the current battle, for the re
 // store.get already JSON.parses, so this mirrors questState's Object.assign
 // pattern rather than the brief's literal snippet, which double-parses).
 let monthly = Object.assign(defaultMonthly(), store.get("monthly", {}));
+
+// Auto-claim a month that ended complete-but-unclaimed (follow-up ticket from
+// PR #70). Runs at boot, before every monthly write (questEvent), and on
+// quest render, so the payout lands at the first observation of the new month.
+function settleMonthlyNow(){
+  const r = settleMonthly(monthly, todayStr());
+  if(r.state === monthly) return;
+  monthly = r.state;
+  store.set("monthly", monthly);
+  if(r.earned > 0){
+    wallet += r.earned; store.set("wallet", wallet); updateWalletChip();
+    toast(t("quest.monthly.autoClaimed", { reward: r.earned }));
+  }
+}
+settleMonthlyNow();
 
 /* ============================== sticker album (B2) ============================== */
 // earn-only — never purchasable. Persisted immediately on every award so a
@@ -285,7 +300,10 @@ function questEvent(eventId, n=1){
   if(r.earned > 0){ wallet += r.earned; store.set("wallet", wallet); updateWalletChip(); }
   if(r.completed.length){
     questToasts.push(...r.completed);
-    // retention pack: every daily quest completion also feeds the monthly goal
+    // retention pack: every daily quest completion also feeds the monthly goal.
+    // Settle first — on a month boundary noteMonthlyProgress would wipe an
+    // unclaimed reward before settleMonthly could see it.
+    settleMonthlyNow();
     monthly = noteMonthlyProgress(monthly, todayStr(), r.completed.length);
     store.set("monthly", monthly);
   }
@@ -294,6 +312,7 @@ function questEvent(eventId, n=1){
 function renderQuests(){
   const panel = $("#quest-panel");
   if(!panel) return;
+  settleMonthlyNow();
   panel.innerHTML = "";
   const ms = monthlyStatus(monthly, todayStr());
   const pct = Math.min(100, Math.round(100*ms.done/ms.target));
@@ -1937,8 +1956,13 @@ function endBattle(quit){
     };
     const hadMonthlyBadgeQuit = !!stickerState.earned["ev:monthly-40"];
     stickerState = evaluateAwards(stickerState, STICKER_DEFS, quitFacts, todayStr());
+    if(!hadMonthlyBadgeQuit && stickerState.earned["ev:monthly-40"]){
+      // announced here once — drop the queued copy so the next results
+      // screen's sticker slot doesn't announce it again
+      toast(t("quest.monthly.badge"));
+      stickerState = dropFromQueue(stickerState, "ev:monthly-40");
+    }
     store.set("stickers", stickerState);
-    if(!hadMonthlyBadgeQuit && stickerState.earned["ev:monthly-40"]) toast(t("quest.monthly.badge"));
     show("home"); return;
   }
   noteDaily(B.resolved);
@@ -2045,11 +2069,15 @@ function endBattle(quit){
   };
   const hadMonthlyBadge = !!stickerState.earned["ev:monthly-40"];
   stickerState = evaluateAwards(stickerState, STICKER_DEFS, stickerFacts, todayStr());
+  // retention pack: the monthly badge gets the floating toast() since it's
+  // most likely to land right as the player finishes the quest that crossed
+  // 40/40 — and ONLY the toast: the queued sticker copy is dropped so the
+  // sticker slot below (and future results screens) won't repeat it.
+  if(!hadMonthlyBadge && stickerState.earned["ev:monthly-40"]){
+    toast(t("quest.monthly.badge"));
+    stickerState = dropFromQueue(stickerState, "ev:monthly-40");
+  }
   store.set("stickers", stickerState);
-  // retention pack: the monthly badge also gets the floating toast() (not
-  // just the results-screen sticker slot below) since it's most likely to
-  // land right as the player finishes the quest that crossed 40/40.
-  if(!hadMonthlyBadge && stickerState.earned["ev:monthly-40"]) toast(t("quest.monthly.badge"));
   const slot = $("#r-sticker-slot");
   const popped = popToast(stickerState);
   if(popped.id){
@@ -2091,8 +2119,8 @@ function renderShop(){
   $("#shop-wallet").innerHTML = t("shop.wallet", { coins: wallet.toLocaleString() });
   const today = todayStr();
   const dailyBox = $("#shop-daily"), seasonBox = $("#shop-season");
-  const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), decoBox = $("#shop-street");
-  for(const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, decoBox]) b.innerHTML = "";
+  const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), supBox = $("#shop-supplies"), decoBox = $("#shop-street");
+  for(const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, supBox, decoBox]) b.innerHTML = "";
 
   // Today's Stock — the 3 featured pool items; once owned they live in their type section
   const stock = unownedDailyStock(today, shopState);
@@ -2120,7 +2148,7 @@ function renderShop(){
   // Permanent sections — pool/season items appear here only once owned
   for(const item of CATALOG){
     if((item.pool || item.season) && !shopState.owned.includes(item.id)) continue;
-    const box = item.type==="skin" ? skinBox : item.type==="backdrop" ? bdBox : item.type==="effect" ? fxBox : item.type==="soundpack" ? sndBox : decoBox;
+    const box = item.type==="skin" ? skinBox : item.type==="backdrop" ? bdBox : item.type==="effect" ? fxBox : item.type==="soundpack" ? sndBox : item.type==="consumable" ? supBox : decoBox;
     box.appendChild(makeShopRow(item, today));
   }
   startShopPreviewLoop();
@@ -2132,6 +2160,10 @@ function renderShop(){
 // window in play, so the hardcoded year never affects the output.
 const fmtMonthDay = ([m, d]) =>
   new Date(2026, m - 1, d).toLocaleDateString(getLocale() === "th" ? "th-TH" : "en-US", { month: "short", day: "numeric" });
+
+// Counted consumables live outside shopState.owned; each id maps to its own
+// counter so a future second consumable can never render the freeze count.
+function consumableCount(item){ return item.id === "streak-freeze" ? freezes : 0; }
 
 function makeShopRow(item, today){
   const owned = shopState.owned.includes(item.id);
@@ -2148,7 +2180,7 @@ function makeShopRow(item, today){
   const copy = document.createElement("span");
   copy.className = "shop-copy";
   const stars = item.type === "deco" && owned ? " " + "★".repeat(tier) : "";
-  const ownedCount = item.type === "consumable" ? `<small>${t("shop.owned-count", { n: freezes, cap: item.cap })}</small>` : "";
+  const ownedCount = item.type === "consumable" ? `<small>${t("shop.owned-count", { n: consumableCount(item), cap: item.cap })}</small>` : "";
   copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}${stars}</b><small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
   left.replaceChildren(preview, copy);
   const btn = document.createElement("button");
@@ -2168,12 +2200,14 @@ function makeShopRow(item, today){
     // shopState.owned/buy()/equipItem() — buyConsumable + nbhsk.freezes only.
     btn.className = "chip buy-chip";
     btn.textContent = t("shop.buy");
-    btn.disabled = freezes >= item.cap || wallet < item.price;
+    const have = consumableCount(item);
+    btn.disabled = have >= item.cap || wallet < item.price;
     btn.onclick = () => {
-      const r = buyConsumable(item, wallet, freezes);
+      const r = buyConsumable(item, wallet, consumableCount(item));
       if(!r.ok) return;
-      wallet = r.wallet; freezes = r.count;
-      store.set("wallet", wallet); store.set("freezes", freezes);
+      wallet = r.wallet;
+      if(item.id === "streak-freeze"){ freezes = r.count; store.set("freezes", freezes); }
+      store.set("wallet", wallet);
       justBought = { id: item.id, at: performance.now() };
       updateWalletChip(); updateStreakChip(); renderShop();
     };

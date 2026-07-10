@@ -26,7 +26,8 @@ export const STRINGS = {
     "home.settings": "Settings",
     "home.streakTitle": "Study Streak",
     "home.streakDays": "{n} days",
-    "home.freezes": "{n} freeze(s)",
+    "home.freezes": "{n} freezes",
+    "home.freeze-one": "1 freeze",
     "home.start": "START",
     "home.startHint": "Need at least 8 words in scope to start — widen it below.",
     "home.scopeWords": "{n} words",
@@ -133,6 +134,7 @@ export const STRINGS = {
     "quest.monthly.title": "Monthly: {done}/{target} quests",
     "quest.monthly.claim": "Claim +{reward}",
     "quest.monthly.badge": "Monthly badge earned!",
+    "quest.monthly.autoClaimed": "Monthly reward claimed for you: +{reward} coins",
     // scores / progress
     "scores.title": "Best Sessions",
     "scores.empty": "No sessions yet — complete a Word Quest.",
@@ -167,6 +169,7 @@ export const STRINGS = {
     "shop.backdrops": "Quest backdrops",
     "shop.effects": "Effects",
     "shop.sounds": "Sounds",
+    "shop.supplies": "Supplies",
     "shop.street": "Street decorations",
     "shop.wallet": "Wallet: <b>{coins}</b> coins",
     "shop.buy": "Buy",
@@ -298,6 +301,7 @@ export const STRINGS = {
     "home.streakTitle": "เรียนต่อเนื่อง",
     "home.streakDays": "{n} วัน",
     "home.freezes": "น้ำแข็ง {n} ชิ้น",   // TH: needs native review
+    "home.freeze-one": "น้ำแข็ง 1 ชิ้น",   // TH: needs native review
     "home.start": "เริ่ม",
     "home.startHint": "ต้องมีคำอย่างน้อย 8 คำในขอบเขตจึงจะเริ่มได้ — ขยายขอบเขตด้านล่าง",
     "home.scopeWords": "{n} คำ",
@@ -402,6 +406,7 @@ export const STRINGS = {
     "quest.monthly.title": "รายเดือน: {done}/{target} เควสต์",   // TH: needs native review
     "quest.monthly.claim": "รับ +{reward}",   // TH: needs native review
     "quest.monthly.badge": "ได้เหรียญตรารายเดือนแล้ว!",   // TH: needs native review
+    "quest.monthly.autoClaimed": "รับรางวัลรายเดือนให้คุณแล้ว: +{reward} เหรียญ",   // TH: needs native review
     // scores / progress
     "scores.title": "สถิติดีที่สุด",
     "scores.empty": "ยังไม่มีสถิติ — เล่นเควสต์คำศัพท์ก่อน",
@@ -436,6 +441,7 @@ export const STRINGS = {
     "shop.backdrops": "ฉากหลัง",
     "shop.effects": "เอฟเฟกต์",
     "shop.sounds": "เสียง",
+    "shop.supplies": "ของใช้",   // TH: needs native review
     "shop.street": "ของตกแต่งถนน",
     "shop.wallet": "กระเป๋าเงิน: <b>{coins}</b> เหรียญ",
     "shop.buy": "ซื้อ",

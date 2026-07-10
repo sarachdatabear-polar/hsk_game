@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   QUEST_POOL, questsForDate, defaultQuestState, noteQuestEvent, questStatus,
-  monthKey, defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, MONTHLY_TARGET, MONTHLY_REWARD,
+  monthKey, defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly, MONTHLY_TARGET, MONTHLY_REWARD,
 } from "../src/quests.js";
 
 describe("quests: questsForDate", () => {
@@ -231,5 +231,31 @@ describe("monthly quest layer", () => {
     m = noteMonthlyProgress(claimed.state, "2026-07-15", 3);
     expect(m).toEqual({ month: "2026-07", done: 40, claimed: true });
     expect(claimMonthly(m).earned).toBe(0);
+  });
+  it("settleMonthly auto-claims a complete unclaimed month at rollover", () => {
+    const m = { month: "2026-06", done: 40, claimed: false };
+    const r = settleMonthly(m, "2026-07-01");
+    expect(r.earned).toBe(MONTHLY_REWARD);
+    expect(r.state).toEqual({ month: "2026-07", done: 0, claimed: false });
+    expect(m.done).toBe(40); // no input mutation
+  });
+  it("settleMonthly pays nothing for claimed or incomplete months", () => {
+    expect(settleMonthly({ month: "2026-06", done: 40, claimed: true }, "2026-07-01").earned).toBe(0);
+    expect(settleMonthly({ month: "2026-06", done: 39, claimed: false }, "2026-07-01").earned).toBe(0);
+    // both still reset to the new month
+    expect(settleMonthly({ month: "2026-06", done: 39, claimed: false }, "2026-07-01").state)
+      .toEqual({ month: "2026-07", done: 0, claimed: false });
+  });
+  it("settleMonthly is a no-op within the same month and on the fresh default", () => {
+    const same = { month: "2026-07", done: 12, claimed: false };
+    expect(settleMonthly(same, "2026-07-20")).toEqual({ state: same, earned: 0 });
+    const fresh = defaultMonthly();
+    expect(settleMonthly(fresh, "2026-07-20")).toEqual({ state: fresh, earned: 0 });
+  });
+  it("settle then noteMonthlyProgress does not double-reset or double-pay", () => {
+    const r = settleMonthly({ month: "2026-06", done: 40, claimed: false }, "2026-07-02");
+    const m = noteMonthlyProgress(r.state, "2026-07-02", 1);
+    expect(m).toEqual({ month: "2026-07", done: 1, claimed: false });
+    expect(settleMonthly(m, "2026-07-02").earned).toBe(0);
   });
 });
