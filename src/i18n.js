@@ -72,6 +72,9 @@ export const STRINGS = {
     "account.lastSynced": "Last synced {when}",
     "account.neverSynced": "Not synced yet",
     "account.restored": "Progress restored ✓",
+    "account.benefit.safe": "Keeps your streak, coins and mastery backed up",
+    "account.benefit.devices": "Works on phone and computer — pick up where you left off",
+    "account.benefit.free": "Free — no password, just an email later if you want",
     "milestone.scarf": "Red scarf",
     "milestone.coin": "Gold coin charm",
     "milestone.outfit": "Chinese outfit",
@@ -90,6 +93,7 @@ export const STRINGS = {
     "nav.street": "Street",
     "nav.progress": "Progress",
     "nav.more": "More",
+    "more.tagline": "Lucky Cat HSK — learn the words that actually appear on the test",
     "street.title": "Lucky Cat Street",
     "street.captionEmpty": "Lucky Cat Street — grows as you learn · {next}",
     "street.captionProgress": "{unlocked}/{total} buildings · {next}",
@@ -116,6 +120,7 @@ export const STRINGS = {
     "scope.smartReview": "Smart Review",
     "scope.smartReviewProgress": "Smart Review · {have}/{min}",
     "scope.smartReviewReady": "Smart Review · {n}",
+    "scope.smartReviewLocked": "Play a session first — Smart Review learns your weak words",
     "scope.readout": "Pool: <b>{count}</b> words · ~<b>{pct}%</b> of exam text",
     "scope.readoutNoThai": "* {n} long-tail words have no Thai yet — English shown instead.",
     // journey map (B3)
@@ -373,6 +378,9 @@ export const STRINGS = {
     "account.lastSynced": "ซิงค์ล่าสุด {when}",   // TH: needs native review
     "account.neverSynced": "ยังไม่ได้ซิงค์",   // TH: needs native review
     "account.restored": "กู้คืนความคืบหน้าแล้ว ✓",   // TH: needs native review
+    "account.benefit.safe": "สำรองสตรีค เหรียญ และความแม่นคำของคุณไว้ให้",   // TH: needs native review
+    "account.benefit.devices": "ใช้ได้ทั้งมือถือและคอมพิวเตอร์ — เล่นต่อจากที่ค้างไว้",   // TH: needs native review
+    "account.benefit.free": "ฟรี — ไม่ต้องตั้งรหัสผ่าน แค่อีเมลทีหลังถ้าต้องการ",   // TH: needs native review
     "milestone.scarf": "ผ้าพันคอสีแดง",
     "milestone.coin": "เครื่องรางเหรียญทอง",
     "milestone.outfit": "ชุดจีน",
@@ -391,6 +399,7 @@ export const STRINGS = {
     "nav.street": "ถนน",
     "nav.progress": "ความคืบหน้า",
     "nav.more": "เพิ่มเติม",
+    "more.tagline": "Lucky Cat HSK — เรียนคำศัพท์ที่ออกข้อสอบจริง",   // TH: needs native review
     "street.title": "ถนนนำโชค",
     "street.captionEmpty": "ถนนนำโชค — เติบโตไปพร้อมการเรียนรู้ของคุณ · {next}",
     "street.captionProgress": "{unlocked}/{total} อาคาร · {next}",
@@ -417,6 +426,7 @@ export const STRINGS = {
     "scope.smartReview": "ทบทวนอัจฉริยะ",
     "scope.smartReviewProgress": "ทบทวนอัจฉริยะ · {have}/{min}",
     "scope.smartReviewReady": "ทบทวนอัจฉริยะ · {n}",
+    "scope.smartReviewLocked": "เล่นสักรอบก่อน — ทบทวนอัจฉริยะจะเรียนรู้คำที่คุณยังไม่แม่น",   // TH: needs native review
     "scope.readout": "คลังคำ: <b>{count}</b> คำ · ~<b>{pct}%</b> ของข้อสอบ",
     "scope.readoutNoThai": "* มี {n} คำที่ยังไม่มีภาษาไทย — แสดงภาษาอังกฤษแทน",
     // journey map (B3)
