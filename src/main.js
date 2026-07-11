@@ -1692,8 +1692,8 @@ function answer(btn, o){
     return true;
   }
   // Every other branch below is a final resolution of this word (correct kill,
-  // wrong tap, or — via bite() — a timeout): reveal the translation on the
-  // plaque from here on (drawWordPlate reads z.revealed, not the answer state).
+  // wrong tap, or — via bite() — a timeout): unmask the plaque's hanzi/pinyin
+  // from here on (drawWordPlate reads z.revealed, not the answer state).
   z.revealed = true;
   if(correct){
     z.frozen = true;   // coin is in flight — don't let the walker cross the bite line first (race with killZombie)
@@ -1775,7 +1775,7 @@ function bite(timedOut){
     // only count here if it timed out before ever being tapped.
     if(!z.boss || z.stage === "meaning") B.attempts++;
     B.combo = 0; noteAnswer(z.w.h, false); pushMiss(z.w); revealCorrect(); lockOptions();
-    z.revealed = true;   // timeout resolves the word too — fill the plaque's translation line
+    z.revealed = true;   // timeout resolves the word too — unmasks the plaque's hanzi/pinyin
   }
   const free = !!(z && z.introFree);   // intro word timing out is also forgiven
   sfx.bite();
@@ -2055,19 +2055,17 @@ function draw(now){
   if(shake) ctx.restore();
 }
 // z: the current walker (B.zombie) — carries the target word (z.w), boss
-// flags, and z.revealed (set in answer()/bite() once the word is resolved).
+// flags, and z.revealed (set in answer()/bite() once the word is resolved,
+// so masked/listen formats can unmask the hanzi/pinyin — no translation is
+// ever drawn on the plaque; that lives on the choice buttons only).
 // vis: { mask, icon, py } — what the format may reveal while live (see the
 // call site in draw(), which derives it from FORMATS[z.format].plaque).
-// Order per PRD §4.3/§6.2: pinyin (small, above) -> Hanzi (large) ->
-// translation (reserved space always; filled in only once z.revealed).
+// Order per PRD §4.3/§6.2: pinyin (small, above) -> Hanzi (large).
 function drawWordPlate(z, vis, now){
   const w = z.w, boss = z.boss, level = w.lv;
   const hanzi = vis.mask ? "？？" : vis.icon ? "🔊" : w.h;
   // pinyin off when: the format hides it (reverse/listen/tone while live), OR the player toggled it off
   const pinyin = (!vis.py || !settings.showPinyin) ? "" : w.p;
-  const revealed = !!z.revealed;
-  const showSub = scope.lang === "both";   // meaningOf() only returns a .sub in "both" mode
-  const m = meaningOf(w, scope.lang);      // hoisted: needed pre-reveal too, to size the card
 
   // A3 plaque bounce: damped dip on a correct answer (juice.js curve; 0 when
   // idle or under reduced motion — no vertical motion, per "fades only").
@@ -2080,31 +2078,21 @@ function drawWordPlate(z, vis, now){
   const textW = Math.max(ctx.measureText(hanzi).width, 74*T);
   const spkR = 12*T;
   // Width invariant: the card must be wide enough for every line it will ever
-  // show — hanzi AND the translation (main/sub) AND pinyin — measured here
-  // EVERY call regardless of reveal state, so it never resizes/jumps when the
-  // answer is revealed. Long thai/english glosses (up to ~230px) routinely
-  // measure wider than the hanzi alone, which used to hang off the card edges.
+  // show — hanzi AND pinyin — measured here EVERY call regardless of reveal
+  // state, so it never resizes/jumps when the answer is revealed.
   let widestLine = 0;
-  ctx.font = fontString(700, 15*T, LATIN_STACK);
-  widestLine = Math.max(widestLine, ctx.measureText(m.main).width);
-  if(showSub && m.sub){
-    ctx.font = fontString(600, 13*T, LATIN_STACK);
-    widestLine = Math.max(widestLine, ctx.measureText(m.sub).width);
-  }
   if(pinyin){
     ctx.font = fontString(600, B.L.pinyinPx, LATIN_STACK);
     widestLine = Math.max(widestLine, ctx.measureText(pinyin).width);
   }
   ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK); // restore: hanzi font, as measured above
   const lw = Math.min(B.w - 24*T, Math.max(textW + 56*T + spkR*2.2, widestLine + 24*T));
-  // Stacked rows, top to bottom: pinyin (if shown) -> Hanzi -> translation.
-  // The translation row's height is reserved unconditionally (same whether
-  // revealed or not) so the plaque never resizes/jumps at reveal time.
+  // Stacked rows, top to bottom: pinyin (if shown) -> Hanzi. No translation
+  // row — English/Thai live on the choice buttons only (never the plaque).
   const padV = 10*T;
   const pinyinH = pinyin ? 22*T : 0;
   const hanziH = B.L.hanziPx * 1.05;
-  const transH = (showSub ? 40 : 24) * T;
-  const lh = padV*2 + pinyinH + hanziH + transH;
+  const lh = padV*2 + pinyinH + hanziH;
   const x = B.w/2 - lw/2, y = wy - lh/2;
   const plaqueImg = sprite("ui-word-plaque");
   if(plaqueImg){
@@ -2159,34 +2147,6 @@ function drawWordPlate(z, vis, now){
   ctx.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
   ctx.fillText(hanzi, B.w/2, cy + hanziH/2);
   cy += hanziH;
-  // translation row: filled in once the word is resolved (revealed), a faint
-  // dashed placeholder otherwise — the row's own space is already reserved
-  // above regardless of reveal state, so nothing shifts when it fills in.
-  const midY = cy + (showSub ? transH*0.32 : transH/2);
-  if(revealed){
-    ctx.font = fontString(700, 15*T, LATIN_STACK);
-    const mw = ctx.measureText(m.main).width;
-    if(mw > innerW) ctx.font = fontString(700, 15*T * (innerW/mw), LATIN_STACK);
-    ctx.fillStyle = "#2F6B4F";
-    ctx.fillText(m.main, B.w/2, midY);
-    if(showSub && m.sub){
-      ctx.font = fontString(600, 13*T, LATIN_STACK);
-      const sw = ctx.measureText(m.sub).width;
-      if(sw > innerW) ctx.font = fontString(600, 13*T * (innerW/sw), LATIN_STACK);
-      ctx.fillStyle = "#5C7A68";
-      ctx.fillText(m.sub, B.w/2, cy + transH*0.74);
-    }
-  }else{
-    ctx.strokeStyle = "rgba(140,95,42,.32)";
-    ctx.lineWidth = Math.max(1.4, 2*T);
-    ctx.setLineDash([4*T, 4*T]);
-    ctx.beginPath(); ctx.moveTo(B.w/2-44*T, midY); ctx.lineTo(B.w/2+44*T, midY); ctx.stroke();
-    if(showSub){
-      const y2 = cy + transH*0.74;
-      ctx.beginPath(); ctx.moveTo(B.w/2-30*T, y2); ctx.lineTo(B.w/2+30*T, y2); ctx.stroke();
-    }
-    ctx.setLineDash([]);
-  }
   ctx.textBaseline = "alphabetic";
   if(level){
     // dark-green level tag (reference TAG)
