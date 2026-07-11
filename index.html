@@ -49,6 +49,14 @@
     font-family:'LC Latin','LC Thai',"Segoe UI",system-ui,-apple-system,"Noto Sans","Noto Sans Thai",sans-serif;}
   #app{max-width:520px; margin:0 auto; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
+  /* F4-iOS: battle never scrolls the document, so a definite height is safe
+     THERE ONLY — real iOS Safari has been seen treating the min-height-only
+     flex chain (#app min-height:100dvh -> .screen flex:1 -> .cv-wrap flex:1)
+     as indefinite, collapsing the canvas short with a void above the
+     answers. main.js's show() toggles this class exactly when the battle
+     screen is shown/hidden (see F4-iOS note there) — no other screen gets
+     it, so their natural scrolling document height is untouched. */
+  body.battle-on #app{height:100vh; height:100dvh;}
   /* Wide screens: the app is a fixed ~520px column. Fill the bare cream margins
      with a warm ambient vignette and lift the column as an intentional "device"
      panel, instead of leaving it floating in an empty void. */
@@ -340,7 +348,13 @@
      aspect-ratio) — the draw loop reads clientWidth/Height and scales everything
      off the measured size (see layout.js), so any ratio the flex box gives it works. */
   #s-battle{padding:8px 12px 10px;}
-  .cv-wrap{flex:1 1 0; min-height:260px; display:flex; align-items:stretch; justify-content:center;}
+  /* F4-iOS: column direction + #cv's own flex:1 1 0 (below) is the robust
+     way to give the canvas its share of height — Safari has been seen
+     treating a percentage-height child (the old #cv{height:100%}) inside an
+     indefinite-height flex chain as 0, collapsing the canvas to a sliver
+     with a void beneath it. flex-basis growth doesn't have that failure
+     mode. */
+  .cv-wrap{flex:1 1 0; min-height:260px; display:flex; flex-direction:column; align-items:stretch; justify-content:center;}
   /* Short screens (SE-class, landscape handled separately): shrink the canvas
      floor. The answer-grid half of this media query lives further down,
      AFTER the base #opts/#opts button rules (see note there) — CSS cascade
@@ -360,7 +374,7 @@
      to make room for the extra row while a listen question is live
      (main.js toggles #s-battle.listen-fmt per-question in renderQuestion). */
   #s-battle.listen-fmt .cv-wrap{min-height:130px;}
-  #cv{width:100%; height:100%; border-radius:14px;
+  #cv{width:100%; height:auto; flex:1 1 0; min-height:0; border-radius:14px;
     background-image:linear-gradient(var(--lc-day-hi),var(--lc-day-mid) 60%,var(--lc-day-ground));
     background-size:cover; background-position:bottom; background-repeat:no-repeat;
     border:2px solid var(--lc-brown); display:block; touch-action:none;

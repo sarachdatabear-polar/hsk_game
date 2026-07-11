@@ -763,6 +763,12 @@ function show(name){
   // intro completion runs before its show() calls, so this is a no-op there.
   if(name === "home" && introPhase){ introPhase = null; store.set("introDone", true); }
   currentScreen = name;
+  // F4-iOS: battle is the only screen that ever needs a definite #app height
+  // (see index.html's body.battle-on rule) — it never scrolls the document,
+  // so a fixed 100dvh is safe there and nowhere else. show() is the single
+  // choke point every screen switch passes through, so toggling here can't
+  // leak the class onto another screen.
+  document.body.classList.toggle("battle-on", name === "battle");
   document.querySelectorAll(".screen").forEach(el=>el.classList.remove("on"));
   $("#s-"+name).classList.add("on");
   updateNav(name);
@@ -1165,6 +1171,12 @@ function sizeCanvas(){
 const cvRO = new ResizeObserver(()=>{ if(B.on) sizeCanvas(); });
 cvRO.observe(cv);
 window.addEventListener("resize", ()=>{ if(B.on) sizeCanvas(); });
+// F4-iOS: Safari can resize the visual viewport (e.g. the URL bar
+// showing/hiding, or the keyboard) without firing a matching window
+// "resize" — visualViewport's own resize event is the belt-and-braces catch
+// for that case. Same guard as the listener above; harmless no-op when
+// visualViewport isn't supported.
+window.visualViewport?.addEventListener("resize", ()=>{ if(B.on) sizeCanvas(); });
 
 // Plaque speaker affordance (M6, §11 accessibility): the plaque itself is the
 // tap target (not just a small icon) — B.plaqueRect is set every draw() frame
