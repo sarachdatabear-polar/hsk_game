@@ -174,3 +174,13 @@ Play Console/App Store products + RevenueCat webhook → Supabase Edge Function
 writing `entitlements`/`ledger`/`wallet` + reconcile on foreground/sign-in/
 post-purchase + flag flips to "native + available". Restore button and all UI
 built here carry over unchanged.
+
+Hardening checklist for that slice (from the v1 whole-branch review, alongside
+the wallet_guard prerequisite above):
+- Wrap `iapBuy`'s provider await in `try/finally { iapPending = null; }` — a
+  real SDK wrapper that ever rejects would otherwise wedge all IAP buttons
+  until reload (mock can't reject, so deferred in v1).
+- Mock dev key housekeeping: clear any truthy `dev.iapFail` value on purchase
+  (not just the two recognized reasons).
+- Add tests pinning multi-order accumulation across different packs and
+  orderId-global dedup across productIds.

@@ -1294,6 +1294,12 @@
     <button class="back" data-go="home" data-i18n="common.back">← Home</button>
     <h2 data-i18n="shop.title">Collection</h2>
     <div class="readout" id="shop-wallet"></div>
+    <!-- IAP (mock-provider v1): ships dark — unhidden by renderIapSections()
+         only when the nbhsk.dev.iap flag is set. -->
+    <div class="sect" id="shop-coins-sect" data-i18n="shop.getCoins" hidden>Get Coins</div>
+    <div class="scorelist" id="shop-coins" hidden></div>
+    <div class="sect" id="shop-supporter-sect" data-i18n="shop.supporterTitle" hidden>Supporter</div>
+    <div class="scorelist" id="shop-supporter" hidden></div>
     <div class="sect" data-i18n="shop.daily">Today's Stock</div>
     <div class="scorelist" id="shop-daily"></div>
     <p class="shop-note" id="shop-daily-note" data-i18n="shop.dailyNote">New stock at midnight</p>
