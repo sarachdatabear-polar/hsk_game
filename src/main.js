@@ -1196,6 +1196,17 @@ cv.addEventListener("keydown", e=>{
   e.preventDefault();
   replayCurrentWord();
 });
+// Pointer cursor over the plaque only (2026-07-11 audit F6, whole-card replay
+// surface) — the rest of the canvas isn't interactive, so a canvas-wide
+// pointer cursor would be a false affordance.
+cv.addEventListener("mousemove", e=>{
+  const r = B.plaqueRect;
+  if(!r || !canReplayAudio(B.zombie)){ cv.style.cursor = ""; return; }
+  const box = cv.getBoundingClientRect();
+  const x = e.clientX - box.left, y = e.clientY - box.top;
+  const over = x>=r.x && x<=r.x+r.w && y>=r.y && y<=r.y+r.h;
+  cv.style.cursor = over ? "pointer" : "";
+});
 
 function pickWord(){
   const deck = B.deck;
@@ -2098,32 +2109,12 @@ function drawWordPlate(z, vis, now){
     ctx.textAlign = "left";
     ctx.fillText(tagText, x+14*T, y-th*.45 + th*.7);
   }
-  // speaker icon, right edge of the plaque, vertically centered — also the
-  // visual affordance for the click/keyboard hit-test set up on #cv below.
-  // Skipped when replay is disallowed (tone/reverse while live — don't
-  // advertise a disabled affordance) and when the plaque is already showing
-  // the big 🔊-as-hanzi (listen format live) to avoid two speaker glyphs.
-  if(canReplayAudio(z) && !vis.icon){
-    drawSpeakerIcon(ctx, x + lw - spkR - 10*T, y + lh/2, spkR, boss ? "#7A4E0C" : "#8C5F2A");
-  }
+  // 2026-07-11 audit F6: no more corner speaker glyph — the whole plaque is
+  // already the tap-to-replay surface (B.plaqueRect below, hit-tested by the
+  // #cv click/keydown listeners), so the icon was pure decoration. Removing
+  // it also declutters the card per Jordan's finding.
   B.plaqueRect = {x, y, w: lw, h: lh};
   ctx.restore();
-}
-function drawSpeakerIcon(c, cx, cy, r, color){
-  c.save();
-  c.translate(cx, cy);
-  c.fillStyle = color;
-  c.beginPath();
-  c.moveTo(-r*0.9, -r*0.35); c.lineTo(-r*0.3, -r*0.35);
-  c.lineTo(r*0.35, -r*0.85); c.lineTo(r*0.35, r*0.85);
-  c.lineTo(-r*0.3, r*0.35); c.lineTo(-r*0.9, r*0.35);
-  c.closePath(); c.fill();
-  c.strokeStyle = color;
-  c.lineWidth = Math.max(1.2, r*0.16);
-  c.lineCap = "round";
-  c.beginPath(); c.arc(r*0.05, 0, r*0.62, -Math.PI*0.32, Math.PI*0.32); c.stroke();
-  c.beginPath(); c.arc(r*0.05, 0, r*0.98, -Math.PI*0.34, Math.PI*0.34); c.stroke();
-  c.restore();
 }
 function drawFeedbackLayer(now){
   const fb = B.feedback;

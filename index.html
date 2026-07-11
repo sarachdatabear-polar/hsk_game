@@ -400,9 +400,13 @@
      with their tighter caps via source order, exactly as before.
      flex-shrink:0 stops flex compressing the clamp box to a fractional line
      count (mid-line clip, no ellipsis) — same guard as the 700px tier. */
+  /* 2026-07-11 audit F5: explicit text-align:center on every option-button
+     text piece — cheap guard against a centering regression, not a fix (this
+     already inherits center from `#opts button` above; Jordan's "Thai not
+     centered" report didn't reproduce and is believed stale-shell). */
   #opts button .opt-label{display:-webkit-box; -webkit-box-orient:vertical;
-    -webkit-line-clamp:3; overflow:hidden; flex-shrink:0; width:100%;}
-  #opts button .th{display:block; color:var(--lc-brown); font-size:15px; font-weight:600; margin-top:2px;}
+    -webkit-line-clamp:3; overflow:hidden; flex-shrink:0; width:100%; text-align:center;}
+  #opts button .th{display:block; color:var(--lc-brown); font-size:15px; font-weight:600; margin-top:2px; text-align:center;}
   /* reveal states never rely on color alone (§11): a ✓/✕ affix rides along
      with the green/coral fill + the game's existing sound/haptic/motion. */
   #opts button.good{background-color:var(--lc-success); color:var(--lc-cream); border-color:var(--lc-success-deep);
@@ -496,7 +500,7 @@
   .cloze-sentence{font-size:17px; line-height:1.35; letter-spacing:.02em;}
   .cloze-trans{margin-top:3px; font-weight:600; font-size:12px; opacity:.75;}
   .cloze-trans:empty{display:none;}
-  #opts .replay{grid-column:1/-1; font-weight:800; padding:8px 0;}
+  #opts .replay{grid-column:1/-1; font-weight:800; padding:8px 0; text-align:center;}
   /* v6p2 typed-pinyin input: #opts-prefixed selectors on the button-shaped
      pieces (tone-chip, typed-go) so they out-specificity the base
      `#opts button` rule above, same trick as `#opts .replay`. */
