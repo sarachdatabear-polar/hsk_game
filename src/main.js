@@ -375,6 +375,16 @@ function renderQuests(){
     panel.appendChild(row);
   }
 }
+// Street quest popup (2026-07-11 audit F2/F3 revert): #quest-panel itself
+// didn't move logic, only markup — renderQuests() above still targets it
+// unchanged. Open/close just toggles the overlay, same convention as
+// #pause-overlay, plus a backdrop-tap close (safe here — unlike the battle
+// pause overlay, an accidental dismiss costs nothing).
+$("#street-quests-btn").onclick = ()=>{ renderQuests(); $("#quest-overlay").classList.add("on"); };
+$("#quest-popup-close").onclick = ()=> $("#quest-overlay").classList.remove("on");
+$("#quest-overlay").addEventListener("click", e=>{
+  if(e.target.id === "quest-overlay") $("#quest-overlay").classList.remove("on");
+});
 function updateSmartBtn(){
   const deck = smartDeck(masteryStore, pool, Date.now());
   const btn = $("#go-smart");
@@ -2714,15 +2724,17 @@ function renderStreet(){
     drawTieredDeco(sc, p, x, gy, du);
   }
 
-  // mascot - maneki sprite or vector fallback, always far left on the ground
+  // mascot - maneki sprite or vector fallback, always far left on the ground.
+  // 2026-07-11 audit F2: "cat too small" — bump the draw scale ~40% (mascot-
+  // bump precedent, 263e3f6/4ec9fcf); both branches stay grounded (gy-anchored).
   const mImg = sprite("maneki");
-  const mp = Math.min(h*0.62, 48);
+  const mp = Math.min(h*0.62, 67);
   if(mImg){
     sc.drawImage(mImg, 4, gy-mp+4, mp, mp);
   }else{
     sc.textAlign = "left";
     sc.font = `${Math.round(h*0.42)}px serif`;
-    drawCat(sc, 22, gy + 8, 0, "happy", null, .58, [], false);
+    drawCat(sc, 22, gy + 8, 0, "happy", null, .81, [], false);
   }
 
   const cap = $("#street-caption");

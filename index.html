@@ -213,11 +213,26 @@
   .account-change-email{background:none; border:none; color:var(--muted); text-decoration:underline; font:inherit; padding:4px; cursor:pointer;}
   .startrow{display:flex; gap:10px; margin-top:14px;}
   .startrow .big{flex:1; padding:14px 6px; font-size:16px;}
-  /* Lucky Cat Street — own screen (M2); DPR-crisp buffer sized by main.js */
-  #street-cv{width:100%; height:min(40vh,320px); display:block; border-radius:12px;
+  /* Lucky Cat Street — own screen (M2); DPR-crisp buffer sized by main.js.
+     2026-07-11 audit F2: quests moved back out into a popup (below), so the
+     scene reclaims that height — grow the cap so decorators see the street
+     as big as the screen reasonably allows (checked against all 10
+     responsive-sweep viewports incl. the two landscape tiers). */
+  #street-cv{width:100%; height:min(52vh,400px); display:block; border-radius:12px;
     border:2px solid var(--lc-brown);
     box-shadow:0 3px 10px rgba(46,42,36,.22);}
   #street-caption{color:var(--lc-brown); font-size:12px; text-align:center; margin:4px 0 0;}
+  /* compact — must not steal meaningful height from the scene above it */
+  #s-street{position:relative;}
+  .street-quests-btn{align-self:center; width:auto; min-width:140px; margin-top:8px; padding:8px 22px; min-height:40px;}
+  /* Quest popup reuses .pause-overlay/.pause-panel (see #s-battle) — scoped to
+     #s-street (position:relative above) so it doesn't cover the bottom nav. */
+  .quest-popup-head{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .quest-popup-head .pause-title{margin:0; text-align:left;}
+  .overlay-close{width:34px; height:34px; min-height:34px; min-width:34px; padding:0; flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center; font-size:20px; line-height:1; font-weight:800;
+    background-color:var(--lc-sand); color:var(--lc-ink); border:2px solid var(--lc-brown); border-radius:50%;}
+  .overlay-close:active{transform:scale(.92);}
   #more-sound.muted{filter:grayscale(1) opacity(.6);}
   /* bottom nav (M2) — deep-teal bar, last child of #app. sticky so it stays
      reachable while long screens (shop catalog) scroll. #app's own safe-area
@@ -1004,13 +1019,28 @@
     </div>
   </div>
 
-  <!-- STREET (+ daily quests, merged per 2026-07-10 audit F3) -->
+  <!-- STREET — quests reverted back out (2026-07-11 audit F2/F3, supersedes the
+       0b1ee1e merge): the scene owns the reclaimed height, quests live behind
+       a popup opened from the compact button below the caption. -->
   <div class="screen festive" id="s-street">
     <h2 data-i18n="street.title">Lucky Cat Street</h2>
     <canvas id="street-cv"></canvas>
     <div id="street-caption"></div>
-    <div class="sect" data-i18n="quests.title">Daily Quests</div>
-    <div id="quest-panel"></div>
+    <button class="sec-btn street-quests-btn" id="street-quests-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span data-i18n="street.questsBtn">Quests</span></span></button>
+
+    <!-- Quest popup: reuses the pause-overlay/pause-panel convention
+         (#pause-overlay in #s-battle) — #quest-panel is the SAME element
+         renderQuests() already targets, just relocated here so no rendering
+         logic is duplicated. -->
+    <div class="pause-overlay" id="quest-overlay">
+      <div class="pause-panel">
+        <div class="quest-popup-head">
+          <h3 class="pause-title" data-i18n="quests.title">Daily Quests</h3>
+          <button class="overlay-close" id="quest-popup-close" data-i18n-title="common.close" aria-label="Close">×</button>
+        </div>
+        <div id="quest-panel"></div>
+      </div>
+    </div>
   </div>
 
   <!-- MORE -->

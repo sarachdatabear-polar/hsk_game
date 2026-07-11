@@ -153,19 +153,34 @@ function probeNavReachable(tol) {
     : `out(top=${Math.round(r.top)},bottom=${Math.round(r.bottom)},ih=${window.innerHeight})`;
 }
 
-// street-quests: after the Daily Quests merge (audit F3), the street screen
-// carries the quest panel (renderQuests() runs alongside renderStreet() in
-// show()) — this must FAIL loudly if #quest-panel ever ends up empty on the
-// street screen, e.g. a regression that drops the renderQuests() call.
-function probeStreetQuests() {
+// street-quests-popup: 2026-07-11 audit F2/F3 reverted the Daily Quests merge
+// — the street screen now shows scene + caption + a compact "Quests" button,
+// and the daily-quest + monthly rows live behind a popup overlay
+// (#quest-overlay) that button opens. This snapshots the pre-click state
+// (button present, popup not already open) — the click/open/close sequence
+// itself is driven from runFullSweep since it needs real click events, not
+// just a DOM snapshot.
+function probeStreetScene() {
   const screen = document.querySelector("#s-street");
-  // Scoped to #s-street specifically (not a bare #quest-panel lookup):
-  // renderQuests() runs at boot, so #quest-panel is populated from startup
-  // and stays populated even if it isn't actually nested inside the street
-  // screen — a bare selector would pass regardless of where the panel lives.
-  const panel = document.querySelector("#s-street #quest-panel");
+  const cv = document.querySelector("#street-cv");
+  const r = cv?.getBoundingClientRect();
   return {
     active: screen?.classList.contains("on") ?? false,
+    cvHeight: r ? Math.round(r.height) : 0,
+    btnPresent: !!document.querySelector("#street-quests-btn"),
+    overlayOpenBeforeClick: document.querySelector("#quest-overlay")?.classList.contains("on") ?? false,
+  };
+}
+// Scoped to #quest-overlay specifically (not a bare #quest-panel lookup):
+// renderQuests() runs at boot, so #quest-panel is populated from startup and
+// stays populated even if it isn't actually nested inside the popup — a bare
+// selector would pass regardless of where the panel lives (same guard as the
+// pre-revert probe this replaces).
+function probeQuestPopup() {
+  const overlay = document.querySelector("#quest-overlay");
+  const panel = document.querySelector("#quest-overlay #quest-panel");
+  return {
+    open: overlay?.classList.contains("on") ?? false,
     questPanelChildren: panel ? panel.children.length : 0,
   };
 }
@@ -316,12 +331,21 @@ async function runFullSweep() {
       () => getComputedStyle(document.documentElement).overscrollBehaviorY
     );
 
-    // street-quests: street tab must show the merged quest panel (audit F3)
-    // with the bottom nav still reachable — mirrors the shop nav-reachable
-    // probe below.
+    // street-quests-popup: street tab shows scene + button; clicking the
+    // button must open the popup with the quest rows, and the X must close
+    // it again — with the bottom nav still reachable throughout (mirrors the
+    // shop nav-reachable probe below).
     await goToStreet(page);
-    const streetQuests = await page.evaluate(probeStreetQuests);
+    const streetScene = await page.evaluate(probeStreetScene);
+    await page.evaluate(() => document.querySelector("#street-quests-btn")?.click());
+    await page.waitForTimeout(150);
+    const questPopup = await page.evaluate(probeQuestPopup);
     const streetNav = await page.evaluate(probeNavReachable, TOL);
+    await page.evaluate(() => document.querySelector("#quest-popup-close")?.click());
+    await page.waitForTimeout(150);
+    const questPopupClosed = await page.evaluate(
+      () => !(document.querySelector("#quest-overlay")?.classList.contains("on") ?? false)
+    );
     await page.evaluate(() => document.querySelector('[data-go="home"]')?.click());
     await page.waitForTimeout(100);
 
@@ -393,9 +417,17 @@ async function runFullSweep() {
     if (account.wide.length) failures.push(`account wide:[${account.wide}]`);
     if (battle.clippedBelow > 0) failures.push(`battle clipped-below=${battle.clippedBelow}`);
     if (overscrollY !== "none") failures.push(`overscroll-behavior-y=${overscrollY}`);
-    if (!streetQuests.active) failures.push("street-quests: #s-street not active");
-    if (streetQuests.questPanelChildren < 1)
-      failures.push(`street-quests: #quest-panel empty (children=${streetQuests.questPanelChildren})`);
+    if (!streetScene.active) failures.push("street: #s-street not active");
+    // Sanity floor, not a "big enough" assertion — the smallest measured tier
+    // (land-640, 640x360) sits at 187px under the new min(52vh,400px) cap;
+    // this just catches an actual regression (e.g. cv collapsing to 0).
+    if (streetScene.cvHeight < 150) failures.push(`street: cv height=${streetScene.cvHeight}<150`);
+    if (!streetScene.btnPresent) failures.push("street-quests: #street-quests-btn missing");
+    if (streetScene.overlayOpenBeforeClick) failures.push("street-quests: popup open before click");
+    if (!questPopup.open) failures.push("street-quests: popup did not open on button click");
+    if (questPopup.questPanelChildren < 1)
+      failures.push(`street-quests: #quest-panel empty (children=${questPopup.questPanelChildren})`);
+    if (!questPopupClosed) failures.push("street-quests: popup did not close on X");
     if (streetNav !== "in-view") failures.push(`street-quests: nav-unreachable:${streetNav}`);
     if (navAtTop !== "in-view") failures.push(`shop nav-unreachable@top:${navAtTop}`);
     if (navAtMid !== "in-view") failures.push(`shop nav-unreachable@mid:${navAtMid}`);
