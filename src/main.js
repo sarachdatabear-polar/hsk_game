@@ -1907,6 +1907,24 @@ function draw(now){
     const fl = FORMATS[z.format || "meaning"].plaque;
     const live = z.state === "walk" && !z.revealed;
     drawWordPlate(z, { mask: live && !!fl.mask, icon: live && !!fl.icon, py: !live || !!fl.py }, now);
+    // A3 enemy hit flash: expanding gold backlight glow at the kill (set in
+    // killZombie), drawn BEFORE the raccoon sprite so it reads as a glow
+    // behind the enemy rather than a wash over it (it used to paint on top,
+    // which bleached the raccoon into a "ghost" at the kill moment).
+    if(B.hitFlash){
+      const leftF = B.hitFlash.until - performance.now();
+      if(leftF <= 0){ B.hitFlash = null; }
+      else{
+        // expanding gold pulse, fading out — a fade, so reduced-motion-safe
+        // (fxUntil already halved its duration there)
+        ctx.save();
+        ctx.globalAlpha = 0.85 * (leftF / fxDuration(150));
+        ctx.fillStyle = "rgba(245,197,24,1)";
+        const rr = (18 + 30 * (1 - leftF / fxDuration(150))) * B.S;
+        ctx.beginPath(); ctx.arc(B.hitFlash.x, B.hitFlash.y, rr, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+    }
     // raccoon enemy (was the cat walker) — bosses draw bigger with a gold
     // aura (boss param, not scale — see raccoon.js); no skins/accessories/
     // kitten on it, those moved to the player above.
@@ -1963,21 +1981,6 @@ function draw(now){
       ctx.fillText(f.text, f.x, f.y);
     }
     ctx.globalAlpha = 1;
-  }
-  // A3 enemy hit flash: expanding cream pulse at the kill (set in killZombie)
-  if(B.hitFlash){
-    const leftF = B.hitFlash.until - performance.now();
-    if(leftF <= 0){ B.hitFlash = null; }
-    else{
-      // expanding cream pulse, fading out — a fade, so reduced-motion-safe
-      // (fxUntil already halved its duration there)
-      ctx.save();
-      ctx.globalAlpha = 0.85 * (leftF / fxDuration(150));
-      ctx.fillStyle = "rgba(251,245,232,1)";
-      const rr = (18 + 30 * (1 - leftF / fxDuration(150))) * B.S;
-      ctx.beginPath(); ctx.arc(B.hitFlash.x, B.hitFlash.y, rr, 0, Math.PI*2); ctx.fill();
-      ctx.restore();
-    }
   }
   drawFeedbackLayer(now);
   // hit flash — softened dim-violet (cat wandered off, not combat damage)
