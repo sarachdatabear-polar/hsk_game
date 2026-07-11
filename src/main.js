@@ -1501,6 +1501,16 @@ const CLOZE_WALK_FACTOR = 0.6;
 // B.dyingUntil deadline and the hp-bar lerp below must both use this same
 // constant or the hp bar and the actual dying window fall out of sync.
 const DYING_MS = 400;
+// Owner-tuned reveal window (Jordan, 2026-07-11): total time from an answer's
+// resolution (kill / wrong tap / timeout) to the next word spawning, so the
+// locked green/red options have long enough on screen to sink in before
+// they're replaced. Every post-resolution scheduleNext() delay derives from
+// this so all three paths land on the same ~2s total.
+const REVEAL_MS = 2000;
+// Wrong-tap hop window: the walker's brief backward flinch (z.state="wrong")
+// — also the wrong-feedback stamp's fade duration (fxUntil at the wrong
+// branch and drawFeedbackLayer's total). Shared so they read as one beat.
+const WRONG_MS = 560;
 // Append the 4 option buttons for a plain-data option list. Shared by every
 // tap-answer format (the cloze branch and the generic branch both call it).
 function renderOptionButtons(box, opts){
@@ -1742,8 +1752,8 @@ function answer(btn, o){
     if(!free){ B.lives--; B.flash = 1; B.screenShake = REDUCED_MOTION ? 0 : 1; }
     B.resolved++;
     z.state = "wrong";
-    z.wrongUntil = performance.now() + 560;
-    B.feedback = {...feedbackEffect("wrong", z.x, B.h-B.L.ground-44*B.S), until:fxUntil(560)};
+    z.wrongUntil = performance.now() + WRONG_MS;
+    B.feedback = {...feedbackEffect("wrong", z.x, B.h-B.L.ground-44*B.S), until:fxUntil(WRONG_MS)};
   }
   updateHud();
   return true;   // tap accepted and resolved — callers may reveal follow-up UI
@@ -1781,7 +1791,7 @@ function bite(timedOut){
   sfx.bite();
   if(!free){ B.lives--; B.flash = 1; }
   B.resolved++;
-  scheduleNext(1500);   // long enough to read the revealed answer
+  scheduleNext(REVEAL_MS);   // owner-tuned window to read the revealed answer
   updateHud();
 }
 function loop(now){
@@ -1823,10 +1833,10 @@ function loop(now){
       z.x -= B.speed*7*dt;
       if(z.x <= B.L.mascotX+B.L.catHalf) bite(false);         // legacy: never assigned, kept for safety
     }else if(z.state==="happy" && now >= B.dyingUntil){
-      scheduleNext(200);
+      scheduleNext(REVEAL_MS - DYING_MS);   // kill → ~REVEAL_MS total before the next word
     }else if(z.state==="wrong"){
       z.x += 24*B.S*dt;
-      if(now >= z.wrongUntil) scheduleNext(350);
+      if(now >= z.wrongUntil) scheduleNext(REVEAL_MS - WRONG_MS);   // wrong → same ~REVEAL_MS total
     }
   }
   if(B.proj && B.zombie){
@@ -2177,7 +2187,7 @@ function drawFeedbackLayer(now){
   // fxDuration() mirrors the halving already applied to fb.until at creation
   // (fxUntil()) — total must track it 1:1 or the fade fraction below (p) goes
   // out of sync with reduced motion and the stamp appears to freeze/cut off.
-  const total = fxDuration((kind === "critical" || kind === "streak") ? 750 : kind === "correct" ? 620 : 560);
+  const total = fxDuration((kind === "critical" || kind === "streak") ? 750 : kind === "correct" ? 620 : WRONG_MS);
   const left = fb.until - performance.now();
   if(left <= 0){ B.feedback = null; return; }
   const p = 1 - left / total;
