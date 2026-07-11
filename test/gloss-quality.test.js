@@ -79,6 +79,8 @@ describe("gloss metadata gate (content round 2, ROOT 4f52c9d)", () => {
   // surname-only.
   const SURNAME_ONLY_WHITELIST = new Set([
     "蔡", "廖", "赵", "郑", "晏", "李", "杨", "桓", "沈", "陈", "崔", "魏", "刘",
+    // compound + kingdom surnames normalized in the round-2 tail (ROOT 004c500)
+    "西门", "公孙", "司马", "百里", "吴",
   ]);
 
   it("no gloss matches banned CC-CEDICT metadata patterns", () => {
