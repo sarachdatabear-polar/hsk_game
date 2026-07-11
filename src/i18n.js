@@ -50,9 +50,9 @@ export const STRINGS = {
     "account.status.guest": "Guest account",
     "account.status.signedIn": "Signed in as {email}",
     "account.explain.offline": "Cloud accounts need an internet connection — your progress is safe on this device.",
-    "account.explain.local": "Your progress lives on this device. Connect to get ready for cloud backup.",
+    "account.explain.local": "Your progress lives on this device. Connect to back it up to the cloud.",
     "account.explain.guest": "Connected as a guest. Add your email so your account isn't lost with this device.",
-    "account.explain.signedIn": "Your account is linked. Cloud backup of progress is coming soon.",
+    "account.explain.signedIn": "Your account is linked. Your progress backs up to the cloud automatically.",
     "account.connect": "Connect",
     "account.sendCode": "Send code",
     "account.verify": "Verify",
@@ -350,37 +350,37 @@ export const STRINGS = {
     "notify.streak.title": "อย่าให้สตรีค {n} วันหลุดนะ!",
     "notify.streak.body": "อีก {remaining} คำสตรีคก็รอด — เล่นรอบสั้น ๆ ก็พอ",
     // account (client-auth round)
-    "account.row": "บัญชี",   // TH: needs native review
-    "account.title": "บัญชี",   // TH: needs native review
-    "account.status.local": "อยู่บนเครื่องนี้",   // TH: needs native review
-    "account.status.guest": "บัญชีผู้เยี่ยมชม",   // TH: needs native review
-    "account.status.signedIn": "เข้าสู่ระบบเป็น {email}",   // TH: needs native review
-    "account.explain.offline": "บัญชีคลาวด์ต้องใช้อินเทอร์เน็ต — ความคืบหน้าของคุณยังปลอดภัยบนเครื่องนี้",   // TH: needs native review
-    "account.explain.local": "ความคืบหน้าของคุณอยู่บนเครื่องนี้ เชื่อมต่อเพื่อเตรียมพร้อมสำรองข้อมูลบนคลาวด์",   // TH: needs native review
-    "account.explain.guest": "เชื่อมต่อแบบผู้เยี่ยมชมแล้ว เพิ่มอีเมลเพื่อไม่ให้บัญชีหายไปพร้อมเครื่อง",   // TH: needs native review
-    "account.explain.signedIn": "บัญชีของคุณเชื่อมต่อแล้ว การสำรองความคืบหน้าบนคลาวด์กำลังจะมาเร็ว ๆ นี้",   // TH: needs native review
-    "account.connect": "เชื่อมต่อ",   // TH: needs native review
-    "account.sendCode": "ส่งรหัส",   // TH: needs native review
-    "account.verify": "ยืนยัน",   // TH: needs native review
-    "account.resend": "ส่งรหัสอีกครั้ง",   // TH: needs native review
-    "account.resendWait": "ส่งใหม่ได้ใน {s} วิ",   // TH: needs native review
-    "account.signOut": "ออกจากระบบ",   // TH: needs native review
-    "account.emailPh": "your@email.com",   // TH: needs native review
-    "account.codePh": "รหัสจากอีเมล",   // TH: needs native review
-    "account.codeSent": "ส่งรหัสแล้ว — เช็กอีเมลของคุณ",   // TH: needs native review
-    "account.changeEmail": "ใช้อีเมลอื่น",   // TH: needs native review
-    "account.signedIn": "เข้าสู่ระบบแล้ว!",   // TH: needs native review
-    "account.signedOut": "ออกจากระบบแล้ว",   // TH: needs native review
-    "account.err.offline": "ไม่มีการเชื่อมต่ออินเทอร์เน็ต",   // TH: needs native review
-    "account.err.network": "ติดต่อคลาวด์ไม่ได้ — ลองอีกครั้ง",   // TH: needs native review
-    "account.err.badEmail": "อีเมลนี้ดูไม่ถูกต้อง",   // TH: needs native review
-    "account.err.badCode": "รหัสผิดหรือหมดอายุ — ลองอีกครั้ง",   // TH: needs native review
-    "account.lastSynced": "ซิงค์ล่าสุด {when}",   // TH: needs native review
-    "account.neverSynced": "ยังไม่ได้ซิงค์",   // TH: needs native review
-    "account.restored": "กู้คืนความคืบหน้าแล้ว ✓",   // TH: needs native review
-    "account.benefit.safe": "สำรองสตรีค เหรียญ และความแม่นคำของคุณไว้ให้",   // TH: needs native review
-    "account.benefit.devices": "ใช้ได้ทั้งมือถือและคอมพิวเตอร์ — เล่นต่อจากที่ค้างไว้",   // TH: needs native review
-    "account.benefit.free": "ฟรี — ไม่ต้องตั้งรหัสผ่าน แค่อีเมลทีหลังถ้าต้องการ",   // TH: needs native review
+    "account.row": "บัญชี",
+    "account.title": "บัญชี",
+    "account.status.local": "อยู่บนเครื่องนี้",
+    "account.status.guest": "บัญชีผู้เยี่ยมชม",
+    "account.status.signedIn": "เข้าสู่ระบบเป็น {email}",
+    "account.explain.offline": "บัญชีคลาวด์ต้องใช้อินเทอร์เน็ต — ความคืบหน้าของคุณยังปลอดภัยบนเครื่องนี้",
+    "account.explain.local": "ความคืบหน้าของคุณอยู่บนเครื่องนี้ เชื่อมต่อเพื่อสำรองข้อมูลบนคลาวด์",
+    "account.explain.guest": "เชื่อมต่อแบบผู้เยี่ยมชมแล้ว เพิ่มอีเมลเพื่อไม่ให้บัญชีหายไปพร้อมเครื่อง",
+    "account.explain.signedIn": "บัญชีของคุณเชื่อมต่อแล้ว ความคืบหน้าจะสำรองขึ้นคลาวด์ให้อัตโนมัติ",
+    "account.connect": "เชื่อมต่อ",
+    "account.sendCode": "ส่งรหัส",
+    "account.verify": "ยืนยัน",
+    "account.resend": "ส่งรหัสอีกครั้ง",
+    "account.resendWait": "ส่งใหม่ได้ใน {s} วิ",
+    "account.signOut": "ออกจากระบบ",
+    "account.emailPh": "your@email.com",
+    "account.codePh": "รหัสจากอีเมล",
+    "account.codeSent": "ส่งรหัสแล้ว — เช็กอีเมลของคุณ",
+    "account.changeEmail": "ใช้อีเมลอื่น",
+    "account.signedIn": "เข้าสู่ระบบแล้ว!",
+    "account.signedOut": "ออกจากระบบแล้ว",
+    "account.err.offline": "ไม่มีการเชื่อมต่ออินเทอร์เน็ต",
+    "account.err.network": "ติดต่อคลาวด์ไม่ได้ — ลองอีกครั้ง",
+    "account.err.badEmail": "อีเมลนี้ดูไม่ถูกต้อง",
+    "account.err.badCode": "รหัสผิดหรือหมดอายุ — ลองอีกครั้ง",
+    "account.lastSynced": "ซิงค์ล่าสุด {when}",
+    "account.neverSynced": "ยังไม่ได้ซิงค์",
+    "account.restored": "กู้คืนความคืบหน้าแล้ว ✓",
+    "account.benefit.safe": "สำรองสตรีค เหรียญ และคำที่เชี่ยวชาญของคุณไว้ให้",
+    "account.benefit.devices": "ใช้ได้ทั้งมือถือและคอมพิวเตอร์ — เล่นต่อจากที่ค้างไว้",
+    "account.benefit.free": "ฟรี — ไม่ต้องตั้งรหัสผ่าน แค่อีเมลทีหลังถ้าต้องการ",
     "milestone.scarf": "ผ้าพันคอสีแดง",
     "milestone.coin": "เครื่องรางเหรียญทอง",
     "milestone.outfit": "ชุดจีน",
@@ -399,7 +399,7 @@ export const STRINGS = {
     "nav.street": "ถนน",
     "nav.progress": "ความคืบหน้า",
     "nav.more": "เพิ่มเติม",
-    "more.tagline": "Lucky Cat HSK — เรียนคำศัพท์ที่ออกข้อสอบจริง",   // TH: needs native review
+    "more.tagline": "Lucky Cat HSK — เรียนคำศัพท์ที่ออกข้อสอบจริง",
     "street.title": "ถนนนำโชค",
     "street.captionEmpty": "ถนนนำโชค — เติบโตไปพร้อมการเรียนรู้ของคุณ · {next}",
     "street.captionProgress": "{unlocked}/{total} อาคาร · {next}",
@@ -426,7 +426,7 @@ export const STRINGS = {
     "scope.smartReview": "ทบทวนอัจฉริยะ",
     "scope.smartReviewProgress": "ทบทวนอัจฉริยะ · {have}/{min}",
     "scope.smartReviewReady": "ทบทวนอัจฉริยะ · {n}",
-    "scope.smartReviewLocked": "เล่นสักรอบก่อน — ทบทวนอัจฉริยะจะเรียนรู้คำที่คุณยังไม่แม่น",   // TH: needs native review
+    "scope.smartReviewLocked": "เล่นสักรอบก่อน — ทบทวนอัจฉริยะจะเรียนรู้คำที่คุณยังไม่แม่น",
     "scope.readout": "คลังคำ: <b>{count}</b> คำ · ~<b>{pct}%</b> ของข้อสอบ",
     "scope.readoutNoThai": "* มี {n} คำที่ยังไม่มีภาษาไทย — แสดงภาษาอังกฤษแทน",
     // journey map (B3)
