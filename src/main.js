@@ -38,6 +38,9 @@ import { accountState, accountView, canSendCode, codeLooksValid } from "./accoun
 import { getSession, ensureGuest, sendCode, verifyCode, signOut } from "./cloud.js";
 import { SYNC_KEYS } from "./merge.js";
 import { reconcile, pushDirty } from "./sync.js";
+import { PRODUCTS, productById, displayPrice } from "./monetization/products.js";
+import { defaultEnt, isSupporter, applyPurchase, restoreFrom } from "./monetization/purchases.js";
+import { getProvider } from "./monetization/provider.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -97,6 +100,17 @@ function noteAnswer(hanzi, correct){
   store.set("mastery", masteryStore);
 }
 let wallet = store.get("wallet", 0);
+// IAP (mock-provider v1). ent is local-only on purpose — NOT in SYNC_KEYS;
+// entitlements become server-authoritative in the RevenueCat slice.
+let ent = Object.assign(defaultEnt(), store.get("ent", {}));
+// Dark-ship flag: localStorage.setItem("nbhsk.dev.iap", "true") + reload.
+// When RevenueCat lands this becomes "native platform && provider available".
+const iapEnabled = () => !!store.get("dev.iap", false);
+let iapProvider = null;
+function provider(){
+  if(!iapProvider) iapProvider = getProvider({ get: (k,d)=>store.get(k,d), set: (k,v)=>store.set(k,v) });
+  return iapProvider;
+}
 let shopState = Object.assign(defaultShop(), store.get("shop", {}));
 function updateWalletChip(){ setPill($("#home-wallet"), "secondary-coin", wallet.toLocaleString()); }
 // Re-arm window (ms): a deco buy synchronously re-renders its row as an
@@ -479,7 +493,16 @@ function renderAccount(){
     p.appendChild(accountResendBtn());
     p.appendChild(accountChangeEmailBtn());
   }
+  if(isSupporter(ent)){
+    const chip = document.createElement("p");
+    chip.className = "account-explain";
+    chip.textContent = t("account.supporterChip");
+    p.appendChild(chip);
+  }
   if(v.showSignOut) p.appendChild(accountBtn(t("account.signOut"), onAccountSignOut));
+  // IAP v1: restore is device-local (mock provider); Apple will require
+  // this button once real billing lands, so the UI slot exists now.
+  if(iapEnabled()) p.appendChild(accountBtn(t("iap.restore"), onRestorePurchases));
 }
 
 function accountBtn(label, onclick){
@@ -623,6 +646,15 @@ async function onAccountSignOut(){
   accountUI.email = "";
   accountUI.lastSentAt = 0;
   toast(t("account.signedOut"));
+  renderAccount();
+}
+
+async function onRestorePurchases(){
+  const r = await provider().restore();
+  if(!r.ok){ toast(t("iap.restoreFailed")); return; }
+  ent = restoreFrom(ent, r.ownedProductIds);
+  store.set("ent", ent);
+  toast(isSupporter(ent) ? t("iap.restored") : t("iap.nothingToRestore"));
   renderAccount();
 }
 
@@ -2455,6 +2487,7 @@ function renderShop(){
     box.appendChild(makeShopRow(item, today));
   }
   startShopPreviewLoop();
+  renderIapSections();
 }
 
 // "Jul 1" / "1 ก.ค." for a [month, day] pair, in the active locale.
@@ -2575,6 +2608,80 @@ function makeShopRow(item, today){
   row.appendChild(left); row.appendChild(btn);
   renderShopPreview(preview, item, performance.now());
   return row;
+}
+
+/* --------------------------- IAP (mock v1) --------------------------- */
+function renderIapSections(){
+  const on = iapEnabled();
+  for(const id of ["shop-coins-sect", "shop-coins", "shop-supporter-sect", "shop-supporter"]){
+    const el = document.getElementById(id);
+    if(el) el.hidden = !on;
+  }
+  if(!on) return;
+  const coinsBox = $("#shop-coins"), supporterBox = $("#shop-supporter");
+  coinsBox.innerHTML = ""; supporterBox.innerHTML = "";
+  for(const p of PRODUCTS.filter(p => !p.entitlement)) coinsBox.appendChild(makeIapRow(p));
+  supporterBox.appendChild(makeSupporterCard());
+}
+
+function makeIapRow(p){
+  const row = document.createElement("div");
+  row.className = "scorerow shoprow";
+  const copy = document.createElement("span");
+  copy.className = "shop-copy";
+  copy.innerHTML = `<b>${t("item." + p.id)}</b><small>${t("iap.amount", { coins: p.coins.toLocaleString() })}</small>`;
+  const btn = document.createElement("button");
+  btn.className = "chip buy-chip";
+  btn.textContent = displayPrice(p, getLocale());
+  btn.onclick = () => iapBuy(p, btn);
+  row.appendChild(copy); row.appendChild(btn);
+  return row;
+}
+
+function makeSupporterCard(){
+  const owned = isSupporter(ent);
+  const row = document.createElement("div");
+  row.className = "scorerow shoprow";
+  const copy = document.createElement("span");
+  copy.className = "shop-copy";
+  copy.innerHTML = owned
+    ? `<b>${t("shop.supporterTitle")} ♥</b><small>${t("shop.supporterOwned")}</small>`
+    : `<b>${t("shop.supporterTitle")}</b><small>${t("shop.supporterDesc")}</small>`;
+  row.appendChild(copy);
+  if(!owned){
+    const btn = document.createElement("button");
+    btn.className = "chip buy-chip";
+    btn.textContent = displayPrice(productById("supporter"), getLocale());
+    btn.onclick = () => iapBuy(productById("supporter"), btn);
+    row.appendChild(btn);
+  }
+  return row;
+}
+
+// Buy flow: pending -> provider -> applyPurchase -> persist -> celebrate.
+// The disabled button is the double-tap guard; applyPurchase's orderId
+// idempotency is the backstop. Cancelled is silent (user changed their
+// mind); failed/unavailable gets a toast.
+async function iapBuy(p, btn){
+  if(btn.disabled) return;
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = t("iap.pending");
+  const r = await provider().purchase(p.id);
+  if(!r.ok){
+    btn.textContent = label; btn.disabled = false;
+    if(r.reason !== "cancelled") toast(t("iap.failed"));
+    return;
+  }
+  const g = applyPurchase(wallet, ent, p.id, r.orderId, Date.now());
+  if(g.ok){
+    wallet = g.wallet; ent = g.ent;
+    store.set("wallet", wallet); store.set("ent", ent);
+    pushDirty(store, "purchase");
+    updateWalletChip();
+    toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: p.coins.toLocaleString() }));
+  }
+  renderShop();   // duplicate/already-owned fall through to the owned state
 }
 
 let shopPreviewRaf = 0;
