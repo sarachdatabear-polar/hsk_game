@@ -1989,7 +1989,11 @@ function draw(now){
     // raccoon enemy (was the cat walker) — bosses draw bigger with a gold
     // aura (boss param, not scale — see raccoon.js); no skins/accessories/
     // kitten on it, those moved to the player above.
-    const rScale = z.boss ? 1.5*B.L.mascotS : B.L.mascotS;
+    // base matches the player cat's .9*B.L.mascotS above so both characters'
+    // CONTENT_H (64 world units, see sprite-draw.js) render at the same
+    // effective size; bosses stay at the historical 1.5x on top of that.
+    const RACCOON_BASE_SCALE = 0.9;
+    const rScale = RACCOON_BASE_SCALE * (z.boss ? 1.5 : 1) * B.L.mascotS;
     drawRaccoon(ctx, z.x, gy + 6*B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
     // floating HP bar above its head — cosmetic only. Animates hp -> 0 over
     // the happy/dying window (killZombie snapshots hpAtKill); wrong/timeout

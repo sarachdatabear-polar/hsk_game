@@ -1,5 +1,6 @@
 "use strict";
 import { sprite } from "./sprites.js";
+import { drawSpriteFrame } from "./sprite-draw.js";
 
 // default palette = current look, so calls without a palette are unchanged.
 const DEFAULT_PALETTE = { body: "#e07830", head: "#f09040", ear: "#f09040", inner: "#f5a0b0", leg: "#c87340" };
@@ -48,30 +49,34 @@ export function drawCat(ctx, x, groundY, tMs, state, palette, scale = 1, accesso
   const baseSprite = boss ? "cat-boss" : pal.sprite || "cat";
   if (state === "walk") {
     let img = sprite(`${baseSprite}-walk`);
+    let sheetName = `${baseSprite}-walk`;
     let tint = "none";
     if (!img) {
       img = sprite("cat-walk");
+      sheetName = "cat-walk";
       tint = pal.filter || "none";
     }
     if (img) {
       const frame = Math.floor(tMs / 110) % 6;
       ctx.filter = tint;
-      ctx.drawImage(img, frame * 256, 0, 256, 256, x - 32, groundY - 64, 64, 64);
+      drawSpriteFrame(ctx, img, frame, x, groundY, sheetName, 64);
       ctx.filter = "none";
       drawn = true;
     }
   }
   if (!drawn && happy) {
     let img = sprite(`${baseSprite}-happy`);
+    let sheetName = `${baseSprite}-happy`;
     let tint = "none";
     if (!img) {
       img = sprite("cat-happy");
+      sheetName = "cat-happy";
       tint = pal.filter || "none";
     }
     if (img) {
       const frame = Math.floor(tMs / 80) % 4;
       ctx.filter = tint;
-      ctx.drawImage(img, frame * 256, 0, 256, 256, x - 32, groundY - 64, 64, 64);
+      drawSpriteFrame(ctx, img, frame, x, groundY, sheetName, 64);
       ctx.filter = "none";
       drawn = true;
     }

@@ -1,5 +1,6 @@
 "use strict";
 import { sprite } from "./sprites.js";
+import { drawSpriteFrame } from "./sprite-draw.js";
 /* drawRaccoon — the battle enemy: a cute chibi gray raccoon ninja (PRD §5.4).
    Same draw contract as the old walker (drawCat/drawZombie before it):
    drawRaccoon(ctx, x, groundY, tMs, state, scale, boss).
@@ -24,9 +25,18 @@ const NOSE = "#E88FA0";       // pink nose
 const EYE_LIGHT = "#F5F1E8";  // cream (not pure white) eye highlight
 const INK = "#3A2E1D";        // warm dark-brown linework (not pure black)
 
-// Approximate unscaled bounding height (ground to ear-tip) — lets main.js
-// place the floating HP bar just above the head at any scale.
-export const RACCOON_HEIGHT = 74;
+// Unscaled content height (ground to top of the painted/vector art) — lets
+// main.js place the floating HP bar just above the head at any scale. Set to
+// match cat.js's CONTENT_H so the sprite draw (which scales each sheet's
+// measured content box to this height, see sprite-draw.js) puts the raccoon
+// at the same effective size as the player cat. The vector fallback below is
+// natively ~74 units ground-to-ear-tip, so it carries an extra VECTOR_SCALE
+// correction to also land on this height.
+export const RACCOON_HEIGHT = 64;
+
+// vector fallback is ~74 units ground-to-ear-tip natively; scale it down to
+// agree with the sprite path's RACCOON_HEIGHT.
+const VECTOR_SCALE = RACCOON_HEIGHT / 74;
 
 /* raccoonBob — pure animation math, unit-testable in isolation.
    Returns {bob, legSwing}: bob is a vertical offset (world units, pre-scale)
@@ -87,8 +97,7 @@ export function drawRaccoon(ctx, x, groundY, tMs, state, scale = 1, boss = false
     const img = sprite("raccoon-walk");
     if (img) {
       const frame = Math.floor(tMs / 110) % 6;
-      ctx.drawImage(img, frame * 256, 0, 256, 256,
-        x - RACCOON_HEIGHT / 2, groundY - RACCOON_HEIGHT, RACCOON_HEIGHT, RACCOON_HEIGHT);
+      drawSpriteFrame(ctx, img, frame, x, groundY, "raccoon-walk", RACCOON_HEIGHT);
       drawn = true;
     }
   }
@@ -96,8 +105,7 @@ export function drawRaccoon(ctx, x, groundY, tMs, state, scale = 1, boss = false
     const img = sprite("raccoon-happy");
     if (img) {
       const frame = Math.floor(tMs / 80) % 4;
-      ctx.drawImage(img, frame * 256, 0, 256, 256,
-        x - RACCOON_HEIGHT / 2, groundY - RACCOON_HEIGHT, RACCOON_HEIGHT, RACCOON_HEIGHT);
+      drawSpriteFrame(ctx, img, frame, x, groundY, "raccoon-happy", RACCOON_HEIGHT);
       drawn = true;
     }
   }
@@ -106,6 +114,11 @@ export function drawRaccoon(ctx, x, groundY, tMs, state, scale = 1, boss = false
   if (!drawn) {
   ctx.save();
   ctx.translate(x, groundY);
+  // vector art is natively ~74 units ground-to-ear; scale down to agree
+  // with the sprite path's RACCOON_HEIGHT (see VECTOR_SCALE above). Scaling
+  // about the origin here (post-translate, so about the ground-contact
+  // point) keeps the feet planted on groundY.
+  ctx.scale(VECTOR_SCALE, VECTOR_SCALE);
 
   if (happy) {
     ctx.rotate(0.18);          // comical forward bow
