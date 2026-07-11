@@ -526,7 +526,9 @@
      shorter-tier 52px ones) — the replay row is one compact line, not an
      answer button, and doesn't need their height reserved (F9: listen-format
      overflow — the extra row was inflating past the .cv-wrap floor below). */
-  #opts .replay{grid-column:1/-1; font-weight:800; padding:8px 0; text-align:center; min-height:0;}
+  #opts .replay{grid-column:1/-1; font-weight:800; padding:8px 0; text-align:center; min-height:0;
+    align-items:center;}   /* the clamp tier sets #opts button{align-items:flex-start} —
+                              the replay row's single text line must stay centered */
   /* v6p2 typed-pinyin input: #opts-prefixed selectors on the button-shaped
      pieces (tone-chip, typed-go) so they out-specificity the base
      `#opts button` rule above, same trick as `#opts .replay`. */
