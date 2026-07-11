@@ -37,6 +37,7 @@ export const STRINGS = {
     "growth.allUnlocked": "All milestones unlocked!",
     "progress.levelRow": "{pct} mastered · {seen}/{total} seen",
     "common.playAudio": "Play audio",
+    "common.close": "Close",
     "battle.critical": "CRITICAL!",
     // toast (retention pack — main.js's floating toast())
     "toast.freeze-used": "Streak Freeze used — your {n}-day streak is safe",
@@ -99,6 +100,7 @@ export const STRINGS = {
     "street.captionProgress": "{unlocked}/{total} buildings · {next}",
     "street.next": "Next: Lv {lv} — {name}",
     "street.allUnlocked": "All buildings unlocked!",
+    "street.questsBtn": "Quests",
     "quests.title": "Daily Quests",
     // scope
     "scope.title": "Choose your words",
@@ -345,6 +347,7 @@ export const STRINGS = {
     "growth.allUnlocked": "ปลดล็อกครบทุกเป้าหมายแล้ว!",
     "progress.levelRow": "{pct} เชี่ยวชาญ · เห็น {seen}/{total}",
     "common.playAudio": "เล่นเสียง",
+    "common.close": "ปิด",   // TH: needs native review
     "battle.critical": "CRITICAL!",
     "toast.freeze-used": "ใช้น้ำแข็งพิทักษ์สตรีคแล้ว — สตรีค {n} วันของคุณยังอยู่",
     "notify.streak.title": "อย่าให้สตรีค {n} วันหลุดนะ!",
@@ -405,6 +408,7 @@ export const STRINGS = {
     "street.captionProgress": "{unlocked}/{total} อาคาร · {next}",
     "street.next": "ถัดไป: Lv {lv} — {name}",
     "street.allUnlocked": "ปลดล็อกอาคารครบทุกหลังแล้ว!",
+    "street.questsBtn": "เควสต์",   // TH: needs native review
     "quests.title": "เควสต์ประจำวัน",
     // scope
     "scope.title": "เลือกคำศัพท์",

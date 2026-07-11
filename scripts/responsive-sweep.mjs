@@ -153,19 +153,34 @@ function probeNavReachable(tol) {
     : `out(top=${Math.round(r.top)},bottom=${Math.round(r.bottom)},ih=${window.innerHeight})`;
 }
 
-// street-quests: after the Daily Quests merge (audit F3), the street screen
-// carries the quest panel (renderQuests() runs alongside renderStreet() in
-// show()) — this must FAIL loudly if #quest-panel ever ends up empty on the
-// street screen, e.g. a regression that drops the renderQuests() call.
-function probeStreetQuests() {
+// street-quests-popup: 2026-07-11 audit F2/F3 reverted the Daily Quests merge
+// — the street screen now shows scene + caption + a compact "Quests" button,
+// and the daily-quest + monthly rows live behind a popup overlay
+// (#quest-overlay) that button opens. This snapshots the pre-click state
+// (button present, popup not already open) — the click/open/close sequence
+// itself is driven from runFullSweep since it needs real click events, not
+// just a DOM snapshot.
+function probeStreetScene() {
   const screen = document.querySelector("#s-street");
-  // Scoped to #s-street specifically (not a bare #quest-panel lookup):
-  // renderQuests() runs at boot, so #quest-panel is populated from startup
-  // and stays populated even if it isn't actually nested inside the street
-  // screen — a bare selector would pass regardless of where the panel lives.
-  const panel = document.querySelector("#s-street #quest-panel");
+  const cv = document.querySelector("#street-cv");
+  const r = cv?.getBoundingClientRect();
   return {
     active: screen?.classList.contains("on") ?? false,
+    cvHeight: r ? Math.round(r.height) : 0,
+    btnPresent: !!document.querySelector("#street-quests-btn"),
+    overlayOpenBeforeClick: document.querySelector("#quest-overlay")?.classList.contains("on") ?? false,
+  };
+}
+// Scoped to #quest-overlay specifically (not a bare #quest-panel lookup):
+// renderQuests() runs at boot, so #quest-panel is populated from startup and
+// stays populated even if it isn't actually nested inside the popup — a bare
+// selector would pass regardless of where the panel lives (same guard as the
+// pre-revert probe this replaces).
+function probeQuestPopup() {
+  const overlay = document.querySelector("#quest-overlay");
+  const panel = document.querySelector("#quest-overlay #quest-panel");
+  return {
+    open: overlay?.classList.contains("on") ?? false,
     questPanelChildren: panel ? panel.children.length : 0,
   };
 }
@@ -268,6 +283,60 @@ async function goToBattle(page) {
   await page.waitForTimeout(900);
 }
 
+// F9: force every word in the dataset to a streak of 1 — formatFor (src/
+// formats.js) maps streak 1-2 to the "listen" format, so whichever word the
+// battle spawns is guaranteed to be a listen question. Written to
+// localStorage then the page is reloaded so main.js's module-level
+// masteryStore (read once at boot from store.get("mastery", {})) picks it
+// up; setting it after boot would be too late for the first spawn.
+async function forceListenFormat(page) {
+  await page.evaluate(() => {
+    const D = window.HSK_DATA;
+    const m = {};
+    for (const lv of Object.values(D.levels)) for (const w of lv) m[w.h] = { s: 1, k: 1, r: 1 };
+    localStorage.setItem("nbhsk.mastery", JSON.stringify(m));
+  });
+  await page.reload({ waitUntil: "load" });
+  await page.waitForTimeout(700);
+}
+
+// F9 permanent gate: at the two worst tiers from the diagnosis, drive a
+// forced listen-format question and assert the page fits without scrolling.
+// Returns a sweep-style [PASS]/[FAIL] line plus a boolean for the caller's
+// overall exit code.
+async function runListenFormatProbe(browser, width, height) {
+  const { page, errs } = await preparePage(browser, width, height);
+  await forceListenFormat(page);
+  await goToBattle(page);
+
+  const info = await page.evaluate(tol => {
+    const doc = document.documentElement;
+    return {
+      listenFmt: document.querySelector("#s-battle.listen-fmt") !== null,
+      replay: document.querySelector("#opts .replay") !== null,
+      scrollHeight: doc.scrollHeight,
+      innerHeight: window.innerHeight,
+      fits: doc.scrollHeight <= window.innerHeight + tol,
+    };
+  }, 2);
+
+  const failures = [];
+  if (!info.replay) failures.push("listen-fmt: .replay row not found (format not forced to listen)");
+  if (!info.listenFmt) failures.push("listen-fmt: #s-battle.listen-fmt class missing");
+  if (!info.fits)
+    failures.push(`listen-fmt: scrollHeight=${info.scrollHeight}>innerHeight+2=${info.innerHeight + 2}`);
+  if (errs.length) failures.push(`JSERR:${errs[0]}`);
+
+  const status = failures.length ? "FAIL" : "PASS";
+  const line =
+    `[${status}] listen-fmt ${width}x${height}: scrollHeight=${info.scrollHeight}` +
+    ` innerHeight=${info.innerHeight}` +
+    (failures.length ? ` | FAILURES: ${failures.join("; ")}` : "");
+
+  await page.close();
+  return { line, failed: failures.length > 0 };
+}
+
 // ---------------------------------------------------------------------------
 // Server reachability check — the harness never starts the server itself
 // (the user runs `npm run serve` in another shell); fail fast with a clear
@@ -316,12 +385,21 @@ async function runFullSweep() {
       () => getComputedStyle(document.documentElement).overscrollBehaviorY
     );
 
-    // street-quests: street tab must show the merged quest panel (audit F3)
-    // with the bottom nav still reachable — mirrors the shop nav-reachable
-    // probe below.
+    // street-quests-popup: street tab shows scene + button; clicking the
+    // button must open the popup with the quest rows, and the X must close
+    // it again — with the bottom nav still reachable throughout (mirrors the
+    // shop nav-reachable probe below).
     await goToStreet(page);
-    const streetQuests = await page.evaluate(probeStreetQuests);
+    const streetScene = await page.evaluate(probeStreetScene);
+    await page.evaluate(() => document.querySelector("#street-quests-btn")?.click());
+    await page.waitForTimeout(150);
+    const questPopup = await page.evaluate(probeQuestPopup);
     const streetNav = await page.evaluate(probeNavReachable, TOL);
+    await page.evaluate(() => document.querySelector("#quest-popup-close")?.click());
+    await page.waitForTimeout(150);
+    const questPopupClosed = await page.evaluate(
+      () => !(document.querySelector("#quest-overlay")?.classList.contains("on") ?? false)
+    );
     await page.evaluate(() => document.querySelector('[data-go="home"]')?.click());
     await page.waitForTimeout(100);
 
@@ -393,9 +471,17 @@ async function runFullSweep() {
     if (account.wide.length) failures.push(`account wide:[${account.wide}]`);
     if (battle.clippedBelow > 0) failures.push(`battle clipped-below=${battle.clippedBelow}`);
     if (overscrollY !== "none") failures.push(`overscroll-behavior-y=${overscrollY}`);
-    if (!streetQuests.active) failures.push("street-quests: #s-street not active");
-    if (streetQuests.questPanelChildren < 1)
-      failures.push(`street-quests: #quest-panel empty (children=${streetQuests.questPanelChildren})`);
+    if (!streetScene.active) failures.push("street: #s-street not active");
+    // Sanity floor, not a "big enough" assertion — the smallest measured tier
+    // (land-640, 640x360) sits at 187px under the new min(52vh,400px) cap;
+    // this just catches an actual regression (e.g. cv collapsing to 0).
+    if (streetScene.cvHeight < 150) failures.push(`street: cv height=${streetScene.cvHeight}<150`);
+    if (!streetScene.btnPresent) failures.push("street-quests: #street-quests-btn missing");
+    if (streetScene.overlayOpenBeforeClick) failures.push("street-quests: popup open before click");
+    if (!questPopup.open) failures.push("street-quests: popup did not open on button click");
+    if (questPopup.questPanelChildren < 1)
+      failures.push(`street-quests: #quest-panel empty (children=${questPopup.questPanelChildren})`);
+    if (!questPopupClosed) failures.push("street-quests: popup did not close on X");
     if (streetNav !== "in-view") failures.push(`street-quests: nav-unreachable:${streetNav}`);
     if (navAtTop !== "in-view") failures.push(`shop nav-unreachable@top:${navAtTop}`);
     if (navAtMid !== "in-view") failures.push(`shop nav-unreachable@mid:${navAtMid}`);
@@ -441,11 +527,28 @@ async function runFullSweep() {
     await page.close();
   }
 
-  await browser.close();
   console.log(lines.join("\n"));
   console.log(
     `\n${lines.filter(l => l.startsWith("[PASS]")).length}/${VIEWPORTS.length} viewports passed`
   );
+
+  // F9 permanent gate: listen-format overflow probe, run as an extra
+  // mini-pass rather than growing the 10-viewport matrix above. 360x640
+  // matches the s-360 tier's dimensions exactly; 390x680 is one of the two
+  // worst tiers the diagnosis measured and isn't itself a standard viewport.
+  const listenTiers = [[360, 640], [390, 680]];
+  const listenLines = [];
+  for (const [w, h] of listenTiers) {
+    const r = await runListenFormatProbe(browser, w, h);
+    listenLines.push(r.line);
+    if (r.failed) anyFail = true;
+  }
+  console.log("\n" + listenLines.join("\n"));
+  console.log(
+    `\n${listenLines.filter(l => l.startsWith("[PASS]")).length}/${listenTiers.length} listen-format probes passed`
+  );
+
+  await browser.close();
   process.exit(anyFail ? 1 : 0);
 }
 
