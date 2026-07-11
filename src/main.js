@@ -2049,6 +2049,7 @@ function drawWordPlate(z, vis, now){
   const pinyin = (!vis.py || !settings.showPinyin) ? "" : w.p;
   const revealed = !!z.revealed;
   const showSub = scope.lang === "both";   // meaningOf() only returns a .sub in "both" mode
+  const m = meaningOf(w, scope.lang);      // hoisted: needed pre-reveal too, to size the card
 
   // A3 plaque bounce: damped dip on a correct answer (juice.js curve; 0 when
   // idle or under reduced motion — no vertical motion, per "fades only").
@@ -2060,7 +2061,24 @@ function drawWordPlate(z, vis, now){
   ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK);
   const textW = Math.max(ctx.measureText(hanzi).width, 74*T);
   const spkR = 12*T;
-  const lw = Math.min(B.w - 24*T, textW + 56*T + spkR*2.2);
+  // Width invariant: the card must be wide enough for every line it will ever
+  // show — hanzi AND the translation (main/sub) AND pinyin — measured here
+  // EVERY call regardless of reveal state, so it never resizes/jumps when the
+  // answer is revealed. Long thai/english glosses (up to ~230px) routinely
+  // measure wider than the hanzi alone, which used to hang off the card edges.
+  let widestLine = 0;
+  ctx.font = fontString(700, 15*T, LATIN_STACK);
+  widestLine = Math.max(widestLine, ctx.measureText(m.main).width);
+  if(showSub && m.sub){
+    ctx.font = fontString(600, 13*T, LATIN_STACK);
+    widestLine = Math.max(widestLine, ctx.measureText(m.sub).width);
+  }
+  if(pinyin){
+    ctx.font = fontString(600, B.L.pinyinPx, LATIN_STACK);
+    widestLine = Math.max(widestLine, ctx.measureText(pinyin).width);
+  }
+  ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK); // restore: hanzi font, as measured above
+  const lw = Math.min(B.w - 24*T, Math.max(textW + 56*T + spkR*2.2, widestLine + 24*T));
   // Stacked rows, top to bottom: pinyin (if shown) -> Hanzi -> translation.
   // The translation row's height is reserved unconditionally (same whether
   // revealed or not) so the plaque never resizes/jumps at reveal time.
@@ -2110,8 +2128,11 @@ function drawWordPlate(z, vis, now){
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   let cy = y + padV;
+  const innerW = lw - 16*T; // defensive shrink budget: screen-width clamp can still leave a line too wide
   if(pinyin){
     ctx.font = fontString(600, B.L.pinyinPx, LATIN_STACK);
+    const pw = ctx.measureText(pinyin).width;
+    if(pw > innerW) ctx.font = fontString(600, B.L.pinyinPx * (innerW/pw), LATIN_STACK);
     ctx.fillStyle = "#8C5F2A";
     ctx.fillText(pinyin, B.w/2, cy + pinyinH/2);
     cy += pinyinH;
@@ -2125,12 +2146,15 @@ function drawWordPlate(z, vis, now){
   // above regardless of reveal state, so nothing shifts when it fills in.
   const midY = cy + (showSub ? transH*0.32 : transH/2);
   if(revealed){
-    const m = meaningOf(w, scope.lang);
     ctx.font = fontString(700, 15*T, LATIN_STACK);
+    const mw = ctx.measureText(m.main).width;
+    if(mw > innerW) ctx.font = fontString(700, 15*T * (innerW/mw), LATIN_STACK);
     ctx.fillStyle = "#2F6B4F";
     ctx.fillText(m.main, B.w/2, midY);
     if(showSub && m.sub){
       ctx.font = fontString(600, 13*T, LATIN_STACK);
+      const sw = ctx.measureText(m.sub).width;
+      if(sw > innerW) ctx.font = fontString(600, 13*T * (innerW/sw), LATIN_STACK);
       ctx.fillStyle = "#5C7A68";
       ctx.fillText(m.sub, B.w/2, cy + transH*0.74);
     }
