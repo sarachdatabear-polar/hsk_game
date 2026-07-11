@@ -378,7 +378,12 @@ function renderQuests(){
 function updateSmartBtn(){
   const deck = smartDeck(masteryStore, pool, Date.now());
   const btn = $("#go-smart");
-  btn.disabled = deck.length < 8;
+  // deck===0 (fresh profile, nothing played yet) stays tappable — disabled
+  // would swallow the click that's supposed to explain why it's empty — so
+  // only the 1-7 "not enough yet" case uses the real disabled attribute.
+  // .locked mimics the same muted look for the ===0 case.
+  btn.disabled = deck.length > 0 && deck.length < 8;
+  btn.classList.toggle("locked", deck.length === 0);
   // below the 8-word minimum, show progress toward it ("6/8") so the disabled
   // button reads as "not enough yet" rather than broken
   setIconLabel(btn, "target", !deck.length ? t("scope.smartReview")
@@ -387,6 +392,7 @@ function updateSmartBtn(){
 }
 $("#go-smart").onclick = ()=>{
   const deck = smartDeck(masteryStore, pool, Date.now());
+  if(deck.length === 0){ toast(t("scope.smartReviewLocked")); return; }
   if(deck.length < 8) return;
   battleDeckOverride = deck;
   smartDeckNext = true;
@@ -419,6 +425,27 @@ function renderAccount(){
   ex.className = "account-explain";
   ex.textContent = t(v.explainKey);
   p.appendChild(ex);
+  if(state === "local"){
+    // Pre-connect benefit rows (audit v55 F2) — three short reasons to
+    // connect, shown only before the player has taken any account action.
+    // Literal t("...") calls (not a computed key) so the static i18n-usage
+    // guard (test/i18n-usage.test.js) enumerates each one.
+    const benefitRow = (icon, label) => {
+      const row = document.createElement("p");
+      row.className = "account-benefit";
+      row.appendChild(iconSvg(icon));
+      const span = document.createElement("span");
+      span.textContent = label;
+      row.appendChild(span);
+      return row;
+    };
+    const benefits = document.createElement("div");
+    benefits.className = "account-benefits";
+    benefits.appendChild(benefitRow("trophy", t("account.benefit.safe")));
+    benefits.appendChild(benefitRow("cards", t("account.benefit.devices")));
+    benefits.appendChild(benefitRow("star", t("account.benefit.free")));
+    p.appendChild(benefits);
+  }
   if(state !== "local"){
     const sy = document.createElement("p");
     sy.className = "account-explain";
@@ -959,8 +986,28 @@ function startToneRound(){
   // or double-firing endToneRound. See the guarded setTimeout in answerTone.
   clearTimeout(TG.advanceTimer); TG.advanceTimer = null;
   TG.pool = tonePool(pool, hasMp3);
-  TG.i = 0; TG.score = 0; TG.streak = 0; TG.bestStreak = 0; TG.q = null; TG.locked = false; TG.ended = false;
+  // Seed from the all-time best (audit v55 F1a) rather than 0, so the
+  // persistent line and the reveal line both read as "best streak ever",
+  // live-updated via the same Math.max in answerTone below — not "best
+  // streak this round". "tonesBest" is local-only (not in merge.js SYNC_KEYS).
+  TG.i = 0; TG.score = 0; TG.streak = 0; TG.bestStreak = Number(store.get("tonesBest", 0)) || 0;
+  TG.q = null; TG.locked = false; TG.ended = false;
+  renderTonesBest();
   nextToneQuestion();
+}
+// Persistent "best streak" line (audit v55 F1a) — visible below the tone
+// grid throughout play, not just on the round-done reveal. Hidden entirely
+// at 0 (cleaner than announcing "Best streak: 0" on a brand-new profile).
+function renderTonesBest(){
+  const el = $("#tones-best");
+  if(!el) return;
+  if(TG.bestStreak > 0){
+    el.textContent = t("tones.bestStreak", { n: TG.bestStreak });
+    el.style.display = "";
+  } else {
+    el.textContent = "";
+    el.style.display = "none";
+  }
 }
 function nextToneQuestion(){
   if(TG.i >= TG.len){ endToneRound(); return; }
@@ -1013,6 +1060,7 @@ function answerTone(picked, btn){
   if(!ok) btn.classList.add("bad");
   if(ok){ TG.score++; TG.streak++; TG.bestStreak = Math.max(TG.bestStreak, TG.streak); sfx.kill(); }
   else { TG.streak = 0; sfx.wrong(); }
+  renderTonesBest();
   const reveal = $("#tones-reveal");
   if(reveal) reveal.innerHTML = `<div class="boss-prompt"><span class="hz">${q.word.h}</span><span class="py">${q.word.p}</span></div>`;
   // Guard the deferred advance only (not nextToneQuestion itself, which the
@@ -1037,10 +1085,19 @@ function endToneRound(){
   if(TG.ended) return;   // idempotent — rewards must credit exactly once per round
   TG.ended = true;
   clearTimeout(TG.advanceTimer); TG.advanceTimer = null;
+  // Persist the all-time best streak (audit v55 F1a) — TG.bestStreak is
+  // already the live max (seeded from store + Math.max'd in answerTone), so
+  // this Math.max is just a safety floor against a concurrent write.
+  store.set("tonesBest", Math.max(Number(store.get("tonesBest", 0)) || 0, TG.bestStreak));
   const box = $("#tones-options");
   if(box) box.innerHTML = "";
   const prog = $("#tones-progress");
   if(prog) prog.textContent = "";
+  // Hide the persistent best-streak line (audit v55 F1a) while the reveal is
+  // up — the reveal's own streakLine below already states the same number;
+  // startToneRound's renderTonesBest() call brings it back for the next round.
+  const bestLine = $("#tones-best");
+  if(bestLine) bestLine.style.display = "none";
   wallet += TG.score;
   store.set("wallet", wallet);
   updateWalletChip();
