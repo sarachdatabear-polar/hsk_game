@@ -9,6 +9,7 @@ const PRECACHE = [
   "pwa/manifest.webmanifest", "pwa/icons/icon-192.png", "pwa/icons/icon-512.png",
   // art assets — tolerant: missing files are silently skipped so a partial
   // asset drop never bricks an offline install
+  "assets/more-cat-icon.png",
   "assets/bg-home.webp",
   "assets/bg-quest.png",
   "assets/bg-flashcards.webp",

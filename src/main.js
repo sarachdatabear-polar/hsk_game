@@ -375,6 +375,16 @@ function renderQuests(){
     panel.appendChild(row);
   }
 }
+// Street quest popup (2026-07-11 audit F2/F3 revert): #quest-panel itself
+// didn't move logic, only markup — renderQuests() above still targets it
+// unchanged. Open/close just toggles the overlay, same convention as
+// #pause-overlay, plus a backdrop-tap close (safe here — unlike the battle
+// pause overlay, an accidental dismiss costs nothing).
+$("#street-quests-btn").onclick = ()=>{ renderQuests(); $("#quest-overlay").classList.add("on"); };
+$("#quest-popup-close").onclick = ()=> $("#quest-overlay").classList.remove("on");
+$("#quest-overlay").addEventListener("click", e=>{
+  if(e.target.id === "quest-overlay") $("#quest-overlay").classList.remove("on");
+});
 function updateSmartBtn(){
   const deck = smartDeck(masteryStore, pool, Date.now());
   const btn = $("#go-smart");
@@ -753,6 +763,12 @@ function show(name){
   // intro completion runs before its show() calls, so this is a no-op there.
   if(name === "home" && introPhase){ introPhase = null; store.set("introDone", true); }
   currentScreen = name;
+  // F4-iOS: battle is the only screen that ever needs a definite #app height
+  // (see index.html's body.battle-on rule) — it never scrolls the document,
+  // so a fixed 100dvh is safe there and nowhere else. show() is the single
+  // choke point every screen switch passes through, so toggling here can't
+  // leak the class onto another screen.
+  document.body.classList.toggle("battle-on", name === "battle");
   document.querySelectorAll(".screen").forEach(el=>el.classList.remove("on"));
   $("#s-"+name).classList.add("on");
   updateNav(name);
@@ -1155,6 +1171,12 @@ function sizeCanvas(){
 const cvRO = new ResizeObserver(()=>{ if(B.on) sizeCanvas(); });
 cvRO.observe(cv);
 window.addEventListener("resize", ()=>{ if(B.on) sizeCanvas(); });
+// F4-iOS: Safari can resize the visual viewport (e.g. the URL bar
+// showing/hiding, or the keyboard) without firing a matching window
+// "resize" — visualViewport's own resize event is the belt-and-braces catch
+// for that case. Same guard as the listener above; harmless no-op when
+// visualViewport isn't supported.
+window.visualViewport?.addEventListener("resize", ()=>{ if(B.on) sizeCanvas(); });
 
 // Plaque speaker affordance (M6, §11 accessibility): the plaque itself is the
 // tap target (not just a small icon) — B.plaqueRect is set every draw() frame
@@ -1185,6 +1207,17 @@ cv.addEventListener("keydown", e=>{
   if(e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
   e.preventDefault();
   replayCurrentWord();
+});
+// Pointer cursor over the plaque only (2026-07-11 audit F6, whole-card replay
+// surface) — the rest of the canvas isn't interactive, so a canvas-wide
+// pointer cursor would be a false affordance.
+cv.addEventListener("mousemove", e=>{
+  const r = B.plaqueRect;
+  if(!r || !canReplayAudio(B.zombie)){ cv.style.cursor = ""; return; }
+  const box = cv.getBoundingClientRect();
+  const x = e.clientX - box.left, y = e.clientY - box.top;
+  const over = x>=r.x && x<=r.x+r.w && y>=r.y && y<=r.y+r.h;
+  cv.style.cursor = over ? "pointer" : "";
 });
 
 function pickWord(){
@@ -1450,6 +1483,10 @@ function renderQuestion(word, format, promptKey){
   const deck = B.deck.length >= 8 ? B.deck : pool;
   const box = $("#opts");
   box.innerHTML = "";
+  // F9: the listen format's extra full-width replay row can overflow the
+  // .cv-wrap min-height floor on short viewports — this class lets CSS
+  // shrink that floor exactly (and only) while a listen question is live.
+  $("#s-battle").classList.toggle("listen-fmt", format === "listen");
   // v6p3 cloze: a blanked sentence + translation prompt row, then tap 1 of 4
   // hanzi. Distractors are baked in the data and their pinyin subs resolve
   // over the full dataset (BY_HANZI), not the scoped pool.
@@ -1886,6 +1923,24 @@ function draw(now){
     const fl = FORMATS[z.format || "meaning"].plaque;
     const live = z.state === "walk" && !z.revealed;
     drawWordPlate(z, { mask: live && !!fl.mask, icon: live && !!fl.icon, py: !live || !!fl.py }, now);
+    // A3 enemy hit flash: expanding gold backlight glow at the kill (set in
+    // killZombie), drawn BEFORE the raccoon sprite so it reads as a glow
+    // behind the enemy rather than a wash over it (it used to paint on top,
+    // which bleached the raccoon into a "ghost" at the kill moment).
+    if(B.hitFlash){
+      const leftF = B.hitFlash.until - performance.now();
+      if(leftF <= 0){ B.hitFlash = null; }
+      else{
+        // expanding gold pulse, fading out — a fade, so reduced-motion-safe
+        // (fxUntil already halved its duration there)
+        ctx.save();
+        ctx.globalAlpha = 0.85 * (leftF / fxDuration(150));
+        ctx.fillStyle = "rgba(245,197,24,1)";
+        const rr = (18 + 30 * (1 - leftF / fxDuration(150))) * B.S;
+        ctx.beginPath(); ctx.arc(B.hitFlash.x, B.hitFlash.y, rr, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+    }
     // raccoon enemy (was the cat walker) — bosses draw bigger with a gold
     // aura (boss param, not scale — see raccoon.js); no skins/accessories/
     // kitten on it, those moved to the player above.
@@ -1942,21 +1997,6 @@ function draw(now){
       ctx.fillText(f.text, f.x, f.y);
     }
     ctx.globalAlpha = 1;
-  }
-  // A3 enemy hit flash: expanding cream pulse at the kill (set in killZombie)
-  if(B.hitFlash){
-    const leftF = B.hitFlash.until - performance.now();
-    if(leftF <= 0){ B.hitFlash = null; }
-    else{
-      // expanding cream pulse, fading out — a fade, so reduced-motion-safe
-      // (fxUntil already halved its duration there)
-      ctx.save();
-      ctx.globalAlpha = 0.85 * (leftF / fxDuration(150));
-      ctx.fillStyle = "rgba(251,245,232,1)";
-      const rr = (18 + 30 * (1 - leftF / fxDuration(150))) * B.S;
-      ctx.beginPath(); ctx.arc(B.hitFlash.x, B.hitFlash.y, rr, 0, Math.PI*2); ctx.fill();
-      ctx.restore();
-    }
   }
   drawFeedbackLayer(now);
   // hit flash — softened dim-violet (cat wandered off, not combat damage)
@@ -2088,32 +2128,12 @@ function drawWordPlate(z, vis, now){
     ctx.textAlign = "left";
     ctx.fillText(tagText, x+14*T, y-th*.45 + th*.7);
   }
-  // speaker icon, right edge of the plaque, vertically centered — also the
-  // visual affordance for the click/keyboard hit-test set up on #cv below.
-  // Skipped when replay is disallowed (tone/reverse while live — don't
-  // advertise a disabled affordance) and when the plaque is already showing
-  // the big 🔊-as-hanzi (listen format live) to avoid two speaker glyphs.
-  if(canReplayAudio(z) && !vis.icon){
-    drawSpeakerIcon(ctx, x + lw - spkR - 10*T, y + lh/2, spkR, boss ? "#7A4E0C" : "#8C5F2A");
-  }
+  // 2026-07-11 audit F6: no more corner speaker glyph — the whole plaque is
+  // already the tap-to-replay surface (B.plaqueRect below, hit-tested by the
+  // #cv click/keydown listeners), so the icon was pure decoration. Removing
+  // it also declutters the card per Jordan's finding.
   B.plaqueRect = {x, y, w: lw, h: lh};
   ctx.restore();
-}
-function drawSpeakerIcon(c, cx, cy, r, color){
-  c.save();
-  c.translate(cx, cy);
-  c.fillStyle = color;
-  c.beginPath();
-  c.moveTo(-r*0.9, -r*0.35); c.lineTo(-r*0.3, -r*0.35);
-  c.lineTo(r*0.35, -r*0.85); c.lineTo(r*0.35, r*0.85);
-  c.lineTo(-r*0.3, r*0.35); c.lineTo(-r*0.9, r*0.35);
-  c.closePath(); c.fill();
-  c.strokeStyle = color;
-  c.lineWidth = Math.max(1.2, r*0.16);
-  c.lineCap = "round";
-  c.beginPath(); c.arc(r*0.05, 0, r*0.62, -Math.PI*0.32, Math.PI*0.32); c.stroke();
-  c.beginPath(); c.arc(r*0.05, 0, r*0.98, -Math.PI*0.34, Math.PI*0.34); c.stroke();
-  c.restore();
 }
 function drawFeedbackLayer(now){
   const fb = B.feedback;
@@ -2714,15 +2734,17 @@ function renderStreet(){
     drawTieredDeco(sc, p, x, gy, du);
   }
 
-  // mascot - maneki sprite or vector fallback, always far left on the ground
+  // mascot - maneki sprite or vector fallback, always far left on the ground.
+  // 2026-07-11 audit F2: "cat too small" — bump the draw scale ~40% (mascot-
+  // bump precedent, 263e3f6/4ec9fcf); both branches stay grounded (gy-anchored).
   const mImg = sprite("maneki");
-  const mp = Math.min(h*0.62, 48);
+  const mp = Math.min(h*0.62, 67);
   if(mImg){
     sc.drawImage(mImg, 4, gy-mp+4, mp, mp);
   }else{
     sc.textAlign = "left";
     sc.font = `${Math.round(h*0.42)}px serif`;
-    drawCat(sc, 22, gy + 8, 0, "happy", null, .58, [], false);
+    drawCat(sc, 22, gy + 8, 0, "happy", null, .81, [], false);
   }
 
   const cap = $("#street-caption");
@@ -3113,6 +3135,10 @@ function renderGrowthCard(){
 }
 function renderProgress(){
   renderGrowthCard();
+  // #go-smart now lives on this screen (2026-07-11 audit F1) — refresh its
+  // label here too, not just on renderHome(), so it reflects the latest
+  // deck size the moment the player opens Progress.
+  updateSmartBtn();
   const box = $("#progresslist");
   box.innerHTML = "";
   for(let n=1;n<=6;n++){

@@ -49,6 +49,14 @@
     font-family:'LC Latin','LC Thai',"Segoe UI",system-ui,-apple-system,"Noto Sans","Noto Sans Thai",sans-serif;}
   #app{max-width:520px; margin:0 auto; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
+  /* F4-iOS: battle never scrolls the document, so a definite height is safe
+     THERE ONLY — real iOS Safari has been seen treating the min-height-only
+     flex chain (#app min-height:100dvh -> .screen flex:1 -> .cv-wrap flex:1)
+     as indefinite, collapsing the canvas short with a void above the
+     answers. main.js's show() toggles this class exactly when the battle
+     screen is shown/hidden (see F4-iOS note there) — no other screen gets
+     it, so their natural scrolling document height is untouched. */
+  body.battle-on #app{height:100vh; height:100dvh;}
   /* Wide screens: the app is a fixed ~520px column. Fill the bare cream margins
      with a warm ambient vignette and lift the column as an intentional "device"
      panel, instead of leaving it floating in an empty void. */
@@ -213,11 +221,26 @@
   .account-change-email{background:none; border:none; color:var(--muted); text-decoration:underline; font:inherit; padding:4px; cursor:pointer;}
   .startrow{display:flex; gap:10px; margin-top:14px;}
   .startrow .big{flex:1; padding:14px 6px; font-size:16px;}
-  /* Lucky Cat Street — own screen (M2); DPR-crisp buffer sized by main.js */
-  #street-cv{width:100%; height:min(40vh,320px); display:block; border-radius:12px;
+  /* Lucky Cat Street — own screen (M2); DPR-crisp buffer sized by main.js.
+     2026-07-11 audit F2: quests moved back out into a popup (below), so the
+     scene reclaims that height — grow the cap so decorators see the street
+     as big as the screen reasonably allows (checked against all 10
+     responsive-sweep viewports incl. the two landscape tiers). */
+  #street-cv{width:100%; height:min(52vh,400px); display:block; border-radius:12px;
     border:2px solid var(--lc-brown);
     box-shadow:0 3px 10px rgba(46,42,36,.22);}
   #street-caption{color:var(--lc-brown); font-size:12px; text-align:center; margin:4px 0 0;}
+  /* compact — must not steal meaningful height from the scene above it */
+  #s-street{position:relative;}
+  .street-quests-btn{align-self:center; width:auto; min-width:140px; margin-top:8px; padding:8px 22px; min-height:40px;}
+  /* Quest popup reuses .pause-overlay/.pause-panel (see #s-battle) — scoped to
+     #s-street (position:relative above) so it doesn't cover the bottom nav. */
+  .quest-popup-head{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .quest-popup-head .pause-title{margin:0; text-align:left;}
+  .overlay-close{width:34px; height:34px; min-height:34px; min-width:34px; padding:0; flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center; font-size:20px; line-height:1; font-weight:800;
+    background-color:var(--lc-sand); color:var(--lc-ink); border:2px solid var(--lc-brown); border-radius:50%;}
+  .overlay-close:active{transform:scale(.92);}
   #more-sound.muted{filter:grayscale(1) opacity(.6);}
   /* bottom nav (M2) — deep-teal bar, last child of #app. sticky so it stays
      reachable while long screens (shop catalog) scroll. #app's own safe-area
@@ -325,7 +348,13 @@
      aspect-ratio) — the draw loop reads clientWidth/Height and scales everything
      off the measured size (see layout.js), so any ratio the flex box gives it works. */
   #s-battle{padding:8px 12px 10px;}
-  .cv-wrap{flex:1 1 0; min-height:260px; display:flex; align-items:stretch; justify-content:center;}
+  /* F4-iOS: column direction + #cv's own flex:1 1 0 (below) is the robust
+     way to give the canvas its share of height — Safari has been seen
+     treating a percentage-height child (the old #cv{height:100%}) inside an
+     indefinite-height flex chain as 0, collapsing the canvas to a sliver
+     with a void beneath it. flex-basis growth doesn't have that failure
+     mode. */
+  .cv-wrap{flex:1 1 0; min-height:260px; display:flex; flex-direction:column; align-items:stretch; justify-content:center;}
   /* Short screens (SE-class, landscape handled separately): shrink the canvas
      floor. The answer-grid half of this media query lives further down,
      AFTER the base #opts/#opts button rules (see note there) — CSS cascade
@@ -337,7 +366,15 @@
     .cv-wrap{min-height:170px;}
     #s-battle{padding:6px 10px 8px;}
   }
-  #cv{width:100%; height:100%; border-radius:14px;
+  /* F9: the listen format prepends a full-width replay row inside #opts;
+     on short viewports the row plus the .cv-wrap floor above pushed content
+     past the fold. This selector's higher specificity (id+class+class) beats
+     both the base 260px and the short-portrait 170px .cv-wrap rules above
+     regardless of viewport, so the canvas floor always yields exactly enough
+     to make room for the extra row while a listen question is live
+     (main.js toggles #s-battle.listen-fmt per-question in renderQuestion). */
+  #s-battle.listen-fmt .cv-wrap{min-height:130px;}
+  #cv{width:100%; height:auto; flex:1 1 0; min-height:0; border-radius:14px;
     background-image:linear-gradient(var(--lc-day-hi),var(--lc-day-mid) 60%,var(--lc-day-ground));
     background-size:cover; background-position:bottom; background-repeat:no-repeat;
     border:2px solid var(--lc-brown); display:block; touch-action:none;
@@ -385,9 +422,13 @@
      with their tighter caps via source order, exactly as before.
      flex-shrink:0 stops flex compressing the clamp box to a fractional line
      count (mid-line clip, no ellipsis) — same guard as the 700px tier. */
+  /* 2026-07-11 audit F5: explicit text-align:center on every option-button
+     text piece — cheap guard against a centering regression, not a fix (this
+     already inherits center from `#opts button` above; Jordan's "Thai not
+     centered" report didn't reproduce and is believed stale-shell). */
   #opts button .opt-label{display:-webkit-box; -webkit-box-orient:vertical;
-    -webkit-line-clamp:3; overflow:hidden; flex-shrink:0; width:100%;}
-  #opts button .th{display:block; color:var(--lc-brown); font-size:15px; font-weight:600; margin-top:2px;}
+    -webkit-line-clamp:3; overflow:hidden; flex-shrink:0; width:100%; text-align:center;}
+  #opts button .th{display:block; color:var(--lc-brown); font-size:15px; font-weight:600; margin-top:2px; text-align:center;}
   /* reveal states never rely on color alone (§11): a ✓/✕ affix rides along
      with the green/coral fill + the game's existing sound/haptic/motion. */
   #opts button.good{background-color:var(--lc-success); color:var(--lc-cream); border-color:var(--lc-success-deep);
@@ -481,7 +522,13 @@
   .cloze-sentence{font-size:17px; line-height:1.35; letter-spacing:.02em;}
   .cloze-trans{margin-top:3px; font-weight:600; font-size:12px; opacity:.75;}
   .cloze-trans:empty{display:none;}
-  #opts .replay{grid-column:1/-1; font-weight:800; padding:8px 0;}
+  /* min-height:0 overrides the base `#opts button` 68px floor (and the
+     shorter-tier 52px ones) — the replay row is one compact line, not an
+     answer button, and doesn't need their height reserved (F9: listen-format
+     overflow — the extra row was inflating past the .cv-wrap floor below). */
+  #opts .replay{grid-column:1/-1; font-weight:800; padding:8px 0; text-align:center; min-height:0;
+    align-items:center;}   /* the clamp tier sets #opts button{align-items:flex-start} —
+                              the replay row's single text line must stay centered */
   /* v6p2 typed-pinyin input: #opts-prefixed selectors on the button-shaped
      pieces (tone-chip, typed-go) so they out-specificity the base
      `#opts button` rule above, same trick as `#opts .replay`. */
@@ -764,7 +811,7 @@
   .scope-chip-btn:active{transform:scale(.97);}
   .start-hint{color:var(--lc-brown); font-size:12px; text-align:center; margin:2px 0 4px;}
 
-  .home-secondary-row{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:4px;}
+  .home-secondary-row{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:4px;}
   .sec-btn{min-width:0; display:flex; align-items:center; justify-content:center; gap:6px;
     background-color:var(--lc-cream); border:2px solid var(--lc-sand); border-radius:14px;
     color:var(--lc-ink); font-size:12px; font-weight:700; padding:10px 4px; min-height:56px;
@@ -776,6 +823,10 @@
      a toast explaining why) so it can't use :disabled; .locked mimics the
      same muted look. */
   .sec-btn.locked{opacity:.5;}
+  /* #go-smart moved to Progress as a .big button (2026-07-11 audit F1) — no
+     other .big button uses :disabled/.locked dimming, so scope this to the
+     id rather than adding it to .big generally. */
+  #go-smart:disabled, #go-smart.locked{opacity:.5;}
 
   /* A4 welcome (first run): compact single-column card, reuses chip + sun
      plaque recipes. Nav is hidden here (nav.js doesn't list "welcome"). */
@@ -974,9 +1025,9 @@
     </div>
     <p class="start-hint" id="home-start-hint" data-i18n="home.startHint" hidden></p>
 
+    <!-- Smart Review moved to Progress (2026-07-11 audit F1) — row is 3-up now -->
     <div class="home-secondary-row">
       <button class="sec-btn" data-go="scope-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg><span data-i18n="home.flashcards">Flashcards</span></span></button>
-      <button class="sec-btn" id="go-smart"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#target"></use></svg><span data-i18n="home.smart">Smart Review</span></span></button>
       <button class="sec-btn" data-go="shop"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#shop"></use></svg><span data-i18n="home.shop">Shop</span></span></button>
       <button class="sec-btn" data-go="tones" id="home-tones-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg><span data-i18n="home.tones">Tone Trainer</span></span></button>
     </div>
@@ -1004,13 +1055,28 @@
     </div>
   </div>
 
-  <!-- STREET (+ daily quests, merged per 2026-07-10 audit F3) -->
+  <!-- STREET — quests reverted back out (2026-07-11 audit F2/F3, supersedes the
+       0b1ee1e merge): the scene owns the reclaimed height, quests live behind
+       a popup opened from the compact button below the caption. -->
   <div class="screen festive" id="s-street">
     <h2 data-i18n="street.title">Lucky Cat Street</h2>
     <canvas id="street-cv"></canvas>
     <div id="street-caption"></div>
-    <div class="sect" data-i18n="quests.title">Daily Quests</div>
-    <div id="quest-panel"></div>
+    <button class="sec-btn street-quests-btn" id="street-quests-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span data-i18n="street.questsBtn">Quests</span></span></button>
+
+    <!-- Quest popup: reuses the pause-overlay/pause-panel convention
+         (#pause-overlay in #s-battle) — #quest-panel is the SAME element
+         renderQuests() already targets, just relocated here so no rendering
+         logic is duplicated. -->
+    <div class="pause-overlay" id="quest-overlay">
+      <div class="pause-panel">
+        <div class="quest-popup-head">
+          <h3 class="pause-title" data-i18n="quests.title">Daily Quests</h3>
+          <button class="overlay-close" id="quest-popup-close" data-i18n-title="common.close" aria-label="Close">×</button>
+        </div>
+        <div id="quest-panel"></div>
+      </div>
+    </div>
   </div>
 
   <!-- MORE -->
@@ -1028,7 +1094,7 @@
       <button class="chip" data-uilang="th">ไทย</button>
     </div>
     <div class="more-foot">
-      <img src="pwa/icons/icon-192.png" alt="" width="72" height="72">
+      <img src="assets/more-cat-icon.png" alt="" width="72" height="72">
       <p data-i18n="more.tagline">Lucky Cat HSK — learn the words that actually appear on the test</p>
     </div>
   </div>
@@ -1200,6 +1266,11 @@
     <button class="back" data-go="home" data-i18n="common.back">← Home</button>
     <h2 data-i18n="progress.title">Progress</h2>
     <button class="big" data-go="album"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="progress.album">Sticker Album</span></span></button>
+    <!-- Smart Review moved here from the home quick row (2026-07-11 audit F1)
+         — same #go-smart element, same updateSmartBtn() label states
+         (base/progress/ready) + .locked/toast empty-state (audit-v55), same
+         deck-start onclick; only the markup location changed. -->
+    <button class="big" id="go-smart"></button>
     <div class="scorelist" id="growth-card"></div>
     <div class="scorelist" id="progresslist"></div>
     <div class="sect" data-i18n="progress.needsWork">Needs work</div>
