@@ -1495,6 +1495,12 @@ function spawnZombie(){
 const TYPED_WALK_FACTOR = 0.4;
 // v6p3: cloze is tap-answer but demands reading time — gentler than typed.
 const CLOZE_WALK_FACTOR = 0.6;
+// Kill "happy"/dying window: long enough for the 4-frame raccoon-happy bow
+// (80ms/frame = 320ms cycle) to finish while the kill feedback stamp fades
+// behind it (see draw()'s F7-style behind-the-raccoon ordering). killZombie's
+// B.dyingUntil deadline and the hp-bar lerp below must both use this same
+// constant or the hp bar and the actual dying window fall out of sync.
+const DYING_MS = 400;
 // Append the 4 option buttons for a plain-data option list. Shared by every
 // tap-answer format (the cloze branch and the generic branch both call it).
 function renderOptionButtons(box, opts){
@@ -1757,7 +1763,7 @@ function killZombie(z){
   z.state = "happy";
   z.happyAt = performance.now();   // raccoonBob("happy") wants time-since-defeat, not the raw rAF t
   z.hpAtKill = z.hp;   // draw() lerps hp -> 0 over the happy/dying window from this
-  B.dyingUntil = performance.now() + 250;
+  B.dyingUntil = performance.now() + DYING_MS;
   B.proj = null;
   B.resolved++;
   B.mascotHopUntil = performance.now()+400;   // little victory hop for the mascot
@@ -1974,10 +1980,20 @@ function draw(now){
         ctx.restore();
       }
     }
+    // Kill feedback stamp (paw/orb burst, set in killZombie) — drawn BEHIND
+    // the raccoon for the same reason as the hitFlash glow above (F7): it
+    // used to paint on top of the raccoon at the end of draw(), centered on
+    // its body, and outlived the dying window, bleaching it into a fading
+    // "ghost" blob instead of reading as a burst behind a bowing raccoon.
+    drawFeedbackLayer(now);
     // raccoon enemy (was the cat walker) — bosses draw bigger with a gold
     // aura (boss param, not scale — see raccoon.js); no skins/accessories/
     // kitten on it, those moved to the player above.
-    const rScale = z.boss ? 1.5*B.L.mascotS : B.L.mascotS;
+    // base matches the player cat's .9*B.L.mascotS above so both characters'
+    // CONTENT_H (64 world units, see sprite-draw.js) render at the same
+    // effective size; bosses stay at the historical 1.5x on top of that.
+    const RACCOON_BASE_SCALE = 0.9;
+    const rScale = RACCOON_BASE_SCALE * (z.boss ? 1.5 : 1) * B.L.mascotS;
     drawRaccoon(ctx, z.x, gy + 6*B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
     // floating HP bar above its head — cosmetic only. Animates hp -> 0 over
     // the happy/dying window (killZombie snapshots hpAtKill); wrong/timeout
@@ -1985,11 +2001,14 @@ function draw(now){
     let hpFrac = z.hp;
     if(z.state === "happy" && B.dyingUntil){
       const remain = Math.max(0, B.dyingUntil - now);
-      hpFrac = (z.hpAtKill ?? z.hp) * (remain/250);
+      hpFrac = (z.hpAtKill ?? z.hp) * (remain/DYING_MS);
     }
     drawHpBar(ctx, z.x, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.L.mascotS, hpFrac, B.L.mascotS);
   }else{
     B.plaqueRect = null;   // no word on screen — the canvas click/keydown handlers no-op
+    // A stamp can outlive the raccoon (word cleared, next spawn pending) —
+    // still finish its fade here so it doesn't just vanish.
+    drawFeedbackLayer(now);
   }
   // projectile - spinning coin sprite or vector fallback
   if(B.proj){
@@ -2031,7 +2050,6 @@ function draw(now){
     }
     ctx.globalAlpha = 1;
   }
-  drawFeedbackLayer(now);
   // hit flash — softened dim-violet (cat wandered off, not combat damage)
   if(B.flash>0){ ctx.fillStyle = `rgba(90,44,80,${(0.30*B.flash).toFixed(3)})`; ctx.fillRect(0,0,B.w,B.h); }
   if(shake) ctx.restore();
@@ -2049,6 +2067,7 @@ function drawWordPlate(z, vis, now){
   const pinyin = (!vis.py || !settings.showPinyin) ? "" : w.p;
   const revealed = !!z.revealed;
   const showSub = scope.lang === "both";   // meaningOf() only returns a .sub in "both" mode
+  const m = meaningOf(w, scope.lang);      // hoisted: needed pre-reveal too, to size the card
 
   // A3 plaque bounce: damped dip on a correct answer (juice.js curve; 0 when
   // idle or under reduced motion — no vertical motion, per "fades only").
@@ -2060,7 +2079,24 @@ function drawWordPlate(z, vis, now){
   ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK);
   const textW = Math.max(ctx.measureText(hanzi).width, 74*T);
   const spkR = 12*T;
-  const lw = Math.min(B.w - 24*T, textW + 56*T + spkR*2.2);
+  // Width invariant: the card must be wide enough for every line it will ever
+  // show — hanzi AND the translation (main/sub) AND pinyin — measured here
+  // EVERY call regardless of reveal state, so it never resizes/jumps when the
+  // answer is revealed. Long thai/english glosses (up to ~230px) routinely
+  // measure wider than the hanzi alone, which used to hang off the card edges.
+  let widestLine = 0;
+  ctx.font = fontString(700, 15*T, LATIN_STACK);
+  widestLine = Math.max(widestLine, ctx.measureText(m.main).width);
+  if(showSub && m.sub){
+    ctx.font = fontString(600, 13*T, LATIN_STACK);
+    widestLine = Math.max(widestLine, ctx.measureText(m.sub).width);
+  }
+  if(pinyin){
+    ctx.font = fontString(600, B.L.pinyinPx, LATIN_STACK);
+    widestLine = Math.max(widestLine, ctx.measureText(pinyin).width);
+  }
+  ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK); // restore: hanzi font, as measured above
+  const lw = Math.min(B.w - 24*T, Math.max(textW + 56*T + spkR*2.2, widestLine + 24*T));
   // Stacked rows, top to bottom: pinyin (if shown) -> Hanzi -> translation.
   // The translation row's height is reserved unconditionally (same whether
   // revealed or not) so the plaque never resizes/jumps at reveal time.
@@ -2110,8 +2146,11 @@ function drawWordPlate(z, vis, now){
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   let cy = y + padV;
+  const innerW = lw - 16*T; // defensive shrink budget: screen-width clamp can still leave a line too wide
   if(pinyin){
     ctx.font = fontString(600, B.L.pinyinPx, LATIN_STACK);
+    const pw = ctx.measureText(pinyin).width;
+    if(pw > innerW) ctx.font = fontString(600, B.L.pinyinPx * (innerW/pw), LATIN_STACK);
     ctx.fillStyle = "#8C5F2A";
     ctx.fillText(pinyin, B.w/2, cy + pinyinH/2);
     cy += pinyinH;
@@ -2125,12 +2164,15 @@ function drawWordPlate(z, vis, now){
   // above regardless of reveal state, so nothing shifts when it fills in.
   const midY = cy + (showSub ? transH*0.32 : transH/2);
   if(revealed){
-    const m = meaningOf(w, scope.lang);
     ctx.font = fontString(700, 15*T, LATIN_STACK);
+    const mw = ctx.measureText(m.main).width;
+    if(mw > innerW) ctx.font = fontString(700, 15*T * (innerW/mw), LATIN_STACK);
     ctx.fillStyle = "#2F6B4F";
     ctx.fillText(m.main, B.w/2, midY);
     if(showSub && m.sub){
       ctx.font = fontString(600, 13*T, LATIN_STACK);
+      const sw = ctx.measureText(m.sub).width;
+      if(sw > innerW) ctx.font = fontString(600, 13*T * (innerW/sw), LATIN_STACK);
       ctx.fillStyle = "#5C7A68";
       ctx.fillText(m.sub, B.w/2, cy + transH*0.74);
     }
