@@ -283,6 +283,60 @@ async function goToBattle(page) {
   await page.waitForTimeout(900);
 }
 
+// F9: force every word in the dataset to a streak of 1 — formatFor (src/
+// formats.js) maps streak 1-2 to the "listen" format, so whichever word the
+// battle spawns is guaranteed to be a listen question. Written to
+// localStorage then the page is reloaded so main.js's module-level
+// masteryStore (read once at boot from store.get("mastery", {})) picks it
+// up; setting it after boot would be too late for the first spawn.
+async function forceListenFormat(page) {
+  await page.evaluate(() => {
+    const D = window.HSK_DATA;
+    const m = {};
+    for (const lv of Object.values(D.levels)) for (const w of lv) m[w.h] = { s: 1, k: 1, r: 1 };
+    localStorage.setItem("nbhsk.mastery", JSON.stringify(m));
+  });
+  await page.reload({ waitUntil: "load" });
+  await page.waitForTimeout(700);
+}
+
+// F9 permanent gate: at the two worst tiers from the diagnosis, drive a
+// forced listen-format question and assert the page fits without scrolling.
+// Returns a sweep-style [PASS]/[FAIL] line plus a boolean for the caller's
+// overall exit code.
+async function runListenFormatProbe(browser, width, height) {
+  const { page, errs } = await preparePage(browser, width, height);
+  await forceListenFormat(page);
+  await goToBattle(page);
+
+  const info = await page.evaluate(tol => {
+    const doc = document.documentElement;
+    return {
+      listenFmt: document.querySelector("#s-battle.listen-fmt") !== null,
+      replay: document.querySelector("#opts .replay") !== null,
+      scrollHeight: doc.scrollHeight,
+      innerHeight: window.innerHeight,
+      fits: doc.scrollHeight <= window.innerHeight + tol,
+    };
+  }, 2);
+
+  const failures = [];
+  if (!info.replay) failures.push("listen-fmt: .replay row not found (format not forced to listen)");
+  if (!info.listenFmt) failures.push("listen-fmt: #s-battle.listen-fmt class missing");
+  if (!info.fits)
+    failures.push(`listen-fmt: scrollHeight=${info.scrollHeight}>innerHeight+2=${info.innerHeight + 2}`);
+  if (errs.length) failures.push(`JSERR:${errs[0]}`);
+
+  const status = failures.length ? "FAIL" : "PASS";
+  const line =
+    `[${status}] listen-fmt ${width}x${height}: scrollHeight=${info.scrollHeight}` +
+    ` innerHeight=${info.innerHeight}` +
+    (failures.length ? ` | FAILURES: ${failures.join("; ")}` : "");
+
+  await page.close();
+  return { line, failed: failures.length > 0 };
+}
+
 // ---------------------------------------------------------------------------
 // Server reachability check — the harness never starts the server itself
 // (the user runs `npm run serve` in another shell); fail fast with a clear
@@ -473,11 +527,28 @@ async function runFullSweep() {
     await page.close();
   }
 
-  await browser.close();
   console.log(lines.join("\n"));
   console.log(
     `\n${lines.filter(l => l.startsWith("[PASS]")).length}/${VIEWPORTS.length} viewports passed`
   );
+
+  // F9 permanent gate: listen-format overflow probe, run as an extra
+  // mini-pass rather than growing the 10-viewport matrix above. 360x640
+  // matches the s-360 tier's dimensions exactly; 390x680 is one of the two
+  // worst tiers the diagnosis measured and isn't itself a standard viewport.
+  const listenTiers = [[360, 640], [390, 680]];
+  const listenLines = [];
+  for (const [w, h] of listenTiers) {
+    const r = await runListenFormatProbe(browser, w, h);
+    listenLines.push(r.line);
+    if (r.failed) anyFail = true;
+  }
+  console.log("\n" + listenLines.join("\n"));
+  console.log(
+    `\n${listenLines.filter(l => l.startsWith("[PASS]")).length}/${listenTiers.length} listen-format probes passed`
+  );
+
+  await browser.close();
   process.exit(anyFail ? 1 : 0);
 }
 

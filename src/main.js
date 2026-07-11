@@ -1471,6 +1471,10 @@ function renderQuestion(word, format, promptKey){
   const deck = B.deck.length >= 8 ? B.deck : pool;
   const box = $("#opts");
   box.innerHTML = "";
+  // F9: the listen format's extra full-width replay row can overflow the
+  // .cv-wrap min-height floor on short viewports — this class lets CSS
+  // shrink that floor exactly (and only) while a listen question is live.
+  $("#s-battle").classList.toggle("listen-fmt", format === "listen");
   // v6p3 cloze: a blanked sentence + translation prompt row, then tap 1 of 4
   // hanzi. Distractors are baked in the data and their pinyin subs resolve
   // over the full dataset (BY_HANZI), not the scoped pool.

@@ -352,6 +352,14 @@
     .cv-wrap{min-height:170px;}
     #s-battle{padding:6px 10px 8px;}
   }
+  /* F9: the listen format prepends a full-width replay row inside #opts;
+     on short viewports the row plus the .cv-wrap floor above pushed content
+     past the fold. This selector's higher specificity (id+class+class) beats
+     both the base 260px and the short-portrait 170px .cv-wrap rules above
+     regardless of viewport, so the canvas floor always yields exactly enough
+     to make room for the extra row while a listen question is live
+     (main.js toggles #s-battle.listen-fmt per-question in renderQuestion). */
+  #s-battle.listen-fmt .cv-wrap{min-height:130px;}
   #cv{width:100%; height:100%; border-radius:14px;
     background-image:linear-gradient(var(--lc-day-hi),var(--lc-day-mid) 60%,var(--lc-day-ground));
     background-size:cover; background-position:bottom; background-repeat:no-repeat;
@@ -500,7 +508,11 @@
   .cloze-sentence{font-size:17px; line-height:1.35; letter-spacing:.02em;}
   .cloze-trans{margin-top:3px; font-weight:600; font-size:12px; opacity:.75;}
   .cloze-trans:empty{display:none;}
-  #opts .replay{grid-column:1/-1; font-weight:800; padding:8px 0; text-align:center;}
+  /* min-height:0 overrides the base `#opts button` 68px floor (and the
+     shorter-tier 52px ones) — the replay row is one compact line, not an
+     answer button, and doesn't need their height reserved (F9: listen-format
+     overflow — the extra row was inflating past the .cv-wrap floor below). */
+  #opts .replay{grid-column:1/-1; font-weight:800; padding:8px 0; text-align:center; min-height:0;}
   /* v6p2 typed-pinyin input: #opts-prefixed selectors on the button-shaped
      pieces (tone-chip, typed-go) so they out-specificity the base
      `#opts button` rule above, same trick as `#opts .replay`. */
