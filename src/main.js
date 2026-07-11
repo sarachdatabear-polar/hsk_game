@@ -107,6 +107,7 @@ let ent = Object.assign(defaultEnt(), store.get("ent", {}));
 // When RevenueCat lands this becomes "native platform && provider available".
 const iapEnabled = () => !!store.get("dev.iap", false);
 let iapProvider = null;
+let iapPending = null;   // productId of the purchase in flight — survives re-renders
 function provider(){
   if(!iapProvider) iapProvider = getProvider({ get: (k,d)=>store.get(k,d), set: (k,v)=>store.set(k,v) });
   return iapProvider;
@@ -2634,6 +2635,10 @@ function makeIapRow(p){
   btn.className = "chip buy-chip";
   btn.textContent = displayPrice(p, getLocale());
   btn.onclick = () => iapBuy(p, btn);
+  if(iapPending){
+    btn.disabled = true;
+    if(iapPending === p.id) btn.textContent = t("iap.pending");
+  }
   row.appendChild(copy); row.appendChild(btn);
   return row;
 }
@@ -2653,24 +2658,31 @@ function makeSupporterCard(){
     btn.className = "chip buy-chip";
     btn.textContent = displayPrice(productById("supporter"), getLocale());
     btn.onclick = () => iapBuy(productById("supporter"), btn);
+    if(iapPending){
+      btn.disabled = true;
+      if(iapPending === "supporter") btn.textContent = t("iap.pending");
+    }
     row.appendChild(btn);
   }
   return row;
 }
 
 // Buy flow: pending -> provider -> applyPurchase -> persist -> celebrate.
-// The disabled button is the double-tap guard; applyPurchase's orderId
-// idempotency is the backstop. Cancelled is silent (user changed their
+// iapPending is the double-tap guard: it is module state, not DOM state, so
+// a mid-purchase renderShop() (e.g. buying an unrelated item) can't hand the
+// user a fresh enabled button for the same product. applyPurchase's orderId
+// idempotency remains the backstop. Cancelled is silent (user changed their
 // mind); failed/unavailable gets a toast.
 async function iapBuy(p, btn){
-  if(btn.disabled) return;
+  if(iapPending || btn.disabled) return;
+  iapPending = p.id;
   btn.disabled = true;
-  const label = btn.textContent;
   btn.textContent = t("iap.pending");
   const r = await provider().purchase(p.id);
+  iapPending = null;
   if(!r.ok){
-    btn.textContent = label; btn.disabled = false;
     if(r.reason !== "cancelled") toast(t("iap.failed"));
+    renderShop();
     return;
   }
   const g = applyPurchase(wallet, ent, p.id, r.orderId, Date.now());
