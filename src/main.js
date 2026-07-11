@@ -1495,6 +1495,12 @@ function spawnZombie(){
 const TYPED_WALK_FACTOR = 0.4;
 // v6p3: cloze is tap-answer but demands reading time — gentler than typed.
 const CLOZE_WALK_FACTOR = 0.6;
+// Kill "happy"/dying window: long enough for the 4-frame raccoon-happy bow
+// (80ms/frame = 320ms cycle) to finish while the kill feedback stamp fades
+// behind it (see draw()'s F7-style behind-the-raccoon ordering). killZombie's
+// B.dyingUntil deadline and the hp-bar lerp below must both use this same
+// constant or the hp bar and the actual dying window fall out of sync.
+const DYING_MS = 400;
 // Append the 4 option buttons for a plain-data option list. Shared by every
 // tap-answer format (the cloze branch and the generic branch both call it).
 function renderOptionButtons(box, opts){
@@ -1757,7 +1763,7 @@ function killZombie(z){
   z.state = "happy";
   z.happyAt = performance.now();   // raccoonBob("happy") wants time-since-defeat, not the raw rAF t
   z.hpAtKill = z.hp;   // draw() lerps hp -> 0 over the happy/dying window from this
-  B.dyingUntil = performance.now() + 250;
+  B.dyingUntil = performance.now() + DYING_MS;
   B.proj = null;
   B.resolved++;
   B.mascotHopUntil = performance.now()+400;   // little victory hop for the mascot
@@ -1974,6 +1980,12 @@ function draw(now){
         ctx.restore();
       }
     }
+    // Kill feedback stamp (paw/orb burst, set in killZombie) — drawn BEHIND
+    // the raccoon for the same reason as the hitFlash glow above (F7): it
+    // used to paint on top of the raccoon at the end of draw(), centered on
+    // its body, and outlived the dying window, bleaching it into a fading
+    // "ghost" blob instead of reading as a burst behind a bowing raccoon.
+    drawFeedbackLayer(now);
     // raccoon enemy (was the cat walker) — bosses draw bigger with a gold
     // aura (boss param, not scale — see raccoon.js); no skins/accessories/
     // kitten on it, those moved to the player above.
@@ -1985,11 +1997,14 @@ function draw(now){
     let hpFrac = z.hp;
     if(z.state === "happy" && B.dyingUntil){
       const remain = Math.max(0, B.dyingUntil - now);
-      hpFrac = (z.hpAtKill ?? z.hp) * (remain/250);
+      hpFrac = (z.hpAtKill ?? z.hp) * (remain/DYING_MS);
     }
     drawHpBar(ctx, z.x, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.L.mascotS, hpFrac, B.L.mascotS);
   }else{
     B.plaqueRect = null;   // no word on screen — the canvas click/keydown handlers no-op
+    // A stamp can outlive the raccoon (word cleared, next spawn pending) —
+    // still finish its fade here so it doesn't just vanish.
+    drawFeedbackLayer(now);
   }
   // projectile - spinning coin sprite or vector fallback
   if(B.proj){
@@ -2031,7 +2046,6 @@ function draw(now){
     }
     ctx.globalAlpha = 1;
   }
-  drawFeedbackLayer(now);
   // hit flash — softened dim-violet (cat wandered off, not combat damage)
   if(B.flash>0){ ctx.fillStyle = `rgba(90,44,80,${(0.30*B.flash).toFixed(3)})`; ctx.fillRect(0,0,B.w,B.h); }
   if(shake) ctx.restore();
