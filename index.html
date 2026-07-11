@@ -779,7 +779,7 @@
   .scope-chip-btn:active{transform:scale(.97);}
   .start-hint{color:var(--lc-brown); font-size:12px; text-align:center; margin:2px 0 4px;}
 
-  .home-secondary-row{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:4px;}
+  .home-secondary-row{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:4px;}
   .sec-btn{min-width:0; display:flex; align-items:center; justify-content:center; gap:6px;
     background-color:var(--lc-cream); border:2px solid var(--lc-sand); border-radius:14px;
     color:var(--lc-ink); font-size:12px; font-weight:700; padding:10px 4px; min-height:56px;
@@ -791,6 +791,10 @@
      a toast explaining why) so it can't use :disabled; .locked mimics the
      same muted look. */
   .sec-btn.locked{opacity:.5;}
+  /* #go-smart moved to Progress as a .big button (2026-07-11 audit F1) — no
+     other .big button uses :disabled/.locked dimming, so scope this to the
+     id rather than adding it to .big generally. */
+  #go-smart:disabled, #go-smart.locked{opacity:.5;}
 
   /* A4 welcome (first run): compact single-column card, reuses chip + sun
      plaque recipes. Nav is hidden here (nav.js doesn't list "welcome"). */
@@ -989,9 +993,9 @@
     </div>
     <p class="start-hint" id="home-start-hint" data-i18n="home.startHint" hidden></p>
 
+    <!-- Smart Review moved to Progress (2026-07-11 audit F1) — row is 3-up now -->
     <div class="home-secondary-row">
       <button class="sec-btn" data-go="scope-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg><span data-i18n="home.flashcards">Flashcards</span></span></button>
-      <button class="sec-btn" id="go-smart"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#target"></use></svg><span data-i18n="home.smart">Smart Review</span></span></button>
       <button class="sec-btn" data-go="shop"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#shop"></use></svg><span data-i18n="home.shop">Shop</span></span></button>
       <button class="sec-btn" data-go="tones" id="home-tones-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg><span data-i18n="home.tones">Tone Trainer</span></span></button>
     </div>
@@ -1230,6 +1234,11 @@
     <button class="back" data-go="home" data-i18n="common.back">← Home</button>
     <h2 data-i18n="progress.title">Progress</h2>
     <button class="big" data-go="album"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="progress.album">Sticker Album</span></span></button>
+    <!-- Smart Review moved here from the home quick row (2026-07-11 audit F1)
+         — same #go-smart element, same updateSmartBtn() label states
+         (base/progress/ready) + .locked/toast empty-state (audit-v55), same
+         deck-start onclick; only the markup location changed. -->
+    <button class="big" id="go-smart"></button>
     <div class="scorelist" id="growth-card"></div>
     <div class="scorelist" id="progresslist"></div>
     <div class="sect" data-i18n="progress.needsWork">Needs work</div>

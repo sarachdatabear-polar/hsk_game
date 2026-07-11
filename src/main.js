@@ -3125,6 +3125,10 @@ function renderGrowthCard(){
 }
 function renderProgress(){
   renderGrowthCard();
+  // #go-smart now lives on this screen (2026-07-11 audit F1) — refresh its
+  // label here too, not just on renderHome(), so it reflects the latest
+  // deck size the moment the player opens Progress.
+  updateSmartBtn();
   const box = $("#progresslist");
   box.innerHTML = "";
   for(let n=1;n<=6;n++){
