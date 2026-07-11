@@ -6,6 +6,7 @@ import { STRINGS } from "../src/i18n.js";
 import { CATALOG } from "../src/shop.js";
 import { BUILDINGS } from "../src/street.js";
 import { MILESTONES } from "../src/growth.js";
+import { PRODUCTS } from "../src/monetization/products.js";
 
 // Static-usage guard (i18n pass 2, Task 1): closes the "key referenced but
 // missing" gap in both directions — every key a template/source file points
@@ -103,4 +104,13 @@ describe("shop/street display-name key coverage", () => {
     expect("item.streak-freeze.desc" in STRINGS.en, "item.streak-freeze.desc missing from STRINGS.en").toBe(true);
     expect("item.streak-freeze.desc" in STRINGS.th, "item.streak-freeze.desc missing from STRINGS.th").toBe(true);
   });
+});
+
+describe("IAP products have display-name keys in both locales", () => {
+  for (const p of PRODUCTS) {
+    it(`"item.${p.id}" exists in EN and TH`, () => {
+      expect("item." + p.id in STRINGS.en, `item.${p.id} missing from STRINGS.en`).toBe(true);
+      expect("item." + p.id in STRINGS.th, `item.${p.id} missing from STRINGS.th`).toBe(true);
+    });
+  }
 });
