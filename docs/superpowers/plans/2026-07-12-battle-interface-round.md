@@ -31,9 +31,9 @@
 **Interfaces:**
 - Produces CSS vars later tasks use: `--lc-teal-deep: #1F4D4A`, `--lc-sky: #5DAADD`. Verify these already exist before adding: `--lc-green`(#32775E expected), `--lc-cream`(#FBF5E8), `--lc-sand`(#EAC796), `--lc-brown`(#846043), `--lc-coral`/error, `--lc-gray`/muted, `--ink`. Reuse existing names; only ADD missing ones. Record the final name→hex map in the commit message body.
 
-- [ ] **Step 1:** Read the `:root` block; list existing `--lc-*` values vs the spec palette.
-- [ ] **Step 2:** Add only the missing tokens (expected: deep-teal, sky-blue; possibly sun-yellow if only #f5c518 exists — add `--lc-sun: #F2BC57` alongside, do NOT change the existing gold used by canvas code).
-- [ ] **Step 3:** `npm test` (full) → 1661 pass. Commit: `feat(ui): palette tokens for battle-interface round`.
+- [x] **Step 1:** Read the `:root` block; list existing `--lc-*` values vs the spec palette.
+- [x] **Step 2:** Add only the missing tokens (expected: deep-teal, sky-blue; possibly sun-yellow if only #f5c518 exists — add `--lc-sun: #F2BC57` alongside, do NOT change the existing gold used by canvas code). All 10 spec tokens already present exactly — no-op, see commit body.
+- [x] **Step 3:** `npm test` (full) → 1661 pass. Commit: `feat(ui): palette tokens for battle-interface round`.
 
 ### Task 2: Thai-primary meaning()
 
