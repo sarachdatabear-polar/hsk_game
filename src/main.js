@@ -1,5 +1,5 @@
 "use strict";
-import { buildPool, coveragePct, scopeKey, meaning as meaningOf, normalizeLen, modeKey, scopeSummary } from "./pool.js";
+import { buildPool, coveragePct, scopeKey, meaning, normalizeLen, modeKey, scopeSummary } from "./pool.js";
 import { formatFor, FORMATS } from "./formats.js";
 import { gradeTyped, syllables, syllableTones, letters } from "./pinyin.js";
 import { clozeFor } from "./cloze.js";
@@ -54,6 +54,12 @@ const CLOZE = window.HSK_CLOZE || {};
 const BY_HANZI = {};
 for (const lv of Object.values(D.levels)) for (const w of lv) BY_HANZI[w.h] = w;
 const $ = s => document.querySelector(s);
+// Thai-primary answers (battle-interface round T2): Thai-locale players see
+// Thai as the bold main line, English as the smaller sub line — everywhere
+// else keeps English-main/Thai-sub (or single-language en/th modes, which
+// ignore the flag). Single wrapper so every meaning() call site in main.js
+// (and the buildOptions call it feeds) derives the flag the same way.
+const meaningOf = (w, lang) => meaning(w, lang, getLocale() === "th");
 // Accessibility (§11): read once at boot. When set, feedback-stamp effects
 // (drawFeedbackLayer) get half the on-screen duration and the hit-flash
 // screen shake is skipped outright (see the wrong-answer branch in answer()).
@@ -1575,7 +1581,7 @@ function renderQuestion(word, format, promptKey){
   }
   // small custom decks (miss/weak-word review) can be meaning-homogeneous —
   // pass the full scoped pool as the widening source for distractors.
-  renderOptionButtons(box, FORMATS[format].buildOptions(word, deck, scope.lang, Math.random, pool));
+  renderOptionButtons(box, FORMATS[format].buildOptions(word, deck, scope.lang, Math.random, pool, getLocale() === "th"));
 }
 // v6p2 typed-pinyin input: letters field (native keyboard) + one tone row per
 // non-neutral syllable + attack button. Grading is pure (pinyin.js); the

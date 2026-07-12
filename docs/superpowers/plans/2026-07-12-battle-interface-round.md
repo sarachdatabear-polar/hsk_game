@@ -46,7 +46,7 @@
 - main.js `meaningOf(w, lang)` becomes `meaning(w, lang, getLocale() === "th")` (getLocale already imported from i18n.js — verify, else import).
 - Consumed by: formats.js buildOptions paths that call meaning() — grep ALL meaning( callers in src/ and pass through the flag from one place only (meaningOf / the options builders' `lang` call sites in main.js). Distractor same-meaning exclusion (distractors.js) works on content tokens, not main/sub order — verify by reading it, note in commit.
 
-- [ ] **Step 1:** Write failing tests in `test/pool.test.js`:
+- [x] **Step 1:** Write failing tests in `test/pool.test.js`:
 
 ```js
 describe("meaning thaiPrimary", () => {
@@ -64,8 +64,8 @@ describe("meaning thaiPrimary", () => {
 });
 ```
 
-- [ ] **Step 2:** Run `npm test` → these fail (arity/behavior).
-- [ ] **Step 3:** Implement:
+- [x] **Step 2:** Run `npm test` → these fail (arity/behavior).
+- [x] **Step 3:** Implement:
 
 ```js
 export function meaning(w, lang, thaiPrimary = false) {
@@ -76,8 +76,8 @@ export function meaning(w, lang, thaiPrimary = false) {
 }
 ```
 
-- [ ] **Step 4:** Wire main.js meaningOf + any direct meaning() call sites feeding option builders; `npm run build`; probe with `localStorage nbhsk.locale='"th"'` → buttons show thai bold on top, english under.
-- [ ] **Step 5:** Full `npm test` → pass. Commit: `feat(battle): thai-primary answers for thai-locale users`.
+- [x] **Step 4:** Wire main.js meaningOf + any direct meaning() call sites feeding option builders; `npm run build`; probe with `localStorage nbhsk.locale='"th"'` → buttons show thai bold on top, english under.
+- [x] **Step 5:** Full `npm test` → pass. Commit: `feat(battle): thai-primary answers for thai-locale users`.
 
 ### Task 3: HUD simplification
 

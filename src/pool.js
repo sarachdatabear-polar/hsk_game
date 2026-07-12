@@ -36,9 +36,10 @@ export function scopeKey(scope) {
     + (scope.topN ? "·top" + scope.topN : "");
 }
 
-export function meaning(w, lang) {
+export function meaning(w, lang, thaiPrimary = false) {
   if (lang === "en") return { main: w.e, sub: "" };
   if (lang === "th") return w.t ? { main: w.t, sub: "" } : { main: w.e + " *", sub: "" };
+  if (thaiPrimary && w.t) return { main: w.t, sub: w.e };
   return { main: w.e, sub: w.t || "" };
 }
 
