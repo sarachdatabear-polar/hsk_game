@@ -835,7 +835,10 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
   else if(tab==="tones"){ startToneRound(); show("tones"); }
   else if(tab==="account"){ renderAccount(); show("account"); refreshAccountSession(); }
   else {
-    if(tab==="home"){ stopBattle(); }   // intro abandonment handled in show()
+    if(tab==="home"){
+      if(B.on){ endBattle(true); return; }   // banks partial round + shows home itself
+      stopBattle();   // intro abandonment handled in show()
+    }
     show(tab);
   }
 }));
@@ -3572,7 +3575,7 @@ if(location.hash === "#debug"){
   window.__debugTarget = ()=> B.zombie && B.zombie.w.h;
   window.__grantXp = n => { addXp(n); };
 }
-initNative({ getScreen: ()=>currentScreen, goHome: ()=>{ stopBattle(); show("home"); } });
+initNative({ getScreen: ()=>currentScreen, goHome: ()=>{ if(B.on){ endBattle(true); } else { stopBattle(); show("home"); } } });
 // SW is at the app root so its scope covers the whole app; http(s) only (no-op on file://).
 // Never on localhost: the cache-first SW would keep serving a stale shell across dev
 // edits (SHELL only bumps on ship), so the dev server must always hit the real files —
