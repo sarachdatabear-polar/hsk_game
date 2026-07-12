@@ -1418,7 +1418,7 @@ function updateComboStrip(){
    deadline the battle loop reads must be shifted forward by the pause duration
    on resume, or it "expires" while the player was looking at the overlay:
    B.nextAt, B.dyingUntil, B.mascotHopUntil, B.feedback.until, B.zombie.wrongUntil,
-   B.hitFlash.until, B.plaqueHitAt. */
+   B.hitFlash.until, B.plaqueHitAt, B.lungeAt, B.bumpAt. */
 const PAUSE_TOGGLES = [
   { icon:"bell", iconOff:"bell-off", labelKey:"home.sound", isOn:()=>sfx.enabled, toggle:()=>toggleSfx() },
   { icon:"sound", iconOff:"muted", labelKey:"battle.wordAudio", isOn:()=>settings.autoSpeak,
@@ -1490,6 +1490,8 @@ function resumeBattle(){
   if(B.bossStageAt) B.bossStageAt += shift;
   if(B.hitFlash) B.hitFlash.until += shift;
   if(B.plaqueHitAt) B.plaqueHitAt += shift;
+  if(B.lungeAt) B.lungeAt += shift;
+  if(B.bumpAt) B.bumpAt += shift;
   B.paused = false;
   keepAwake(true);
   $("#pause-overlay").classList.remove("on");
