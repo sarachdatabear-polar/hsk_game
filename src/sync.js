@@ -116,6 +116,25 @@ export async function reconcile(store, reason, now = Date.now()) {
     const led = await fetchLedgerSince(uid, meta.lastLedgerAt);
     if (!led.ok) return { ok: false, reason: "network" };
     const unseen = led.rows.reduce((sum, r) => sum + (Number(r.delta) || 0), 0);
+    // FRESH-CURSOR ADOPT (I2 fix, coin-purchase go-live review): a fresh
+    // cursor (meta.lastLedgerAt === "") means either a brand-new device or a
+    // post-wipe reinstall. In BOTH cases the client has no history of its
+    // own to reconcile against — the cloud wallet already reflects every
+    // settled purchase (the webhook wrote it directly), so the correct move
+    // is to ADOPT the cloud wallet wholesale, not to subtract-then-add
+    // unseenPurchased on top of it. Subtract-then-add on a fresh cursor lets
+    // a spent-down local wallet float the cloud side back UP by the full
+    // unseen sum (buy 1000 -> spend to 300 -> push -> wipe -> restore would
+    // give max(0, 300-1000->clamp 0)+1000 = 1000, minting 700 coins out of
+    // thin air, and repeatably so across further wipes) — it also violates
+    // PRD §7.4 (consumables never restore). We still fetch the ledger rows
+    // (their max created_at is what advances the cursor) and still advance
+    // the cursor either way; we just pass 0 as unseenPurchased into the fold
+    // so it degrades to a plain max(local, cloud) adopt. Accepted cost: a
+    // fresh device can't heal the webhook's lost-increment window (a crash
+    // between the atomic wallet RPC and the ledger insert) — that heal lives
+    // in the webhook's own atomic-grant fix, landing separately from T3.
+    const freshCursor = !meta.lastLedgerAt;
     const local = localSnapshot(store);
     const shopDirty = !!(meta.dirty && meta.dirty.shop);
     const today = localDateStr(now);
@@ -128,8 +147,10 @@ export async function reconcile(store, reason, now = Date.now()) {
     // no cloud side to subtract a purchase component out of (mergeAll(local,
     // null, …) already contributes 0 from "cloud"), so passing it there too
     // would just add unseen straight into the baseline and mask real change.
+    // On a fresh cursor, pass 0 (adopt) instead of the summed unseen — see
+    // the freshCursor comment above.
     const merged = mergeAll(local, localFromRows(rows.progress, rows.wallet),
-      { shopDirty, today, unseenPurchased: unseen });
+      { shopDirty, today, unseenPurchased: freshCursor ? 0 : unseen });
     const baseline = mergeAll(local, null, { shopDirty, today });
     const changed = !eq(merged, baseline);
     // CURSOR ORDERING (THE FOLD): advance + persist meta.lastLedgerAt BEFORE
