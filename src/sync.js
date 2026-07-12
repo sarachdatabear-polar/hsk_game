@@ -122,7 +122,7 @@ export async function reconcile(store, reason, now = Date.now()) {
   }
 }
 
-export async function pushDirty(store, reason, now = Date.now()) {
+export async function pushDirty(store, reason, now = Date.now(), midRound = false) {
   const meta = Object.assign(defaultSyncMeta(), store.get("sync", {}));
   if (!Object.keys(meta.dirty || {}).length) return { ok: true, skipped: true };
   // monthly is the one key whose CLOUD side can hold unrealized coin value (a
@@ -130,7 +130,19 @@ export async function pushDirty(store, reason, now = Date.now()) {
   // ever crediting the reward. Redirect through reconcile so the stale month
   // gets settled first. reconcile owns `inFlight` end-to-end, so this must
   // happen before pushDirty sets its own inFlight below.
-  if (meta.dirty.monthly) return reconcile(store, "monthly-dirty", now);
+  if (meta.dirty.monthly) {
+    // …but never mid-battle: reconcile writes merged state back into the
+    // store, and syncEdge's invariant (design §3, "merged state must not
+    // change mid-battle") applies to ANY reconcile, including this redirect —
+    // a hide during a paused battle would otherwise snapshot local, resume
+    // would keep playing on in-memory state, and the resolving reconcile's
+    // store writes would roll localStorage back to the pre-resume snapshot.
+    // Nor may it fall back to the blind push (that's the exact clobber the
+    // redirect exists to prevent) — defer wholesale, dirty bits intact, and
+    // the next battle-free sync edge catches up.
+    if (midRound) return { ok: false, reason: "mid-round" };
+    return reconcile(store, "monthly-dirty", now);
+  }
   if (inFlight) return { ok: false, reason: "busy" };
   inFlight = true;
   try {

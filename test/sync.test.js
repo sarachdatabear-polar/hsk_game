@@ -13,9 +13,9 @@ function memStore(init = {}) {
 }
 
 function fakeClient({ session, progressRow = null, walletRow = null, failPush = false } = {}) {
-  const calls = { upserts: [] };
+  const calls = { upserts: [], sessions: 0 };
   const client = {
-    auth: { getSession: async () => ({ data: { session } }) },
+    auth: { getSession: async () => { calls.sessions++; return { data: { session } }; } },
     from: (table) => ({
       select: () => ({ eq: () => ({ maybeSingle: async () =>
         ({ data: table === "progress" ? progressRow : walletRow, error: null }) }) }),
@@ -186,5 +186,50 @@ describe("pushDirty", () => {
     const meta = store.get("sync", {});
     expect(meta.lastSyncAt).toBe(now);                // reconcile's stamp, proving the merge path ran
     expect(meta.dirty).toEqual({});
+  });
+
+  it("monthly-dirty mid-round: defers entirely — no network, dirty preserved, {ok:false, reason:'mid-round'}", async () => {
+    // syncEdge (main.js) refuses reconcile while B.on per the "merged state
+    // must not change mid-battle" invariant. pushDirty's monthly redirect is
+    // a reconcile, so it must honor the same gate — and it must NOT fall back
+    // to a blind push either (rowsFromLocal would push the local monthly row
+    // and clobber the cloud's unclaimed month: the exact bug this fix is
+    // for). Defer whole-hog; the next battle-free edge catches up.
+    const now = new Date(2026, 6, 15, 12, 0, 0).getTime();
+    const { client, calls } = fakeClient({ session: SESSION,
+      progressRow: { user_id: "u1", xp: 0, mastery: {},
+        daily: { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" },
+        quests: {}, monthly: { month: "2026-06", done: 40, claimed: false },
+        best: {}, cosmetics: {}, stickers: { earned: {} } },
+      walletRow: { user_id: "u1", coins: 100, freezes: 0 } });
+    __setClientForTests(client);
+    const store = memStore({ wallet: 200, monthly: { month: "2026-07", done: 3, claimed: false },
+      sync: { dirty: { monthly: true, wallet: true }, lastSyncAt: 0 } });
+    const r = await pushDirty(store, "hide", now, true);   // midRound = true
+    expect(r).toEqual({ ok: false, reason: "mid-round" });
+    expect(calls.sessions).toBe(0);                    // never even asked for a session
+    expect(calls.upserts.length).toBe(0);              // no fetch, no push
+    expect(store.get("sync", {}).dirty).toEqual({ monthly: true, wallet: true });
+    expect(store.get("wallet", 0)).toBe(200);          // store untouched
+    // and a later battle-free edge picks it right up:
+    const r2 = await pushDirty(store, "hide", now, false);
+    expect(r2.ok).toBe(true);
+    expect(store.get("wallet", 0)).toBe(1600);         // reconcile redirect ran this time
+  });
+
+  it("non-monthly dirty mid-round: plain blind push still happens (write-only, safe mid-battle)", async () => {
+    // The blind push never writes gameplay keys back to the store (settleDirty
+    // only clears dirty bits + meta), so it can't violate the mid-battle
+    // invariant — keep it flowing so purchases made from the shop mid-pause
+    // still reach the cloud promptly.
+    const { client, calls } = fakeClient({ session: SESSION });
+    __setClientForTests(client);
+    const store = memStore({ wallet: 950, sync: { dirty: { wallet: true }, lastSyncAt: 777 } });
+    const r = await pushDirty(store, "purchase", undefined, true);   // midRound = true
+    expect(r.ok).toBe(true);
+    expect(calls.upserts.find(u => u.table === "wallet").row.coins).toBe(950);
+    const meta = store.get("sync", {});
+    expect(meta.dirty).toEqual({});
+    expect(meta.lastSyncAt).toBe(777);
   });
 });

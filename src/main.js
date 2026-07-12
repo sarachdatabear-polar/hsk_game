@@ -1503,7 +1503,9 @@ document.addEventListener("visibilitychange", ()=>{
     syncStreakReminder(plan,
       t("notify.streak.title", { n: inf.streak }),
       t("notify.streak.body", { remaining: Math.max(0, inf.goal - inf.todayResolved) }));
-    pushDirty(store, "hide");
+    // midRound=B.on: a hide during a (paused) battle must not let a
+    // monthly-dirty push redirect into reconcile — see pushDirty/syncEdge.
+    pushDirty(store, "hide", undefined, B.on);
   }
   if(!document.hidden) syncEdge("foreground");
 });
@@ -2782,7 +2784,7 @@ function makeShopRow(item, today){
     if(!r.ok) return;
     wallet = r.wallet; shopState = r.shop;
     store.set("wallet", wallet); store.set("shop", shopState);
-    pushDirty(store, "purchase");
+    pushDirty(store, "purchase", undefined, B.on);
     justBought = { id: item.id, at: performance.now() };
     // no renderStreet() here: the street canvas is display:none while the
     // shop screen is up (renderStreet would no-op) and show("street") always
@@ -2802,7 +2804,7 @@ function makeShopRow(item, today){
       wallet = r.wallet;
       if(item.id === "streak-freeze"){ freezes = r.count; store.set("freezes", freezes); }
       store.set("wallet", wallet);
-      pushDirty(store, "purchase");
+      pushDirty(store, "purchase", undefined, B.on);
       justBought = { id: item.id, at: performance.now() };
       updateWalletChip(); updateStreakChip(); renderShop();
     };
@@ -2943,7 +2945,7 @@ async function iapBuy(p, btn){
   if(g.ok){
     wallet = g.wallet; ent = g.ent;
     store.set("wallet", wallet); store.set("ent", ent);
-    pushDirty(store, "purchase");
+    pushDirty(store, "purchase", undefined, B.on);
     updateWalletChip();
     toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: p.coins.toLocaleString() }));
   }
