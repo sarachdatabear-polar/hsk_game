@@ -3007,12 +3007,19 @@ async function iapBuy(p, btn){
     sleep: ms => new Promise(res => setTimeout(res, ms)),
   });
   iapPending = null;
+  // Any reconcile() call inside the poll that ran wrote ALL merged SYNC_KEYS
+  // back to the store, not just wallet (sync.js's reconcile, same guarantee
+  // syncEdge relies on) — rehydrate in-memory state the same way syncEdge
+  // does, or a later gameplay write would persist a stale value on top of
+  // what reconcile just merged in. Unconditional (not just on poll.credited):
+  // a push failure inside reconcile still commits the merged store writes
+  // before returning {ok:false}, and rehydrating a no-op case is harmless.
+  rehydrateFromStore();
+  renderAccount();
   if(poll.credited){
     // Server is authoritative: toast the ACTUAL credited delta
     // (wallet_after - wallet_before), never p.coins — a Supporter bonus or a
     // differently-priced server catalog could make them diverge.
-    wallet = store.get("wallet", 0);
-    updateWalletChip();
     toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: poll.delta.toLocaleString() }));
   }else{
     // Exhausted the poll with no visible credit yet. The webhook's grant is
