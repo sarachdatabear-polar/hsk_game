@@ -6,7 +6,7 @@ import { clozeFor } from "./cloze.js";
 import { tonePool, toneQuestion, gradeTone } from "./tone_gym.js";
 import { killPoints } from "./scoring.js";
 import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus, impactBurst } from "./fx.js";
-import { sfx } from "./sfx.js";
+import { sfx, setSfxVolume, clampVol } from "./sfx.js";
 import { drawCat } from "./cat.js";
 import { drawRaccoon, drawHpBar, RACCOON_HEIGHT } from "./raccoon.js";
 import { uiScale, layout } from "./layout.js";
@@ -21,7 +21,7 @@ import { REMINDER_HOUR, reminderPlan } from "./notify.js";
 import { defaultQuestState, noteQuestEvent, questStatus,
          defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly } from "./quests.js";
 import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
-import { initAudio, speak, audioAvailable, hasMp3 } from "./audio.js";
+import { initAudio, speak, audioAvailable, hasMp3, setVoiceVolume } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, requestNotifPermission } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import { BUILDINGS, streetPieces, streetProgress, streetMetrics, DECO_SPRITE_SCALE } from "./street.js";
@@ -84,12 +84,18 @@ const store = {
 };
 const scope = Object.assign({levels:[3], core:false, newOnly:false, topN:0, lang:"both", sessionLen:20},
                             store.get("scope", {}));
-let settings = Object.assign({autoSpeak:true, showPinyin:true}, store.get("settings", {}));
+let settings = Object.assign({autoSpeak:true, showPinyin:true, sfxVol:1, voiceVol:1}, store.get("settings", {}));
+// Defensive clamp — a corrupt/out-of-range stored value shouldn't survive a
+// reload (see clampVol in sfx.js, shared with audio.js's voice volume).
+settings.sfxVol = clampVol(settings.sfxVol);
+settings.voiceVol = clampVol(settings.voiceVol);
 let formatIntros = store.get("formatIntros", {});   // v6: which formats have had their soft-intro
 // UI language: persisted choice wins, else device language. i18n.js is pure,
 // so persistence lives here (nbhsk.locale), like every other nbhsk.* key.
 setLocale(store.get("locale", detectLocale()));
 sfx.enabled = store.get("sfx", true);
+setSfxVolume(settings.sfxVol);
+setVoiceVolume(settings.voiceVol);
 let pool = [];            // current merged word pool
 let learnDeck = null;     // override deck for "review misses"
 let lenCustomOpen = false;  // "Custom" chip tapped; input visible even if value matches a preset
@@ -1441,12 +1447,32 @@ function renderPauseToggles(){
     box.appendChild(btn);
   }
 }
+// Volume sliders (T12): plain range inputs, bound once at boot; pauseBattle()
+// just re-syncs their displayed value in case settings changed elsewhere
+// (e.g. a future settings screen). Persisted the same way as every other
+// settings.* field — assign, then store.set("settings", settings).
+const pauseSfxVol = $("#pause-sfxvol"), pauseVoiceVol = $("#pause-voicevol");
+function syncPauseSliders(){
+  if(pauseSfxVol) pauseSfxVol.value = settings.sfxVol;
+  if(pauseVoiceVol) pauseVoiceVol.value = settings.voiceVol;
+}
+if(pauseSfxVol) pauseSfxVol.oninput = ()=>{
+  settings.sfxVol = clampVol(pauseSfxVol.value);
+  setSfxVolume(settings.sfxVol);
+  store.set("settings", settings);
+};
+if(pauseVoiceVol) pauseVoiceVol.oninput = ()=>{
+  settings.voiceVol = clampVol(pauseVoiceVol.value);
+  setVoiceVolume(settings.voiceVol);
+  store.set("settings", settings);
+};
 function pauseBattle(){
   if(!B.on || B.paused) return;
   B.paused = true;
   B.pausedAt = performance.now();
   keepAwake(false);   // nothing moves while paused — let the screen sleep
   renderPauseToggles();
+  syncPauseSliders();
   $("#pause-overlay").classList.add("on");
 }
 function resumeBattle(){

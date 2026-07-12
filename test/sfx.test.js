@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { PACKS } from "../src/sfx.js";
+import { describe, it, expect, vi } from "vitest";
+import { PACKS, sfx, setSfxVolume, clampVol } from "../src/sfx.js";
 
 const EVENT_ARRAYS = ["kill", "wrong", "bite"];
 
@@ -87,5 +87,77 @@ describe("sfx PACKS", () => {
     expect(Array.isArray(p.combo.tones)).toBe(true);
     expect(typeof p.combo.boff).toBe("number");
     expect(typeof p.combo.mult).toBe("number");
+  });
+});
+
+describe("clampVol", () => {
+  it("passes through in-range values", () => {
+    expect(clampVol(0.5)).toBe(0.5);
+    expect(clampVol(0)).toBe(0);
+    expect(clampVol(1)).toBe(1);
+  });
+  it("clamps out-of-range values to 0..1", () => {
+    expect(clampVol(-1)).toBe(0);
+    expect(clampVol(2)).toBe(1);
+  });
+  it("bad input falls back to the default (1)", () => {
+    expect(clampVol(NaN)).toBe(1);
+    expect(clampVol(undefined)).toBe(1);
+    expect(clampVol("nope")).toBe(1);
+  });
+  it("bad input falls back to a supplied default", () => {
+    expect(clampVol(NaN, 0.7)).toBe(0.7);
+  });
+});
+
+describe("setSfxVolume — master multiplier applied to the gain envelope", () => {
+  class FakeGain {
+    constructor() {
+      this.gain = { value: 0, setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() };
+    }
+    connect() { return this; }
+  }
+  class FakeOsc {
+    constructor() { this.frequency = { value: 0 }; }
+    connect() { return this; }
+    start() {}
+    stop() {}
+  }
+  // sfx.js memoizes its AudioContext instance on first use (module-level
+  // `ctx`), so a single fake instance/gains array is shared across both
+  // assertions below rather than re-installed per `it` (a second install
+  // would be ignored — `ac()` returns the cached ctx, not the new class).
+  it("multiplies every tone's gain by the master volume set via setSfxVolume", () => {
+    const gains = [];
+    globalThis.window = {
+      AudioContext: class {
+        constructor() { this.currentTime = 0; this.destination = {}; }
+        createGain() { const g = new FakeGain(); gains.push(g); return g; }
+        createOscillator() { return new FakeOsc(); }
+      },
+    };
+    sfx.enabled = true;
+    sfx.pack = "default";
+
+    setSfxVolume(1);
+    sfx.kill(); // default pack's kill = two tones, both vol .15
+    expect(gains.length).toBe(2);
+    expect(gains[0].gain.setValueAtTime).toHaveBeenCalledWith(0.15, 0);
+
+    setSfxVolume(0.5);
+    sfx.kill();
+    expect(gains.length).toBe(4);
+    expect(gains[2].gain.setValueAtTime).toHaveBeenCalledWith(0.075, 0);
+
+    // setSfxVolume(0) — fully muted: nothing new gets scheduled (also
+    // sidesteps WebAudio's exponential-ramp-from-zero edge case). Same
+    // cached ctx/gains array as above — sfx.js memoizes its AudioContext on
+    // first use, so a later `it` couldn't install a fresh fake and observe
+    // its own calls.
+    setSfxVolume(0);
+    sfx.kill();
+    expect(gains.length).toBe(4); // unchanged — no gain nodes created
+
+    setSfxVolume(1); // reset module-level state for any later test in this file
   });
 });

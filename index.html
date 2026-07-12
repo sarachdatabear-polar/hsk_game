@@ -342,6 +342,21 @@
   .pause-toggle .pt-state{font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
     padding:3px 9px; border-radius:999px; background-color:var(--lc-gray); color:var(--lc-ink); flex:0 0 auto;}
   .pause-toggle.on .pt-state{background-color:var(--lc-success); color:var(--lc-cream);}
+  /* T12: SFX/pronunciation volume sliders. The <input> itself is 44px tall
+     (the touch target) even though the visible track is 6px, centered via
+     the browser's default vertical alignment for range inputs. */
+  .pause-sliders{display:flex; flex-direction:column; gap:6px;}
+  .pause-slider-row{display:flex; flex-direction:column; gap:2px;}
+  .pause-slider-row span{font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif;
+    font-weight:700; font-size:13px; color:var(--lc-ink);}
+  .pause-slider-row input[type=range]{-webkit-appearance:none; appearance:none;
+    width:100%; height:44px; min-height:44px; margin:0; padding:0; background:transparent; touch-action:manipulation;}
+  .pause-slider-row input[type=range]::-webkit-slider-runnable-track{height:6px; border-radius:3px; background-color:var(--lc-sand);}
+  .pause-slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:24px; height:24px;
+    margin-top:-9px; border-radius:50%; background-color:var(--lc-green); border:2px solid var(--lc-brown); cursor:pointer;}
+  .pause-slider-row input[type=range]::-moz-range-track{height:6px; border-radius:3px; background-color:var(--lc-sand);}
+  .pause-slider-row input[type=range]::-moz-range-thumb{width:24px; height:24px; border-radius:50%;
+    background-color:var(--lc-green); border:2px solid var(--lc-brown); cursor:pointer;}
   /* darker shade of --lc-error so the cream label clears 4.5:1 (the raw token
      only reaches ~3.8:1 with small text) */
   .pause-quit{font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif; font-weight:700; font-size:14px; color:var(--lc-cream);
@@ -1222,6 +1237,16 @@
           <span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span data-i18n="battle.resume">Resume</span></span>
         </button>
         <div class="pause-toggles" id="pause-toggles"></div>
+        <div class="pause-sliders">
+          <label class="pause-slider-row" for="pause-sfxvol">
+            <span data-i18n="settings.sfxVol">Sound effects</span>
+            <input type="range" id="pause-sfxvol" min="0" max="1" step="0.01" value="1">
+          </label>
+          <label class="pause-slider-row" for="pause-voicevol">
+            <span data-i18n="settings.voiceVol">Pronunciation</span>
+            <input type="range" id="pause-voicevol" min="0" max="1" step="0.01" value="1">
+          </label>
+        </div>
         <button class="pause-quit" id="pause-quit">
           <span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#close"></use></svg><span data-i18n="battle.quit">Quit</span></span>
         </button>

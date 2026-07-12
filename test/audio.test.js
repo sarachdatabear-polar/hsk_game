@@ -1,9 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { chooseTts, speak } from "../src/audio.js";
+import { chooseTts, speak, setVoiceVolume } from "../src/audio.js";
 import { initAudio, audioAvailable } from "../src/audio.js";
 
 class FakeUtterance {
-  constructor(text) { this.text = text; this.lang = null; this.rate = null; this.voice = null; this.onerror = null; }
+  constructor(text) {
+    this.text = text; this.lang = null; this.rate = null; this.voice = null;
+    this.onerror = null; this.volume = null;
+  }
 }
 
 function makeSynth({ speaking = false, pending = false } = {}) {
@@ -107,5 +110,47 @@ describe("speak() utterance error retry", () => {
     // a second error must not trigger another retry
     if (second.onerror) second.onerror(new Event("error"));
     expect(synth.speak).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("setVoiceVolume — applied to both playback paths", () => {
+  it("sets .volume on the SpeechSynthesisUtterance (web TTS path)", () => {
+    const synth = makeSynth();
+    globalThis.window = { speechSynthesis: synth };
+    globalThis.SpeechSynthesisUtterance = FakeUtterance;
+    initAudio([]);
+    setVoiceVolume(0.4);
+    speak("你好");
+    const u = synth.speak.mock.calls[0][0];
+    expect(u.volume).toBe(0.4);
+    setVoiceVolume(1); // reset module-level state for later tests
+  });
+
+  it("sets .volume on the bundled-mp3 Audio element", () => {
+    globalThis.window = {};
+    let created = null;
+    globalThis.Audio = class {
+      constructor(src) { this.src = src; this.volume = null; created = this; }
+      play() { return Promise.resolve(); }
+      pause() {}
+    };
+    initAudio(["你好"]);
+    setVoiceVolume(0.6);
+    speak("你好");
+    expect(created).toBeTruthy();
+    expect(created.volume).toBe(0.6);
+    setVoiceVolume(1); // reset module-level state for later tests
+    delete globalThis.Audio;
+  });
+
+  it("bad input clamps to the default (1) via clampVol", () => {
+    const synth = makeSynth();
+    globalThis.window = { speechSynthesis: synth };
+    globalThis.SpeechSynthesisUtterance = FakeUtterance;
+    initAudio([]);
+    setVoiceVolume(NaN);
+    speak("你好");
+    const u = synth.speak.mock.calls[0][0];
+    expect(u.volume).toBe(1);
   });
 });
