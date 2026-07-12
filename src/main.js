@@ -1236,10 +1236,15 @@ function replayCurrentWord(){
   speak(B.zombie.w.h);
 }
 cv.addEventListener("click", e=>{
-  const r = B.plaqueRect;
-  if(!r) return;
   const box = cv.getBoundingClientRect();
   const x = e.clientX - box.left, y = e.clientY - box.top;
+  // T4: speaker badge hit-tests BEFORE the whole-card plaque rect (it sits
+  // inside plaqueRect's bounds) — same action today (replay), but the
+  // ordering matters once tap-to-skip lands on the card elsewhere (T6).
+  const sr = B.speakerRect;
+  if(sr && x>=sr.x && x<=sr.x+sr.w && y>=sr.y && y<=sr.y+sr.h){ replayCurrentWord(); return; }
+  const r = B.plaqueRect;
+  if(!r) return;
   if(x>=r.x && x<=r.x+r.w && y>=r.y && y<=r.y+r.h) replayCurrentWord();
 });
 cv.addEventListener("keydown", e=>{
@@ -2021,6 +2026,7 @@ function draw(now){
     drawHpBar(ctx, z.x, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.L.mascotS, hpFrac, B.L.mascotS);
   }else{
     B.plaqueRect = null;   // no word on screen — the canvas click/keydown handlers no-op
+    B.speakerRect = null;
     // A stamp can outlive the raccoon (word cleared, next spawn pending) —
     // still finish its fade here so it doesn't just vanish.
     drawFeedbackLayer(now);
@@ -2076,11 +2082,42 @@ function draw(now){
 // vis: { mask, icon, py } — what the format may reveal while live (see the
 // call site in draw(), which derives it from FORMATS[z.format].plaque).
 // Order per PRD §4.3/§6.2: pinyin (small, above) -> Hanzi (large).
+// Small rounded speaker mark (T4 — supersedes the 2026-07-11 audit F6 removal;
+// discoverability affordance beside the pinyin, distinct from the whole-card
+// tap-to-replay surface which stays). cx/cy: badge center; r: badge radius,
+// all in CSS px (canvas ctx is DPR-transformed — see sizeCanvas). Mirrors
+// assets/ui-icons.svg#sound's cone+waves silhouette, hand-drawn for canvas.
+function drawSpeakerBadge(cx, cy, r){
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.fillStyle = "#F2BC57";      // --lc-sun
+  ctx.fill();
+  ctx.lineWidth = Math.max(1, r*0.14);
+  ctx.strokeStyle = "#2E2A24";    // --lc-ink
+  ctx.stroke();
+  const s = r * 0.09;             // scales a 24x24 glyph viewBox into the badge
+  ctx.save();
+  ctx.translate(cx - 12*s, cy - 12*s);
+  ctx.fillStyle = "#2E2A24";
+  ctx.beginPath();
+  ctx.moveTo(4*s,14*s); ctx.lineTo(4*s,10*s); ctx.lineTo(8*s,10*s);
+  ctx.lineTo(13*s,6*s); ctx.lineTo(13*s,18*s); ctx.lineTo(8*s,14*s);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = "#2E2A24";
+  ctx.lineWidth = Math.max(1, 1.6*s);
+  ctx.lineCap = "round";
+  ctx.beginPath(); ctx.arc(16*s, 12*s, 4*s, -0.6, 0.6); ctx.stroke();
+  ctx.beginPath(); ctx.arc(16*s, 12*s, 7*s, -0.7, 0.7); ctx.stroke();
+  ctx.restore();
+}
 function drawWordPlate(z, vis, now){
   const w = z.w, boss = z.boss, level = w.lv;
+  const format = z.format || "meaning";
   const hanzi = vis.mask ? "？？" : vis.icon ? "🔊" : w.h;
   // pinyin off when: the format hides it (reverse/listen/tone while live), OR the player toggled it off
   const pinyin = (!vis.py || !settings.showPinyin) ? "" : w.p;
+  // T4: per-format instruction line, always shown, above the pinyin row.
+  const instruction = t("battle.instruction." + format);
 
   // A3 plaque bounce: damped dip on a correct answer (juice.js curve; 0 when
   // idle or under reduced motion — no vertical motion, per "fades only").
@@ -2092,22 +2129,26 @@ function drawWordPlate(z, vis, now){
   ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK);
   const textW = Math.max(ctx.measureText(hanzi).width, 74*T);
   const spkR = 12*T;
+  const instrPx = 13*T;
   // Width invariant: the card must be wide enough for every line it will ever
-  // show — hanzi AND pinyin — measured here EVERY call regardless of reveal
-  // state, so it never resizes/jumps when the answer is revealed.
+  // show — hanzi, pinyin, AND the instruction line — measured here EVERY call
+  // regardless of reveal state, so it never resizes/jumps when revealed.
   let widestLine = 0;
   if(pinyin){
     ctx.font = fontString(600, B.L.pinyinPx, LATIN_STACK);
     widestLine = Math.max(widestLine, ctx.measureText(pinyin).width);
   }
+  ctx.font = fontString(600, instrPx, LATIN_STACK);
+  widestLine = Math.max(widestLine, ctx.measureText(instruction).width);
   ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK); // restore: hanzi font, as measured above
   const lw = Math.min(B.w - 24*T, Math.max(textW + 56*T + spkR*2.2, widestLine + 24*T));
-  // Stacked rows, top to bottom: pinyin (if shown) -> Hanzi. No translation
-  // row — English/Thai live on the choice buttons only (never the plaque).
+  // Stacked rows, top to bottom: instruction -> pinyin (if shown) -> Hanzi.
+  // No translation row — English/Thai live on the choice buttons only.
   const padV = 10*T;
+  const instrH = 16*T;
   const pinyinH = pinyin ? 22*T : 0;
   const hanziH = B.L.hanziPx * 1.05;
-  const lh = padV*2 + pinyinH + hanziH;
+  const lh = padV*2 + instrH + pinyinH + hanziH;
   const x = B.w/2 - lw/2, y = wy - lh/2;
   const plaqueImg = sprite("ui-word-plaque");
   if(plaqueImg){
@@ -2117,8 +2158,10 @@ function drawWordPlate(z, vis, now){
       ctx.drawImage(plaqueImg, r.sx, r.sy, r.sw, r.sh, r.dx, r.dy, r.dw, r.dh);
     }
   }else{
-    // vector fallback: cream paper plaque (education-first reference): matte
-    // paper, warm-brown border, corner ticks — hanzi/pinyin stay dynamic text
+    // T4: vector fallback — matte cream paper + ONE warm-brown hairline
+    // border + soft shadow. Dropped the double-border + corner ticks (lighter
+    // frame per spec §3); the 9-slice sprite path above is a real asset and
+    // is untouched.
     ctx.shadowColor = "rgba(60,40,20,.32)";
     ctx.shadowBlur = 12*T;
     ctx.shadowOffsetY = 4*T;
@@ -2129,34 +2172,40 @@ function drawWordPlate(z, vis, now){
     roundRect(x,y,lw,lh,14*T); ctx.fill();
     ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
     ctx.strokeStyle = boss ? "#D8A93A" : "#B98F55";
-    ctx.lineWidth = 2.6*T;
-    roundRect(x+1.3*T,y+1.3*T,lw-2.6*T,lh-2.6*T,13*T); ctx.stroke();
-    ctx.strokeStyle = "rgba(231,211,166,.9)";
-    ctx.lineWidth = 1.2*T;
-    roundRect(x+6*T,y+6*T,lw-12*T,lh-12*T,9*T); ctx.stroke();
-    // corner ticks
-    ctx.strokeStyle = "#C29B5F";
-    ctx.lineWidth = 1.8*T;
-    ctx.lineCap = "round";
-    const tk = 5*T, ti = 10*T;
-    ctx.beginPath();
-    ctx.moveTo(x+ti, y+ti+tk); ctx.lineTo(x+ti, y+ti); ctx.lineTo(x+ti+tk, y+ti);
-    ctx.moveTo(x+lw-ti-tk, y+ti); ctx.lineTo(x+lw-ti, y+ti); ctx.lineTo(x+lw-ti, y+ti+tk);
-    ctx.moveTo(x+ti, y+lh-ti-tk); ctx.lineTo(x+ti, y+lh-ti); ctx.lineTo(x+ti+tk, y+lh-ti);
-    ctx.moveTo(x+lw-ti-tk, y+lh-ti); ctx.lineTo(x+lw-ti, y+lh-ti); ctx.lineTo(x+lw-ti, y+lh-ti-tk);
-    ctx.stroke();
+    ctx.lineWidth = 1.4*T;
+    roundRect(x+0.7*T,y+0.7*T,lw-1.4*T,lh-1.4*T,13*T); ctx.stroke();
   }
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   let cy = y + padV;
   const innerW = lw - 16*T; // defensive shrink budget: screen-width clamp can still leave a line too wide
+  // instruction line (warm-brown, format-keyed) — always shown, above pinyin
+  {
+    let font = fontString(600, instrPx, LATIN_STACK);
+    ctx.font = font;
+    const iw = ctx.measureText(instruction).width;
+    if(iw > innerW) ctx.font = fontString(600, instrPx * (innerW/iw), LATIN_STACK);
+    ctx.fillStyle = "#846043";
+    ctx.fillText(instruction, B.w/2, cy + instrH/2);
+    cy += instrH;
+  }
   if(pinyin){
     ctx.font = fontString(600, B.L.pinyinPx, LATIN_STACK);
     const pw = ctx.measureText(pinyin).width;
     if(pw > innerW) ctx.font = fontString(600, B.L.pinyinPx * (innerW/pw), LATIN_STACK);
     ctx.fillStyle = "#8C5F2A";
     ctx.fillText(pinyin, B.w/2, cy + pinyinH/2);
+    // T4: speaker badge beside the pinyin, inside the card's right margin —
+    // hit rect padded to >=44px CSS px regardless of the visual badge size;
+    // inset guarantees the whole padded hit box stays inside the card.
+    const hit = Math.max(44, spkR*2);
+    const inset = Math.max(spkR + 10*T, hit/2 + 6*T);
+    const bx = x + lw - inset, by = cy + pinyinH/2;
+    drawSpeakerBadge(bx, by, spkR);
+    B.speakerRect = { x: bx - hit/2, y: by - hit/2, w: hit, h: hit };
     cy += pinyinH;
+  }else{
+    B.speakerRect = null;
   }
   ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK);
   ctx.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
@@ -2178,10 +2227,6 @@ function drawWordPlate(z, vis, now){
     ctx.textAlign = "left";
     ctx.fillText(tagText, x+14*T, y-th*.45 + th*.7);
   }
-  // 2026-07-11 audit F6: no more corner speaker glyph — the whole plaque is
-  // already the tap-to-replay surface (B.plaqueRect below, hit-tested by the
-  // #cv click/keydown listeners), so the icon was pure decoration. Removing
-  // it also declutters the card per Jordan's finding.
   B.plaqueRect = {x, y, w: lw, h: lh};
   ctx.restore();
 }

@@ -322,6 +322,14 @@ export const STRINGS = {
     "battle.typedLettersOk": "letters right — check the tones!",
     "battle.typedTonesOk": "tones right — check the spelling!",
     "battle.toneAria": "tone {n} for {syl}",
+    // T4 (battle-interface round): per-format instruction line above the
+    // card's pinyin — TH strings flagged for native-review queue.
+    "battle.instruction.meaning": "Choose the correct meaning",
+    "battle.instruction.reverse": "Choose the hanzi",
+    "battle.instruction.listen": "Listen, then choose",
+    "battle.instruction.tone": "Choose the pinyin",
+    "battle.instruction.typed": "Type the pinyin",
+    "battle.instruction.cloze": "Fill the blank",
     // tones (v6 phase 3: standalone tone-discrimination minigame)
     "tones.title": "Tone Trainer",
     "tones.instruction": "Which tone did you hear?",
@@ -650,6 +658,14 @@ export const STRINGS = {
     "battle.typedLettersOk": "ตัวอักษรถูกแล้ว — เช็ควรรณยุกต์!",
     "battle.typedTonesOk": "วรรณยุกต์ถูกแล้ว — เช็คตัวสะกด!",
     "battle.toneAria": "วรรณยุกต์ {n} ของ {syl}",
+    // T4 (battle-interface round) — machine/plan-authored, flagged for the
+    // native-review queue (see i18n.js header convention).
+    "battle.instruction.meaning": "เลือกความหมายที่ถูกต้อง",
+    "battle.instruction.reverse": "เลือกตัวอักษรที่ถูกต้อง",
+    "battle.instruction.listen": "ฟังแล้วเลือกความหมาย",
+    "battle.instruction.tone": "เลือกพินอินที่ถูกต้อง",
+    "battle.instruction.typed": "พิมพ์พินอิน",
+    "battle.instruction.cloze": "เติมคำในช่องว่าง",
     // tones (v6 phase 3: standalone tone-discrimination minigame)
     "tones.title": "ฝึกวรรณยุกต์",
     "tones.instruction": "คุณได้ยินวรรณยุกต์อะไร",

@@ -106,11 +106,11 @@ export function meaning(w, lang, thaiPrimary = false) {
 - i18n keys: `battle.instruction.meaning` ("Choose the correct meaning" / TH "เลือกความหมายที่ถูกต้อง"), `.reverse` ("Choose the hanzi" / "เลือกตัวอักษรที่ถูกต้อง"), `.listen` ("Listen, then choose" / "ฟังแล้วเลือกความหมาย"), `.tone` ("Choose the pinyin" / "เลือกพินอินที่ถูกต้อง"), `.typed` ("Type the pinyin" / "พิมพ์พินอิน"), `.cloze` ("Fill the blank" / "เติมคำในช่องว่าง"). Mark TH strings for the native-review queue in the commit body.
 - Produces: `B.speakerRect` `{x,y,w,h}` (canvas hit region beside pinyin, ≥44px square in CSS pixels) — click handler order: speaker hit → replay audio ONLY; card hit elsewhere → replay (existing); during reveal window, any canvas tap outside speaker → skip (Task 6 consumes this ordering).
 
-- [ ] **Step 1:** Add i18n keys (both locales). Full `npm test` (the usage guard will fail until they're referenced — add keys and wiring in one step if the guard demands it).
-- [ ] **Step 2:** drawWordPlate: instruction line above pinyin (14-16px equivalent via `T` scale, `--lc-brown` ink `#846043`), format-keyed. Extend `lh` accordingly. Speaker glyph (reuse `iconSvg("sound")` path style — canvas: draw a simple rounded speaker mark, sun-yellow fill, ink stroke) beside pinyin; store `B.speakerRect`. Replace the double border + corner ticks with ONE 1.4*T hairline (`#B98F55` kept) + existing soft shadow (the 9-slice sprite path stays as-is; simplification applies to the vector fallback AND shrink the 9-slice inset look only if trivial — do not regenerate the plaque asset).
-- [ ] **Step 3:** Click handler: speakerRect check before plaqueRect.
-- [ ] **Step 4:** Build + probe: screenshot question live (EN + TH locales); tap speaker region → audio fires (assert via `speechSynthesis`/Audio spy in page, or visually confirm no crash + log).
-- [ ] **Step 5:** Full `npm test`. Commit: `feat(battle): card instruction line + speaker affordance, lighter frame`.
+- [x] **Step 1:** Add i18n keys (both locales). Full `npm test` (the usage guard will fail until they're referenced — add keys and wiring in one step if the guard demands it).
+- [x] **Step 2:** drawWordPlate: instruction line above pinyin (14-16px equivalent via `T` scale, `--lc-brown` ink `#846043`), format-keyed. Extend `lh` accordingly. Speaker glyph (reuse `iconSvg("sound")` path style — canvas: draw a simple rounded speaker mark, sun-yellow fill, ink stroke) beside pinyin; store `B.speakerRect`. Replace the double border + corner ticks with ONE 1.4*T hairline (`#B98F55` kept) + existing soft shadow (the 9-slice sprite path stays as-is; simplification applies to the vector fallback AND shrink the 9-slice inset look only if trivial — do not regenerate the plaque asset).
+- [x] **Step 3:** Click handler: speakerRect check before plaqueRect.
+- [x] **Step 4:** Build + probe: screenshot question live (EN + TH locales); tap speaker region → audio fires (assert via `speechSynthesis`/Audio spy in page, or visually confirm no crash + log).
+- [x] **Step 5:** Full `npm test`. Commit: `feat(battle): card instruction line + speaker affordance, lighter frame`.
 
 ### Task 5: Hearts in-scene + HP bar restyle
 
