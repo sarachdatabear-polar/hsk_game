@@ -34,40 +34,35 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
   );
 
-  // Idempotency: event_id has a unique index (migrations/2026-07-12). A
-  // 23505 conflict means this event's coins were already credited — skip the
-  // wallet increment (the one non-idempotent step) but fall through to the
-  // entitlement upsert, which must still run: if a previous delivery died
-  // between wallet and entitlement, only a replay can finish the grant.
-  // A 23503 FK violation means the user row is gone (deleted account) —
-  // permanent, so ack 200: retrying can never succeed, and letting RC
-  // retry-loop forever risks it disabling the whole webhook.
-  let duplicate = false;
-  const { error: ledgerErr } = await supabase
-    .from("ledger")
-    .insert({ user_id: userId, delta: coins, reason: productId, event_id: eventId });
-  if (ledgerErr) {
-    if (ledgerErr.code === "23503") return new Response(JSON.stringify({ ignored: "unknown-user" }), { status: 200 });
-    if (ledgerErr.code !== "23505") return new Response("storage error", { status: 500 }); // real failure — let RC retry
-    duplicate = true;
-  }
+  // grant_purchase (docs/supabase/migrations/2026-07-12-iap-golive.sql) does
+  // the ledger insert, wallet increment, and entitlement upsert as ONE
+  // plpgsql function body — a single implicit transaction, all-or-nothing.
+  // That atomicity is load-bearing (I1 fix): a visible ledger row now always
+  // implies its wallet increment already committed alongside it, which is
+  // exactly what T3's ledger-cursor reconcile needs to be safe. Doing this
+  // as three separate awaits (ledger insert, then rpc increment, then
+  // entitlement upsert) left a window where a mid-flight reconcile could
+  // see the ledger row without the balance it represents, credit itself,
+  // advance its cursor past the row, and double-credit permanently once the
+  // increment landed a moment later.
+  const { data, error } = await supabase.rpc("grant_purchase", {
+    p_user_id: userId,
+    p_delta: coins,
+    p_reason: productId,
+    p_event_id: eventId,
+    p_entitlement: entitlement,
+  });
+  if (error) return new Response("storage error", { status: 500 }); // real failure — let RC retry
 
-  if (!duplicate) {
-    // Atomic increment via the increment_wallet SQL function (INSERT ... ON
-    // CONFLICT DO UPDATE adds under the row lock — no read-modify-write race).
-    const { error: walletErr } = await supabase
-      .rpc("increment_wallet", { p_user_id: userId, p_delta: coins });
-    if (walletErr) return new Response("storage error", { status: 500 });
+  switch (data) {
+    case "granted": return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    case "duplicate": return new Response(JSON.stringify({ duplicate: true }), { status: 200 });
+    // Deleted account: permanent, so ack 200 — retrying can never succeed,
+    // and letting RC retry-loop forever risks it disabling the webhook.
+    case "unknown-user": return new Response(JSON.stringify({ ignored: "unknown-user" }), { status: 200 });
+    // Should be unreachable (grant_purchase only ever returns the three
+    // values above); treat defensively as a transient failure so RC retries
+    // rather than silently swallowing a grant.
+    default: return new Response("storage error", { status: 500 });
   }
-
-  // Idempotent by PK (user_id, product_id) — safe on both first-time and
-  // duplicate paths; an error 500s so RC retries until the grant is whole.
-  if (entitlement) {
-    const { error: entErr } = await supabase
-      .from("entitlements")
-      .upsert({ user_id: userId, product_id: productId }, { onConflict: "user_id,product_id" });
-    if (entErr) return new Response("storage error", { status: 500 });
-  }
-
-  return new Response(JSON.stringify(duplicate ? { duplicate: true } : { ok: true }), { status: 200 });
 });
