@@ -9,11 +9,14 @@ import { mergeAll, defaultSyncMeta } from "./merge.js";
 export const MIN_SYNC_GAP_MS = 30000;
 
 // Reasons allowed to skip the cooldown gate: sign-in (a fresh session should
-// always get one reconcile), and monthly-dirty (pushDirty's redirect for a
+// always get one reconcile), monthly-dirty (pushDirty's redirect for a
 // stale-monthly settle — it must run even if a routine reconcile just fired,
 // since skipping it would fall through to nothing and leave the dirty flag
-// unsettled indefinitely).
-const BYPASS_COOLDOWN = new Set(["sign-in", "monthly-dirty"]);
+// unsettled indefinitely), and purchase (purchase-poll.js's real-provider
+// poll retries ~2s apart — well under MIN_SYNC_GAP_MS — so every retry after
+// the first would otherwise be dropped as "cooldown", making the poll a
+// no-op past try 1).
+const BYPASS_COOLDOWN = new Set(["sign-in", "monthly-dirty", "purchase"]);
 
 let inFlight = false;
 export function __resetForTests() { inFlight = false; }

@@ -116,6 +116,16 @@ describe("reconcile", () => {
     const r2 = await reconcile(store, "sign-in", 100000 + 1);
     expect(r2.ok).toBe(true);
   });
+
+  it("\"purchase\" also bypasses the cooldown (purchase-poll's ~2s-apart retries would otherwise no-op past try 1)", async () => {
+    const { client } = fakeClient({ session: SESSION });
+    __setClientForTests(client);
+    const store = memStore({ sync: { dirty: {}, lastSyncAt: 100000 } });
+    // Well inside MIN_SYNC_GAP_MS of the prior sync — a plain reason would be
+    // dropped as "cooldown" (see the test above); "purchase" must still run.
+    const r = await reconcile(store, "purchase", 100000 + MIN_SYNC_GAP_MS - 1);
+    expect(r.ok).toBe(true);
+  });
   it("regression: a boot-settled local wallet is not double-paid by a still-stale cloud monthly row", async () => {
     // Local already ran settleMonthlyNow() at boot: its wallet (2500) already
     // includes June's 1500 reward. Cloud never pushed since, so its row
