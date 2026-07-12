@@ -64,4 +64,12 @@ describe("getProvider", () => {
     expect(await p.available()).toBe(true);
     expect((await p.purchase("coins_s")).ok).toBe(true);
   });
+
+  // Load-bearing for gating.js: iapVisible() hides the mock behind the dev
+  // flag by checking kind === "mock", not available(). If this drifts, the
+  // mock reads as a real provider and un-darks the purchase UI in prod.
+  it("is tagged kind: \"mock\" (gating.js relies on this)", () => {
+    const s = memStore();
+    expect(getProvider({ get: s.get, set: s.set, delayMs: 0 }).kind).toBe("mock");
+  });
 });

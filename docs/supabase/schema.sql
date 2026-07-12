@@ -72,7 +72,9 @@ create or replace trigger progress_touch before update on public.progress
 -- wallet — coin balance + daily anti-cheat accounting. (PRD §3, §6.2)
 -- `coins` = spendable balance (mirrors nbhsk.wallet, an integer today).
 -- `earned_today` + `earned_today_date` back the server-side daily earn cap;
--- purchased coins bypass the cap and arrive via the ledger (service_role).
+-- purchased coins bypass the cap: the RevenueCat webhook writes them with the
+-- service role, which wallet_guard exempts from the clamp (see below), and
+-- records each grant in the ledger.
 -- ---------------------------------------------------------------------------
 create table if not exists public.wallet (
   user_id           uuid primary key references auth.users (id) on delete cascade,
@@ -164,6 +166,10 @@ alter table public.progress alter column best set default '{}'::jsonb;
 update public.progress set best = '{}'::jsonb where best = '[]'::jsonb;
 
 -- wallet_guard — PRD §3.3 server-side anti-cheat clamp.
+--  * Service-role writers are EXEMPT (revision 2026-07-12): purchased coins
+--    are granted by the RevenueCat webhook with the service key, and a paid
+--    pack must never be eaten by the earn clamp. Clients can't reach this
+--    path — RLS keys them to anon/authenticated JWTs.
 --  * Only positive coin deltas count as earnings; spending is never penalized.
 --  * UPDATE allowance = 25000/day × days since the row was last written
 --    (edge-based sync legitimately delivers several offline days at once).
@@ -179,6 +185,14 @@ declare
   delta     integer;
   days      integer;
 begin
+  -- Server-authoritative purchase grants bypass the earn clamp. auth.role()
+  -- reads the request JWT's role claim (same auth.* helper family the RLS
+  -- policies use): 'service_role' only for service-key requests — clients
+  -- get 'anon'/'authenticated' and clamp as before. (Direct psql/SQL-editor
+  -- sessions have no JWT: auth.role() is null there, so the clamp applies.)
+  if auth.role() = 'service_role' then
+    return new;
+  end if;
   new.freezes := least(greatest(coalesce(new.freezes, 0), 0), 2);
   new.coins   := greatest(coalesce(new.coins, 0), 0);
   if tg_op = 'INSERT' then
@@ -210,3 +224,80 @@ $$;
 drop trigger if exists wallet_guard on public.wallet;
 create trigger wallet_guard before insert or update on public.wallet
   for each row execute function public.wallet_guard();
+
+-- ---------------------------------------------------------------------------
+-- Revision 2026-07-12 (coin-purchase go-live, Phase 1 T2). Three changes, see
+-- docs/supabase/migrations/2026-07-12-iap-golive.sql:
+--  * ledger.event_id (below) makes the RevenueCat webhook's ledger insert
+--    idempotent: a replayed delivery for the same RC event hits the unique
+--    index instead of crediting the wallet twice.
+--  * wallet_guard (edited in place above) now exempts service-role writers,
+--    so the webhook's paid-coin grants bypass the daily earn clamp.
+--  * grant_purchase (below) fuses the ledger insert + wallet increment +
+--    entitlement upsert into ONE atomic function (I1 fix, revision
+--    2026-07-12b): see the function's own comment for the race it closes.
+-- ---------------------------------------------------------------------------
+alter table public.ledger add column if not exists event_id text;
+
+create unique index if not exists ledger_event_id_uidx
+  on public.ledger (event_id) where event_id is not null;
+
+-- ---------------------------------------------------------------------------
+-- Revision 2026-07-12b (I1 go-live fix, Phase 1 T2 adversarial review).
+--
+-- Superseded: increment_wallet (2026-07-12 revision above) paired with the
+-- webhook doing the ledger insert and the wallet increment as two SEPARATE
+-- awaits. That left a window where the ledger row was COMMITTED (visible to
+-- readers) but the wallet increment was NOT YET applied. A client reconcile
+-- reading the ledger in that window sees a coin-pack delta it hasn't folded
+-- into its local total, credits itself, and advances its cursor PAST the
+-- row — so when the wallet increment lands a moment later, the max(local,
+-- cloud) fold on the next reconcile double-counts it, permanently (the
+-- cursor already moved past the row, so nothing re-triggers the credit).
+--
+-- Fix: grant_purchase does the ledger insert, the wallet increment, and the
+-- entitlement upsert inside ONE plpgsql function body, which Postgres runs
+-- as a single implicit transaction — either all three writes commit, or
+-- none do. A ledger row can never be visible without its wallet increment
+-- already committed alongside it, which is exactly what makes the client's
+-- ledger-cursor reconcile safe to trust.
+--
+-- increment_wallet is dropped: it was introduced in the same not-yet-applied
+-- migration this revision supersedes, and nothing else in the codebase
+-- calls it after this change (grep confirmed) — no reason to ship dead code.
+drop function if exists public.increment_wallet(uuid, integer);
+
+-- grant_purchase — atomic ledger + wallet + entitlement write for the
+-- webhook. See the "Revision 2026-07-12b" comment above for why atomicity
+-- matters (the I1 race). event_id carries the idempotency key: the ledger
+-- insert is the one step that can conflict (ledger_event_id_uidx, above),
+-- so it doubles as the "claim this event" step — if it succeeds, the other
+-- two writes are guaranteed to commit in the same transaction.
+create or replace function public.grant_purchase(
+  p_user_id uuid, p_delta integer, p_reason text, p_event_id text, p_entitlement text
+) returns text language plpgsql as $$
+begin
+  insert into public.ledger (user_id, delta, reason, event_id)
+  values (p_user_id, p_delta, p_reason, p_event_id);        -- claims the event; unique event_id = idempotency key
+  insert into public.wallet (user_id, coins) values (p_user_id, p_delta)
+    on conflict (user_id) do update set coins = wallet.coins + excluded.coins;
+  if p_entitlement is not null then
+    insert into public.entitlements (user_id, product_id) values (p_user_id, p_entitlement)
+      on conflict (user_id, product_id) do nothing;
+  end if;
+  return 'granted';
+exception
+  when unique_violation then                                 -- event already processed: DO NOT re-credit...
+    if p_entitlement is not null then                        -- ...but heal a prior partial (entitlement is PK-idempotent)
+      insert into public.entitlements (user_id, product_id) values (p_user_id, p_entitlement)
+        on conflict (user_id, product_id) do nothing;
+    end if;
+    return 'duplicate';
+  when foreign_key_violation then                            -- deleted account: permanent, ack so RC stops retrying
+    return 'unknown-user';
+end;
+$$;
+
+-- Server-authoritative surface only: clients never write purchased coins
+-- (schema header rule), so client roles may not call this at all.
+revoke execute on function public.grant_purchase(uuid, integer, text, text, text) from public, anon, authenticated;
