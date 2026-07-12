@@ -41,6 +41,8 @@ import { reconcile, pushDirty } from "./sync.js";
 import { PRODUCTS, productById, displayPrice } from "./monetization/products.js";
 import { defaultEnt, isSupporter, applyPurchase, restoreFrom } from "./monetization/purchases.js";
 import { getProvider } from "./monetization/provider.js";
+import { iapVisible } from "./monetization/gating.js";
+import { pollForCredit } from "./monetization/purchase-poll.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -115,8 +117,9 @@ let wallet = store.get("wallet", 0);
 // IAP (mock-provider v1). ent is local-only on purpose — NOT in SYNC_KEYS;
 // entitlements become server-authoritative in the RevenueCat slice.
 let ent = Object.assign(defaultEnt(), store.get("ent", {}));
-// Dark-ship flag: localStorage.setItem("nbhsk.dev.iap", "true") + reload.
-// When RevenueCat lands this becomes "native platform && provider available".
+// Dev-flag escape hatch (mock only): localStorage.setItem("nbhsk.dev.iap", "true")
+// + reload. Sync/cheap — anything that must stay sync keeps reading this directly.
+// Real visibility (see iapOn below) also honors a real provider's availability.
 const iapEnabled = () => !!store.get("dev.iap", false);
 let iapProvider = null;
 let iapPending = null;   // productId of the purchase in flight — survives re-renders
@@ -124,6 +127,13 @@ function provider(){
   if(!iapProvider) iapProvider = getProvider({ get: (k,d)=>store.get(k,d), set: (k,v)=>store.set(k,v) });
   return iapProvider;
 }
+// Availability-driven visibility (go-live plan §4 T1, src/monetization/gating.js):
+// a real provider un-darks the purchase UI on its own; the mock stays behind
+// iapEnabled(). Starts false so nothing flashes visible before init resolves
+// it (identical to today's hidden-by-default in Phase 1, where no real
+// provider exists). The dev flag itself only changes via localStorage edit +
+// reload, so no live re-evaluation is needed beyond the one at boot.
+let iapOn = false;
 let shopState = Object.assign(defaultShop(), store.get("shop", {}));
 function updateWalletChip(){ setPill($("#home-wallet"), "secondary-coin", wallet.toLocaleString()); }
 // Re-arm window (ms): a deco buy synchronously re-renders its row as an
@@ -515,7 +525,8 @@ function renderAccount(){
   if(v.showSignOut) p.appendChild(accountBtn(t("account.signOut"), onAccountSignOut));
   // IAP v1: restore is device-local (mock provider); Apple will require
   // this button once real billing lands, so the UI slot exists now.
-  if(iapEnabled()) p.appendChild(accountBtn(t("iap.restore"), onRestorePurchases));
+  // Availability-aware (iapOn, not iapEnabled()) — see gating.js.
+  if(iapOn) p.appendChild(accountBtn(t("iap.restore"), onRestorePurchases));
 }
 
 function accountBtn(label, onclick){
@@ -2885,7 +2896,7 @@ function makeShopRow(item, today){
 
 /* --------------------------- IAP (mock v1) --------------------------- */
 function renderIapSections(){
-  const on = iapEnabled();
+  const on = iapOn;
   for(const id of ["shop-coins-sect", "shop-coins", "shop-supporter-sect", "shop-supporter"]){
     const el = document.getElementById(id);
     if(el) el.hidden = !on;
@@ -2939,33 +2950,100 @@ function makeSupporterCard(){
   return row;
 }
 
-// Buy flow: pending -> provider -> applyPurchase -> persist -> celebrate.
+// Buy flow: pending -> provider -> [mock: applyPurchase self-grant] |
+// [real: server-side grant via reconcile poll] -> celebrate.
 // iapPending is the double-tap guard: it is module state, not DOM state, so
 // a mid-purchase renderShop() (e.g. buying an unrelated item) can't hand the
-// user a fresh enabled button for the same product. applyPurchase's orderId
-// idempotency remains the backstop. Cancelled is silent (user changed their
-// mind); failed/unavailable gets a toast.
+// user a fresh enabled button for the same product. Cancelled is silent
+// (user changed their mind); failed/unavailable gets a toast.
 async function iapBuy(p, btn){
   if(iapPending || btn.disabled) return;
   iapPending = p.id;
   btn.disabled = true;
   btn.textContent = t("iap.pending");
-  const r = await provider().purchase(p.id);
-  iapPending = null;
+  const prov = provider();
+  const r = await prov.purchase(p.id);
+
+  if(prov.kind === "mock"){
+    // Mock path (dev flag only, no backend): unchanged self-grant, byte-for-
+    // byte the same flow this branch replaced (coin-purchase go-live T4 —
+    // see the real path below for the split's other half).
+    iapPending = null;
+    if(!r.ok){
+      if(r.reason !== "cancelled") toast(t("iap.failed"));
+      renderShop();
+      return;
+    }
+    const g = applyPurchase(wallet, ent, p.id, r.orderId, Date.now());
+    if(g.ok){
+      wallet = g.wallet; ent = g.ent;
+      store.set("wallet", wallet); store.set("ent", ent);
+      pushEdge("purchase");
+      updateWalletChip();
+      toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: p.coins.toLocaleString() }));
+    }
+    renderShop();   // duplicate/already-owned fall through to the owned state
+    return;
+  }
+
+  // Real provider (kind !== "mock", e.g. "revenuecat"): coins are granted
+  // SERVER-SIDE by the RevenueCat webhook (idempotent ledger row + wallet
+  // increment) — the client NEVER self-grants here. purchase() ok only means
+  // the store transaction went through; stay in iap.pending and poll
+  // sync.js's ledger-cursor reconcile ("purchase" bypasses the sync cooldown,
+  // see sync.js's BYPASS_COOLDOWN) until the credit lands locally (go-live
+  // plan §3/§4 T4).
   if(!r.ok){
+    iapPending = null;
     if(r.reason !== "cancelled") toast(t("iap.failed"));
     renderShop();
     return;
   }
-  const g = applyPurchase(wallet, ent, p.id, r.orderId, Date.now());
-  if(g.ok){
-    wallet = g.wallet; ent = g.ent;
-    store.set("wallet", wallet); store.set("ent", ent);
-    pushEdge("purchase");
-    updateWalletChip();
-    toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: p.coins.toLocaleString() }));
+  const walletBefore = wallet;
+  const poll = await pollForCredit({
+    reconcile: reason => reconcile(store, reason),
+    walletBefore,
+    getWallet: () => store.get("wallet", 0),
+    sleep: ms => new Promise(res => setTimeout(res, ms)),
+  });
+  iapPending = null;
+  // Any reconcile() call inside the poll that ran wrote ALL merged SYNC_KEYS
+  // back to the store, not just wallet (sync.js's reconcile, same guarantee
+  // syncEdge relies on) — rehydrate in-memory state the same way syncEdge
+  // does, or a later gameplay write would persist a stale value on top of
+  // what reconcile just merged in. Unconditional (not just on poll.credited):
+  // a push failure inside reconcile still commits the merged store writes
+  // before returning {ok:false}, and rehydrating a no-op case is harmless.
+  rehydrateFromStore();
+  renderAccount();
+  if(poll.credited){
+    // Server is authoritative: toast the ACTUAL credited delta
+    // (wallet_after - wallet_before), never p.coins — a Supporter bonus or a
+    // differently-priced server catalog could make them diverge.
+    toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: poll.delta.toLocaleString() }));
+  }else{
+    // Exhausted the poll with no visible credit yet. The webhook's grant is
+    // idempotent and guaranteed eventually — the next ordinary sync (or the
+    // next reconcile edge) will fold the ledger row in. Not an error.
+    toast(t("iap.processing"));
   }
-  renderShop();   // duplicate/already-owned fall through to the owned state
+  // Supporter entitlement rides `ent`, which is local-only and NOT in
+  // SYNC_KEYS (see `ent`'s declaration comment) — the coin poll's reconcile
+  // never touches it. Pull it separately via restore(), same pattern as
+  // onRestorePurchases. (Supporter's bonus coins DO arrive through the coin
+  // poll above, same as any other product.) Coin packs ship first in this
+  // go-live slice — Supporter itself stays gated behind ads landing (round
+  // decision, go-live plan §6.1) — but this branch stays wired for when it
+  // un-darks, so entitlement purchases already work end-to-end.
+  if(p.entitlement){
+    const rr = await prov.restore();
+    if(rr.ok){
+      ent = restoreFrom(ent, rr.ownedProductIds);
+      store.set("ent", ent);
+      renderAccount();
+    }
+  }
+  renderShop();
 }
 
 let shopPreviewRaf = 0;
@@ -3584,6 +3662,11 @@ renderHome();
 renderQuests();
 renderStreet();
 updateNav(currentScreen);
+// Availability-driven IAP gating (go-live plan §4 T1): resolve once at boot.
+// renderIapSections() is safe to call standalone (see its hidden-toggling
+// loop) even before the shop screen has ever been rendered — the elements
+// it touches are static markup, always present in the DOM.
+iapVisible(provider(), iapEnabled()).then(v => { iapOn = v; renderIapSections(); });
 if(location.hash === "#debug"){
   window.__debugTarget = ()=> B.zombie && B.zombie.w.h;
   window.__grantXp = n => { addXp(n); };

@@ -126,6 +126,32 @@ export async function pushSyncRows(progressRow, walletRow) {
   } catch (e) { return { ok: false }; }
 }
 
+// Sentinel "beginning of time" cursor: a fresh install (or a wipe) has no
+// meta.lastLedgerAt yet (defaultSyncMeta's "") — passing that straight to a
+// `gt` filter is unreliable across backends, so fall back to an epoch string
+// old enough that `created_at > sinceIso` is equivalent to "all rows".
+export const LEDGER_EPOCH = "1970-01-01T00:00:00Z";
+
+// Purchase ledger rows only (event_id set by the webhook's idempotent
+// insert — earned-coin rows never carry one). Ordered ascending so the last
+// row's created_at is the new cursor value (sync.js's ledger-cursor fold,
+// design doc §3 as amended: THE FOLD).
+export async function fetchLedgerSince(userId, sinceIso) {
+  if (offline()) return { ok: false, reason: "offline" };
+  try {
+    const since = sinceIso || LEDGER_EPOCH;
+    const { data, error } = await getClient()
+      .from("ledger")
+      .select("delta, created_at")
+      .eq("user_id", userId)
+      .not("event_id", "is", null)
+      .gt("created_at", since)
+      .order("created_at", { ascending: true });
+    if (error) return { ok: false, reason: "network" };
+    return { ok: true, rows: data || [] };
+  } catch (e) { return { ok: false, reason: "network" }; }
+}
+
 export async function signOut() {
   // Local-scope sign-out; local gameplay state is untouched by design.
   try { await getClient().auth.signOut({ scope: "local" }); } catch (e) { /* ignore */ }

@@ -11,7 +11,7 @@ import { defaultDaily } from "./daily.js";
 export const SYNC_KEYS = ["mastery", "xp", "daily", "quests", "monthly",
   "wallet", "freezes", "shop", "stickers", "best"];
 
-export function defaultSyncMeta() { return { dirty: {}, lastSyncAt: 0 }; }
+export function defaultSyncMeta() { return { dirty: {}, lastSyncAt: 0, lastLedgerAt: "" }; }
 
 const num = v => Number(v) || 0;
 
@@ -157,17 +157,43 @@ export function mergeDaily(a, b) {
 // first (via quests.js's settleMonthly — same rule settleMonthlyNow uses,
 // so a side that's already current-month is an idempotent no-op) and only
 // then max-fold the two settled wallets together.
-export function mergeAll(local, cloud, { shopDirty = false, today = null } = {}) {
+// THE FOLD (coin-purchase go-live, design doc §3 as amended 2026-07-12 — the
+// doc's looser "add after the max fold" wording double-counts once the cloud
+// wallet already reflects the purchase; this is the corrected formula).
+//
+// Purchased coins are granted server-side: the webhook inserts a ledger row
+// (event_id set) AND atomically increments the cloud wallet row. So by the
+// time reconcile runs, the cloud wallet may ALREADY include a purchase the
+// client hasn't seen locally. `unseenPurchased` is the sum of ledger deltas
+// for event_id-tagged rows newer than the client's cursor (sync.js computes
+// it from fetchLedgerSince).
+//
+// A bare max(local, cloud) either eats the purchase (if local is otherwise
+// ahead) or — if we naively added unseenPurchased on top of both sides —
+// double-counts it for a client that already pushed its earned coins into
+// the cloud wallet the webhook then incremented. The fix: subtract
+// unseenPurchased from the cloud contribution BEFORE the max fold (this
+// neutralizes the cloud's purchase component so the fold only compares the
+// two sides' shared, already-synced history) and add it back ONCE after the
+// fold (this credits the purchase exactly once, regardless of which side the
+// max picked). Value-neutral for any row whose value already exists on BOTH
+// sides — that's exactly the well-synced case. mergeWallet's floor-at-0 clamp
+// absorbs a spent-down cloud wallet going negative after the subtraction.
+//
+// unseenPurchased defaults to 0, at which point this is a 0-subtract/0-add
+// no-op: byte-identical to the pre-fold formula (test-asserted in merge.test.js).
+export function mergeAll(local, cloud, { shopDirty = false, today = null, unseenPurchased = 0 } = {}) {
   const l = local || {}, c = cloud || {};
   const lm = today ? settleMonthly(Object.assign(defaultMonthly(), l.monthly || {}), today) : { state: l.monthly, earned: 0 };
   const cm = today ? settleMonthly(Object.assign(defaultMonthly(), c.monthly || {}), today) : { state: c.monthly, earned: 0 };
+  const unseen = num(unseenPurchased);
   return {
     mastery: mergeMastery(l.mastery, c.mastery),
     xp: mergeXp(l.xp, c.xp),
     daily: mergeDaily(l.daily, c.daily),
     quests: mergeQuests(l.quests, c.quests),
     monthly: mergeMonthly(lm.state, cm.state),
-    wallet: mergeWallet(num(l.wallet) + lm.earned, num(c.wallet) + cm.earned),
+    wallet: mergeWallet(num(l.wallet) + lm.earned, num(c.wallet) + cm.earned - unseen) + unseen,
     freezes: mergeFreezes(l.freezes, c.freezes),
     shop: mergeShop(l.shop, c.shop, shopDirty),
     stickers: mergeStickers(l.stickers, c.stickers),

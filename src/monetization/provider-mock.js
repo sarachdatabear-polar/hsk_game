@@ -20,6 +20,7 @@ export function mockProvider(opts) {
   const delayMs = opts.delayMs == null ? MOCK_DELAY_MS : opts.delayMs;
   const wait = () => new Promise(res => setTimeout(res, delayMs));
   return {
+    kind: "mock",
     async available() { return true; },
     async purchase(productId) {
       await wait();

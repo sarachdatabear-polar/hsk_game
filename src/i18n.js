@@ -233,6 +233,10 @@ export const STRINGS = {
     "iap.restored": "Supporter restored ♥",
     "iap.nothingToRestore": "Nothing to restore",
     "iap.restoreFailed": "Restore failed — check your connection and try again.",
+    // Real-provider purchase poll timeout (coin-purchase go-live T4): the
+    // webhook's idempotent grant guarantees eventual delivery, so this is
+    // reassurance, not an error — the next ordinary sync credits it.
+    "iap.processing": "Purchase is processing — your coins will arrive shortly.",
     "account.supporterChip": "Supporter ♥",
     "item.supporter": "Supporter Pack",
     "item.coins_s": "Coin Pouch",
@@ -573,6 +577,7 @@ export const STRINGS = {
     "iap.restored": "กู้คืนสถานะผู้สนับสนุนแล้ว ♥",
     "iap.nothingToRestore": "ไม่มีรายการให้กู้คืน",
     "iap.restoreFailed": "กู้คืนไม่สำเร็จ — ตรวจสอบการเชื่อมต่อแล้วลองใหม่",
+    "iap.processing": "การซื้อกำลังดำเนินการ — เหรียญของคุณจะเข้าบัญชีในไม่ช้า", // TH-REVIEW 2026-07-12: machine-translated, needs native review
     "account.supporterChip": "ผู้สนับสนุน ♥",
     "item.supporter": "แพ็กผู้สนับสนุน",
     "item.coins_s": "ถุงเหรียญ",

@@ -7,7 +7,7 @@ describe("merge: scalars", () => {
   it("SYNC_KEYS lists the 10 synced keys", () =>
     expect(SYNC_KEYS).toEqual(["mastery","xp","daily","quests","monthly","wallet","freezes","shop","stickers","best"]));
   it("defaultSyncMeta shape", () =>
-    expect(defaultSyncMeta()).toEqual({ dirty: {}, lastSyncAt: 0 }));
+    expect(defaultSyncMeta()).toEqual({ dirty: {}, lastSyncAt: 0, lastLedgerAt: "" }));
   it("xp/wallet take max; nullish sides are 0", () => {
     expect(mergeXp(120, 80)).toBe(120);
     expect(mergeXp(undefined, 80)).toBe(80);
@@ -227,5 +227,42 @@ describe("merge: stale monthly settle (P1 2026-07-12, race-safe)", () => {
     const m = mergeAll(local, cloud);     // no opts.today
     expect(m.wallet).toBe(200);           // plain max(200,100), no 1500 credit
     expect(m.monthly).toEqual(mergeMonthly(july, juneDone));
+  });
+});
+
+// Coin-purchase go-live (P1 2026-07-12): purchased coins are granted
+// server-side — the webhook inserts an event_id-tagged ledger row AND
+// atomically increments the cloud wallet. THE FOLD subtracts unseenPurchased
+// from the cloud contribution before the max fold (neutralizing the cloud's
+// already-counted purchase) and adds it back once after — see mergeAll's own
+// comment in src/merge.js for the full reasoning.
+describe("merge: ledger-cursor purchase fold (THE FOLD, coin-purchase go-live)", () => {
+  it("purchase-eaten-pre-fix scenario is fixed: local unpushed ahead, cloud already carries the webhook's grant — credited once", () => {
+    // Pre-fix: max(local 5000, cloud 5000) would eat the 1000-coin purchase
+    // entirely (cloud's pre-purchase value coincidentally equals local's).
+    const local = { wallet: 5000 };
+    const cloud = { wallet: 4000 + 1000 };   // webhook already added the pack
+    expect(mergeAll(local, cloud, { unseenPurchased: 1000 }).wallet).toBe(6000);
+  });
+
+  it("well-synced scenario: local already pushed 5000, cloud is 6000 incl. the purchase — credited once, NOT summed on top", () => {
+    const local = { wallet: 5000 };
+    const cloud = { wallet: 6000 };
+    expect(mergeAll(local, cloud, { unseenPurchased: 1000 }).wallet).toBe(6000); // not 7000
+  });
+
+  it("unseenPurchased=0 is byte-identical to omitting the option entirely", () => {
+    const local = { wallet: 5000 };
+    const cloud = { wallet: 4000 };
+    const withZero = mergeAll(local, cloud, { unseenPurchased: 0 });
+    const omitted = mergeAll(local, cloud, {});
+    expect(withZero).toEqual(omitted);
+    expect(withZero.wallet).toBe(5000);
+  });
+
+  it("spent-down cloud after subtracting unseen goes negative — mergeWallet's floor-at-0 clamp absorbs it, doesn't sink the fold", () => {
+    const local = { wallet: 5000 };
+    const cloud = { wallet: 300 };   // cloud contribution pre-clamp: 300 - 1000 = -700
+    expect(mergeAll(local, cloud, { unseenPurchased: 1000 }).wallet).toBe(6000);
   });
 });
