@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus } from "../src/fx.js";
+import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus, impactBurst } from "../src/fx.js";
 
 function allFinite(specs, keys) {
   return specs.every(s => keys.every(k => Number.isFinite(s[k])));
@@ -148,5 +148,24 @@ describe("perfectBonus", () => {
   });
   it("does not cap below the threshold", () => {
     expect(perfectBonus(1996)).toBe(499);   // 499
+  });
+});
+
+describe("impactBurst", () => {
+  it("8 short-lived impact specs at the origin point", () => {
+    const specs = impactBurst(10, 20);
+    expect(specs.length).toBe(8);
+    expect(specs.every(s => s.kind === "impact")).toBe(true);
+    expect(specs.every(s => s.life === 0.35)).toBe(true);
+    expect(specs.every(s => s.x === 10 && s.y === 20)).toBe(true);
+  });
+  it("carries finite randomized velocities", () => {
+    const specs = impactBurst(0, 0);
+    expect(allFinite(specs, ["vx", "vy"])).toBe(true);
+    for (const s of specs) {
+      expect(Math.abs(s.vx)).toBeLessThanOrEqual(110);
+      expect(s.vy).toBeLessThanOrEqual(0);
+      expect(s.vy).toBeGreaterThanOrEqual(-160);
+    }
   });
 });

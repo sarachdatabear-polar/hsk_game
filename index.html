@@ -287,20 +287,25 @@
   .spk{color:var(--lc-teal); font-size:22px; padding:10px 16px; border-radius:12px; border:1px solid var(--panel-border);
     min-width:44px; min-height:44px;
     display:inline-flex; align-items:center; justify-content:center;}
-  /* battle (M4 — minimal HUD: hearts · round capsule · coins · pause) */
+  /* battle (T3 — simplified HUD: round · progress bar+count · coins · pause;
+     hearts moved in-scene above the cat, see drawHearts in hud.js/T5). Flat
+     chips: single hairline border, no inner-shadow/bevel stack, so the HUD
+     never competes with the vocabulary card underneath it. */
   #hud{display:flex; justify-content:space-between; align-items:center; font-size:15px; padding:2px 2px 8px; gap:6px; flex-wrap:nowrap;}
   .hud-pill{display:inline-flex; align-items:center; gap:4px; background:var(--panel-wash); min-width:0;
     color:var(--ink); border-radius:999px; padding:4px 10px; border:1px solid var(--panel-border); font-weight:700; font-size:14px;
-    box-shadow:0 2px 6px rgba(46,42,36,.10); white-space:nowrap;}
+    white-space:nowrap;}
   /* round-counter capsule — palette tan (amends PRD §6.2's blue) */
   .hud-round-pill{font-weight:800;}
   .hud-round{width:44px; height:44px; min-width:44px; border-radius:50%; background:var(--panel-wash);
     color:var(--ink); border:1px solid var(--panel-border); border-image:var(--f-ui-badge-mastery, none); font-size:18px; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; flex:0 0 auto;
-    box-shadow:0 2px 6px rgba(46,42,36,.10);}
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
   .hud-round:active{transform:scale(.94);}
-  .life-icon{width:18px; height:18px; color:var(--lc-error); filter:drop-shadow(0 1px 1px rgba(46,42,36,.25));}
-  .life-icon.empty{color:var(--lc-gray); opacity:.65;}
+  /* T3: slim session-progress bar + "n/20" caption, center of the HUD */
+  .hud-progress{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; flex:1 1 auto; min-width:0;}
+  .hud-progress-track{width:100%; max-width:140px; height:6px; border-radius:3px; background:var(--lc-sand); overflow:hidden;}
+  .hud-progress-fill{display:block; height:100%; border-radius:3px; background:var(--lc-green); transition:width .25s ease; width:0%;}
+  .hud-progress-count{font-size:12px; font-weight:700; color:var(--lc-brown); white-space:nowrap;}
   /* pause overlay — cream plaque on a dim scrim, covers #s-battle only (nav is
      hidden during battle anyway). Mirrors the .screen.on show/hide convention. */
   #s-battle{position:relative;}
@@ -337,6 +342,21 @@
   .pause-toggle .pt-state{font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
     padding:3px 9px; border-radius:999px; background-color:var(--lc-gray); color:var(--lc-ink); flex:0 0 auto;}
   .pause-toggle.on .pt-state{background-color:var(--lc-success); color:var(--lc-cream);}
+  /* T12: SFX/pronunciation volume sliders. The <input> itself is 44px tall
+     (the touch target) even though the visible track is 6px, centered via
+     the browser's default vertical alignment for range inputs. */
+  .pause-sliders{display:flex; flex-direction:column; gap:6px;}
+  .pause-slider-row{display:flex; flex-direction:column; gap:2px;}
+  .pause-slider-row span{font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif;
+    font-weight:700; font-size:13px; color:var(--lc-ink);}
+  .pause-slider-row input[type=range]{-webkit-appearance:none; appearance:none;
+    width:100%; height:44px; min-height:44px; margin:0; padding:0; background:transparent; touch-action:manipulation;}
+  .pause-slider-row input[type=range]::-webkit-slider-runnable-track{height:6px; border-radius:3px; background-color:var(--lc-sand);}
+  .pause-slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:24px; height:24px;
+    margin-top:-9px; border-radius:50%; background-color:var(--lc-green); border:2px solid var(--lc-brown); cursor:pointer;}
+  .pause-slider-row input[type=range]::-moz-range-track{height:6px; border-radius:3px; background-color:var(--lc-sand);}
+  .pause-slider-row input[type=range]::-moz-range-thumb{width:24px; height:24px; border-radius:50%;
+    background-color:var(--lc-green); border:2px solid var(--lc-brown); cursor:pointer;}
   /* darker shade of --lc-error so the cream label clears 4.5:1 (the raw token
      only reaches ~3.8:1 with small text) */
   .pause-quit{font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif; font-weight:700; font-size:14px; color:var(--lc-cream);
@@ -408,13 +428,26 @@
      row count (grid-auto-rows keeps the boss reverse-question's 3rd prompt
      row the same height as the two button rows below it). */
   #opts{display:grid; grid-template-columns:1fr 1fr; grid-auto-rows:1fr; gap:10px; margin-top:10px;}
-  #opts button{padding:12px 10px; font-size:20px; font-weight:700; line-height:1.25; text-align:center;
+  /* T7: storybook restyle — flat paper-cream surface, single warm contact
+     shadow (the old inset-bevel stack read as "gloss", not storybook), 72px
+     floor. min-height 68->72 per spec §5; border thinned 2px brown -> 1.5px
+     sand (brown moves to the :active state below, so pressed still reads
+     "darker border" against the idle sand). */
+  /* T7: .opt-label has no font-size of its own (see below) — it inherits
+     from this rule, and every responsive tier below overrides font-size
+     HERE (on the button), not on .opt-label, so inheritance keeps carrying
+     it down at every breakpoint. 20 -> 19px lands the base case in spec
+     §5's 18-20px range without touching that cascade. */
+  #opts button{padding:12px 10px; font-size:19px; font-weight:700; line-height:1.25; text-align:center;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
-    background-color:var(--lc-sand); color:var(--lc-ink);
-    border:2px solid var(--lc-brown); border-image:var(--f-ui-button-neutral, none); border-radius:14px; min-height:68px;
-    box-shadow:inset 0 2px 0 rgba(255,255,255,.45), inset 0 -3px 0 rgba(120,80,40,.28), 0 2px 6px rgba(36,26,16,.18);
+    background-color:var(--lc-cream); color:var(--lc-ink);
+    border:1.5px solid var(--lc-sand); border-image:var(--f-ui-button-neutral, none); border-radius:14px; min-height:72px;
+    box-shadow:0 2px 4px rgba(46,42,36,.14);
     max-height:140px;
     overflow-wrap:anywhere;}
+  /* T7 pressed state (spec §5): translate + shrink the shadow + darken the
+     border — no color change, so it reads as "pushed paper", not a new skin. */
+  #opts button:active:not(:disabled){transform:translateY(2px); box-shadow:0 1px 2px rgba(46,42,36,.14); border-color:var(--lc-brown);}
   /* Base-tier gloss clamp: grid-auto-rows:1fr sizes ALL four buttons to the
      tallest one, so a single rare 4-5 line gloss inflated every row to ~150px
      on tall phones (412x915 measured 149px), squeezing the canvas above it.
@@ -430,13 +463,15 @@
     -webkit-line-clamp:3; overflow:hidden; flex-shrink:0; width:100%; text-align:center;}
   #opts button .th{display:block; color:var(--lc-brown); font-size:15px; font-weight:600; margin-top:2px; text-align:center;}
   /* reveal states never rely on color alone (§11): a ✓/✕ affix rides along
-     with the green/coral fill + the game's existing sound/haptic/motion. */
+     with the green/coral fill + the game's existing sound/haptic/motion.
+     T7: shadows restyled to match the flat idle button (single warm shadow,
+     no inset-bevel stack) — fill/border colors unchanged. */
   #opts button.good{background-color:var(--lc-success); color:var(--lc-cream); border-color:var(--lc-success-deep);
-    box-shadow:inset 0 2px 0 rgba(255,255,255,.3), inset 0 -3px 0 rgba(0,0,0,.22), 0 2px 6px rgba(0,0,0,.2);}
+    box-shadow:0 2px 4px rgba(46,42,36,.14);}
   #opts button.good .th{color:var(--lc-cream);}
   #opts button.good::before{content:"✓"; font-size:22px; font-weight:800; line-height:1;}
   #opts button.bad{background-color:var(--lc-error); color:var(--lc-cream); border-color:var(--lc-error-border);
-    box-shadow:inset 0 2px 0 rgba(255,255,255,.28), inset 0 -3px 0 rgba(0,0,0,.22), 0 2px 6px rgba(0,0,0,.2);}
+    box-shadow:0 2px 4px rgba(46,42,36,.14);}
   #opts button.bad .th{color:var(--lc-cream);}
   #opts button.bad::before{content:"✕"; font-size:22px; font-weight:800; line-height:1;}
   /* A3: paw-print stamp pops on the TAPPED option (fx sprites are the
@@ -901,7 +936,8 @@
     #hud{grid-area:hud; padding:0; gap:4px;}
     .hud-pill{padding:3px 8px; font-size:12px;}
     .hud-round{width:36px; height:36px; min-width:36px; font-size:14px;}
-    .life-icon{width:15px; height:15px;}
+    .hud-progress-track{max-width:100px; height:5px;}
+    .hud-progress-count{font-size:11px;}
     .cv-wrap{grid-area:canvas; min-height:0;}
     #combo-strip{grid-area:combo; margin-top:0; min-height:18px; padding:3px 8px;}
     .combo-strip-label{font-size:11px;}
@@ -1172,8 +1208,11 @@
   <!-- BATTLE (M4 rebuild — visual PRD §6.2 item 1: minimal HUD + pause overlay) -->
   <div class="screen" id="s-battle">
     <div id="hud">
-      <span class="hud-pill" id="hud-lives"></span>
       <span class="hud-pill hud-round-pill" id="hud-round"></span>
+      <div class="hud-progress" id="hud-progress">
+        <div class="hud-progress-track"><div class="hud-progress-fill" id="hud-progress-fill"></div></div>
+        <span class="hud-progress-count" id="hud-progress-count"></span>
+      </div>
       <span class="hud-pill"><svg class="asset-icon"><use href="assets/ui-icons.svg#secondary-coin"></use></svg><b id="hud-score">0</b></span>
       <button class="hud-round" id="hud-pause" title="Pause" aria-label="Pause" data-i18n-title="battle.pause"><svg class="asset-icon"><use href="assets/ui-icons.svg#pause"></use></svg></button>
     </div>
@@ -1198,6 +1237,16 @@
           <span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span data-i18n="battle.resume">Resume</span></span>
         </button>
         <div class="pause-toggles" id="pause-toggles"></div>
+        <div class="pause-sliders">
+          <label class="pause-slider-row" for="pause-sfxvol">
+            <span data-i18n="settings.sfxVol">Sound effects</span>
+            <input type="range" id="pause-sfxvol" min="0" max="1" step="0.01" value="1">
+          </label>
+          <label class="pause-slider-row" for="pause-voicevol">
+            <span data-i18n="settings.voiceVol">Pronunciation</span>
+            <input type="range" id="pause-voicevol" min="0" max="1" step="0.01" value="1">
+          </label>
+        </div>
         <button class="pause-quit" id="pause-quit">
           <span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#close"></use></svg><span data-i18n="battle.quit">Quit</span></span>
         </button>

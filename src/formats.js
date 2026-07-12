@@ -30,9 +30,9 @@ export function formatFor(word, rec, caps = { audio: true }) {
   return f;
 }
 
-function meaningOptions(word, deck, lang, rand, fullPool = deck) {
+function meaningOptions(word, deck, lang, rand, fullPool = deck, thaiPrimary = false) {
   return shuffle([word, ...pickDistractors(deck, word, rand, fullPool)], rand).map(o => {
-    const m = meaning(o, lang);
+    const m = meaning(o, lang, thaiPrimary);
     return { label: m.main, sub: m.sub, correct: o.h === word.h };
   });
 }
