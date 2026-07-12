@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { MIN_SYNC_GAP_MS, localSnapshot, rowsFromLocal, localFromRows,
          reconcile, pushDirty, __resetForTests } from "../src/sync.js";
-import { __setClientForTests } from "../src/cloud.js";
+import { __setClientForTests, LEDGER_EPOCH } from "../src/cloud.js";
 
 function memStore(init = {}) {
   const m = { ...init };
@@ -12,15 +12,33 @@ function memStore(init = {}) {
   };
 }
 
-function fakeClient({ session, progressRow = null, walletRow = null, failPush = false } = {}) {
-  const calls = { upserts: [], sessions: 0 };
+// ledgerRows/failLedger: extend the fake for the coin-purchase ledger-cursor
+// fold (mirrors fetchLedgerSince's chain — select/eq/not/gt/order — one
+// table branch alongside progress/wallet). calls.ledgerSince records the
+// `gt` cutoff each fetch used, so tests can assert the cursor value a
+// reconcile actually queried with.
+function fakeClient({ session, progressRow = null, walletRow = null, failPush = false,
+                       ledgerRows = [], failLedger = false } = {}) {
+  const calls = { upserts: [], sessions: 0, ledgerSince: [] };
   const client = {
     auth: { getSession: async () => { calls.sessions++; return { data: { session } }; } },
-    from: (table) => ({
-      select: () => ({ eq: () => ({ maybeSingle: async () =>
-        ({ data: table === "progress" ? progressRow : walletRow, error: null }) }) }),
-      upsert: async (row) => { calls.upserts.push({ table, row }); return { error: failPush ? { message: "x" } : null }; },
-    }),
+    from: (table) => {
+      if (table === "ledger") {
+        return {
+          select: () => ({ eq: () => ({ not: () => ({ gt: (col, since) => ({
+            order: async () => {
+              calls.ledgerSince.push(since);
+              return failLedger ? { data: null, error: { message: "x" } } : { data: ledgerRows, error: null };
+            },
+          }) }) }) }),
+        };
+      }
+      return {
+        select: () => ({ eq: () => ({ maybeSingle: async () =>
+          ({ data: table === "progress" ? progressRow : walletRow, error: null }) }) }),
+        upsert: async (row) => { calls.upserts.push({ table, row }); return { error: failPush ? { message: "x" } : null }; },
+      };
+    },
   };
   return { client, calls };
 }
@@ -123,6 +141,68 @@ describe("reconcile", () => {
     const r = await reconcile(store, "sign-in", 1);
     expect(r.ok).toBe(false);
     expect(store.get("sync", {}).dirty).toEqual({ xp: true });
+  });
+});
+
+describe("reconcile: ledger-cursor purchase fold (coin-purchase go-live, THE FOLD)", () => {
+  const PROGRESS_STUB = { user_id: "u1", xp: 0, mastery: {},
+    daily: { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" },
+    quests: {}, monthly: {}, best: {}, cosmetics: {}, stickers: { earned: {} } };
+
+  it("unseen ledger rows credit once; cursor advances to the max created_at fetched", async () => {
+    // Cloud wallet (5000) already includes the webhook's 1000-coin grant —
+    // pre-fix, max(local 5000, cloud 5000) would eat the purchase entirely.
+    const ledgerRows = [{ delta: 1000, created_at: "2026-07-12T10:00:00Z" }];
+    const { client, calls } = fakeClient({ session: SESSION,
+      progressRow: PROGRESS_STUB, walletRow: { user_id: "u1", coins: 5000, freezes: 0 }, ledgerRows });
+    __setClientForTests(client);
+    const store = memStore({ wallet: 5000, sync: { dirty: {}, lastSyncAt: 0, lastLedgerAt: "" } });
+    const r = await reconcile(store, "sign-in", 2000000);
+    expect(r.ok).toBe(true);
+    expect(store.get("wallet", 0)).toBe(6000);
+    const meta = store.get("sync", {});
+    expect(meta.lastLedgerAt).toBe("2026-07-12T10:00:00Z");
+    expect(calls.ledgerSince[0]).toBe(LEDGER_EPOCH);   // "" cursor -> cloud.js sentinel fallback
+  });
+
+  it("ledger fetch failure aborts reconcile before any store write — cursor and wallet both untouched", async () => {
+    const { client, calls } = fakeClient({ session: SESSION,
+      progressRow: PROGRESS_STUB, walletRow: { user_id: "u1", coins: 9000, freezes: 0 }, failLedger: true });
+    __setClientForTests(client);
+    const store = memStore({ wallet: 5000, sync: { dirty: {}, lastSyncAt: 0, lastLedgerAt: "2026-07-01T00:00:00Z" } });
+    const r = await reconcile(store, "sign-in", 2000000);
+    expect(r).toEqual({ ok: false, reason: "network" });
+    expect(store.get("wallet", 0)).toBe(5000);                          // cloud's 9000 never applied
+    expect(store.get("sync", {}).lastLedgerAt).toBe("2026-07-01T00:00:00Z"); // cursor not advanced
+    expect(calls.upserts.length).toBe(0);                               // never reached push
+  });
+
+  it("new-device sign-in: cursor \"\" fetches ALL ledger rows, folds old purchases in exactly once (neutral)", async () => {
+    const ledgerRows = [
+      { delta: 1000, created_at: "2026-01-01T00:00:00Z" },
+      { delta: 2000, created_at: "2026-03-01T00:00:00Z" },
+    ];
+    const { client, calls } = fakeClient({ session: SESSION,
+      progressRow: PROGRESS_STUB, walletRow: { user_id: "u1", coins: 8000, freezes: 0 }, ledgerRows });
+    __setClientForTests(client);
+    const store = memStore({ wallet: 0, sync: { dirty: {}, lastSyncAt: 0, lastLedgerAt: "" } });
+    const r = await reconcile(store, "sign-in", 2000000);
+    expect(r.ok).toBe(true);
+    // max(0, 8000-3000) + 3000 = 8000 — neutral, not 11000 (double-count).
+    expect(store.get("wallet", 0)).toBe(8000);
+    expect(store.get("sync", {}).lastLedgerAt).toBe("2026-03-01T00:00:00Z");
+    expect(calls.ledgerSince[0]).toBe(LEDGER_EPOCH);
+  });
+
+  it("no unseen rows: byte-identical to the pre-ledger-cursor fold", async () => {
+    const { client } = fakeClient({ session: SESSION,
+      progressRow: PROGRESS_STUB, walletRow: { user_id: "u1", coins: 700, freezes: 0 }, ledgerRows: [] });
+    __setClientForTests(client);
+    const store = memStore({ wallet: 5000, sync: { dirty: {}, lastSyncAt: 0, lastLedgerAt: "2026-01-01T00:00:00Z" } });
+    const r = await reconcile(store, "sign-in", 2000000);
+    expect(r.ok).toBe(true);
+    expect(store.get("wallet", 0)).toBe(5000);   // plain max(5000, 700), unchanged behavior
+    expect(store.get("sync", {}).lastLedgerAt).toBe("2026-01-01T00:00:00Z"); // no rows -> no advance
   });
 });
 

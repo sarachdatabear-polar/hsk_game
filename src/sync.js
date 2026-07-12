@@ -3,7 +3,7 @@
 // throws/rejects, offline/failure resolves {ok:false} and gameplay never
 // notices. Pure data flow: cloud rows -> mergeAll -> store -> cloud rows.
 // `store` is injected ({get,set}) so node probes/tests can shim localStorage.
-import { getSession, fetchSyncRows, pushSyncRows } from "./cloud.js";
+import { getSession, fetchSyncRows, pushSyncRows, fetchLedgerSince } from "./cloud.js";
 import { mergeAll, defaultSyncMeta } from "./merge.js";
 
 export const MIN_SYNC_GAP_MS = 30000;
@@ -98,6 +98,24 @@ export async function reconcile(store, reason, now = Date.now()) {
     const uid = s.session.user.id;
     const rows = await fetchSyncRows(uid);
     if (!rows.ok) return { ok: false, reason: rows.reason };
+    // Ledger-cursor fetch (coin-purchase go-live, THE FOLD — merge.js's
+    // mergeAll comment has the full formula). Purchased coins ride the
+    // ledger, not the max-fold wallet compare: the webhook already
+    // incremented the cloud wallet AND inserted an event_id-tagged ledger
+    // row, so we need to know how much of the cloud wallet's gap over local
+    // is an already-counted purchase before folding.
+    //
+    // A failed fetch here must NOT silently fall through to a plain
+    // (non-ledger-aware) reconcile: with "how much is unseen" unknown, we
+    // could either wrongly credit 0 (eating a real purchase, the exact bug
+    // this exists to fix) or — worse — let the cursor advance on some LATER
+    // successful fetch without ever having summed these rows in between,
+    // skipping them forever. Treat it exactly like any other network
+    // failure: bail whole-hog, dirty flags stay set, next reconcile retries
+    // both fetches together.
+    const led = await fetchLedgerSince(uid, meta.lastLedgerAt);
+    if (!led.ok) return { ok: false, reason: "network" };
+    const unseen = led.rows.reduce((sum, r) => sum + (Number(r.delta) || 0), 0);
     const local = localSnapshot(store);
     const shopDirty = !!(meta.dirty && meta.dirty.shop);
     const today = localDateStr(now);
@@ -106,9 +124,38 @@ export async function reconcile(store, reason, now = Date.now()) {
     // settle local's own stale month too — otherwise a local-only stale
     // rollover would show up as a spurious `changed:true` (or mask a real
     // one) purely from the settle, not from anything cloud contributed.
-    const merged = mergeAll(local, localFromRows(rows.progress, rows.wallet), { shopDirty, today });
+    // unseenPurchased goes ONLY into the cloud-merged call: the baseline has
+    // no cloud side to subtract a purchase component out of (mergeAll(local,
+    // null, …) already contributes 0 from "cloud"), so passing it there too
+    // would just add unseen straight into the baseline and mask real change.
+    const merged = mergeAll(local, localFromRows(rows.progress, rows.wallet),
+      { shopDirty, today, unseenPurchased: unseen });
     const baseline = mergeAll(local, null, { shopDirty, today });
     const changed = !eq(merged, baseline);
+    // CURSOR ORDERING (THE FOLD): advance + persist meta.lastLedgerAt BEFORE
+    // writing the merged keys to the store below. This file already has a
+    // "two meta writes per reconcile" reality — settleDirty (further down)
+    // stamps lastSyncAt/dirty AFTER the store writes — this adds an earlier,
+    // narrower write that touches only lastLedgerAt; both writes read-modify
+    // the same `sync` key via defaultSyncMeta()-assign, so they compose
+    // (settleDirty's later read picks up this write's cursor).
+    //
+    // Why this order and not the reverse: if the process dies between this
+    // write and the merged-key writes below, we land on
+    // cursor-advanced/wallet-not-yet-credited. The NEXT reconcile's ledger
+    // fetch then sees zero unseen rows (cursor already past them) — but the
+    // cloud wallet still holds the webhook's increment, so the plain
+    // max(local, cloud) fold picks the cloud side and self-heals. Writing
+    // the wallet first instead would leave cursor-behind/wallet-with-credit
+    // on a crash: the next reconcile would re-fetch the SAME ledger rows as
+    // "unseen" and add them again on top of a wallet that already has them —
+    // an unhealable double-credit.
+    if (led.rows.length) {
+      const maxAt = led.rows.reduce((m, r) => (r.created_at > m ? r.created_at : m), led.rows[0].created_at);
+      const cursorMeta = Object.assign(defaultSyncMeta(), store.get("sync", {}));
+      cursorMeta.lastLedgerAt = maxAt;
+      store.set("sync", cursorMeta);
+    }
     for (const k of Object.keys(merged)) store.set(k, merged[k]);
     const built = rowsFromLocal(uid, merged);
     const push = await pushSyncRows(built.progress, built.wallet);

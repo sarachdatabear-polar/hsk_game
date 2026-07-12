@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { getSession, ensureGuest, sendCode, verifyCode, signOut,
-         upsertProfile, fetchSyncRows, pushSyncRows, __setClientForTests } from "../src/cloud.js";
+         upsertProfile, fetchSyncRows, pushSyncRows, fetchLedgerSince,
+         LEDGER_EPOCH, __setClientForTests } from "../src/cloud.js";
 
 // House pattern (see test/native.test.js): no vi.mock — a hand-rolled fake
 // client + globalThis stubs, reset in beforeEach.
@@ -252,6 +253,71 @@ describe("fetchSyncRows", () => {
     const { client } = fakeSyncClient({ failSelect: true });
     __setClientForTests(client);
     expect(await fetchSyncRows("u1")).toEqual({ ok: false, reason: "network" });
+  });
+});
+
+// Fake with the ledger chain (select/eq/not/gt/order — event_id-tagged rows
+// only, ordered ascending). Mirrors fakeSyncClient's shape/conventions.
+function fakeLedgerClient({ rows = [], failFetch = false } = {}) {
+  const calls = { queries: [] };
+  const client = {
+    from: (table) => ({
+      select: (cols) => ({
+        eq: (col, val) => ({
+          not: (notCol, op, notVal) => ({
+            gt: (gtCol, since) => ({
+              order: async (orderCol, opts) => {
+                calls.queries.push({ table, cols, col, val, notCol, op, notVal, gtCol, since, orderCol, opts });
+                if (failFetch) return { data: null, error: { message: "boom" } };
+                return { data: rows, error: null };
+              },
+            }),
+          }),
+        }),
+      }),
+    }),
+  };
+  return { client, calls };
+}
+
+describe("fetchLedgerSince", () => {
+  it("offline resolves {ok:false, reason:'offline'}", async () => {
+    globalThis.navigator = { onLine: false };
+    expect(await fetchLedgerSince("u1", "2026-01-01T00:00:00Z")).toEqual({ ok: false, reason: "offline" });
+  });
+  it("queries event_id-tagged rows only, gt the given cutoff, ordered ascending", async () => {
+    const rows = [{ delta: 1000, created_at: "2026-07-12T10:00:00Z" }];
+    const { client, calls } = fakeLedgerClient({ rows });
+    __setClientForTests(client);
+    const r = await fetchLedgerSince("u1", "2026-07-01T00:00:00Z");
+    expect(r).toEqual({ ok: true, rows });
+    const q = calls.queries[0];
+    expect(q.table).toBe("ledger");
+    expect(q.col).toBe("user_id");
+    expect(q.val).toBe("u1");
+    expect(q.notCol).toBe("event_id");
+    expect(q.op).toBe("is");
+    expect(q.notVal).toBe(null);
+    expect(q.gtCol).toBe("created_at");
+    expect(q.since).toBe("2026-07-01T00:00:00Z");
+    expect(q.orderCol).toBe("created_at");
+    expect(q.opts).toEqual({ ascending: true });
+  });
+  it("empty/falsy sinceIso falls back to the epoch sentinel (fetch-all for a fresh cursor)", async () => {
+    const { client, calls } = fakeLedgerClient({ rows: [] });
+    __setClientForTests(client);
+    await fetchLedgerSince("u1", "");
+    expect(calls.queries[0].since).toBe(LEDGER_EPOCH);
+  });
+  it("no rows resolves {ok:true, rows:[]}", async () => {
+    const { client } = fakeLedgerClient({ rows: [] });
+    __setClientForTests(client);
+    expect(await fetchLedgerSince("u1", "2026-01-01T00:00:00Z")).toEqual({ ok: true, rows: [] });
+  });
+  it("query failure resolves {ok:false, reason:'network'} — never throws", async () => {
+    const { client } = fakeLedgerClient({ failFetch: true });
+    __setClientForTests(client);
+    expect(await fetchLedgerSince("u1", "2026-01-01T00:00:00Z")).toEqual({ ok: false, reason: "network" });
   });
 });
 
