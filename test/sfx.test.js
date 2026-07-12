@@ -161,3 +161,32 @@ describe("setSfxVolume — master multiplier applied to the gain envelope", () =
     setSfxVolume(1); // reset module-level state for any later test in this file
   });
 });
+
+describe("tone() resumes a suspended AudioContext (iOS PWA silent-session bug)", () => {
+  // sfx.js memoizes its AudioContext on first use (module-level `ctx`), and
+  // the tests above already triggered ac() against their own fake — so a
+  // fresh module instance is required to observe a *first-ever* construction
+  // landing in the "suspended" state. vi.resetModules() + a dynamic import
+  // gives this test its own private copy of sfx.js, isolated from the
+  // statically-imported bindings the rest of this file shares.
+  it("tone() calls resume() before scheduling when the context starts suspended", async () => {
+    vi.resetModules();
+    let resumed = 0;
+    const fakeCtx = {
+      state: "suspended",
+      resume: () => { resumed++; fakeCtx.state = "running"; return Promise.resolve(); },
+      currentTime: 0,
+      destination: {},
+      createOscillator: () => ({ type: "", frequency: { value: 0 }, connect: o => o, start() {}, stop() {} }),
+      createGain: () => ({ gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect: o => o }),
+    };
+    globalThis.window = { AudioContext: function () { return fakeCtx; } };
+
+    const fresh = await import("../src/sfx.js");
+    fresh.sfx.enabled = true;
+    fresh.setSfxVolume(1);
+    fresh.sfx.kill();
+
+    expect(resumed).toBe(1);
+  });
+});
