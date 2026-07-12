@@ -1310,6 +1310,7 @@ function pickWord(){
   return deck[Math.floor(Math.random()*deck.length)];
 }
 function startBattle(mode){
+  if(B.on) return;   // re-entrancy guard: a double-tapped start button must not schedule a second rAF loop
   lastMode = mode;
   B.on = true; B.mode = mode;
   // A miss deck can be as small as 2 (only 3 lives => at most 3 misses per round);
