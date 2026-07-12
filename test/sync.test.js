@@ -92,6 +92,30 @@ describe("reconcile", () => {
     const r2 = await reconcile(store, "sign-in", 100000 + 1);
     expect(r2.ok).toBe(true);
   });
+  it("regression: a boot-settled local wallet is not double-paid by a still-stale cloud monthly row", async () => {
+    // Local already ran settleMonthlyNow() at boot: its wallet (2500) already
+    // includes June's 1500 reward. Cloud never pushed since, so its row
+    // still shows June done:40 unclaimed with the pre-settle wallet (1000).
+    // A same-instant local date is derived inside reconcile() from `now` —
+    // pick a `now` whose LOCAL calendar date (matches main.js's todayStr())
+    // is 2026-07-15, well past June.
+    const now = new Date(2026, 6, 15, 12, 0, 0).getTime();
+    const { client } = fakeClient({ session: SESSION,
+      progressRow: { user_id: "u1", xp: 0, mastery: {},
+        daily: { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" },
+        quests: {}, monthly: { month: "2026-06", done: 40, claimed: false },
+        best: {}, cosmetics: {}, stickers: { earned: {} } },
+      walletRow: { user_id: "u1", coins: 1000, freezes: 0 } });
+    __setClientForTests(client);
+    const store = memStore({ wallet: 2500, monthly: { month: "2026-07", done: 3, claimed: false },
+      sync: { dirty: {}, lastSyncAt: 0 } });
+    const r = await reconcile(store, "sign-in", now);
+    expect(r.ok).toBe(true);
+    // A buggy post-fold credit would give max(2500,1000)+1500 = 4000.
+    expect(store.get("wallet", 0)).toBe(2500);
+    expect(store.get("monthly", null)).toEqual({ month: "2026-07", done: 3, claimed: false });
+  });
+
   it("push failure keeps dirty flags", async () => {
     const { client } = fakeClient({ session: SESSION, failPush: true });
     __setClientForTests(client);

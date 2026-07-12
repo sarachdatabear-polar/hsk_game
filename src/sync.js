@@ -53,6 +53,18 @@ export function localFromRows(progressRow, walletRow) {
 
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
+// Device-local calendar date from an epoch ms — same algorithm as main.js's
+// (unexported) todayStr(): local Y/M/D, not UTC, so a stale-monthly settle
+// here rolls over at the same midnight as main.js's boot-time
+// settleMonthlyNow(). sync.js is otherwise pure/injectable (store, now), so
+// this derives from the `now` param rather than importing a DOM-adjacent
+// helper from main.js.
+function localDateStr(ms) {
+  const d = new Date(ms);
+  const mm = String(d.getMonth() + 1).padStart(2, "0"), dd = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
 // Clear dirty flags for keys whose stored value still equals what we pushed —
 // a gameplay write that raced the push keeps its flag for the next edge.
 function settleDirty(store, expected, lastSyncAt) {
@@ -81,8 +93,14 @@ export async function reconcile(store, reason, now = Date.now()) {
     if (!rows.ok) return { ok: false, reason: rows.reason };
     const local = localSnapshot(store);
     const shopDirty = !!(meta.dirty && meta.dirty.shop);
-    const merged = mergeAll(local, localFromRows(rows.progress, rows.wallet), { shopDirty });
-    const baseline = mergeAll(local, null, { shopDirty });
+    const today = localDateStr(now);
+    // Both calls get `today` (not just the cloud-merged one): mergeAll's
+    // stale-monthly settle is symmetric in local/cloud, so the baseline must
+    // settle local's own stale month too — otherwise a local-only stale
+    // rollover would show up as a spurious `changed:true` (or mask a real
+    // one) purely from the settle, not from anything cloud contributed.
+    const merged = mergeAll(local, localFromRows(rows.progress, rows.wallet), { shopDirty, today });
+    const baseline = mergeAll(local, null, { shopDirty, today });
     const changed = !eq(merged, baseline);
     for (const k of Object.keys(merged)) store.set(k, merged[k]);
     const built = rowsFromLocal(uid, merged);
