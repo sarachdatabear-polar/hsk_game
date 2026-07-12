@@ -178,9 +178,9 @@ export function meaning(w, lang, thaiPrimary = false) {
   - `hurtSquash(t)` → `{sx, sy}` victim squish: sx 1.15, sy 0.85 at t≈40 → 1/1 by 260, with 1 small rebound.
 - All consumed by main.js draw() as ctx transforms around the ground-contact point; reduced-motion: main.js passes t=Infinity (neutral) when REDUCED_MOTION.
 
-- [ ] **Step 1:** Tests: neutral at t<0 and t>duration; peak signs/magnitudes at documented times; monotonic return. Run → fail.
-- [ ] **Step 2:** Implement (damped sin/ease shapes, mirror plaqueBounce style already in juice.js).
-- [ ] **Step 3:** Full `npm test`. Commit: `feat(juice): lunge, bump, hurt-squash curves`.
+- [x] **Step 1:** Tests: neutral at t<0 and t>duration; peak signs/magnitudes at documented times; monotonic return. Run → fail.
+- [x] **Step 2:** Implement (damped sin/ease shapes, mirror plaqueBounce style already in juice.js).
+- [x] **Step 3:** Full `npm test`. Commit: `feat(juice): lunge, bump, hurt-squash curves`.
 
 ### Task 10: Correct-answer choreography
 
