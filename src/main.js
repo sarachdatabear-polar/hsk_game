@@ -1231,18 +1231,30 @@ function canReplayAudio(z){
   return !(live && forbidden);
 }
 function replayCurrentWord(){
-  if(B.paused || !B.zombie) return;
-  if(!canReplayAudio(B.zombie)) return;
-  speak(B.zombie.w.h);
+  if(B.paused) return;
+  if(B.zombie){
+    if(!canReplayAudio(B.zombie)) return;
+    speak(B.zombie.w.h);
+  }else if(B.reveal){
+    // T6: word already resolved (B.zombie gone) but still in its reveal
+    // window — the speaker badge on the persistent plate keeps working.
+    speak(B.reveal.w.h);
+  }
 }
+// T6: during the reveal window (word resolved, next spawn pending) any tap
+// outside the speaker's hit box means "move on" — fast-forward straight to
+// the next word instead of waiting out the rest of REVEAL_MS.
+function inRevealWindow(now){ return !B.zombie && !!B.reveal && B.nextAt > now; }
 cv.addEventListener("click", e=>{
   const box = cv.getBoundingClientRect();
   const x = e.clientX - box.left, y = e.clientY - box.top;
   // T4: speaker badge hit-tests BEFORE the whole-card plaque rect (it sits
   // inside plaqueRect's bounds) — same action today (replay), but the
-  // ordering matters once tap-to-skip lands on the card elsewhere (T6).
+  // ordering matters now that tap-to-skip (T6) lands on the card elsewhere.
   const sr = B.speakerRect;
   if(sr && x>=sr.x && x<=sr.x+sr.w && y>=sr.y && y<=sr.y+sr.h){ replayCurrentWord(); return; }
+  const now = performance.now();
+  if(inRevealWindow(now)){ B.nextAt = now; return; }   // T6: tap-to-skip — plate + recap strip are both on-canvas, so this single check covers either
   const r = B.plaqueRect;
   if(!r) return;
   if(x>=r.x && x<=r.x+r.w && y>=r.y && y<=r.y+r.h) replayCurrentWord();
@@ -1250,14 +1262,18 @@ cv.addEventListener("click", e=>{
 cv.addEventListener("keydown", e=>{
   if(e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
   e.preventDefault();
+  const now = performance.now();
+  if(inRevealWindow(now)){ B.nextAt = now; return; }   // T6: keyboard tap-to-skip
   replayCurrentWord();
 });
 // Pointer cursor over the plaque only (2026-07-11 audit F6, whole-card replay
 // surface) — the rest of the canvas isn't interactive, so a canvas-wide
-// pointer cursor would be a false affordance.
+// pointer cursor would be a false affordance. T6: the reveal-window plate is
+// also a tap-to-skip surface, so it gets the same affordance.
 cv.addEventListener("mousemove", e=>{
   const r = B.plaqueRect;
-  if(!r || !canReplayAudio(B.zombie)){ cv.style.cursor = ""; return; }
+  const tappable = canReplayAudio(B.zombie) || inRevealWindow(performance.now());
+  if(!r || !tappable){ cv.style.cursor = ""; return; }
   const box = cv.getBoundingClientRect();
   const x = e.clientX - box.left, y = e.clientY - box.top;
   const over = x>=r.x && x<=r.x+r.w && y>=r.y && y<=r.y+r.h;
@@ -1297,6 +1313,7 @@ function startBattle(mode){
   smartDeckNext = false;
   B.zombie = null; B.proj = null; B.parts = []; B.flash = 0; B.screenShake = 0; B.feedback = null;
   B.hitFlash = null; B.plaqueHitAt = 0;
+  B.reveal = null;   // T6: resolved-word snapshot for the persistent reveal-window plate/strip
   B.bossDefeated = false;   // session fact for the first-boss sticker (B2)
   B.floats = []; B.mascotHopUntil = 0;
   B.score = 0; B.combo = 0; B.lives = 3;
@@ -1471,6 +1488,7 @@ $("#pause-quit").onclick = ()=>{ $("#pause-overlay").classList.remove("on"); end
 function pushMiss(w){ if(!B.missSet.has(w.h)){ B.missSet.add(w.h); B.misses.push(w); } }
 function spawnZombie(){
   const w = pickWord();
+  B.reveal = null;   // T6: new word incoming — drop the previous word's reveal-window snapshot
   // hp is cosmetic-only (drives the floating HP bar): 1 = full, drops to 0.5
   // once a boss's first stage is passed, animates to 0 on the kill.
   B.zombie = {w, x: B.w+30, state:"walk", hp: 1};
@@ -1751,6 +1769,7 @@ function answer(btn, o){
   }else{
     // ONE attempt per word: wrong tap = lose a heart. Skip the charge animation and
     // advance quickly — just long enough to see the correct answer flashed green.
+    B.reveal = { w: z.w, boss: !!boss, format: z.format || "meaning" };   // T6: reveal-window snapshot
     B.combo = 0;
     const free = !!z.introFree;   // first-ever attempt of a new format: no heart lost
     sfx.wrong(); if(!free){ sfx.bite(); hapticWrong(); }
@@ -1775,6 +1794,11 @@ function scheduleNext(ms){
   // the next spawn's renderQuestion replaces them
 }
 function killZombie(z){
+  // T6: snapshot for the reveal window's persistent plate/strip — taken here
+  // (not in answer()'s correct branch) because the word isn't actually
+  // resolved until the coin lands and this fires; z itself goes away (state
+  // "happy" -> scheduleNext nulls B.zombie) well before REVEAL_MS is up.
+  B.reveal = { w: z.w, boss: !!z.boss, format: z.format || "meaning" };
   const gy = B.h-B.L.ground;
   // A3 enemy hit flash: quick warm-white pulse at the raccoon (drawn in draw(),
   // just before the feedback layer). Absolute deadline — shifted on resume.
@@ -1790,6 +1814,7 @@ function killZombie(z){
 }
 function bite(timedOut){
   const z = B.zombie;
+  B.reveal = { w: z.w, boss: !!z.boss, format: z.format || "meaning" };   // T6: reveal-window snapshot
   if(timedOut){
     // boss word already counted its one attempt on the first tap (see answer());
     // only count here if it timed out before ever being tapped.
@@ -1988,6 +2013,13 @@ function draw(now){
     const fl = FORMATS[z.format || "meaning"].plaque;
     const live = z.state === "walk" && !z.revealed;
     drawWordPlate(z, { mask: live && !!fl.mask, icon: live && !!fl.icon, py: !live || !!fl.py }, now);
+    // T6: the recap strip belongs to the whole reveal window, not just the
+    // B.zombie===null tail of it — z.revealed is true from the moment of
+    // resolution (kill/wrong/timeout) through the "happy" dying window and
+    // the "wrong" retreat hop, both of which keep z (and B.zombie) alive for
+    // a few hundred ms before scheduleNext() nulls it. Draw it here too so it
+    // doesn't pop in partway through (plate + strip visible the WHOLE window).
+    if(z.revealed) drawRecapStrip(z.w, now);
     // A3 enemy hit flash: expanding gold backlight glow at the kill (set in
     // killZombie), drawn BEFORE the raccoon sprite so it reads as a glow
     // behind the enemy rather than a wash over it (it used to paint on top,
@@ -2030,6 +2062,18 @@ function draw(now){
       hpFrac = (z.hpAtKill ?? z.hp) * (remain/DYING_MS);
     }
     drawHpBar(ctx, z.x, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.L.mascotS, hpFrac, B.L.mascotS);
+  }else if(B.reveal && now < B.nextAt){
+    // T6: the zombie object itself is gone by now (scheduleNext() nulls
+    // B.zombie right at kill/wrong/timeout resolution — for a kill that's
+    // after the short "happy" dying window, for wrong/timeout it's
+    // immediate) but the ~2s reveal window (REVEAL_MS) isn't over yet. Keep
+    // showing the resolved word — fully unmasked, vis is fixed rather than
+    // derived from any live state — plus the recap strip underneath, so the
+    // card no longer vanishes mid-reveal.
+    const rz = { w: B.reveal.w, boss: B.reveal.boss, format: B.reveal.format };
+    drawWordPlate(rz, { mask:false, icon:false, py:true }, now);
+    drawRecapStrip(B.reveal.w, now);
+    drawFeedbackLayer(now);
   }else{
     B.plaqueRect = null;   // no word on screen — the canvas click/keydown handlers no-op
     B.speakerRect = null;
@@ -2234,6 +2278,51 @@ function drawWordPlate(z, vis, now){
     ctx.fillText(tagText, x+14*T, y-th*.45 + th*.7);
   }
   B.plaqueRect = {x, y, w: lw, h: lh};
+  ctx.restore();
+}
+// T6 recap strip (spec §7): small cream strip directly under the plate during
+// the reveal window — `main · sub` (thai/english order follows the
+// locale-primary meaning() call, same as the answer buttons), main only when
+// sub is empty. Defensive font shrink mirrors the instruction-line pattern
+// above (drawWordPlate) so a long English gloss can't blow past the canvas.
+function drawRecapStrip(w, now){
+  const r = B.plaqueRect;
+  if(!r) return;
+  const m = meaningOf(w, scope.lang);
+  const T = B.L.textS;
+  const padX = 16*T, padY = 8*T;
+  const maxTextW = (B.w - 24*T) - padX*2;
+  let fontPx = 15*T;
+  const sep = m.sub ? " · " : "";
+  ctx.save();
+  ctx.font = fontString(600, fontPx, LATIN_STACK);
+  let totalW = ctx.measureText(m.main).width + ctx.measureText(sep).width + ctx.measureText(m.sub || "").width;
+  if(totalW > maxTextW && totalW > 0){
+    fontPx *= maxTextW / totalW;
+    ctx.font = fontString(600, fontPx, LATIN_STACK);
+    totalW = ctx.measureText(m.main).width + ctx.measureText(sep).width + ctx.measureText(m.sub || "").width;
+  }
+  const sw = totalW + padX*2;
+  const sh = fontPx*1.5 + padY*2;
+  const sx = B.w/2 - sw/2;
+  const sy = r.y + r.h + 14*T;
+  ctx.fillStyle = "#FBF5E8";
+  roundRect(sx, sy, sw, sh, sh/2); ctx.fill();
+  ctx.strokeStyle = "#EAC796";
+  ctx.lineWidth = 1.2*T;
+  roundRect(sx+0.6*T, sy+0.6*T, sw-1.2*T, sh-1.2*T, sh/2-0.6*T); ctx.stroke();
+  ctx.textAlign = "left"; ctx.textBaseline = "middle";
+  let cx = sx + padX;
+  const cy = sy + sh/2;
+  ctx.fillStyle = "#2E2A24";
+  ctx.fillText(m.main, cx, cy);
+  cx += ctx.measureText(m.main).width;
+  if(m.sub){
+    ctx.fillStyle = "#846043";
+    ctx.fillText(sep, cx, cy);
+    cx += ctx.measureText(sep).width;
+    ctx.fillText(m.sub, cx, cy);
+  }
   ctx.restore();
 }
 function drawFeedbackLayer(now){

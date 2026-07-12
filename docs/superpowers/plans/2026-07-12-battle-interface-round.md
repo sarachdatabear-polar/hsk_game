@@ -138,10 +138,10 @@ export function meaning(w, lang, thaiPrimary = false) {
 - Recap strip: small cream rounded strip directly under the plate: `m.main · m.sub` one line (from `meaning(w, scope.lang, getLocale()==="th")`; if sub empty, main only), 15*T font, ink main / brown sub, sand hairline border. Drawn on canvas below plaqueRect.
 - Tap-to-skip: during the reveal window (`!B.zombie && B.nextAt > now`), canvas tap OUTSIDE `B.speakerRect` → `B.nextAt = performance.now()` (guard: only when `B.reveal`). Also Enter/Space keydown. Strip + plate both count as skip surfaces (speaker still replays).
 
-- [ ] **Step 1:** Implement snapshot + persistent plate + strip + skip.
-- [ ] **Step 2:** Build + probe: answer correctly → plate + strip visible the WHOLE 2s (screenshot at +600ms and +1500ms), strip shows `อากาศ · weather`-style line; tap at +500ms → next word spawns immediately (measure <300ms after tap).
-- [ ] **Step 3:** Wrong answer → same persistence; correct button green through window (existing).
-- [ ] **Step 4:** Full `npm test`. Commit: `feat(battle): reveal window keeps the card + adds recap strip; tap to skip`.
+- [x] **Step 1:** Implement snapshot + persistent plate + strip + skip.
+- [x] **Step 2:** Build + probe: answer correctly → plate + strip visible the WHOLE 2s (screenshot at +600ms and +1500ms), strip shows `อากาศ · weather`-style line; tap at +500ms → next word spawns immediately (measure <300ms after tap).
+- [x] **Step 3:** Wrong answer → same persistence; correct button green through window (existing).
+- [x] **Step 4:** Full `npm test`. Commit: `feat(battle): reveal window keeps the card + adds recap strip; tap to skip`.
 
 ### Task 7: Buttons restyle + character scale tune
 
