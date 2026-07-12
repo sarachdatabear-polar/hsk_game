@@ -611,6 +611,15 @@ async function syncEdge(reason){
   }
 }
 
+// pushDirty can redirect to a full reconcile (monthly-dirty, sync.js) — any
+// merge that wrote the store must be followed by a rehydrate, same as
+// syncEdge. The plain push path never merges ("changed" absent) and skips it.
+function pushEdge(reason){
+  pushDirty(store, reason, undefined, B.on).then(r => {
+    if(r && r.ok && "changed" in r) { rehydrateFromStore(); renderAccount(); }
+  });
+}
+
 async function onAccountConnect(){
   const r = await ensureGuest(getLocale());
   if(r.ok){ accountUI.session = r.session; renderAccount(); syncEdge("sign-in"); }
@@ -1512,7 +1521,7 @@ document.addEventListener("visibilitychange", ()=>{
       t("notify.streak.body", { remaining: Math.max(0, inf.goal - inf.todayResolved) }));
     // midRound=B.on: a hide during a (paused) battle must not let a
     // monthly-dirty push redirect into reconcile — see pushDirty/syncEdge.
-    pushDirty(store, "hide", undefined, B.on);
+    pushEdge("hide");
   }
   if(!document.hidden) syncEdge("foreground");
 });
@@ -2791,7 +2800,7 @@ function makeShopRow(item, today){
     if(!r.ok) return;
     wallet = r.wallet; shopState = r.shop;
     store.set("wallet", wallet); store.set("shop", shopState);
-    pushDirty(store, "purchase", undefined, B.on);
+    pushEdge("purchase");
     justBought = { id: item.id, at: performance.now() };
     // no renderStreet() here: the street canvas is display:none while the
     // shop screen is up (renderStreet would no-op) and show("street") always
@@ -2811,7 +2820,7 @@ function makeShopRow(item, today){
       wallet = r.wallet;
       if(item.id === "streak-freeze"){ freezes = r.count; store.set("freezes", freezes); }
       store.set("wallet", wallet);
-      pushDirty(store, "purchase", undefined, B.on);
+      pushEdge("purchase");
       justBought = { id: item.id, at: performance.now() };
       updateWalletChip(); updateStreakChip(); renderShop();
     };
@@ -2952,7 +2961,7 @@ async function iapBuy(p, btn){
   if(g.ok){
     wallet = g.wallet; ent = g.ent;
     store.set("wallet", wallet); store.set("ent", ent);
-    pushDirty(store, "purchase", undefined, B.on);
+    pushEdge("purchase");
     updateWalletChip();
     toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: p.coins.toLocaleString() }));
   }
