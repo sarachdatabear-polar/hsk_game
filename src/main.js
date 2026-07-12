@@ -2069,7 +2069,10 @@ function draw(now){
   // popT is Infinity (suppressed) under REDUCED_MOTION or with no bump yet;
   // popIndex (B.lives) is the pip that just flipped from filled to lost.
   const heartPopT = REDUCED_MOTION || !B.bumpAt ? Infinity : now - B.bumpAt - 160;
-  drawHearts(ctx, B.L.mascotX, gy + 6*B.S - 64*catScale - 14*B.S, B.lives, 3, B.S, heartPopT, B.lives);
+  // Pips scale with the CHARACTER (mascotS-based catScale), not the bare
+  // screen factor — at CHAR_SCALE 1.4 the B.S-sized pips read as barely
+  // visible specks against the backdrop (spec §4: "clearly visible").
+  drawHearts(ctx, B.L.mascotX, gy + 6*B.S - 64*catScale - 18*B.S, B.lives, 3, 1.5*catScale, heartPopT, B.lives);
   // catHalf grew with mascotS while mascotX stayed on S, so clamp the kitten on-canvas.
   const kittenX = Math.max(16*B.L.mascotS + 2, B.L.mascotX - B.L.catHalf);
   if(B.hasKitten) drawCat(ctx, kittenX, gy + 6*B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.L.mascotS, [], false);
