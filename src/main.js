@@ -30,7 +30,7 @@ import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
 import { navVisibleOn, activeTabFor } from "./nav.js";
 import { roundLabel, comboMultiplier, comboFires, roundProgress, drawHearts } from "./hud.js";
-import { comboGlowTier, plaqueBounce, countUpValue, lungeOffset } from "./juice.js";
+import { comboGlowTier, plaqueBounce, countUpValue, lungeOffset, bumpOffset, hurtSquash } from "./juice.js";
 import { isFirstRun, introDeck } from "./firstrun.js";
 import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue } from "./stickers.js";
 import { journeyNodes, currentNodeId } from "./journey.js";
@@ -1312,7 +1312,7 @@ function startBattle(mode){
   B.smartRound = B.customDeck && smartDeckNext;   // full-rules smart review (owner: perfect bonus yes, best-score no)
   smartDeckNext = false;
   B.zombie = null; B.proj = null; B.parts = []; B.flash = 0; B.screenShake = 0; B.feedback = null;
-  B.hitFlash = null; B.plaqueHitAt = 0; B.lungeAt = 0;
+  B.hitFlash = null; B.plaqueHitAt = 0; B.lungeAt = 0; B.bumpAt = 0;
   B.reveal = null;   // T6: resolved-word snapshot for the persistent reveal-window plate/strip
   B.bossDefeated = false;   // session fact for the first-boss sticker (B2)
   B.floats = []; B.mascotHopUntil = 0;
@@ -1784,7 +1784,10 @@ function answer(btn, o){
     revealCorrect();
     pushMiss(z.w);
     if(boss) noteAnswer(z.w.h, false);          // any miss fails the boss word
-    if(!free){ B.lives--; B.flash = 1; B.screenShake = REDUCED_MOTION ? 0 : 1; }
+    // T11: bump/squash/heart-pop are the visible cause for the lost heart —
+    // a forgiven (free) miss loses no heart, so it gets no bump either (a
+    // stale/unset B.bumpAt keeps bumpOffset/hurtSquash neutral in draw()).
+    if(!free){ B.lives--; B.flash = 1; B.screenShake = REDUCED_MOTION ? 0 : 1; B.bumpAt = performance.now(); }
     B.resolved++;
     z.state = "wrong";
     z.wrongUntil = performance.now() + WRONG_MS;
@@ -1831,7 +1834,11 @@ function bite(timedOut){
   }
   const free = !!(z && z.introFree);   // intro word timing out is also forgiven
   sfx.bite();
-  if(!free){ B.lives--; B.flash = 1; }
+  // T11: same bump timeline as answer()'s wrong branch — the raccoon reached
+  // the cat anyway (that's what a timeout means), so the cat's hurt-squash +
+  // heart-pop reaction fires here too (unconditional in draw(), no live z
+  // needed); gated on !free for the same reason as the wrong-tap path.
+  if(!free){ B.lives--; B.flash = 1; B.bumpAt = performance.now(); }
   B.resolved++;
   scheduleNext(REVEAL_MS);   // owner-tuned window to read the revealed answer
   updateHud();
@@ -2010,17 +2017,21 @@ function draw(now){
   const hopping = B.mascotHopUntil && now < B.mascotHopUntil;   // little victory hop after a kill
   const playerState = hopping ? "happy" : "walk";
   const catScale = CHAR_BASE*B.L.mascotS;
-  // T10: cat attack lunge — a forward dash + launch squash-and-stretch on a
-  // correct answer (B.lungeAt, set at coin launch in answer()). REDUCED_MOTION
-  // feeds t=Infinity so the curve is neutral (no dx/scale) and this collapses
-  // to the old unconditional drawCat call. The transform pivots on the cat's
-  // (possibly dx-shifted) ground-contact point so squash reads as anchored
-  // to the feet, not the sprite's bounding box.
+  // T10/T11: cat attack lunge (correct answer) and hurt-squash (wrong answer
+  // / timeout bump) — both pure curves from juice.js, combined into one
+  // transform since they never overlap in practice (mutually exclusive
+  // resolutions, both windows well under REVEAL_MS) and multiplying two
+  // 1-based scale factors is a no-op for whichever curve is inactive.
+  // REDUCED_MOTION feeds t=Infinity so both curves are neutral and this
+  // collapses to the old unconditional drawCat call. The transform pivots on
+  // the cat's (possibly dx-shifted) ground-contact point so squash reads as
+  // anchored to the feet, not the sprite's bounding box.
   const lunge = lungeOffset(REDUCED_MOTION ? Infinity : now - (B.lungeAt || -Infinity));
+  const hurt = hurtSquash(REDUCED_MOTION ? Infinity : now - (B.bumpAt || -Infinity) - 160);
   const catX = B.L.mascotX + lunge.dx, catY = gy + 6*B.S;
   ctx.save();
   ctx.translate(catX, catY);
-  ctx.scale(lunge.sx, lunge.sy);
+  ctx.scale(lunge.sx * hurt.sx, lunge.sy * hurt.sy);
   ctx.translate(-catX, -catY);
   drawCat(ctx, catX, catY, now, playerState, SKIN_PALETTES[shopState.skin], catScale, B.acc, false);
   ctx.restore();
@@ -2028,7 +2039,11 @@ function draw(now){
   // pips removed in T3) — same y-convention as the raccoon's floating HP bar
   // below (gy + 6*B.S - <char height>*<char scale>), plus a little extra lift
   // (14*B.S) since these 3 pips need their own row above the head.
-  drawHearts(ctx, B.L.mascotX, gy + 6*B.S - 64*catScale - 14*B.S, B.lives, 3, B.S);
+  // T11: popT/popIndex draw the just-lost pip's fading coral "pop" echo —
+  // popT is Infinity (suppressed) under REDUCED_MOTION or with no bump yet;
+  // popIndex (B.lives) is the pip that just flipped from filled to lost.
+  const heartPopT = REDUCED_MOTION || !B.bumpAt ? Infinity : now - B.bumpAt - 160;
+  drawHearts(ctx, B.L.mascotX, gy + 6*B.S - 64*catScale - 14*B.S, B.lives, 3, B.S, heartPopT, B.lives);
   // catHalf grew with mascotS while mascotX stayed on S, so clamp the kitten on-canvas.
   const kittenX = Math.max(16*B.L.mascotS + 2, B.L.mascotX - B.L.catHalf);
   if(B.hasKitten) drawCat(ctx, kittenX, gy + 6*B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.L.mascotS, [], false);
@@ -2087,7 +2102,17 @@ function draw(now){
     // characters' CONTENT_H (64 world units, see sprite-draw.js) render at
     // the same effective size; bosses stay at the historical 1.5x on top.
     const rScale = CHAR_BASE * (z.boss ? 1.5 : 1) * B.L.mascotS;
-    drawRaccoon(ctx, z.x, gy + 6*B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
+    // T11: wrong-answer bump — the raccoon dashes toward the cat, bonks, and
+    // eases back before its existing "wrong" retreat drift resumes alone.
+    // gapToCat is measured live each frame (z.x drifts a few px during the
+    // retreat, negligible next to the dash distance); B.bumpAt is only fresh
+    // during the "wrong" state (a correct-kill's B.bumpAt, if any, is long
+    // past its 420ms window by the time this word's z exists).
+    const bumpDx = (!REDUCED_MOTION && B.bumpAt)
+      ? bumpOffset(now - B.bumpAt, Math.max(0, z.x - (B.L.mascotX + B.L.catHalf))).dx
+      : 0;
+    const rx = z.x + bumpDx;
+    drawRaccoon(ctx, rx, gy + 6*B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
     // floating HP bar above its head — cosmetic only. Animates hp -> 0 over
     // the happy/dying window (killZombie snapshots hpAtKill); wrong/timeout
     // never touch hp (the raccoon "wins" that word, no damage).
@@ -2096,7 +2121,7 @@ function draw(now){
       const remain = Math.max(0, B.dyingUntil - now);
       hpFrac = (z.hpAtKill ?? z.hp) * (remain/DYING_MS);
     }
-    drawHpBar(ctx, z.x, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.L.mascotS, hpFrac, B.L.mascotS);
+    drawHpBar(ctx, rx, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.L.mascotS, hpFrac, B.L.mascotS);
   }else if(B.reveal && now < B.nextAt){
     // T6: the zombie object itself is gone by now (scheduleNext() nulls
     // B.zombie right at kill/wrong/timeout resolution — for a kill that's

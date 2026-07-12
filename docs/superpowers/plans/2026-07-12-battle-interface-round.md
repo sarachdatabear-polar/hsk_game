@@ -209,10 +209,10 @@ export function meaning(w, lang, thaiPrimary = false) {
 - `WRONG_MS` unchanged (bump 420ms fits inside 560ms hop window; retreat starts after bump returns).
 - Timeout (bite) path: same bump (the raccoon reached the cat anyway) — set B.bumpAt in bite() too.
 
-- [ ] **Step 1:** hud test for pop scaling/fade. Fail → implement → pass.
-- [ ] **Step 2:** Wire timeline; REDUCED_MOTION → no bump/squash, heart just swaps to gray.
-- [ ] **Step 3:** Build + probe wrong answer at +100/+250/+450ms: raccoon at cat, cat squished, heart popping, then retreat. Verify it reads CUTE (no weapon, soft) per §13.
-- [ ] **Step 4:** Full `npm test`. Commit: `feat(battle): wrong-answer bump — visible cause for the lost heart`.
+- [x] **Step 1:** hud test for pop scaling/fade. Fail → implement → pass.
+- [x] **Step 2:** Wire timeline; REDUCED_MOTION → no bump/squash, heart just swaps to gray.
+- [x] **Step 3:** Build + probe wrong answer at +100/+250/+450ms: raccoon at cat, cat squished, heart popping, then retreat. Verify it reads CUTE (no weapon, soft) per §13.
+- [x] **Step 4:** Full `npm test`. Commit: `feat(battle): wrong-answer bump — visible cause for the lost heart`.
 
 ### Task 12: Volume controls
 

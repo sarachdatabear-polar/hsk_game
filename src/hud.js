@@ -38,7 +38,16 @@ export function roundProgress(resolved, total) {
 // literal arcs+triangle construction at these small pip sizes) — moveTo
 // starts at the bottom tip, which doubles as this module's test seam for
 // each pip's x position.
-export function drawHearts(ctx, x, topY, lives, maxLives, S) {
+// T11 (wrong-answer bump): the just-lost pip's coral "pop" echo — the base
+// pips already read the new (decremented) B.lives as of this frame (lost pip
+// already gray), so this overlay is purely a fading, growing coral ghost of
+// the heart that just popped, not a second source of truth for the count.
+// popT: ms since the bump's contact instant (main.js passes
+// now - B.bumpAt - 160, or a value outside [0, POP_MS) to suppress it, e.g.
+// under REDUCED_MOTION). popIndex: the lost pip's 0-based slot (B.lives,
+// post-decrement — the first pip index that's no longer "filled").
+const POP_MS = 240;
+export function drawHearts(ctx, x, topY, lives, maxLives, S, popT, popIndex) {
   const size = 10 * S;
   const gap = 4 * S;
   const step = size + gap;
@@ -46,6 +55,14 @@ export function drawHearts(ctx, x, topY, lives, maxLives, S) {
   const startX = x - totalW / 2 + size / 2;
   for (let i = 0; i < maxLives; i++) {
     drawHeartPip(ctx, startX + i * step, topY, size, i < lives);
+  }
+  if (popT != null && popT >= 0 && popT < POP_MS &&
+      popIndex != null && popIndex >= 0 && popIndex < maxLives) {
+    const f = popT / POP_MS;
+    ctx.save();
+    ctx.globalAlpha = (ctx.globalAlpha ?? 1) * (1 - f);
+    drawHeartPip(ctx, startX + popIndex * step, topY, size * (1 + 0.4 * f), true);
+    ctx.restore();
   }
 }
 
