@@ -178,9 +178,9 @@ export function meaning(w, lang, thaiPrimary = false) {
   - `hurtSquash(t)` → `{sx, sy}` victim squish: sx 1.15, sy 0.85 at t≈40 → 1/1 by 260, with 1 small rebound.
 - All consumed by main.js draw() as ctx transforms around the ground-contact point; reduced-motion: main.js passes t=Infinity (neutral) when REDUCED_MOTION.
 
-- [ ] **Step 1:** Tests: neutral at t<0 and t>duration; peak signs/magnitudes at documented times; monotonic return. Run → fail.
-- [ ] **Step 2:** Implement (damped sin/ease shapes, mirror plaqueBounce style already in juice.js).
-- [ ] **Step 3:** Full `npm test`. Commit: `feat(juice): lunge, bump, hurt-squash curves`.
+- [x] **Step 1:** Tests: neutral at t<0 and t>duration; peak signs/magnitudes at documented times; monotonic return. Run → fail.
+- [x] **Step 2:** Implement (damped sin/ease shapes, mirror plaqueBounce style already in juice.js).
+- [x] **Step 3:** Full `npm test`. Commit: `feat(juice): lunge, bump, hurt-squash curves`.
 
 ### Task 10: Correct-answer choreography
 
@@ -193,10 +193,10 @@ export function meaning(w, lang, thaiPrimary = false) {
 - Floater: on kill push TWO floats — existing combo floater stays; add `{text: t("battle.correct") + "  +" + xpGained + " XP", …}` where xpGained is the addXp amount for a kill (grep addXp call in the correct branch; if XP-per-kill isn't currently granted at kill time, grant via the existing quest/growth flow — do NOT invent new XP economy: show the amount that's actually credited; if none is credited per-kill, show only "Correct!"). i18n key `battle.correct` ("Correct!" / "ถูกต้อง!").
 - Cat lunge trigger: `B.lungeAt = performance.now()` in the correct branch (at coin launch, not at kill, so the attack reads as causing the hit).
 
-- [ ] **Step 1:** fx test: impactBurst count/life/kind. Fail → implement → pass.
-- [ ] **Step 2:** Wire draw(): cat transform when `now - B.lungeAt < 320` (skip when REDUCED_MOTION); impactBurst at raccoon on kill; floats.
-- [ ] **Step 3:** Build + probe screenshots at +80/+200ms after correct tap: cat leans forward, starbits at raccoon, floater visible.
-- [ ] **Step 4:** Full `npm test`. Commit: `feat(battle): correct-answer choreography — lunge, impact, Correct!/+XP floater`.
+- [x] **Step 1:** fx test: impactBurst count/life/kind. Fail → implement → pass.
+- [x] **Step 2:** Wire draw(): cat transform when `now - B.lungeAt < 320` (skip when REDUCED_MOTION); impactBurst at raccoon on kill; floats.
+- [x] **Step 3:** Build + probe screenshots at +80/+200ms after correct tap: cat leans forward, starbits at raccoon, floater visible.
+- [x] **Step 4:** Full `npm test`. Commit: `feat(battle): correct-answer choreography — lunge, impact, Correct!/+XP floater`.
 
 ### Task 11: Wrong-answer bump + heart pop
 
@@ -209,10 +209,10 @@ export function meaning(w, lang, thaiPrimary = false) {
 - `WRONG_MS` unchanged (bump 420ms fits inside 560ms hop window; retreat starts after bump returns).
 - Timeout (bite) path: same bump (the raccoon reached the cat anyway) — set B.bumpAt in bite() too.
 
-- [ ] **Step 1:** hud test for pop scaling/fade. Fail → implement → pass.
-- [ ] **Step 2:** Wire timeline; REDUCED_MOTION → no bump/squash, heart just swaps to gray.
-- [ ] **Step 3:** Build + probe wrong answer at +100/+250/+450ms: raccoon at cat, cat squished, heart popping, then retreat. Verify it reads CUTE (no weapon, soft) per §13.
-- [ ] **Step 4:** Full `npm test`. Commit: `feat(battle): wrong-answer bump — visible cause for the lost heart`.
+- [x] **Step 1:** hud test for pop scaling/fade. Fail → implement → pass.
+- [x] **Step 2:** Wire timeline; REDUCED_MOTION → no bump/squash, heart just swaps to gray.
+- [x] **Step 3:** Build + probe wrong answer at +100/+250/+450ms: raccoon at cat, cat squished, heart popping, then retreat. Verify it reads CUTE (no weapon, soft) per §13.
+- [x] **Step 4:** Full `npm test`. Commit: `feat(battle): wrong-answer bump — visible cause for the lost heart`.
 
 ### Task 12: Volume controls
 
@@ -226,15 +226,57 @@ export function meaning(w, lang, thaiPrimary = false) {
 - audio.js/speak: mp3 `Audio.volume = voiceVol`; SpeechSynthesisUtterance `.volume = voiceVol`.
 - Pause menu: two labeled range inputs (styled: sand track, green thumb, ≥44px touch), i18n keys `settings.sfxVol` ("Sound effects" / "เสียงเอฟเฟกต์"), `settings.voiceVol` ("Pronunciation" / "เสียงอ่าน").
 
-- [ ] **Step 1:** Tests: clamp helper (0..1, bad input → 1), setSfxVolume affects the envelope value (fake AudioContext pattern — see existing sfx tests for the stub style). Fail → implement → pass.
-- [ ] **Step 2:** Wire UI + persistence; build + probe: sliders render in pause overlay, values persist across reload (localStorage check).
-- [ ] **Step 3:** Full `npm test`. Commit: `feat(audio): separate SFX and pronunciation volume controls`.
+- [x] **Step 1:** Tests: clamp helper (0..1, bad input → 1), setSfxVolume affects the envelope value (fake AudioContext pattern — see existing sfx tests for the stub style). Fail → implement → pass.
+- [x] **Step 2:** Wire UI + persistence; build + probe: sliders render in pause overlay, values persist across reload (localStorage check).
+- [x] **Step 3:** Full `npm test`. Commit: `feat(audio): separate SFX and pronunciation volume controls`.
+
+  Deviation: added a defensive early-return in `tone()` when the resolved
+  level (`vol * master`) is `<= 0`, so `setSfxVolume(0)` schedules no gain
+  node at all rather than relying on WebAudio's exponential-ramp-from-zero
+  behavior degrading cleanly (not itself hit by the pre-change code, since
+  `vol` was always positive). Flagged in the commit body as a known UX
+  issue: the pause overlay now shows "Sound effects" twice — the existing
+  `home.sound` on/off toggle and the new `settings.sfxVol` slider share the
+  plan's specified copy — left as-is per plan text, for Jordan to rule on.
 
 ### Task 13: Wave-2 gate — a11y & viewport sweep
 
-- [ ] REDUCED_MOTION probe (`page.emulateMedia({reducedMotion:'reduce'})`): no lunge/bump/pop motion, states still legible (gray heart, ✓/✕, reveal strip).
-- [ ] 320×568 + browser-font-scale probe (`page.addInitScript` set `document.documentElement.style.fontSize='20px'`): no clipped Thai/labels; responsive-sweep clean.
-- [ ] Full `npm test`; screenshots EN+TH; delete probes; lead review → PR Wave 2.
+- [x] REDUCED_MOTION probe (`page.emulateMedia({reducedMotion:'reduce'})`): no lunge/bump/pop motion, states still legible (gray heart, ✓/✕, reveal strip).
+
+  Verified with a same-session timelapse (single wrong-tap event, screenshots
+  at 40/150/300/500ms): under reduced motion the raccoon never enters frame
+  (bump dx suppressed, base retreat only) across all four frames; under
+  normal motion it visibly lunges into frame by 150ms then retreats by
+  300-500ms. Hearts (2 coral + 1 gray after the miss) render at full,
+  unscaled size in both modes by 450ms — no stuck pop-scale artifact. ✓/✕
+  stamps present on both option buttons in both modes.
+
+- [x] 320×568 + browser-font-scale probe (`page.addInitScript` set `document.documentElement.style.fontSize='20px'`): no clipped Thai/labels; responsive-sweep clean.
+
+  Deviation: `page.addInitScript(() => document.documentElement.style.fontSize=...)`
+  threw `TypeError: Cannot read properties of null (reading 'style')` on
+  this playwright-core/chromium-1228 build (documentElement unavailable at
+  the init-script's injection point) and the font-size never actually took
+  effect (verified by reading it back — empty). Applied the same override
+  via `page.evaluate()` immediately after each navigation/reload instead —
+  this app has no code that caches `documentElement`'s computed font-size at
+  boot (layout.js reads `clientWidth`/`clientHeight` fresh every frame per
+  CLAUDE.md), so a post-load mutation exercises the same browser-text-zoom
+  scenario. Result: zero horizontal-overflow offenders at 320×568 in EN and
+  TH across home/battle/pause-overlay/options screens; pause-overlay slider
+  labels stay well within the viewport (rightmost edge 279px of 320px);
+  `node scripts/responsive-sweep.mjs` (10 viewports + 2 listen-format
+  probes) passed clean.
+
+- [x] Full `npm test`; screenshots EN+TH; delete probes; lead review → PR Wave 2.
+
+  `npm test`: 1711 pass (53 files). Screenshots captured at 320×568 and
+  390×844 in both locales (battle screen + pause overlay) — all probe
+  scripts and screenshots deleted before commit, nothing left in the repo.
+  No fixes were needed from the sweep itself; this commit's only change is
+  the checkbox/plan-note update (T12's tone()-zero-guard landed in the T12
+  commit, not here). PR handoff is the lead's call, not run from this
+  worker session.
 
 ---
 

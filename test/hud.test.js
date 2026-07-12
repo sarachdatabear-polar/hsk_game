@@ -7,11 +7,11 @@ function fakeCtx() {
   const calls = [];
   return {
     calls,
-    fillStyle: "", strokeStyle: "", lineWidth: 0,
+    fillStyle: "", strokeStyle: "", lineWidth: 0, globalAlpha: 1,
     save(){}, restore(){}, beginPath(){}, closePath(){},
     moveTo(x, y){ calls.push({ op: "moveTo", x, y }); },
     lineTo(){}, bezierCurveTo(){}, quadraticCurveTo(){}, arc(){},
-    fill(){ calls.push({ op: "fill", fillStyle: this.fillStyle }); },
+    fill(){ calls.push({ op: "fill", fillStyle: this.fillStyle, globalAlpha: this.globalAlpha }); },
     stroke(){ calls.push({ op: "stroke", strokeStyle: this.strokeStyle }); },
   };
 }
@@ -132,6 +132,59 @@ describe("drawHearts", () => {
     const xs2 = ctx2.calls.filter(c => c.op === "moveTo").map(c => c.x);
     // doubling S doubles the spread between the outer pips
     expect(xs2[2] - xs2[0]).toBeCloseTo((xs1[2] - xs1[0]) * 2, 5);
+  });
+});
+
+// T11: the just-lost pip's coral "pop" echo, drawn on top of the maxLives
+// base pips when popT/popIndex are given — additive params (base arity from
+// T5 above is unchanged when they're omitted).
+describe("drawHearts pop (T11)", () => {
+  it("with no popT, renders exactly maxLives pips (unchanged base behavior)", () => {
+    const ctx = fakeCtx();
+    drawHearts(ctx, 100, 50, 1, 3, 1);
+    expect(ctx.calls.filter(c => c.op === "fill").length).toBe(3);
+  });
+  it("within the pop window, draws one extra coral overlay pip at popIndex", () => {
+    const ctx = fakeCtx();
+    drawHearts(ctx, 100, 50, 1, 3, 1, 100, 1);
+    const fills = ctx.calls.filter(c => c.op === "fill");
+    expect(fills.length).toBe(4);
+    expect(fills[3].fillStyle).toBe("#E69777");
+  });
+  it("the pop overlay sits at the same x as the lost pip", () => {
+    const ctx = fakeCtx();
+    drawHearts(ctx, 100, 50, 1, 3, 1, 100, 1);
+    const moves = ctx.calls.filter(c => c.op === "moveTo").map(c => c.x);
+    expect(moves.length).toBe(4);
+    expect(moves[3]).toBeCloseTo(moves[1], 5);   // pip index 1's x
+  });
+  it("no overlay once the 240ms pop window has closed", () => {
+    const ctx = fakeCtx();
+    drawHearts(ctx, 100, 50, 1, 3, 1, 240, 1);
+    expect(ctx.calls.filter(c => c.op === "fill").length).toBe(3);
+  });
+  it("no overlay before the window opens (negative popT)", () => {
+    const ctx = fakeCtx();
+    drawHearts(ctx, 100, 50, 1, 3, 1, -5, 1);
+    expect(ctx.calls.filter(c => c.op === "fill").length).toBe(3);
+  });
+  it("no overlay for an out-of-range popIndex", () => {
+    const ctx = fakeCtx();
+    drawHearts(ctx, 100, 50, 1, 3, 1, 100, 5);
+    expect(ctx.calls.filter(c => c.op === "fill").length).toBe(3);
+  });
+  it("fades from full alpha at contact toward transparent by the window's end", () => {
+    const ctxStart = fakeCtx();
+    drawHearts(ctxStart, 100, 50, 1, 3, 1, 0, 1);
+    const startFill = ctxStart.calls.filter(c => c.op === "fill").at(-1);
+    expect(startFill.globalAlpha).toBeCloseTo(1, 5);
+
+    const ctxLate = fakeCtx();
+    drawHearts(ctxLate, 100, 50, 1, 3, 1, 200, 1);
+    const lateFill = ctxLate.calls.filter(c => c.op === "fill").at(-1);
+    expect(lateFill.globalAlpha).toBeLessThan(1);
+    expect(lateFill.globalAlpha).toBeGreaterThan(0);
+    expect(lateFill.globalAlpha).toBeLessThan(startFill.globalAlpha);
   });
 });
 

@@ -4,11 +4,28 @@ function ac() {
   const AC = window.AudioContext || window.webkitAudioContext;
   return AC ? (ctx = new AC()) : null;
 }
+// Clamp a settings volume (0..1); anything non-finite falls back to `dflt`
+// (default 1 = full volume, so a corrupt/missing stored value never goes
+// silent). Shared by sfx.js's master multiplier and audio.js's voice volume.
+export function clampVol(v, dflt = 1) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return dflt;
+  return Math.max(0, Math.min(1, n));
+}
+// Master SFX multiplier (settings.sfxVol, wave-2 volume controls). Applied on
+// top of each pack's per-tone `vol` in the gain envelope below.
+let master = 1;
+export function setSfxVolume(v) { master = clampVol(v); }
 function tone(freq, dur, type = "square", vol = 0.15, when = 0) {
   const a = ac(); if (!a || !sfx.enabled) return;
+  const level = vol * master;
+  // Fully muted: nothing to schedule. Also sidesteps WebAudio's
+  // exponential-ramp-from-zero edge case (ramping FROM 0 is undefined/
+  // throws in some engines) rather than relying on it degrading cleanly.
+  if (level <= 0) return;
   const o = a.createOscillator(), g = a.createGain();
   o.type = type; o.frequency.value = freq;
-  g.gain.setValueAtTime(vol, a.currentTime + when);
+  g.gain.setValueAtTime(level, a.currentTime + when);
   g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + when + dur);
   o.connect(g).connect(a.destination);
   o.start(a.currentTime + when); o.stop(a.currentTime + when + dur);

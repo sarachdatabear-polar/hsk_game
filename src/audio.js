@@ -1,9 +1,15 @@
 import { isNative } from "./native.js";
+import { clampVol } from "./sfx.js";
 
 let mp3Set = new Set();
 let base = "audio/";
 let zhVoice = null;
 let current = null;
+// Pronunciation volume (settings.voiceVol, wave-2 volume controls). Applied
+// to both playback paths: the bundled-mp3 Audio element and the Web Speech
+// SpeechSynthesisUtterance fallback.
+let voiceVol = 1;
+export function setVoiceVolume(v) { voiceVol = clampVol(v); }
 
 // Bundled-MP3 presence — reliable tone (browser TTS can't be trusted for tones).
 export function hasMp3(hanzi){ return mp3Set.has(hanzi); }
@@ -49,6 +55,7 @@ export function speak(hanzi) {
   }
   if (mp3Set.has(hanzi)) {
     current = new Audio(base + encodeURIComponent(hanzi) + ".mp3");
+    current.volume = voiceVol;
     current.play().catch(() => ttsFallback(hanzi, synth, deferred));
     return;
   }
@@ -62,7 +69,7 @@ export function speak(hanzi) {
 // synthesizer instance it was scheduled against.
 function speakUtterance(hanzi, synth, isRetry) {
   const u = new SpeechSynthesisUtterance(hanzi);
-  u.lang = "zh-CN"; u.rate = 0.85;
+  u.lang = "zh-CN"; u.rate = 0.85; u.volume = voiceVol;
   if (zhVoice) u.voice = zhVoice;
   if (!isRetry) u.onerror = () => speakUtterance(hanzi, synth, true);
   synth.speak(u);

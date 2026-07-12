@@ -5,8 +5,8 @@ import { gradeTyped, syllables, syllableTones, letters } from "./pinyin.js";
 import { clozeFor } from "./cloze.js";
 import { tonePool, toneQuestion, gradeTone } from "./tone_gym.js";
 import { killPoints } from "./scoring.js";
-import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus } from "./fx.js";
-import { sfx } from "./sfx.js";
+import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus, impactBurst } from "./fx.js";
+import { sfx, setSfxVolume, clampVol } from "./sfx.js";
 import { drawCat } from "./cat.js";
 import { drawRaccoon, drawHpBar, RACCOON_HEIGHT } from "./raccoon.js";
 import { uiScale, layout } from "./layout.js";
@@ -21,7 +21,7 @@ import { REMINDER_HOUR, reminderPlan } from "./notify.js";
 import { defaultQuestState, noteQuestEvent, questStatus,
          defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly } from "./quests.js";
 import { isBossSpawn, bossPoints, bossSpeedFactor } from "./boss.js";
-import { initAudio, speak, audioAvailable, hasMp3 } from "./audio.js";
+import { initAudio, speak, audioAvailable, hasMp3, setVoiceVolume } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, requestNotifPermission } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import { BUILDINGS, streetPieces, streetProgress, streetMetrics, DECO_SPRITE_SCALE } from "./street.js";
@@ -30,7 +30,7 @@ import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
 import { navVisibleOn, activeTabFor } from "./nav.js";
 import { roundLabel, comboMultiplier, comboFires, roundProgress, drawHearts } from "./hud.js";
-import { comboGlowTier, plaqueBounce, countUpValue } from "./juice.js";
+import { comboGlowTier, plaqueBounce, countUpValue, lungeOffset, bumpOffset, hurtSquash } from "./juice.js";
 import { isFirstRun, introDeck } from "./firstrun.js";
 import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue } from "./stickers.js";
 import { journeyNodes, currentNodeId } from "./journey.js";
@@ -84,12 +84,18 @@ const store = {
 };
 const scope = Object.assign({levels:[3], core:false, newOnly:false, topN:0, lang:"both", sessionLen:20},
                             store.get("scope", {}));
-let settings = Object.assign({autoSpeak:true, showPinyin:true}, store.get("settings", {}));
+let settings = Object.assign({autoSpeak:true, showPinyin:true, sfxVol:1, voiceVol:1}, store.get("settings", {}));
+// Defensive clamp — a corrupt/out-of-range stored value shouldn't survive a
+// reload (see clampVol in sfx.js, shared with audio.js's voice volume).
+settings.sfxVol = clampVol(settings.sfxVol);
+settings.voiceVol = clampVol(settings.voiceVol);
 let formatIntros = store.get("formatIntros", {});   // v6: which formats have had their soft-intro
 // UI language: persisted choice wins, else device language. i18n.js is pure,
 // so persistence lives here (nbhsk.locale), like every other nbhsk.* key.
 setLocale(store.get("locale", detectLocale()));
 sfx.enabled = store.get("sfx", true);
+setSfxVolume(settings.sfxVol);
+setVoiceVolume(settings.voiceVol);
 let pool = [];            // current merged word pool
 let learnDeck = null;     // override deck for "review misses"
 let lenCustomOpen = false;  // "Custom" chip tapped; input visible even if value matches a preset
@@ -1312,7 +1318,7 @@ function startBattle(mode){
   B.smartRound = B.customDeck && smartDeckNext;   // full-rules smart review (owner: perfect bonus yes, best-score no)
   smartDeckNext = false;
   B.zombie = null; B.proj = null; B.parts = []; B.flash = 0; B.screenShake = 0; B.feedback = null;
-  B.hitFlash = null; B.plaqueHitAt = 0;
+  B.hitFlash = null; B.plaqueHitAt = 0; B.lungeAt = 0; B.bumpAt = 0;
   B.reveal = null;   // T6: resolved-word snapshot for the persistent reveal-window plate/strip
   B.bossDefeated = false;   // session fact for the first-boss sticker (B2)
   B.floats = []; B.mascotHopUntil = 0;
@@ -1441,12 +1447,32 @@ function renderPauseToggles(){
     box.appendChild(btn);
   }
 }
+// Volume sliders (T12): plain range inputs, bound once at boot; pauseBattle()
+// just re-syncs their displayed value in case settings changed elsewhere
+// (e.g. a future settings screen). Persisted the same way as every other
+// settings.* field — assign, then store.set("settings", settings).
+const pauseSfxVol = $("#pause-sfxvol"), pauseVoiceVol = $("#pause-voicevol");
+function syncPauseSliders(){
+  if(pauseSfxVol) pauseSfxVol.value = settings.sfxVol;
+  if(pauseVoiceVol) pauseVoiceVol.value = settings.voiceVol;
+}
+if(pauseSfxVol) pauseSfxVol.oninput = ()=>{
+  settings.sfxVol = clampVol(pauseSfxVol.value);
+  setSfxVolume(settings.sfxVol);
+  store.set("settings", settings);
+};
+if(pauseVoiceVol) pauseVoiceVol.oninput = ()=>{
+  settings.voiceVol = clampVol(pauseVoiceVol.value);
+  setVoiceVolume(settings.voiceVol);
+  store.set("settings", settings);
+};
 function pauseBattle(){
   if(!B.on || B.paused) return;
   B.paused = true;
   B.pausedAt = performance.now();
   keepAwake(false);   // nothing moves while paused — let the screen sleep
   renderPauseToggles();
+  syncPauseSliders();
   $("#pause-overlay").classList.add("on");
 }
 function resumeBattle(){
@@ -1739,7 +1765,8 @@ function answer(btn, o){
     questEvent("correct");
     questEvent("combo", B.combo);
     if(boss) questEvent("boss");
-    addXp(boss ? 5 : 1);   // boss final kill is worth +5 total, not +1 then +5
+    const killXp = boss ? 5 : 1;   // boss final kill is worth +5 total, not +1 then +5
+    addXp(killXp);
     // farther kill = bigger bonus (replaces the old time bonus)
     const biteX = B.L.mascotX + B.L.catHalf;
     const distFrac = Math.max(0, z.x - biteX) / (B.w - biteX);
@@ -1748,6 +1775,7 @@ function answer(btn, o){
     btn.classList.add("good", "stamp", "stamp-good");
     lockOptions();
     B.proj = {x:B.L.mascotX+16*B.S, y:B.h-B.L.ground-30*B.S};   // coin flies at the cat
+    B.lungeAt = performance.now();   // T10: cat attack lunge — at coin launch, so the attack reads as causing the hit
     // (word audio fires once, on spawn — no replay on the answer tap)
     if(boss){ noteAnswer(z.w.h, true); B.bossDefeated = true; }   // both stages passed
     const gy = B.h-B.L.ground;
@@ -1759,6 +1787,10 @@ function answer(btn, o){
     B.plaqueHitAt = performance.now();   // plaque bounce timebase (drawWordPlate)
     const floater = comboFloater(z.x, gy-130, B.combo);
     if(floater) B.floats.push(floater);
+    // T10: "Correct!  +N XP" floater — N is the exact amount addXp() just
+    // credited above (killXp), never an invented number. Sits a touch higher
+    // than the combo floater so the two don't fully overlap when both show.
+    B.floats.push({x:z.x, y:gy-160, text: t("battle.correct") + "  +" + killXp + " XP", life:0.9, vy:-60});
     // milestone combo (10, 20, ...): fireworks + a CRITICAL! comic burst
     // (fx-critical sprite + bold lettering, drawn in drawFeedbackLayer)
     // replaces the plain correct stamp for this kill.
@@ -1778,7 +1810,10 @@ function answer(btn, o){
     revealCorrect();
     pushMiss(z.w);
     if(boss) noteAnswer(z.w.h, false);          // any miss fails the boss word
-    if(!free){ B.lives--; B.flash = 1; B.screenShake = REDUCED_MOTION ? 0 : 1; }
+    // T11: bump/squash/heart-pop are the visible cause for the lost heart —
+    // a forgiven (free) miss loses no heart, so it gets no bump either (a
+    // stale/unset B.bumpAt keeps bumpOffset/hurtSquash neutral in draw()).
+    if(!free){ B.lives--; B.flash = 1; B.screenShake = REDUCED_MOTION ? 0 : 1; B.bumpAt = performance.now(); }
     B.resolved++;
     z.state = "wrong";
     z.wrongUntil = performance.now() + WRONG_MS;
@@ -1804,6 +1839,7 @@ function killZombie(z){
   // just before the feedback layer). Absolute deadline — shifted on resume.
   B.hitFlash = {x:z.x, y:gy-40*B.S, until:fxUntil(150)};
   B.parts.push(...coinBurst(z.x, gy-16, !!z.boss, shopState.effect));   // bosses pop a bigger, coinier burst; effect pack swaps the look
+  B.parts.push(...impactBurst(z.x, gy-16));   // T10: sun-yellow/cream starbits — "the attack connected"
   z.state = "happy";
   z.happyAt = performance.now();   // raccoonBob("happy") wants time-since-defeat, not the raw rAF t
   z.hpAtKill = z.hp;   // draw() lerps hp -> 0 over the happy/dying window from this
@@ -1824,7 +1860,11 @@ function bite(timedOut){
   }
   const free = !!(z && z.introFree);   // intro word timing out is also forgiven
   sfx.bite();
-  if(!free){ B.lives--; B.flash = 1; }
+  // T11: same bump timeline as answer()'s wrong branch — the raccoon reached
+  // the cat anyway (that's what a timeout means), so the cat's hurt-squash +
+  // heart-pop reaction fires here too (unconditional in draw(), no live z
+  // needed); gated on !free for the same reason as the wrong-tap path.
+  if(!free){ B.lives--; B.flash = 1; B.bumpAt = performance.now(); }
   B.resolved++;
   scheduleNext(REVEAL_MS);   // owner-tuned window to read the revealed answer
   updateHud();
@@ -2003,12 +2043,36 @@ function draw(now){
   const hopping = B.mascotHopUntil && now < B.mascotHopUntil;   // little victory hop after a kill
   const playerState = hopping ? "happy" : "walk";
   const catScale = CHAR_BASE*B.L.mascotS;
-  drawCat(ctx, B.L.mascotX, gy + 6*B.S, now, playerState, SKIN_PALETTES[shopState.skin], catScale, B.acc, false);
+  // T10/T11: cat attack lunge (correct answer) and hurt-squash (wrong answer
+  // / timeout bump) — both pure curves from juice.js, combined into one
+  // transform since they never overlap in practice (mutually exclusive
+  // resolutions, both windows well under REVEAL_MS) and multiplying two
+  // 1-based scale factors is a no-op for whichever curve is inactive.
+  // REDUCED_MOTION feeds t=Infinity so both curves are neutral and this
+  // collapses to the old unconditional drawCat call. The transform pivots on
+  // the cat's (possibly dx-shifted) ground-contact point so squash reads as
+  // anchored to the feet, not the sprite's bounding box.
+  const lunge = lungeOffset(REDUCED_MOTION ? Infinity : now - (B.lungeAt || -Infinity));
+  const hurt = hurtSquash(REDUCED_MOTION ? Infinity : now - (B.bumpAt || -Infinity) - 160);
+  const catX = B.L.mascotX + lunge.dx, catY = gy + 6*B.S;
+  ctx.save();
+  ctx.translate(catX, catY);
+  ctx.scale(lunge.sx * hurt.sx, lunge.sy * hurt.sy);
+  ctx.translate(-catX, -catY);
+  drawCat(ctx, catX, catY, now, playerState, SKIN_PALETTES[shopState.skin], catScale, B.acc, false);
+  ctx.restore();
   // T5: hero hearts, in-scene above the cat's head (replaces the HUD hud-lives
   // pips removed in T3) — same y-convention as the raccoon's floating HP bar
   // below (gy + 6*B.S - <char height>*<char scale>), plus a little extra lift
   // (14*B.S) since these 3 pips need their own row above the head.
-  drawHearts(ctx, B.L.mascotX, gy + 6*B.S - 64*catScale - 14*B.S, B.lives, 3, B.S);
+  // T11: popT/popIndex draw the just-lost pip's fading coral "pop" echo —
+  // popT is Infinity (suppressed) under REDUCED_MOTION or with no bump yet;
+  // popIndex (B.lives) is the pip that just flipped from filled to lost.
+  const heartPopT = REDUCED_MOTION || !B.bumpAt ? Infinity : now - B.bumpAt - 160;
+  // Pips scale with the CHARACTER (mascotS-based catScale), not the bare
+  // screen factor — at CHAR_SCALE 1.4 the B.S-sized pips read as barely
+  // visible specks against the backdrop (spec §4: "clearly visible").
+  drawHearts(ctx, B.L.mascotX, gy + 6*B.S - 64*catScale - 18*B.S, B.lives, 3, 1.5*catScale, heartPopT, B.lives);
   // catHalf grew with mascotS while mascotX stayed on S, so clamp the kitten on-canvas.
   const kittenX = Math.max(16*B.L.mascotS + 2, B.L.mascotX - B.L.catHalf);
   if(B.hasKitten) drawCat(ctx, kittenX, gy + 6*B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.L.mascotS, [], false);
@@ -2067,7 +2131,17 @@ function draw(now){
     // characters' CONTENT_H (64 world units, see sprite-draw.js) render at
     // the same effective size; bosses stay at the historical 1.5x on top.
     const rScale = CHAR_BASE * (z.boss ? 1.5 : 1) * B.L.mascotS;
-    drawRaccoon(ctx, z.x, gy + 6*B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
+    // T11: wrong-answer bump — the raccoon dashes toward the cat, bonks, and
+    // eases back before its existing "wrong" retreat drift resumes alone.
+    // gapToCat is measured live each frame (z.x drifts a few px during the
+    // retreat, negligible next to the dash distance); B.bumpAt is only fresh
+    // during the "wrong" state (a correct-kill's B.bumpAt, if any, is long
+    // past its 420ms window by the time this word's z exists).
+    const bumpDx = (!REDUCED_MOTION && B.bumpAt)
+      ? bumpOffset(now - B.bumpAt, Math.max(0, z.x - (B.L.mascotX + B.L.catHalf))).dx
+      : 0;
+    const rx = z.x + bumpDx;
+    drawRaccoon(ctx, rx, gy + 6*B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
     // floating HP bar above its head — cosmetic only. Animates hp -> 0 over
     // the happy/dying window (killZombie snapshots hpAtKill); wrong/timeout
     // never touch hp (the raccoon "wins" that word, no damage).
@@ -2076,7 +2150,7 @@ function draw(now){
       const remain = Math.max(0, B.dyingUntil - now);
       hpFrac = (z.hpAtKill ?? z.hp) * (remain/DYING_MS);
     }
-    drawHpBar(ctx, z.x, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.L.mascotS, hpFrac, B.L.mascotS);
+    drawHpBar(ctx, rx, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.L.mascotS, hpFrac, B.L.mascotS);
   }else if(B.reveal && now < B.nextAt){
     // T6: the zombie object itself is gone by now (scheduleNext() nulls
     // B.zombie right at kill/wrong/timeout resolution — for a kill that's
@@ -2121,6 +2195,14 @@ function draw(now){
       ctx.fillStyle = "#e04040"; ctx.beginPath(); ctx.arc(p.x,p.y,4.4,0,7); ctx.fill();
     }else if(p.kind==="star"){
       ctx.fillStyle = "#ffe08a"; drawStarMark(ctx, p.x, p.y, 5.2);
+    }else if(p.kind==="impact"){
+      // T10: sun-yellow/cream starbits at the raccoon on a correct-answer
+      // impact — brighter than the shared life/0.6 alpha ratio would give a
+      // 0.35s-life particle (capped ~0.58), so the flash still reads at a
+      // glance instead of looking washed out.
+      ctx.globalAlpha = Math.max(0, Math.min(1, p.life/0.35));
+      ctx.fillStyle = p.vx >= 0 ? "#F2BC57" : "#FBF5E8";   // sun-yellow/cream split by the randomized fling direction
+      drawStarMark(ctx, p.x, p.y, 3.4);
     }else{
       ctx.fillStyle = "#f5c518"; ctx.beginPath(); ctx.arc(p.x,p.y,3.4,0,7); ctx.fill();
     }

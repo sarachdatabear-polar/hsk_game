@@ -307,6 +307,8 @@ export const STRINGS = {
     "battle.pinyin": "Pinyin",
     "battle.on": "On",
     "battle.off": "Off",
+    "settings.sfxVol": "Sound effects",
+    "settings.voiceVol": "Pronunciation",
     "battle.canvasLabel": "Battle scene. Press Enter or Space to replay the word's audio (when available).",
     "battle.bossPrompt": "Review Challenge · pick the hanzi for: {meaning}",
     "battle.replay": "Play it again",
@@ -330,6 +332,8 @@ export const STRINGS = {
     "battle.instruction.tone": "Choose the pinyin",
     "battle.instruction.typed": "Type the pinyin",
     "battle.instruction.cloze": "Fill the blank",
+    // T10 (battle-interface round): kill floater text, "Correct!  +N XP".
+    "battle.correct": "Correct!",
     // tones (v6 phase 3: standalone tone-discrimination minigame)
     "tones.title": "Tone Trainer",
     "tones.instruction": "Which tone did you hear?",
@@ -643,6 +647,8 @@ export const STRINGS = {
     "battle.pinyin": "พินอิน",
     "battle.on": "เปิด",
     "battle.off": "ปิด",
+    "settings.sfxVol": "เสียงเอฟเฟกต์",
+    "settings.voiceVol": "เสียงอ่าน",
     "battle.canvasLabel": "ฉากต่อสู้ กด Enter หรือ Space เพื่อฟังเสียงคำศัพท์อีกครั้ง (เมื่อเปิดให้ฟัง)",
     "battle.bossPrompt": "ด่านทบทวน · เลือกตัวอักษรจีนของคำว่า: {meaning}",
     "battle.replay": "ฟังอีกครั้ง",
@@ -666,6 +672,9 @@ export const STRINGS = {
     "battle.instruction.tone": "เลือกพินอินที่ถูกต้อง",
     "battle.instruction.typed": "พิมพ์พินอิน",
     "battle.instruction.cloze": "เติมคำในช่องว่าง",
+    // T10 (battle-interface round) — machine/plan-authored, flagged for the
+    // native-review queue.
+    "battle.correct": "ถูกต้อง!",
     // tones (v6 phase 3: standalone tone-discrimination minigame)
     "tones.title": "ฝึกวรรณยุกต์",
     "tones.instruction": "คุณได้ยินวรรณยุกต์อะไร",
