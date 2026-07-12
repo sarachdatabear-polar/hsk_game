@@ -5,7 +5,7 @@
 // additive-safe: no fold can lose progress in either direction.
 import { defaultShop } from "./shop.js";
 import { defaultStickers } from "./stickers.js";
-import { defaultQuestState, defaultMonthly, MONTHLY_TARGET } from "./quests.js";
+import { defaultQuestState, defaultMonthly, MONTHLY_TARGET, MONTHLY_REWARD } from "./quests.js";
 import { defaultDaily } from "./daily.js";
 
 export const SYNC_KEYS = ["mastery", "xp", "daily", "quests", "monthly",
@@ -107,6 +107,19 @@ export function mergeMonthly(a, b) {
            claimed: !!(A.claimed || B.claimed) };
 }
 
+// coins owed for the month a cross-month merge discards.
+// A completed-but-unclaimed month is unrealized wallet value (unlike daily
+// quests, which credit the wallet immediately) — settle it before it's lost.
+// Mirrors main.js's local-path settleMonthlyNow() guard. Idempotent: after
+// one merge the stale month no longer exists on either side.
+export function staleMonthlyOwed(a, b) {
+  const A = Object.assign(defaultMonthly(), a || {});
+  const B = Object.assign(defaultMonthly(), b || {});
+  if (A.month === B.month) return 0;
+  const stale = A.month > B.month ? B : A;
+  return stale.done >= MONTHLY_TARGET && !stale.claimed ? MONTHLY_REWARD : 0;
+}
+
 function daysBetween(a, b) {   // whole days b - a; 0 when either is invalid/empty
   if (!a || !b) return 0;
   const da = new Date(a + "T00:00:00Z"), db = new Date(b + "T00:00:00Z");
@@ -154,7 +167,7 @@ export function mergeAll(local, cloud, { shopDirty = false } = {}) {
     daily: mergeDaily(l.daily, c.daily),
     quests: mergeQuests(l.quests, c.quests),
     monthly: mergeMonthly(l.monthly, c.monthly),
-    wallet: mergeWallet(l.wallet, c.wallet),
+    wallet: mergeWallet(l.wallet, c.wallet) + staleMonthlyOwed(l.monthly, c.monthly),
     freezes: mergeFreezes(l.freezes, c.freezes),
     shop: mergeShop(l.shop, c.shop, shopDirty),
     stickers: mergeStickers(l.stickers, c.stickers),

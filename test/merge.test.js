@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { SYNC_KEYS, defaultSyncMeta, mergeXp, mergeWallet, mergeFreezes,
          mergeBest, mergeStickers, mergeShop, mergeMastery, mergeQuests,
-         mergeMonthly } from "../src/merge.js";
+         mergeMonthly, staleMonthlyOwed, mergeAll } from "../src/merge.js";
 
 describe("merge: scalars", () => {
   it("SYNC_KEYS lists the 10 synced keys", () =>
@@ -131,4 +131,28 @@ describe("mergeMonthly", () => {
     expect(mergeMonthly({ month: "2026-06", done: 40, claimed: false },
                         { month: "2026-07", done: 3, claimed: false }))
       .toEqual({ month: "2026-07", done: 3, claimed: false }));
+});
+
+describe("merge: stale monthly settle (P0 2026-07-12)", () => {
+  const juneDone = { month: "2026-06", done: 40, claimed: false };
+  const july     = { month: "2026-07", done: 0,  claimed: false };
+  it("owes the reward when the discarded older month is complete and unclaimed", () =>
+    expect(staleMonthlyOwed(july, juneDone)).toBe(1500));
+  it("order-independent: stale side may be local or cloud", () =>
+    expect(staleMonthlyOwed(juneDone, july)).toBe(1500));
+  it("owes nothing when already claimed, incomplete, same month, or missing side", () => {
+    expect(staleMonthlyOwed(july, { ...juneDone, claimed: true })).toBe(0);
+    expect(staleMonthlyOwed(july, { ...juneDone, done: 39 })).toBe(0);
+    expect(staleMonthlyOwed(juneDone, juneDone)).toBe(0);
+    expect(staleMonthlyOwed(july, null)).toBe(0);           // null -> defaultMonthly month ""
+  });
+  it("mergeAll credits the owed reward into the merged wallet", () => {
+    const local = { monthly: july, wallet: 200 };
+    const cloud = { monthly: juneDone, wallet: 100 };
+    const m = mergeAll(local, cloud);
+    expect(m.wallet).toBe(200 + 1500);
+    expect(m.monthly.month).toBe("2026-07");
+  });
+  it("mergeAll(local, null) baseline owes nothing", () =>
+    expect(mergeAll({ monthly: juneDone, wallet: 50 }, null).wallet).toBe(50));
 });
