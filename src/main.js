@@ -1270,6 +1270,7 @@ cv.addEventListener("click", e=>{
 });
 cv.addEventListener("keydown", e=>{
   if(e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+  if(B.paused) return;   // overlay is up — same guard as replayCurrentWord/answer
   e.preventDefault();
   const now = performance.now();
   if(inRevealWindow(now)){ B.nextAt = now; return; }   // T6: keyboard tap-to-skip
