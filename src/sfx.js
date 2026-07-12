@@ -18,6 +18,10 @@ let master = 1;
 export function setSfxVolume(v) { master = clampVol(v); }
 function tone(freq, dur, type = "square", vol = 0.15, when = 0) {
   const a = ac(); if (!a || !sfx.enabled) return;
+  // WebKit can hand back a suspended context when first constructed outside a
+  // user gesture (e.g. first SFX = a word timing out in the rAF loop). resume()
+  // is async — this tone may still be lost, but the session unmutes.
+  if (a.state === "suspended" && a.resume) a.resume().catch(() => {});
   const level = vol * master;
   // Fully muted: nothing to schedule. Also sidesteps WebAudio's
   // exponential-ramp-from-zero edge case (ramping FROM 0 is undefined/

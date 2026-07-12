@@ -611,6 +611,15 @@ async function syncEdge(reason){
   }
 }
 
+// pushDirty can redirect to a full reconcile (monthly-dirty, sync.js) — any
+// merge that wrote the store must be followed by a rehydrate, same as
+// syncEdge. The plain push path never merges ("changed" absent) and skips it.
+function pushEdge(reason){
+  pushDirty(store, reason, undefined, B.on).then(r => {
+    if(r && r.ok && "changed" in r) { rehydrateFromStore(); renderAccount(); }
+  });
+}
+
 async function onAccountConnect(){
   const r = await ensureGuest(getLocale());
   if(r.ok){ accountUI.session = r.session; renderAccount(); syncEdge("sign-in"); }
@@ -835,7 +844,10 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
   else if(tab==="tones"){ startToneRound(); show("tones"); }
   else if(tab==="account"){ renderAccount(); show("account"); refreshAccountSession(); }
   else {
-    if(tab==="home"){ stopBattle(); }   // intro abandonment handled in show()
+    if(tab==="home"){
+      if(B.on){ endBattle(true); return; }   // banks partial round + shows home itself
+      stopBattle();   // intro abandonment handled in show()
+    }
     show(tab);
   }
 }));
@@ -1267,6 +1279,7 @@ cv.addEventListener("click", e=>{
 });
 cv.addEventListener("keydown", e=>{
   if(e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+  if(B.paused) return;   // overlay is up — same guard as replayCurrentWord/answer
   e.preventDefault();
   const now = performance.now();
   if(inRevealWindow(now)){ B.nextAt = now; return; }   // T6: keyboard tap-to-skip
@@ -1306,6 +1319,7 @@ function pickWord(){
   return deck[Math.floor(Math.random()*deck.length)];
 }
 function startBattle(mode){
+  if(B.on) return;   // re-entrancy guard: a double-tapped start button must not schedule a second rAF loop
   lastMode = mode;
   B.on = true; B.mode = mode;
   // A miss deck can be as small as 2 (only 3 lives => at most 3 misses per round);
@@ -1415,7 +1429,7 @@ function updateComboStrip(){
    deadline the battle loop reads must be shifted forward by the pause duration
    on resume, or it "expires" while the player was looking at the overlay:
    B.nextAt, B.dyingUntil, B.mascotHopUntil, B.feedback.until, B.zombie.wrongUntil,
-   B.hitFlash.until, B.plaqueHitAt. */
+   B.hitFlash.until, B.plaqueHitAt, B.lungeAt, B.bumpAt. */
 const PAUSE_TOGGLES = [
   { icon:"bell", iconOff:"bell-off", labelKey:"home.sound", isOn:()=>sfx.enabled, toggle:()=>toggleSfx() },
   { icon:"sound", iconOff:"muted", labelKey:"battle.wordAudio", isOn:()=>settings.autoSpeak,
@@ -1487,6 +1501,8 @@ function resumeBattle(){
   if(B.bossStageAt) B.bossStageAt += shift;
   if(B.hitFlash) B.hitFlash.until += shift;
   if(B.plaqueHitAt) B.plaqueHitAt += shift;
+  if(B.lungeAt) B.lungeAt += shift;
+  if(B.bumpAt) B.bumpAt += shift;
   B.paused = false;
   keepAwake(true);
   $("#pause-overlay").classList.remove("on");
@@ -1503,7 +1519,9 @@ document.addEventListener("visibilitychange", ()=>{
     syncStreakReminder(plan,
       t("notify.streak.title", { n: inf.streak }),
       t("notify.streak.body", { remaining: Math.max(0, inf.goal - inf.todayResolved) }));
-    pushDirty(store, "hide");
+    // midRound=B.on: a hide during a (paused) battle must not let a
+    // monthly-dirty push redirect into reconcile — see pushDirty/syncEdge.
+    pushEdge("hide");
   }
   if(!document.hidden) syncEdge("foreground");
 });
@@ -2782,7 +2800,7 @@ function makeShopRow(item, today){
     if(!r.ok) return;
     wallet = r.wallet; shopState = r.shop;
     store.set("wallet", wallet); store.set("shop", shopState);
-    pushDirty(store, "purchase");
+    pushEdge("purchase");
     justBought = { id: item.id, at: performance.now() };
     // no renderStreet() here: the street canvas is display:none while the
     // shop screen is up (renderStreet would no-op) and show("street") always
@@ -2802,7 +2820,7 @@ function makeShopRow(item, today){
       wallet = r.wallet;
       if(item.id === "streak-freeze"){ freezes = r.count; store.set("freezes", freezes); }
       store.set("wallet", wallet);
-      pushDirty(store, "purchase");
+      pushEdge("purchase");
       justBought = { id: item.id, at: performance.now() };
       updateWalletChip(); updateStreakChip(); renderShop();
     };
@@ -2943,7 +2961,7 @@ async function iapBuy(p, btn){
   if(g.ok){
     wallet = g.wallet; ent = g.ent;
     store.set("wallet", wallet); store.set("ent", ent);
-    pushDirty(store, "purchase");
+    pushEdge("purchase");
     updateWalletChip();
     toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: p.coins.toLocaleString() }));
   }
@@ -3570,7 +3588,7 @@ if(location.hash === "#debug"){
   window.__debugTarget = ()=> B.zombie && B.zombie.w.h;
   window.__grantXp = n => { addXp(n); };
 }
-initNative({ getScreen: ()=>currentScreen, goHome: ()=>{ stopBattle(); show("home"); } });
+initNative({ getScreen: ()=>currentScreen, goHome: ()=>{ if(B.on){ endBattle(true); } else { stopBattle(); show("home"); } } });
 // SW is at the app root so its scope covers the whole app; http(s) only (no-op on file://).
 // Never on localhost: the cache-first SW would keep serving a stale shell across dev
 // edits (SHELL only bumps on ship), so the dev server must always hit the real files —

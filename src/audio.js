@@ -78,7 +78,7 @@ function speakUtterance(hanzi, synth, isRetry) {
 function ttsFallback(hanzi, synth, deferred = false) {
   const mode = chooseTts();
   if (mode === "native") {
-    window.Capacitor.Plugins.TextToSpeech.speak({ text: hanzi, lang: "zh-CN", rate: 1.0 }).catch(() => {});
+    window.Capacitor.Plugins.TextToSpeech.speak({ text: hanzi, lang: "zh-CN", rate: 1.0, volume: voiceVol }).catch(() => {});
   } else if (mode === "web") {
     if (deferred) setTimeout(() => speakUtterance(hanzi, synth, false), 0);
     else speakUtterance(hanzi, synth, false);
