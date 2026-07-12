@@ -72,7 +72,9 @@ create or replace trigger progress_touch before update on public.progress
 -- wallet — coin balance + daily anti-cheat accounting. (PRD §3, §6.2)
 -- `coins` = spendable balance (mirrors nbhsk.wallet, an integer today).
 -- `earned_today` + `earned_today_date` back the server-side daily earn cap;
--- purchased coins bypass the cap and arrive via the ledger (service_role).
+-- purchased coins bypass the cap: the RevenueCat webhook writes them with the
+-- service role, which wallet_guard exempts from the clamp (see below), and
+-- records each grant in the ledger.
 -- ---------------------------------------------------------------------------
 create table if not exists public.wallet (
   user_id           uuid primary key references auth.users (id) on delete cascade,
@@ -164,6 +166,10 @@ alter table public.progress alter column best set default '{}'::jsonb;
 update public.progress set best = '{}'::jsonb where best = '[]'::jsonb;
 
 -- wallet_guard — PRD §3.3 server-side anti-cheat clamp.
+--  * Service-role writers are EXEMPT (revision 2026-07-12): purchased coins
+--    are granted by the RevenueCat webhook with the service key, and a paid
+--    pack must never be eaten by the earn clamp. Clients can't reach this
+--    path — RLS keys them to anon/authenticated JWTs.
 --  * Only positive coin deltas count as earnings; spending is never penalized.
 --  * UPDATE allowance = 25000/day × days since the row was last written
 --    (edge-based sync legitimately delivers several offline days at once).
@@ -179,6 +185,14 @@ declare
   delta     integer;
   days      integer;
 begin
+  -- Server-authoritative purchase grants bypass the earn clamp. auth.role()
+  -- reads the request JWT's role claim (same auth.* helper family the RLS
+  -- policies use): 'service_role' only for service-key requests — clients
+  -- get 'anon'/'authenticated' and clamp as before. (Direct psql/SQL-editor
+  -- sessions have no JWT: auth.role() is null there, so the clamp applies.)
+  if auth.role() = 'service_role' then
+    return new;
+  end if;
   new.freezes := least(greatest(coalesce(new.freezes, 0), 0), 2);
   new.coins   := greatest(coalesce(new.coins, 0), 0);
   if tg_op = 'INSERT' then
@@ -212,10 +226,13 @@ create trigger wallet_guard before insert or update on public.wallet
   for each row execute function public.wallet_guard();
 
 -- ---------------------------------------------------------------------------
--- Revision 2026-07-12 (coin-purchase go-live, Phase 1 T2). event_id makes
--- the RevenueCat webhook's ledger insert idempotent: a replayed webhook
--- delivery for the same RC event hits the unique index instead of crediting
--- the wallet twice. See docs/supabase/migrations/2026-07-12-ledger-event-id.sql.
+-- Revision 2026-07-12 (coin-purchase go-live, Phase 1 T2). Two changes, see
+-- docs/supabase/migrations/2026-07-12-iap-golive.sql:
+--  * ledger.event_id (below) makes the RevenueCat webhook's ledger insert
+--    idempotent: a replayed delivery for the same RC event hits the unique
+--    index instead of crediting the wallet twice.
+--  * wallet_guard (edited in place above) now exempts service-role writers,
+--    so the webhook's paid-coin grants bypass the daily earn clamp.
 -- ---------------------------------------------------------------------------
 alter table public.ledger add column if not exists event_id text;
 
