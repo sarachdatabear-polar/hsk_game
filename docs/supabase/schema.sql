@@ -210,3 +210,14 @@ $$;
 drop trigger if exists wallet_guard on public.wallet;
 create trigger wallet_guard before insert or update on public.wallet
   for each row execute function public.wallet_guard();
+
+-- ---------------------------------------------------------------------------
+-- Revision 2026-07-12 (coin-purchase go-live, Phase 1 T2). event_id makes
+-- the RevenueCat webhook's ledger insert idempotent: a replayed webhook
+-- delivery for the same RC event hits the unique index instead of crediting
+-- the wallet twice. See docs/supabase/migrations/2026-07-12-ledger-event-id.sql.
+-- ---------------------------------------------------------------------------
+alter table public.ledger add column if not exists event_id text;
+
+create unique index if not exists ledger_event_id_uidx
+  on public.ledger (event_id) where event_id is not null;
