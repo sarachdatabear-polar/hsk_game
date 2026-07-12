@@ -58,6 +58,20 @@ describe("meaning", () => {
   });
 });
 
+describe("meaning thaiPrimary", () => {
+  const w = { e: "weather", t: "อากาศ" };
+  it("both + thaiPrimary puts thai first", () =>
+    expect(meaning(w, "both", true)).toEqual({ main: "อากาศ", sub: "weather" }));
+  it("both without flag keeps english first", () =>
+    expect(meaning(w, "both")).toEqual({ main: "weather", sub: "อากาศ" }));
+  it("thaiPrimary with missing thai falls back to english-first", () =>
+    expect(meaning({ e: "x", t: "" }, "both", true)).toEqual({ main: "x", sub: "" }));
+  it("en/th modes ignore the flag", () => {
+    expect(meaning(w, "en", true)).toEqual({ main: "weather", sub: "" });
+    expect(meaning(w, "th", true)).toEqual({ main: "อากาศ", sub: "" });
+  });
+});
+
 describe("scopeSummary", () => {
   it("collapses a contiguous run of levels to a dash range", () => {
     expect(scopeSummary({ levels: [1, 2, 3], core: false, newOnly: false, sessionLen: 20 }))

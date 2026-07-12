@@ -1,5 +1,5 @@
 "use strict";
-import { buildPool, coveragePct, scopeKey, meaning as meaningOf, normalizeLen, modeKey, scopeSummary } from "./pool.js";
+import { buildPool, coveragePct, scopeKey, meaning, normalizeLen, modeKey, scopeSummary } from "./pool.js";
 import { formatFor, FORMATS } from "./formats.js";
 import { gradeTyped, syllables, syllableTones, letters } from "./pinyin.js";
 import { clozeFor } from "./cloze.js";
@@ -29,7 +29,7 @@ import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
 import { navVisibleOn, activeTabFor } from "./nav.js";
-import { roundLabel, comboMultiplier, comboFires } from "./hud.js";
+import { roundLabel, comboMultiplier, comboFires, roundProgress, drawHearts } from "./hud.js";
 import { comboGlowTier, plaqueBounce, countUpValue } from "./juice.js";
 import { isFirstRun, introDeck } from "./firstrun.js";
 import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue } from "./stickers.js";
@@ -54,6 +54,12 @@ const CLOZE = window.HSK_CLOZE || {};
 const BY_HANZI = {};
 for (const lv of Object.values(D.levels)) for (const w of lv) BY_HANZI[w.h] = w;
 const $ = s => document.querySelector(s);
+// Thai-primary answers (battle-interface round T2): Thai-locale players see
+// Thai as the bold main line, English as the smaller sub line — everywhere
+// else keeps English-main/Thai-sub (or single-language en/th modes, which
+// ignore the flag). Single wrapper so every meaning() call site in main.js
+// (and the buildOptions call it feeds) derives the flag the same way.
+const meaningOf = (w, lang) => meaning(w, lang, getLocale() === "th");
 // Accessibility (§11): read once at boot. When set, feedback-stamp effects
 // (drawFeedbackLayer) get half the on-screen duration and the hit-flash
 // screen shake is skipped outright (see the wrong-answer branch in answer()).
@@ -1225,28 +1231,49 @@ function canReplayAudio(z){
   return !(live && forbidden);
 }
 function replayCurrentWord(){
-  if(B.paused || !B.zombie) return;
-  if(!canReplayAudio(B.zombie)) return;
-  speak(B.zombie.w.h);
+  if(B.paused) return;
+  if(B.zombie){
+    if(!canReplayAudio(B.zombie)) return;
+    speak(B.zombie.w.h);
+  }else if(B.reveal){
+    // T6: word already resolved (B.zombie gone) but still in its reveal
+    // window — the speaker badge on the persistent plate keeps working.
+    speak(B.reveal.w.h);
+  }
 }
+// T6: during the reveal window (word resolved, next spawn pending) any tap
+// outside the speaker's hit box means "move on" — fast-forward straight to
+// the next word instead of waiting out the rest of REVEAL_MS.
+function inRevealWindow(now){ return !B.zombie && !!B.reveal && B.nextAt > now; }
 cv.addEventListener("click", e=>{
-  const r = B.plaqueRect;
-  if(!r) return;
   const box = cv.getBoundingClientRect();
   const x = e.clientX - box.left, y = e.clientY - box.top;
+  // T4: speaker badge hit-tests BEFORE the whole-card plaque rect (it sits
+  // inside plaqueRect's bounds) — same action today (replay), but the
+  // ordering matters now that tap-to-skip (T6) lands on the card elsewhere.
+  const sr = B.speakerRect;
+  if(sr && x>=sr.x && x<=sr.x+sr.w && y>=sr.y && y<=sr.y+sr.h){ replayCurrentWord(); return; }
+  const now = performance.now();
+  if(inRevealWindow(now)){ B.nextAt = now; return; }   // T6: tap-to-skip — plate + recap strip are both on-canvas, so this single check covers either
+  const r = B.plaqueRect;
+  if(!r) return;
   if(x>=r.x && x<=r.x+r.w && y>=r.y && y<=r.y+r.h) replayCurrentWord();
 });
 cv.addEventListener("keydown", e=>{
   if(e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
   e.preventDefault();
+  const now = performance.now();
+  if(inRevealWindow(now)){ B.nextAt = now; return; }   // T6: keyboard tap-to-skip
   replayCurrentWord();
 });
 // Pointer cursor over the plaque only (2026-07-11 audit F6, whole-card replay
 // surface) — the rest of the canvas isn't interactive, so a canvas-wide
-// pointer cursor would be a false affordance.
+// pointer cursor would be a false affordance. T6: the reveal-window plate is
+// also a tap-to-skip surface, so it gets the same affordance.
 cv.addEventListener("mousemove", e=>{
   const r = B.plaqueRect;
-  if(!r || !canReplayAudio(B.zombie)){ cv.style.cursor = ""; return; }
+  const tappable = canReplayAudio(B.zombie) || inRevealWindow(performance.now());
+  if(!r || !tappable){ cv.style.cursor = ""; return; }
   const box = cv.getBoundingClientRect();
   const x = e.clientX - box.left, y = e.clientY - box.top;
   const over = x>=r.x && x<=r.x+r.w && y>=r.y && y<=r.y+r.h;
@@ -1286,6 +1313,7 @@ function startBattle(mode){
   smartDeckNext = false;
   B.zombie = null; B.proj = null; B.parts = []; B.flash = 0; B.screenShake = 0; B.feedback = null;
   B.hitFlash = null; B.plaqueHitAt = 0;
+  B.reveal = null;   // T6: resolved-word snapshot for the persistent reveal-window plate/strip
   B.bossDefeated = false;   // session fact for the first-boss sticker (B2)
   B.floats = []; B.mascotHopUntil = 0;
   B.score = 0; B.combo = 0; B.lives = 3;
@@ -1332,17 +1360,16 @@ function toggleSfx(){
 }
 $("#more-sound").addEventListener("click", toggleSfx);
 syncSoundToggles();
+// T3 (HUD simplification): hearts moved in-scene above the cat (drawHearts,
+// wired in draw() — T5); the HUD keeps just round label, a slim progress
+// bar + "n/20" caption (roundProgress/roundLabel, hud.js), coins, and pause.
 function updateHud(){
   if(!B.on) return;   // toggleSfx can fire from the More screen, outside battle
-  const lives = $("#hud-lives");
-  lives.replaceChildren();
-  for(let i=0;i<3;i++){
-    const h = iconSvg("heart");
-    h.classList.add("life-icon", i < B.lives ? "full" : "empty");
-    lives.appendChild(h);
-  }
   $("#hud-score").textContent = B.score;
-  $("#hud-round").textContent = t("battle.round", { label: roundLabel(B.mode, B.spawned, B.wordsTotal) });
+  const label = roundLabel(B.mode, B.spawned, B.wordsTotal);
+  $("#hud-round").textContent = t("battle.round", { label });
+  $("#hud-progress-fill").style.width = (roundProgress(B.resolved, B.wordsTotal) * 100) + "%";
+  $("#hud-progress-count").textContent = label;
   updateComboStrip();
 }
 // Combo strip (M6, §6.2 item 5): COMBO N · fire row · xN badge. Replaces the
@@ -1461,6 +1488,7 @@ $("#pause-quit").onclick = ()=>{ $("#pause-overlay").classList.remove("on"); end
 function pushMiss(w){ if(!B.missSet.has(w.h)){ B.missSet.add(w.h); B.misses.push(w); } }
 function spawnZombie(){
   const w = pickWord();
+  B.reveal = null;   // T6: new word incoming — drop the previous word's reveal-window snapshot
   // hp is cosmetic-only (drives the floating HP bar): 1 = full, drops to 0.5
   // once a boss's first stage is passed, animates to 0 on the kill.
   B.zombie = {w, x: B.w+30, state:"walk", hp: 1};
@@ -1575,7 +1603,7 @@ function renderQuestion(word, format, promptKey){
   }
   // small custom decks (miss/weak-word review) can be meaning-homogeneous —
   // pass the full scoped pool as the widening source for distractors.
-  renderOptionButtons(box, FORMATS[format].buildOptions(word, deck, scope.lang, Math.random, pool));
+  renderOptionButtons(box, FORMATS[format].buildOptions(word, deck, scope.lang, Math.random, pool, getLocale() === "th"));
 }
 // v6p2 typed-pinyin input: letters field (native keyboard) + one tone row per
 // non-neutral syllable + attack button. Grading is pure (pinyin.js); the
@@ -1741,6 +1769,7 @@ function answer(btn, o){
   }else{
     // ONE attempt per word: wrong tap = lose a heart. Skip the charge animation and
     // advance quickly — just long enough to see the correct answer flashed green.
+    B.reveal = { w: z.w, boss: !!boss, format: z.format || "meaning" };   // T6: reveal-window snapshot
     B.combo = 0;
     const free = !!z.introFree;   // first-ever attempt of a new format: no heart lost
     sfx.wrong(); if(!free){ sfx.bite(); hapticWrong(); }
@@ -1765,6 +1794,11 @@ function scheduleNext(ms){
   // the next spawn's renderQuestion replaces them
 }
 function killZombie(z){
+  // T6: snapshot for the reveal window's persistent plate/strip — taken here
+  // (not in answer()'s correct branch) because the word isn't actually
+  // resolved until the coin lands and this fires; z itself goes away (state
+  // "happy" -> scheduleNext nulls B.zombie) well before REVEAL_MS is up.
+  B.reveal = { w: z.w, boss: !!z.boss, format: z.format || "meaning" };
   const gy = B.h-B.L.ground;
   // A3 enemy hit flash: quick warm-white pulse at the raccoon (drawn in draw(),
   // just before the feedback layer). Absolute deadline — shifted on resume.
@@ -1780,6 +1814,7 @@ function killZombie(z){
 }
 function bite(timedOut){
   const z = B.zombie;
+  B.reveal = { w: z.w, boss: !!z.boss, format: z.format || "meaning" };   // T6: reveal-window snapshot
   if(timedOut){
     // boss word already counted its one attempt on the first tap (see answer());
     // only count here if it timed out before ever being tapped.
@@ -1929,6 +1964,17 @@ function drawBackdrop(gy){
   else if(shopState.backdrop) paintBackdrop(ctx, B.w, B.h, gy, shopState.backdrop, performance.now());
   else paintBackdrop(ctx, B.w, B.h, gy, "", performance.now());
 }
+// T7: character scale tune (spec §4 — "scaled up by the tuned constant").
+// Single knob for BOTH characters' base scale so cat/raccoon parity (T5's
+// "both characters' CONTENT_H render at the same effective size") holds at
+// any tuning: replaces the old bare 0.9 literal on each. 1.4 (the spec's
+// stated ceiling) shipped as-is: a Playwright screenshot sweep at
+// 320x568/390x844/412x915 (idle spawn, mid-walk, and post-wrong-answer with
+// hearts down to 2) found no collisions at that value — no step-down to
+// 1.3/1.25 needed (commit body has the screenshot-by-screenshot reasoning).
+// Boss stays at CHAR_BASE*1.5 on top of this, unchanged.
+const CHAR_SCALE = 1.4;
+const CHAR_BASE = 0.9 * CHAR_SCALE;
 function draw(now){
   ctx.clearRect(0,0,B.w,B.h);
   const gy = B.h - B.L.ground;
@@ -1940,6 +1986,11 @@ function draw(now){
     ctx.translate(shake, 0);
   }
   drawBackdrop(gy);
+  // T7/spec §4 last bullet: a single very-light warm wash under the ground
+  // band ONLY (not the sky/scenery above) — grounds the bigger characters
+  // without dulling the backdrop art. One flat fill, no gradient/blur.
+  ctx.fillStyle = "rgba(46,42,36,.06)";
+  ctx.fillRect(0, gy, B.w, B.h - gy);
   // ground line — subtle gold
   ctx.strokeStyle = "rgba(245,197,24,.35)"; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(0,gy+12); ctx.lineTo(B.w,gy+12); ctx.stroke();
@@ -1951,7 +2002,13 @@ function draw(now){
   // since x never changes here).
   const hopping = B.mascotHopUntil && now < B.mascotHopUntil;   // little victory hop after a kill
   const playerState = hopping ? "happy" : "walk";
-  drawCat(ctx, B.L.mascotX, gy + 6*B.S, now, playerState, SKIN_PALETTES[shopState.skin], .9*B.L.mascotS, B.acc, false);
+  const catScale = CHAR_BASE*B.L.mascotS;
+  drawCat(ctx, B.L.mascotX, gy + 6*B.S, now, playerState, SKIN_PALETTES[shopState.skin], catScale, B.acc, false);
+  // T5: hero hearts, in-scene above the cat's head (replaces the HUD hud-lives
+  // pips removed in T3) — same y-convention as the raccoon's floating HP bar
+  // below (gy + 6*B.S - <char height>*<char scale>), plus a little extra lift
+  // (14*B.S) since these 3 pips need their own row above the head.
+  drawHearts(ctx, B.L.mascotX, gy + 6*B.S - 64*catScale - 14*B.S, B.lives, 3, B.S);
   // catHalf grew with mascotS while mascotX stayed on S, so clamp the kitten on-canvas.
   const kittenX = Math.max(16*B.L.mascotS + 2, B.L.mascotX - B.L.catHalf);
   if(B.hasKitten) drawCat(ctx, kittenX, gy + 6*B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.L.mascotS, [], false);
@@ -1972,6 +2029,13 @@ function draw(now){
     const fl = FORMATS[z.format || "meaning"].plaque;
     const live = z.state === "walk" && !z.revealed;
     drawWordPlate(z, { mask: live && !!fl.mask, icon: live && !!fl.icon, py: !live || !!fl.py }, now);
+    // T6: the recap strip belongs to the whole reveal window, not just the
+    // B.zombie===null tail of it — z.revealed is true from the moment of
+    // resolution (kill/wrong/timeout) through the "happy" dying window and
+    // the "wrong" retreat hop, both of which keep z (and B.zombie) alive for
+    // a few hundred ms before scheduleNext() nulls it. Draw it here too so it
+    // doesn't pop in partway through (plate + strip visible the WHOLE window).
+    if(z.revealed) drawRecapStrip(z.w, now);
     // A3 enemy hit flash: expanding gold backlight glow at the kill (set in
     // killZombie), drawn BEFORE the raccoon sprite so it reads as a glow
     // behind the enemy rather than a wash over it (it used to paint on top,
@@ -1999,11 +2063,10 @@ function draw(now){
     // raccoon enemy (was the cat walker) — bosses draw bigger with a gold
     // aura (boss param, not scale — see raccoon.js); no skins/accessories/
     // kitten on it, those moved to the player above.
-    // base matches the player cat's .9*B.L.mascotS above so both characters'
-    // CONTENT_H (64 world units, see sprite-draw.js) render at the same
-    // effective size; bosses stay at the historical 1.5x on top of that.
-    const RACCOON_BASE_SCALE = 0.9;
-    const rScale = RACCOON_BASE_SCALE * (z.boss ? 1.5 : 1) * B.L.mascotS;
+    // base matches the player cat's CHAR_BASE*B.L.mascotS above so both
+    // characters' CONTENT_H (64 world units, see sprite-draw.js) render at
+    // the same effective size; bosses stay at the historical 1.5x on top.
+    const rScale = CHAR_BASE * (z.boss ? 1.5 : 1) * B.L.mascotS;
     drawRaccoon(ctx, z.x, gy + 6*B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
     // floating HP bar above its head — cosmetic only. Animates hp -> 0 over
     // the happy/dying window (killZombie snapshots hpAtKill); wrong/timeout
@@ -2014,8 +2077,21 @@ function draw(now){
       hpFrac = (z.hpAtKill ?? z.hp) * (remain/DYING_MS);
     }
     drawHpBar(ctx, z.x, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.L.mascotS, hpFrac, B.L.mascotS);
+  }else if(B.reveal && now < B.nextAt){
+    // T6: the zombie object itself is gone by now (scheduleNext() nulls
+    // B.zombie right at kill/wrong/timeout resolution — for a kill that's
+    // after the short "happy" dying window, for wrong/timeout it's
+    // immediate) but the ~2s reveal window (REVEAL_MS) isn't over yet. Keep
+    // showing the resolved word — fully unmasked, vis is fixed rather than
+    // derived from any live state — plus the recap strip underneath, so the
+    // card no longer vanishes mid-reveal.
+    const rz = { w: B.reveal.w, boss: B.reveal.boss, format: B.reveal.format };
+    drawWordPlate(rz, { mask:false, icon:false, py:true }, now);
+    drawRecapStrip(B.reveal.w, now);
+    drawFeedbackLayer(now);
   }else{
     B.plaqueRect = null;   // no word on screen — the canvas click/keydown handlers no-op
+    B.speakerRect = null;
     // A stamp can outlive the raccoon (word cleared, next spawn pending) —
     // still finish its fade here so it doesn't just vanish.
     drawFeedbackLayer(now);
@@ -2071,11 +2147,42 @@ function draw(now){
 // vis: { mask, icon, py } — what the format may reveal while live (see the
 // call site in draw(), which derives it from FORMATS[z.format].plaque).
 // Order per PRD §4.3/§6.2: pinyin (small, above) -> Hanzi (large).
+// Small rounded speaker mark (T4 — supersedes the 2026-07-11 audit F6 removal;
+// discoverability affordance beside the pinyin, distinct from the whole-card
+// tap-to-replay surface which stays). cx/cy: badge center; r: badge radius,
+// all in CSS px (canvas ctx is DPR-transformed — see sizeCanvas). Mirrors
+// assets/ui-icons.svg#sound's cone+waves silhouette, hand-drawn for canvas.
+function drawSpeakerBadge(cx, cy, r){
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.fillStyle = "#F2BC57";      // --lc-sun
+  ctx.fill();
+  ctx.lineWidth = Math.max(1, r*0.14);
+  ctx.strokeStyle = "#2E2A24";    // --lc-ink
+  ctx.stroke();
+  const s = r * 0.09;             // scales a 24x24 glyph viewBox into the badge
+  ctx.save();
+  ctx.translate(cx - 12*s, cy - 12*s);
+  ctx.fillStyle = "#2E2A24";
+  ctx.beginPath();
+  ctx.moveTo(4*s,14*s); ctx.lineTo(4*s,10*s); ctx.lineTo(8*s,10*s);
+  ctx.lineTo(13*s,6*s); ctx.lineTo(13*s,18*s); ctx.lineTo(8*s,14*s);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = "#2E2A24";
+  ctx.lineWidth = Math.max(1, 1.6*s);
+  ctx.lineCap = "round";
+  ctx.beginPath(); ctx.arc(16*s, 12*s, 4*s, -0.6, 0.6); ctx.stroke();
+  ctx.beginPath(); ctx.arc(16*s, 12*s, 7*s, -0.7, 0.7); ctx.stroke();
+  ctx.restore();
+}
 function drawWordPlate(z, vis, now){
   const w = z.w, boss = z.boss, level = w.lv;
+  const format = z.format || "meaning";
   const hanzi = vis.mask ? "？？" : vis.icon ? "🔊" : w.h;
   // pinyin off when: the format hides it (reverse/listen/tone while live), OR the player toggled it off
   const pinyin = (!vis.py || !settings.showPinyin) ? "" : w.p;
+  // T4: per-format instruction line, always shown, above the pinyin row.
+  const instruction = t("battle.instruction." + format);
 
   // A3 plaque bounce: damped dip on a correct answer (juice.js curve; 0 when
   // idle or under reduced motion — no vertical motion, per "fades only").
@@ -2087,22 +2194,26 @@ function drawWordPlate(z, vis, now){
   ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK);
   const textW = Math.max(ctx.measureText(hanzi).width, 74*T);
   const spkR = 12*T;
+  const instrPx = 13*T;
   // Width invariant: the card must be wide enough for every line it will ever
-  // show — hanzi AND pinyin — measured here EVERY call regardless of reveal
-  // state, so it never resizes/jumps when the answer is revealed.
+  // show — hanzi, pinyin, AND the instruction line — measured here EVERY call
+  // regardless of reveal state, so it never resizes/jumps when revealed.
   let widestLine = 0;
   if(pinyin){
     ctx.font = fontString(600, B.L.pinyinPx, LATIN_STACK);
     widestLine = Math.max(widestLine, ctx.measureText(pinyin).width);
   }
+  ctx.font = fontString(600, instrPx, LATIN_STACK);
+  widestLine = Math.max(widestLine, ctx.measureText(instruction).width);
   ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK); // restore: hanzi font, as measured above
   const lw = Math.min(B.w - 24*T, Math.max(textW + 56*T + spkR*2.2, widestLine + 24*T));
-  // Stacked rows, top to bottom: pinyin (if shown) -> Hanzi. No translation
-  // row — English/Thai live on the choice buttons only (never the plaque).
+  // Stacked rows, top to bottom: instruction -> pinyin (if shown) -> Hanzi.
+  // No translation row — English/Thai live on the choice buttons only.
   const padV = 10*T;
+  const instrH = 16*T;
   const pinyinH = pinyin ? 22*T : 0;
   const hanziH = B.L.hanziPx * 1.05;
-  const lh = padV*2 + pinyinH + hanziH;
+  const lh = padV*2 + instrH + pinyinH + hanziH;
   const x = B.w/2 - lw/2, y = wy - lh/2;
   const plaqueImg = sprite("ui-word-plaque");
   if(plaqueImg){
@@ -2112,8 +2223,10 @@ function drawWordPlate(z, vis, now){
       ctx.drawImage(plaqueImg, r.sx, r.sy, r.sw, r.sh, r.dx, r.dy, r.dw, r.dh);
     }
   }else{
-    // vector fallback: cream paper plaque (education-first reference): matte
-    // paper, warm-brown border, corner ticks — hanzi/pinyin stay dynamic text
+    // T4: vector fallback — matte cream paper + ONE warm-brown hairline
+    // border + soft shadow. Dropped the double-border + corner ticks (lighter
+    // frame per spec §3); the 9-slice sprite path above is a real asset and
+    // is untouched.
     ctx.shadowColor = "rgba(60,40,20,.32)";
     ctx.shadowBlur = 12*T;
     ctx.shadowOffsetY = 4*T;
@@ -2124,34 +2237,40 @@ function drawWordPlate(z, vis, now){
     roundRect(x,y,lw,lh,14*T); ctx.fill();
     ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
     ctx.strokeStyle = boss ? "#D8A93A" : "#B98F55";
-    ctx.lineWidth = 2.6*T;
-    roundRect(x+1.3*T,y+1.3*T,lw-2.6*T,lh-2.6*T,13*T); ctx.stroke();
-    ctx.strokeStyle = "rgba(231,211,166,.9)";
-    ctx.lineWidth = 1.2*T;
-    roundRect(x+6*T,y+6*T,lw-12*T,lh-12*T,9*T); ctx.stroke();
-    // corner ticks
-    ctx.strokeStyle = "#C29B5F";
-    ctx.lineWidth = 1.8*T;
-    ctx.lineCap = "round";
-    const tk = 5*T, ti = 10*T;
-    ctx.beginPath();
-    ctx.moveTo(x+ti, y+ti+tk); ctx.lineTo(x+ti, y+ti); ctx.lineTo(x+ti+tk, y+ti);
-    ctx.moveTo(x+lw-ti-tk, y+ti); ctx.lineTo(x+lw-ti, y+ti); ctx.lineTo(x+lw-ti, y+ti+tk);
-    ctx.moveTo(x+ti, y+lh-ti-tk); ctx.lineTo(x+ti, y+lh-ti); ctx.lineTo(x+ti+tk, y+lh-ti);
-    ctx.moveTo(x+lw-ti-tk, y+lh-ti); ctx.lineTo(x+lw-ti, y+lh-ti); ctx.lineTo(x+lw-ti, y+lh-ti-tk);
-    ctx.stroke();
+    ctx.lineWidth = 1.4*T;
+    roundRect(x+0.7*T,y+0.7*T,lw-1.4*T,lh-1.4*T,13*T); ctx.stroke();
   }
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   let cy = y + padV;
   const innerW = lw - 16*T; // defensive shrink budget: screen-width clamp can still leave a line too wide
+  // instruction line (warm-brown, format-keyed) — always shown, above pinyin
+  {
+    let font = fontString(600, instrPx, LATIN_STACK);
+    ctx.font = font;
+    const iw = ctx.measureText(instruction).width;
+    if(iw > innerW) ctx.font = fontString(600, instrPx * (innerW/iw), LATIN_STACK);
+    ctx.fillStyle = "#846043";
+    ctx.fillText(instruction, B.w/2, cy + instrH/2);
+    cy += instrH;
+  }
   if(pinyin){
     ctx.font = fontString(600, B.L.pinyinPx, LATIN_STACK);
     const pw = ctx.measureText(pinyin).width;
     if(pw > innerW) ctx.font = fontString(600, B.L.pinyinPx * (innerW/pw), LATIN_STACK);
     ctx.fillStyle = "#8C5F2A";
     ctx.fillText(pinyin, B.w/2, cy + pinyinH/2);
+    // T4: speaker badge beside the pinyin, inside the card's right margin —
+    // hit rect padded to >=44px CSS px regardless of the visual badge size;
+    // inset guarantees the whole padded hit box stays inside the card.
+    const hit = Math.max(44, spkR*2);
+    const inset = Math.max(spkR + 10*T, hit/2 + 6*T);
+    const bx = x + lw - inset, by = cy + pinyinH/2;
+    drawSpeakerBadge(bx, by, spkR);
+    B.speakerRect = { x: bx - hit/2, y: by - hit/2, w: hit, h: hit };
     cy += pinyinH;
+  }else{
+    B.speakerRect = null;
   }
   ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK);
   ctx.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
@@ -2173,11 +2292,52 @@ function drawWordPlate(z, vis, now){
     ctx.textAlign = "left";
     ctx.fillText(tagText, x+14*T, y-th*.45 + th*.7);
   }
-  // 2026-07-11 audit F6: no more corner speaker glyph — the whole plaque is
-  // already the tap-to-replay surface (B.plaqueRect below, hit-tested by the
-  // #cv click/keydown listeners), so the icon was pure decoration. Removing
-  // it also declutters the card per Jordan's finding.
   B.plaqueRect = {x, y, w: lw, h: lh};
+  ctx.restore();
+}
+// T6 recap strip (spec §7): small cream strip directly under the plate during
+// the reveal window — `main · sub` (thai/english order follows the
+// locale-primary meaning() call, same as the answer buttons), main only when
+// sub is empty. Defensive font shrink mirrors the instruction-line pattern
+// above (drawWordPlate) so a long English gloss can't blow past the canvas.
+function drawRecapStrip(w, now){
+  const r = B.plaqueRect;
+  if(!r) return;
+  const m = meaningOf(w, scope.lang);
+  const T = B.L.textS;
+  const padX = 16*T, padY = 8*T;
+  const maxTextW = (B.w - 24*T) - padX*2;
+  let fontPx = 15*T;
+  const sep = m.sub ? " · " : "";
+  ctx.save();
+  ctx.font = fontString(600, fontPx, LATIN_STACK);
+  let totalW = ctx.measureText(m.main).width + ctx.measureText(sep).width + ctx.measureText(m.sub || "").width;
+  if(totalW > maxTextW && totalW > 0){
+    fontPx *= maxTextW / totalW;
+    ctx.font = fontString(600, fontPx, LATIN_STACK);
+    totalW = ctx.measureText(m.main).width + ctx.measureText(sep).width + ctx.measureText(m.sub || "").width;
+  }
+  const sw = totalW + padX*2;
+  const sh = fontPx*1.5 + padY*2;
+  const sx = B.w/2 - sw/2;
+  const sy = r.y + r.h + 14*T;
+  ctx.fillStyle = "#FBF5E8";
+  roundRect(sx, sy, sw, sh, sh/2); ctx.fill();
+  ctx.strokeStyle = "#EAC796";
+  ctx.lineWidth = 1.2*T;
+  roundRect(sx+0.6*T, sy+0.6*T, sw-1.2*T, sh-1.2*T, sh/2-0.6*T); ctx.stroke();
+  ctx.textAlign = "left"; ctx.textBaseline = "middle";
+  let cx = sx + padX;
+  const cy = sy + sh/2;
+  ctx.fillStyle = "#2E2A24";
+  ctx.fillText(m.main, cx, cy);
+  cx += ctx.measureText(m.main).width;
+  if(m.sub){
+    ctx.fillStyle = "#846043";
+    ctx.fillText(sep, cx, cy);
+    cx += ctx.measureText(sep).width;
+    ctx.fillText(m.sub, cx, cy);
+  }
   ctx.restore();
 }
 function drawFeedbackLayer(now){

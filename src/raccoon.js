@@ -223,22 +223,23 @@ function roundedRect(ctx, x, y, w, h, r) {
 
 /* drawHpBar — floating cosmetic HP bar above the raccoon. frac is 0..1;
    positioning (x, y, w) is entirely left to the caller so it can be placed
-   above the raccoon's head at any scale/boss size. Cream track, warm-brown
-   border, success-green fill (matches the §4.1 palette tokens). */
+   above the raccoon's head at any scale/boss size. T5 recolor: cream border,
+   deep-teal track, primary-green fill (battle-interface round §4 — same
+   geometry/signature, palette tokens only). */
 export function drawHpBar(ctx, x, y, w, frac, scale = 1) {
   const f = Math.max(0, Math.min(1, frac));
   const h = 6 * scale;
   const bw = Math.max(1, 1.2 * scale);
   ctx.save();
-  ctx.fillStyle = "#FBF5E8";
+  ctx.fillStyle = "#1F4D4A";
   roundedRect(ctx, x - w / 2, y, w, h, h / 2); ctx.fill();
-  ctx.strokeStyle = "#846043"; ctx.lineWidth = bw;
+  ctx.strokeStyle = "#FBF5E8"; ctx.lineWidth = bw;
   roundedRect(ctx, x - w / 2, y, w, h, h / 2); ctx.stroke();
   if (f > 0) {
     const pad = Math.min(scale, w / 2, h / 2);
     const innerW = Math.max(0, (w - pad * 2) * f);
     const innerH = Math.max(0, h - pad * 2);
-    ctx.fillStyle = "#28723B";
+    ctx.fillStyle = "#32775E";
     roundedRect(ctx, x - w / 2 + pad, y + pad, innerW, innerH, innerH / 2);
     ctx.fill();
   }
