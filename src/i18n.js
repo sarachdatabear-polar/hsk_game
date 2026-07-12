@@ -330,6 +330,8 @@ export const STRINGS = {
     "battle.instruction.tone": "Choose the pinyin",
     "battle.instruction.typed": "Type the pinyin",
     "battle.instruction.cloze": "Fill the blank",
+    // T10 (battle-interface round): kill floater text, "Correct!  +N XP".
+    "battle.correct": "Correct!",
     // tones (v6 phase 3: standalone tone-discrimination minigame)
     "tones.title": "Tone Trainer",
     "tones.instruction": "Which tone did you hear?",
@@ -666,6 +668,9 @@ export const STRINGS = {
     "battle.instruction.tone": "เลือกพินอินที่ถูกต้อง",
     "battle.instruction.typed": "พิมพ์พินอิน",
     "battle.instruction.cloze": "เติมคำในช่องว่าง",
+    // T10 (battle-interface round) — machine/plan-authored, flagged for the
+    // native-review queue.
+    "battle.correct": "ถูกต้อง!",
     // tones (v6 phase 3: standalone tone-discrimination minigame)
     "tones.title": "ฝึกวรรณยุกต์",
     "tones.instruction": "คุณได้ยินวรรณยุกต์อะไร",

@@ -108,3 +108,24 @@ export function feedbackEffect(kind, x, y) {
 export function perfectBonus(score) {
   return Math.min(500, Math.round(score * 0.25));
 }
+
+// Impact starbits at the raccoon when the coin lands on a correct answer
+// (battle-interface round T10) — a short, snappy "the attack connected" burst,
+// distinct from coinBurst's loot-flavored gold/dot spray above. Sun-yellow/
+// cream palette only (drawn in main.js's kind==="impact" particle branch) so
+// it always reads as a friendly hit, never damage-red. Short life (0.35s) —
+// this is a flash, not a lingering effect.
+export function impactBurst(x, y) {
+  const n = 8;
+  const specs = [];
+  for (let i = 0; i < n; i++) {
+    specs.push({
+      x, y,
+      vx: (Math.random() - 0.5) * 220,   // ±110
+      vy: -Math.random() * 160,
+      life: 0.35,
+      kind: "impact"
+    });
+  }
+  return specs;
+}

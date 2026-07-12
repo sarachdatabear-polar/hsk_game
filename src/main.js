@@ -5,7 +5,7 @@ import { gradeTyped, syllables, syllableTones, letters } from "./pinyin.js";
 import { clozeFor } from "./cloze.js";
 import { tonePool, toneQuestion, gradeTone } from "./tone_gym.js";
 import { killPoints } from "./scoring.js";
-import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus } from "./fx.js";
+import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus, impactBurst } from "./fx.js";
 import { sfx } from "./sfx.js";
 import { drawCat } from "./cat.js";
 import { drawRaccoon, drawHpBar, RACCOON_HEIGHT } from "./raccoon.js";
@@ -30,7 +30,7 @@ import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
 import { navVisibleOn, activeTabFor } from "./nav.js";
 import { roundLabel, comboMultiplier, comboFires, roundProgress, drawHearts } from "./hud.js";
-import { comboGlowTier, plaqueBounce, countUpValue } from "./juice.js";
+import { comboGlowTier, plaqueBounce, countUpValue, lungeOffset } from "./juice.js";
 import { isFirstRun, introDeck } from "./firstrun.js";
 import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue } from "./stickers.js";
 import { journeyNodes, currentNodeId } from "./journey.js";
@@ -1312,7 +1312,7 @@ function startBattle(mode){
   B.smartRound = B.customDeck && smartDeckNext;   // full-rules smart review (owner: perfect bonus yes, best-score no)
   smartDeckNext = false;
   B.zombie = null; B.proj = null; B.parts = []; B.flash = 0; B.screenShake = 0; B.feedback = null;
-  B.hitFlash = null; B.plaqueHitAt = 0;
+  B.hitFlash = null; B.plaqueHitAt = 0; B.lungeAt = 0;
   B.reveal = null;   // T6: resolved-word snapshot for the persistent reveal-window plate/strip
   B.bossDefeated = false;   // session fact for the first-boss sticker (B2)
   B.floats = []; B.mascotHopUntil = 0;
@@ -1739,7 +1739,8 @@ function answer(btn, o){
     questEvent("correct");
     questEvent("combo", B.combo);
     if(boss) questEvent("boss");
-    addXp(boss ? 5 : 1);   // boss final kill is worth +5 total, not +1 then +5
+    const killXp = boss ? 5 : 1;   // boss final kill is worth +5 total, not +1 then +5
+    addXp(killXp);
     // farther kill = bigger bonus (replaces the old time bonus)
     const biteX = B.L.mascotX + B.L.catHalf;
     const distFrac = Math.max(0, z.x - biteX) / (B.w - biteX);
@@ -1748,6 +1749,7 @@ function answer(btn, o){
     btn.classList.add("good", "stamp", "stamp-good");
     lockOptions();
     B.proj = {x:B.L.mascotX+16*B.S, y:B.h-B.L.ground-30*B.S};   // coin flies at the cat
+    B.lungeAt = performance.now();   // T10: cat attack lunge — at coin launch, so the attack reads as causing the hit
     // (word audio fires once, on spawn — no replay on the answer tap)
     if(boss){ noteAnswer(z.w.h, true); B.bossDefeated = true; }   // both stages passed
     const gy = B.h-B.L.ground;
@@ -1759,6 +1761,10 @@ function answer(btn, o){
     B.plaqueHitAt = performance.now();   // plaque bounce timebase (drawWordPlate)
     const floater = comboFloater(z.x, gy-130, B.combo);
     if(floater) B.floats.push(floater);
+    // T10: "Correct!  +N XP" floater — N is the exact amount addXp() just
+    // credited above (killXp), never an invented number. Sits a touch higher
+    // than the combo floater so the two don't fully overlap when both show.
+    B.floats.push({x:z.x, y:gy-160, text: t("battle.correct") + "  +" + killXp + " XP", life:0.9, vy:-60});
     // milestone combo (10, 20, ...): fireworks + a CRITICAL! comic burst
     // (fx-critical sprite + bold lettering, drawn in drawFeedbackLayer)
     // replaces the plain correct stamp for this kill.
@@ -1804,6 +1810,7 @@ function killZombie(z){
   // just before the feedback layer). Absolute deadline — shifted on resume.
   B.hitFlash = {x:z.x, y:gy-40*B.S, until:fxUntil(150)};
   B.parts.push(...coinBurst(z.x, gy-16, !!z.boss, shopState.effect));   // bosses pop a bigger, coinier burst; effect pack swaps the look
+  B.parts.push(...impactBurst(z.x, gy-16));   // T10: sun-yellow/cream starbits — "the attack connected"
   z.state = "happy";
   z.happyAt = performance.now();   // raccoonBob("happy") wants time-since-defeat, not the raw rAF t
   z.hpAtKill = z.hp;   // draw() lerps hp -> 0 over the happy/dying window from this
@@ -2003,7 +2010,20 @@ function draw(now){
   const hopping = B.mascotHopUntil && now < B.mascotHopUntil;   // little victory hop after a kill
   const playerState = hopping ? "happy" : "walk";
   const catScale = CHAR_BASE*B.L.mascotS;
-  drawCat(ctx, B.L.mascotX, gy + 6*B.S, now, playerState, SKIN_PALETTES[shopState.skin], catScale, B.acc, false);
+  // T10: cat attack lunge — a forward dash + launch squash-and-stretch on a
+  // correct answer (B.lungeAt, set at coin launch in answer()). REDUCED_MOTION
+  // feeds t=Infinity so the curve is neutral (no dx/scale) and this collapses
+  // to the old unconditional drawCat call. The transform pivots on the cat's
+  // (possibly dx-shifted) ground-contact point so squash reads as anchored
+  // to the feet, not the sprite's bounding box.
+  const lunge = lungeOffset(REDUCED_MOTION ? Infinity : now - (B.lungeAt || -Infinity));
+  const catX = B.L.mascotX + lunge.dx, catY = gy + 6*B.S;
+  ctx.save();
+  ctx.translate(catX, catY);
+  ctx.scale(lunge.sx, lunge.sy);
+  ctx.translate(-catX, -catY);
+  drawCat(ctx, catX, catY, now, playerState, SKIN_PALETTES[shopState.skin], catScale, B.acc, false);
+  ctx.restore();
   // T5: hero hearts, in-scene above the cat's head (replaces the HUD hud-lives
   // pips removed in T3) — same y-convention as the raccoon's floating HP bar
   // below (gy + 6*B.S - <char height>*<char scale>), plus a little extra lift
@@ -2121,6 +2141,14 @@ function draw(now){
       ctx.fillStyle = "#e04040"; ctx.beginPath(); ctx.arc(p.x,p.y,4.4,0,7); ctx.fill();
     }else if(p.kind==="star"){
       ctx.fillStyle = "#ffe08a"; drawStarMark(ctx, p.x, p.y, 5.2);
+    }else if(p.kind==="impact"){
+      // T10: sun-yellow/cream starbits at the raccoon on a correct-answer
+      // impact — brighter than the shared life/0.6 alpha ratio would give a
+      // 0.35s-life particle (capped ~0.58), so the flash still reads at a
+      // glance instead of looking washed out.
+      ctx.globalAlpha = Math.max(0, Math.min(1, p.life/0.35));
+      ctx.fillStyle = p.vx >= 0 ? "#F2BC57" : "#FBF5E8";   // sun-yellow/cream split by the randomized fling direction
+      drawStarMark(ctx, p.x, p.y, 3.4);
     }else{
       ctx.fillStyle = "#f5c518"; ctx.beginPath(); ctx.arc(p.x,p.y,3.4,0,7); ctx.fill();
     }

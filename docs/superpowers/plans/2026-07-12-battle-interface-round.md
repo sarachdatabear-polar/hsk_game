@@ -193,10 +193,10 @@ export function meaning(w, lang, thaiPrimary = false) {
 - Floater: on kill push TWO floats — existing combo floater stays; add `{text: t("battle.correct") + "  +" + xpGained + " XP", …}` where xpGained is the addXp amount for a kill (grep addXp call in the correct branch; if XP-per-kill isn't currently granted at kill time, grant via the existing quest/growth flow — do NOT invent new XP economy: show the amount that's actually credited; if none is credited per-kill, show only "Correct!"). i18n key `battle.correct` ("Correct!" / "ถูกต้อง!").
 - Cat lunge trigger: `B.lungeAt = performance.now()` in the correct branch (at coin launch, not at kill, so the attack reads as causing the hit).
 
-- [ ] **Step 1:** fx test: impactBurst count/life/kind. Fail → implement → pass.
-- [ ] **Step 2:** Wire draw(): cat transform when `now - B.lungeAt < 320` (skip when REDUCED_MOTION); impactBurst at raccoon on kill; floats.
-- [ ] **Step 3:** Build + probe screenshots at +80/+200ms after correct tap: cat leans forward, starbits at raccoon, floater visible.
-- [ ] **Step 4:** Full `npm test`. Commit: `feat(battle): correct-answer choreography — lunge, impact, Correct!/+XP floater`.
+- [x] **Step 1:** fx test: impactBurst count/life/kind. Fail → implement → pass.
+- [x] **Step 2:** Wire draw(): cat transform when `now - B.lungeAt < 320` (skip when REDUCED_MOTION); impactBurst at raccoon on kill; floats.
+- [x] **Step 3:** Build + probe screenshots at +80/+200ms after correct tap: cat leans forward, starbits at raccoon, floater visible.
+- [x] **Step 4:** Full `npm test`. Commit: `feat(battle): correct-answer choreography — lunge, impact, Correct!/+XP floater`.
 
 ### Task 11: Wrong-answer bump + heart pop
 
