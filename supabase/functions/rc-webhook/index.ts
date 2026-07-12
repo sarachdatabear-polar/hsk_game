@@ -35,29 +35,33 @@ Deno.serve(async (req) => {
   );
 
   // Idempotency: event_id has a unique index (migrations/2026-07-12). A
-  // conflict means this event was already granted — ack without touching
-  // the wallet again, so a replayed webhook never double-credits.
+  // 23505 conflict means this event's coins were already credited — skip the
+  // wallet increment (the one non-idempotent step) but fall through to the
+  // entitlement upsert, which must still run: if a previous delivery died
+  // between wallet and entitlement, only a replay can finish the grant.
+  // A 23503 FK violation means the user row is gone (deleted account) —
+  // permanent, so ack 200: retrying can never succeed, and letting RC
+  // retry-loop forever risks it disabling the whole webhook.
+  let duplicate = false;
   const { error: ledgerErr } = await supabase
     .from("ledger")
     .insert({ user_id: userId, delta: coins, reason: productId, event_id: eventId });
   if (ledgerErr) {
-    if (ledgerErr.code === "23505") return new Response(JSON.stringify({ duplicate: true }), { status: 200 });
-    return new Response("storage error", { status: 500 }); // real failure — let RC retry
+    if (ledgerErr.code === "23503") return new Response(JSON.stringify({ ignored: "unknown-user" }), { status: 200 });
+    if (ledgerErr.code !== "23505") return new Response("storage error", { status: 500 }); // real failure — let RC retry
+    duplicate = true;
   }
 
-  // Read-modify-write, not a single atomic statement. Safe here because (a)
-  // RC serializes retries of the SAME event, so no two writers race for one
-  // grant, and (b) the ledger event_id uniqueness above already guards the
-  // double-credit case — this step only decides the new total.
-  const { data: wallet, error: readErr } = await supabase
-    .from("wallet").select("coins").eq("user_id", userId).maybeSingle();
-  if (readErr) return new Response("storage error", { status: 500 });
+  if (!duplicate) {
+    // Atomic increment via the increment_wallet SQL function (INSERT ... ON
+    // CONFLICT DO UPDATE adds under the row lock — no read-modify-write race).
+    const { error: walletErr } = await supabase
+      .rpc("increment_wallet", { p_user_id: userId, p_delta: coins });
+    if (walletErr) return new Response("storage error", { status: 500 });
+  }
 
-  const { error: walletErr } = await supabase
-    .from("wallet")
-    .upsert({ user_id: userId, coins: (wallet?.coins ?? 0) + coins }, { onConflict: "user_id" });
-  if (walletErr) return new Response("storage error", { status: 500 });
-
+  // Idempotent by PK (user_id, product_id) — safe on both first-time and
+  // duplicate paths; an error 500s so RC retries until the grant is whole.
   if (entitlement) {
     const { error: entErr } = await supabase
       .from("entitlements")
@@ -65,5 +69,5 @@ Deno.serve(async (req) => {
     if (entErr) return new Response("storage error", { status: 500 });
   }
 
-  return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  return new Response(JSON.stringify(duplicate ? { duplicate: true } : { ok: true }), { status: 200 });
 });

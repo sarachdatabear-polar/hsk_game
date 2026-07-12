@@ -1,5 +1,5 @@
 -- Migration 2026-07-12 — IAP go-live (coin-purchase round, Phase 1 T2).
--- Two changes, both serving the RevenueCat webhook Edge Function
+-- Three changes, all serving the RevenueCat webhook Edge Function
 -- (supabase/functions/rc-webhook). Not applied to the live project by this
 -- file — it ships as a plain SQL file and is applied at release per the
 -- release-cut ritual, same as schema.sql itself.
@@ -71,3 +71,24 @@ begin
   return new;
 end;
 $$;
+
+-- 3. increment_wallet — atomic coin credit for the webhook.
+--
+-- Why: a read-then-upsert in the Edge Function is a race window (two writers
+-- could both read the same balance and one increment would be lost). A single
+-- INSERT ... ON CONFLICT DO UPDATE takes the row lock and adds in place — no
+-- prior read. The insert branch only needs (user_id, coins): every other
+-- wallet column is NOT NULL WITH A DEFAULT (freezes 0, earned_today 0,
+-- earned_today_date current_date, updated_at now()). Called by the webhook
+-- via PostgREST rpc() with the service key; wallet_guard sees that request's
+-- 'service_role' JWT claim and exempts the write from the earn clamp (§2).
+create or replace function public.increment_wallet(p_user_id uuid, p_delta integer)
+returns void language sql as $$
+  insert into public.wallet (user_id, coins)
+  values (p_user_id, p_delta)
+  on conflict (user_id) do update set coins = wallet.coins + excluded.coins;
+$$;
+
+-- Server-authoritative surface only: clients never write purchased coins
+-- (schema header rule), so client roles may not call this at all.
+revoke execute on function public.increment_wallet(uuid, integer) from public, anon, authenticated;

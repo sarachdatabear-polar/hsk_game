@@ -226,15 +226,34 @@ create trigger wallet_guard before insert or update on public.wallet
   for each row execute function public.wallet_guard();
 
 -- ---------------------------------------------------------------------------
--- Revision 2026-07-12 (coin-purchase go-live, Phase 1 T2). Two changes, see
+-- Revision 2026-07-12 (coin-purchase go-live, Phase 1 T2). Three changes, see
 -- docs/supabase/migrations/2026-07-12-iap-golive.sql:
 --  * ledger.event_id (below) makes the RevenueCat webhook's ledger insert
 --    idempotent: a replayed delivery for the same RC event hits the unique
 --    index instead of crediting the wallet twice.
 --  * wallet_guard (edited in place above) now exempts service-role writers,
 --    so the webhook's paid-coin grants bypass the daily earn clamp.
+--  * increment_wallet (below) gives the webhook an atomic coin credit.
 -- ---------------------------------------------------------------------------
 alter table public.ledger add column if not exists event_id text;
 
 create unique index if not exists ledger_event_id_uidx
   on public.ledger (event_id) where event_id is not null;
+
+-- increment_wallet — atomic coin credit for the webhook. A read-then-upsert
+-- in the Edge Function is a race window (two writers could both read the
+-- same balance and one increment would be lost); INSERT ... ON CONFLICT DO
+-- UPDATE takes the row lock and adds in place — no prior read. The insert
+-- branch only needs (user_id, coins): every other wallet column is NOT NULL
+-- WITH A DEFAULT. Called via PostgREST rpc() with the service key, so
+-- wallet_guard's service-role exemption applies to the write.
+create or replace function public.increment_wallet(p_user_id uuid, p_delta integer)
+returns void language sql as $$
+  insert into public.wallet (user_id, coins)
+  values (p_user_id, p_delta)
+  on conflict (user_id) do update set coins = wallet.coins + excluded.coins;
+$$;
+
+-- Server-authoritative surface only: clients never write purchased coins
+-- (header rule), so client roles may not call this at all.
+revoke execute on function public.increment_wallet(uuid, integer) from public, anon, authenticated;
