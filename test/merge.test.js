@@ -200,6 +200,27 @@ describe("merge: stale monthly settle (P1 2026-07-12, race-safe)", () => {
     expect(mergeAll(local, null, { today: TODAY }).wallet).toBe(500);
   });
 
+  it("both sides stale on the SAME month: each self-credits once, single payment survives the fold", () => {
+    // Sharpest proof of settle-before-fold: if settle ran only once (or
+    // post-fold), 1000+1500 on one side and a bare 1000 on the other would
+    // max-fold to 2500 too — but so would a double-credit bug that summed
+    // instead of maxed (2500+2500=5000 would be the double-pay tell). Both
+    // sides holding the identical stale month means the settle is the ONLY
+    // thing distinguishing this from a same-month no-op, and the fold must
+    // still land on exactly one reward.
+    const local = { monthly: juneDone, wallet: 1000 };
+    const cloud = { monthly: juneDone, wallet: 1000 };
+    const m = mergeAll(local, cloud, { today: TODAY });
+    expect(m.wallet).toBe(2500);          // max(1000+1500, 1000+1500), not summed
+  });
+
+  it("both sides stale on DIFFERENT months: each self-credits its own, max-fold absorbs one (wallet fold is max-never-sum)", () => {
+    const local = { monthly: { month: "2026-05", done: 40, claimed: false }, wallet: 1000 };
+    const cloud = { monthly: juneDone, wallet: 1000 };
+    const m = mergeAll(local, cloud, { today: TODAY });
+    expect(m.wallet).toBe(2500);          // max(1000+1500, 1000+1500) — universal max, never a sum
+  });
+
   it("omitting `today` preserves the old pure behavior: no settle, wallet is the plain max", () => {
     const local = { monthly: july, wallet: 200 };
     const cloud = { monthly: juneDone, wallet: 100 };

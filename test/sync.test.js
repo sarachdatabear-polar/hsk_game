@@ -142,4 +142,49 @@ describe("pushDirty", () => {
     expect(meta.dirty).toEqual({});
     expect(meta.lastSyncAt).toBe(777);
   });
+
+  it("non-monthly dirty push stays on the plain path: local wallet pushed verbatim, cloud ignored, lastSyncAt untouched", async () => {
+    const { client, calls } = fakeClient({ session: SESSION,
+      // Cloud holds a much larger wallet — if pushDirty ever consulted it,
+      // the pushed row would reflect that. The plain path must never fetch
+      // or fold cloud rows at all.
+      progressRow: { user_id: "u1", xp: 0, mastery: {},
+        daily: { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" },
+        quests: {}, monthly: {}, best: {}, cosmetics: {}, stickers: { earned: {} } },
+      walletRow: { user_id: "u1", coins: 5000, freezes: 0 } });
+    __setClientForTests(client);
+    const store = memStore({ wallet: 200, sync: { dirty: { xp: true }, lastSyncAt: 777 } });
+    const r = await pushDirty(store, "purchase");
+    expect(r.ok).toBe(true);
+    const pushedWallet = calls.upserts.find(u => u.table === "wallet").row;
+    expect(pushedWallet.coins).toBe(200);           // blind local push, not max(200,5000)
+    const meta = store.get("sync", {});
+    expect(meta.lastSyncAt).toBe(777);               // plain path never stamps lastSyncAt
+  });
+
+  it("pushDirty routes through reconcile when monthly is dirty (stale-month settle path)", async () => {
+    // local monthly is current (2026-07); cloud row still holds a completed,
+    // unclaimed June (done:40) with a pre-settle wallet. A blind push of the
+    // local wallet (200) would clobber that unrealized 1500-coin reward.
+    const now = new Date(2026, 6, 15, 12, 0, 0).getTime(); // local date 2026-07-15
+    const { client, calls } = fakeClient({ session: SESSION,
+      progressRow: { user_id: "u1", xp: 0, mastery: {},
+        daily: { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" },
+        quests: {}, monthly: { month: "2026-06", done: 40, claimed: false },
+        best: {}, cosmetics: {}, stickers: { earned: {} } },
+      walletRow: { user_id: "u1", coins: 100, freezes: 0 } });
+    __setClientForTests(client);
+    // lastSyncAt is recent enough to fail a plain cooldown check — proves
+    // "monthly-dirty" bypasses the cooldown gate the same way "sign-in" does.
+    const store = memStore({ wallet: 200, monthly: { month: "2026-07", done: 3, claimed: false },
+      sync: { dirty: { monthly: true }, lastSyncAt: now - 1000 } });
+    const r = await pushDirty(store, "hide", now);
+    expect(r.ok).toBe(true);
+    const pushedWallet = calls.upserts.find(u => u.table === "wallet").row;
+    expect(pushedWallet.coins).toBe(1600);            // max(200,100) + 1500 settle, NOT a blind 200
+    expect(store.get("wallet", 0)).toBe(1600);
+    const meta = store.get("sync", {});
+    expect(meta.lastSyncAt).toBe(now);                // reconcile's stamp, proving the merge path ran
+    expect(meta.dirty).toEqual({});
+  });
 });

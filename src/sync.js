@@ -8,6 +8,13 @@ import { mergeAll, defaultSyncMeta } from "./merge.js";
 
 export const MIN_SYNC_GAP_MS = 30000;
 
+// Reasons allowed to skip the cooldown gate: sign-in (a fresh session should
+// always get one reconcile), and monthly-dirty (pushDirty's redirect for a
+// stale-monthly settle — it must run even if a routine reconcile just fired,
+// since skipping it would fall through to nothing and leave the dirty flag
+// unsettled indefinitely).
+const BYPASS_COOLDOWN = new Set(["sign-in", "monthly-dirty"]);
+
 let inFlight = false;
 export function __resetForTests() { inFlight = false; }
 
@@ -82,7 +89,7 @@ export async function reconcile(store, reason, now = Date.now()) {
   inFlight = true;
   try {
     const meta = Object.assign(defaultSyncMeta(), store.get("sync", {}));
-    if (reason !== "sign-in" && now - meta.lastSyncAt < MIN_SYNC_GAP_MS) {
+    if (!BYPASS_COOLDOWN.has(reason) && now - meta.lastSyncAt < MIN_SYNC_GAP_MS) {
       return { ok: false, reason: "cooldown" };
     }
     const s = await getSession();
@@ -115,9 +122,15 @@ export async function reconcile(store, reason, now = Date.now()) {
   }
 }
 
-export async function pushDirty(store, reason) {
+export async function pushDirty(store, reason, now = Date.now()) {
   const meta = Object.assign(defaultSyncMeta(), store.get("sync", {}));
   if (!Object.keys(meta.dirty || {}).length) return { ok: true, skipped: true };
+  // monthly is the one key whose CLOUD side can hold unrealized coin value (a
+  // completed-unclaimed month) — a blind push here could clobber it without
+  // ever crediting the reward. Redirect through reconcile so the stale month
+  // gets settled first. reconcile owns `inFlight` end-to-end, so this must
+  // happen before pushDirty sets its own inFlight below.
+  if (meta.dirty.monthly) return reconcile(store, "monthly-dirty", now);
   if (inFlight) return { ok: false, reason: "busy" };
   inFlight = true;
   try {
