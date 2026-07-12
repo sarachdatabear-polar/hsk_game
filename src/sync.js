@@ -8,6 +8,13 @@ import { mergeAll, defaultSyncMeta } from "./merge.js";
 
 export const MIN_SYNC_GAP_MS = 30000;
 
+// Reasons allowed to skip the cooldown gate: sign-in (a fresh session should
+// always get one reconcile), and monthly-dirty (pushDirty's redirect for a
+// stale-monthly settle — it must run even if a routine reconcile just fired,
+// since skipping it would fall through to nothing and leave the dirty flag
+// unsettled indefinitely).
+const BYPASS_COOLDOWN = new Set(["sign-in", "monthly-dirty"]);
+
 let inFlight = false;
 export function __resetForTests() { inFlight = false; }
 
@@ -53,6 +60,18 @@ export function localFromRows(progressRow, walletRow) {
 
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
+// Device-local calendar date from an epoch ms — same algorithm as main.js's
+// (unexported) todayStr(): local Y/M/D, not UTC, so a stale-monthly settle
+// here rolls over at the same midnight as main.js's boot-time
+// settleMonthlyNow(). sync.js is otherwise pure/injectable (store, now), so
+// this derives from the `now` param rather than importing a DOM-adjacent
+// helper from main.js.
+function localDateStr(ms) {
+  const d = new Date(ms);
+  const mm = String(d.getMonth() + 1).padStart(2, "0"), dd = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
 // Clear dirty flags for keys whose stored value still equals what we pushed —
 // a gameplay write that raced the push keeps its flag for the next edge.
 function settleDirty(store, expected, lastSyncAt) {
@@ -70,7 +89,7 @@ export async function reconcile(store, reason, now = Date.now()) {
   inFlight = true;
   try {
     const meta = Object.assign(defaultSyncMeta(), store.get("sync", {}));
-    if (reason !== "sign-in" && now - meta.lastSyncAt < MIN_SYNC_GAP_MS) {
+    if (!BYPASS_COOLDOWN.has(reason) && now - meta.lastSyncAt < MIN_SYNC_GAP_MS) {
       return { ok: false, reason: "cooldown" };
     }
     const s = await getSession();
@@ -81,8 +100,14 @@ export async function reconcile(store, reason, now = Date.now()) {
     if (!rows.ok) return { ok: false, reason: rows.reason };
     const local = localSnapshot(store);
     const shopDirty = !!(meta.dirty && meta.dirty.shop);
-    const merged = mergeAll(local, localFromRows(rows.progress, rows.wallet), { shopDirty });
-    const baseline = mergeAll(local, null, { shopDirty });
+    const today = localDateStr(now);
+    // Both calls get `today` (not just the cloud-merged one): mergeAll's
+    // stale-monthly settle is symmetric in local/cloud, so the baseline must
+    // settle local's own stale month too — otherwise a local-only stale
+    // rollover would show up as a spurious `changed:true` (or mask a real
+    // one) purely from the settle, not from anything cloud contributed.
+    const merged = mergeAll(local, localFromRows(rows.progress, rows.wallet), { shopDirty, today });
+    const baseline = mergeAll(local, null, { shopDirty, today });
     const changed = !eq(merged, baseline);
     for (const k of Object.keys(merged)) store.set(k, merged[k]);
     const built = rowsFromLocal(uid, merged);
@@ -97,9 +122,27 @@ export async function reconcile(store, reason, now = Date.now()) {
   }
 }
 
-export async function pushDirty(store, reason) {
+export async function pushDirty(store, reason, now = Date.now(), midRound = false) {
   const meta = Object.assign(defaultSyncMeta(), store.get("sync", {}));
   if (!Object.keys(meta.dirty || {}).length) return { ok: true, skipped: true };
+  // monthly is the one key whose CLOUD side can hold unrealized coin value (a
+  // completed-unclaimed month) — a blind push here could clobber it without
+  // ever crediting the reward. Redirect through reconcile so the stale month
+  // gets settled first. reconcile owns `inFlight` end-to-end, so this must
+  // happen before pushDirty sets its own inFlight below.
+  if (meta.dirty.monthly) {
+    // …but never mid-battle: reconcile writes merged state back into the
+    // store, and syncEdge's invariant (design §3, "merged state must not
+    // change mid-battle") applies to ANY reconcile, including this redirect —
+    // a hide during a paused battle would otherwise snapshot local, resume
+    // would keep playing on in-memory state, and the resolving reconcile's
+    // store writes would roll localStorage back to the pre-resume snapshot.
+    // Nor may it fall back to the blind push (that's the exact clobber the
+    // redirect exists to prevent) — defer wholesale, dirty bits intact, and
+    // the next battle-free sync edge catches up.
+    if (midRound) return { ok: false, reason: "mid-round" };
+    return reconcile(store, "monthly-dirty", now);
+  }
   if (inFlight) return { ok: false, reason: "busy" };
   inFlight = true;
   try {

@@ -153,4 +153,15 @@ describe("setVoiceVolume — applied to both playback paths", () => {
     const u = synth.speak.mock.calls[0][0];
     expect(u.volume).toBe(1);
   });
+
+  it("native TTS receives the voice volume", () => {
+    const calls = [];
+    globalThis.window = { Capacitor: { isNativePlatform: () => true, Plugins: {
+      TextToSpeech: { speak: o => { calls.push(o); return Promise.resolve(); } } } } };
+    initAudio([]);
+    setVoiceVolume(0.3);
+    speak("好");            // no bundled audio in test env -> ttsFallback -> native path
+    expect(calls[0].volume).toBeCloseTo(0.3);
+    setVoiceVolume(1); // reset module-level state for later tests
+  });
 });

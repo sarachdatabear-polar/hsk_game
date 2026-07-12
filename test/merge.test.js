@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { SYNC_KEYS, defaultSyncMeta, mergeXp, mergeWallet, mergeFreezes,
          mergeBest, mergeStickers, mergeShop, mergeMastery, mergeQuests,
-         mergeMonthly } from "../src/merge.js";
+         mergeMonthly, mergeAll } from "../src/merge.js";
 
 describe("merge: scalars", () => {
   it("SYNC_KEYS lists the 10 synced keys", () =>
@@ -131,4 +131,101 @@ describe("mergeMonthly", () => {
     expect(mergeMonthly({ month: "2026-06", done: 40, claimed: false },
                         { month: "2026-07", done: 3, claimed: false }))
       .toEqual({ month: "2026-07", done: 3, claimed: false }));
+});
+
+// P1 2026-07-12: e7ce6d0's staleMonthlyOwed() credited the stale-month reward
+// into the merged wallet AFTER the max-fold — double-paying whenever a
+// device's own boot-time settle (main.js settleMonthlyNow, via quests.js's
+// settleMonthly) already paid that reward into ITS wallet before an
+// unpushed/still-stale cloud row got reconciled. The fix settles each side
+// into its OWN wallet first (mergeAll's `today` option, using the same
+// settleMonthly), then max-folds — so a side that already banked the reward
+// can't have it added a second time by the other side's stale row.
+describe("merge: stale monthly settle (P1 2026-07-12, race-safe)", () => {
+  const juneDone = { month: "2026-06", done: 40, claimed: false };
+  const july     = { month: "2026-07", done: 0,  claimed: false };
+  const TODAY = "2026-07-15";
+
+  it("cloud stale + local current: reward settles into the cloud side, wins the fold", () => {
+    const local = { monthly: july, wallet: 200 };
+    const cloud = { monthly: juneDone, wallet: 100 };
+    const m = mergeAll(local, cloud, { today: TODAY });
+    expect(m.wallet).toBe(1600);          // max(200+0, 100+1500)
+    expect(m.monthly).toEqual({ month: "2026-07", done: 0, claimed: false });
+  });
+
+  it("order-independent: stale side may be local or cloud, total is the same", () => {
+    const local = { monthly: juneDone, wallet: 100 };
+    const cloud = { monthly: july, wallet: 200 };
+    const m = mergeAll(local, cloud, { today: TODAY });
+    expect(m.wallet).toBe(1600);          // max(100+1500, 200+0)
+  });
+
+  it("credits nothing when already claimed, incomplete, or same month", () => {
+    const claimed = mergeAll({ monthly: july, wallet: 200 },
+      { monthly: { ...juneDone, claimed: true }, wallet: 100 }, { today: TODAY });
+    expect(claimed.wallet).toBe(200);
+    const incomplete = mergeAll({ monthly: july, wallet: 200 },
+      { monthly: { ...juneDone, done: 39 }, wallet: 100 }, { today: TODAY });
+    expect(incomplete.wallet).toBe(200);
+    const sameMonth = mergeAll({ monthly: { month: "2026-07", done: 10, claimed: false }, wallet: 200 },
+      { monthly: { month: "2026-07", done: 5, claimed: false }, wallet: 100 }, { today: TODAY });
+    expect(sameMonth.wallet).toBe(200);
+  });
+
+  it("a side with no monthly data (defaultMonthly's month:\"\") never settles, credits nothing", () => {
+    // Distinct from a truly-stale local month with a missing cloud row: under
+    // the new self-settle design that case now legitimately earns its own
+    // reward (see the "already settled" test below) — that's the fix, not a
+    // regression. This checks the actual no-op: a side whose monthly is
+    // simply absent (month "") always passes through per settleMonthly.
+    const local = { monthly: july, wallet: 200 };   // same month as TODAY: not stale
+    const cloud = { wallet: 100 };                  // no monthly key at all
+    expect(mergeAll(local, cloud, { today: TODAY }).wallet).toBe(200);
+  });
+
+  it("regression: a boot-settled local wallet is not double-paid by a still-stale cloud row", () => {
+    // Local already ran settleMonthlyNow() at boot: its 2500 wallet already
+    // includes the 1500 for June. Cloud never pushed since, so it still
+    // shows June done:40 unclaimed with the pre-settle wallet (1000).
+    const local = { monthly: { month: "2026-07", done: 3, claimed: false }, wallet: 2500 };
+    const cloud = { monthly: juneDone, wallet: 1000 };
+    const m = mergeAll(local, cloud, { today: TODAY });
+    // Buggy post-fold credit would give max(2500,1000)+1500 = 4000.
+    expect(m.wallet).toBe(2500);          // max(2500+0, 1000+1500) = max(2500,2500)
+  });
+
+  it("mergeAll(local, null) where local is already settled: wallet unchanged", () => {
+    const local = { monthly: { month: "2026-07", done: 20, claimed: false }, wallet: 500 };
+    expect(mergeAll(local, null, { today: TODAY }).wallet).toBe(500);
+  });
+
+  it("both sides stale on the SAME month: each self-credits once, single payment survives the fold", () => {
+    // Sharpest proof of settle-before-fold: if settle ran only once (or
+    // post-fold), 1000+1500 on one side and a bare 1000 on the other would
+    // max-fold to 2500 too — but so would a double-credit bug that summed
+    // instead of maxed (2500+2500=5000 would be the double-pay tell). Both
+    // sides holding the identical stale month means the settle is the ONLY
+    // thing distinguishing this from a same-month no-op, and the fold must
+    // still land on exactly one reward.
+    const local = { monthly: juneDone, wallet: 1000 };
+    const cloud = { monthly: juneDone, wallet: 1000 };
+    const m = mergeAll(local, cloud, { today: TODAY });
+    expect(m.wallet).toBe(2500);          // max(1000+1500, 1000+1500), not summed
+  });
+
+  it("both sides stale on DIFFERENT months: each self-credits its own, max-fold absorbs one (wallet fold is max-never-sum)", () => {
+    const local = { monthly: { month: "2026-05", done: 40, claimed: false }, wallet: 1000 };
+    const cloud = { monthly: juneDone, wallet: 1000 };
+    const m = mergeAll(local, cloud, { today: TODAY });
+    expect(m.wallet).toBe(2500);          // max(1000+1500, 1000+1500) — universal max, never a sum
+  });
+
+  it("omitting `today` preserves the old pure behavior: no settle, wallet is the plain max", () => {
+    const local = { monthly: july, wallet: 200 };
+    const cloud = { monthly: juneDone, wallet: 100 };
+    const m = mergeAll(local, cloud);     // no opts.today
+    expect(m.wallet).toBe(200);           // plain max(200,100), no 1500 credit
+    expect(m.monthly).toEqual(mergeMonthly(july, juneDone));
+  });
 });

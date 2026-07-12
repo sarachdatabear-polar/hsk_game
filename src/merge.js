@@ -5,7 +5,7 @@
 // additive-safe: no fold can lose progress in either direction.
 import { defaultShop } from "./shop.js";
 import { defaultStickers } from "./stickers.js";
-import { defaultQuestState, defaultMonthly, MONTHLY_TARGET } from "./quests.js";
+import { defaultQuestState, defaultMonthly, MONTHLY_TARGET, settleMonthly } from "./quests.js";
 import { defaultDaily } from "./daily.js";
 
 export const SYNC_KEYS = ["mastery", "xp", "daily", "quests", "monthly",
@@ -146,15 +146,28 @@ export function mergeDaily(a, b) {
   return { last: N.last, streak, today, restWeek: N.restWeek, restDay: N.restDay };
 }
 
-export function mergeAll(local, cloud, { shopDirty = false } = {}) {
+// A completed-but-unclaimed month is unrealized wallet value (unlike daily
+// quests, which credit the wallet immediately) — it must be settled before a
+// cross-month merge would otherwise discard it. The naive fix (credit the
+// reward once into the merged wallet AFTER folding) double-pays: if a
+// device's own boot-time settleMonthlyNow() already paid the stale month
+// into ITS wallet, and reconcile then runs against a still-stale row on the
+// other side, a second reward gets folded in on top of the already-settled
+// wallet. The correct order is to settle EACH side into ITS OWN wallet
+// first (via quests.js's settleMonthly — same rule settleMonthlyNow uses,
+// so a side that's already current-month is an idempotent no-op) and only
+// then max-fold the two settled wallets together.
+export function mergeAll(local, cloud, { shopDirty = false, today = null } = {}) {
   const l = local || {}, c = cloud || {};
+  const lm = today ? settleMonthly(Object.assign(defaultMonthly(), l.monthly || {}), today) : { state: l.monthly, earned: 0 };
+  const cm = today ? settleMonthly(Object.assign(defaultMonthly(), c.monthly || {}), today) : { state: c.monthly, earned: 0 };
   return {
     mastery: mergeMastery(l.mastery, c.mastery),
     xp: mergeXp(l.xp, c.xp),
     daily: mergeDaily(l.daily, c.daily),
     quests: mergeQuests(l.quests, c.quests),
-    monthly: mergeMonthly(l.monthly, c.monthly),
-    wallet: mergeWallet(l.wallet, c.wallet),
+    monthly: mergeMonthly(lm.state, cm.state),
+    wallet: mergeWallet(num(l.wallet) + lm.earned, num(c.wallet) + cm.earned),
     freezes: mergeFreezes(l.freezes, c.freezes),
     shop: mergeShop(l.shop, c.shop, shopDirty),
     stickers: mergeStickers(l.stickers, c.stickers),

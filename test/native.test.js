@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { isNative, nextBackScreen, hapticKill, keepAwake,
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { isNative, nextBackScreen, hapticKill, hapticWrong, keepAwake,
          syncStreakReminder, requestNotifPermission } from "../src/native.js";
 
 beforeEach(() => { delete globalThis.window; });
@@ -43,6 +43,32 @@ describe("web runtime is inert", () => {
   it("haptics/keepAwake are silent no-ops on web", () => {
     globalThis.window = {};
     expect(() => { hapticKill(); keepAwake(true); keepAwake(false); }).not.toThrow();
+  });
+});
+
+describe("haptic rejection handling", () => {
+  it("hapticKill guards a rejected Haptics.impact promise", () => {
+    const catchSpy = { catch: vi.fn((fn) => { fn(new Error("rejected")); }) };
+    globalThis.window = { Capacitor: { isNativePlatform: () => true, Plugins: { Haptics: { impact: () => catchSpy } } } };
+    hapticKill();
+    expect(catchSpy.catch).toHaveBeenCalled();
+  });
+
+  it("hapticWrong guards a rejected Haptics.impact promise", () => {
+    const catchSpy = { catch: vi.fn((fn) => { fn(new Error("rejected")); }) };
+    globalThis.window = { Capacitor: { isNativePlatform: () => true, Plugins: { Haptics: { impact: () => catchSpy } } } };
+    hapticWrong();
+    expect(catchSpy.catch).toHaveBeenCalled();
+  });
+
+  it("hapticKill is inert when Haptics is missing (no throw on undefined.catch)", () => {
+    globalThis.window = { Capacitor: { isNativePlatform: () => true, Plugins: {} } };
+    expect(() => { hapticKill(); }).not.toThrow();
+  });
+
+  it("hapticWrong is inert when Haptics is missing (no throw on undefined.catch)", () => {
+    globalThis.window = { Capacitor: { isNativePlatform: () => true, Plugins: {} } };
+    expect(() => { hapticWrong(); }).not.toThrow();
   });
 });
 

@@ -15,8 +15,8 @@ export function nextBackScreen(currentScreen) {
   return currentScreen === "home" ? null : "home";
 }
 
-export function hapticKill()  { if (isNative()) plugins().Haptics?.impact({ style: "LIGHT" }); }
-export function hapticWrong() { if (isNative()) plugins().Haptics?.impact({ style: "MEDIUM" }); }
+export function hapticKill()  { if (isNative()) plugins().Haptics?.impact({ style: "LIGHT" })?.catch(() => {}); }
+export function hapticWrong() { if (isNative()) plugins().Haptics?.impact({ style: "MEDIUM" })?.catch(() => {}); }
 
 let awakeOn = false;
 export function keepAwake(on) {

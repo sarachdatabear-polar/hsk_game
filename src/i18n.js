@@ -307,7 +307,7 @@ export const STRINGS = {
     "battle.pinyin": "Pinyin",
     "battle.on": "On",
     "battle.off": "Off",
-    "settings.sfxVol": "Sound effects",
+    "settings.sfxVol": "SFX volume",
     "settings.voiceVol": "Pronunciation",
     "battle.canvasLabel": "Battle scene. Press Enter or Space to replay the word's audio (when available).",
     "battle.bossPrompt": "Review Challenge · pick the hanzi for: {meaning}",
@@ -647,7 +647,7 @@ export const STRINGS = {
     "battle.pinyin": "พินอิน",
     "battle.on": "เปิด",
     "battle.off": "ปิด",
-    "settings.sfxVol": "เสียงเอฟเฟกต์",
+    "settings.sfxVol": "ระดับเสียงเอฟเฟกต์", // TH-REVIEW 2026-07-12: relabeled from เสียงเอฟเฟกต์
     "settings.voiceVol": "เสียงอ่าน",
     "battle.canvasLabel": "ฉากต่อสู้ กด Enter หรือ Space เพื่อฟังเสียงคำศัพท์อีกครั้ง (เมื่อเปิดให้ฟัง)",
     "battle.bossPrompt": "ด่านทบทวน · เลือกตัวอักษรจีนของคำว่า: {meaning}",
