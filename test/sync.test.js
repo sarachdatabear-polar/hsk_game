@@ -202,16 +202,55 @@ describe("reconcile: ledger-cursor purchase fold (coin-purchase go-live, THE FOL
     expect(firstSyncIdx).toBeLessThan(firstKeyIdx);
   });
 
-  it("ledger fetch failure aborts reconcile before any store write — cursor and wallet both untouched", async () => {
+  it("ledger fetch failure degrades gracefully: sync-row merge + push still happen, cursor frozen, no purchase credit", async () => {
+    // C1 fix: a ledger-specific failure (e.g. event_id column not yet
+    // migrated) must NOT abort the whole reconcile — fetchSyncRows already
+    // ran and succeeded, so cloud save (mastery/xp/wallet-max-fold/etc) must
+    // still merge and push. Only the ledger's purchase contribution degrades
+    // to 0, and the cursor freezes so these rows get summed on a later
+    // successful fetch instead of being skipped forever.
     const { client, calls } = fakeClient({ session: SESSION,
       progressRow: PROGRESS_STUB, walletRow: { user_id: "u1", coins: 9000, freezes: 0 }, failLedger: true });
     __setClientForTests(client);
     const store = memStore({ wallet: 5000, sync: { dirty: {}, lastSyncAt: 0, lastLedgerAt: "2026-07-01T00:00:00Z" } });
     const r = await reconcile(store, "sign-in", 2000000);
-    expect(r).toEqual({ ok: false, reason: "network" });
-    expect(store.get("wallet", 0)).toBe(5000);                          // cloud's 9000 never applied
-    expect(store.get("sync", {}).lastLedgerAt).toBe("2026-07-01T00:00:00Z"); // cursor not advanced
-    expect(calls.upserts.length).toBe(0);                               // never reached push
+    expect(r.ok).toBe(true);
+    // Plain max(local 5000, cloud 9000) fold — NOT +1000 worth of unseen
+    // ledger credit (unseenPurchased forced to 0 on a failed fetch), and NOT
+    // clamped to local-only either: cloud's own wallet gap still wins on the
+    // max-fold, since that gap isn't attributable to an unseen purchase we
+    // can't yet prove happened.
+    expect(store.get("wallet", 0)).toBe(9000);
+    expect(store.get("sync", {}).lastLedgerAt).toBe("2026-07-01T00:00:00Z"); // cursor frozen, not advanced
+    expect(calls.upserts.length).toBeGreaterThan(0);                     // sync-row push still happened
+    const meta = store.get("sync", {});
+    expect(meta.lastSyncAt).toBe(2000000);                               // settled like a normal success
+    expect(meta.dirty).toEqual({});
+  });
+
+  it("regression: a later reconcile whose ledger fetch now succeeds credits the same unseen rows exactly once (no skip-forever)", async () => {
+    // Same fixture as above, but the SECOND reconcile's ledger fetch
+    // succeeds and returns a purchase row still newer than the frozen
+    // cursor — proving the degrade-on-failure path doesn't lose it.
+    const { client: failClient } = fakeClient({ session: SESSION,
+      progressRow: PROGRESS_STUB, walletRow: { user_id: "u1", coins: 5000, freezes: 0 }, failLedger: true });
+    __setClientForTests(failClient);
+    const store = memStore({ wallet: 5000, sync: { dirty: {}, lastSyncAt: 0, lastLedgerAt: "2026-06-01T00:00:00Z" } });
+    const r1 = await reconcile(store, "sign-in", 1000000);
+    expect(r1.ok).toBe(true);
+    expect(store.get("wallet", 0)).toBe(5000);
+    expect(store.get("sync", {}).lastLedgerAt).toBe("2026-06-01T00:00:00Z"); // still frozen
+
+    // The migration lands (or the transient fault clears): the SAME unseen
+    // purchase row is still there, still newer than the untouched cursor.
+    const ledgerRows = [{ delta: 1000, created_at: "2026-07-12T10:00:00Z" }];
+    const { client: okClient } = fakeClient({ session: SESSION,
+      progressRow: PROGRESS_STUB, walletRow: { user_id: "u1", coins: 6000, freezes: 0 }, ledgerRows });
+    __setClientForTests(okClient);
+    const r2 = await reconcile(store, "sign-in", 1000000 + MIN_SYNC_GAP_MS + 1);
+    expect(r2.ok).toBe(true);
+    expect(store.get("wallet", 0)).toBe(6000);   // credited exactly once: max(5000,6000-1000)+1000
+    expect(store.get("sync", {}).lastLedgerAt).toBe("2026-07-12T10:00:00Z"); // cursor now advances
   });
 
   it("new-device sign-in: cursor \"\" fetches ALL ledger rows, folds old purchases in exactly once (neutral)", async () => {
