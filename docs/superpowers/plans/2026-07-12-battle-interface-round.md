@@ -90,11 +90,11 @@ export function meaning(w, lang, thaiPrimary = false) {
 - Progress: `B.resolved / B.deck.length` (grep exact fields; sessionLen normalizes). Add pure `roundProgress(resolved, total)` → clamped 0..1 in hud.js WITH test.
 - Pause button: ensure computed hit area ≥44px (padding, not icon growth).
 
-- [ ] **Step 1:** Test for `roundProgress` (clamp 0..1, total=0 → 0). Run → fail.
-- [ ] **Step 2:** Implement in hud.js; test passes.
-- [ ] **Step 3:** Markup/CSS: slim bar (height ~6px, track `--lc-sand`, fill `--lc-green`, border-radius 3px), "n/20" 12-13px `--lc-brown`; flatten HUD chips (single hairline border, no inner shadows). Remove heart pips from HUD markup + their update code in updateHud (leave B.lives logic untouched).
-- [ ] **Step 4:** Build + probe screenshot (390×844): HUD reads round+bar+coins+pause; measure pause button box ≥44.
-- [ ] **Step 5:** Full `npm test`. Commit: `feat(battle): simplified HUD — round progress bar, no duplicate hearts`.
+- [x] **Step 1:** Test for `roundProgress` (clamp 0..1, total=0 → 0). Run → fail.
+- [x] **Step 2:** Implement in hud.js; test passes.
+- [x] **Step 3:** Markup/CSS: slim bar (height ~6px, track `--lc-sand`, fill `--lc-green`, border-radius 3px), "n/20" 12-13px `--lc-brown`; flatten HUD chips (single hairline border, no inner shadows). Remove heart pips from HUD markup + their update code in updateHud (leave B.lives logic untouched).
+- [x] **Step 4:** Build + probe screenshot (390×844): HUD reads round+bar+coins+pause; measure pause button box ≥44.
+- [x] **Step 5:** Full `npm test`. Commit: `feat(battle): simplified HUD — round progress bar, no duplicate hearts`.
 
 ### Task 4: Vocabulary card — instruction line, speaker button, lighter frame
 

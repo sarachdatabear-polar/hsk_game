@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { roundLabel, comboMultiplier, comboFires } from "../src/hud.js";
+import { roundLabel, comboMultiplier, comboFires, roundProgress } from "../src/hud.js";
 
 describe("roundLabel", () => {
   it("reads 1/20 on the first word (spawned=0, before the first spawn)", () => {
@@ -39,6 +39,30 @@ describe("comboMultiplier", () => {
     expect(comboMultiplier(2)).toBe("x2");
     expect(comboMultiplier(9)).toBe("x9");
     expect(comboMultiplier(23)).toBe("x23");
+  });
+});
+
+describe("roundProgress", () => {
+  it("0 resolved of the total reads 0", () => {
+    expect(roundProgress(0, 20)).toBe(0);
+  });
+  it("mid-session reads the fraction", () => {
+    expect(roundProgress(5, 20)).toBe(0.25);
+  });
+  it("fully resolved reads 1", () => {
+    expect(roundProgress(20, 20)).toBe(1);
+  });
+  it("clamps overshoot at 1", () => {
+    expect(roundProgress(25, 20)).toBe(1);
+  });
+  it("a total of 0 reads 0 (no division by zero)", () => {
+    expect(roundProgress(0, 0)).toBe(0);
+  });
+  it("an infinite total (endless mode) reads 0", () => {
+    expect(roundProgress(7, Infinity)).toBe(0);
+  });
+  it("never goes negative", () => {
+    expect(roundProgress(-3, 20)).toBe(0);
   });
 });
 

@@ -287,20 +287,25 @@
   .spk{color:var(--lc-teal); font-size:22px; padding:10px 16px; border-radius:12px; border:1px solid var(--panel-border);
     min-width:44px; min-height:44px;
     display:inline-flex; align-items:center; justify-content:center;}
-  /* battle (M4 — minimal HUD: hearts · round capsule · coins · pause) */
+  /* battle (T3 — simplified HUD: round · progress bar+count · coins · pause;
+     hearts moved in-scene above the cat, see drawHearts in hud.js/T5). Flat
+     chips: single hairline border, no inner-shadow/bevel stack, so the HUD
+     never competes with the vocabulary card underneath it. */
   #hud{display:flex; justify-content:space-between; align-items:center; font-size:15px; padding:2px 2px 8px; gap:6px; flex-wrap:nowrap;}
   .hud-pill{display:inline-flex; align-items:center; gap:4px; background:var(--panel-wash); min-width:0;
     color:var(--ink); border-radius:999px; padding:4px 10px; border:1px solid var(--panel-border); font-weight:700; font-size:14px;
-    box-shadow:0 2px 6px rgba(46,42,36,.10); white-space:nowrap;}
+    white-space:nowrap;}
   /* round-counter capsule — palette tan (amends PRD §6.2's blue) */
   .hud-round-pill{font-weight:800;}
   .hud-round{width:44px; height:44px; min-width:44px; border-radius:50%; background:var(--panel-wash);
     color:var(--ink); border:1px solid var(--panel-border); border-image:var(--f-ui-badge-mastery, none); font-size:18px; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; flex:0 0 auto;
-    box-shadow:0 2px 6px rgba(46,42,36,.10);}
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
   .hud-round:active{transform:scale(.94);}
-  .life-icon{width:18px; height:18px; color:var(--lc-error); filter:drop-shadow(0 1px 1px rgba(46,42,36,.25));}
-  .life-icon.empty{color:var(--lc-gray); opacity:.65;}
+  /* T3: slim session-progress bar + "n/20" caption, center of the HUD */
+  .hud-progress{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; flex:1 1 auto; min-width:0;}
+  .hud-progress-track{width:100%; max-width:140px; height:6px; border-radius:3px; background:var(--lc-sand); overflow:hidden;}
+  .hud-progress-fill{display:block; height:100%; border-radius:3px; background:var(--lc-green); transition:width .25s ease; width:0%;}
+  .hud-progress-count{font-size:12px; font-weight:700; color:var(--lc-brown); white-space:nowrap;}
   /* pause overlay — cream plaque on a dim scrim, covers #s-battle only (nav is
      hidden during battle anyway). Mirrors the .screen.on show/hide convention. */
   #s-battle{position:relative;}
@@ -901,7 +906,8 @@
     #hud{grid-area:hud; padding:0; gap:4px;}
     .hud-pill{padding:3px 8px; font-size:12px;}
     .hud-round{width:36px; height:36px; min-width:36px; font-size:14px;}
-    .life-icon{width:15px; height:15px;}
+    .hud-progress-track{max-width:100px; height:5px;}
+    .hud-progress-count{font-size:11px;}
     .cv-wrap{grid-area:canvas; min-height:0;}
     #combo-strip{grid-area:combo; margin-top:0; min-height:18px; padding:3px 8px;}
     .combo-strip-label{font-size:11px;}
@@ -1172,8 +1178,11 @@
   <!-- BATTLE (M4 rebuild — visual PRD §6.2 item 1: minimal HUD + pause overlay) -->
   <div class="screen" id="s-battle">
     <div id="hud">
-      <span class="hud-pill" id="hud-lives"></span>
       <span class="hud-pill hud-round-pill" id="hud-round"></span>
+      <div class="hud-progress" id="hud-progress">
+        <div class="hud-progress-track"><div class="hud-progress-fill" id="hud-progress-fill"></div></div>
+        <span class="hud-progress-count" id="hud-progress-count"></span>
+      </div>
       <span class="hud-pill"><svg class="asset-icon"><use href="assets/ui-icons.svg#secondary-coin"></use></svg><b id="hud-score">0</b></span>
       <button class="hud-round" id="hud-pause" title="Pause" aria-label="Pause" data-i18n-title="battle.pause"><svg class="asset-icon"><use href="assets/ui-icons.svg#pause"></use></svg></button>
     </div>

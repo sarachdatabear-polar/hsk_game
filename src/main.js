@@ -29,7 +29,7 @@ import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
 import { navVisibleOn, activeTabFor } from "./nav.js";
-import { roundLabel, comboMultiplier, comboFires } from "./hud.js";
+import { roundLabel, comboMultiplier, comboFires, roundProgress } from "./hud.js";
 import { comboGlowTier, plaqueBounce, countUpValue } from "./juice.js";
 import { isFirstRun, introDeck } from "./firstrun.js";
 import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue } from "./stickers.js";
@@ -1338,17 +1338,16 @@ function toggleSfx(){
 }
 $("#more-sound").addEventListener("click", toggleSfx);
 syncSoundToggles();
+// T3 (HUD simplification): hearts moved in-scene above the cat (drawHearts,
+// wired in draw() — T5); the HUD keeps just round label, a slim progress
+// bar + "n/20" caption (roundProgress/roundLabel, hud.js), coins, and pause.
 function updateHud(){
   if(!B.on) return;   // toggleSfx can fire from the More screen, outside battle
-  const lives = $("#hud-lives");
-  lives.replaceChildren();
-  for(let i=0;i<3;i++){
-    const h = iconSvg("heart");
-    h.classList.add("life-icon", i < B.lives ? "full" : "empty");
-    lives.appendChild(h);
-  }
   $("#hud-score").textContent = B.score;
-  $("#hud-round").textContent = t("battle.round", { label: roundLabel(B.mode, B.spawned, B.wordsTotal) });
+  const label = roundLabel(B.mode, B.spawned, B.wordsTotal);
+  $("#hud-round").textContent = t("battle.round", { label });
+  $("#hud-progress-fill").style.width = (roundProgress(B.resolved, B.wordsTotal) * 100) + "%";
+  $("#hud-progress-count").textContent = label;
   updateComboStrip();
 }
 // Combo strip (M6, §6.2 item 5): COMBO N · fire row · xN badge. Replaces the

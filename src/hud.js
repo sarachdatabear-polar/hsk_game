@@ -17,6 +17,14 @@ export function roundLabel(mode, spawned, total) {
   return `${current}/${total}`;
 }
 
+// Round progress bar fraction (battle-interface round, T3 — HUD simplification).
+// resolved/total clamped to [0, 1]; total<=0 (or Infinity, endless mode's
+// wordsTotal) reads 0 rather than NaN/Infinity so the bar fill never breaks.
+export function roundProgress(resolved, total) {
+  if (!total || total <= 0) return 0;
+  return Math.max(0, Math.min(1, resolved / total));
+}
+
 // Combo strip (M6 — visual PRD §6.2 item 5). Both helpers are pure formatting
 // over B.combo; main.js decides when to hide the strip entirely (combo < 2).
 
