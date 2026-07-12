@@ -226,15 +226,57 @@ export function meaning(w, lang, thaiPrimary = false) {
 - audio.js/speak: mp3 `Audio.volume = voiceVol`; SpeechSynthesisUtterance `.volume = voiceVol`.
 - Pause menu: two labeled range inputs (styled: sand track, green thumb, ≥44px touch), i18n keys `settings.sfxVol` ("Sound effects" / "เสียงเอฟเฟกต์"), `settings.voiceVol` ("Pronunciation" / "เสียงอ่าน").
 
-- [ ] **Step 1:** Tests: clamp helper (0..1, bad input → 1), setSfxVolume affects the envelope value (fake AudioContext pattern — see existing sfx tests for the stub style). Fail → implement → pass.
-- [ ] **Step 2:** Wire UI + persistence; build + probe: sliders render in pause overlay, values persist across reload (localStorage check).
-- [ ] **Step 3:** Full `npm test`. Commit: `feat(audio): separate SFX and pronunciation volume controls`.
+- [x] **Step 1:** Tests: clamp helper (0..1, bad input → 1), setSfxVolume affects the envelope value (fake AudioContext pattern — see existing sfx tests for the stub style). Fail → implement → pass.
+- [x] **Step 2:** Wire UI + persistence; build + probe: sliders render in pause overlay, values persist across reload (localStorage check).
+- [x] **Step 3:** Full `npm test`. Commit: `feat(audio): separate SFX and pronunciation volume controls`.
+
+  Deviation: added a defensive early-return in `tone()` when the resolved
+  level (`vol * master`) is `<= 0`, so `setSfxVolume(0)` schedules no gain
+  node at all rather than relying on WebAudio's exponential-ramp-from-zero
+  behavior degrading cleanly (not itself hit by the pre-change code, since
+  `vol` was always positive). Flagged in the commit body as a known UX
+  issue: the pause overlay now shows "Sound effects" twice — the existing
+  `home.sound` on/off toggle and the new `settings.sfxVol` slider share the
+  plan's specified copy — left as-is per plan text, for Jordan to rule on.
 
 ### Task 13: Wave-2 gate — a11y & viewport sweep
 
-- [ ] REDUCED_MOTION probe (`page.emulateMedia({reducedMotion:'reduce'})`): no lunge/bump/pop motion, states still legible (gray heart, ✓/✕, reveal strip).
-- [ ] 320×568 + browser-font-scale probe (`page.addInitScript` set `document.documentElement.style.fontSize='20px'`): no clipped Thai/labels; responsive-sweep clean.
-- [ ] Full `npm test`; screenshots EN+TH; delete probes; lead review → PR Wave 2.
+- [x] REDUCED_MOTION probe (`page.emulateMedia({reducedMotion:'reduce'})`): no lunge/bump/pop motion, states still legible (gray heart, ✓/✕, reveal strip).
+
+  Verified with a same-session timelapse (single wrong-tap event, screenshots
+  at 40/150/300/500ms): under reduced motion the raccoon never enters frame
+  (bump dx suppressed, base retreat only) across all four frames; under
+  normal motion it visibly lunges into frame by 150ms then retreats by
+  300-500ms. Hearts (2 coral + 1 gray after the miss) render at full,
+  unscaled size in both modes by 450ms — no stuck pop-scale artifact. ✓/✕
+  stamps present on both option buttons in both modes.
+
+- [x] 320×568 + browser-font-scale probe (`page.addInitScript` set `document.documentElement.style.fontSize='20px'`): no clipped Thai/labels; responsive-sweep clean.
+
+  Deviation: `page.addInitScript(() => document.documentElement.style.fontSize=...)`
+  threw `TypeError: Cannot read properties of null (reading 'style')` on
+  this playwright-core/chromium-1228 build (documentElement unavailable at
+  the init-script's injection point) and the font-size never actually took
+  effect (verified by reading it back — empty). Applied the same override
+  via `page.evaluate()` immediately after each navigation/reload instead —
+  this app has no code that caches `documentElement`'s computed font-size at
+  boot (layout.js reads `clientWidth`/`clientHeight` fresh every frame per
+  CLAUDE.md), so a post-load mutation exercises the same browser-text-zoom
+  scenario. Result: zero horizontal-overflow offenders at 320×568 in EN and
+  TH across home/battle/pause-overlay/options screens; pause-overlay slider
+  labels stay well within the viewport (rightmost edge 279px of 320px);
+  `node scripts/responsive-sweep.mjs` (10 viewports + 2 listen-format
+  probes) passed clean.
+
+- [x] Full `npm test`; screenshots EN+TH; delete probes; lead review → PR Wave 2.
+
+  `npm test`: 1711 pass (53 files). Screenshots captured at 320×568 and
+  390×844 in both locales (battle screen + pause overlay) — all probe
+  scripts and screenshots deleted before commit, nothing left in the repo.
+  No fixes were needed from the sweep itself; this commit's only change is
+  the checkbox/plan-note update (T12's tone()-zero-guard landed in the T12
+  commit, not here). PR handoff is the lead's call, not run from this
+  worker session.
 
 ---
 
