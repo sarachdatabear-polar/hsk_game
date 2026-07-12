@@ -122,11 +122,11 @@ export function meaning(w, lang, thaiPrimary = false) {
 - Produces: `drawHearts(ctx, x, topY, lives, maxLives, S)` — new export in `src/hud.js` (canvas-drawing but pure-ish: no state; test via fake ctx recording calls, same pattern as `test/sprite-draw.test.js`). 3 pips, filled `#E69777`, lost `#B2AEA9`, ink outline, ~10*S px each, 4*S gap, centered above the cat's head (same y-convention as enemy drawHpBar: `gy + 6*B.S - 64*catScale - 14*B.S`).
 - drawHpBar recolor: border `#FBF5E8` (cream) width 1.2*scale, track `#1F4D4A` (deep teal), fill `#32775E` (green). Same geometry/signature.
 
-- [ ] **Step 1:** Fake-ctx test for `drawHearts`: records `lives` filled + `maxLives-lives` gray pips, positions monotonic. Run → fail.
-- [ ] **Step 2:** Implement drawHearts (heart = two arcs + triangle path, matching the HUD heart glyph shape previously used).
-- [ ] **Step 3:** Wire into draw() after drawCat: `drawHearts(ctx, B.L.mascotX, heartsY, B.lives, 3, B.S)`. Recolor drawHpBar.
-- [ ] **Step 4:** Build + probe: hearts above cat, correct fill/lost states after a wrong answer; HP bar shows cream/teal/green.
-- [ ] **Step 5:** Full `npm test`. Commit: `feat(battle): hearts live in-scene above the cat; HP bar recolored cream/teal/green`.
+- [x] **Step 1:** Fake-ctx test for `drawHearts`: records `lives` filled + `maxLives-lives` gray pips, positions monotonic. Run → fail.
+- [x] **Step 2:** Implement drawHearts (heart = two arcs + triangle path, matching the HUD heart glyph shape previously used).
+- [x] **Step 3:** Wire into draw() after drawCat: `drawHearts(ctx, B.L.mascotX, heartsY, B.lives, 3, B.S)`. Recolor drawHpBar.
+- [x] **Step 4:** Build + probe: hearts above cat, correct fill/lost states after a wrong answer; HP bar shows cream/teal/green.
+- [x] **Step 5:** Full `npm test`. Commit: `feat(battle): hearts live in-scene above the cat; HP bar recolored cream/teal/green`.
 
 ### Task 6: Reveal card persistence, recap strip, tap-to-skip
 

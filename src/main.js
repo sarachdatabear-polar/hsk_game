@@ -29,7 +29,7 @@ import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
 import { navVisibleOn, activeTabFor } from "./nav.js";
-import { roundLabel, comboMultiplier, comboFires, roundProgress } from "./hud.js";
+import { roundLabel, comboMultiplier, comboFires, roundProgress, drawHearts } from "./hud.js";
 import { comboGlowTier, plaqueBounce, countUpValue } from "./juice.js";
 import { isFirstRun, introDeck } from "./firstrun.js";
 import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue } from "./stickers.js";
@@ -1961,7 +1961,13 @@ function draw(now){
   // since x never changes here).
   const hopping = B.mascotHopUntil && now < B.mascotHopUntil;   // little victory hop after a kill
   const playerState = hopping ? "happy" : "walk";
-  drawCat(ctx, B.L.mascotX, gy + 6*B.S, now, playerState, SKIN_PALETTES[shopState.skin], .9*B.L.mascotS, B.acc, false);
+  const catScale = .9*B.L.mascotS;
+  drawCat(ctx, B.L.mascotX, gy + 6*B.S, now, playerState, SKIN_PALETTES[shopState.skin], catScale, B.acc, false);
+  // T5: hero hearts, in-scene above the cat's head (replaces the HUD hud-lives
+  // pips removed in T3) — same y-convention as the raccoon's floating HP bar
+  // below (gy + 6*B.S - <char height>*<char scale>), plus a little extra lift
+  // (14*B.S) since these 3 pips need their own row above the head.
+  drawHearts(ctx, B.L.mascotX, gy + 6*B.S - 64*catScale - 14*B.S, B.lives, 3, B.S);
   // catHalf grew with mascotS while mascotX stayed on S, so clamp the kitten on-canvas.
   const kittenX = Math.max(16*B.L.mascotS + 2, B.L.mascotX - B.L.catHalf);
   if(B.hasKitten) drawCat(ctx, kittenX, gy + 6*B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.L.mascotS, [], false);
