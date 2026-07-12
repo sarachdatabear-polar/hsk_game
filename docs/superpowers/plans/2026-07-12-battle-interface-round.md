@@ -152,10 +152,10 @@ export function meaning(w, lang, thaiPrimary = false) {
 - Produces: `const CHAR_SCALE` in main.js (single constant multiplying BOTH the cat's 0.9 and raccoon base 0.9 — i.e. replace both `.9` with `0.9 * CHAR_SCALE`… simpler: `const CHAR_BASE = 0.9 * CHAR_SCALE` used by both). Start CHAR_SCALE = 1.4; screenshot 320×568, 390×844, 412×915; step down 1.4 → 1.3 → 1.25 until: no clip of cat tail at left edge, raccoon spawn not clipped right, ≥16px gap between characters and the card at its tallest (instruction+pinyin+hanzi), hearts/HP bar unclipped. Record chosen value + screenshots in commit body.
 - Buttons CSS: min-height 72px; background `--lc-cream`; border 1.5px `--lc-sand`; radius keep existing storybook value; ONE shadow `0 2px 4px rgba(46,42,36,.14)`; remove inset bevel stack. Pressed (`:active:not(:disabled)`): `transform: translateY(2px)`, shadow `0 1px 2px`, border-color `--lc-brown`. `.opt-label` 19px (18-20 range), `.th` 15px. Keep good/bad state colors + ✓/✕ (restyle shadows only). Preserve the line-clamp guards (audit F5 history) — do not remove `-webkit-line-clamp` rules.
 
-- [ ] **Step 1:** CSS restyle; build; screenshot all 4 button states (idle/pressed/good/bad) at 390 + 320.
-- [ ] **Step 2:** CHAR_SCALE sweep as above; pick value; screenshot final at 3 viewports.
-- [ ] **Step 3:** `node scripts/responsive-sweep.mjs` (serve first) → no new failures.
-- [ ] **Step 4:** Full `npm test`. Commit: `feat(battle): storybook button restyle (72px, flat cream) + characters scaled up ~N%`.
+- [x] **Step 1:** CSS restyle; build; screenshot all 4 button states (idle/pressed/good/bad) at 390 + 320.
+- [x] **Step 2:** CHAR_SCALE sweep as above; pick value; screenshot final at 3 viewports.
+- [x] **Step 3:** `node scripts/responsive-sweep.mjs` (serve first) → no new failures.
+- [x] **Step 4:** Full `npm test`. Commit: `feat(battle): storybook button restyle (72px, flat cream) + characters scaled up ~N%`.
 
 ### Task 8: Wave-1 gate
 

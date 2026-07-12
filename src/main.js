@@ -1964,6 +1964,17 @@ function drawBackdrop(gy){
   else if(shopState.backdrop) paintBackdrop(ctx, B.w, B.h, gy, shopState.backdrop, performance.now());
   else paintBackdrop(ctx, B.w, B.h, gy, "", performance.now());
 }
+// T7: character scale tune (spec §4 — "scaled up by the tuned constant").
+// Single knob for BOTH characters' base scale so cat/raccoon parity (T5's
+// "both characters' CONTENT_H render at the same effective size") holds at
+// any tuning: replaces the old bare 0.9 literal on each. 1.4 (the spec's
+// stated ceiling) shipped as-is: a Playwright screenshot sweep at
+// 320x568/390x844/412x915 (idle spawn, mid-walk, and post-wrong-answer with
+// hearts down to 2) found no collisions at that value — no step-down to
+// 1.3/1.25 needed (commit body has the screenshot-by-screenshot reasoning).
+// Boss stays at CHAR_BASE*1.5 on top of this, unchanged.
+const CHAR_SCALE = 1.4;
+const CHAR_BASE = 0.9 * CHAR_SCALE;
 function draw(now){
   ctx.clearRect(0,0,B.w,B.h);
   const gy = B.h - B.L.ground;
@@ -1975,6 +1986,11 @@ function draw(now){
     ctx.translate(shake, 0);
   }
   drawBackdrop(gy);
+  // T7/spec §4 last bullet: a single very-light warm wash under the ground
+  // band ONLY (not the sky/scenery above) — grounds the bigger characters
+  // without dulling the backdrop art. One flat fill, no gradient/blur.
+  ctx.fillStyle = "rgba(46,42,36,.06)";
+  ctx.fillRect(0, gy, B.w, B.h - gy);
   // ground line — subtle gold
   ctx.strokeStyle = "rgba(245,197,24,.35)"; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(0,gy+12); ctx.lineTo(B.w,gy+12); ctx.stroke();
@@ -1986,7 +2002,7 @@ function draw(now){
   // since x never changes here).
   const hopping = B.mascotHopUntil && now < B.mascotHopUntil;   // little victory hop after a kill
   const playerState = hopping ? "happy" : "walk";
-  const catScale = .9*B.L.mascotS;
+  const catScale = CHAR_BASE*B.L.mascotS;
   drawCat(ctx, B.L.mascotX, gy + 6*B.S, now, playerState, SKIN_PALETTES[shopState.skin], catScale, B.acc, false);
   // T5: hero hearts, in-scene above the cat's head (replaces the HUD hud-lives
   // pips removed in T3) — same y-convention as the raccoon's floating HP bar
@@ -2047,11 +2063,10 @@ function draw(now){
     // raccoon enemy (was the cat walker) — bosses draw bigger with a gold
     // aura (boss param, not scale — see raccoon.js); no skins/accessories/
     // kitten on it, those moved to the player above.
-    // base matches the player cat's .9*B.L.mascotS above so both characters'
-    // CONTENT_H (64 world units, see sprite-draw.js) render at the same
-    // effective size; bosses stay at the historical 1.5x on top of that.
-    const RACCOON_BASE_SCALE = 0.9;
-    const rScale = RACCOON_BASE_SCALE * (z.boss ? 1.5 : 1) * B.L.mascotS;
+    // base matches the player cat's CHAR_BASE*B.L.mascotS above so both
+    // characters' CONTENT_H (64 world units, see sprite-draw.js) render at
+    // the same effective size; bosses stay at the historical 1.5x on top.
+    const rScale = CHAR_BASE * (z.boss ? 1.5 : 1) * B.L.mascotS;
     drawRaccoon(ctx, z.x, gy + 6*B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
     // floating HP bar above its head — cosmetic only. Animates hp -> 0 over
     // the happy/dying window (killZombie snapshots hpAtKill); wrong/timeout

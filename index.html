@@ -413,13 +413,26 @@
      row count (grid-auto-rows keeps the boss reverse-question's 3rd prompt
      row the same height as the two button rows below it). */
   #opts{display:grid; grid-template-columns:1fr 1fr; grid-auto-rows:1fr; gap:10px; margin-top:10px;}
-  #opts button{padding:12px 10px; font-size:20px; font-weight:700; line-height:1.25; text-align:center;
+  /* T7: storybook restyle — flat paper-cream surface, single warm contact
+     shadow (the old inset-bevel stack read as "gloss", not storybook), 72px
+     floor. min-height 68->72 per spec §5; border thinned 2px brown -> 1.5px
+     sand (brown moves to the :active state below, so pressed still reads
+     "darker border" against the idle sand). */
+  /* T7: .opt-label has no font-size of its own (see below) — it inherits
+     from this rule, and every responsive tier below overrides font-size
+     HERE (on the button), not on .opt-label, so inheritance keeps carrying
+     it down at every breakpoint. 20 -> 19px lands the base case in spec
+     §5's 18-20px range without touching that cascade. */
+  #opts button{padding:12px 10px; font-size:19px; font-weight:700; line-height:1.25; text-align:center;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
-    background-color:var(--lc-sand); color:var(--lc-ink);
-    border:2px solid var(--lc-brown); border-image:var(--f-ui-button-neutral, none); border-radius:14px; min-height:68px;
-    box-shadow:inset 0 2px 0 rgba(255,255,255,.45), inset 0 -3px 0 rgba(120,80,40,.28), 0 2px 6px rgba(36,26,16,.18);
+    background-color:var(--lc-cream); color:var(--lc-ink);
+    border:1.5px solid var(--lc-sand); border-image:var(--f-ui-button-neutral, none); border-radius:14px; min-height:72px;
+    box-shadow:0 2px 4px rgba(46,42,36,.14);
     max-height:140px;
     overflow-wrap:anywhere;}
+  /* T7 pressed state (spec §5): translate + shrink the shadow + darken the
+     border — no color change, so it reads as "pushed paper", not a new skin. */
+  #opts button:active:not(:disabled){transform:translateY(2px); box-shadow:0 1px 2px rgba(46,42,36,.14); border-color:var(--lc-brown);}
   /* Base-tier gloss clamp: grid-auto-rows:1fr sizes ALL four buttons to the
      tallest one, so a single rare 4-5 line gloss inflated every row to ~150px
      on tall phones (412x915 measured 149px), squeezing the canvas above it.
@@ -435,13 +448,15 @@
     -webkit-line-clamp:3; overflow:hidden; flex-shrink:0; width:100%; text-align:center;}
   #opts button .th{display:block; color:var(--lc-brown); font-size:15px; font-weight:600; margin-top:2px; text-align:center;}
   /* reveal states never rely on color alone (§11): a ✓/✕ affix rides along
-     with the green/coral fill + the game's existing sound/haptic/motion. */
+     with the green/coral fill + the game's existing sound/haptic/motion.
+     T7: shadows restyled to match the flat idle button (single warm shadow,
+     no inset-bevel stack) — fill/border colors unchanged. */
   #opts button.good{background-color:var(--lc-success); color:var(--lc-cream); border-color:var(--lc-success-deep);
-    box-shadow:inset 0 2px 0 rgba(255,255,255,.3), inset 0 -3px 0 rgba(0,0,0,.22), 0 2px 6px rgba(0,0,0,.2);}
+    box-shadow:0 2px 4px rgba(46,42,36,.14);}
   #opts button.good .th{color:var(--lc-cream);}
   #opts button.good::before{content:"✓"; font-size:22px; font-weight:800; line-height:1;}
   #opts button.bad{background-color:var(--lc-error); color:var(--lc-cream); border-color:var(--lc-error-border);
-    box-shadow:inset 0 2px 0 rgba(255,255,255,.28), inset 0 -3px 0 rgba(0,0,0,.22), 0 2px 6px rgba(0,0,0,.2);}
+    box-shadow:0 2px 4px rgba(46,42,36,.14);}
   #opts button.bad .th{color:var(--lc-cream);}
   #opts button.bad::before{content:"✕"; font-size:22px; font-weight:800; line-height:1;}
   /* A3: paw-print stamp pops on the TAPPED option (fx sprites are the
