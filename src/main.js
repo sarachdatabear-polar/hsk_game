@@ -41,6 +41,7 @@ import { reconcile, pushDirty } from "./sync.js";
 import { PRODUCTS, productById, displayPrice } from "./monetization/products.js";
 import { defaultEnt, isSupporter, applyPurchase, restoreFrom } from "./monetization/purchases.js";
 import { getProvider } from "./monetization/provider.js";
+import { iapVisible } from "./monetization/gating.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -115,8 +116,9 @@ let wallet = store.get("wallet", 0);
 // IAP (mock-provider v1). ent is local-only on purpose — NOT in SYNC_KEYS;
 // entitlements become server-authoritative in the RevenueCat slice.
 let ent = Object.assign(defaultEnt(), store.get("ent", {}));
-// Dark-ship flag: localStorage.setItem("nbhsk.dev.iap", "true") + reload.
-// When RevenueCat lands this becomes "native platform && provider available".
+// Dev-flag escape hatch (mock only): localStorage.setItem("nbhsk.dev.iap", "true")
+// + reload. Sync/cheap — anything that must stay sync keeps reading this directly.
+// Real visibility (see iapOn below) also honors a real provider's availability.
 const iapEnabled = () => !!store.get("dev.iap", false);
 let iapProvider = null;
 let iapPending = null;   // productId of the purchase in flight — survives re-renders
@@ -124,6 +126,13 @@ function provider(){
   if(!iapProvider) iapProvider = getProvider({ get: (k,d)=>store.get(k,d), set: (k,v)=>store.set(k,v) });
   return iapProvider;
 }
+// Availability-driven visibility (go-live plan §4 T1, src/monetization/gating.js):
+// a real provider un-darks the purchase UI on its own; the mock stays behind
+// iapEnabled(). Starts false so nothing flashes visible before init resolves
+// it (identical to today's hidden-by-default in Phase 1, where no real
+// provider exists). The dev flag itself only changes via localStorage edit +
+// reload, so no live re-evaluation is needed beyond the one at boot.
+let iapOn = false;
 let shopState = Object.assign(defaultShop(), store.get("shop", {}));
 function updateWalletChip(){ setPill($("#home-wallet"), "secondary-coin", wallet.toLocaleString()); }
 // Re-arm window (ms): a deco buy synchronously re-renders its row as an
@@ -515,7 +524,8 @@ function renderAccount(){
   if(v.showSignOut) p.appendChild(accountBtn(t("account.signOut"), onAccountSignOut));
   // IAP v1: restore is device-local (mock provider); Apple will require
   // this button once real billing lands, so the UI slot exists now.
-  if(iapEnabled()) p.appendChild(accountBtn(t("iap.restore"), onRestorePurchases));
+  // Availability-aware (iapOn, not iapEnabled()) — see gating.js.
+  if(iapOn) p.appendChild(accountBtn(t("iap.restore"), onRestorePurchases));
 }
 
 function accountBtn(label, onclick){
@@ -2885,7 +2895,7 @@ function makeShopRow(item, today){
 
 /* --------------------------- IAP (mock v1) --------------------------- */
 function renderIapSections(){
-  const on = iapEnabled();
+  const on = iapOn;
   for(const id of ["shop-coins-sect", "shop-coins", "shop-supporter-sect", "shop-supporter"]){
     const el = document.getElementById(id);
     if(el) el.hidden = !on;
@@ -3584,6 +3594,11 @@ renderHome();
 renderQuests();
 renderStreet();
 updateNav(currentScreen);
+// Availability-driven IAP gating (go-live plan §4 T1): resolve once at boot.
+// renderIapSections() is safe to call standalone (see its hidden-toggling
+// loop) even before the shop screen has ever been rendered — the elements
+// it touches are static markup, always present in the DOM.
+iapVisible(provider(), iapEnabled()).then(v => { iapOn = v; renderIapSections(); });
 if(location.hash === "#debug"){
   window.__debugTarget = ()=> B.zombie && B.zombie.w.h;
   window.__grantXp = n => { addXp(n); };

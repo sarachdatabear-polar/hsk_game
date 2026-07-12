@@ -5,7 +5,11 @@
 // without touching any call site.
 //
 // Interface (all async, never throw/reject):
-//   available() -> boolean
+//   kind: "mock" | "revenuecat"
+//   available() -> boolean — a REAL provider's available() reflects
+//                  SDK/platform readiness; the mock's always stays true
+//                  (the dev flag, not available(), decides mock visibility —
+//                  see gating.js)
 //   purchase(productId) -> {ok:true, orderId}
 //                        | {ok:false, reason:"cancelled"|"failed"|"unavailable"}
 //   restore() -> {ok:true, ownedProductIds} | {ok:false, reason}
