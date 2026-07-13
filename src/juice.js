@@ -91,3 +91,12 @@ export function hurtSquash(t) {
   }
   return { sx: 1 + 0.15 * shape, sy: 1 - 0.15 * shape };
 }
+
+const TRAIL_MOVE_MS = 480;
+export function trailMoveX(from, to, elapsed) {
+  if (!(elapsed >= 0)) return from;
+  if (elapsed >= TRAIL_MOVE_MS) return to;
+  const f = elapsed / TRAIL_MOVE_MS;
+  const smooth = f * f * (3 - 2 * f);
+  return from + (to - from) * smooth;
+}

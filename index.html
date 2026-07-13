@@ -232,12 +232,12 @@
   #street-caption{color:var(--lc-brown); font-size:12px; text-align:center; margin:4px 0 0;}
   /* compact — must not steal meaningful height from the scene above it */
   #s-street{position:relative;}
-  .street-quests-btn{align-self:center; width:auto; min-width:140px; margin-top:8px; padding:8px 22px; min-height:40px;}
+  .street-quests-btn{align-self:center; width:auto; min-width:140px; margin-top:8px; padding:8px 22px; min-height:44px;}
   /* Quest popup reuses .pause-overlay/.pause-panel (see #s-battle) — scoped to
      #s-street (position:relative above) so it doesn't cover the bottom nav. */
   .quest-popup-head{display:flex; align-items:center; justify-content:space-between; gap:10px;}
   .quest-popup-head .pause-title{margin:0; text-align:left;}
-  .overlay-close{width:34px; height:34px; min-height:34px; min-width:34px; padding:0; flex:0 0 auto;
+  .overlay-close{width:44px; height:44px; min-height:44px; min-width:44px; padding:0; flex:0 0 auto;
     display:flex; align-items:center; justify-content:center; font-size:20px; line-height:1; font-weight:800;
     background-color:var(--lc-sand); color:var(--lc-ink); border:2px solid var(--lc-brown); border-radius:50%;}
   .overlay-close:active{transform:scale(.92);}
@@ -287,16 +287,17 @@
   .spk{color:var(--lc-teal); font-size:22px; padding:10px 16px; border-radius:12px; border:1px solid var(--panel-border);
     min-width:44px; min-height:44px;
     display:inline-flex; align-items:center; justify-content:center;}
-  /* battle (T3 — simplified HUD: round · progress bar+count · coins · pause;
-     hearts moved in-scene above the cat, see drawHearts in hud.js/T5). Flat
-     chips: single hairline border, no inner-shadow/bevel stack, so the HUD
-     never competes with the vocabulary card underneath it. */
+  /* Word Quest header: route identity · durable learning progress · Review
+     Pouch · pause. Coins remain a reward reveal on Results instead of
+     competing with the learning objective during play. */
   #hud{display:flex; justify-content:space-between; align-items:center; font-size:15px; padding:2px 2px 8px; gap:6px; flex-wrap:nowrap;}
+  .quest-route{display:flex; flex-direction:column; justify-content:center; min-width:92px; line-height:1.05;}
+  .quest-eyebrow{font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--lc-green-deep);}
+  .quest-route-name{font-size:15px; font-weight:800; color:var(--lc-ink); white-space:nowrap;}
   .hud-pill{display:inline-flex; align-items:center; gap:4px; background:var(--panel-wash); min-width:0;
     color:var(--ink); border-radius:999px; padding:4px 10px; border:1px solid var(--panel-border); font-weight:700; font-size:14px;
     white-space:nowrap;}
-  /* round-counter capsule — palette tan (amends PRD §6.2's blue) */
-  .hud-round-pill{font-weight:800;}
+  .hud-review{font-size:12px; color:var(--lc-brown);}
   .hud-round{width:44px; height:44px; min-width:44px; border-radius:50%; background:var(--panel-wash);
     color:var(--ink); border:1px solid var(--panel-border); border-image:var(--f-ui-badge-mastery, none); font-size:18px; cursor:pointer;
     display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
@@ -393,7 +394,7 @@
      regardless of viewport, so the canvas floor always yields exactly enough
      to make room for the extra row while a listen question is live
      (main.js toggles #s-battle.listen-fmt per-question in renderQuestion). */
-  #s-battle.listen-fmt .cv-wrap{min-height:130px;}
+  #s-battle.listen-fmt .cv-wrap{min-height:116px;}
   #cv{width:100%; height:auto; flex:1 1 0; min-height:0; border-radius:14px;
     background-image:linear-gradient(var(--lc-day-hi),var(--lc-day-mid) 60%,var(--lc-day-ground));
     background-size:cover; background-position:bottom; background-repeat:no-repeat;
@@ -403,6 +404,15 @@
      same target the plaque click hit-test uses (see main.js replayCurrentWord). */
   #cv:focus{outline:3px solid var(--lc-sun); outline-offset:2px;}
   #cv:focus:not(:focus-visible){outline:none;}
+  /* Prompt/feedback rail: one calm instruction while choosing, then a short
+     learning-oriented outcome. aria-live on the element announces changes. */
+  #quest-feedback{display:flex; align-items:center; justify-content:center; min-height:32px;
+    margin-top:8px; padding:5px 10px; border:1px solid var(--panel-border); border-radius:12px;
+    background:var(--panel-wash); color:var(--lc-brown); font-size:12.5px; font-weight:700; text-align:center;}
+  #quest-feedback.feedback-correct{color:var(--lc-success-deep); border-color:var(--lc-success);}
+  #quest-feedback.feedback-review{color:var(--lc-coral-deep); border-color:var(--lc-coral);}
+  #quest-feedback.feedback-challenge{color:var(--lc-brown); border-color:var(--lc-sun-deep);
+    background:linear-gradient(180deg,rgba(255,231,149,.82),rgba(242,188,87,.48));}
   /* combo strip (M6, §6.2 item 5): thin bar between the canvas and the answer
      grid; .hidden zero-states it below a 2-combo (updateComboStrip in main.js). */
   #combo-strip{display:flex; align-items:center; justify-content:space-between; gap:8px;
@@ -506,6 +516,11 @@
      below — same equal-specificity/source-order cascade rule noted there —
      so the ≤620 tier's more aggressive 13px/80px values still win beneath
      620px; this block only takes over from 621-700px. */
+  /* Mid-short phones sit just above the SE tier: let the painted scene yield
+     20px before bilingual long-tail answers ever fall below the fold. */
+  @media (min-height:621px) and (max-height:700px) and (orientation:portrait){
+    .cv-wrap{min-height:240px;}
+  }
   @media (max-height: 700px) and (orientation: portrait){
     #opts button{align-items:flex-start; max-height:112px; overflow:hidden;}
     /* flex-shrink:0 is load-bearing: the button is a column flex container
@@ -609,6 +624,36 @@
     filter:drop-shadow(0 6px 8px rgba(46,42,36,.25));
     animation:cat-bob 2.2s ease-in-out infinite alternate;}
   @keyframes cat-bob{from{transform:translateY(0) rotate(-2deg);} to{transform:translateY(-6px) rotate(2deg);}}
+  .results-postcard{position:relative; overflow:hidden; display:grid; grid-template-columns:96px 1fr;
+    grid-template-areas:"route route" "cat lanterns" "cat learned" "stats stats";
+    align-items:center; gap:5px 12px; min-height:214px; padding:12px 14px 10px; margin:0 0 10px;
+    border:2px solid var(--lc-brown); border-radius:18px;
+    background-image:linear-gradient(rgba(251,245,232,.34),rgba(251,245,232,.86)),url("assets/bg-quest.png");
+    background-position:center 58%; background-size:cover;
+    box-shadow:0 5px 14px rgba(46,42,36,.2),inset 0 1px 0 rgba(255,255,255,.65);}
+  .results-route-row{grid-area:route; display:flex; align-items:center; justify-content:space-between;
+    gap:8px; color:var(--lc-brown); font-size:13px; font-weight:800;
+    background:rgba(251,245,232,.82); border-radius:999px; padding:5px 10px;}
+  .results-postcard .r-cat{grid-area:cat; margin:0; align-self:end;}
+  .results-lanterns{grid-area:lanterns; display:flex; justify-content:center; align-items:flex-end; gap:5px;
+    min-height:62px; padding-top:4px;}
+  .results-lanterns img{width:31px; height:47px; object-fit:contain; filter:drop-shadow(0 0 8px rgba(242,188,87,.72));}
+  .results-lanterns img.unlit{opacity:.3; filter:grayscale(.45) drop-shadow(0 2px 3px rgba(46,42,36,.2));}
+  .results-learned{grid-area:learned; text-align:center; color:var(--lc-green-deep); font-size:15px;
+    font-weight:900; background:rgba(251,245,232,.88); border-radius:10px; padding:5px 8px;}
+  .results-stats{grid-area:stats; display:grid; grid-template-columns:repeat(3,1fr); gap:6px;}
+  .results-stats div{display:flex; flex-direction:column; align-items:center; padding:6px 4px;
+    border:1px solid rgba(132,96,67,.35); border-radius:10px; background:rgba(251,245,232,.9);}
+  .results-stats strong{color:var(--lc-green-deep); font-size:18px; line-height:1.1;}
+  .results-stats span{color:var(--muted); font-size:10.5px; line-height:1.2; text-align:center;}
+  .results-reward{display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap;
+    padding:8px 12px; margin:0 0 10px; color:var(--lc-brown); font-size:13px; font-weight:800;
+    background:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun)); border:2px solid var(--lc-brown);
+    border-radius:14px; box-shadow:0 3px 8px rgba(46,42,36,.16);}
+  .results-reward .bignum{font-size:34px; margin:0; color:var(--lc-brown);}
+  .results-reward #r-wallet{width:100%; margin:-4px 0 0; font-size:12.5px;}
+  .results-next-review{margin:10px 0 0; padding:9px 12px; text-align:center; color:var(--lc-green-deep);
+    background:rgba(168,216,209,.42); border:1px solid var(--lc-teal); border-radius:12px; font-weight:800;}
   .sub{text-align:center; color:var(--muted); margin:0 0 14px;}
   .misslist{flex:1; overflow-y:auto; background-color:var(--panel-wash); border-radius:12px;
     border:1px solid var(--panel-border); padding:6px 12px; margin:10px 0; max-height:38vh;}
@@ -617,7 +662,8 @@
   .missrow .hz{font-size:24px; min-width:70px;}
   .missrow .det{flex:1; font-size:13.5px; color:var(--muted); line-height:1.35;}
   .missrow .det .py{color:var(--lc-brown);}
-  .missrow .sp{background:none; font-size:19px; padding:4px;}
+  .missrow .sp{background:none; font-size:19px; padding:4px; min-width:44px; min-height:44px;
+    display:inline-flex; align-items:center; justify-content:center;}
   .scorelist{background-color:var(--panel-wash); border-radius:12px; border:1px solid var(--panel-border); padding:8px 14px;}
   .scorerow{display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(132,96,67,.22); font-size:15px;}
   .scorerow:last-child{border-bottom:none;}
@@ -828,7 +874,7 @@
   .j-play{background-color:var(--lc-sun);
     background-image:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun) 55%,var(--lc-sun-deep));
     border:2px solid var(--lc-brown); border-radius:12px; color:var(--lc-brown);
-    font-weight:800; font-size:12.5px; padding:8px 12px; min-height:40px; flex:0 0 auto;}
+    font-weight:800; font-size:12.5px; padding:8px 12px; min-height:44px; flex:0 0 auto;}
 
   .home-cta{display:flex; align-items:stretch; gap:10px; margin:8px 0 2px;}
   .start-btn{flex:1 1 62%; font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif; font-weight:800;
@@ -912,7 +958,7 @@
      individually. Mutually exclusive with the `(max-height:620px) and
      (orientation:portrait)` short-screen blocks above by construction
      (orientation differs), so the two never fight over the same element.
-     Battle: regroups #s-battle into a 2-column grid — HUD spans a
+     Word Quest: regroups #s-battle into a 2-column grid — header spans a
      full-width strip on top, canvas + combo strip stack in the left column,
      and the 2x2 answer grid fills the right column at full height, so nothing
      scrolls mid-round. Home: every vertical rhythm (paddings, hero art,
@@ -930,15 +976,19 @@
        non-display layout properties on the bare ID is harmless since they
        have no effect while display:none. */
     #s-battle{padding:4px 8px 3px; grid-template-columns:1fr 1fr;
-      grid-template-rows:auto 1fr auto; grid-template-areas:"hud hud" "canvas opts" "combo opts";
+      grid-template-rows:auto 1fr auto auto; grid-template-areas:"hud hud" "canvas opts" "feedback opts" "combo opts";
       gap:6px; align-items:stretch;}
     #s-battle.on{display:grid;}
     #hud{grid-area:hud; padding:0; gap:4px;}
+    .quest-route{min-width:82px;}
+    .quest-eyebrow{font-size:8px;}
+    .quest-route-name{font-size:12px;}
     .hud-pill{padding:3px 8px; font-size:12px;}
-    .hud-round{width:36px; height:36px; min-width:36px; font-size:14px;}
+    .hud-round{width:44px; height:44px; min-width:44px; font-size:14px;}
     .hud-progress-track{max-width:100px; height:5px;}
     .hud-progress-count{font-size:11px;}
     .cv-wrap{grid-area:canvas; min-height:0;}
+    #quest-feedback{grid-area:feedback; margin-top:0; min-height:18px; padding:3px 8px; font-size:10.5px;}
     #combo-strip{grid-area:combo; margin-top:0; min-height:18px; padding:3px 8px;}
     .combo-strip-label{font-size:11px;}
     .combo-strip-label b{font-size:12px;}
@@ -959,14 +1009,16 @@
     .level-info{min-width:52px;}
     .level-text{font-size:11px;}
     .xp-bar{width:52px;}
-    .gear-btn{width:36px; height:36px; min-width:36px;}
+    .gear-btn{width:44px; height:44px; min-width:44px;}
     .gear-btn .asset-icon{width:16px; height:16px;}
     .brand-title{margin:2px 0 0; padding:2px 14px 3px;}
     .brand-sub{font-size:11px;}
     .brand-cn{font-size:9px;}
     .brand-main{font-size:22px;}
-    .home-hero{flex:0 0 auto; min-height:0; max-height:13vh; padding-bottom:0;}
-    .hero-cat{width:auto; height:100%; max-height:13vh; min-width:0;}
+    /* Keep every control at the 44px release floor by yielding the decorative
+       hero's vertical slot on short landscape phones. The painted home scene,
+       wordmark, avatar, and warm palette keep the same visual identity. */
+    .home-hero{display:none;}
     .streak-card{padding:4px 10px; margin:3px 0;}
     .streak-row{margin-bottom:2px;}
     .streak-left{font-size:11px;}
@@ -974,14 +1026,14 @@
     .streak-bar{height:4px;}
     .streak-note{margin-top:2px; font-size:9.5px;}
     .home-cta{margin:3px 0 0; gap:6px;}
-    .start-btn{font-size:15px; padding:4px 6px; min-height:36px;}
-    .scope-chip-btn{padding:2px 6px; min-height:36px; font-size:9.5px;}
+    .start-btn{font-size:15px; padding:4px 6px; min-height:44px;}
+    .scope-chip-btn{padding:2px 6px; min-height:44px; font-size:9.5px;}
     .start-hint{margin:1px 0 2px; font-size:9.5px;}
     .home-secondary-row{margin-top:3px; gap:6px;}
-    .sec-btn{min-height:36px; padding:3px 4px; font-size:9.5px;}
+    .sec-btn{min-height:44px; padding:3px 4px; font-size:9.5px;}
     .sec-btn .asset-icon{width:14px; height:14px;}
     #bottom-nav{margin-top:3px; padding:2px 3px;}
-    .nav-btn{min-height:28px; padding:1px 2px; gap:1px; font-size:9px;}
+    .nav-btn{min-height:44px; padding:1px 2px; gap:1px; font-size:9px;}
     .nav-btn .asset-icon{width:16px; height:16px;}
     /* ---- tone trainer ---- */
     /* Short landscape can't stack a 2x2 tone grid + big reveal under the
@@ -992,7 +1044,7 @@
     #s-tones h2{margin:2px 0; font-size:18px;}
     #s-tones .sub{margin:2px 0; font-size:11px;}
     #tones-progress{margin:1px 0;}
-    .tones-replay{margin-top:5px; font-size:14px; min-height:34px;}
+    .tones-replay{margin-top:5px; font-size:14px; min-height:44px;}
     #tones-options{grid-template-columns:repeat(4,1fr); gap:8px; margin-top:8px;}
     #tones-options .tone-chip{min-height:46px; font-size:20px;}
     #tones-options .tone-num{font-size:22px;}
@@ -1205,22 +1257,26 @@
     </div>
   </div>
 
-  <!-- BATTLE (M4 rebuild — visual PRD §6.2 item 1: minimal HUD + pause overlay) -->
+  <!-- WORD QUEST — Lantern Trail route, learning progress, review pouch, pause -->
   <div class="screen" id="s-battle">
     <div id="hud">
-      <span class="hud-pill hud-round-pill" id="hud-round"></span>
+      <div class="quest-route">
+        <span class="quest-eyebrow" data-i18n="battle.wordQuest">Word Quest</span>
+        <strong class="quest-route-name" id="quest-route-name" data-i18n="battle.routeName">Lantern Trail</strong>
+      </div>
       <div class="hud-progress" id="hud-progress">
         <div class="hud-progress-track"><div class="hud-progress-fill" id="hud-progress-fill"></div></div>
         <span class="hud-progress-count" id="hud-progress-count"></span>
       </div>
-      <span class="hud-pill"><svg class="asset-icon"><use href="assets/ui-icons.svg#secondary-coin"></use></svg><b id="hud-score">0</b></span>
+      <span class="hud-pill hud-review" id="hud-review"></span>
       <button class="hud-round" id="hud-pause" title="Pause" aria-label="Pause" data-i18n-title="battle.pause"><svg class="asset-icon"><use href="assets/ui-icons.svg#pause"></use></svg></button>
     </div>
     <div class="cv-wrap"><canvas id="cv" tabindex="0" role="img" data-i18n-title="battle.canvasLabel"></canvas></div>
-    <!-- combo strip (M6, §6.2 item 5): COMBO N · fire row · xN badge. Hidden
+    <div id="quest-feedback" role="status" aria-live="polite" data-i18n="battle.promptChoose">Choose the best answer to light the trail.</div>
+    <!-- Lucky Flow strip: streak count · lantern flames · multiplier. Hidden
          (via .hidden) below a 2-combo by updateComboStrip() in main.js. -->
     <div id="combo-strip" class="hidden">
-      <span class="combo-strip-label">COMBO <b id="combo-count">0</b></span>
+      <span class="combo-strip-label"><span data-i18n="battle.luckyFlow">Lucky Flow</span> <b id="combo-count">0</b></span>
       <span class="combo-strip-fires" id="combo-fires"></span>
       <span class="combo-strip-badge" id="combo-badge"></span>
     </div>
@@ -1266,25 +1322,42 @@
 
   <!-- RESULTS -->
   <div class="screen festive" id="s-results">
-    <img class="r-cat" src="assets/cat-celebrate.png" alt="">
-    <h2 style="text-align:center" data-i18n="results.roundOver">Round over</h2>
-    <div class="bignum" id="r-score"></div>
+    <h2 style="text-align:center" data-i18n="results.roundOver">Word Quest complete</h2>
+    <div class="results-postcard">
+      <div class="results-route-row">
+        <span data-i18n="results.routeLabel">Village Gate journey</span>
+        <strong id="r-chapter"></strong>
+      </div>
+      <img class="r-cat" src="assets/cat-celebrate.png" alt="">
+      <div class="results-lanterns" id="r-lanterns"></div>
+      <div class="results-learned" id="r-learned"></div>
+      <div class="results-stats">
+        <div><strong id="r-attempts"></strong><span data-i18n="results.attempts">Attempts</span></div>
+        <div><strong id="r-accuracy"></strong><span data-i18n="results.accuracy">Accuracy</span></div>
+        <div><strong id="r-lantern-count"></strong><span data-i18n="results.lanterns">Lanterns</span></div>
+      </div>
+    </div>
+    <div class="results-reward">
+      <span data-i18n="results.rewardTitle">Lucky rewards</span>
+      <div class="bignum" id="r-score"></div>
+      <p class="sub" id="r-wallet" style="color:var(--lc-brown)"></p>
+    </div>
     <!-- A4/B2 slots: intro streak pointer (filled by endBattle on the intro
          round) and the sticker toast slot (activates in Phase 4 with stickers.js) -->
     <p class="sub" id="r-intro-hint" style="display:none"></p>
     <div id="r-sticker-slot" style="display:none"></div>
     <p class="sub" id="r-sub"></p>
-    <p class="sub" id="r-wallet" style="color:var(--lc-brown)"></p>
     <div id="r-perfect" style="display:none"></div>
     <div id="r-levelup" style="display:none"></div>
     <div id="r-quests"></div>
-    <div class="sect" id="r-misshead" data-i18n="results.missed">Words you missed</div>
+    <div class="sect" id="r-misshead" data-i18n="results.missed">Needed extra practice</div>
     <div class="misslist" id="r-miss"></div>
     <div class="startrow">
       <button class="big" id="r-review"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#review"></use></svg><span data-i18n="results.reviewWords">Review Words</span></span></button>
-      <button class="big" id="r-fight-miss"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#retry"></use></svg><span data-i18n="results.practiceMissed">Practice Missed Words</span></span></button>
+      <button class="big" id="r-fight-miss"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#retry"></use></svg><span data-i18n="results.practiceMissed">Practice these words again</span></span></button>
       <button class="big primary" id="r-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span data-i18n="results.playAgain">Play again</span></span></button>
     </div>
+    <p class="results-next-review" id="r-next-review"></p>
     <button class="big" style="margin-top:10px" data-go="home" data-i18n="results.home">Home</button>
   </div>
 
@@ -1373,18 +1446,22 @@
   <div class="screen festive" id="s-howto">
     <button class="back" data-go="more" data-i18n="common.backMore">← More</button>
     <h2 data-i18n="howto.title">How to play</h2>
-    <p class="howto" data-i18n-html="howto.intro">A lucky cat strolls in from the right carrying a <b>Chinese word</b> (with pinyin) on a flag.</p>
-    <p class="howto" data-i18n-html="howto.tapMeaning">Tap the <b>correct meaning</b> and the cat celebrates your answer.
-      The farther away the cat still is, the bigger the practice bonus — and learning streaks build your score.</p>
+    <p class="howto" data-i18n-html="howto.intro">Follow Lucky Cat along the <b>Lantern Trail</b>. Each stop presents a Chinese word with pinyin.</p>
+    <p class="howto" data-i18n-html="howto.tapMeaning">Choose the <b>correct meaning</b> to light the next lantern.
+      Consecutive first-try answers build Lucky Flow.</p>
     <p class="howto">
-      <b data-i18n="howto.oneShot">You get one shot per word.</b>
-      <span data-i18n-html="howto.oneShotDetail">A wrong tap costs a heart — no second guesses.
-      The correct answer flashes green so you learn it for next time.</span>
+      <b data-i18n="howto.oneShot">Missed words return.</b>
+      <span data-i18n-html="howto.oneShotDetail">A wrong tap reveals the answer and adds the word to your Review Pouch,
+      so you can learn it when it returns.</span>
     </p>
-    <p class="howto" data-i18n-html="howto.tooSlow">Too slow counts too: if the cat wanders all the way across without an answer,
-      that costs a heart. Three hearts and the round is over.</p>
-    <p class="howto" data-i18n-html="howto.everyWord">Every word shows <b>pinyin</b> and can be <b>heard aloud</b> — during the game,
-      in flashcards, and in the missed-words review.</p>
+    <p class="howto" data-i18n-html="howto.tooSlow">If time runs out, the answer is revealed and the word returns soon.
+      Your Word Quest continues until every planned word is learned.</p>
+    <p class="howto" data-i18n-html="howto.reviewChallenge">Every tenth planned word becomes a <b>two-step Review Challenge</b>:
+      meaning first, then reverse recall.</p>
+    <p class="howto" data-i18n-html="howto.results">Finish every planned word to receive a results postcard with learned words,
+      extra practice, rewards, and your next review.</p>
+    <p class="howto" data-i18n-html="howto.everyWord">Every word shows <b>pinyin</b> and can be <b>heard aloud</b> — during the Word Quest,
+      in flashcards, and in extra-practice review.</p>
     <p class="howto" data-i18n-html="howto.learnMode"><b>Learn mode</b> drills the same word pool as flashcards first, so you can
       study, then play.</p>
     <p class="howto" data-i18n="howto.attribution">Some example sentences from Tatoeba (tatoeba.org), CC-BY 2.0 FR.</p>

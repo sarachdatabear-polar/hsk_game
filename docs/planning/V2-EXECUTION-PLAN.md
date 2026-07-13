@@ -1,5 +1,18 @@
 # V2/V3/V4 Execution Plan — living checklist
 
+## Lantern Trail checkpoint — Phase 6 release candidate merged (2026-07-13)
+
+Plan: [2026-07-13-lantern-trail-migration-plan.md](2026-07-13-lantern-trail-migration-plan.md). Core merged as `7d0aded`; Phase 3 through PR #90; Phase 4 through PR #91; Phase 5 through PR #93; Phase 6 automated release candidate through PR #95 (`a6164a9`).
+
+- [x] Added the deep `quest-session.js` scheduler and 11 focused tests for learned-word completion, Endless mode, exhaustive decks, retry spacing, Review Challenges, milestones, and interface invariants.
+- [x] Integrated continuous review into the existing battle shell: no hearts or life-based failure; wrong answers/timeouts enter the Review Pouch and return; HUD shows Review and Learned progress.
+- [x] Preserved the current warm storybook palette, painted scenes, cat/raccoon characters, audio, reveal timing, motion, and owned assets.
+- [x] Added the semantic Word Quest hierarchy, Review Pouch/Lucky Flow purpose rail, three-node local Lantern Trail, advancing cat, friendly guide, lucky-charm feedback, and existing-art chapter rotation.
+- [x] Added semantic Review Challenge exports with legacy compatibility, a postcard results/rewards screen, missed-word and next-review hooks, plus retry-economy guards that preserve mastery/XP/quest credit without coins or Lucky Flow inflation.
+- [x] Latest merge gate: production build clean, 62 test files / 1,827 tests passing, 95 manifest assets validated; first-run browser playthrough completed with no console errors.
+- [x] Phase 6 automated release candidate: 44px control floor, short-phone/listening fit repair, real Results probes, updated EN/TH how-to, two consecutive clean responsive sweeps, SHELL v69, Capacitor sync, and signed APK (`A819708…6488F`).
+- [x] Owner gate: because no physical phone is available, the owner accepted the existing Android emulator as the native release gate. The exact signed APK passed cold launch, first-run quest, Review Pouch retry, background/resume, settings, Results, portrait/landscape fit, and zero-error checks. Physical-only haptics and real-device performance remain unproven follow-ups; promotion to `main` is approved.
+
 ## i18n pass 2 (2026-07-08)
 
 Plan: [2026-07-08-i18n-pass-2.md](../superpowers/plans/2026-07-08-i18n-pass-2.md). Branch `feat/i18n-pass-2`.

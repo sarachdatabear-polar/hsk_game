@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { comboGlowTier, plaqueBounce, countUpValue, lungeOffset, bumpOffset, hurtSquash } from "../src/juice.js";
+import { comboGlowTier, plaqueBounce, countUpValue, lungeOffset, bumpOffset, hurtSquash, trailMoveX } from "../src/juice.js";
 
 describe("comboGlowTier", () => {
   it("maps combo to escalation tiers at 5/10/15 (PRD A3)", () => {
@@ -148,5 +148,14 @@ describe("hurtSquash", () => {
       expect(s.sx).toBeLessThanOrEqual(1.15 + 1e-9);
       expect(s.sy).toBeGreaterThanOrEqual(0.85 - 1e-9);
     }
+  });
+});
+
+describe("trailMoveX", () => {
+  it("moves smoothly between lantern nodes and lands exactly", () => {
+    expect(trailMoveX(60, 120, -1)).toBe(60);
+    expect(trailMoveX(60, 120, 240)).toBe(90);
+    expect(trailMoveX(60, 120, 480)).toBe(120);
+    expect(trailMoveX(60, 120, Infinity)).toBe(120);
   });
 });

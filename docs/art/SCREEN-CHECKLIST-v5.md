@@ -10,6 +10,14 @@ Shared checks for every screen:
 - [ ] All colors come from tokens (spot-check devtools: no `--edu-*`, no legacy hex)
 - [ ] Shadows warm ink, light from top-left; no glows, no gambling visual language
 
+Lantern Trail vibe-preservation gate:
+- [ ] Existing warm-daylight palette, LC fonts, paper plaques, brown outlines, and top-left lighting remain unchanged
+- [ ] Existing painted backdrops and owned cat skins remain the dominant visual identity
+- [ ] Raccoon remains cute and friendly; Review Guide framing does not introduce aggressive combat art
+- [ ] Lantern/orb effects use the current restrained storybook effect language, not neon arcade chrome
+- [ ] No replacement asset is required for migration; any new pose or postcard is optional polish
+- [ ] Side-by-side comparison still reads immediately as the same Lucky Cat HSK game
+
 | Screen | `#s-` id | Pass A1 | Notes |
 |---|---|---|---|
 | Home | `s-home` | [x] | shipped by Visual Slice v1 — re-verify only |

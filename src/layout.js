@@ -42,3 +42,51 @@ export function layout(w, h) {
     coinPx: 20 * S
   };
 }
+
+/* Display-ready geometry for one five-word Lantern Trail segment. Three
+   lantern nodes sit across the left half of the scene so the guide still has
+   a full, consistent approach lane from the right. A completed fifth word
+   holds the landmark pose; the following word starts a fresh local segment. */
+export function lanternTrailLayout(w, h, learned = 0, ground = 0, { startNextSegment = false } = {}) {
+  const safeLearned = Math.max(0, Math.floor(Number(learned) || 0));
+  const step = startNextSegment ? 0 : safeLearned === 0 ? 0 : ((safeLearned - 1) % 5) + 1;
+  const startX = w * 0.16;
+  const middleX = w * 0.31;
+  const endX = w * 0.46;
+  const pathY = h - ground + 8;
+  const thresholds = [1, 3, 5];
+  const xs = [startX, middleX, endX];
+  return {
+    step,
+    pathY,
+    catX: startX + (endX - startX) * (step / 5),
+    nodes: xs.map((x, index) => ({
+      x,
+      y: pathY,
+      lit: step >= thresholds[index],
+      landmark: index === xs.length - 1,
+    })),
+  };
+}
+
+const TRAIL_BACKDROPS = Object.freeze([
+  "bg-quest",
+  "bg-temple",
+  "bg-bamboo",
+  "bg-lantern-festival",
+  "bg-dragon-gate",
+]);
+
+export function lanternTrailBackdrop(chapter = 0, equippedBackdrop = "") {
+  if (equippedBackdrop) return `bg-${equippedBackdrop}`;
+  const safeChapter = Math.max(0, Math.floor(Number(chapter) || 0));
+  return TRAIL_BACKDROPS[safeChapter % TRAIL_BACKDROPS.length];
+}
+
+/* Scale the guide's walking speed by its remaining approach distance. This
+   keeps time-to-arrival stable while the cat visibly advances. */
+export function lanternApproachScale(spawnX, targetX, baselineTargetX) {
+  const baseline = Math.max(1, spawnX - baselineTargetX);
+  const remaining = Math.max(1, spawnX - targetX);
+  return remaining / baseline;
+}

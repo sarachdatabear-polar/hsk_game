@@ -63,10 +63,12 @@ wiring for these lands in Task 2):
 | `street.captionProgress` | {unlocked}/{total} buildings · {next} | {unlocked}/{total} อาคาร · {next} |
 | `street.next` | Next: Lv {lv} — {name} | ถัดไป: Lv {lv} — {name} |
 | `street.allUnlocked` | All buildings unlocked! | ปลดล็อกอาคารครบทุกหลังแล้ว! |
-| `howto.intro` | A lucky cat strolls in from the right carrying a `<b>`Chinese word`</b>` (with pinyin) on a flag. | แมวนำโชคเดินเข้ามาจากด้านขวา พร้อมธงที่มี`<b>`คำศัพท์จีน`</b>` (พร้อมพินอิน) |
-| `howto.tapMeaning` | Tap the `<b>`correct meaning`</b>` and the cat celebrates your answer. The farther away the cat still is, the bigger the practice bonus — and learning streaks build your score. | แตะ`<b>`ความหมายที่ถูกต้อง`</b>` แล้วแมวจะฉลองคำตอบของคุณ ยิ่งแมวอยู่ไกลเท่าไร โบนัสก็ยิ่งมากขึ้น — และสตรีคการเรียนรู้ช่วยเพิ่มคะแนน |
-| `howto.oneShotDetail` | A wrong tap costs a heart — no second guesses. The correct answer flashes green so you learn it for next time. | แตะผิดเสียหัวใจไปหนึ่งดวง — ไม่มีโอกาสแก้ตัว คำตอบที่ถูกต้องจะกะพริบสีเขียวให้คุณจำไว้ใช้ครั้งต่อไป |
-| `howto.tooSlow` | Too slow counts too: if the cat wanders all the way across without an answer, that costs a heart. Three hearts and the round is over. | ช้าเกินไปก็เสียหัวใจเหมือนกัน หากแมวเดินข้ามจอไปโดยไม่มีคำตอบ จะเสียหัวใจหนึ่งดวง ครบสามดวงจบรอบทันที |
+| `howto.intro` | Follow Lucky Cat along the `<b>`Lantern Trail`</b>`. Each stop presents a Chinese word with pinyin. | เดินไปกับแมวนำโชคตาม`<b>`เส้นทางโคมไฟ`</b>` แต่ละจุดจะแสดงคำศัพท์จีนพร้อมพินอิน |
+| `howto.tapMeaning` | Choose the `<b>`correct meaning`</b>` to light the next lantern. Consecutive first-try answers build Lucky Flow. | เลือก`<b>`ความหมายที่ถูกต้อง`</b>`เพื่อจุดโคมดวงถัดไป การตอบถูกครั้งแรกต่อเนื่องจะสร้างจังหวะโชคดี |
+| `howto.oneShotDetail` | A wrong tap reveals the answer and adds the word to your Review Pouch, so you can learn it when it returns. | หากแตะผิด เกมจะแสดงคำตอบและเพิ่มคำนั้นลงถุงทบทวน เพื่อให้คุณเรียนรู้อีกครั้งเมื่อคำนั้นกลับมา |
+| `howto.tooSlow` | If time runs out, the answer is revealed and the word returns soon. Your Word Quest continues until every planned word is learned. | หากหมดเวลา เกมจะแสดงคำตอบและนำคำนั้นกลับมาในไม่ช้า ภารกิจคำศัพท์จะดำเนินต่อจนคุณเรียนรู้ครบทุกคำที่วางไว้ |
+| `howto.reviewChallenge` | Every tenth planned word becomes a `<b>`two-step Review Challenge`</b>`: meaning first, then reverse recall. | ทุกคำลำดับที่สิบจะเป็น`<b>`ด่านทบทวนสองขั้น`</b>`: เลือกความหมายก่อน แล้วนึกคำตอบย้อนกลับ |
+| `howto.results` | Finish every planned word to receive a results postcard with learned words, extra practice, rewards, and your next review. | เรียนรู้คำที่วางไว้ให้ครบเพื่อรับโปสการ์ดสรุปคำที่เรียน คำที่ต้องฝึกเพิ่ม รางวัล และการทบทวนครั้งถัดไป |
 | `howto.everyWord` | Every word shows `<b>`pinyin`</b>` and can be `<b>`heard aloud`</b>` — during the game, in flashcards, and in the missed-words review. | ทุกคำแสดง`<b>`พินอิน`</b>`และสามารถ`<b>`ฟังเสียงได้`</b>` — ทั้งระหว่างเล่นเกม ในบัตรคำ และตอนทบทวนคำที่ตอบผิด |
 | `howto.learnMode` | `<b>`Learn mode`</b>` drills the same word pool as flashcards first, so you can study, then play. | `<b>`โหมดเรียนรู้`</b>`ฝึกคลังคำเดียวกับบัตรคำก่อน เพื่อให้คุณได้ทบทวนก่อนเริ่มเล่น |
 | `item.midnight` | Midnight | เที่ยงคืน |

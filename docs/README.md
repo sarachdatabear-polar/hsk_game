@@ -21,8 +21,10 @@ Finished and superseded docs move to [`archive/`](archive/README.md) (run
 - [ASSET-INVENTORY.md](art/ASSET-INVENTORY.md) — asset audit baseline
 
 ## 📌 `planning/` — Living checklists & status
+- [2026-07-13-lantern-trail-migration-plan.md](planning/2026-07-13-lantern-trail-migration-plan.md) — release approved after automated and native-emulator gates; promotion to `main` and live verification pending
+- [2026-07-12-coin-purchase-golive.md](planning/2026-07-12-coin-purchase-golive.md) — Phase 1 merged dark; real-provider Phase 2 and owner gates remain pending
+- [2026-07-09-duolingo-comparison.md](planning/2026-07-09-duolingo-comparison.md) — evergreen verified comparison and adoption reference
 - [V2-EXECUTION-PLAN.md](planning/V2-EXECUTION-PLAN.md) — cross-session technical log across v2–v7
-- [ux-audit-2026-07-09.md](planning/ux-audit-2026-07-09.md) — Chromium screenshot UX/UI audit; shipped fixes + deferred polish (tracked in STATUS Planned)
 
 ## 🔧 `build/` — Build & release
 - [ANDROID_BUILD.md](build/ANDROID_BUILD.md) — Capacitor → APK build/signing guide
