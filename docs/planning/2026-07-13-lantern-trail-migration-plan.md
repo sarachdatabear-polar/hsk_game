@@ -1,20 +1,20 @@
 # Lantern Trail Migration Plan
 
-**Status:** In progress — Phases 0–4 merged to `development` through PR #91 (`f6b2489`); Phases 5–6 remain pending
+**Status:** In progress — Phases 0–5 merged to `development` through PR #93 (`3d3f821`); Phase 6 verification and release remains pending
 **Product direction:** Replace the visible battle with a continuous Word Quest while reusing the current art and learning systems.  
 **Primary rule:** A finite session length means words successfully learned, not attempts made. A missed word returns until it is answered correctly.
 
 ### Implementation checkpoint (Codex + Claude workflow, 2026-07-13)
 
-- [x] Phase 0 characterization and regression coverage retained; current merged build passes 1,811 tests and validates all 95 manifest assets.
+- [x] Phase 0 characterization and regression coverage retained; current merged build passes 1,827 tests and validates all 95 manifest assets.
 - [x] Phase 1 deep `quest-session.js` module: finite learned-word targets, exhaustive custom/intro decks, Endless mode, spaced retries, Review Pouch state, every-10th Review Challenge, five-word milestones, and twenty-word chapters.
 - [x] Phase 2 integration behind the current visual shell: hearts/lives removed, misses and timeouts requeue, HUD reports `Review N` and `Learned N/target`, existing warm art and animation remain intact.
 - [x] Phase 3 semantic page layout and purpose/lantern bar; merged through PR #90 (`34b7ab3`).
 - [x] Phase 4 visible three-node Lantern Trail, advancing cat, friendly guide, lucky-charm feedback, and 20-word existing-backdrop rotation; merged through PR #91 (`f6b2489`).
-- [ ] Phase 5 Review Challenge/results/reward presentation and economy-rule audit.
+- [x] Phase 5 semantic Review Challenge, postcard results/rewards, missed-word recap, next-review hook, and retry-economy protection; merged through PR #93 (`3d3f821`).
 - [ ] Phase 6 full device verification, SHELL bump, and release to `main`.
 
-Do not describe the migration as fully shipped: `main` still serves the pre-migration release. `development` contains the coherent Word Quest and Lantern Trail through Phase 4, but Phase 5 results/rewards and the Phase 6 device/release gate are still required.
+Do not describe the migration as fully shipped: `main` still serves the pre-migration release. `development` contains the complete Word Quest and Lantern Trail through Phase 5, but the Phase 6 device/release gate is still required.
 
 ## 0. Decisions locked (grilled with Jordan, 2026-07-13)
 
@@ -413,6 +413,8 @@ Work:
 - Preserve Smart Review, first-boss sticker fact, daily quests, and reward policy.
 
 Exit: a full quest has a coherent start, middle, challenge, finish, and tomorrow hook.
+
+Checkpoint (2026-07-13): complete in PR #93 (`3d3f821`). The merged gate is 62 test files / 1,827 tests, a clean production build, and 95 validated manifest assets. A six-word first-run browser playthrough with misses reached the results postcard with no console errors; the retry path granted learning progress without coin-score or Lucky Flow inflation.
 
 ### Phase 6 — Verification and release
 

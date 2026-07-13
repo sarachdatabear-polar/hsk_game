@@ -21,7 +21,7 @@ Finished and superseded docs move to [`archive/`](archive/README.md) (run
 - [ASSET-INVENTORY.md](art/ASSET-INVENTORY.md) — asset audit baseline
 
 ## 📌 `planning/` — Living checklists & status
-- [2026-07-13-lantern-trail-migration-plan.md](planning/2026-07-13-lantern-trail-migration-plan.md) — active migration; Phases 0–4 merged, Review Challenge/results and release gates pending
+- [2026-07-13-lantern-trail-migration-plan.md](planning/2026-07-13-lantern-trail-migration-plan.md) — active migration; Phases 0–5 merged, full responsive/device verification and release pending
 - [2026-07-12-coin-purchase-golive.md](planning/2026-07-12-coin-purchase-golive.md) — Phase 1 merged dark; real-provider Phase 2 and owner gates remain pending
 - [2026-07-09-duolingo-comparison.md](planning/2026-07-09-duolingo-comparison.md) — evergreen verified comparison and adoption reference
 - [V2-EXECUTION-PLAN.md](planning/V2-EXECUTION-PLAN.md) — cross-session technical log across v2–v7
