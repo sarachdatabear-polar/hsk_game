@@ -48,6 +48,28 @@ export async function syncStreakReminder(plan, title, body) {
   } catch (e) { /* notification failure must never break gameplay */ }
 }
 
+// Lapsed-streak "come back" local notification (re-engagement). Web/PWA: inert.
+// Distinct id (1002) from the same-day streak-saver (1001) so the two never
+// cancel each other. Rescheduled on every sync for `afterDays` out at REMINDER_HOUR
+// (19:00 local, via plan.hour), so it only fires if the player is genuinely absent
+// that long. Like syncStreakReminder it only CHECKS the existing grant — the
+// foreground prompt lives in main.js.
+export async function syncReengageReminder(plan, title, body) {
+  if (!isNative()) return;
+  const LN = plugins().LocalNotifications;
+  if (!LN) return;
+  try {
+    await LN.cancel({ notifications: [{ id: 1002 }] });
+    if (!plan.schedule) return;
+    const perm = await LN.checkPermissions();
+    if (perm.display !== "granted") return;
+    const at = new Date();
+    at.setDate(at.getDate() + plan.afterDays);
+    at.setHours(plan.hour, 0, 0, 0);   // civilized time (REMINDER_HOUR via the plan), not a raw +72h stamp
+    await LN.schedule({ notifications: [{ id: 1002, title, body, schedule: { at } }] });
+  } catch (e) { /* notification failure must never break gameplay */ }
+}
+
 // Foreground POST_NOTIFICATIONS prompt. Call this while the app is visible
 // (during play) so Android 13+ actually shows the dialog. Idempotent: once the
 // user has decided, Capacitor returns the status without re-showing. Returns
