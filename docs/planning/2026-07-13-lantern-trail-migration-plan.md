@@ -445,6 +445,10 @@ Release:
 - sync Capacitor and build the Android release candidate;
 - compare completion, wrong-answer recovery, delayed recall, and D1/D7 return after release.
 
+Release-candidate checkpoint (2026-07-13): automated work is complete on `codex/lantern-trail-phase6-release`. The final bundle passes 62 files / 1,827 tests and 95 asset checks. Two consecutive permanent sweeps pass all 10 base viewports, both listening probes, and real five-word Results postcards (with an intentional miss) at 360×640, 390×844, and 640×360. EN/TH how-to text and the final PWA cache are updated to SHELL v69. Capacitor sync and the signed APK build succeed; `apksigner` verifies the existing NorthBear certificate. The APK SHA-256 is `A81970806068EDF0FD436A9B000CF228844081CFDB0EDB264BE3A6CB1526488F`.
+
+Remaining release gate: no Android device was connected, so the manual mid-range-phone matrix above is not yet complete. Keep Phase 6 and the migration open, and do not merge to `main`, until the owner confirms that playthrough.
+
 ## 7. Acceptance Criteria
 
 ### Layout

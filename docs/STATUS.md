@@ -1,7 +1,7 @@
 # Lucky Cat HSK — Status
 
 **Last updated:** 2026-07-13
-**TL;DR:** `main` is live at **SHELL v66**. `development` now contains Lantern Trail Phases 0–5: the continuous learning rules, Word Quest hierarchy, existing-asset trail, Review Challenge, and results/rewards are merged and verified. Only the Phase 6 release gate remains intentionally unshipped.
+**TL;DR:** `main` is live at **SHELL v66**. `development` contains Lantern Trail Phases 0–5, and the Phase 6 release-candidate branch is green at **SHELL v69**. The signed Android candidate is ready; only the required physical-phone playthrough remains before release.
 
 ## Where the game is
 
@@ -9,7 +9,7 @@
 |---|---|
 | **Live on `main` / GitHub Pages** | SHELL **v66** (PR #89, 2026-07-12): retention/auth/cloud-save rounds, content repair, battle-interface Waves 1–2, bug-hunt fixes, and coin-purchase Phase 1 shipped dark behind its provider gate. |
 | **Merged to `development`, unreleased** | **Lantern Trail Phases 0–5**: continuous quest core (`7d0aded`), semantic Word Quest UI (PR #90), existing-asset Lantern Trail rendering (PR #91), and Review Challenge/results/rewards with retry-economy protection (PR #93, merge `3d3f821`). `development` carries SHELL **v68**, but none of this migration is live until Phase 6 passes. |
-| **On feature branches** | `docs/plan-refresh-2026-07-13-phase5` records the Phase 5 merge. Phase 6 verification and release starts from updated `development` after this docs-only refresh. |
+| **On feature branches** | `codex/lantern-trail-phase6-release` contains the v69 release candidate: 44px accessibility fixes, mid-short/listening fit fixes, real Results viewport gates, updated EN/TH how-to text, and a signed Android APK. Automated gates pass; no physical device was connected for the final owner playthrough. |
 
 ## Done
 
@@ -50,14 +50,14 @@
 
 ## In progress
 
-- **Lantern Trail migration:** Phases 0–5 are merged to `development`. Phase 6 now owns the full responsive/device verification, final PWA shell bump, Android release candidate, and release to `main`. See the [migration plan](planning/2026-07-13-lantern-trail-migration-plan.md).
-- **Docs refresh:** `docs/plan-refresh-2026-07-13-phase5` records PR #93 and the Claude + Codex handoff. No gameplay changes live on this docs branch.
+- **Lantern Trail migration:** the Phase 6 web/PWA and Android release candidate is ready on `codex/lantern-trail-phase6-release`. Two consecutive 10-viewport + listening + real Results sweeps pass, as do 1,827 tests and 95 assets. The remaining gate is a manual playthrough of the signed APK on a mid-range Android phone. See the [migration plan](planning/2026-07-13-lantern-trail-migration-plan.md).
+- **Release hold:** do not merge to `main` until the owner confirms the physical-phone matrix. The candidate APK is `dist-apk/LuckyCatHSK-1.0.0.apk` (SHA-256 `A81970806068EDF0FD436A9B000CF228844081CFDB0EDB264BE3A6CB1526488F`).
 
 ## Planned
 
 Ordered by priority. `(owner)` = needs a human action Claude can't do; `(needs direction)` = Claude can build once you pick an approach; `(Claude-ready)` = actionable now.
 
-1. **Finish Lantern Trail Phase 6** `(Claude/Codex + owner device gate)` — run the full responsive and Android playtest matrix, build the release candidate, then release the complete migration to `main`. Do not ship the current partial migration alone.
+1. **Finish Lantern Trail Phase 6** `(owner device gate, then Claude/Codex)` — install the signed candidate on a mid-range phone, complete the remaining manual matrix, then release the complete migration to `main`. Do not ship before that confirmation.
 2. **Coin purchase Phase 2 / monetization production gates** `(owner + implementation)` — configure the real provider/products and closed-track testing, then implement the deferred provider/join-key/fresh-cursor gates in the [go-live plan](planning/2026-07-12-coin-purchase-golive.md). See also the [PRD](prd/PRD-monetization-and-production.md).
 3. **Native Thai review of UI strings** `(owner)` — including later account, IAP, and Lantern Trail terminology ([i18n-translation-review.md](i18n/i18n-translation-review.md)).
 4. **Later roadmaps** — HSK 3.0 content refresh, social layer, notifications/widget, and Android release refresh ([ANDROID_BUILD.md](build/ANDROID_BUILD.md)).
