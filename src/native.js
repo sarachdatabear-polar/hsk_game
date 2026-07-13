@@ -50,10 +50,10 @@ export async function syncStreakReminder(plan, title, body) {
 
 // Lapsed-streak "come back" local notification (re-engagement). Web/PWA: inert.
 // Distinct id (1002) from the same-day streak-saver (1001) so the two never
-// cancel each other. Rescheduled on every sync for `afterDays` out at 19:00
-// local, so it only fires if the player is genuinely absent that long. Like
-// syncStreakReminder it only CHECKS the existing grant — the foreground prompt
-// lives in main.js.
+// cancel each other. Rescheduled on every sync for `afterDays` out at REMINDER_HOUR
+// (19:00 local, via plan.hour), so it only fires if the player is genuinely absent
+// that long. Like syncStreakReminder it only CHECKS the existing grant — the
+// foreground prompt lives in main.js.
 export async function syncReengageReminder(plan, title, body) {
   if (!isNative()) return;
   const LN = plugins().LocalNotifications;

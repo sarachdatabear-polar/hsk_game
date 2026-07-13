@@ -123,3 +123,11 @@ minimum). The call site in `main.js` (`renderScope`) does not yet pass a
 literal text `{min}` unreplaced if exercised in the running app; it is not
 covered by any existing runtime test, so `npm test` stays green, but this is
 a known transitional gap the Task 2 agent must close first.
+
+New strings awaiting native-speaker review (re-engagement notification —
+2026-07-13):
+
+| Key | EN | TH |
+| --- | --- | --- |
+| `notify.comeback.title` | Your lucky cat misses you 🐱 | เจ้าแมวนำโชคคิดถึงคุณนะ 🐱 |
+| `notify.comeback.body` | You were on a {n}-day roll — jump back in and get it going again! | คุณทำสตรีคได้ตั้ง {n} วัน — กลับมาลุยต่อกันเลย! |
