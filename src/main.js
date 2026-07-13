@@ -5,11 +5,11 @@ import { gradeTyped, syllables, syllableTones, letters } from "./pinyin.js";
 import { clozeFor } from "./cloze.js";
 import { tonePool, toneQuestion, gradeTone } from "./tone_gym.js";
 import { killPoints } from "./scoring.js";
-import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus, impactBurst } from "./fx.js";
+import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus, impactBurst as lanternSparkBurst } from "./fx.js";
 import { sfx, setSfxVolume, clampVol } from "./sfx.js";
 import { drawCat } from "./cat.js";
-import { drawRaccoon, drawHpBar, RACCOON_HEIGHT } from "./raccoon.js";
-import { uiScale, layout } from "./layout.js";
+import { drawRaccoon } from "./raccoon.js";
+import { uiScale, layout, lanternTrailLayout, lanternTrailBackdrop, lanternApproachScale } from "./layout.js";
 import { loadSprites, sprite } from "./sprites.js";
 import { nineSliceRects } from "./nineslice.js";
 import { preload as preloadAssets } from "./assets.js";
@@ -30,7 +30,7 @@ import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
 import { navVisibleOn, activeTabFor } from "./nav.js";
 import { comboMultiplier, comboFires, roundProgress } from "./hud.js";
-import { comboGlowTier, plaqueBounce, countUpValue, lungeOffset } from "./juice.js";
+import { comboGlowTier, plaqueBounce, countUpValue, trailMoveX } from "./juice.js";
 import { isFirstRun, introDeck } from "./firstrun.js";
 import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue } from "./stickers.js";
 import { journeyNodes, currentNodeId } from "./journey.js";
@@ -1224,6 +1224,30 @@ $("#tones-replay").onclick = ()=>{ if(TG.q) speak(TG.q.word.h); };   // never lo
    Correct answers light the trail; missed words return through the Review Pouch. */
 const cv = $("#cv"), ctx = cv.getContext("2d");
 const B = {on:false};
+function trailView(){
+  const learned = B.quest ? B.quest.view().learned : 0;
+  const startNextSegment = learned > 0 && learned % 5 === 0
+    && !!(B.zombie?.trailSegmentStart || B.reveal?.trailSegmentStart);
+  return lanternTrailLayout(B.w || 0, B.h || 0, learned, B.L ? B.L.ground : 0, { startNextSegment });
+}
+function guideTargetX(){
+  return trailView().catX + (B.L ? B.L.catHalf : 0);
+}
+function renderedTrailCatX(now){
+  const target = trailView().catX;
+  if(!B.trailMove || REDUCED_MOTION) return target;
+  const elapsed = now - B.trailMove.at;
+  const x = trailMoveX(B.trailMove.from, B.trailMove.to, elapsed);
+  if(elapsed >= 480) B.trailMove = null;
+  return x;
+}
+function refreshGuideSpeed(){
+  if(!B.speedBase || !B.w || !B.L) return;
+  const spawnX = B.w + 30;
+  const baselineTarget = B.L.mascotX + B.L.catHalf;
+  const scale = lanternApproachScale(spawnX, guideTargetX(), baselineTarget);
+  B.speed = B.speedBase * (B.w/380) * scale;
+}
 function sizeCanvas(){
   // CSS drives the box: .cv-wrap (flex:1) fills between HUD and options, and
   // #cv fills that box exactly (no forced aspect ratio). We just read the
@@ -1235,7 +1259,7 @@ function sizeCanvas(){
   ctx.setTransform(dpr,0,0,dpr,0,0);
   B.w = w; B.h = h;
   B.S = uiScale(w,h); B.L = layout(w,h);
-  if(B.speedBase) B.speed = B.speedBase * (B.w/380);
+  refreshGuideSpeed();
 }
 const cvRO = new ResizeObserver(()=>{ if(B.on) sizeCanvas(); });
 cvRO.observe(cv);
@@ -1324,8 +1348,8 @@ function startBattle(mode){
   battleDeckOverride = null;
   B.smartRound = B.customDeck && smartDeckNext;   // full-rules smart review (owner: perfect bonus yes, best-score no)
   smartDeckNext = false;
-  B.zombie = null; B.proj = null; B.parts = []; B.flash = 0; B.screenShake = 0; B.feedback = null;
-  B.hitFlash = null; B.plaqueHitAt = 0; B.lungeAt = 0;
+  B.zombie = null; B.proj = null; B.parts = []; B.feedback = null;
+  B.hitFlash = null; B.plaqueHitAt = 0; B.trailMove = null;
   B.reveal = null;   // T6: resolved-word snapshot for the persistent reveal-window plate/strip
   B.bossDefeated = false;   // session fact for the first-boss sticker (B2)
   B.floats = []; B.mascotHopUntil = 0;
@@ -1436,7 +1460,7 @@ function updateComboStrip(){
    deadline the battle loop reads must be shifted forward by the pause duration
    on resume, or it "expires" while the player was looking at the overlay:
    B.nextAt, B.dyingUntil, B.mascotHopUntil, B.feedback.until, B.zombie.wrongUntil,
-   B.hitFlash.until, B.plaqueHitAt, B.lungeAt. */
+   B.hitFlash.until, B.plaqueHitAt, B.trailMove.at. */
 const PAUSE_TOGGLES = [
   { icon:"bell", iconOff:"bell-off", labelKey:"home.sound", isOn:()=>sfx.enabled, toggle:()=>toggleSfx() },
   { icon:"sound", iconOff:"muted", labelKey:"battle.wordAudio", isOn:()=>settings.autoSpeak,
@@ -1508,7 +1532,7 @@ function resumeBattle(){
   if(B.bossStageAt) B.bossStageAt += shift;
   if(B.hitFlash) B.hitFlash.until += shift;
   if(B.plaqueHitAt) B.plaqueHitAt += shift;
-  if(B.lungeAt) B.lungeAt += shift;
+  if(B.trailMove) B.trailMove.at += shift;
   B.paused = false;
   keepAwake(true);
   $("#pause-overlay").classList.remove("on");
@@ -1551,9 +1575,11 @@ function spawnZombie(){
   if(!encounter) return false;
   const w = encounter.word;
   B.reveal = null;   // T6: new word incoming — drop the previous word's reveal-window snapshot
-  // hp is cosmetic-only (drives the floating HP bar): 1 = full, drops to 0.5
-  // once a boss's first stage is passed, animates to 0 on the kill.
-  B.zombie = {w, encounter, x: B.w+30, state:"walk", hp: 1};
+  const learnedAtStart = B.quest.view().learned;
+  B.zombie = {
+    w, encounter, x:B.w+30, state:"walk",
+    trailSegmentStart: learnedAtStart > 0 && learnedAtStart % 5 === 0,
+  };
   B.spawned++; B.locked = false;
   if(encounter.reviewChallenge){
     B.zombie.boss = true; B.zombie.stage = "meaning";
@@ -1580,7 +1606,7 @@ function spawnZombie(){
   // per-word ramp on the unscaled base, then re-derive the screen-scaled
   // speed (a plain B.speed *= 1.03 would be wiped by the next resize)
   if(encounter.origin === "fresh") B.speedBase *= 1.03;
-  B.speed = B.speedBase * (B.w/380);
+  refreshGuideSpeed();
   return true;
 }
 // v6p2: typed questions slow the walker — recall under pressure, not panic.
@@ -1778,7 +1804,6 @@ function answer(btn, o){
     // Freeze the walk (not the render state, so the sprite keeps animating)
     // so the brief pause can't cost a free bite.
     z.frozen = true;
-    z.hp = 0.5;   // cosmetic HP bar: half-depleted after stage 1 (meaning)
     btn.classList.add("good");
     lockOptions();
     // Deadline checked in loop() rather than a raw setTimeout, so a pause
@@ -1794,6 +1819,8 @@ function answer(btn, o){
   // from here on (drawWordPlate reads z.revealed, not the answer state).
   z.revealed = true;
   if(correct){
+    const trailBefore = trailView();
+    const resolvedAt = performance.now();
     z.frozen = true;   // coin is in flight — don't let the walker cross the bite line first (race with killZombie)
     B.combo++;
     questEvent("correct");
@@ -1802,17 +1829,21 @@ function answer(btn, o){
     const killXp = boss ? 5 : 1;   // boss final kill is worth +5 total, not +1 then +5
     addXp(killXp);
     // farther kill = bigger bonus (replaces the old time bonus)
-    const biteX = B.L.mascotX + B.L.catHalf;
+    const biteX = trailBefore.catX + B.L.catHalf;
     const distFrac = Math.max(0, z.x - biteX) / (B.w - biteX);
     B.score += boss ? bossPoints(killPoints(B.combo, distFrac)) : killPoints(B.combo, distFrac);
     sfx.kill(); hapticKill(); if (B.combo >= 3) sfx.combo(B.combo);
     btn.classList.add("good", "stamp", "stamp-good");
     lockOptions();
-    B.proj = {x:B.L.mascotX+16*B.S, y:B.h-B.L.ground-30*B.S};   // coin flies at the cat
-    B.lungeAt = performance.now();   // T10: cat attack lunge — at coin launch, so the attack reads as causing the hit
+    // A gold lucky charm carries the successful recall from the cat to the
+    // guide. The internal projectile field stays until the later cleanup.
+    B.proj = {x:trailBefore.catX+16*B.S, y:B.h-B.L.ground-30*B.S};
     // (word audio fires once, on spawn — no replay on the answer tap)
     if(boss){ noteAnswer(z.w.h, true); B.bossDefeated = true; }   // both stages passed
     syncQuestOutcome(true, false);
+    const trailAfter = trailView();
+    B.trailMove = { from:trailBefore.catX, to:trailAfter.catX, at:resolvedAt };
+    refreshGuideSpeed();
     const gy = B.h-B.L.ground;
     // boss final kill gets the reference's CRITICAL! starburst (A3); the
     // 10-combo milestone below may upgrade a normal kill to critical too.
@@ -1836,7 +1867,7 @@ function answer(btn, o){
     showQuestFeedback("learned");
   }else{
     // A wrong tap reveals the answer, then returns the word to the review pouch.
-    B.reveal = { w: z.w, boss: !!boss, format: z.format || "meaning" };   // T6: reveal-window snapshot
+    B.reveal = { w:z.w, boss:!!boss, format:z.format || "meaning", trailSegmentStart:!!z.trailSegmentStart };   // T6: reveal-window snapshot
     B.combo = 0;
     const free = !!z.introFree;   // first-ever attempt of a new format is gently introduced
     sfx.wrong(); if(!free) hapticWrong();
@@ -1864,23 +1895,21 @@ function killZombie(z){
   // (not in answer()'s correct branch) because the word isn't actually
   // resolved until the coin lands and this fires; z itself goes away (state
   // "happy" -> scheduleNext nulls B.zombie) well before REVEAL_MS is up.
-  B.reveal = { w: z.w, boss: !!z.boss, format: z.format || "meaning" };
+  B.reveal = { w:z.w, boss:!!z.boss, format:z.format || "meaning", trailSegmentStart:!!z.trailSegmentStart };
   const gy = B.h-B.L.ground;
-  // A3 enemy hit flash: quick warm-white pulse at the raccoon (drawn in draw(),
-  // just before the feedback layer). Absolute deadline — shifted on resume.
+  // The lucky charm arriving lights a quick warm glow behind the guide.
   B.hitFlash = {x:z.x, y:gy-40*B.S, until:fxUntil(150)};
-  B.parts.push(...coinBurst(z.x, gy-16, !!z.boss, shopState.effect));   // bosses pop a bigger, coinier burst; effect pack swaps the look
-  B.parts.push(...impactBurst(z.x, gy-16));   // T10: sun-yellow/cream starbits — "the attack connected"
+  B.parts.push(...coinBurst(z.x, gy-16, !!z.boss, shopState.effect));
+  B.parts.push(...lanternSparkBurst(z.x, gy-16));
   z.state = "happy";
-  z.happyAt = performance.now();   // raccoonBob("happy") wants time-since-defeat, not the raw rAF t
-  z.hpAtKill = z.hp;   // draw() lerps hp -> 0 over the happy/dying window from this
+  z.happyAt = performance.now();
   B.dyingUntil = performance.now() + DYING_MS;
   B.proj = null;
   B.mascotHopUntil = performance.now()+400;   // little victory hop for the mascot
 }
 function bite(timedOut){
   const z = B.zombie;
-  B.reveal = { w: z.w, boss: !!z.boss, format: z.format || "meaning" };   // T6: reveal-window snapshot
+  B.reveal = { w:z.w, boss:!!z.boss, format:z.format || "meaning", trailSegmentStart:!!z.trailSegmentStart };   // T6: reveal-window snapshot
   if(timedOut){
     // boss word already counted its one attempt on the first tap (see answer());
     // only count here if it timed out before ever being tapped.
@@ -1928,11 +1957,11 @@ function loop(now){
     if(z.state==="walk"){
       if(!z.frozen){
         z.x -= B.speed*(z.boss?bossSpeedFactor:1)*(z.format==="typed"?TYPED_WALK_FACTOR:z.format==="cloze"?CLOZE_WALK_FACTOR:1)*dt;
-        if(z.x <= B.L.mascotX+B.L.catHalf) bite(true);          // too slow — cat got there
+        if(z.x <= guideTargetX()) bite(true);                    // time ran out — guide reached the cat
       }
     }else if(z.state==="dash"){
       z.x -= B.speed*7*dt;
-      if(z.x <= B.L.mascotX+B.L.catHalf) bite(false);         // legacy: never assigned, kept for safety
+      if(z.x <= guideTargetX()) bite(false);                    // legacy: never assigned, kept for safety
     }else if(z.state==="happy" && now >= B.dyingUntil){
       scheduleNext(REVEAL_MS - DYING_MS);   // kill → ~REVEAL_MS total before the next word
     }else if(z.state==="wrong"){
@@ -1948,8 +1977,6 @@ function loop(now){
   B.parts = B.parts.filter(p=>p.life>0);
   for(const f of B.floats){ f.y += f.vy*dt; f.life -= dt; }
   B.floats = B.floats.filter(f=>f.life>0);
-  B.flash = Math.max(0, B.flash-2.2*dt);
-  B.screenShake = Math.max(0, (B.screenShake || 0)-4*dt);
   draw(now);
   requestAnimationFrame(loop);
 }
@@ -2024,7 +2051,8 @@ function paintBackdrop(c, w, h, gy, style, now=0){
   }
 }
 function drawBackdrop(gy){
-  const selected = shopState.backdrop ? `bg-${shopState.backdrop}` : "bg-quest";
+  const chapter = B.quest ? B.quest.view().chapter : 0;
+  const selected = lanternTrailBackdrop(chapter, shopState.backdrop);
   const img = sprite(selected);
   if(img) drawCoverImage(ctx, img, 0, 0, B.w, B.h);
   else if(shopState.backdrop) paintBackdrop(ctx, B.w, B.h, gy, shopState.backdrop, performance.now());
@@ -2041,16 +2069,52 @@ function drawBackdrop(gy){
 // Boss stays at CHAR_BASE*1.5 on top of this, unchanged.
 const CHAR_SCALE = 1.4;
 const CHAR_BASE = 0.9 * CHAR_SCALE;
+function drawLanternTrail(trail, now){
+  if(!trail.nodes.length) return;
+  const first = trail.nodes[0], last = trail.nodes[trail.nodes.length-1];
+  const catX = renderedTrailCatX(now);
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "rgba(46,42,36,.42)";
+  ctx.lineWidth = Math.max(3, 5*B.S);
+  ctx.beginPath(); ctx.moveTo(first.x, trail.pathY); ctx.lineTo(last.x, trail.pathY); ctx.stroke();
+  ctx.strokeStyle = "rgba(242,188,87,.92)";
+  ctx.lineWidth = Math.max(2, 3*B.S);
+  ctx.beginPath(); ctx.moveTo(first.x, trail.pathY); ctx.lineTo(catX, trail.pathY); ctx.stroke();
+
+  const lanternImg = sprite("lantern");
+  for(const node of trail.nodes){
+    const scale = node.landmark ? 1.12 : 1;
+    const lw = 24 * B.L.mascotS * scale;
+    const lh = lw * 1.45;
+    const ly = trail.pathY - lh - 7*B.S;
+    if(node.lit){
+      const glow = ctx.createRadialGradient(node.x, ly+lh*.5, 2, node.x, ly+lh*.5, lw*1.45);
+      glow.addColorStop(0, "rgba(255,225,132,.58)");
+      glow.addColorStop(1, "rgba(242,188,87,0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(node.x, ly+lh*.5, lw*1.45, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = node.lit ? 1 : .34;
+    if(lanternImg){
+      ctx.drawImage(lanternImg, node.x-lw/2, ly, lw, lh);
+    }else{
+      ctx.fillStyle = node.lit ? "#F2BC57" : "#C8BFAE";
+      ctx.beginPath(); ctx.ellipse(node.x, ly+lh*.48, lw*.38, lh*.34, 0, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = "#846043"; ctx.lineWidth = Math.max(1, B.S);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = node.lit ? "#F2BC57" : "#D5C7AC";
+    ctx.strokeStyle = "rgba(46,42,36,.58)";
+    ctx.lineWidth = Math.max(1, 1.5*B.S);
+    ctx.beginPath(); ctx.arc(node.x, trail.pathY, (node.landmark?6:5)*B.S, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  }
+  ctx.restore();
+}
 function draw(now){
   ctx.clearRect(0,0,B.w,B.h);
   const gy = B.h - B.L.ground;
-  const shake = B.screenShake > 0
-    ? Math.sin(now * 0.08) * 5 * B.S * B.screenShake
-    : 0;
-  if(shake){
-    ctx.save();
-    ctx.translate(shake, 0);
-  }
   drawBackdrop(gy);
   // T7/spec §4 last bullet: a single very-light warm wash under the ground
   // band ONLY (not the sky/scenery above) — grounds the bigger characters
@@ -2060,6 +2124,8 @@ function draw(now){
   // ground line — subtle gold
   ctx.strokeStyle = "rgba(245,197,24,.35)"; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(0,gy+12); ctx.lineTo(B.w,gy+12); ctx.stroke();
+  const trail = trailView();
+  drawLanternTrail(trail, now);
   ctx.textAlign = "center";
   // player cat (left side, was the maneki) — shop skin + growth accessories +
   // kitten companion now live here instead of on the walker (M5 role swap).
@@ -2069,26 +2135,11 @@ function draw(now){
   const hopping = B.mascotHopUntil && now < B.mascotHopUntil;   // little victory hop after a kill
   const playerState = hopping ? "happy" : "walk";
   const catScale = CHAR_BASE*B.L.mascotS;
-  // Correct answers give the cat a brief attack lunge. Reduced motion feeds
-  // an inactive timeline, preserving the same anchored draw without motion.
-  const lunge = lungeOffset(REDUCED_MOTION ? Infinity : now - (B.lungeAt || -Infinity));
-  const catX = B.L.mascotX + lunge.dx, catY = gy + 6*B.S;
-  ctx.save();
-  ctx.translate(catX, catY);
-  ctx.scale(lunge.sx, lunge.sy);
-  ctx.translate(-catX, -catY);
+  const catX = renderedTrailCatX(now), catY = gy + 6*B.S;
   drawCat(ctx, catX, catY, now, playerState, SKIN_PALETTES[shopState.skin], catScale, B.acc, false);
-  ctx.restore();
-  // catHalf grew with mascotS while mascotX stayed on S, so clamp the kitten on-canvas.
-  const kittenX = Math.max(16*B.L.mascotS + 2, B.L.mascotX - B.L.catHalf);
+  // Companion follows the cat between lantern nodes and stays on-canvas.
+  const kittenX = Math.max(16*B.L.mascotS + 2, catX - B.L.catHalf);
   if(B.hasKitten) drawCat(ctx, kittenX, gy + 6*B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.L.mascotS, [], false);
-  // idle coin icon (left of the player) - coin sprite or vector fallback
-  const coinImgIdle = sprite("coin");
-  if(coinImgIdle){
-    ctx.drawImage(coinImgIdle, 4*B.S, gy-22*B.S, B.L.coinPx, B.L.coinPx);
-  }else{
-    drawCoinMark(ctx, 16*B.S, gy-10*B.S, 9*B.S);
-  }
   const z = B.zombie;
   if(z){
     // word + pinyin + (post-reveal) translation, fixed at the center of the
@@ -2106,10 +2157,8 @@ function draw(now){
     // a few hundred ms before scheduleNext() nulls it. Draw it here too so it
     // doesn't pop in partway through (plate + strip visible the WHOLE window).
     if(z.revealed) drawRecapStrip(z.w, now);
-    // A3 enemy hit flash: expanding gold backlight glow at the kill (set in
-    // killZombie), drawn BEFORE the raccoon sprite so it reads as a glow
-    // behind the enemy rather than a wash over it (it used to paint on top,
-    // which bleached the raccoon into a "ghost" at the kill moment).
+    // The arriving lucky charm blooms into a warm lantern glow behind the
+    // guide. It is drawn before the sprite so the character stays crisp.
     if(B.hitFlash){
       const leftF = B.hitFlash.until - performance.now();
       if(leftF <= 0){ B.hitFlash = null; }
@@ -2124,29 +2173,14 @@ function draw(now){
         ctx.restore();
       }
     }
-    // Kill feedback stamp (paw/orb burst, set in killZombie) — drawn BEHIND
-    // the raccoon for the same reason as the hitFlash glow above (F7): it
-    // used to paint on top of the raccoon at the end of draw(), centered on
-    // its body, and outlived the dying window, bleaching it into a fading
-    // "ghost" blob instead of reading as a burst behind a bowing raccoon.
+    // Recall feedback stays behind the bowing guide so the illustration
+    // remains readable throughout the reveal window.
     drawFeedbackLayer(now);
-    // raccoon enemy (was the cat walker) — bosses draw bigger with a gold
-    // aura (boss param, not scale — see raccoon.js); no skins/accessories/
-    // kitten on it, those moved to the player above.
-    // base matches the player cat's CHAR_BASE*B.L.mascotS above so both
-    // characters' CONTENT_H (64 world units, see sprite-draw.js) render at
-    // the same effective size; bosses stay at the historical 1.5x on top.
+    // Friendly review guide: walks in with the prompt, then bows happily when
+    // the learner recalls it. Review Challenges use the larger gold-aura
+    // variant, without an HP bar or defeat framing.
     const rScale = CHAR_BASE * (z.boss ? 1.5 : 1) * B.L.mascotS;
     drawRaccoon(ctx, z.x, gy + 6*B.S, z.state === "happy" ? now - z.happyAt : now, z.state, rScale, !!z.boss);
-    // floating HP bar above its head — cosmetic only. Animates hp -> 0 over
-    // the happy/dying window (killZombie snapshots hpAtKill); wrong/timeout
-    // never touch hp (the raccoon "wins" that word, no damage).
-    let hpFrac = z.hp;
-    if(z.state === "happy" && B.dyingUntil){
-      const remain = Math.max(0, B.dyingUntil - now);
-      hpFrac = (z.hpAtKill ?? z.hp) * (remain/DYING_MS);
-    }
-    drawHpBar(ctx, z.x, gy + 6*B.S - RACCOON_HEIGHT*rScale, 46*B.L.mascotS, hpFrac, B.L.mascotS);
   }else if(B.reveal && now < B.nextAt){
     // T6: the zombie object itself is gone by now (scheduleNext() nulls
     // B.zombie right at kill/wrong/timeout resolution — for a kill that's
@@ -2166,17 +2200,20 @@ function draw(now){
     // still finish its fade here so it doesn't just vanish.
     drawFeedbackLayer(now);
   }
-  // projectile - spinning coin sprite or vector fallback
+  // Successful recall charm: a warm gold orb travels from cat to guide.
   if(B.proj){
-    const coinImg = sprite("coin");
-    const pc = B.L.coinPx;
-    if(coinImg){
-      ctx.drawImage(coinImg, B.proj.x-pc/2, B.proj.y-pc/2, pc, pc);
+    const charmImg = sprite("vfx-orb-gold");
+    const pc = B.L.coinPx * 1.55;
+    if(charmImg){
+      ctx.drawImage(charmImg, B.proj.x-pc/2, B.proj.y-pc/2, pc, pc);
     }else{
-      drawCoinMark(ctx, B.proj.x, B.proj.y, pc*.45);
+      const glow = ctx.createRadialGradient(B.proj.x,B.proj.y,1,B.proj.x,B.proj.y,pc*.6);
+      glow.addColorStop(0,"#FFF4C0"); glow.addColorStop(.55,"#F2BC57"); glow.addColorStop(1,"rgba(242,188,87,0)");
+      ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(B.proj.x,B.proj.y,pc*.6,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#FFF4C0"; drawStarMark(ctx, B.proj.x, B.proj.y, pc*.2);
     }
   }
-  // particles (kill bursts + combo fireworks) — kind picks the look
+  // Lantern sparks, reward bursts, and Lucky Flow fireworks.
   const coinImgP = sprite("coin");
   for(const p of B.parts){
     ctx.globalAlpha = Math.max(0, Math.min(1, p.life/0.6));
@@ -2192,10 +2229,7 @@ function draw(now){
     }else if(p.kind==="star"){
       ctx.fillStyle = "#ffe08a"; drawStarMark(ctx, p.x, p.y, 5.2);
     }else if(p.kind==="impact"){
-      // T10: sun-yellow/cream starbits at the raccoon on a correct-answer
-      // impact — brighter than the shared life/0.6 alpha ratio would give a
-      // 0.35s-life particle (capped ~0.58), so the flash still reads at a
-      // glance instead of looking washed out.
+      // Short sun-yellow/cream starbits read as lantern light arriving.
       ctx.globalAlpha = Math.max(0, Math.min(1, p.life/0.35));
       ctx.fillStyle = p.vx >= 0 ? "#F2BC57" : "#FBF5E8";   // sun-yellow/cream split by the randomized fling direction
       drawStarMark(ctx, p.x, p.y, 3.4);
@@ -2214,9 +2248,6 @@ function draw(now){
     }
     ctx.globalAlpha = 1;
   }
-  // hit flash — softened dim-violet (cat wandered off, not combat damage)
-  if(B.flash>0){ ctx.fillStyle = `rgba(90,44,80,${(0.30*B.flash).toFixed(3)})`; ctx.fillRect(0,0,B.w,B.h); }
-  if(shake) ctx.restore();
 }
 // z: the current walker (B.zombie) — carries the target word (z.w), boss
 // flags, and z.revealed (set in answer()/bite() once the word is resolved,
