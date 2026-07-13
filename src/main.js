@@ -17,12 +17,12 @@ import { recordAnswer, levelMastery } from "./mastery.js";
 import { levelForXp, xpToNext, accessoriesFor, nextMilestone, MILESTONES } from "./growth.js";
 import { smartDeck, weakWords } from "./srs.js";
 import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
-import { REMINDER_HOUR, reminderPlan } from "./notify.js";
+import { REMINDER_HOUR, reminderPlan, reengagePlan } from "./notify.js";
 import { defaultQuestState, noteQuestEvent, questStatus,
          defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly } from "./quests.js";
 import { reviewChallengePoints, reviewChallengeSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable, hasMp3, setVoiceVolume } from "./audio.js";
-import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, requestNotifPermission } from "./native.js";
+import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, syncReengageReminder, requestNotifPermission } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import { BUILDINGS, streetPieces, streetProgress, streetMetrics, DECO_SPRITE_SCALE } from "./street.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
@@ -257,7 +257,7 @@ function noteDaily(count){
   // not yet met, before the reminder hour). Android 13+ suppresses this dialog
   // if requested while backgrounding, so the visibilitychange sync only checks
   // the grant — the prompt has to happen during active play. Once per session.
-  if(!notifPermAsked && reminderPlan(info, new Date().getHours()).schedule){
+  if(!notifPermAsked && (reminderPlan(info, new Date().getHours()).schedule || reengagePlan(info).schedule)){
     notifPermAsked = true;
     requestNotifPermission();
   }
@@ -1552,6 +1552,9 @@ document.addEventListener("visibilitychange", ()=>{
     syncStreakReminder(plan,
       t("notify.streak.title", { n: inf.streak }),
       t("notify.streak.body", { remaining: Math.max(0, inf.goal - inf.todayResolved) }));
+    syncReengageReminder(reengagePlan(inf),
+      t("notify.comeback.title", { n: inf.streak }),
+      t("notify.comeback.body", { n: inf.streak }));
     // midRound=B.on: a hide during a (paused) battle must not let a
     // monthly-dirty push redirect into reconcile — see pushDirty/syncEdge.
     pushEdge("hide");

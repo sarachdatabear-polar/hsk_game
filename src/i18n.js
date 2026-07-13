@@ -44,6 +44,8 @@ export const STRINGS = {
     // notify (retention pack — Android local notification, see notify.js/native.js)
     "notify.streak.title": "Don't lose your {n}-day streak!",
     "notify.streak.body": "{remaining} words keep it alive — a quick Word Quest does it.",
+    "notify.comeback.title": "Your lucky cat misses you 🐱",
+    "notify.comeback.body": "Your {n}-day streak is waiting — one quick Word Quest brings it back.",
     // account (client-auth round — Account sub-screen off More)
     "account.row": "Account",
     "account.title": "Account",
@@ -409,6 +411,8 @@ export const STRINGS = {
     "toast.freeze-used": "ใช้น้ำแข็งพิทักษ์สตรีคแล้ว — สตรีค {n} วันของคุณยังอยู่",
     "notify.streak.title": "อย่าให้สตรีค {n} วันหลุดนะ!",
     "notify.streak.body": "อีก {remaining} คำสตรีคก็รอด — เล่นภารกิจคำศัพท์สั้น ๆ ก็พอ",
+    "notify.comeback.title": "เจ้าแมวนำโชคคิดถึงคุณนะ 🐱",
+    "notify.comeback.body": "สตรีค {n} วันของคุณรออยู่ — เล่นภารกิจคำศัพท์สั้น ๆ ก็กลับมาได้เลย",
     // account (client-auth round)
     "account.row": "บัญชี",
     "account.title": "บัญชี",
