@@ -20,7 +20,7 @@ import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
 import { REMINDER_HOUR, reminderPlan } from "./notify.js";
 import { defaultQuestState, noteQuestEvent, questStatus,
          defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly } from "./quests.js";
-import { bossPoints, bossSpeedFactor } from "./boss.js";
+import { reviewChallengePoints, reviewChallengeSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable, hasMp3, setVoiceVolume } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, requestNotifPermission } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
@@ -45,6 +45,8 @@ import { iapVisible } from "./monetization/gating.js";
 import { pollForCredit } from "./monetization/purchase-poll.js";
 import { createQuestSession } from "./quest-session.js";
 import { questFeedbackFor } from "./quest-feedback.js";
+import { questResultsSummary } from "./quest-results.js";
+import { questRewardPolicy } from "./quest-rewards.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -1422,6 +1424,7 @@ function showQuestFeedback(state){
   rail.textContent = t(feedback.key);
   rail.classList.toggle("feedback-correct", feedback.tone === "correct");
   rail.classList.toggle("feedback-review", feedback.tone === "review");
+  rail.classList.toggle("feedback-challenge", feedback.tone === "challenge");
 }
 // Combo strip (M6, §6.2 item 5): COMBO N · fire row · xN badge. Replaces the
 // old #hud-combo pill inside the score chip. Hidden entirely below a 2-combo
@@ -1601,7 +1604,7 @@ function spawnZombie(){
   // during an intro the audio waits for dismiss (played in showFormatIntro's OK)
   if(!z.frozen && (pol === "always" || (pol === "setting" && settings.autoSpeak))) speak(w.h);
   renderQuestion(w, z.format, z.format === "reverse" ? "battle.reversePrompt" : null);
-  showQuestFeedback("choose");
+  showQuestFeedback(encounter.reviewChallenge ? "challenge" : "choose");
   updateHud();   // round capsule tracks B.spawned — refresh as each word enters
   // per-word ramp on the unscaled base, then re-derive the screen-scaled
   // speed (a plain B.speed *= 1.03 would be wiped by the next resize)
@@ -1797,6 +1800,7 @@ function answer(btn, o){
   const z = B.zombie;
   if(!z || z.state!=="walk" || z.frozen || B.locked) return;
   const boss = z.boss;
+  const rewardPolicy = questRewardPolicy(z.encounter?.origin);
   const correct = !!o.correct;
   if(!boss) noteAnswer(z.w.h, correct);
   if(correct && boss && z.stage === "meaning"){
@@ -1822,17 +1826,20 @@ function answer(btn, o){
     const trailBefore = trailView();
     const resolvedAt = performance.now();
     z.frozen = true;   // coin is in flight — don't let the walker cross the bite line first (race with killZombie)
-    B.combo++;
+    if(rewardPolicy.luckyFlow === "change") B.combo++;
     questEvent("correct");
-    questEvent("combo", B.combo);
+    if(rewardPolicy.luckyFlow === "change") questEvent("combo", B.combo);
     if(boss) questEvent("boss");
     const killXp = boss ? 5 : 1;   // boss final kill is worth +5 total, not +1 then +5
     addXp(killXp);
     // farther kill = bigger bonus (replaces the old time bonus)
     const biteX = trailBefore.catX + B.L.catHalf;
     const distFrac = Math.max(0, z.x - biteX) / (B.w - biteX);
-    B.score += boss ? bossPoints(killPoints(B.combo, distFrac)) : killPoints(B.combo, distFrac);
-    sfx.kill(); hapticKill(); if (B.combo >= 3) sfx.combo(B.combo);
+    if(rewardPolicy.awardsCoins){
+      B.score += boss ? reviewChallengePoints(killPoints(B.combo, distFrac)) : killPoints(B.combo, distFrac);
+    }
+    sfx.kill(); hapticKill();
+    if(rewardPolicy.luckyFlow === "change" && B.combo >= 3) sfx.combo(B.combo);
     btn.classList.add("good", "stamp", "stamp-good");
     lockOptions();
     // A gold lucky charm carries the successful recall from the cat to the
@@ -1851,7 +1858,7 @@ function answer(btn, o){
       ? {...feedbackEffect("critical", z.x, gy-42*B.S), until:fxUntil(750)}
       : {...feedbackEffect("correct", z.x, gy-42*B.S), until:fxUntil(620)};
     B.plaqueHitAt = performance.now();   // plaque bounce timebase (drawWordPlate)
-    const floater = comboFloater(z.x, gy-130, B.combo);
+    const floater = rewardPolicy.luckyFlow === "change" ? comboFloater(z.x, gy-130, B.combo) : null;
     if(floater) B.floats.push(floater);
     // T10: "Correct!  +N XP" floater — N is the exact amount addXp() just
     // credited above (killXp), never an invented number. Sits a touch higher
@@ -1860,7 +1867,7 @@ function answer(btn, o){
     // milestone combo (10, 20, ...): fireworks + a CRITICAL! comic burst
     // (fx-critical sprite + bold lettering, drawn in drawFeedbackLayer)
     // replaces the plain correct stamp for this kill.
-    if(B.combo>=10 && B.combo%10===0){
+    if(rewardPolicy.luckyFlow === "change" && B.combo>=10 && B.combo%10===0){
       B.parts.push(...fireworkRing(z.x, gy-16));
       B.feedback = {...feedbackEffect("critical", z.x, gy-42*B.S), until:fxUntil(750)};
     }
@@ -1868,7 +1875,7 @@ function answer(btn, o){
   }else{
     // A wrong tap reveals the answer, then returns the word to the review pouch.
     B.reveal = { w:z.w, boss:!!boss, format:z.format || "meaning", trailSegmentStart:!!z.trailSegmentStart };   // T6: reveal-window snapshot
-    B.combo = 0;
+    if(rewardPolicy.luckyFlow === "change") B.combo = 0;
     const free = !!z.introFree;   // first-ever attempt of a new format is gently introduced
     sfx.wrong(); if(!free) hapticWrong();
     btn.classList.add("bad", "stamp", "stamp-bad");
@@ -1899,7 +1906,9 @@ function killZombie(z){
   const gy = B.h-B.L.ground;
   // The lucky charm arriving lights a quick warm glow behind the guide.
   B.hitFlash = {x:z.x, y:gy-40*B.S, until:fxUntil(150)};
-  B.parts.push(...coinBurst(z.x, gy-16, !!z.boss, shopState.effect));
+  if(questRewardPolicy(z.encounter?.origin).awardsCoins){
+    B.parts.push(...coinBurst(z.x, gy-16, !!z.boss, shopState.effect));
+  }
   B.parts.push(...lanternSparkBurst(z.x, gy-16));
   z.state = "happy";
   z.happyAt = performance.now();
@@ -1913,7 +1922,8 @@ function bite(timedOut){
   if(timedOut){
     // boss word already counted its one attempt on the first tap (see answer());
     // only count here if it timed out before ever being tapped.
-    B.combo = 0; noteAnswer(z.w.h, false); revealCorrect(); lockOptions();
+    if(questRewardPolicy(z.encounter?.origin).luckyFlow === "change") B.combo = 0;
+    noteAnswer(z.w.h, false); revealCorrect(); lockOptions();
     syncQuestOutcome(false, true);
     z.revealed = true;   // timeout resolves the word too — unmasks the plaque's hanzi/pinyin
     showQuestFeedback("review");
@@ -1943,6 +1953,7 @@ function loop(now){
       bz.stage = "hanzi"; bz.frozen = false;
       bz.format = "reverse";
       renderQuestion(bz.w, "reverse", "battle.bossPrompt");
+      showQuestFeedback("challenge");
       B.locked = false;
     }
   }
@@ -1956,7 +1967,7 @@ function loop(now){
   if(z){
     if(z.state==="walk"){
       if(!z.frozen){
-        z.x -= B.speed*(z.boss?bossSpeedFactor:1)*(z.format==="typed"?TYPED_WALK_FACTOR:z.format==="cloze"?CLOZE_WALK_FACTOR:1)*dt;
+        z.x -= B.speed*(z.boss?reviewChallengeSpeedFactor:1)*(z.format==="typed"?TYPED_WALK_FACTOR:z.format==="cloze"?CLOZE_WALK_FACTOR:1)*dt;
         if(z.x <= guideTargetX()) bite(true);                    // time ran out — guide reached the cat
       }
     }else if(z.state==="dash"){
@@ -2582,7 +2593,8 @@ function endBattle(quit){
     store.set("stickers", stickerState);
     show("home"); return;
   }
-  noteDaily(B.resolved);
+  const results = questResultsSummary(B.quest.view(), { score:B.score });
+  noteDaily(results.learned);
   const isPerfect = B.mode==="round" && B.resolved>0 && B.misses.length===0 && (!B.customDeck || B.smartRound);
   if(isPerfect) questEvent("perfect");
   wallet += B.score;
@@ -2590,6 +2602,23 @@ function endBattle(quit){
   if(bonus) wallet += bonus;
   store.set("wallet", wallet);
   updateWalletChip();
+  $("#r-learned").textContent = t("results.learnedTarget", { learned:results.learned, target:results.target });
+  $("#r-attempts").textContent = results.attempts;
+  $("#r-accuracy").textContent = results.accuracy + "%";
+  $("#r-lantern-count").textContent = results.lanternsLit;
+  $("#r-chapter").textContent = t("results.chapter", { n:results.routeChapter });
+  $("#r-next-review").textContent = t(results.nextReview === "practice"
+    ? "results.nextReviewPractice"
+    : "results.nextReviewTomorrow");
+  const lanternRow = $("#r-lanterns");
+  lanternRow.replaceChildren();
+  for(let i=0;i<4;i++){
+    const img = document.createElement("img");
+    img.src = "assets/lantern.png";
+    img.alt = i < results.chapterLanternsLit ? t("results.lanternAlt") : "";
+    img.className = i < results.chapterLanternsLit ? "lit" : "unlit";
+    lanternRow.appendChild(img);
+  }
   $("#r-wallet").textContent = t("results.banked", { score: B.score, total: wallet.toLocaleString() });
   const perfectEl = $("#r-perfect");
   if(isPerfect){ perfectEl.textContent = t("results.perfect", { bonus }); perfectEl.style.display = "block"; }
@@ -2614,7 +2643,7 @@ function endBattle(quit){
     rq.appendChild(line);
   }
   rq.style.display = questToasts.length ? "block" : "none";
-  const acc = B.attempts? Math.round(100*B.correct/B.attempts) : 0;
+  const acc = results.accuracy;
   // A3 results celebration: count the earned coins up (~700ms ease-out).
   // Reduced motion or a zero score renders instantly.
   const scoreEl = $("#r-score");
@@ -2634,13 +2663,13 @@ function endBattle(quit){
   const key = scopeKey(scope)+"·"+modeKey(B.mode, B.wordsTotal);
   if(B.customDeck){
     // miss/weak-word decks don't compete on the scoreboard — no best-tag/prev-best suffix
-    $("#r-sub").innerHTML = t("results.sub", { acc, words: B.correct, key });
+    $("#r-sub").innerHTML = t("results.sub", { acc, words: results.learned, key });
   }else{
     const best = store.get("best", {});
     const prev = best[key]? best[key].score : 0;
     const isBest = B.score > prev;
     if(isBest){ best[key] = {score:B.score, date:new Date().toISOString().slice(0,10)}; store.set("best", best); }
-    $("#r-sub").innerHTML = t("results.sub", { acc, words: B.correct, key })
+    $("#r-sub").innerHTML = t("results.sub", { acc, words: results.learned, key })
       + (isBest ? ` · <b style="color:var(--lc-brown)">${t("results.bestTag")}</b>` : ` · ${t("results.bestPrev", { prev })}`);
   }
   const list = $("#r-miss");

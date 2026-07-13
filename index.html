@@ -411,6 +411,8 @@
     background:var(--panel-wash); color:var(--lc-brown); font-size:12.5px; font-weight:700; text-align:center;}
   #quest-feedback.feedback-correct{color:var(--lc-success-deep); border-color:var(--lc-success);}
   #quest-feedback.feedback-review{color:var(--lc-coral-deep); border-color:var(--lc-coral);}
+  #quest-feedback.feedback-challenge{color:var(--lc-brown); border-color:var(--lc-sun-deep);
+    background:linear-gradient(180deg,rgba(255,231,149,.82),rgba(242,188,87,.48));}
   /* combo strip (M6, §6.2 item 5): thin bar between the canvas and the answer
      grid; .hidden zero-states it below a 2-combo (updateComboStrip in main.js). */
   #combo-strip{display:flex; align-items:center; justify-content:space-between; gap:8px;
@@ -617,6 +619,36 @@
     filter:drop-shadow(0 6px 8px rgba(46,42,36,.25));
     animation:cat-bob 2.2s ease-in-out infinite alternate;}
   @keyframes cat-bob{from{transform:translateY(0) rotate(-2deg);} to{transform:translateY(-6px) rotate(2deg);}}
+  .results-postcard{position:relative; overflow:hidden; display:grid; grid-template-columns:96px 1fr;
+    grid-template-areas:"route route" "cat lanterns" "cat learned" "stats stats";
+    align-items:center; gap:5px 12px; min-height:214px; padding:12px 14px 10px; margin:0 0 10px;
+    border:2px solid var(--lc-brown); border-radius:18px;
+    background-image:linear-gradient(rgba(251,245,232,.34),rgba(251,245,232,.86)),url("assets/bg-quest.png");
+    background-position:center 58%; background-size:cover;
+    box-shadow:0 5px 14px rgba(46,42,36,.2),inset 0 1px 0 rgba(255,255,255,.65);}
+  .results-route-row{grid-area:route; display:flex; align-items:center; justify-content:space-between;
+    gap:8px; color:var(--lc-brown); font-size:13px; font-weight:800;
+    background:rgba(251,245,232,.82); border-radius:999px; padding:5px 10px;}
+  .results-postcard .r-cat{grid-area:cat; margin:0; align-self:end;}
+  .results-lanterns{grid-area:lanterns; display:flex; justify-content:center; align-items:flex-end; gap:5px;
+    min-height:62px; padding-top:4px;}
+  .results-lanterns img{width:31px; height:47px; object-fit:contain; filter:drop-shadow(0 0 8px rgba(242,188,87,.72));}
+  .results-lanterns img.unlit{opacity:.3; filter:grayscale(.45) drop-shadow(0 2px 3px rgba(46,42,36,.2));}
+  .results-learned{grid-area:learned; text-align:center; color:var(--lc-green-deep); font-size:15px;
+    font-weight:900; background:rgba(251,245,232,.88); border-radius:10px; padding:5px 8px;}
+  .results-stats{grid-area:stats; display:grid; grid-template-columns:repeat(3,1fr); gap:6px;}
+  .results-stats div{display:flex; flex-direction:column; align-items:center; padding:6px 4px;
+    border:1px solid rgba(132,96,67,.35); border-radius:10px; background:rgba(251,245,232,.9);}
+  .results-stats strong{color:var(--lc-green-deep); font-size:18px; line-height:1.1;}
+  .results-stats span{color:var(--muted); font-size:10.5px; line-height:1.2; text-align:center;}
+  .results-reward{display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap;
+    padding:8px 12px; margin:0 0 10px; color:var(--lc-brown); font-size:13px; font-weight:800;
+    background:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun)); border:2px solid var(--lc-brown);
+    border-radius:14px; box-shadow:0 3px 8px rgba(46,42,36,.16);}
+  .results-reward .bignum{font-size:34px; margin:0; color:var(--lc-brown);}
+  .results-reward #r-wallet{width:100%; margin:-4px 0 0; font-size:12.5px;}
+  .results-next-review{margin:10px 0 0; padding:9px 12px; text-align:center; color:var(--lc-green-deep);
+    background:rgba(168,216,209,.42); border:1px solid var(--lc-teal); border-radius:12px; font-weight:800;}
   .sub{text-align:center; color:var(--muted); margin:0 0 14px;}
   .misslist{flex:1; overflow-y:auto; background-color:var(--panel-wash); border-radius:12px;
     border:1px solid var(--panel-border); padding:6px 12px; margin:10px 0; max-height:38vh;}
@@ -1282,15 +1314,31 @@
 
   <!-- RESULTS -->
   <div class="screen festive" id="s-results">
-    <img class="r-cat" src="assets/cat-celebrate.png" alt="">
     <h2 style="text-align:center" data-i18n="results.roundOver">Word Quest complete</h2>
-    <div class="bignum" id="r-score"></div>
+    <div class="results-postcard">
+      <div class="results-route-row">
+        <span data-i18n="results.routeLabel">Village Gate journey</span>
+        <strong id="r-chapter"></strong>
+      </div>
+      <img class="r-cat" src="assets/cat-celebrate.png" alt="">
+      <div class="results-lanterns" id="r-lanterns"></div>
+      <div class="results-learned" id="r-learned"></div>
+      <div class="results-stats">
+        <div><strong id="r-attempts"></strong><span data-i18n="results.attempts">Attempts</span></div>
+        <div><strong id="r-accuracy"></strong><span data-i18n="results.accuracy">Accuracy</span></div>
+        <div><strong id="r-lantern-count"></strong><span data-i18n="results.lanterns">Lanterns</span></div>
+      </div>
+    </div>
+    <div class="results-reward">
+      <span data-i18n="results.rewardTitle">Lucky rewards</span>
+      <div class="bignum" id="r-score"></div>
+      <p class="sub" id="r-wallet" style="color:var(--lc-brown)"></p>
+    </div>
     <!-- A4/B2 slots: intro streak pointer (filled by endBattle on the intro
          round) and the sticker toast slot (activates in Phase 4 with stickers.js) -->
     <p class="sub" id="r-intro-hint" style="display:none"></p>
     <div id="r-sticker-slot" style="display:none"></div>
     <p class="sub" id="r-sub"></p>
-    <p class="sub" id="r-wallet" style="color:var(--lc-brown)"></p>
     <div id="r-perfect" style="display:none"></div>
     <div id="r-levelup" style="display:none"></div>
     <div id="r-quests"></div>
@@ -1301,6 +1349,7 @@
       <button class="big" id="r-fight-miss"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#retry"></use></svg><span data-i18n="results.practiceMissed">Practice these words again</span></span></button>
       <button class="big primary" id="r-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span data-i18n="results.playAgain">Play again</span></span></button>
     </div>
+    <p class="results-next-review" id="r-next-review"></p>
     <button class="big" style="margin-top:10px" data-go="home" data-i18n="results.home">Home</button>
   </div>
 
