@@ -44,6 +44,7 @@ import { getProvider } from "./monetization/provider.js";
 import { iapVisible } from "./monetization/gating.js";
 import { pollForCredit } from "./monetization/purchase-poll.js";
 import { createQuestSession } from "./quest-session.js";
+import { questFeedbackFor } from "./quest-feedback.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -1359,6 +1360,7 @@ function startBattle(mode){
   keepAwake(true);
   sizeCanvas();
   updateHud();
+  showQuestFeedback("choose");
   $("#opts").innerHTML = "";
   requestAnimationFrame(loop);
 }
@@ -1383,12 +1385,19 @@ syncSoundToggles();
 function updateHud(){
   if(!B.on) return;   // toggleSfx can fire from the More screen, outside battle
   const q = B.quest.view();
-  $("#hud-score").textContent = B.score;
-  $("#hud-round").textContent = t("battle.reviewPouch", { n: q.reviewPouch });
+  $("#hud-review").textContent = t("battle.reviewPouch", { n: q.reviewPouch });
   const label = q.endless ? `${q.learned} · ∞` : `${q.learned}/${q.target}`;
   $("#hud-progress-fill").style.width = (roundProgress(q.learned, q.target) * 100) + "%";
   $("#hud-progress-count").textContent = t("battle.learnedProgress", { label });
   updateComboStrip();
+}
+function showQuestFeedback(state){
+  const rail = $("#quest-feedback");
+  if(!rail) return;
+  const feedback = questFeedbackFor(state);
+  rail.textContent = t(feedback.key);
+  rail.classList.toggle("feedback-correct", feedback.tone === "correct");
+  rail.classList.toggle("feedback-review", feedback.tone === "review");
 }
 // Combo strip (M6, §6.2 item 5): COMBO N · fire row · xN badge. Replaces the
 // old #hud-combo pill inside the score chip. Hidden entirely below a 2-combo
@@ -1566,6 +1575,7 @@ function spawnZombie(){
   // during an intro the audio waits for dismiss (played in showFormatIntro's OK)
   if(!z.frozen && (pol === "always" || (pol === "setting" && settings.autoSpeak))) speak(w.h);
   renderQuestion(w, z.format, z.format === "reverse" ? "battle.reversePrompt" : null);
+  showQuestFeedback("choose");
   updateHud();   // round capsule tracks B.spawned — refresh as each word enters
   // per-word ramp on the unscaled base, then re-derive the screen-scaled
   // speed (a plain B.speed *= 1.03 would be wiped by the next resize)
@@ -1775,6 +1785,7 @@ function answer(btn, o){
     // mid-transition doesn't fire it behind the overlay — resumeBattle()
     // shifts it forward like every other absolute performance.now() deadline.
     B.bossStageAt = performance.now() + 500;
+    showQuestFeedback("choose");
     updateHud();
     return true;
   }
@@ -1822,6 +1833,7 @@ function answer(btn, o){
       B.parts.push(...fireworkRing(z.x, gy-16));
       B.feedback = {...feedbackEffect("critical", z.x, gy-42*B.S), until:fxUntil(750)};
     }
+    showQuestFeedback("learned");
   }else{
     // A wrong tap reveals the answer, then returns the word to the review pouch.
     B.reveal = { w: z.w, boss: !!boss, format: z.format || "meaning" };   // T6: reveal-window snapshot
@@ -1836,6 +1848,7 @@ function answer(btn, o){
     z.state = "wrong";
     z.wrongUntil = performance.now() + WRONG_MS;
     B.feedback = {...feedbackEffect("wrong", z.x, B.h-B.L.ground-44*B.S), until:fxUntil(WRONG_MS)};
+    showQuestFeedback("review");
   }
   updateHud();
   return true;   // tap accepted and resolved — callers may reveal follow-up UI
@@ -1874,6 +1887,7 @@ function bite(timedOut){
     B.combo = 0; noteAnswer(z.w.h, false); revealCorrect(); lockOptions();
     syncQuestOutcome(false, true);
     z.revealed = true;   // timeout resolves the word too — unmasks the plaque's hanzi/pinyin
+    showQuestFeedback("review");
   }
   const free = !!(z && z.introFree);   // intro word timing out is also forgiven
   if(!free){ sfx.wrong(); hapticWrong(); }

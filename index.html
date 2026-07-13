@@ -287,16 +287,17 @@
   .spk{color:var(--lc-teal); font-size:22px; padding:10px 16px; border-radius:12px; border:1px solid var(--panel-border);
     min-width:44px; min-height:44px;
     display:inline-flex; align-items:center; justify-content:center;}
-  /* battle (T3 — simplified HUD: round · progress bar+count · coins · pause;
-     hearts moved in-scene above the cat, see drawHearts in hud.js/T5). Flat
-     chips: single hairline border, no inner-shadow/bevel stack, so the HUD
-     never competes with the vocabulary card underneath it. */
+  /* Word Quest header: route identity · durable learning progress · Review
+     Pouch · pause. Coins remain a reward reveal on Results instead of
+     competing with the learning objective during play. */
   #hud{display:flex; justify-content:space-between; align-items:center; font-size:15px; padding:2px 2px 8px; gap:6px; flex-wrap:nowrap;}
+  .quest-route{display:flex; flex-direction:column; justify-content:center; min-width:92px; line-height:1.05;}
+  .quest-eyebrow{font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--lc-green-deep);}
+  .quest-route-name{font-size:15px; font-weight:800; color:var(--lc-ink); white-space:nowrap;}
   .hud-pill{display:inline-flex; align-items:center; gap:4px; background:var(--panel-wash); min-width:0;
     color:var(--ink); border-radius:999px; padding:4px 10px; border:1px solid var(--panel-border); font-weight:700; font-size:14px;
     white-space:nowrap;}
-  /* round-counter capsule — palette tan (amends PRD §6.2's blue) */
-  .hud-round-pill{font-weight:800;}
+  .hud-review{font-size:12px; color:var(--lc-brown);}
   .hud-round{width:44px; height:44px; min-width:44px; border-radius:50%; background:var(--panel-wash);
     color:var(--ink); border:1px solid var(--panel-border); border-image:var(--f-ui-badge-mastery, none); font-size:18px; cursor:pointer;
     display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
@@ -403,6 +404,13 @@
      same target the plaque click hit-test uses (see main.js replayCurrentWord). */
   #cv:focus{outline:3px solid var(--lc-sun); outline-offset:2px;}
   #cv:focus:not(:focus-visible){outline:none;}
+  /* Prompt/feedback rail: one calm instruction while choosing, then a short
+     learning-oriented outcome. aria-live on the element announces changes. */
+  #quest-feedback{display:flex; align-items:center; justify-content:center; min-height:32px;
+    margin-top:8px; padding:5px 10px; border:1px solid var(--panel-border); border-radius:12px;
+    background:var(--panel-wash); color:var(--lc-brown); font-size:12.5px; font-weight:700; text-align:center;}
+  #quest-feedback.feedback-correct{color:var(--lc-success-deep); border-color:var(--lc-success);}
+  #quest-feedback.feedback-review{color:var(--lc-coral-deep); border-color:var(--lc-coral);}
   /* combo strip (M6, §6.2 item 5): thin bar between the canvas and the answer
      grid; .hidden zero-states it below a 2-combo (updateComboStrip in main.js). */
   #combo-strip{display:flex; align-items:center; justify-content:space-between; gap:8px;
@@ -912,7 +920,7 @@
      individually. Mutually exclusive with the `(max-height:620px) and
      (orientation:portrait)` short-screen blocks above by construction
      (orientation differs), so the two never fight over the same element.
-     Battle: regroups #s-battle into a 2-column grid — HUD spans a
+     Word Quest: regroups #s-battle into a 2-column grid — header spans a
      full-width strip on top, canvas + combo strip stack in the left column,
      and the 2x2 answer grid fills the right column at full height, so nothing
      scrolls mid-round. Home: every vertical rhythm (paddings, hero art,
@@ -930,15 +938,19 @@
        non-display layout properties on the bare ID is harmless since they
        have no effect while display:none. */
     #s-battle{padding:4px 8px 3px; grid-template-columns:1fr 1fr;
-      grid-template-rows:auto 1fr auto; grid-template-areas:"hud hud" "canvas opts" "combo opts";
+      grid-template-rows:auto 1fr auto auto; grid-template-areas:"hud hud" "canvas opts" "feedback opts" "combo opts";
       gap:6px; align-items:stretch;}
     #s-battle.on{display:grid;}
     #hud{grid-area:hud; padding:0; gap:4px;}
+    .quest-route{min-width:82px;}
+    .quest-eyebrow{font-size:8px;}
+    .quest-route-name{font-size:12px;}
     .hud-pill{padding:3px 8px; font-size:12px;}
     .hud-round{width:36px; height:36px; min-width:36px; font-size:14px;}
     .hud-progress-track{max-width:100px; height:5px;}
     .hud-progress-count{font-size:11px;}
     .cv-wrap{grid-area:canvas; min-height:0;}
+    #quest-feedback{grid-area:feedback; margin-top:0; min-height:18px; padding:3px 8px; font-size:10.5px;}
     #combo-strip{grid-area:combo; margin-top:0; min-height:18px; padding:3px 8px;}
     .combo-strip-label{font-size:11px;}
     .combo-strip-label b{font-size:12px;}
@@ -1205,22 +1217,26 @@
     </div>
   </div>
 
-  <!-- BATTLE (M4 rebuild — visual PRD §6.2 item 1: minimal HUD + pause overlay) -->
+  <!-- WORD QUEST — Lantern Trail route, learning progress, review pouch, pause -->
   <div class="screen" id="s-battle">
     <div id="hud">
-      <span class="hud-pill hud-round-pill" id="hud-round"></span>
+      <div class="quest-route">
+        <span class="quest-eyebrow" data-i18n="battle.wordQuest">Word Quest</span>
+        <strong class="quest-route-name" id="quest-route-name" data-i18n="battle.routeName">Lantern Trail</strong>
+      </div>
       <div class="hud-progress" id="hud-progress">
         <div class="hud-progress-track"><div class="hud-progress-fill" id="hud-progress-fill"></div></div>
         <span class="hud-progress-count" id="hud-progress-count"></span>
       </div>
-      <span class="hud-pill"><svg class="asset-icon"><use href="assets/ui-icons.svg#secondary-coin"></use></svg><b id="hud-score">0</b></span>
+      <span class="hud-pill hud-review" id="hud-review"></span>
       <button class="hud-round" id="hud-pause" title="Pause" aria-label="Pause" data-i18n-title="battle.pause"><svg class="asset-icon"><use href="assets/ui-icons.svg#pause"></use></svg></button>
     </div>
     <div class="cv-wrap"><canvas id="cv" tabindex="0" role="img" data-i18n-title="battle.canvasLabel"></canvas></div>
-    <!-- combo strip (M6, §6.2 item 5): COMBO N · fire row · xN badge. Hidden
+    <div id="quest-feedback" role="status" aria-live="polite" data-i18n="battle.promptChoose">Choose the best answer to light the trail.</div>
+    <!-- Lucky Flow strip: streak count · lantern flames · multiplier. Hidden
          (via .hidden) below a 2-combo by updateComboStrip() in main.js. -->
     <div id="combo-strip" class="hidden">
-      <span class="combo-strip-label">COMBO <b id="combo-count">0</b></span>
+      <span class="combo-strip-label"><span data-i18n="battle.luckyFlow">Lucky Flow</span> <b id="combo-count">0</b></span>
       <span class="combo-strip-fires" id="combo-fires"></span>
       <span class="combo-strip-badge" id="combo-badge"></span>
     </div>
@@ -1267,7 +1283,7 @@
   <!-- RESULTS -->
   <div class="screen festive" id="s-results">
     <img class="r-cat" src="assets/cat-celebrate.png" alt="">
-    <h2 style="text-align:center" data-i18n="results.roundOver">Round over</h2>
+    <h2 style="text-align:center" data-i18n="results.roundOver">Word Quest complete</h2>
     <div class="bignum" id="r-score"></div>
     <!-- A4/B2 slots: intro streak pointer (filled by endBattle on the intro
          round) and the sticker toast slot (activates in Phase 4 with stickers.js) -->
@@ -1278,11 +1294,11 @@
     <div id="r-perfect" style="display:none"></div>
     <div id="r-levelup" style="display:none"></div>
     <div id="r-quests"></div>
-    <div class="sect" id="r-misshead" data-i18n="results.missed">Words you missed</div>
+    <div class="sect" id="r-misshead" data-i18n="results.missed">Needed extra practice</div>
     <div class="misslist" id="r-miss"></div>
     <div class="startrow">
       <button class="big" id="r-review"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#review"></use></svg><span data-i18n="results.reviewWords">Review Words</span></span></button>
-      <button class="big" id="r-fight-miss"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#retry"></use></svg><span data-i18n="results.practiceMissed">Practice Missed Words</span></span></button>
+      <button class="big" id="r-fight-miss"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#retry"></use></svg><span data-i18n="results.practiceMissed">Practice these words again</span></span></button>
       <button class="big primary" id="r-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span data-i18n="results.playAgain">Play again</span></span></button>
     </div>
     <button class="big" style="margin-top:10px" data-go="home" data-i18n="results.home">Home</button>
@@ -1378,13 +1394,13 @@
       The farther away the cat still is, the bigger the practice bonus — and learning streaks build your score.</p>
     <p class="howto">
       <b data-i18n="howto.oneShot">You get one shot per word.</b>
-      <span data-i18n-html="howto.oneShotDetail">A wrong tap costs a heart — no second guesses.
-      The correct answer flashes green so you learn it for next time.</span>
+      <span data-i18n-html="howto.oneShotDetail">A wrong tap reveals the answer and adds the word to your Review Pouch,
+      so you can learn it when it returns.</span>
     </p>
-    <p class="howto" data-i18n-html="howto.tooSlow">Too slow counts too: if the cat wanders all the way across without an answer,
-      that costs a heart. Three hearts and the round is over.</p>
-    <p class="howto" data-i18n-html="howto.everyWord">Every word shows <b>pinyin</b> and can be <b>heard aloud</b> — during the game,
-      in flashcards, and in the missed-words review.</p>
+    <p class="howto" data-i18n-html="howto.tooSlow">If time runs out, the answer is revealed and the word returns soon.
+      Your Word Quest continues until every planned word is learned.</p>
+    <p class="howto" data-i18n-html="howto.everyWord">Every word shows <b>pinyin</b> and can be <b>heard aloud</b> — during the Word Quest,
+      in flashcards, and in extra-practice review.</p>
     <p class="howto" data-i18n-html="howto.learnMode"><b>Learn mode</b> drills the same word pool as flashcards first, so you can
       study, then play.</p>
     <p class="howto" data-i18n="howto.attribution">Some example sentences from Tatoeba (tatoeba.org), CC-BY 2.0 FR.</p>
