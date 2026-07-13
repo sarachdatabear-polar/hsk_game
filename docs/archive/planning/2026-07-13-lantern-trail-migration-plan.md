@@ -1,6 +1,6 @@
 # Lantern Trail Migration Plan
 
-**Status:** Release approved — Phases 0–6 are complete on `development` through PR #95 (`a6164a9`); the signed APK passed the accepted Android-emulator gate and promotion to `main` is next
+**Status:** Shipped — Phases 0–6 released to `main` through PR #98 (`336a56d`) and GitHub Pages serves SHELL v69
 **Product direction:** Replace the visible battle with a continuous Word Quest while reusing the current art and learning systems.  
 **Primary rule:** A finite session length means words successfully learned, not attempts made. A missed word returns until it is answered correctly.
 
@@ -14,7 +14,7 @@
 - [x] Phase 5 semantic Review Challenge, postcard results/rewards, missed-word recap, next-review hook, and retry-economy protection; merged through PR #93 (`3d3f821`).
 - [x] Phase 6: automated verification, SHELL v69, signed Android candidate, and accepted native-emulator playthrough are complete; release to `main` is approved and remains the final promotion step.
 
-Do not describe the migration as fully shipped yet: `main` still serves the pre-migration release. `development` contains the complete Word Quest and Lantern Trail release candidate, and the release gate is approved; only promotion and live verification remain.
+The complete migration shipped as one release through PR #98 (`336a56d`). GitHub Pages deployment run `29238824245` completed successfully; the public site serves `nbhsk-shell-v69`, renders the first-run Welcome screen without horizontal overflow, and reports no browser-console errors.
 
 ## 0. Decisions locked (grilled with Jordan, 2026-07-13)
 
@@ -447,7 +447,7 @@ Release:
 
 Release-candidate checkpoint (2026-07-13): automated work is merged to `development` through PR #95 (`a6164a9`). The final bundle passes 62 files / 1,827 tests and 95 asset checks. Two consecutive permanent sweeps pass all 10 base viewports, both listening probes, and real five-word Results postcards (with an intentional miss) at 360×640, 390×844, and 640×360. EN/TH how-to text and the final PWA cache are updated to SHELL v69. Capacitor sync and the signed APK build succeed; `apksigner` verifies the existing NorthBear certificate. The APK SHA-256 is `A81970806068EDF0FD436A9B000CF228844081CFDB0EDB264BE3A6CB1526488F`.
 
-Accepted native gate (2026-07-13): the owner has no physical phone and confirmed the Android emulator as the release device, matching the previous native-verification method. The exact signed APK was installed after clearing app data and passed a cold launch, the first-run six-card onboarding, an intentional miss that stalled at `0 / 6` and entered the Review Pouch, background/resume with unchanged state and auto-pause, pause toggles and both volume controls, retry completion, the real Results postcard (`6 / 6`, 7 attempts, 86% accuracy, one extra-practice row), next-review guidance, portrait `412×842`, and landscape `866×364`. Both orientations had no horizontal overflow; visible Results controls met the 44px floor; the packaged WebView reported no console or page errors. Physical-only vibration and real mid-range-device performance remain unproven follow-ups, not release blockers under this owner-approved emulator gate. Promotion to `main` and live verification are next.
+Accepted native gate (2026-07-13): the owner has no physical phone and confirmed the Android emulator as the release device, matching the previous native-verification method. The exact signed APK was installed after clearing app data and passed a cold launch, the first-run six-card onboarding, an intentional miss that stalled at `0 / 6` and entered the Review Pouch, background/resume with unchanged state and auto-pause, pause toggles and both volume controls, retry completion, the real Results postcard (`6 / 6`, 7 attempts, 86% accuracy, one extra-practice row), next-review guidance, portrait `412×842`, and landscape `866×364`. Both orientations had no horizontal overflow; visible Results controls met the 44px floor; the packaged WebView reported no console or page errors. Physical-only vibration and real mid-range-device performance remain unproven follow-ups, not release blockers under this owner-approved emulator gate. PR #98 then promoted the release to `main`, and the live Pages verification passed.
 
 ## 7. Acceptance Criteria
 
