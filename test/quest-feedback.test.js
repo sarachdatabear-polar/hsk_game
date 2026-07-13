@@ -5,6 +5,7 @@ import { setLocale, t } from "../src/i18n.js";
 describe("questFeedbackFor", () => {
   it.each([
     ["choose", { key: "battle.promptChoose", tone: "prompt" }],
+    ["challenge", { key: "battle.reviewChallengeIntro", tone: "challenge" }],
     ["learned", { key: "battle.feedbackLearned", tone: "correct" }],
     ["review", { key: "battle.feedbackReview", tone: "review" }],
   ])("maps %s to learning-oriented copy", (state, expected) => {

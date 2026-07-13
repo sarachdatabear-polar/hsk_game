@@ -1,24 +1,33 @@
 "use strict";
-// Boss waves — pure module, no DOM/canvas. Every 10th spawn (1-based index:
-// the 10th, 20th, ... spawn) is a boss, in both round and endless modes.
-// A boss is a two-stage kill: stage "meaning" (normal question), then stage
-// "hanzi" (reverse: meaning shown, pick the hanzi). main.js owns the DOM/
-// canvas wiring; this module just holds the pure rules.
+// Review Challenges — pure module, no DOM/canvas. Every 10th planned encounter
+// is a two-stage checkpoint: meaning recognition, then reverse Hanzi recall.
+// main.js owns the DOM/canvas wiring; this module holds the public rules while
+// legacy boss-named exports remain as compatibility aliases during migration.
 
-export const BOSS_EVERY = 10;
-export const BOSS_STAGES = ["meaning", "hanzi"];
-export const bossSpeedFactor = 0.85;   // boss walks 15% slower — bigger, but fair
+export const REVIEW_CHALLENGE_EVERY = 10;
+export const REVIEW_CHALLENGE_STAGES = ["meaning", "hanzi"];
+export const reviewChallengeSpeedFactor = 0.85;
 
-export function isBossSpawn(spawnIndex) {
-  return spawnIndex > 0 && spawnIndex % BOSS_EVERY === 0;
+export function isReviewChallenge(plannedIndex) {
+  return plannedIndex > 0 && plannedIndex % REVIEW_CHALLENGE_EVERY === 0;
 }
 
-export function bossPoints(basePoints) {
+export function reviewChallengePoints(basePoints) {
   return basePoints * 5;
 }
 
-// stage machine: meaning -> hanzi -> dead (word resolves on kill or miss)
-export function nextBossStage(stage) {
+export function nextReviewChallengeStage(stage) {
   if (stage === "meaning") return "hanzi";
+  if (stage === "hanzi") return "complete";
+  return "complete";
+}
+
+export const BOSS_EVERY = REVIEW_CHALLENGE_EVERY;
+export const BOSS_STAGES = REVIEW_CHALLENGE_STAGES;
+export const bossSpeedFactor = reviewChallengeSpeedFactor;
+export const isBossSpawn = isReviewChallenge;
+export const bossPoints = reviewChallengePoints;
+export function nextBossStage(stage) {
+  if (stage === "meaning") return nextReviewChallengeStage(stage);
   return "dead";
 }

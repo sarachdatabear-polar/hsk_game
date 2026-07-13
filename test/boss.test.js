@@ -1,5 +1,22 @@
 import { describe, it, expect } from "vitest";
-import { isBossSpawn, bossPoints, bossSpeedFactor, nextBossStage, BOSS_STAGES, BOSS_EVERY } from "../src/boss.js";
+import {
+  isBossSpawn, bossPoints, bossSpeedFactor, nextBossStage, BOSS_STAGES, BOSS_EVERY,
+  isReviewChallenge, reviewChallengePoints, reviewChallengeSpeedFactor,
+  nextReviewChallengeStage, REVIEW_CHALLENGE_STAGES, REVIEW_CHALLENGE_EVERY,
+} from "../src/boss.js";
+
+describe("Review Challenge public vocabulary", () => {
+  it("exposes the existing two-stage checkpoint rules without combat language", () => {
+    expect(REVIEW_CHALLENGE_EVERY).toBe(10);
+    expect(REVIEW_CHALLENGE_STAGES).toEqual(["meaning", "hanzi"]);
+    expect(isReviewChallenge(10)).toBe(true);
+    expect(isReviewChallenge(9)).toBe(false);
+    expect(nextReviewChallengeStage("meaning")).toBe("hanzi");
+    expect(nextReviewChallengeStage("hanzi")).toBe("complete");
+    expect(reviewChallengePoints(13)).toBe(65);
+    expect(reviewChallengeSpeedFactor).toBeCloseTo(0.85);
+  });
+});
 
 describe("isBossSpawn", () => {
   it("true on positive multiples of 10", () => {
