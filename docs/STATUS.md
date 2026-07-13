@@ -1,15 +1,15 @@
 # Lucky Cat HSK — Status
 
 **Last updated:** 2026-07-13
-**TL;DR:** `main` is live at **SHELL v66**. `development` contains the complete Lantern Trail web/PWA and signed Android release candidate at **SHELL v69** (PR #95). The owner-approved emulator gate passed; promotion to `main` is next.
+**TL;DR:** Lantern Trail is live on `main` and GitHub Pages at **SHELL v69** (PR #98). The public Word Quest release and signed Android candidate passed their accepted release gates.
 
 ## Where the game is
 
 | Tier | State |
 |---|---|
-| **Live on `main` / GitHub Pages** | SHELL **v66** (PR #89, 2026-07-12): retention/auth/cloud-save rounds, content repair, battle-interface Waves 1–2, bug-hunt fixes, and coin-purchase Phase 1 shipped dark behind its provider gate. |
-| **Merged to `development`, unreleased** | **Complete Lantern Trail Phases 0–6**: continuous quest core (`7d0aded`), semantic Word Quest UI (PR #90), existing-asset trail (PR #91), Review Challenge/results/rewards (PR #93), and the v69 responsive/accessibility/native candidate (PR #95, merge `a6164a9`). Automated gates and the accepted emulator playthrough pass; release is approved. |
-| **On feature branches** | `docs/plan-refresh-2026-07-13-phase6-emulator` records the passed native-emulator gate and release approval. No gameplay changes live on this docs branch. |
+| **Live on `main` / GitHub Pages** | SHELL **v69** (PR #98, merge `336a56d`, 2026-07-13): complete Lantern Trail Word Quest, Review Pouch retries, semantic Review Challenge, postcard Results/rewards, responsive/accessibility repairs, updated EN/TH how-to, and the preceding v66 retention/content/battle/coin-purchase foundation. Pages deployment `29238824245` passed. |
+| **Merged to `development`, unreleased** | No unreleased gameplay changes. `development` contains the v69 release content now live on `main`; only the post-release docs refresh is pending here. |
+| **On feature branches** | `docs/plan-refresh-2026-07-13-lantern-release` archives the completed migration plan and records the live release. No gameplay changes live on this docs branch. |
 
 ## Done
 
@@ -44,24 +44,23 @@
 - **Client auth + cloud save** — guest/email OTP and cross-device reconciliation (2026-07-10, PRs #74 and #76) → [archive](archive/planning/2026-07-10-client-auth-plan.md)
 - **Content and live-audit rounds** — gloss/Thai repair, street/quest/battle/audio fixes, and battle-interface Waves 1–2 (2026-07-11–12, PRs #78–#86)
 - **Bug-hunt + coin purchase Phase 1 dark release** (2026-07-12, PRs #87–#89) → [bug-hunt archive](archive/planning/2026-07-12-bug-hunt-fix-plan.md)
-- **Lantern Trail continuous quest core** — deep scheduler, Review Pouch, learned targets, no hearts, and existing-vibe integration; 1,789 tests and 95 assets green (2026-07-13, `7d0aded`) → [live migration plan](planning/2026-07-13-lantern-trail-migration-plan.md)
-- **Lantern Trail Phases 3–4** — semantic Word Quest hierarchy, Lucky Flow/purpose rail, three-node local trail, advancing cat, friendly guide, lucky-charm feedback, and rotating existing chapter art (2026-07-13, PRs #90–#91; 1,811 tests and 95 assets green) → [live migration plan](planning/2026-07-13-lantern-trail-migration-plan.md)
-- **Lantern Trail Phase 5** — semantic Review Challenge, postcard results/rewards, missed-word recap, tomorrow hook, and retry-economy protection; 62 test files / 1,827 tests and 95 assets green (2026-07-13, PR #93, merge `3d3f821`) → [live migration plan](planning/2026-07-13-lantern-trail-migration-plan.md)
-- **Lantern Trail Phase 6 release gate** — SHELL v69 candidate, 44px target floor, responsive/listening/real-Results sweeps, signed APK, and accepted emulator playthrough covering cold launch, first run, Review Pouch, background/resume, settings, Results, and both orientations with zero runtime errors (2026-07-13, PR #95) → [live migration plan](planning/2026-07-13-lantern-trail-migration-plan.md)
+- **Lantern Trail continuous quest core** — deep scheduler, Review Pouch, learned targets, no hearts, and existing-vibe integration; 1,789 tests and 95 assets green (2026-07-13, `7d0aded`) → [archived migration plan](archive/planning/2026-07-13-lantern-trail-migration-plan.md)
+- **Lantern Trail Phases 3–4** — semantic Word Quest hierarchy, Lucky Flow/purpose rail, three-node local trail, advancing cat, friendly guide, lucky-charm feedback, and rotating existing chapter art (2026-07-13, PRs #90–#91; 1,811 tests and 95 assets green) → [archived migration plan](archive/planning/2026-07-13-lantern-trail-migration-plan.md)
+- **Lantern Trail Phase 5** — semantic Review Challenge, postcard results/rewards, missed-word recap, tomorrow hook, and retry-economy protection; 62 test files / 1,827 tests and 95 assets green (2026-07-13, PR #93, merge `3d3f821`) → [archived migration plan](archive/planning/2026-07-13-lantern-trail-migration-plan.md)
+- **Lantern Trail Phase 6 and release** — SHELL v69, 44px target floor, responsive/listening/real-Results sweeps, signed APK, accepted emulator playthrough, and successful live Pages verification (2026-07-13, PRs #95 and #98, live merge `336a56d`) → [archived migration plan](archive/planning/2026-07-13-lantern-trail-migration-plan.md)
 
 ## In progress
 
-- **Lantern Trail release:** the complete v69 web/PWA and Android candidate is merged to `development` through PR #95 (`a6164a9`). The owner-approved emulator gate passed the packaged APK flow with no runtime errors. Promotion to `main` and live Pages verification are now in progress. See the [migration plan](planning/2026-07-13-lantern-trail-migration-plan.md).
-- **Physical-device follow-up:** haptic feel and real mid-range-device performance could not be proven because no phone is available. They are explicitly recorded as non-blocking follow-ups. The candidate APK is `dist-apk/LuckyCatHSK-1.0.0.apk` (SHA-256 `A81970806068EDF0FD436A9B000CF228844081CFDB0EDB264BE3A6CB1526488F`).
+- **Post-release observation:** compare completion, wrong-answer recovery, delayed recall, and D1/D7 return after the v69 release. No corrective feature branch is open.
+- **Physical-device follow-up:** haptic feel and real mid-range-device performance could not be proven because no phone is available. They remain explicit non-blocking follow-ups. The signed APK is `dist-apk/LuckyCatHSK-1.0.0.apk` (SHA-256 `A81970806068EDF0FD436A9B000CF228844081CFDB0EDB264BE3A6CB1526488F`).
 
 ## Planned
 
 Ordered by priority. `(owner)` = needs a human action Claude can't do; `(needs direction)` = Claude can build once you pick an approach; `(Claude-ready)` = actionable now.
 
-1. **Promote Lantern Trail v69** `(Claude/Codex)` — merge the approved `development` release candidate to `main`, verify GitHub Pages serves SHELL v69, then archive the completed migration plan and refresh this status.
-2. **Coin purchase Phase 2 / monetization production gates** `(owner + implementation)` — configure the real provider/products and closed-track testing, then implement the deferred provider/join-key/fresh-cursor gates in the [go-live plan](planning/2026-07-12-coin-purchase-golive.md). See also the [PRD](prd/PRD-monetization-and-production.md).
-3. **Native Thai review of UI strings** `(owner)` — including later account, IAP, and Lantern Trail terminology ([i18n-translation-review.md](i18n/i18n-translation-review.md)).
-4. **Later roadmaps** — HSK 3.0 content refresh, social layer, notifications/widget, and Android release refresh ([ANDROID_BUILD.md](build/ANDROID_BUILD.md)).
+1. **Coin purchase Phase 2 / monetization production gates** `(owner + implementation)` — configure the real provider/products and closed-track testing, then implement the deferred provider/join-key/fresh-cursor gates in the [go-live plan](planning/2026-07-12-coin-purchase-golive.md). See also the [PRD](prd/PRD-monetization-and-production.md).
+2. **Native Thai review of UI strings** `(owner)` — including later account, IAP, and Lantern Trail terminology ([i18n-translation-review.md](i18n/i18n-translation-review.md)).
+3. **Later roadmaps** — HSK 3.0 content refresh, social layer, notifications/widget, and Android release refresh ([ANDROID_BUILD.md](build/ANDROID_BUILD.md)).
 
 _UX-audit polish complete: tone glyphs (#60) + desktop ambient (#61) shipped; **dark theme decided against** (light-only is fine for this mobile learning game)._
 _All 7 shop preview tiles shipped (2026-07-10): the 4 originals plus regenerated `tile-arcade`/`tile-lion-drum` and the new `tile-streak-freeze` consumable tile (audit-v50 F6 closed). Archive note: the 3 final dark-glow raws were pruned before being committed — git history only holds the old white-bg arcade/lion-drum raws; re-drop the originals to `art-drop/` if full-res archival is wanted._
