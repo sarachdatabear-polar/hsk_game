@@ -1,8 +1,8 @@
 # V2/V3/V4 Execution Plan — living checklist
 
-## Lantern Trail checkpoint — Phase 6 release candidate merged (2026-07-13)
+## Lantern Trail — shipped (2026-07-13)
 
-Plan: [2026-07-13-lantern-trail-migration-plan.md](2026-07-13-lantern-trail-migration-plan.md). Core merged as `7d0aded`; Phase 3 through PR #90; Phase 4 through PR #91; Phase 5 through PR #93; Phase 6 automated release candidate through PR #95 (`a6164a9`).
+Plan: [2026-07-13-lantern-trail-migration-plan.md](../archive/planning/2026-07-13-lantern-trail-migration-plan.md). Core merged as `7d0aded`; Phase 3 through PR #90; Phase 4 through PR #91; Phase 5 through PR #93; Phase 6 candidate through PR #95 (`a6164a9`); full release through PR #98 (`336a56d`). GitHub Pages deployment run `29238824245` passed and serves SHELL v69.
 
 - [x] Added the deep `quest-session.js` scheduler and 11 focused tests for learned-word completion, Endless mode, exhaustive decks, retry spacing, Review Challenges, milestones, and interface invariants.
 - [x] Integrated continuous review into the existing battle shell: no hearts or life-based failure; wrong answers/timeouts enter the Review Pouch and return; HUD shows Review and Learned progress.
@@ -12,6 +12,7 @@ Plan: [2026-07-13-lantern-trail-migration-plan.md](2026-07-13-lantern-trail-migr
 - [x] Latest merge gate: production build clean, 62 test files / 1,827 tests passing, 95 manifest assets validated; first-run browser playthrough completed with no console errors.
 - [x] Phase 6 automated release candidate: 44px control floor, short-phone/listening fit repair, real Results probes, updated EN/TH how-to, two consecutive clean responsive sweeps, SHELL v69, Capacitor sync, and signed APK (`A819708…6488F`).
 - [x] Owner gate: because no physical phone is available, the owner accepted the existing Android emulator as the native release gate. The exact signed APK passed cold launch, first-run quest, Review Pouch retry, background/resume, settings, Results, portrait/landscape fit, and zero-error checks. Physical-only haptics and real-device performance remain unproven follow-ups; promotion to `main` is approved.
+- [x] Released to `main` through PR #98 (`336a56d`); live Pages serves `nbhsk-shell-v69`, renders Welcome without horizontal overflow, and has no browser-console errors.
 
 ## i18n pass 2 (2026-07-08)
 

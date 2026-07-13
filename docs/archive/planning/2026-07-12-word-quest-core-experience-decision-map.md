@@ -208,4 +208,4 @@ Measure for two weeks after release:
 
 ## Frontier
 
-The Lantern Trail direction and continuous-review behavior are approved. Implementation is specified in [2026-07-13-lantern-trail-migration-plan.md](../../planning/2026-07-13-lantern-trail-migration-plan.md). The core module and current-shell integration merged on 2026-07-13; the live plan tracks the remaining visual and release phases.
+The Lantern Trail direction and continuous-review behavior were approved. Implementation and release evidence are recorded in [2026-07-13-lantern-trail-migration-plan.md](2026-07-13-lantern-trail-migration-plan.md). The full migration shipped on 2026-07-13 through PR #98.
