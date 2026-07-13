@@ -11,7 +11,7 @@ Plan: [2026-07-13-lantern-trail-migration-plan.md](2026-07-13-lantern-trail-migr
 - [x] Added semantic Review Challenge exports with legacy compatibility, a postcard results/rewards screen, missed-word and next-review hooks, plus retry-economy guards that preserve mastery/XP/quest credit without coins or Lucky Flow inflation.
 - [x] Latest merge gate: production build clean, 62 test files / 1,827 tests passing, 95 manifest assets validated; first-run browser playthrough completed with no console errors.
 - [x] Phase 6 automated release candidate: 44px control floor, short-phone/listening fit repair, real Results probes, updated EN/TH how-to, two consecutive clean responsive sweeps, SHELL v69, Capacitor sync, and signed APK (`A819708…6488F`).
-- [ ] Owner gate: complete the manual matrix on a mid-range Android phone, then release to `main`. Nothing from this partial migration ships before that confirmation.
+- [x] Owner gate: because no physical phone is available, the owner accepted the existing Android emulator as the native release gate. The exact signed APK passed cold launch, first-run quest, Review Pouch retry, background/resume, settings, Results, portrait/landscape fit, and zero-error checks. Physical-only haptics and real-device performance remain unproven follow-ups; promotion to `main` is approved.
 
 ## i18n pass 2 (2026-07-08)
 
