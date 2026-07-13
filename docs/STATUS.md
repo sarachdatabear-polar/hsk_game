@@ -1,15 +1,15 @@
 # Lucky Cat HSK — Status
 
-**Last updated:** 2026-07-09
-**TL;DR:** Live on `main` at **SHELL v43** — everything through today's release train plus the **10 street-deco art files**, **Tone Trainer pitch-contour glyphs**, and a **desktop ambient backdrop**. Nothing pending to merge. The big unstarted item is **monetization / store production**.
+**Last updated:** 2026-07-13
+**TL;DR:** `main` is live at **SHELL v66**. `development` now contains Lantern Trail Phases 0–4: the continuous learning rules, Word Quest hierarchy, and existing-asset trail presentation are merged and verified. Phase 5 results/rewards and the Phase 6 release gate remain intentionally unshipped.
 
 ## Where the game is
 
 | Tier | State |
 |---|---|
-| **Live on `main` / GitHub Pages** | SHELL **v43** (released 2026-07-09). Latest: **10 street-deco art files** integrated — all 15 decos render in shop + street (#59); **Tone Trainer pitch-contour glyphs** replacing the tiny tone marks (#60); **desktop ambient backdrop** — warm vignette + column lift at ≥900px (#61). Earlier today: **shop deco-tile fit** — painted decos fit the preview tile (#55); **removed 4 old recolor skins** midnight/sakura/jade/gold, owners degrade to the default cat (#56); **deco PNG art** — 5 legacy street decos as real art with vector fallback (#50); **UX-audit fixes** — quest-row frame no longer clips text + Street/Quests/More top-align (#51); **shop preview tiles** — effect/soundpack previews fill the tile (#53); **UI polish** audit F1–F10 (#44); **v6 phase 3** — cloze (#41/#42) + Tone Trainer (#43). Earlier: i18n completeness (#46), Monetization P0 foundations (#47), street deco auto-arrange (#48), v5/v6/v7, responsive round, season art. |
-| **Merged to `development`, unreleased** | Nothing — `development` == `main` at v43. |
-| **On feature branches** | None — all merged. |
+| **Live on `main` / GitHub Pages** | SHELL **v66** (PR #89, 2026-07-12): retention/auth/cloud-save rounds, content repair, battle-interface Waves 1–2, bug-hunt fixes, and coin-purchase Phase 1 shipped dark behind its provider gate. |
+| **Merged to `development`, unreleased** | **Lantern Trail Phases 0–4**: continuous quest core (`7d0aded`), semantic Word Quest UI (PR #90, merge `34b7ab3`), and three-node existing-asset Lantern Trail rendering (PR #91, merge `f6b2489`). `development` carries SHELL **v68**, but none of this migration is live until Phases 5–6 pass. |
+| **On feature branches** | `docs/plan-refresh-2026-07-13-phase4` records PRs #90/#91 and archives completed plans. Phase 5 gameplay starts from `f6b2489` after this docs-only refresh. |
 
 ## Done
 
@@ -33,25 +33,33 @@
 - **Monetization P0 no-accounts foundations** — Supabase `schema.sql`+README, privacy-policy DRAFT, pure/tested `interstitial-policy.js` (not wired) (2026-07-09, PR #47) → [PRD](prd/PRD-monetization-and-production.md)
 - **Street deco auto-arrange** — even, tier-aware, provably-non-overlapping deco layout (2026-07-09, PR #48)
 - **Street deco PNG art** — 5 legacy decos rendered as real art with vector fallback (2026-07-09, PR #50)
-- **UX/UI audit round** ([ux-audit-2026-07-09.md](planning/ux-audit-2026-07-09.md)) — Chromium screenshot sweep; shipped fixes: quest-row frame clip + top-align sparse screens (PR #51), shop effect/soundpack preview fill (PR #53). Remaining findings are in **Planned** below.
+- **UX/UI audit round** ([archive](archive/planning/ux-audit-2026-07-09.md)) — Chromium screenshot sweep; shipped fixes: quest-row frame clip + top-align sparse screens (PR #51), shop effect/soundpack preview fill (PR #53).
 - **Shop deco-tile fit** — painted deco sprites fit the shop preview tile instead of overflowing at street scale (2026-07-09, PR #55)
 - **Removed 4 deprecated skins** — midnight/sakura/jade/gold fully removed (catalog, palettes, i18n, sprites, manifest, precache, art); owners degrade gracefully to the default cat (2026-07-09, PR #56)
 - **10 street-deco art files** — owner-generated art intaken + integrated; all 15 decos render in shop + street (2026-07-09, PR #59)
 - **Tone Trainer pitch-contour glyphs** — replaced the tiny spacing tone marks with Chao-5-level contours (2026-07-09, PR #60)
 - **Desktop ambient backdrop** — warm vignette + column lift so the wide-screen column reads as an intentional panel (2026-07-09, PR #61)
 - **Shop effect/soundpack tile art (4 of 6)** — painted full-bleed tiles for sakura-fx, firecracker-fx, star-shower, bells replace the procedural previews; arcade + lion-drum fall back to procedural pending art regen (2026-07-09)
+- **Retention pack + follow-ups** — streak freezes, monthly quest, streak saver, and repair round (2026-07-10, PRs #70–#71) → [archive](archive/planning/2026-07-09-retention-pack.md)
+- **Client auth + cloud save** — guest/email OTP and cross-device reconciliation (2026-07-10, PRs #74 and #76) → [archive](archive/planning/2026-07-10-client-auth-plan.md)
+- **Content and live-audit rounds** — gloss/Thai repair, street/quest/battle/audio fixes, and battle-interface Waves 1–2 (2026-07-11–12, PRs #78–#86)
+- **Bug-hunt + coin purchase Phase 1 dark release** (2026-07-12, PRs #87–#89) → [bug-hunt archive](archive/planning/2026-07-12-bug-hunt-fix-plan.md)
+- **Lantern Trail continuous quest core** — deep scheduler, Review Pouch, learned targets, no hearts, and existing-vibe integration; 1,789 tests and 95 assets green (2026-07-13, `7d0aded`) → [live migration plan](planning/2026-07-13-lantern-trail-migration-plan.md)
+- **Lantern Trail Phases 3–4** — semantic Word Quest hierarchy, Lucky Flow/purpose rail, three-node local trail, advancing cat, friendly guide, lucky-charm feedback, and rotating existing chapter art (2026-07-13, PRs #90–#91; 1,811 tests and 95 assets green) → [live migration plan](planning/2026-07-13-lantern-trail-migration-plan.md)
 
 ## In progress
 
-- Nothing on branches. All merged and released (SHELL v43).
+- **Lantern Trail migration:** Phases 0–4 are merged to `development`. Phase 5 now owns Review Challenge/results/reward presentation and its economy-rule audit; Phase 6 is the responsive/device/release gate. See the [migration plan](planning/2026-07-13-lantern-trail-migration-plan.md).
+- **Docs refresh:** `docs/plan-refresh-2026-07-13-phase4` records PRs #90/#91 and the Claude + Codex handoff. No gameplay changes live on this docs branch.
 
 ## Planned
 
 Ordered by priority. `(owner)` = needs a human action Claude can't do; `(needs direction)` = Claude can build once you pick an approach; `(Claude-ready)` = actionable now.
 
-1. **Monetization P0 — account-gated slices** `(owner)` — the no-accounts slices are done (#46/#47). Remaining P0 needs the owner: stand up the Supabase project (apply [`docs/supabase/schema.sql`](supabase/schema.sql)), register RevenueCat products + AdMob, add the iOS/Capacitor target, get the privacy policy legally reviewed. Then **P1 (ads)** wires AdMob into the built `src/monetization/interstitial-policy.js`. Provider abstraction/mock + results UI + client clamp are deferred until the SDKs exist. See [PRD](prd/PRD-monetization-and-production.md).
-2. **Native Thai review of UI strings** `(owner)` — incl. the i18n pass-2/3 additions ([i18n-translation-review.md](i18n/i18n-translation-review.md)).
-3. **Roadmaps not started** — HSK 3.0 content refresh; social layer; notifications/widget; Android release refresh ([ANDROID_BUILD.md](build/ANDROID_BUILD.md)). Optional: deco reorder self-expression; a display cap / second row when the deco catalog grows past ~15.
+1. **Finish Lantern Trail Phases 5–6** `(Claude/Codex-ready)` — Review Challenge/results/reward presentation and economy audit, then the full responsive/device playtest and release to `main`. Do not ship the current partial migration alone.
+2. **Coin purchase Phase 2 / monetization production gates** `(owner + implementation)` — configure the real provider/products and closed-track testing, then implement the deferred provider/join-key/fresh-cursor gates in the [go-live plan](planning/2026-07-12-coin-purchase-golive.md). See also the [PRD](prd/PRD-monetization-and-production.md).
+3. **Native Thai review of UI strings** `(owner)` — including later account, IAP, and Lantern Trail terminology ([i18n-translation-review.md](i18n/i18n-translation-review.md)).
+4. **Later roadmaps** — HSK 3.0 content refresh, social layer, notifications/widget, and Android release refresh ([ANDROID_BUILD.md](build/ANDROID_BUILD.md)).
 
 _UX-audit polish complete: tone glyphs (#60) + desktop ambient (#61) shipped; **dark theme decided against** (light-only is fine for this mobile learning game)._
 _All 7 shop preview tiles shipped (2026-07-10): the 4 originals plus regenerated `tile-arcade`/`tile-lion-drum` and the new `tile-streak-freeze` consumable tile (audit-v50 F6 closed). Archive note: the 3 final dark-glow raws were pruned before being committed — git history only holds the old white-bg arcade/lion-drum raws; re-drop the originals to `art-drop/` if full-res archival is wanted._

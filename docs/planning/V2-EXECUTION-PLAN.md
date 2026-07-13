@@ -1,5 +1,16 @@
 # V2/V3/V4 Execution Plan — living checklist
 
+## Lantern Trail checkpoint — Phases 0–4 merged (2026-07-13)
+
+Plan: [2026-07-13-lantern-trail-migration-plan.md](2026-07-13-lantern-trail-migration-plan.md). Core merged as `7d0aded`; Phase 3 merged through PR #90 (`34b7ab3`); Phase 4 merged through PR #91 (`f6b2489`).
+
+- [x] Added the deep `quest-session.js` scheduler and 11 focused tests for learned-word completion, Endless mode, exhaustive decks, retry spacing, Review Challenges, milestones, and interface invariants.
+- [x] Integrated continuous review into the existing battle shell: no hearts or life-based failure; wrong answers/timeouts enter the Review Pouch and return; HUD shows Review and Learned progress.
+- [x] Preserved the current warm storybook palette, painted scenes, cat/raccoon characters, audio, reveal timing, motion, and owned assets.
+- [x] Added the semantic Word Quest hierarchy, Review Pouch/Lucky Flow purpose rail, three-node local Lantern Trail, advancing cat, friendly guide, lucky-charm feedback, and existing-art chapter rotation.
+- [x] Latest merge gate: production build clean, 59 test files / 1,811 tests passing, 95 manifest assets validated.
+- [ ] Finish Phase 5 Review Challenge/results/reward presentation and economy audit, then Phase 6 responsive/device release gate. Nothing from this partial migration ships to `main` alone.
+
 ## i18n pass 2 (2026-07-08)
 
 Plan: [2026-07-08-i18n-pass-2.md](../superpowers/plans/2026-07-08-i18n-pass-2.md). Branch `feat/i18n-pass-2`.
