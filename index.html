@@ -448,12 +448,15 @@
      HERE (on the button), not on .opt-label, so inheritance keeps carrying
      it down at every breakpoint. 20 -> 19px lands the base case in spec
      §5's 18-20px range without touching that cascade. */
-  #opts button{padding:12px 10px; font-size:19px; font-weight:700; line-height:1.25; text-align:center;
+  /* Goal 2026-07-13: choice cards shrunk ~15% (19->16px, 72->62px, 12/10->10/8
+     padding) to sit lighter under the smaller plate. The -webkit-line-clamp:3
+     below is preserved so a long bilingual gloss still fits without clipping. */
+  #opts button{padding:10px 8px; font-size:16px; font-weight:700; line-height:1.25; text-align:center;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     background-color:var(--lc-cream); color:var(--lc-ink);
-    border:1.5px solid var(--lc-sand); border-image:var(--f-ui-button-neutral, none); border-radius:14px; min-height:72px;
+    border:1.5px solid var(--lc-sand); border-image:var(--f-ui-button-neutral, none); border-radius:14px; min-height:62px;
     box-shadow:0 2px 4px rgba(46,42,36,.14);
-    max-height:140px;
+    max-height:118px;
     overflow-wrap:anywhere;}
   /* T7 pressed state (spec §5): translate + shrink the shadow + darken the
      border — no color change, so it reads as "pushed paper", not a new skin. */
@@ -471,7 +474,7 @@
      centered" report didn't reproduce and is believed stale-shell). */
   #opts button .opt-label{display:-webkit-box; -webkit-box-orient:vertical;
     -webkit-line-clamp:3; overflow:hidden; flex-shrink:0; width:100%; text-align:center;}
-  #opts button .th{display:block; color:var(--lc-brown); font-size:15px; font-weight:600; margin-top:2px; text-align:center;}
+  #opts button .th{display:block; color:var(--lc-brown); font-size:13px; font-weight:600; margin-top:2px; text-align:center;}
   /* reveal states never rely on color alone (§11): a ✓/✕ affix rides along
      with the green/coral fill + the game's existing sound/haptic/motion.
      T7: shadows restyled to match the flat idle button (single warm shadow,

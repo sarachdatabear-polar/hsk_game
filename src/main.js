@@ -9,6 +9,7 @@ import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus, im
 import { sfx, setSfxVolume, clampVol } from "./sfx.js";
 import { drawCat } from "./cat.js";
 import { drawRaccoon } from "./raccoon.js";
+import { CONTENT_H } from "./sprite-draw.js";
 import { uiScale, layout, lanternTrailLayout, lanternTrailBackdrop, lanternApproachScale } from "./layout.js";
 import { loadSprites, sprite } from "./sprites.js";
 import { nineSliceRects } from "./nineslice.js";
@@ -2311,10 +2312,18 @@ function drawWordPlate(z, vis, now){
   // idle or under reduced motion — no vertical motion, per "fades only").
   const bounce = (!REDUCED_MOTION && B.plaqueHitAt)
     ? plaqueBounce(performance.now() - B.plaqueHitAt) : 0;
-  const wy = Math.round(B.h * 0.36) + Math.round(bounce);
-  const T = B.L.textS;   // plaque metrics scale with the width-driven text scale
+  // Goal 2026-07-13: shrink the plate ~15% and lift it (0.36 -> 0.31) so the
+  // recap strip below it clears the cat/raccoon on short-and-wide canvases.
+  // CARD scales the chrome (padding/badge/min-widths/pinyin) down; the hanzi
+  // glyph shrinks too but is floored at 56 CSS px so it never drops below the
+  // PRD §6.1 legibility floor on narrow phones (where the width term binds).
+  const CARD = 0.85;
+  const wy = Math.round(B.h * 0.31) + Math.round(bounce);
+  const T = B.L.textS * CARD;   // plaque metrics scale with the width-driven text scale
+  const hzPx = Math.max(56, B.L.hanziPx * CARD);
+  const pyPx = B.L.pinyinPx * CARD;
   ctx.save();
-  ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK);
+  ctx.font = fontString(700, hzPx, HANZI_STACK);
   const textW = Math.max(ctx.measureText(hanzi).width, 74*T);
   const spkR = 12*T;
   const instrPx = 13*T;
@@ -2323,19 +2332,19 @@ function drawWordPlate(z, vis, now){
   // regardless of reveal state, so it never resizes/jumps when revealed.
   let widestLine = 0;
   if(pinyin){
-    ctx.font = fontString(600, B.L.pinyinPx, LATIN_STACK);
+    ctx.font = fontString(600, pyPx, LATIN_STACK);
     widestLine = Math.max(widestLine, ctx.measureText(pinyin).width);
   }
   ctx.font = fontString(600, instrPx, LATIN_STACK);
   widestLine = Math.max(widestLine, ctx.measureText(instruction).width);
-  ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK); // restore: hanzi font, as measured above
+  ctx.font = fontString(700, hzPx, HANZI_STACK); // restore: hanzi font, as measured above
   const lw = Math.min(B.w - 24*T, Math.max(textW + 56*T + spkR*2.2, widestLine + 24*T));
   // Stacked rows, top to bottom: instruction -> pinyin (if shown) -> Hanzi.
   // No translation row — English/Thai live on the choice buttons only.
   const padV = 10*T;
   const instrH = 16*T;
   const pinyinH = pinyin ? 22*T : 0;
-  const hanziH = B.L.hanziPx * 1.05;
+  const hanziH = hzPx * 1.05;
   const lh = padV*2 + instrH + pinyinH + hanziH;
   const x = B.w/2 - lw/2, y = wy - lh/2;
   const plaqueImg = sprite("ui-word-plaque");
@@ -2378,9 +2387,9 @@ function drawWordPlate(z, vis, now){
     cy += instrH;
   }
   if(pinyin){
-    ctx.font = fontString(600, B.L.pinyinPx, LATIN_STACK);
+    ctx.font = fontString(600, pyPx, LATIN_STACK);
     const pw = ctx.measureText(pinyin).width;
-    if(pw > innerW) ctx.font = fontString(600, B.L.pinyinPx * (innerW/pw), LATIN_STACK);
+    if(pw > innerW) ctx.font = fontString(600, pyPx * (innerW/pw), LATIN_STACK);
     ctx.fillStyle = "#8C5F2A";
     ctx.fillText(pinyin, B.w/2, cy + pinyinH/2);
     // T4: speaker badge beside the pinyin, inside the card's right margin —
@@ -2395,7 +2404,7 @@ function drawWordPlate(z, vis, now){
   }else{
     B.speakerRect = null;
   }
-  ctx.font = fontString(700, B.L.hanziPx, HANZI_STACK);
+  ctx.font = fontString(700, hzPx, HANZI_STACK);
   ctx.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
   ctx.fillText(hanzi, B.w/2, cy + hanziH/2);
   cy += hanziH;
@@ -2443,7 +2452,20 @@ function drawRecapStrip(w, now){
   const sw = totalW + padX*2;
   const sh = fontPx*1.5 + padY*2;
   const sx = B.w/2 - sw/2;
-  const sy = r.y + r.h + 14*T;
+  // Goal 2026-07-13 overlap fix: pin the strip under the plate, but clamp it
+  // up so its bottom stays clear of the tallest character on screen. Both cat
+  // and raccoon are bottom-anchored at (gy + 6*B.S) and draw CONTENT_H*scale
+  // tall; bosses draw at CHAR_BASE*1.5, so the guard keys off whichever is
+  // present. Bounded fallback: on a canvas too short to hold plate + strip +
+  // character, the strip stays just under the plate rather than climbing over
+  // it (prefers plate-attachment over a giant-boss edge case).
+  let sy = r.y + r.h + 12*T;
+  const bossOnScreen = !!(B.zombie?.boss || B.reveal?.boss);
+  const charScale = CHAR_BASE * (bossOnScreen ? 1.5 : 1) * B.L.mascotS;
+  const charTop = (B.h - B.L.ground + 6*B.S) - CONTENT_H*charScale;
+  if(sy + sh + 6*T > charTop){
+    sy = Math.max(r.y + r.h + 4*T, charTop - sh - 6*T);
+  }
   ctx.fillStyle = "#FBF5E8";
   roundRect(sx, sy, sw, sh, sh/2); ctx.fill();
   ctx.strokeStyle = "#EAC796";

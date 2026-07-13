@@ -1,14 +1,14 @@
 # Lucky Cat HSK — Status
 
 **Last updated:** 2026-07-13
-**TL;DR:** Lantern Trail is live on `main` and GitHub Pages at **SHELL v69** (PR #98). The public Word Quest release and signed Android candidate passed their accepted release gates.
+**TL;DR:** Lantern Trail is live on `main` and GitHub Pages at **SHELL v69** (PR #98). The public Word Quest release and signed Android candidate passed their accepted release gates. Since then, the **re-engagement notification** (day-3 lapsed-streak nudge) shipped to `main` (PRs #101/#102, deploy `29262391961`) — **native-only, so no SHELL bump** (web-inert; runs on the next Android cut).
 
 ## Where the game is
 
 | Tier | State |
 |---|---|
 | **Live on `main` / GitHub Pages** | SHELL **v69** (PR #98, merge `336a56d`, 2026-07-13): complete Lantern Trail Word Quest, Review Pouch retries, semantic Review Challenge, postcard Results/rewards, responsive/accessibility repairs, updated EN/TH how-to, and the preceding v66 retention/content/battle/coin-purchase foundation. Pages deployment `29238824245` passed. |
-| **Merged to `development`, unreleased** | No unreleased gameplay changes. `development` contains the v69 release content now live on `main`; only the post-release docs refresh is pending here. |
+| **Merged to `development`, unreleased** | No unreleased gameplay changes. `development` and `main` both carry the v69 content plus the re-engagement notification (native-only). |
 | **On feature branches** | `docs/plan-refresh-2026-07-13-lantern-release` archives the completed migration plan and records the live release. No gameplay changes live on this docs branch. |
 
 ## Done
@@ -48,6 +48,7 @@
 - **Lantern Trail Phases 3–4** — semantic Word Quest hierarchy, Lucky Flow/purpose rail, three-node local trail, advancing cat, friendly guide, lucky-charm feedback, and rotating existing chapter art (2026-07-13, PRs #90–#91; 1,811 tests and 95 assets green) → [archived migration plan](archive/planning/2026-07-13-lantern-trail-migration-plan.md)
 - **Lantern Trail Phase 5** — semantic Review Challenge, postcard results/rewards, missed-word recap, tomorrow hook, and retry-economy protection; 62 test files / 1,827 tests and 95 assets green (2026-07-13, PR #93, merge `3d3f821`) → [archived migration plan](archive/planning/2026-07-13-lantern-trail-migration-plan.md)
 - **Lantern Trail Phase 6 and release** — SHELL v69, 44px target floor, responsive/listening/real-Results sweeps, signed APK, accepted emulator playthrough, and successful live Pages verification (2026-07-13, PRs #95 and #98, live merge `336a56d`) → [archived migration plan](archive/planning/2026-07-13-lantern-trail-migration-plan.md)
+- **Re-engagement notification** — day-3 lapsed-streak "come back" local notification for players with an established streak (notification id 1002, distinct from the same-day streak-saver 1001); pure `reengagePlan()` + native `syncReengageReminder()`, EN/TH copy (TH queued for native review). Native-only, **no SHELL bump**; suite 1833, whole-branch review clean (2026-07-13, PRs #101/#102, live merge `223ca53`) → design/plan `planning/2026-07-13-reengagement-notification-{design,plan}.md`. Owed on next Android cut: `cap sync` + emulator check of id-1002 firing/cancel.
 
 ## In progress
 
