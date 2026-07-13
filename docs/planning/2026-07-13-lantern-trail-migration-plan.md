@@ -1,8 +1,20 @@
 # Lantern Trail Migration Plan
 
-**Status:** Ready for implementation  
+**Status:** In progress — Phases 0–2 merged to `development` in `7d0aded`; Phases 3–6 remain pending
 **Product direction:** Replace the visible battle with a continuous Word Quest while reusing the current art and learning systems.  
 **Primary rule:** A finite session length means words successfully learned, not attempts made. A missed word returns until it is answered correctly.
+
+### Implementation checkpoint (Codex + Claude workflow, 2026-07-13)
+
+- [x] Phase 0 characterization and regression coverage retained; merged build passes 1,789 tests and validates all 95 manifest assets.
+- [x] Phase 1 deep `quest-session.js` module: finite learned-word targets, exhaustive custom/intro decks, Endless mode, spaced retries, Review Pouch state, every-10th Review Challenge, five-word milestones, and twenty-word chapters.
+- [x] Phase 2 integration behind the current visual shell: hearts/lives removed, misses and timeouts requeue, HUD reports `Review N` and `Learned N/target`, existing warm art and animation remain intact.
+- [ ] Phase 3 semantic page layout and purpose/lantern bar.
+- [ ] Phase 4 visible Lantern Trail rendering and five-word landmark celebrations.
+- [ ] Phase 5 Review Challenge/results/reward presentation and economy-rule audit.
+- [ ] Phase 6 full device verification, SHELL bump, and release to `main`.
+
+Do not describe the migration as fully shipped: `main` still serves the pre-migration release, and the merged core on `development` intentionally keeps the existing battle-stage layout until Phases 3–5 replace it as one coherent experience.
 
 ## 0. Decisions locked (grilled with Jordan, 2026-07-13)
 

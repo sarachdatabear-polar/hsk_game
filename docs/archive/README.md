@@ -20,3 +20,13 @@ current state in [../STATUS.md](../STATUS.md).
 
 ## planning/
 - [USER-CHECKLIST.md](planning/USER-CHECKLIST.md) — human-task list for v2–Visual Slice rounds, all shipped. Stale since v5.
+- [2026-07-09-battle-screen-mobile-fit.md](planning/2026-07-09-battle-screen-mobile-fit.md) — responsive battle fit plan. Shipped to `development` 2026-07-08; permanent viewport gates retained.
+- [2026-07-09-retention-pack.md](planning/2026-07-09-retention-pack.md) — streak freezes, monthly quest, streak saver, and rewarded-first pivot. Shipped 2026-07-10, PR #70.
+- [2026-07-10-audit-v50-fixes.md](planning/2026-07-10-audit-v50-fixes.md) — v50 audit implementation plan. Shipped 2026-07-10, PR #72.
+- [2026-07-10-client-auth-design.md](planning/2026-07-10-client-auth-design.md) / [plan](planning/2026-07-10-client-auth-plan.md) — guest/email OTP client authentication. Shipped 2026-07-10, PR #74.
+- [2026-07-10-cloud-save-predesign-notes.md](planning/2026-07-10-cloud-save-predesign-notes.md), [design](planning/2026-07-10-cloud-save-design.md), and [plan](planning/2026-07-10-cloud-save-plan.md) — cloud reconciliation investigation and implementation. Shipped 2026-07-10, PR #76.
+- [2026-07-10-retention-followups.md](planning/2026-07-10-retention-followups.md) — retention-pack repair round. Shipped 2026-07-10, PR #71.
+- [2026-07-11-jordan-audit-round.md](planning/2026-07-11-jordan-audit-round.md) — live-audit fixes for street, quest popup, battle, audio, and glosses. Shipped 2026-07-11, PR #78.
+- [2026-07-12-bug-hunt-fix-plan.md](planning/2026-07-12-bug-hunt-fix-plan.md) — monthly-reward P0 and verified bug-hunt repairs. Shipped 2026-07-12, PR #87.
+- [ux-audit-2026-07-09.md](planning/ux-audit-2026-07-09.md) — screenshot UX/UI audit; fixes shipped through PRs #51, #53, #55, #60, and #61; remaining roadmap folded into STATUS.
+- [2026-07-12-word-quest-core-experience-decision-map.md](planning/2026-07-12-word-quest-core-experience-decision-map.md) — direction research superseded by the approved live [Lantern Trail migration plan](../planning/2026-07-13-lantern-trail-migration-plan.md); core merged 2026-07-13 as `7d0aded`.
