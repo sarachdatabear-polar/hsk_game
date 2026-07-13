@@ -1,15 +1,15 @@
 # Lucky Cat HSK — Status
 
 **Last updated:** 2026-07-13
-**TL;DR:** `main` is live at **SHELL v66**. `development` is one product checkpoint ahead: the continuous Lantern Trail quest core is merged and verified, while the visible Lantern Trail layout and release phases remain intentionally unshipped.
+**TL;DR:** `main` is live at **SHELL v66**. `development` now contains Lantern Trail Phases 0–4: the continuous learning rules, Word Quest hierarchy, and existing-asset trail presentation are merged and verified. Phase 5 results/rewards and the Phase 6 release gate remain intentionally unshipped.
 
 ## Where the game is
 
 | Tier | State |
 |---|---|
 | **Live on `main` / GitHub Pages** | SHELL **v66** (PR #89, 2026-07-12): retention/auth/cloud-save rounds, content repair, battle-interface Waves 1–2, bug-hunt fixes, and coin-purchase Phase 1 shipped dark behind its provider gate. |
-| **Merged to `development`, unreleased** | **Lantern Trail core** (`7d0aded`, 2026-07-13): learned-word completion, spaced Review Pouch retries, Endless/exhaustive sessions, Review Challenges, and no life-based failure. It deliberately retains the current battle-stage layout until migration Phases 3–5 are coherent. |
-| **On feature branches** | `docs/plan-refresh-2026-07-13` records the merge and archives completed plans. No unmerged gameplay branch is active. |
+| **Merged to `development`, unreleased** | **Lantern Trail Phases 0–4**: continuous quest core (`7d0aded`), semantic Word Quest UI (PR #90, merge `34b7ab3`), and three-node existing-asset Lantern Trail rendering (PR #91, merge `f6b2489`). `development` carries SHELL **v68**, but none of this migration is live until Phases 5–6 pass. |
+| **On feature branches** | `docs/plan-refresh-2026-07-13-phase4` records PRs #90/#91 and archives completed plans. Phase 5 gameplay starts from `f6b2489` after this docs-only refresh. |
 
 ## Done
 
@@ -45,17 +45,18 @@
 - **Content and live-audit rounds** — gloss/Thai repair, street/quest/battle/audio fixes, and battle-interface Waves 1–2 (2026-07-11–12, PRs #78–#86)
 - **Bug-hunt + coin purchase Phase 1 dark release** (2026-07-12, PRs #87–#89) → [bug-hunt archive](archive/planning/2026-07-12-bug-hunt-fix-plan.md)
 - **Lantern Trail continuous quest core** — deep scheduler, Review Pouch, learned targets, no hearts, and existing-vibe integration; 1,789 tests and 95 assets green (2026-07-13, `7d0aded`) → [live migration plan](planning/2026-07-13-lantern-trail-migration-plan.md)
+- **Lantern Trail Phases 3–4** — semantic Word Quest hierarchy, Lucky Flow/purpose rail, three-node local trail, advancing cat, friendly guide, lucky-charm feedback, and rotating existing chapter art (2026-07-13, PRs #90–#91; 1,811 tests and 95 assets green) → [live migration plan](planning/2026-07-13-lantern-trail-migration-plan.md)
 
 ## In progress
 
-- **Lantern Trail migration:** Phases 0–2 are merged to `development`; Phases 3–5 remain — semantic mobile layout, the visible five-lantern journey, landmark celebrations, and Review Challenge/results/reward presentation. Phase 6 is the device/release gate. See the [migration plan](planning/2026-07-13-lantern-trail-migration-plan.md).
-- **Docs refresh:** `docs/plan-refresh-2026-07-13` archives completed plans and records the Claude + Codex handoff. No gameplay changes live on this docs branch.
+- **Lantern Trail migration:** Phases 0–4 are merged to `development`. Phase 5 now owns Review Challenge/results/reward presentation and its economy-rule audit; Phase 6 is the responsive/device/release gate. See the [migration plan](planning/2026-07-13-lantern-trail-migration-plan.md).
+- **Docs refresh:** `docs/plan-refresh-2026-07-13-phase4` records PRs #90/#91 and the Claude + Codex handoff. No gameplay changes live on this docs branch.
 
 ## Planned
 
 Ordered by priority. `(owner)` = needs a human action Claude can't do; `(needs direction)` = Claude can build once you pick an approach; `(Claude-ready)` = actionable now.
 
-1. **Finish Lantern Trail Phases 3–6** `(Claude/Codex-ready)` — visual hierarchy and purpose bar, five-lantern journey, milestone/chapter celebration, results/economy audit, full responsive playtest, then one SHELL bump and release. Do not ship the current partial migration alone.
+1. **Finish Lantern Trail Phases 5–6** `(Claude/Codex-ready)` — Review Challenge/results/reward presentation and economy audit, then the full responsive/device playtest and release to `main`. Do not ship the current partial migration alone.
 2. **Coin purchase Phase 2 / monetization production gates** `(owner + implementation)` — configure the real provider/products and closed-track testing, then implement the deferred provider/join-key/fresh-cursor gates in the [go-live plan](planning/2026-07-12-coin-purchase-golive.md). See also the [PRD](prd/PRD-monetization-and-production.md).
 3. **Native Thai review of UI strings** `(owner)` — including later account, IAP, and Lantern Trail terminology ([i18n-translation-review.md](i18n/i18n-translation-review.md)).
 4. **Later roadmaps** — HSK 3.0 content refresh, social layer, notifications/widget, and Android release refresh ([ANDROID_BUILD.md](build/ANDROID_BUILD.md)).
