@@ -129,14 +129,17 @@ The app is distributed as a private signed APK — no Google Play, no account ne
 To update later: bump `versionCode`/`versionName` in `android/app/build.gradle`, rebuild, reinstall.
 **The same keystore must sign every update** — back up `android-signing/` now.
 
-## Final regression (Task 9)
+## Latest release candidate (Lantern Trail Phase 6, 2026-07-13)
 
-The native wrapper does not touch the web/PWA build. Verified after all Phase-3 work:
-- `npx vitest run` → 30 passed (incl. native.js + audio.js unit tests)
-- Phase-2 headless e2e over `http://localhost:8000` → 21/21 checks (home, scope, flashcards, battle,
-  results, fight-misses, progress, scores, audio, offline PWA)
-- `file://` double-click of `index.html` → home renders, battle plays, `Capacitor.isNativePlatform()`
-  is false, zero console errors (native code fully inert on plain web)
+- Web gate: 62 test files / 1,827 tests, production build, and 95 manifest assets pass.
+- Responsive gate: two consecutive 10-viewport sweeps plus both listening probes and real Results
+  probes at 360×640, 390×844, and 640×360 pass.
+- PWA cache: SHELL v69.
+- Signed APK: `dist-apk/LuckyCatHSK-1.0.0.apk`, 38,282,269 bytes.
+- SHA-256: `A81970806068EDF0FD436A9B000CF228844081CFDB0EDB264BE3A6CB1526488F`.
+- Signature: verified with `apksigner`; existing certificate DN starts `CN=NorthBear`.
+- Remaining gate: install this exact APK on a mid-range Android phone and complete the Lantern Trail
+  manual matrix in the live migration plan before releasing to `main`.
 
 ## Notes
 - `android/` and `android-signing/` are **git-ignored**. `android/` is fully regenerable

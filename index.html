@@ -232,12 +232,12 @@
   #street-caption{color:var(--lc-brown); font-size:12px; text-align:center; margin:4px 0 0;}
   /* compact — must not steal meaningful height from the scene above it */
   #s-street{position:relative;}
-  .street-quests-btn{align-self:center; width:auto; min-width:140px; margin-top:8px; padding:8px 22px; min-height:40px;}
+  .street-quests-btn{align-self:center; width:auto; min-width:140px; margin-top:8px; padding:8px 22px; min-height:44px;}
   /* Quest popup reuses .pause-overlay/.pause-panel (see #s-battle) — scoped to
      #s-street (position:relative above) so it doesn't cover the bottom nav. */
   .quest-popup-head{display:flex; align-items:center; justify-content:space-between; gap:10px;}
   .quest-popup-head .pause-title{margin:0; text-align:left;}
-  .overlay-close{width:34px; height:34px; min-height:34px; min-width:34px; padding:0; flex:0 0 auto;
+  .overlay-close{width:44px; height:44px; min-height:44px; min-width:44px; padding:0; flex:0 0 auto;
     display:flex; align-items:center; justify-content:center; font-size:20px; line-height:1; font-weight:800;
     background-color:var(--lc-sand); color:var(--lc-ink); border:2px solid var(--lc-brown); border-radius:50%;}
   .overlay-close:active{transform:scale(.92);}
@@ -394,7 +394,7 @@
      regardless of viewport, so the canvas floor always yields exactly enough
      to make room for the extra row while a listen question is live
      (main.js toggles #s-battle.listen-fmt per-question in renderQuestion). */
-  #s-battle.listen-fmt .cv-wrap{min-height:130px;}
+  #s-battle.listen-fmt .cv-wrap{min-height:116px;}
   #cv{width:100%; height:auto; flex:1 1 0; min-height:0; border-radius:14px;
     background-image:linear-gradient(var(--lc-day-hi),var(--lc-day-mid) 60%,var(--lc-day-ground));
     background-size:cover; background-position:bottom; background-repeat:no-repeat;
@@ -516,6 +516,11 @@
      below — same equal-specificity/source-order cascade rule noted there —
      so the ≤620 tier's more aggressive 13px/80px values still win beneath
      620px; this block only takes over from 621-700px. */
+  /* Mid-short phones sit just above the SE tier: let the painted scene yield
+     20px before bilingual long-tail answers ever fall below the fold. */
+  @media (min-height:621px) and (max-height:700px) and (orientation:portrait){
+    .cv-wrap{min-height:240px;}
+  }
   @media (max-height: 700px) and (orientation: portrait){
     #opts button{align-items:flex-start; max-height:112px; overflow:hidden;}
     /* flex-shrink:0 is load-bearing: the button is a column flex container
@@ -657,7 +662,8 @@
   .missrow .hz{font-size:24px; min-width:70px;}
   .missrow .det{flex:1; font-size:13.5px; color:var(--muted); line-height:1.35;}
   .missrow .det .py{color:var(--lc-brown);}
-  .missrow .sp{background:none; font-size:19px; padding:4px;}
+  .missrow .sp{background:none; font-size:19px; padding:4px; min-width:44px; min-height:44px;
+    display:inline-flex; align-items:center; justify-content:center;}
   .scorelist{background-color:var(--panel-wash); border-radius:12px; border:1px solid var(--panel-border); padding:8px 14px;}
   .scorerow{display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(132,96,67,.22); font-size:15px;}
   .scorerow:last-child{border-bottom:none;}
@@ -868,7 +874,7 @@
   .j-play{background-color:var(--lc-sun);
     background-image:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun) 55%,var(--lc-sun-deep));
     border:2px solid var(--lc-brown); border-radius:12px; color:var(--lc-brown);
-    font-weight:800; font-size:12.5px; padding:8px 12px; min-height:40px; flex:0 0 auto;}
+    font-weight:800; font-size:12.5px; padding:8px 12px; min-height:44px; flex:0 0 auto;}
 
   .home-cta{display:flex; align-items:stretch; gap:10px; margin:8px 0 2px;}
   .start-btn{flex:1 1 62%; font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif; font-weight:800;
@@ -978,7 +984,7 @@
     .quest-eyebrow{font-size:8px;}
     .quest-route-name{font-size:12px;}
     .hud-pill{padding:3px 8px; font-size:12px;}
-    .hud-round{width:36px; height:36px; min-width:36px; font-size:14px;}
+    .hud-round{width:44px; height:44px; min-width:44px; font-size:14px;}
     .hud-progress-track{max-width:100px; height:5px;}
     .hud-progress-count{font-size:11px;}
     .cv-wrap{grid-area:canvas; min-height:0;}
@@ -1003,14 +1009,16 @@
     .level-info{min-width:52px;}
     .level-text{font-size:11px;}
     .xp-bar{width:52px;}
-    .gear-btn{width:36px; height:36px; min-width:36px;}
+    .gear-btn{width:44px; height:44px; min-width:44px;}
     .gear-btn .asset-icon{width:16px; height:16px;}
     .brand-title{margin:2px 0 0; padding:2px 14px 3px;}
     .brand-sub{font-size:11px;}
     .brand-cn{font-size:9px;}
     .brand-main{font-size:22px;}
-    .home-hero{flex:0 0 auto; min-height:0; max-height:13vh; padding-bottom:0;}
-    .hero-cat{width:auto; height:100%; max-height:13vh; min-width:0;}
+    /* Keep every control at the 44px release floor by yielding the decorative
+       hero's vertical slot on short landscape phones. The painted home scene,
+       wordmark, avatar, and warm palette keep the same visual identity. */
+    .home-hero{display:none;}
     .streak-card{padding:4px 10px; margin:3px 0;}
     .streak-row{margin-bottom:2px;}
     .streak-left{font-size:11px;}
@@ -1018,14 +1026,14 @@
     .streak-bar{height:4px;}
     .streak-note{margin-top:2px; font-size:9.5px;}
     .home-cta{margin:3px 0 0; gap:6px;}
-    .start-btn{font-size:15px; padding:4px 6px; min-height:36px;}
-    .scope-chip-btn{padding:2px 6px; min-height:36px; font-size:9.5px;}
+    .start-btn{font-size:15px; padding:4px 6px; min-height:44px;}
+    .scope-chip-btn{padding:2px 6px; min-height:44px; font-size:9.5px;}
     .start-hint{margin:1px 0 2px; font-size:9.5px;}
     .home-secondary-row{margin-top:3px; gap:6px;}
-    .sec-btn{min-height:36px; padding:3px 4px; font-size:9.5px;}
+    .sec-btn{min-height:44px; padding:3px 4px; font-size:9.5px;}
     .sec-btn .asset-icon{width:14px; height:14px;}
     #bottom-nav{margin-top:3px; padding:2px 3px;}
-    .nav-btn{min-height:28px; padding:1px 2px; gap:1px; font-size:9px;}
+    .nav-btn{min-height:44px; padding:1px 2px; gap:1px; font-size:9px;}
     .nav-btn .asset-icon{width:16px; height:16px;}
     /* ---- tone trainer ---- */
     /* Short landscape can't stack a 2x2 tone grid + big reveal under the
@@ -1036,7 +1044,7 @@
     #s-tones h2{margin:2px 0; font-size:18px;}
     #s-tones .sub{margin:2px 0; font-size:11px;}
     #tones-progress{margin:1px 0;}
-    .tones-replay{margin-top:5px; font-size:14px; min-height:34px;}
+    .tones-replay{margin-top:5px; font-size:14px; min-height:44px;}
     #tones-options{grid-template-columns:repeat(4,1fr); gap:8px; margin-top:8px;}
     #tones-options .tone-chip{min-height:46px; font-size:20px;}
     #tones-options .tone-num{font-size:22px;}
@@ -1438,16 +1446,20 @@
   <div class="screen festive" id="s-howto">
     <button class="back" data-go="more" data-i18n="common.backMore">← More</button>
     <h2 data-i18n="howto.title">How to play</h2>
-    <p class="howto" data-i18n-html="howto.intro">A lucky cat strolls in from the right carrying a <b>Chinese word</b> (with pinyin) on a flag.</p>
-    <p class="howto" data-i18n-html="howto.tapMeaning">Tap the <b>correct meaning</b> and the cat celebrates your answer.
-      The farther away the cat still is, the bigger the practice bonus — and learning streaks build your score.</p>
+    <p class="howto" data-i18n-html="howto.intro">Follow Lucky Cat along the <b>Lantern Trail</b>. Each stop presents a Chinese word with pinyin.</p>
+    <p class="howto" data-i18n-html="howto.tapMeaning">Choose the <b>correct meaning</b> to light the next lantern.
+      Consecutive first-try answers build Lucky Flow.</p>
     <p class="howto">
-      <b data-i18n="howto.oneShot">You get one shot per word.</b>
+      <b data-i18n="howto.oneShot">Missed words return.</b>
       <span data-i18n-html="howto.oneShotDetail">A wrong tap reveals the answer and adds the word to your Review Pouch,
       so you can learn it when it returns.</span>
     </p>
     <p class="howto" data-i18n-html="howto.tooSlow">If time runs out, the answer is revealed and the word returns soon.
       Your Word Quest continues until every planned word is learned.</p>
+    <p class="howto" data-i18n-html="howto.reviewChallenge">Every tenth planned word becomes a <b>two-step Review Challenge</b>:
+      meaning first, then reverse recall.</p>
+    <p class="howto" data-i18n-html="howto.results">Finish every planned word to receive a results postcard with learned words,
+      extra practice, rewards, and your next review.</p>
     <p class="howto" data-i18n-html="howto.everyWord">Every word shows <b>pinyin</b> and can be <b>heard aloud</b> — during the Word Quest,
       in flashcards, and in extra-practice review.</p>
     <p class="howto" data-i18n-html="howto.learnMode"><b>Learn mode</b> drills the same word pool as flashcards first, so you can

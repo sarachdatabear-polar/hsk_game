@@ -30,8 +30,9 @@ function launchOpts() {
   return { channel: "msedge", headless: true };
 }
 
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = process.env.RESP_BASE_URL || "http://localhost:8000";
 const TOL = 1; // px tolerance for viewport-edge comparisons
+const MIN_TAP = 44; // Phase 6 accessibility/release acceptance floor
 
 // [name, width, height] — matches the device matrix agreed for this round.
 const VIEWPORTS = [
@@ -100,9 +101,9 @@ function installPageHelpers() {
 
 // ---------------------------------------------------------------------------
 // Per-screen probe: overflow-x, elements past left/right edge, tap targets
-// under 36px, and (battle only) ancestor-aware clipped-below count.
+// under 44px, and (battle only) ancestor-aware clipped-below count.
 // ---------------------------------------------------------------------------
-function probeScreen([screenName, tol]) {
+function probeScreen([screenName, tol, minTap]) {
   const doc = document.documentElement;
   const overflowX = doc.scrollWidth > window.innerWidth + tol;
 
@@ -120,7 +121,7 @@ function probeScreen([screenName, tol]) {
     .filter(el => el.offsetParent !== null)
     .filter(el => {
       const r = el.getBoundingClientRect();
-      return r.width > 0 && r.height > 0 && (r.height < 36 || r.width < 36);
+      return r.width > 0 && r.height > 0 && (r.height < minTap || r.width < minTap);
     })
     .slice(0, 5)
     .map(el => {
@@ -337,6 +338,80 @@ async function runListenFormatProbe(browser, width, height) {
   return { line, failed: failures.length > 0 };
 }
 
+// Phase 6: finish a deterministic five-word quest with one intentional miss,
+// then verify the real Results postcard. This covers the route that the normal
+// battle probe cannot reach and keeps missed-word audio targets in the gate.
+async function runResultsProbe(browser, width, height) {
+  const { page, errs } = await preparePage(browser, width, height);
+  await page.evaluate(() => {
+    localStorage.setItem("nbhsk.scope", JSON.stringify({
+      levels:[3], core:false, newOnly:false, topN:0, lang:"both", sessionLen:5,
+    }));
+  });
+  await page.reload({ waitUntil:"load" });
+  await page.waitForTimeout(300);
+  await goToBattle(page);
+
+  await page.waitForFunction(() => [...document.querySelectorAll("#opts button")]
+    .some(b => !b.disabled && !b._correct && !b.classList.contains("replay")));
+  await page.evaluate(() => [...document.querySelectorAll("#opts button")]
+    .find(b => !b.disabled && !b._correct && !b.classList.contains("replay"))?.click());
+  await page.waitForTimeout(80);
+  await page.evaluate(() => document.querySelector("#cv")?.click());
+
+  for(let guard=0; guard<12; guard++){
+    if(await page.evaluate(() => document.querySelector("#s-results")?.classList.contains("on"))) break;
+    await page.waitForFunction(() =>
+      document.querySelector("#s-results")?.classList.contains("on") ||
+      [...document.querySelectorAll("#opts button")]
+        .some(b => !b.disabled && b._correct && !b.classList.contains("replay"))
+    );
+    if(await page.evaluate(() => document.querySelector("#s-results")?.classList.contains("on"))) break;
+    await page.evaluate(() => [...document.querySelectorAll("#opts button")]
+      .find(b => !b.disabled && b._correct && !b.classList.contains("replay"))?.click());
+    await page.waitForTimeout(520);
+    await page.evaluate(() => document.querySelector("#cv")?.click());
+    await page.waitForTimeout(80);
+  }
+  await page.waitForFunction(() => document.querySelector("#s-results")?.classList.contains("on"));
+
+  const info = await page.evaluate(([tol, minTap]) => {
+    const doc = document.documentElement;
+    const active = document.querySelector("#s-results.on");
+    const small = [...active.querySelectorAll("button")]
+      .filter(b => b.offsetParent !== null)
+      .filter(b => {
+        const r = b.getBoundingClientRect();
+        return r.width < minTap || r.height < minTap;
+      })
+      .map(b => {
+        const r = b.getBoundingClientRect();
+        return `${b.getAttribute("aria-label") || b.textContent.trim().slice(0,16)}(${Math.round(r.width)}x${Math.round(r.height)})`;
+      });
+    return {
+      overflowX:doc.scrollWidth > window.innerWidth + tol,
+      learned:document.querySelector("#r-learned")?.textContent || "",
+      nextVisible:document.querySelector("#r-next-review")?.offsetParent !== null,
+      missedRows:document.querySelectorAll("#r-miss .missrow").length,
+      small,
+    };
+  }, [TOL, MIN_TAP]);
+
+  const failures = [];
+  if(info.overflowX) failures.push("results overflow-x");
+  if(!/^5 \/ 5\b/.test(info.learned)) failures.push(`results learned=${info.learned}`);
+  if(!info.nextVisible) failures.push("results next-review hidden");
+  if(info.missedRows < 1) failures.push("results missed-word recap absent");
+  if(info.small.length) failures.push(`results small-taps:[${info.small}]`);
+  if(errs.length) failures.push(`JSERR:${errs[0]}`);
+
+  const status = failures.length ? "FAIL" : "PASS";
+  const line = `[${status}] results ${width}x${height}: learned=${info.learned}` +
+    ` misses=${info.missedRows}` + (failures.length ? ` | FAILURES: ${failures.join("; ")}` : "");
+  await page.close();
+  return { line, failed:failures.length > 0 };
+}
+
 // ---------------------------------------------------------------------------
 // Server reachability check — the harness never starts the server itself
 // (the user runs `npm run serve` in another shell); fail fast with a clear
@@ -379,7 +454,7 @@ async function runFullSweep() {
   for (const [name, width, height] of VIEWPORTS) {
     const { page, errs } = await preparePage(browser, width, height);
 
-    const home = await page.evaluate(probeScreen, ["home", TOL]);
+    const home = await page.evaluate(probeScreen, ["home", TOL, MIN_TAP]);
     const startVisible = await page.evaluate(probeStartInFold, TOL);
     const overscrollY = await page.evaluate(
       () => getComputedStyle(document.documentElement).overscrollBehaviorY
@@ -404,7 +479,7 @@ async function runFullSweep() {
     await page.waitForTimeout(100);
 
     await goToShop(page);
-    const shop = await page.evaluate(probeScreen, ["shop", TOL]);
+    const shop = await page.evaluate(probeScreen, ["shop", TOL, MIN_TAP]);
 
     // nav-reachable: on shop the tab bar must be inside the viewport both at
     // the top of the document and after scrolling to the middle of the (tall)
@@ -437,12 +512,12 @@ async function runFullSweep() {
     }
 
     await goToAccount(page);
-    const account = await page.evaluate(probeScreen, ["account", TOL]);
+    const account = await page.evaluate(probeScreen, ["account", TOL, MIN_TAP]);
     await page.evaluate(() => document.querySelector('[data-go="home"]')?.click());
     await page.waitForTimeout(100);
 
     await goToBattle(page);
-    const battle = await page.evaluate(probeScreen, ["battle", TOL]);
+    const battle = await page.evaluate(probeScreen, ["battle", TOL, MIN_TAP]);
     const battleInfo = await page.evaluate(probeBattle, TOL);
     const cvRect = await page.evaluate(() => {
       const r = document.querySelector("#cv").getBoundingClientRect();
@@ -548,6 +623,18 @@ async function runFullSweep() {
     `\n${listenLines.filter(l => l.startsWith("[PASS]")).length}/${listenTiers.length} listen-format probes passed`
   );
 
+  const resultsTiers = [[360,640], [390,844], [640,360]];
+  const resultsLines = [];
+  for(const [w,h] of resultsTiers){
+    const r = await runResultsProbe(browser, w, h);
+    resultsLines.push(r.line);
+    if(r.failed) anyFail = true;
+  }
+  console.log("\n" + resultsLines.join("\n"));
+  console.log(
+    `\n${resultsLines.filter(l => l.startsWith("[PASS]")).length}/${resultsTiers.length} results probes passed`
+  );
+
   await browser.close();
   process.exit(anyFail ? 1 : 0);
 }
@@ -569,7 +656,7 @@ async function runBattleSingleShot(spec) {
   const { page, errs } = await preparePage(browser, width, height);
 
   await goToBattle(page);
-  const battle = await page.evaluate(probeScreen, ["battle", TOL]);
+  const battle = await page.evaluate(probeScreen, ["battle", TOL, MIN_TAP]);
   const battleInfo = await page.evaluate(probeBattle, TOL);
 
   const isLandscape = height <= 500;

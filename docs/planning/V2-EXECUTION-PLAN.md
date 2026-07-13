@@ -10,7 +10,8 @@ Plan: [2026-07-13-lantern-trail-migration-plan.md](2026-07-13-lantern-trail-migr
 - [x] Added the semantic Word Quest hierarchy, Review Pouch/Lucky Flow purpose rail, three-node local Lantern Trail, advancing cat, friendly guide, lucky-charm feedback, and existing-art chapter rotation.
 - [x] Added semantic Review Challenge exports with legacy compatibility, a postcard results/rewards screen, missed-word and next-review hooks, plus retry-economy guards that preserve mastery/XP/quest credit without coins or Lucky Flow inflation.
 - [x] Latest merge gate: production build clean, 62 test files / 1,827 tests passing, 95 manifest assets validated; first-run browser playthrough completed with no console errors.
-- [ ] Finish the Phase 6 responsive/device release gate, final shell bump, Android release candidate, and release to `main`. Nothing from this partial migration ships to `main` alone.
+- [x] Phase 6 automated release candidate: 44px control floor, short-phone/listening fit repair, real Results probes, updated EN/TH how-to, two consecutive clean responsive sweeps, SHELL v69, Capacitor sync, and signed APK (`A819708…6488F`).
+- [ ] Owner gate: complete the manual matrix on a mid-range Android phone, then release to `main`. Nothing from this partial migration ships before that confirmation.
 
 ## i18n pass 2 (2026-07-08)
 
