@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { uiScale, layout } from "../src/layout.js";
+import { uiScale, layout, lanternTrailLayout, lanternTrailBackdrop, lanternApproachScale } from "../src/layout.js";
 
 describe("uiScale", () => {
   it("reference size (380x480) gives S=1", () => {
@@ -73,5 +73,62 @@ describe("textS / mascotS (battle-mobile-fit)", () => {
   });
   it("mascotPx is gone (was dead — draw loop never read it)", () => {
     expect(layout(380, 480).mascotPx).toBeUndefined();
+  });
+});
+
+describe("lanternTrailLayout", () => {
+  it("places three lantern nodes across the left half of the path", () => {
+    const trail = lanternTrailLayout(380, 480, 0, 30);
+    expect(trail.nodes.map(node => node.x)).toEqual([
+      expect.closeTo(60.8, 5),
+      expect.closeTo(117.8, 5),
+      expect.closeTo(174.8, 5),
+    ]);
+    expect(trail.nodes.map(node => node.lit)).toEqual([false, false, false]);
+    expect(trail.catX).toBeCloseTo(60.8, 5);
+  });
+
+  it("lights route nodes and moves the cat as words are learned", () => {
+    const trail = lanternTrailLayout(380, 480, 3, 30);
+    expect(trail.step).toBe(3);
+    expect(trail.nodes.map(node => node.lit)).toEqual([true, true, false]);
+    expect(trail.catX).toBeCloseTo(129.2, 5);
+  });
+
+  it("holds the landmark pose at five learned before starting the next segment", () => {
+    expect(lanternTrailLayout(380, 480, 5, 30).catX).toBeCloseTo(174.8, 5);
+    expect(lanternTrailLayout(380, 480, 5, 30).nodes.every(node => node.lit)).toBe(true);
+    expect(lanternTrailLayout(380, 480, 6, 30).step).toBe(1);
+  });
+
+  it("starts the next encounter at a fresh unlit segment after a landmark", () => {
+    const trail = lanternTrailLayout(380, 480, 5, 30, { startNextSegment:true });
+    expect(trail.step).toBe(0);
+    expect(trail.catX).toBeCloseTo(60.8, 5);
+    expect(trail.nodes.every(node => !node.lit)).toBe(true);
+  });
+});
+
+describe("lanternTrailBackdrop", () => {
+  it("rotates the existing world art at each 20-word chapter", () => {
+    expect([0, 1, 2, 3, 4, 5].map(chapter => lanternTrailBackdrop(chapter))).toEqual([
+      "bg-quest",
+      "bg-temple",
+      "bg-bamboo",
+      "bg-lantern-festival",
+      "bg-dragon-gate",
+      "bg-quest",
+    ]);
+  });
+
+  it("respects a backdrop the player equipped", () => {
+    expect(lanternTrailBackdrop(3, "market")).toBe("bg-market");
+  });
+});
+
+describe("lanternApproachScale", () => {
+  it("preserves prompt time as the cat advances along the trail", () => {
+    expect(lanternApproachScale(400, 200, 100)).toBeCloseTo(2 / 3, 5);
+    expect(lanternApproachScale(400, 100, 100)).toBe(1);
   });
 });
