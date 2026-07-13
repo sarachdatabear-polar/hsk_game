@@ -303,6 +303,8 @@ export const STRINGS = {
     "howto.attribution": "Some example sentences from Tatoeba (tatoeba.org), CC-BY 2.0 FR.",
     // battle HUD + pause overlay (M4)
     "battle.round": "Round {label}",
+    "battle.reviewPouch": "Review {n}",
+    "battle.learnedProgress": "Learned {label}",
     "battle.pause": "Pause",
     "battle.paused": "Paused",
     "battle.resume": "Resume",
@@ -644,6 +646,8 @@ export const STRINGS = {
     "howto.attribution": "ประโยคตัวอย่างบางส่วนจาก Tatoeba (tatoeba.org) สัญญาอนุญาต CC-BY 2.0 FR",
     // battle HUD + pause overlay (M4)
     "battle.round": "รอบ {label}",
+    "battle.reviewPouch": "ทบทวน {n}",
+    "battle.learnedProgress": "เรียนแล้ว {label}",
     "battle.pause": "หยุดชั่วคราว",
     "battle.paused": "หยุดชั่วคราว",
     "battle.resume": "เล่นต่อ",
