@@ -1638,13 +1638,28 @@ const REVEAL_MS = 2000;
 const WRONG_MS = 560;
 // Append the 4 option buttons for a plain-data option list. Shared by every
 // tap-answer format (the cloze branch and the generic branch both call it).
+// #4 tone signal: a compact per-syllable number + pitch-contour glyph, reusing
+// the Tone Trainer's TONE_CURVE. Stroke is currentColor so it stays legible when
+// the button flips to the cream-on-green/coral good/bad states. Neutral syllables
+// (tone 0) show a subtle dot, no contour.
+function toneSigHtml(tones){
+  const items = (tones || []).map(k => k > 0
+    ? `<span class="tsig-i"><span class="tsig-n">${k}</span>` +
+      `<svg class="tsig-c" viewBox="0 0 44 30" aria-hidden="true">` +
+      `<path d="${TONE_CURVE[k]}" fill="none" stroke="currentColor" stroke-width="3.6" ` +
+      `stroke-linecap="round" stroke-linejoin="round"/></svg></span>`
+    : `<span class="tsig-i tsig-neutral">·</span>`).join("");
+  return `<span class="tone-sig" aria-hidden="true">${items}</span>`;
+}
 function renderOptionButtons(box, opts){
   for(const o of opts){
     const b = document.createElement("button");
     // Label wrapped in its own span (not just a bare text node) so short
     // viewports can -webkit-line-clamp it specifically — an ellipsis on the
     // primary answer only, never a silent symmetric crop across label+sub.
-    b.innerHTML = `<span class="opt-label">${o.label}</span>` + (o.sub? `<span class="th">${o.sub}</span>`:"");
+    b.innerHTML = `<span class="opt-label">${o.label}</span>` + (o.sub? `<span class="th">${o.sub}</span>`:"")
+      + (o.tones ? toneSigHtml(o.tones) : "");
+    if(o.tones) b.classList.add("has-tonesig");
     b._correct = !!o.correct;
     b.onclick = ()=>answer(b, o);
     box.appendChild(b);
@@ -2404,9 +2419,18 @@ function drawWordPlate(z, vis, now){
   }else{
     B.speakerRect = null;
   }
-  ctx.font = fontString(700, hzPx, HANZI_STACK);
+  // #1/#2: the 🔊 icon and the fullwidth ？？ mask aren't centered within their
+  // advance box (emoji ink overflows the row / rim; fullwidth ？ is left-weighted,
+  // so a screen-centered anchor reads as shifted left). Shrink the icon to clear
+  // the plaque rim, then re-anchor on the glyph's actual ink box. Real hanzi are
+  // symmetric, so inkShift is ~0 and they are unaffected.
+  const glyphPx = vis.icon ? hzPx * 0.72 : hzPx;
+  ctx.font = fontString(700, glyphPx, HANZI_STACK);
   ctx.fillStyle = boss ? "#7A4E0C" : "#3A2E1D";
-  ctx.fillText(hanzi, B.w/2, cy + hanziH/2);
+  const gm = ctx.measureText(hanzi);
+  const inkShift = (gm.actualBoundingBoxLeft != null && gm.actualBoundingBoxRight != null)
+    ? (gm.actualBoundingBoxRight - gm.actualBoundingBoxLeft) / 2 : 0;
+  ctx.fillText(hanzi, B.w/2 - inkShift, cy + hanziH/2);
   cy += hanziH;
   ctx.textBaseline = "alphabetic";
   if(level){

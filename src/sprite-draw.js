@@ -14,6 +14,18 @@ import { SPRITE_METRICS } from "./sprite-metrics.js";
 // constant so the two characters read as the same size.
 export const CONTENT_H = 64;
 
+/* Audit #7 — pose sheets of the SAME character must render at the SAME scale.
+   Per-sheet height-normalization shrinks a pose whose alpha bbox is taller: the
+   default cat's sitting "happy" pose (upright tail) has a taller bbox than the
+   mid-stride "walk" pose, so normalizing both to CONTENT_H made the cat visibly
+   shrink on a correct answer. Anchor such a pose to a sibling sheet's bbox height
+   so the pair shares ONE scale factor; the taller pose then renders proportionally
+   taller (bottom-anchored) instead of shrinking. Kept in this hand-edited module
+   (not the generated metrics) so a metrics regen can't drop it. Skins fill their
+   frames uniformly (walk/happy bboxes already match → no-op), so only the default
+   cat pair needs an anchor today. */
+export const SCALE_ANCHOR = { "cat-happy": "cat-walk" };
+
 /* drawSpriteFrame — draw frame `frame` (0-indexed, 256px-wide source column)
    of `img` (a sheet named `sheetName`, sans ".png") so its measured content
    box (SPRITE_METRICS[sheetName]) is CONTENT_H world units tall, bottom-
@@ -28,7 +40,12 @@ export function drawSpriteFrame(ctx, img, frame, x, groundY, sheetName, fallback
     return;
   }
   const sw = m.r - m.l, sh = m.b - m.t;
-  const k = CONTENT_H / sh;
-  const dw = sw * k;
-  ctx.drawImage(img, frame * 256 + m.l, m.t, sw, sh, x - dw / 2, groundY - CONTENT_H, dw, CONTENT_H);
+  // Shared-scale anchoring (see SCALE_ANCHOR): scale by a sibling pose's bbox
+  // height when set, so the pair renders at one scale. refH === sh for every
+  // unanchored sheet, so their output is unchanged.
+  const am = SCALE_ANCHOR[sheetName] && SPRITE_METRICS[SCALE_ANCHOR[sheetName]];
+  const refH = am ? am.b - am.t : sh;
+  const k = CONTENT_H / refH;
+  const dw = sw * k, dh = sh * k;
+  ctx.drawImage(img, frame * 256 + m.l, m.t, sw, sh, x - dw / 2, groundY - dh, dw, dh);
 }
