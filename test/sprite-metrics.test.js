@@ -34,7 +34,10 @@ describe("SPRITE_METRICS", () => {
   it("matches known reference measurements (regression guard)", () => {
     // cat-walk/cat-happy remeasured after the v2 upright side-profile art
     // (regenerated to match the raccoon; repacked via scripts/repack_cat_sheets.py).
-    expect(SPRITE_METRICS["cat-walk"]).toEqual({ l: 70, t: 80, r: 185, b: 176 });
+    // cat-walk re-measured 2026-07-14 after the clean-matte walk regen (audit #7);
+    // its bbox now matches cat-happy's (100×124 ≈ 99×127) — the upright walk frames
+    // like the sitting pose, so size parity is natural, not just code-anchored.
+    expect(SPRITE_METRICS["cat-walk"]).toEqual({ l: 78, t: 65, r: 178, b: 189 });
     expect(SPRITE_METRICS["cat-happy"]).toEqual({ l: 78, t: 62, r: 177, b: 189 });
     expect(SPRITE_METRICS["raccoon-walk"]).toEqual({ l: 31, t: 12, r: 225, b: 244 });
     expect(SPRITE_METRICS["raccoon-happy"]).toEqual({ l: 8, t: 12, r: 248, b: 244 });
