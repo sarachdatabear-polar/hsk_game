@@ -4,7 +4,7 @@
 // 4 option buttons. main.js renders; nothing here touches the DOM.
 import { pickDistractors } from "./distractors.js";
 import { meaning } from "./pool.js";
-import { toneSlots, toneVariants } from "./pinyin.js";
+import { toneSlots, toneVariants, syllableTones } from "./pinyin.js";
 import { clozeOptions } from "./cloze.js";
 
 function shuffle(a, rand) {
@@ -65,9 +65,12 @@ export const FORMATS = {
     intro: "battle.introTone",
     buildOptions(word, deck, lang, rand) {
       const wrong = toneVariants(word.p, rand) || [];
-      return shuffle(
-        [{ label: word.p, sub: "", correct: true },
-         ...wrong.map(p => ({ label: p, sub: "", correct: false }))], rand);
+      // #4: attach per-syllable tone digits so main.js can render an explicit
+      // tone signal (number + pitch contour) on each card — diacritics alone
+      // are hard to tell apart. Each option carries ITS OWN tones, so this
+      // labels the choice, it does not reveal which one is correct.
+      const opt = (p, correct) => ({ label: p, sub: "", correct, tones: syllableTones(p) });
+      return shuffle([opt(word.p, true), ...wrong.map(p => opt(p, false))], rand);
     },
   },
   cloze: {

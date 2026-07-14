@@ -221,6 +221,16 @@
   .account-change-email{background:none; border:none; color:var(--muted); text-decoration:underline; font:inherit; padding:4px; cursor:pointer;}
   .startrow{display:flex; gap:10px; margin-top:14px;}
   .startrow .big{flex:1; padding:14px 6px; font-size:16px;}
+  /* #9 audit: cap "Choose your words" cards & buttons at two lines so long
+     (esp. Thai) labels never sprawl past two rows. Text-only controls clamp
+     directly; icon+text action buttons clamp their inner label span so the
+     icon layout is preserved. Same -webkit-line-clamp pattern as .opt-label. */
+  #s-scope .chip,
+  #s-scope .startrow .big .icon-text > span,
+  #journey-list .j-copy b,
+  #journey-list .j-play{
+    display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2;
+    overflow:hidden; overflow-wrap:anywhere;}
   /* Lucky Cat Street — own screen (M2); DPR-crisp buffer sized by main.js.
      2026-07-11 audit F2: quests moved back out into a popup (below), so the
      scene reclaims that height — grow the cap so decorators see the street
@@ -340,6 +350,9 @@
   #format-intro .fi-card{background:#FBF5E8; border:2px solid #B98F55;
     border-radius:16px; padding:18px 20px; max-width:280px; text-align:center;}
   #format-intro .fi-card p{margin:10px 0 14px; font-weight:700;}
+  /* #6: the Typed intro is a multi-line numbered how-to — honor the line breaks
+     in the copy (harmless for the single-line intros). */
+  #format-intro #fi-text{white-space:pre-line; line-height:1.5;}
   .pause-toggle .pt-state{font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
     padding:3px 9px; border-radius:999px; background-color:var(--lc-gray); color:var(--lc-ink); flex:0 0 auto;}
   .pause-toggle.on .pt-state{background-color:var(--lc-success); color:var(--lc-cream);}
@@ -475,6 +488,17 @@
   #opts button .opt-label{display:-webkit-box; -webkit-box-orient:vertical;
     -webkit-line-clamp:3; overflow:hidden; flex-shrink:0; width:100%; text-align:center;}
   #opts button .th{display:block; color:var(--lc-brown); font-size:13px; font-weight:600; margin-top:2px; text-align:center;}
+  /* #4 tone signal: compact number + pitch-contour badges under the pinyin on
+     the tone-format cards, so the tone is readable at a glance. Same TONE_CURVE
+     as the Tone Trainer; stroke inherits currentColor and flips to cream on the
+     good/bad reveal. */
+  #opts button .tone-sig{display:flex; align-items:center; justify-content:center; gap:8px;
+    flex-wrap:wrap; margin-top:5px;}
+  #opts button .tsig-i{display:inline-flex; align-items:center; gap:3px; color:var(--lc-brown);}
+  #opts button.good .tsig-i, #opts button.bad .tsig-i{color:var(--lc-cream);}
+  #opts button .tsig-n{font-size:15px; font-weight:800; line-height:1;}
+  #opts button .tsig-c{width:26px; height:18px; flex:none;}
+  #opts button .tsig-neutral{font-size:16px; font-weight:800; opacity:.55;}
   /* reveal states never rely on color alone (§11): a ✓/✕ affix rides along
      with the green/coral fill + the game's existing sound/haptic/motion.
      T7: shadows restyled to match the flat idle button (single warm shadow,
@@ -566,14 +590,21 @@
     #opts button .th{display:block; width:100%; font-size:10px; line-height:1.1; margin-top:2px;}
   }
   /* boss stage-2 reverse-question banner (spans both columns, row 1) */
-  .boss-prompt{grid-column:1/-1; text-align:center; font-weight:800; font-size:14px;
+  /* Meaning/prompt banner shared by Reverse (#2), Cloze (#5, via .cloze-prompt)
+     and Review Challenge stage 2 (#8). Legibility: viewport-height clamp — the
+     floor equals the old fixed 14px so landscape/short phones are unchanged,
+     while tall phones (e.g. the 402x874 audit device) grow to a readable 19px.
+     Still verify with the 10-viewport sweep before release. */
+  .boss-prompt{grid-column:1/-1; text-align:center; font-weight:800;
+    font-size:clamp(14px, 2.4vh, 19px); line-height:1.32;
     color:var(--lc-brown); background-color:var(--lc-cream); border:1.5px solid var(--lc-brown);
     border-radius:10px; padding:8px 10px;}
   /* v6p3 cloze: the blanked sentence (bigger hanzi) over a muted translation.
-     17px keeps hanzi legible while staying gentle on landscape height (the
-     boss-prompt row is 14px). Verify with the responsive sweep before release. */
-  .cloze-sentence{font-size:17px; line-height:1.35; letter-spacing:.02em;}
-  .cloze-trans{margin-top:3px; font-weight:600; font-size:12px; opacity:.75;}
+     Height-clamped (floor 17px = old landscape-safe value) so the reading grows
+     on tall phones without overflowing landscape. */
+  .cloze-sentence{font-size:clamp(17px, 3.2vh, 24px); line-height:1.4; letter-spacing:.02em;}
+  /* opacity:1 (was .75) — brown-on-cream at .75 was too faint to read (#5). */
+  .cloze-trans{margin-top:3px; font-weight:600; font-size:clamp(12px, 1.8vh, 14px); opacity:1;}
   .cloze-trans:empty{display:none;}
   /* min-height:0 overrides the base `#opts button` 68px floor (and the
      shorter-tier 52px ones) — the replay row is one compact line, not an
