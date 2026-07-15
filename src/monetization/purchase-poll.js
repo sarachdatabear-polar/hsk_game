@@ -7,20 +7,23 @@
 //
 // Pure/injectable (house pattern: interstitial-policy.js, gating.js) so tests
 // drive it with fakes and zero real timers: `reconcile` is async and returns
-// {ok, ...} (sync.js's reconcile(store,"purchase") shape); `getWallet` reads
-// whatever reconcile() just wrote to the store; `sleep` is ms -> Promise so
-// tests can stub it out. main.js supplies the real deps; this file has none.
-export async function pollForCredit({ reconcile, walletBefore, getWallet, tries = 3, delayMs = 2000, sleep }) {
+// {ok, credits:[{orderId,delta}], ...} (sync.js's reconcile shape). Matching
+// the exact store transaction prevents unrelated cloud earnings from being
+// mistaken for this purchase. `sleep` is injected so tests use no real timers.
+export async function pollForCredit({ reconcile, orderId, tries = 3, delayMs = 2000, sleep }) {
+  if (!orderId) return { credited: false, delta: 0 };
   for (let i = 0; i < tries; i++) {
-    const r = await reconcile("purchase");
+    const r = await reconcile("purchase", orderId);
     // A failed reconcile (offline, cooldown-race, etc) is just "no credit
     // seen THIS try" — not a reason to stop polling. The webhook already
     // guarantees eventual delivery; the next try (or the next ordinary sync,
     // after timeout) will pick it up.
-    if (r && r.ok) {
-      const after = getWallet();
-      if (after > walletBefore) return { credited: true, delta: after - walletBefore };
-    }
+    // A push can fail after reconcile has already folded and persisted the
+    // exact ledger row locally, so credit attribution does not require r.ok.
+    const credit = r && Array.isArray(r.credits)
+      ? r.credits.find(c => c.orderId === orderId)
+      : null;
+    if (credit) return { credited: true, delta: Number(credit.delta) || 0 };
     if (i < tries - 1) await sleep(delayMs);
   }
   return { credited: false, delta: 0 };

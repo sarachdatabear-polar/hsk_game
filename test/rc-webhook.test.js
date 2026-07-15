@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { processEvent } from "../supabase/functions/rc-webhook/core.js";
+import { readFileSync } from "node:fs";
+import { authorizeWebhook, processEvent } from "../supabase/functions/rc-webhook/core.js";
 import { PRODUCTS, productById } from "../src/monetization/products.js";
 
 // NOTE: this file tests core.js only — the pure event-to-grant decision
@@ -15,6 +16,7 @@ function rcEvent(overrides) {
       type: "INITIAL_PURCHASE",
       app_user_id: "user-1",
       product_id: "coins_s",
+      transaction_id: "GPA.1234-5678",
       ...overrides,
     },
   };
@@ -29,11 +31,13 @@ describe("processEvent — grants per product", () => {
         userId: "user-1",
         productId: "coins_s",
         eventId: "evt-1",
+        orderId: "GPA.1234-5678",
         coins: productById("coins_s").coins,
         entitlement: null,
       },
     });
     expect(r.grant.coins).toBe(1000);
+    expect(r.grant.orderId).toBe("GPA.1234-5678");
   });
 
   it("supporter grants 2000 coins + the supporter entitlement", () => {
@@ -96,11 +100,39 @@ describe("processEvent — malformed / unresolvable events", () => {
     expect(r).toEqual({ ok: false, reason: "missing-event-id" });
   });
 
+  it("rejects a missing store transaction id", () => {
+    const r = processEvent(rcEvent({ transaction_id: undefined }), PRODUCTS);
+    expect(r).toEqual({ ok: false, reason: "missing-transaction-id" });
+  });
+
   it("rejects a garbage body with no event object", () => {
     expect(processEvent({ nope: true }, PRODUCTS)).toEqual({ ok: false, reason: "not-an-event" });
     expect(processEvent(null, PRODUCTS)).toEqual({ ok: false, reason: "not-an-event" });
     expect(processEvent(undefined, PRODUCTS)).toEqual({ ok: false, reason: "not-an-event" });
     expect(processEvent("garbage", PRODUCTS)).toEqual({ ok: false, reason: "not-an-event" });
     expect(processEvent({ event: null }, PRODUCTS)).toEqual({ ok: false, reason: "not-an-event" });
+  });
+});
+
+describe("webhook authorization", () => {
+  it("accepts only the configured bearer secret", () => {
+    expect(authorizeWebhook("Bearer secret-1", "secret-1")).toBe(true);
+    expect(authorizeWebhook("Bearer wrong", "secret-1")).toBe(false);
+  });
+
+  it("fails closed when the secret is missing", () => {
+    expect(authorizeWebhook("Bearer undefined", undefined)).toBe(false);
+    expect(authorizeWebhook("Bearer ", "")).toBe(false);
+  });
+});
+
+describe("grant_purchase migration privileges", () => {
+  it.each([
+    "docs/supabase/schema.sql",
+    "docs/supabase/migrations/2026-07-12-iap-golive.sql",
+  ])("explicitly grants only the six-argument function to service_role in %s", file => {
+    const sql = readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
+    expect(sql).toMatch(/grant execute on function public\.grant_purchase\(uuid, integer, text, text, text, text\) to service_role;/i);
+    expect(sql).toMatch(/revoke execute on function public\.grant_purchase\(uuid, integer, text, text, text, text\) from public, anon, authenticated;/i);
   });
 });

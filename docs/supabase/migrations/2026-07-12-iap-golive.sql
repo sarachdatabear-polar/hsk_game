@@ -12,9 +12,13 @@
 -- violation the function detects and treats as "already granted" instead of
 -- crediting the wallet twice.
 alter table public.ledger add column if not exists event_id text;
+alter table public.ledger add column if not exists order_id text;
 
 create unique index if not exists ledger_event_id_uidx
   on public.ledger (event_id) where event_id is not null;
+
+create unique index if not exists ledger_order_id_uidx
+  on public.ledger (order_id) where order_id is not null;
 
 -- 2. wallet_guard — exempt service-role purchase grants from the earn clamp.
 --
@@ -106,13 +110,15 @@ $$;
 -- actually has increment_wallet, but the drop keeps this file safe to run
 -- against any environment that experimented with the superseded design.
 drop function if exists public.increment_wallet(uuid, integer);
+drop function if exists public.grant_purchase(uuid, integer, text, text, text);
 
 create or replace function public.grant_purchase(
-  p_user_id uuid, p_delta integer, p_reason text, p_event_id text, p_entitlement text
+  p_user_id uuid, p_delta integer, p_reason text, p_event_id text,
+  p_order_id text, p_entitlement text
 ) returns text language plpgsql as $$
 begin
-  insert into public.ledger (user_id, delta, reason, event_id)
-  values (p_user_id, p_delta, p_reason, p_event_id);        -- claims the event; unique event_id = idempotency key
+  insert into public.ledger (user_id, delta, reason, event_id, order_id)
+  values (p_user_id, p_delta, p_reason, p_event_id, p_order_id); -- event idempotency + client transaction attribution
   insert into public.wallet (user_id, coins) values (p_user_id, p_delta)
     on conflict (user_id) do update set coins = wallet.coins + excluded.coins;
   if p_entitlement is not null then
@@ -134,4 +140,5 @@ $$;
 
 -- Server-authoritative surface only: clients never write purchased coins
 -- (schema header rule), so client roles may not call this at all.
-revoke execute on function public.grant_purchase(uuid, integer, text, text, text) from public, anon, authenticated;
+revoke execute on function public.grant_purchase(uuid, integer, text, text, text, text) from public, anon, authenticated;
+grant execute on function public.grant_purchase(uuid, integer, text, text, text, text) to service_role;

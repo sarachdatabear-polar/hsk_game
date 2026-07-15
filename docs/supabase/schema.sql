@@ -238,9 +238,13 @@ create trigger wallet_guard before insert or update on public.wallet
 --    2026-07-12b): see the function's own comment for the race it closes.
 -- ---------------------------------------------------------------------------
 alter table public.ledger add column if not exists event_id text;
+alter table public.ledger add column if not exists order_id text;
 
 create unique index if not exists ledger_event_id_uidx
   on public.ledger (event_id) where event_id is not null;
+
+create unique index if not exists ledger_order_id_uidx
+  on public.ledger (order_id) where order_id is not null;
 
 -- ---------------------------------------------------------------------------
 -- Revision 2026-07-12b (I1 go-live fix, Phase 1 T2 adversarial review).
@@ -266,6 +270,7 @@ create unique index if not exists ledger_event_id_uidx
 -- migration this revision supersedes, and nothing else in the codebase
 -- calls it after this change (grep confirmed) — no reason to ship dead code.
 drop function if exists public.increment_wallet(uuid, integer);
+drop function if exists public.grant_purchase(uuid, integer, text, text, text);
 
 -- grant_purchase — atomic ledger + wallet + entitlement write for the
 -- webhook. See the "Revision 2026-07-12b" comment above for why atomicity
@@ -274,11 +279,12 @@ drop function if exists public.increment_wallet(uuid, integer);
 -- so it doubles as the "claim this event" step — if it succeeds, the other
 -- two writes are guaranteed to commit in the same transaction.
 create or replace function public.grant_purchase(
-  p_user_id uuid, p_delta integer, p_reason text, p_event_id text, p_entitlement text
+  p_user_id uuid, p_delta integer, p_reason text, p_event_id text,
+  p_order_id text, p_entitlement text
 ) returns text language plpgsql as $$
 begin
-  insert into public.ledger (user_id, delta, reason, event_id)
-  values (p_user_id, p_delta, p_reason, p_event_id);        -- claims the event; unique event_id = idempotency key
+  insert into public.ledger (user_id, delta, reason, event_id, order_id)
+  values (p_user_id, p_delta, p_reason, p_event_id, p_order_id); -- event idempotency + client transaction attribution
   insert into public.wallet (user_id, coins) values (p_user_id, p_delta)
     on conflict (user_id) do update set coins = wallet.coins + excluded.coins;
   if p_entitlement is not null then
@@ -300,4 +306,5 @@ $$;
 
 -- Server-authoritative surface only: clients never write purchased coins
 -- (schema header rule), so client roles may not call this at all.
-revoke execute on function public.grant_purchase(uuid, integer, text, text, text) from public, anon, authenticated;
+revoke execute on function public.grant_purchase(uuid, integer, text, text, text, text) from public, anon, authenticated;
+grant execute on function public.grant_purchase(uuid, integer, text, text, text, text) to service_role;

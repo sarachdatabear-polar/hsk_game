@@ -18,6 +18,13 @@
 // Everything else (RENEWAL, CANCELLATION, TEST, ...) is not a grant trigger.
 const GRANTABLE_TYPES = new Set(["INITIAL_PURCHASE", "NON_RENEWING_PURCHASE"]);
 
+// Fail closed when deployment configuration is incomplete. Without the
+// explicit non-empty check, an unset secret would accept the literal header
+// "Bearer undefined".
+export function authorizeWebhook(header, secret) {
+  return typeof secret === "string" && secret.length > 0 && header === `Bearer ${secret}`;
+}
+
 export function processEvent(body, catalog) {
   const fail = reason => ({ ok: false, reason });
   const event = body && typeof body === "object" ? body.event : null;
@@ -27,12 +34,14 @@ export function processEvent(body, catalog) {
   if (!product) return fail("unknown-product");
   if (!event.app_user_id) return fail("missing-user");
   if (!event.id) return fail("missing-event-id");
+  if (!event.transaction_id) return fail("missing-transaction-id");
   return {
     ok: true,
     grant: {
       userId: event.app_user_id,
       productId: event.product_id,
       eventId: event.id,
+      orderId: event.transaction_id,
       coins: product.coins,
       entitlement: product.entitlement || null,
     },

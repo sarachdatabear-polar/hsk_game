@@ -3,13 +3,18 @@
 // test/rc-webhook.test.js). This file only does auth, parsing, and the
 // Supabase service-role writes that core.js can't do (no Deno APIs there).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { processEvent } from "./core.js";
+import { authorizeWebhook, processEvent } from "./core.js";
 import { PRODUCTS } from "../../../src/monetization/products.js";
 
 Deno.serve(async (req) => {
   // RC signs webhook calls with a bearer secret we configure on their side.
-  const expected = `Bearer ${Deno.env.get("RC_WEBHOOK_SECRET")}`;
-  if (req.headers.get("Authorization") !== expected) {
+  const webhookSecret = Deno.env.get("RC_WEBHOOK_SECRET");
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!webhookSecret || !supabaseUrl || !serviceRoleKey) {
+    return new Response("service unavailable", { status: 503 });
+  }
+  if (!authorizeWebhook(req.headers.get("Authorization"), webhookSecret)) {
     return new Response("unauthorized", { status: 401 });
   }
 
@@ -28,11 +33,8 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ ignored: result.reason }), { status: 200 });
   }
 
-  const { userId, productId, eventId, coins, entitlement } = result.grant;
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-  );
+  const { userId, productId, eventId, orderId, coins, entitlement } = result.grant;
+  const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   // grant_purchase (docs/supabase/migrations/2026-07-12-iap-golive.sql) does
   // the ledger insert, wallet increment, and entitlement upsert as ONE
@@ -50,6 +52,7 @@ Deno.serve(async (req) => {
     p_delta: coins,
     p_reason: productId,
     p_event_id: eventId,
+    p_order_id: orderId,
     p_entitlement: entitlement,
   });
   if (error) return new Response("storage error", { status: 500 }); // real failure — let RC retry

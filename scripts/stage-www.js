@@ -6,9 +6,11 @@
  * would drag in node_modules/.git/android/src/test). This stages exactly the
  * five asset groups the game loads at runtime. Run after `npm run build`.
  */
-const fs = require("fs");
-const path = require("path");
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const WWW = path.join(ROOT, "www");
 

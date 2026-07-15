@@ -2,6 +2,7 @@
   "name": "lucky-cat-hsk",
   "version": "0.2.0",
   "private": true,
+  "type": "module",
   "description": "HSK vocabulary arcade game - Lucky Cat HSK",
   "scripts": {
     "test": "vitest run",
@@ -9,7 +10,7 @@
     "assets:validate": "node scripts/validate-assets.mjs",
     "assets:report": "node scripts/asset-report.mjs",
     "assets:shop": "node scripts/generate-shop-assets.mjs",
-    "serve": "python -m http.server 8000",
+    "serve": "node scripts/serve.mjs",
     "cap:sync": "npm run build && node scripts/stage-www.js && npx cap sync android",
     "apk:release": "powershell -ExecutionPolicy Bypass -File scripts/build_apk.ps1"
   },

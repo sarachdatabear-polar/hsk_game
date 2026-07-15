@@ -18,25 +18,33 @@ function memStore(init = {}) {
   };
 }
 
-// ledgerRows/failLedger: extend the fake for the coin-purchase ledger-cursor
+// ledgerRows/ledgerError: extend the fake for the coin-purchase ledger-cursor
 // fold (mirrors fetchLedgerSince's chain — select/eq/not/gt/order — one
 // table branch alongside progress/wallet). calls.ledgerSince records the
 // `gt` cutoff each fetch used, so tests can assert the cursor value a
 // reconcile actually queried with.
 function fakeClient({ session, progressRow = null, walletRow = null, failPush = false,
-                       ledgerRows = [], failLedger = false } = {}) {
-  const calls = { upserts: [], sessions: 0, ledgerSince: [] };
+                       ledgerRows = [], ledgerError = null, ledgerOrderRow = null } = {}) {
+  const calls = { upserts: [], sessions: 0, ledgerSince: [], ledgerOrders: [] };
   const client = {
     auth: { getSession: async () => { calls.sessions++; return { data: { session } }; } },
     from: (table) => {
       if (table === "ledger") {
         return {
-          select: () => ({ eq: () => ({ not: () => ({ gt: (col, since) => ({
-            order: async () => {
-              calls.ledgerSince.push(since);
-              return failLedger ? { data: null, error: { message: "x" } } : { data: ledgerRows, error: null };
-            },
-          }) }) }) }),
+          select: () => ({ eq: (col, value) => ({
+            not: () => ({ gt: (gtCol, since) => ({
+              order: async () => {
+                calls.ledgerSince.push(since);
+                return ledgerError ? { data:null, error:ledgerError } : { data:ledgerRows, error:null };
+              },
+            }) }),
+            eq: (orderCol, orderId) => ({
+              maybeSingle: async () => {
+                calls.ledgerOrders.push({ col, value, orderCol, orderId });
+                return { data: ledgerOrderRow, error: null };
+              },
+            }),
+          }) }),
         };
       }
       return {
@@ -92,7 +100,7 @@ describe("reconcile", () => {
     __setClientForTests(client);
     const store = memStore({ xp: 100, wallet: 700, sync: { dirty: { xp: true, wallet: true }, lastSyncAt: 0 } });
     const r = await reconcile(store, "sign-in", 1000000);
-    expect(r).toEqual({ ok: true, changed: true });
+    expect(r).toEqual({ ok: true, changed: true, credits: [] });
     expect(store.get("xp", 0)).toBe(900);          // cloud won xp
     expect(store.get("wallet", 0)).toBe(700);      // local won wallet
     const pushedProgress = calls.upserts.find(u => u.table === "progress").row;
@@ -105,7 +113,7 @@ describe("reconcile", () => {
     const { client } = fakeClient({ session: SESSION, progressRow: null, walletRow: null });
     __setClientForTests(client);
     const r = await reconcile(memStore({ xp: 5 }), "sign-in", 5000);
-    expect(r).toEqual({ ok: true, changed: false });
+    expect(r).toEqual({ ok: true, changed: false, credits: [] });
   });
   it("cooldown skips non-sign-in reasons but never sign-in", async () => {
     const { client } = fakeClient({ session: SESSION });
@@ -173,7 +181,7 @@ describe("reconcile: ledger-cursor purchase fold (coin-purchase go-live, THE FOL
     // "" (fresh/new device). A fresh cursor takes the adopt branch instead
     // (I2 fix, see the "new-device sign-in" test below); this test pins the
     // subtract-then-add branch that only fires for a returning device.
-    const ledgerRows = [{ delta: 1000, created_at: "2026-07-12T10:00:00Z" }];
+    const ledgerRows = [{ delta: 1000, created_at: "2026-07-12T10:00:00Z", order_id: "GPA.1000" }];
     const { client, calls } = fakeClient({ session: SESSION,
       progressRow: PROGRESS_STUB, walletRow: { user_id: "u1", coins: 5000, freezes: 0 }, ledgerRows });
     __setClientForTests(client);
@@ -181,6 +189,7 @@ describe("reconcile: ledger-cursor purchase fold (coin-purchase go-live, THE FOL
       sync: { dirty: {}, lastSyncAt: 0, lastLedgerAt: "2026-06-01T00:00:00Z" } });
     const r = await reconcile(store, "sign-in", 2000000);
     expect(r.ok).toBe(true);
+    expect(r.credits).toEqual([{ orderId: "GPA.1000", delta: 1000 }]);
     expect(store.get("wallet", 0)).toBe(6000);
     const meta = store.get("sync", {});
     expect(meta.lastLedgerAt).toBe("2026-07-12T10:00:00Z");
@@ -202,42 +211,48 @@ describe("reconcile: ledger-cursor purchase fold (coin-purchase go-live, THE FOL
     expect(firstSyncIdx).toBeLessThan(firstKeyIdx);
   });
 
-  it("ledger fetch failure degrades gracefully: sync-row merge + push still happen, cursor frozen, no purchase credit", async () => {
-    // C1 fix: a ledger-specific failure (e.g. event_id column not yet
-    // migrated) must NOT abort the whole reconcile — fetchSyncRows already
-    // ran and succeeded, so cloud save (mastery/xp/wallet-max-fold/etc) must
-    // still merge and push. Only the ledger's purchase contribution degrades
-    // to 0, and the cursor freezes so these rows get summed on a later
-    // successful fetch instead of being skipped forever.
+  it("ledger/RLS failure aborts before mutation so recovery cannot double-credit", async () => {
+    // A signed-in ledger read can fail independently of the progress/wallet
+    // reads (for example a bad RLS policy). The wallet gap is then unsafe to
+    // attribute, so reconcile must not mutate or push anything.
     const { client, calls } = fakeClient({ session: SESSION,
-      progressRow: PROGRESS_STUB, walletRow: { user_id: "u1", coins: 9000, freezes: 0 }, failLedger: true });
+      progressRow: PROGRESS_STUB, walletRow: { user_id: "u1", coins: 9000, freezes: 0 },
+      ledgerError:{ message:"permission denied", code:"42501" } });
     __setClientForTests(client);
-    const store = memStore({ wallet: 5000, sync: { dirty: {}, lastSyncAt: 0, lastLedgerAt: "2026-07-01T00:00:00Z" } });
+    const store = memStore({ wallet: 5000,
+      sync: { dirty: { wallet:true }, lastSyncAt: 0, lastLedgerAt: "2026-07-01T00:00:00Z" } });
+    const r = await reconcile(store, "sign-in", 2000000);
+    expect(r).toEqual({ ok:false, reason:"ledger" });
+    expect(store.get("wallet", 0)).toBe(5000);
+    expect(store.get("sync", {}).lastLedgerAt).toBe("2026-07-01T00:00:00Z"); // cursor frozen, not advanced
+    expect(calls.upserts).toEqual([]);
+    const meta = store.get("sync", {});
+    expect(meta.lastSyncAt).toBe(0);
+    expect(meta.dirty).toEqual({ wallet:true });
+  });
+
+  it("missing migration degrades safely because no purchase grant can commit yet", async () => {
+    const { client } = fakeClient({ session:SESSION, progressRow:PROGRESS_STUB,
+      walletRow:{ user_id:"u1", coins:9000, freezes:0 },
+      ledgerError:{ message:"column ledger.order_id does not exist", code:"42703" } });
+    __setClientForTests(client);
+    const store = memStore({ wallet:5000, sync:{ dirty:{}, lastSyncAt:0, lastLedgerAt:"" } });
     const r = await reconcile(store, "sign-in", 2000000);
     expect(r.ok).toBe(true);
-    // Plain max(local 5000, cloud 9000) fold — NOT +1000 worth of unseen
-    // ledger credit (unseenPurchased forced to 0 on a failed fetch), and NOT
-    // clamped to local-only either: cloud's own wallet gap still wins on the
-    // max-fold, since that gap isn't attributable to an unseen purchase we
-    // can't yet prove happened.
-    expect(store.get("wallet", 0)).toBe(9000);
-    expect(store.get("sync", {}).lastLedgerAt).toBe("2026-07-01T00:00:00Z"); // cursor frozen, not advanced
-    expect(calls.upserts.length).toBeGreaterThan(0);                     // sync-row push still happened
-    const meta = store.get("sync", {});
-    expect(meta.lastSyncAt).toBe(2000000);                               // settled like a normal success
-    expect(meta.dirty).toEqual({});
+    expect(store.get("wallet",0)).toBe(9000);
   });
 
   it("regression: a later reconcile whose ledger fetch now succeeds credits the same unseen rows exactly once (no skip-forever)", async () => {
     // Same fixture as above, but the SECOND reconcile's ledger fetch
     // succeeds and returns a purchase row still newer than the frozen
-    // cursor — proving the degrade-on-failure path doesn't lose it.
+    // cursor — proving the abort-on-failure path doesn't lose it.
     const { client: failClient } = fakeClient({ session: SESSION,
-      progressRow: PROGRESS_STUB, walletRow: { user_id: "u1", coins: 5000, freezes: 0 }, failLedger: true });
+      progressRow: PROGRESS_STUB, walletRow: { user_id: "u1", coins: 5000, freezes: 0 },
+      ledgerError:{ message:"permission denied", code:"42501" } });
     __setClientForTests(failClient);
     const store = memStore({ wallet: 5000, sync: { dirty: {}, lastSyncAt: 0, lastLedgerAt: "2026-06-01T00:00:00Z" } });
     const r1 = await reconcile(store, "sign-in", 1000000);
-    expect(r1.ok).toBe(true);
+    expect(r1.ok).toBe(false);
     expect(store.get("wallet", 0)).toBe(5000);
     expect(store.get("sync", {}).lastLedgerAt).toBe("2026-06-01T00:00:00Z"); // still frozen
 
@@ -296,6 +311,32 @@ describe("reconcile: ledger-cursor purchase fold (coin-purchase go-live, THE FOL
     expect(store.get("wallet", 0)).toBe(300);   // NOT 1000
   });
 
+  it("fresh-cursor purchase poll folds only its exact new order above local earnings", async () => {
+    const ledgerRows = [{ delta:1000, created_at:"2026-07-12T12:00:00Z", order_id:"GPA.NEW" }];
+    const { client } = fakeClient({ session:SESSION, progressRow:PROGRESS_STUB,
+      walletRow:{ user_id:"u1", coins:1000, freezes:0 }, ledgerRows });
+    __setClientForTests(client);
+    const store = memStore({ wallet:5000, sync:{ dirty:{wallet:true}, lastSyncAt:0, lastLedgerAt:"" } });
+    const r = await reconcile(store, "purchase", 2000000, "GPA.NEW");
+    expect(r.ok).toBe(true);
+    expect(store.get("wallet",0)).toBe(6000); // local 5000 + this purchase 1000
+    expect(r.credits).toEqual([{ orderId:"GPA.NEW", delta:1000 }]);
+  });
+
+  it("purchase poll confirms an exact order already consumed by a foreground reconcile without re-crediting", async () => {
+    const prior = { delta:1000, created_at:"2026-07-12T12:00:00Z", order_id:"GPA.ALREADY" };
+    const { client, calls } = fakeClient({ session:SESSION, progressRow:PROGRESS_STUB,
+      walletRow:{ user_id:"u1", coins:6000, freezes:0 }, ledgerRows:[], ledgerOrderRow:prior });
+    __setClientForTests(client);
+    const store = memStore({ wallet:6000,
+      sync:{ dirty:{}, lastSyncAt:0, lastLedgerAt:"2026-07-12T12:00:00Z" } });
+    const r = await reconcile(store, "purchase", 2000000, "GPA.ALREADY");
+    expect(r.ok).toBe(true);
+    expect(r.credits).toEqual([{ orderId:"GPA.ALREADY", delta:1000 }]);
+    expect(store.get("wallet",0)).toBe(6000); // attribution only; never fold an older row twice
+    expect(calls.ledgerOrders).toEqual([{ col:"user_id", value:"u1", orderCol:"order_id", orderId:"GPA.ALREADY" }]);
+  });
+
   it("no unseen rows: byte-identical to the pre-ledger-cursor fold", async () => {
     const { client } = fakeClient({ session: SESSION,
       progressRow: PROGRESS_STUB, walletRow: { user_id: "u1", coins: 700, freezes: 0 }, ledgerRows: [] });
@@ -312,7 +353,7 @@ describe("reconcile: ledger-cursor purchase fold (coin-purchase go-live, THE FOL
     // invariant) — a failed push must not roll either back. The store ends
     // up ahead of what got pushed; the next successful sync just re-pushes
     // the same (already-correct) merged state.
-    const ledgerRows = [{ delta: 1000, created_at: "2026-06-15T00:00:00Z" }];
+    const ledgerRows = [{ delta: 1000, created_at: "2026-06-15T00:00:00Z", order_id: "GPA.FAIL" }];
     const { client } = fakeClient({ session: SESSION,
       progressRow: PROGRESS_STUB, walletRow: { user_id: "u1", coins: 5000, freezes: 0 },
       ledgerRows, failPush: true });
@@ -320,7 +361,8 @@ describe("reconcile: ledger-cursor purchase fold (coin-purchase go-live, THE FOL
     const store = memStore({ wallet: 5000,
       sync: { dirty: { wallet: true }, lastSyncAt: 0, lastLedgerAt: "2026-06-01T00:00:00Z" } });
     const r = await reconcile(store, "sign-in", 2000000);
-    expect(r).toEqual({ ok: false, reason: "network" });
+    expect(r).toEqual({ ok: false, reason: "network", localChanged: true,
+      credits: [{ orderId: "GPA.FAIL", delta: 1000 }] });
     expect(store.get("wallet", 0)).toBe(6000);                                   // credited locally
     expect(store.get("sync", {}).lastLedgerAt).toBe("2026-06-15T00:00:00Z");     // cursor advanced
     expect(store.get("sync", {}).dirty).toEqual({ wallet: true });               // kept, not cleared

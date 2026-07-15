@@ -19,11 +19,30 @@ export function hapticKill()  { if (isNative()) plugins().Haptics?.impact({ styl
 export function hapticWrong() { if (isNative()) plugins().Haptics?.impact({ style: "MEDIUM" })?.catch(() => {}); }
 
 let awakeOn = false;
+let awakeWanted = false;
+let awakeTask = null;
+export function __resetNativeForTests() { awakeOn = false; awakeWanted = false; awakeTask = null; }
 export function keepAwake(on) {
-  if (!isNative() || on === awakeOn) return;
-  awakeOn = on;
+  if (!isNative()) return;
+  awakeWanted = !!on;
   const ka = plugins().KeepAwake;
-  if (ka) (on ? ka.keepAwake() : ka.allowSleep());
+  // Do not mark the request applied while the bridge registry is still empty;
+  // a later same-value call must be able to retry once the plugin appears.
+  if (!ka || awakeTask || awakeWanted === awakeOn) return;
+  awakeTask = (async () => {
+    while (isNative() && awakeWanted !== awakeOn) {
+      const current = plugins().KeepAwake;
+      if (!current) return;
+      const target = awakeWanted;
+      try {
+        await (target ? current.keepAwake() : current.allowSleep());
+        awakeOn = target;
+      } catch (e) {
+        // Leave applied state unchanged so a future call can retry.
+        return;
+      }
+    }
+  })().finally(() => { awakeTask = null; });
 }
 
 // Streak-saver local notification (retention pack). Web/PWA: inert.
@@ -54,7 +73,17 @@ export async function syncStreakReminder(plan, title, body) {
 // (19:00 local, via plan.hour), so it only fires if the player is genuinely absent
 // that long. Like syncStreakReminder it only CHECKS the existing grant — the
 // foreground prompt lives in main.js.
-export async function syncReengageReminder(plan, title, body) {
+export function reengageFireAt(now, plan) {
+  const min = new Date(now.getTime() + plan.afterDays * 86400000);
+  const at = new Date(min);
+  at.setHours(plan.hour, 0, 0, 0);
+  // "Three idle days" means at least 72 hours. If 19:00 on the third
+  // calendar date is earlier than that, use the following day's 19:00.
+  if (at < min) at.setDate(at.getDate() + 1);
+  return at;
+}
+
+export async function syncReengageReminder(plan, title, body, now = new Date()) {
   if (!isNative()) return;
   const LN = plugins().LocalNotifications;
   if (!LN) return;
@@ -63,9 +92,7 @@ export async function syncReengageReminder(plan, title, body) {
     if (!plan.schedule) return;
     const perm = await LN.checkPermissions();
     if (perm.display !== "granted") return;
-    const at = new Date();
-    at.setDate(at.getDate() + plan.afterDays);
-    at.setHours(plan.hour, 0, 0, 0);   // civilized time (REMINDER_HOUR via the plan), not a raw +72h stamp
+    const at = reengageFireAt(now, plan);
     await LN.schedule({ notifications: [{ id: 1002, title, body, schedule: { at } }] });
   } catch (e) { /* notification failure must never break gameplay */ }
 }
@@ -95,8 +122,8 @@ export function initNative({ getScreen, goHome }) {
   const tick = () => {
     const P = plugins();
     if (isNative() && P.App && typeof P.App.addListener === "function") {
-      P.StatusBar?.setBackgroundColor({ color: "#141a14" });
-      P.StatusBar?.setStyle({ style: "DARK" });
+      P.StatusBar?.setBackgroundColor({ color: "#141a14" })?.catch(() => {});
+      P.StatusBar?.setStyle({ style: "DARK" })?.catch(() => {});
       P.App.addListener("backButton", () => {
         const dest = nextBackScreen(getScreen());
         if (dest === null) P.App.exitApp();
