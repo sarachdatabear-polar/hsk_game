@@ -620,10 +620,10 @@ function rehydrateFromStore(){
 async function syncEdge(reason){
   if(B.on) return;
   const r = await reconcile(store, reason);
-  if(r.ok){
+  if(r.ok || r.localChanged){
     rehydrateFromStore();
     renderAccount();
-    if(reason === "sign-in" && r.changed) toast(t("account.restored"));
+    if(r.ok && reason === "sign-in" && r.changed) toast(t("account.restored"));
   }
 }
 
@@ -632,7 +632,7 @@ async function syncEdge(reason){
 // syncEdge. The plain push path never merges ("changed" absent) and skips it.
 function pushEdge(reason){
   pushDirty(store, reason, undefined, B.on).then(r => {
-    if(r && r.ok && "changed" in r) { rehydrateFromStore(); renderAccount(); }
+    if(r && (r.localChanged || (r.ok && "changed" in r))) { rehydrateFromStore(); renderAccount(); }
   });
 }
 
@@ -3037,8 +3037,9 @@ async function iapBuy(p, btn){
   iapPending = p.id;
   btn.disabled = true;
   btn.textContent = t("iap.pending");
-  const prov = provider();
-  const r = await prov.purchase(p.id);
+  try{
+    const prov = provider();
+    const r = await prov.purchase(p.id);
 
   if(prov.kind === "mock"){
     // Mock path (dev flag only, no backend): unchanged self-grant, byte-for-
@@ -3075,11 +3076,9 @@ async function iapBuy(p, btn){
     renderShop();
     return;
   }
-  const walletBefore = wallet;
   const poll = await pollForCredit({
-    reconcile: reason => reconcile(store, reason),
-    walletBefore,
-    getWallet: () => store.get("wallet", 0),
+    reconcile: (reason, orderId) => reconcile(store, reason, undefined, orderId),
+    orderId: r.orderId,
     sleep: ms => new Promise(res => setTimeout(res, ms)),
   });
   iapPending = null;
@@ -3093,9 +3092,8 @@ async function iapBuy(p, btn){
   rehydrateFromStore();
   renderAccount();
   if(poll.credited){
-    // Server is authoritative: toast the ACTUAL credited delta
-    // (wallet_after - wallet_before), never p.coins — a Supporter bonus or a
-    // differently-priced server catalog could make them diverge.
+    // Server is authoritative: toast the delta on this exact transaction's
+    // ledger row, never an aggregate wallet increase or the local catalog.
     toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: poll.delta.toLocaleString() }));
   }else{
     // Exhausted the poll with no visible credit yet. The webhook's grant is
@@ -3120,6 +3118,14 @@ async function iapBuy(p, btn){
     }
   }
   renderShop();
+  }catch(e){
+    // Provider plugins promise a never-throw contract, but a bridge/SDK fault
+    // must still release the pending guard instead of disabling IAP forever.
+    toast(t("iap.failed"));
+  }finally{
+    iapPending = null;
+    renderShop();
+  }
 }
 
 let shopPreviewRaf = 0;

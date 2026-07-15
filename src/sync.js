@@ -3,7 +3,7 @@
 // throws/rejects, offline/failure resolves {ok:false} and gameplay never
 // notices. Pure data flow: cloud rows -> mergeAll -> store -> cloud rows.
 // `store` is injected ({get,set}) so node probes/tests can shim localStorage.
-import { getSession, fetchSyncRows, pushSyncRows, fetchLedgerSince } from "./cloud.js";
+import { getSession, fetchSyncRows, pushSyncRows, fetchLedgerSince, fetchLedgerOrder } from "./cloud.js";
 import { mergeAll, defaultSyncMeta } from "./merge.js";
 
 export const MIN_SYNC_GAP_MS = 30000;
@@ -87,7 +87,7 @@ function settleDirty(store, expected, lastSyncAt) {
   store.set("sync", meta);
 }
 
-export async function reconcile(store, reason, now = Date.now()) {
+export async function reconcile(store, reason, now = Date.now(), expectedOrderId = null) {
   if (inFlight) return { ok: false, reason: "busy" };
   inFlight = true;
   try {
@@ -108,48 +108,42 @@ export async function reconcile(store, reason, now = Date.now()) {
     // row, so we need to know how much of the cloud wallet's gap over local
     // is an already-counted purchase before folding.
     //
-    // GRACEFUL DEGRADATION on ledger-fetch failure (C1 fix): this fetch runs
-    // AFTER fetchSyncRows above, which already bails the whole reconcile on
-    // any network fault. So by the time we're here, the network is UP and
-    // fetchSyncRows PROVED it — a failure at this specific query is
-    // structural (e.g. a not-yet-applied migration: the ledger query filters
-    // on `event_id`, a column that may not exist yet on a client that
-    // reaches prod ahead of the migration), not transient. Aborting the
-    // ENTIRE reconcile for that would take down cloud-save read/merge/push
-    // fleet-wide over a purely coin-ledger concern, and it isn't gated by
-    // any purchase flag — every device hits this path on every reconcile.
-    //
-    // Instead: degrade the ledger's contribution to "nothing seen" and leave
-    // the cursor exactly where it was, but let the sync-row merge + push
-    // proceed normally below. Two invariants make this safe:
-    //  - cursor frozen -> these same rows are still `> cursor` on the next
-    //    SUCCESSFUL fetch, so they get summed and credited then. Nothing is
-    //    skipped forever.
-    //  - unseen=0 feeds mergeWallet's max-fold as 0 subtracted/0 added, so
-    //    the degraded reconcile itself can only land the wallet at >= the
-    //    cloud wallet's own value (never below it) — it can never write a
-    //    number that clobbers whatever the webhook has already incremented
-    //    the cloud wallet to.
-    //
-    // Residual double-credit risk (deliberately accepted, not eliminated):
-    // if a device with a NON-fresh cursor has cloud already ahead by a live
-    // purchase DURING a ledger read failure, the degraded max-fold adopts
-    // that gap into local (no unseenPurchased subtracted), and a LATER
-    // successful fetch then sums the same still-unseen row on top ->
-    // double count. This does not happen for the C1 scenario (missing
-    // event_id column) specifically: grant_purchase (see commit 87cd90e)
-    // writes the ledger row and the wallet increment inside one Postgres
-    // transaction, so a missing column fails the ledger insert and rolls
-    // back the wallet increment with it — the cloud wallet can never be
-    // ahead by an un-cursored purchase while the column is missing. The
-    // risk is confined to a genuinely different failure mode: a read-only
-    // ledger failure (e.g. RLS) on a previously-synced device with a
-    // purchase that already committed server-side.
+    // Missing pre-launch columns are the only safe degradation: without them
+    // grant_purchase cannot commit, so no hidden purchase component can exist.
+    // Any other ledger failure aborts before mutation below.
     const led = await fetchLedgerSince(uid, meta.lastLedgerAt);
     const ledgerOk = led.ok;
+    // A real ledger/RLS failure makes the cloud wallet unsafe to fold: its
+    // gap may already contain a purchase that the frozen cursor will return
+    // later. Abort before any local writes so recovery cannot double-credit.
+    // The one safe degradation is a provably missing schema: grant_purchase
+    // cannot commit purchases without those columns, so the legacy max-fold
+    // remains valid while the dark migration is still unapplied.
+    if(!ledgerOk && led.reason !== "not-migrated") return { ok:false, reason:led.reason || "ledger" };
     // Guard: never touch led.rows when the fetch failed — some fake/real
     // clients return null/undefined `rows` alongside ok:false.
     const unseen = ledgerOk ? led.rows.reduce((sum, r) => sum + (Number(r.delta) || 0), 0) : 0;
+    // Purchase polling must confirm the exact store transaction, never infer
+    // success from an aggregate wallet increase (which could be unrelated
+    // cloud progress). Keep the attribution alongside the ledger rows that
+    // produced this fold and return it to the caller below.
+    const unseenCredits = ledgerOk ? led.rows
+      .filter(r => r.order_id)
+      .map(r => ({ orderId: r.order_id, delta: Number(r.delta) || 0 })) : [];
+    let credits = unseenCredits;
+    // The native billing sheet can foreground the app before purchase()
+    // resolves. A normal foreground reconcile may therefore consume and fold
+    // this row first. Look up the exact order only for confirmation in that
+    // case; because it is older than the cursor, never add it to `unseen`.
+    if (expectedOrderId && !credits.some(c => c.orderId === expectedOrderId)) {
+      const exact = await fetchLedgerOrder(uid, expectedOrderId);
+      if (exact.ok && exact.row) {
+        credits = credits.concat({
+          orderId: exact.row.order_id,
+          delta: Number(exact.row.delta) || 0,
+        });
+      }
+    }
     // FRESH-CURSOR ADOPT (I2 fix, coin-purchase go-live review): a fresh
     // cursor (meta.lastLedgerAt === "") means either a brand-new device or a
     // post-wipe reinstall. In BOTH cases the client has no history of its
@@ -164,15 +158,12 @@ export async function reconcile(store, reason, now = Date.now()) {
     // PRD §7.4 (consumables never restore). We still fetch the ledger rows
     // (their max created_at is what advances the cursor) and still advance
     // the cursor either way; we just pass 0 as unseenPurchased into the fold
-    // so it degrades to a plain max(local, cloud) adopt. Accepted cost: a
-    // fresh device can't heal the webhook's lost-increment window (a crash
-    // between the atomic wallet RPC and the ledger insert) — that heal lives
-    // in the webhook's own atomic-grant fix, landing separately from T3.
+    // so it degrades to a plain max(local, cloud) adopt. The webhook's atomic
+    // grant guarantees that no ledger row is visible without its matching
+    // wallet increment.
     const freshCursor = !meta.lastLedgerAt;
-    // ledgerOk fold-in: a failed fetch degrades unseenPurchased to 0 exactly
-    // like the freshCursor adopt branch does — see the graceful-degradation
-    // comment above for why that's safe (cursor stays frozen so these rows
-    // aren't lost, and 0 can never push the merged wallet below cloud's).
+    // On the safe not-migrated path unseenPurchased is 0; real ledger failures
+    // already returned above.
     const local = localSnapshot(store);
     const shopDirty = !!(meta.dirty && meta.dirty.shop);
     const today = localDateStr(now);
@@ -187,8 +178,18 @@ export async function reconcile(store, reason, now = Date.now()) {
     // would just add unseen straight into the baseline and mask real change.
     // On a fresh cursor, pass 0 (adopt) instead of the summed unseen — see
     // the freshCursor comment above.
+    // A purchase poll supplies its exact store transaction. On a fresh cursor,
+    // fold only that new row: old lifetime rows are already represented by the
+    // cloud wallet and must not resurrect spent consumables, while the just-
+    // completed order must still be added when local earnings are ahead.
+    const expectedCredit = expectedOrderId
+      ? unseenCredits.find(c => c.orderId === expectedOrderId)
+      : null;
+    const foldUnseen = !ledgerOk ? 0
+      : freshCursor ? (expectedCredit ? expectedCredit.delta : 0)
+      : unseen;
     const merged = mergeAll(local, localFromRows(rows.progress, rows.wallet),
-      { shopDirty, today, unseenPurchased: (freshCursor || !ledgerOk) ? 0 : unseen });
+      { shopDirty, today, unseenPurchased: foldUnseen });
     const baseline = mergeAll(local, null, { shopDirty, today });
     const changed = !eq(merged, baseline);
     // CURSOR ORDERING (THE FOLD): advance + persist meta.lastLedgerAt BEFORE
@@ -218,9 +219,14 @@ export async function reconcile(store, reason, now = Date.now()) {
     for (const k of Object.keys(merged)) store.set(k, merged[k]);
     const built = rowsFromLocal(uid, merged);
     const push = await pushSyncRows(built.progress, built.wallet);
-    if (!push.ok) return { ok: false, reason: "network" };
+    // The merged keys above are durable local writes even when the following
+    // cloud push fails. Tell DOM/in-memory callers to rehydrate so they do not
+    // overwrite those merged values with stale module-scope caches. This is
+    // especially important when the progress-row upsert succeeds but the
+    // wallet-row upsert fails after a stale-month reward was settled.
+    if (!push.ok) return { ok: false, reason: "network", localChanged: true, credits };
     settleDirty(store, merged, now);
-    return { ok: true, changed };
+    return { ok: true, changed, credits };
   } catch (e) {
     return { ok: false, reason: "network" };
   } finally {

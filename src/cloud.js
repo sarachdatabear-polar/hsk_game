@@ -142,13 +142,37 @@ export async function fetchLedgerSince(userId, sinceIso) {
     const since = sinceIso || LEDGER_EPOCH;
     const { data, error } = await getClient()
       .from("ledger")
-      .select("delta, created_at")
+      .select("delta, created_at, order_id")
       .eq("user_id", userId)
       .not("event_id", "is", null)
       .gt("created_at", since)
       .order("created_at", { ascending: true });
-    if (error) return { ok: false, reason: "network" };
+    if (error) {
+      const msg = String(error.message || "");
+      const missingSchema = error.code === "42703" ||
+        /(?:event_id|order_id).*(?:does not exist|schema cache)/i.test(msg);
+      return { ok: false, reason: missingSchema ? "not-migrated" : "ledger" };
+    }
     return { ok: true, rows: data || [] };
+  } catch (e) { return { ok: false, reason: "network" }; }
+}
+
+// Exact transaction lookup for the native purchase-confirmation race: an app
+// foreground reconcile can consume the new ledger row before the billing
+// sheet's purchase promise resolves. The later poll still needs to prove that
+// specific order landed, but must not fold its delta a second time.
+export async function fetchLedgerOrder(userId, orderId) {
+  if (offline()) return { ok: false, reason: "offline" };
+  if (!orderId) return { ok: false, reason: "missing-order" };
+  try {
+    const { data, error } = await getClient()
+      .from("ledger")
+      .select("delta, created_at, order_id")
+      .eq("user_id", userId)
+      .eq("order_id", orderId)
+      .maybeSingle();
+    if (error) return { ok: false, reason: "ledger" };
+    return { ok: true, row: data || null };
   } catch (e) { return { ok: false, reason: "network" }; }
 }
 

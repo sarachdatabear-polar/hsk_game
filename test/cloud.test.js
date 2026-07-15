@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { getSession, ensureGuest, sendCode, verifyCode, signOut,
-         upsertProfile, fetchSyncRows, pushSyncRows, fetchLedgerSince,
+         upsertProfile, fetchSyncRows, pushSyncRows, fetchLedgerSince, fetchLedgerOrder,
          LEDGER_EPOCH, __setClientForTests } from "../src/cloud.js";
 
 // House pattern (see test/native.test.js): no vi.mock — a hand-rolled fake
@@ -258,7 +258,7 @@ describe("fetchSyncRows", () => {
 
 // Fake with the ledger chain (select/eq/not/gt/order — event_id-tagged rows
 // only, ordered ascending). Mirrors fakeSyncClient's shape/conventions.
-function fakeLedgerClient({ rows = [], failFetch = false } = {}) {
+function fakeLedgerClient({ rows = [], fetchError = null } = {}) {
   const calls = { queries: [] };
   const client = {
     from: (table) => ({
@@ -268,10 +268,29 @@ function fakeLedgerClient({ rows = [], failFetch = false } = {}) {
             gt: (gtCol, since) => ({
               order: async (orderCol, opts) => {
                 calls.queries.push({ table, cols, col, val, notCol, op, notVal, gtCol, since, orderCol, opts });
-                if (failFetch) return { data: null, error: { message: "boom" } };
+                if (fetchError) return { data: null, error: fetchError };
                 return { data: rows, error: null };
               },
             }),
+          }),
+        }),
+      }),
+    }),
+  };
+  return { client, calls };
+}
+
+function fakeLedgerOrderClient({ row = null, fetchError = null } = {}) {
+  const calls = { queries: [] };
+  const client = {
+    from: (table) => ({
+      select: (cols) => ({
+        eq: (userCol, userId) => ({
+          eq: (orderCol, orderId) => ({
+            maybeSingle: async () => {
+              calls.queries.push({ table, cols, userCol, userId, orderCol, orderId });
+              return fetchError ? { data: null, error: fetchError } : { data: row, error: null };
+            },
           }),
         }),
       }),
@@ -314,10 +333,31 @@ describe("fetchLedgerSince", () => {
     __setClientForTests(client);
     expect(await fetchLedgerSince("u1", "2026-01-01T00:00:00Z")).toEqual({ ok: true, rows: [] });
   });
-  it("query failure resolves {ok:false, reason:'network'} — never throws", async () => {
-    const { client } = fakeLedgerClient({ failFetch: true });
+  it("ordinary ledger failure is distinguished from the safe pre-migration case", async () => {
+    const { client } = fakeLedgerClient({ fetchError: { message:"permission denied", code:"42501" } });
     __setClientForTests(client);
-    expect(await fetchLedgerSince("u1", "2026-01-01T00:00:00Z")).toEqual({ ok: false, reason: "network" });
+    expect(await fetchLedgerSince("u1", "2026-01-01T00:00:00Z")).toEqual({ ok:false, reason:"ledger" });
+  });
+  it("reports a missing ledger migration explicitly", async () => {
+    const { client } = fakeLedgerClient({ fetchError: { message:'column ledger.order_id does not exist', code:'42703' } });
+    __setClientForTests(client);
+    expect(await fetchLedgerSince("u1", "2026-01-01T00:00:00Z")).toEqual({ ok:false, reason:"not-migrated" });
+  });
+});
+
+describe("fetchLedgerOrder", () => {
+  it("looks up one exact store transaction", async () => {
+    const row = { delta: 1000, created_at: "2026-07-12T10:00:00Z", order_id: "GPA.ONE" };
+    const { client, calls } = fakeLedgerOrderClient({ row });
+    __setClientForTests(client);
+    expect(await fetchLedgerOrder("u1", "GPA.ONE")).toEqual({ ok: true, row });
+    expect(calls.queries[0]).toMatchObject({
+      table: "ledger", userCol: "user_id", userId: "u1",
+      orderCol: "order_id", orderId: "GPA.ONE",
+    });
+  });
+  it("fails closed for an empty order id", async () => {
+    expect(await fetchLedgerOrder("u1", "")).toEqual({ ok: false, reason: "missing-order" });
   });
 });
 
