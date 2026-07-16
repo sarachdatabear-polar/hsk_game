@@ -371,6 +371,8 @@ export const STRINGS = {
     "battle.off": "Off",
     "settings.sfxVol": "SFX volume",
     "settings.voiceVol": "Pronunciation",
+    "settings.analytics": "Share anonymous usage data",
+    "settings.analyticsHint": "Helps improve the game. No personal info, no word history. Off by default.",
     "battle.canvasLabel": "Word Quest scene. Press Enter or Space to replay the word's audio (when available).",
     "battle.canvasWord": "Current word: {h}, pinyin {p}. Press Enter or Space to replay its audio.",
     "battle.canvasHanzi": "Current hanzi: {h}. Use the task below to recall its pinyin.",
@@ -775,6 +777,8 @@ export const STRINGS = {
     "battle.off": "ปิด",
     "settings.sfxVol": "ระดับเสียงเอฟเฟกต์", // TH-REVIEW 2026-07-12: relabeled from เสียงเอฟเฟกต์
     "settings.voiceVol": "ระดับเสียงอ่าน",
+    "settings.analytics": "แชร์ข้อมูลการใช้งานแบบไม่ระบุตัวตน",
+    "settings.analyticsHint": "ช่วยพัฒนาเกม ไม่มีข้อมูลส่วนตัว ไม่มีประวัติคำศัพท์ ปิดไว้เป็นค่าเริ่มต้น",
     "battle.canvasLabel": "ฉากภารกิจคำศัพท์ กด Enter หรือ Space เพื่อฟังเสียงคำศัพท์อีกครั้ง (เมื่อเปิดให้ฟัง)",
     "battle.canvasWord": "คำปัจจุบัน: {h} พินอิน {p} กด Enter หรือ Space เพื่อฟังเสียงอีกครั้ง",
     "battle.canvasHanzi": "อักษรจีนปัจจุบัน: {h} ทำโจทย์ด้านล่างเพื่อนึกพินอิน",
