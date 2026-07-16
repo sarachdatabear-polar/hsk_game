@@ -35,7 +35,7 @@ import { comboGlowTier, plaqueBounce, countUpValue, trailMoveX } from "./juice.j
 import { isFirstRun, introDeck } from "./firstrun.js";
 import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue } from "./stickers.js";
 import { journeyNodes, currentNodeId } from "./journey.js";
-import { defaultProfile, normalizeDisplayName, profileStats, equippedSummary } from "./profile.js";
+import { defaultProfile, normalizeDisplayName, profileInitial, profileStats, equippedSummary } from "./profile.js";
 import { accountState, accountView, canSendCode, codeLooksValid } from "./account.js";
 import { getSession, ensureGuest, sendCode, verifyCode, saveDisplayName, signOut } from "./cloud.js";
 import { SYNC_KEYS } from "./merge.js";
@@ -3688,6 +3688,11 @@ function renderProfileDashboard(){
 
   const displayName = playerProfile.displayName || t("profile.defaultName");
   $("#profile-name").textContent = displayName;
+  const avatar = $("#profile-avatar");
+  const initial = profileInitial(playerProfile.displayName);
+  $("#profile-avatar-initial").textContent = initial;
+  avatar.classList.toggle("has-initial", !!initial);
+  avatar.setAttribute("aria-label", t("profile.avatar", { name: displayName }));
   $("#profile-level").textContent = t("profile.level", { lv: level });
   $("#profile-xp-bar").style.width = pct + "%";
   $("#profile-xp-copy").textContent = t("profile.xp", {
@@ -3718,17 +3723,6 @@ function renderProfileDashboard(){
     ? tOr("item."+equipped.backdrop.id, equipped.backdrop.name) : t("profile.defaultBackdrop");
   $("#profile-skin").textContent = t("profile.skin", { name: skinName });
   $("#profile-backdrop").textContent = t("profile.backdrop", { name: backdropName });
-
-  const canvas = $("#profile-cat"), dpr = window.devicePixelRatio || 1;
-  const w = 112, h = 112;
-  canvas.width = Math.round(w*dpr); canvas.height = Math.round(h*dpr);
-  const ctx = canvas.getContext("2d");
-  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
-  const accessories = accessoriesFor(level);
-  drawCat(ctx, 55, 105, 0, "happy", SKIN_PALETTES[shopState.skin], 1.12,
-    accessories.filter(id=>id!=="kitten"), false);
-  if(accessories.includes("kitten"))
-    drawCat(ctx, 91, 108, 120, "happy", SKIN_PALETTES[shopState.skin], .46, [], false);
 
   const nameRow = $("#profile-name-row"), form = $("#profile-name-form");
   const input = $("#profile-name-input");
