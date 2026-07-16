@@ -51,7 +51,7 @@ export async function getSession() {
   catch (e) { return { ok: false, reason: "network" }; }
 }
 
-export async function ensureGuest(locale) {
+export async function ensureGuest(locale, displayName) {
   if (offline()) return { ok: false, reason: "offline" };
   try {
     let session = await currentSession();
@@ -60,7 +60,7 @@ export async function ensureGuest(locale) {
       if (error || !data || !data.session) return { ok: false, reason: "network" };
       session = data.session;
     }
-    await upsertProfile(profileRowFor(session.user.id, locale));
+    await upsertProfile(profileRowFor(session.user.id, locale, displayName));
     return { ok: true, session };
   } catch (e) { return { ok: false, reason: "network" }; }
 }
@@ -82,13 +82,13 @@ export async function sendCode(email) {
   } catch (e) { return { ok: false, reason: "network" }; }
 }
 
-export async function verifyCode(email, code, verifyType, locale) {
+export async function verifyCode(email, code, verifyType, locale, displayName) {
   if (offline()) return { ok: false, reason: "offline" };
   try {
     const { data, error } = await getClient().auth.verifyOtp({ email, token: code, type: verifyType });
     if (error) return { ok: false, reason: isNetworkAuthError(error) ? "network" : "bad-code" };
     if (!data || !data.session) return { ok: false, reason: "bad-code" };
-    await upsertProfile(profileRowFor(data.session.user.id, locale));
+    await upsertProfile(profileRowFor(data.session.user.id, locale, displayName));
     return { ok: true, session: data.session };
   } catch (e) { return { ok: false, reason: "network" }; }
 }
@@ -99,6 +99,15 @@ export async function upsertProfile(row) {
     const { error } = await getClient().from("profiles").upsert(row);
     return { ok: !error };
   } catch (e) { return { ok: false }; }
+}
+
+// Device-local profile is authoritative for this first slice. If a cloud
+// session exists, mirror a name edit best-effort; offline/network failure must
+// never roll the local name back or surface as a gameplay error.
+export async function saveDisplayName(session, locale, displayName) {
+  const userId = session && session.user && session.user.id;
+  if (!userId) return { ok: false };
+  return upsertProfile(profileRowFor(userId, locale, displayName));
 }
 
 // --- cloud-save round: sync-row data access (the only supabase touchpoints

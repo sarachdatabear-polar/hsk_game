@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Permanent viewport regression harness — drives home/shop/battle at the
+// Permanent viewport regression harness — drives home/shop/profile/account/battle at the
 // standard device matrix and reports overflow / clipped controls / tap-target
 // / scroll regressions. Promoted from the throwaway probes used in the
 // responsive-all-devices round (.superpowers/sdd/responsive-sweep.mjs +
@@ -7,7 +7,7 @@
 //
 // Usage:
 //   npm run serve                       # in another shell — python http.server on :8000
-//   node scripts/responsive-sweep.mjs           # full 10-viewport x 3-screen sweep
+//   node scripts/responsive-sweep.mjs           # full 10-viewport multi-screen sweep
 //   node scripts/responsive-sweep.mjs --battle 390x844   # single-shot battle probe
 //
 // Requires: npm i --no-save playwright-core, and Microsoft Edge installed
@@ -269,6 +269,11 @@ async function goToStreet(page) {
   await page.waitForTimeout(250);
 }
 
+async function goToProfile(page) {
+  await page.evaluate(() => document.querySelector('[data-go="progress"]')?.click());
+  await page.waitForTimeout(250);
+}
+
 async function goToAccount(page) {
   await page.evaluate(() => document.querySelector('#bottom-nav [data-go="more"], [data-go="more"]')?.click());
   await page.waitForTimeout(150);
@@ -443,7 +448,7 @@ async function assertServerReachable() {
 }
 
 // ---------------------------------------------------------------------------
-// Full sweep: home + shop + battle at all 10 viewports.
+// Full sweep: home + shop + profile + account + battle at all 10 viewports.
 // ---------------------------------------------------------------------------
 async function runFullSweep() {
   await assertServerReachable();
@@ -511,6 +516,15 @@ async function runFullSweep() {
       await page.waitForTimeout(100);
     }
 
+    await goToProfile(page);
+    const profile = await page.evaluate(probeScreen, ["progress", TOL, MIN_TAP]);
+    await page.evaluate(() => document.querySelector("#profile-edit-name")?.click());
+    await page.waitForTimeout(50);
+    const profileEdit = await page.evaluate(probeScreen, ["progress", TOL, MIN_TAP]);
+    await page.evaluate(() => document.querySelector("#profile-cancel-name")?.click());
+    await page.evaluate(() => document.querySelector('[data-go="home"]')?.click());
+    await page.waitForTimeout(100);
+
     await goToAccount(page);
     const account = await page.evaluate(probeScreen, ["account", TOL, MIN_TAP]);
     await page.evaluate(() => document.querySelector('[data-go="home"]')?.click());
@@ -533,15 +547,21 @@ async function runFullSweep() {
     const failures = [];
     if (home.overflowX) failures.push("home overflow-x");
     if (shop.overflowX) failures.push("shop overflow-x");
+    if (profile.overflowX) failures.push("profile overflow-x");
+    if (profileEdit.overflowX) failures.push("profile-edit overflow-x");
     if (battle.overflowX) failures.push("battle overflow-x");
     if (account.overflowX) failures.push("account overflow-x");
     if (startVisible !== "in-fold") failures.push(`start=${startVisible}`);
     if (home.small.length) failures.push(`home small-taps:[${home.small}]`);
     if (shop.small.length) failures.push(`shop small-taps:[${shop.small}]`);
+    if (profile.small.length) failures.push(`profile small-taps:[${profile.small}]`);
+    if (profileEdit.small.length) failures.push(`profile-edit small-taps:[${profileEdit.small}]`);
     if (battle.small.length) failures.push(`battle small-taps:[${battle.small}]`);
     if (account.small.length) failures.push(`account small-taps:[${account.small}]`);
     if (home.wide.length) failures.push(`home wide:[${home.wide}]`);
     if (shop.wide.length) failures.push(`shop wide:[${shop.wide}]`);
+    if (profile.wide.length) failures.push(`profile wide:[${profile.wide}]`);
+    if (profileEdit.wide.length) failures.push(`profile-edit wide:[${profileEdit.wide}]`);
     if (battle.wide.length) failures.push(`battle wide:[${battle.wide}]`);
     if (account.wide.length) failures.push(`account wide:[${account.wide}]`);
     if (battle.clippedBelow > 0) failures.push(`battle clipped-below=${battle.clippedBelow}`);

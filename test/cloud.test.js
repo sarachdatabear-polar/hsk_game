@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { getSession, ensureGuest, sendCode, verifyCode, signOut,
-         upsertProfile, fetchSyncRows, pushSyncRows, fetchLedgerSince, fetchLedgerOrder,
+         upsertProfile, saveDisplayName, fetchSyncRows, pushSyncRows, fetchLedgerSince, fetchLedgerOrder,
          LEDGER_EPOCH, __setClientForTests } from "../src/cloud.js";
 
 // House pattern (see test/native.test.js): no vi.mock — a hand-rolled fake
@@ -208,6 +208,18 @@ describe("signOut / upsertProfile never throw", () => {
     globalThis.navigator = { onLine: false };
     expect(await upsertProfile({ id: "u1", locale: "en" })).toEqual({ ok: false });
     expect(calls).toBe(0);
+  });
+  it("saveDisplayName mirrors an explicit name for a session", async () => {
+    const { client, calls } = fakeClient();
+    __setClientForTests(client);
+    expect(await saveDisplayName({ user: { id: "u1" } }, "th", "Lucky"))
+      .toEqual({ ok: true });
+    expect(calls.upserts).toEqual([{
+      table: "profiles", row: { id: "u1", locale: "th", display_name: "Lucky" },
+    }]);
+  });
+  it("saveDisplayName does nothing without a session", async () => {
+    expect(await saveDisplayName(null, "en", "Lucky")).toEqual({ ok: false });
   });
 });
 
