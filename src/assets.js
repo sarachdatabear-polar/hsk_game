@@ -64,7 +64,11 @@ export function createAssets(m, opts = {}) {
 
   function preload() {
     for (const asset of m.assets) {
-      if (asset.priority !== "P0") continue;
+      // Only 9-slice UI chrome is globally useful at boot. Canvas sprites,
+      // backgrounds, effects, and null-slice badges are requested lazily by
+      // their owning screen; preloading every P0 row made Home fetch the
+      // complete cosmetic catalog.
+      if (asset.priority !== "P0" || !FRAME_TYPES.has(asset.type) || !Array.isArray(asset.slice)) continue;
       load(asset.id);
       for (const state of asset.states || []) {
         if (state !== "default") load(asset.id, state);

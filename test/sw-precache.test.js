@@ -2,24 +2,26 @@ import { describe, it, expect } from "vitest";
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { SPRITE_NAMES } from "../src/sprites.js";
 
 // sw.js is a classic (non-module) service-worker script, so we can't import
-// it — parse the PRECACHE array out of the source text instead. This guards
-// the two failure modes that silently break offline mode (each cache.add is
-// .catch(()=>{})-swallowed by design): entries pointing at files that don't
-// exist (typos, deleted art), and runtime-referenced files missing from the
-// list entirely.
+// it — parse the PRECACHE array out of the source text instead. PRECACHE is
+// the atomic boot/play shell; optional art is cached on first use by RUNTIME.
 
 const GAME = join(dirname(fileURLToPath(import.meta.url)), "..");
 const swSrc = readFileSync(join(GAME, "sw.js"), "utf8");
 const arr = swSrc.match(/const PRECACHE = \[([\s\S]*?)\];/);
 const PRECACHE = [...arr[1].matchAll(/"([^"]+)"/g)].map(m => m[1]);
 const precacheSet = new Set(PRECACHE);
+const precacheBytes = PRECACHE.reduce((sum, entry) => sum + readFileSync(join(GAME, entry)).byteLength, 0);
 
 describe("sw.js precache list", () => {
   it("parses a non-trivial PRECACHE array", () => {
     expect(PRECACHE.length).toBeGreaterThan(20);
+  });
+
+  it("keeps the atomic offline shell within the install budget", () => {
+    expect(PRECACHE.length).toBeLessThanOrEqual(70);
+    expect(precacheBytes).toBeLessThanOrEqual(10 * 1024 * 1024);
   });
 
   for (const entry of PRECACHE) {
@@ -35,23 +37,24 @@ describe("sw.js precache list", () => {
     expect(missing, `index.html references assets not in PRECACHE: ${missing.join(", ")}`).toEqual([]);
   });
 
-  it("covers every registered sprite that exists on disk", () => {
-    const missing = [];
-    for (const name of SPRITE_NAMES) {
-      const candidates = [`assets/${name}.png`, `assets/${name}.svg`];
-      const onDisk = candidates.find(p => existsSync(join(GAME, p)));
-      if (onDisk && !precacheSet.has(onDisk)) missing.push(onDisk);
-    }
-    expect(missing, `sprites not in PRECACHE: ${missing.join(", ")}`).toEqual([]);
+  it("keeps the default playable loop in the atomic shell", () => {
+    for (const entry of [
+      "data/words.js", "assets/cat-walk.png", "assets/raccoon-walk.png",
+      "assets/bg-battle.png", "assets/ui-word-plaque.svg", "assets/bg-home.webp",
+    ]) expect(precacheSet.has(entry), entry).toBe(true);
   });
 
-  it("covers every integrated asset-manifest file", () => {
-    const manifest = JSON.parse(readFileSync(join(GAME, "assets", "asset-manifest.json"), "utf8"));
-    const items = Array.isArray(manifest) ? manifest : manifest.assets || [];
-    const missing = items
-      .filter(a => a.status === "integrated" && a.file)
-      .map(a => `assets/${a.file}`)
-      .filter(p => existsSync(join(GAME, p)) && !precacheSet.has(p));
-    expect(missing, `integrated assets not in PRECACHE: ${missing.join(", ")}`).toEqual([]);
+  it("keeps optional cosmetics out of install and caches them on first use", () => {
+    for (const entry of [
+      "assets/cat-astronaut-walk.png", "assets/bg-island-sunset.png",
+      "assets/deco-noodle-stall.png", "assets/tile-arcade.png",
+    ]) expect(precacheSet.has(entry), entry).toBe(false);
+    expect(swSrc).toContain('const RUNTIME = "nbhsk-runtime-v76"');
+    expect(swSrc).toContain("cacheAfterFetch(RUNTIME, request)");
+  });
+
+  it("fails an incomplete core install instead of swallowing missing files", () => {
+    expect(swSrc).toContain("cache.addAll(PRECACHE)");
+    expect(swSrc).not.toContain("c.add(u).catch");
   });
 });

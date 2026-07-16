@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#FBF5E8">
 <link rel="icon" href="data:,">
 <link rel="manifest" href="pwa/manifest.webmanifest">
@@ -158,13 +158,13 @@
     box-shadow:0 4px 9px rgba(60,42,22,.20);}
   :root.has-ui-button-primary .big.primary{background:none; border-color:transparent; border-radius:22px;
     color:var(--lc-cream); box-shadow:0 4px 9px rgba(60,42,22,.22);}
-  .back{align-self:flex-start; background:none; color:var(--lc-teal); font-weight:700; font-size:15px; padding:6px 2px; margin-bottom:6px;
-    min-height:45px; display:inline-flex; align-items:center;}
+  .back{align-self:flex-start; background:none; color:var(--lc-teal); font-weight:700; font-size:15px; padding:6px 7px; margin-bottom:6px;
+    min-height:45px; min-width:44px; display:inline-flex; align-items:center;}
   h2{font-size:20px; margin:4px 0 14px; color:var(--lc-green);}
   .sect{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:16px 0 8px;}
   .chips{display:flex; flex-wrap:wrap; gap:8px;}
   .chip{padding:9px 14px; border-radius:999px; background:var(--chip); color:var(--ink);
-    min-height:44px;
+    min-height:45px; min-width:44px;
     font-size:15px; font-weight:600; border:1px solid var(--panel-border);
     border-image:var(--f-ui-tab, none);}
   .chip.on{background-color:var(--chip-on); color:var(--chip-ink-on); border-color:var(--lc-teal);
@@ -223,10 +223,14 @@
   .profile-hero{display:grid; grid-template-columns:112px minmax(0,1fr); gap:14px; align-items:center;
     padding:14px; margin-bottom:12px; border:1px solid var(--panel-border); border-radius:16px;
     background:var(--panel-wash); border-image:var(--f-ui-card-paper, none); box-shadow:0 3px 10px rgba(132,96,67,.16);}
-  .profile-cat-wrap{width:112px; height:112px; border-radius:50%; display:flex; align-items:center;
+  .profile-avatar{width:112px; height:112px; border-radius:50%; display:flex; align-items:center;
     justify-content:center; overflow:hidden; background:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-cream));
     border:2px solid var(--lc-sun-deep);}
-  #profile-cat{display:block; width:112px; height:112px;}
+  .profile-avatar-initial{display:none; color:var(--lc-green); font-size:44px; font-weight:900;
+    line-height:1; text-transform:none;}
+  .profile-avatar.has-initial .profile-avatar-initial{display:block;}
+  .profile-avatar.has-initial .profile-avatar-fallback{display:none;}
+  .profile-avatar-fallback{width:54px; height:54px; color:var(--lc-green); opacity:.9;}
   .profile-identity{min-width:0; display:flex; flex-direction:column; gap:8px;}
   .profile-name-row{display:flex; align-items:center; gap:8px; min-width:0;}
   .profile-name-row h3{margin:0; min-width:0; overflow-wrap:anywhere; color:var(--ink); font-size:21px;}
@@ -258,12 +262,18 @@
   .profile-actions .big{min-height:44px; padding:10px 8px; font-size:13px;}
   @media (max-width:380px){
     .profile-hero{grid-template-columns:88px minmax(0,1fr); gap:10px; padding:10px;}
-    .profile-cat-wrap,#profile-cat{width:88px; height:88px;}
+    .profile-avatar{width:88px; height:88px;}
+    .profile-avatar-initial{font-size:38px;}
+    .profile-avatar-fallback{width:46px; height:46px;}
     .profile-name-row h3{font-size:18px;}
     .profile-equipped,.profile-actions{grid-template-columns:1fr;}
   }
   .startrow{display:flex; gap:10px; margin-top:14px;}
   .startrow .big{flex:1; padding:14px 6px; font-size:16px;}
+  /* Scope has one primary decision and two secondary modes. A full-width
+     first row preserves the Word Quest length instead of ellipsizing it. */
+  #s-scope .startrow{display:grid; grid-template-columns:1fr 1fr;}
+  #s-scope #go-battle{grid-column:1/-1;}
   /* #9 audit: cap "Choose your words" cards & buttons at two lines so long
      (esp. Thai) labels never sprawl past two rows. Text-only controls clamp
      directly; icon+text action buttons clamp their inner label span so the
@@ -329,6 +339,7 @@
   .card .hint{color:var(--lc-brown); font-size:13px; margin-top:26px;}
   .fc-btns{display:flex; gap:10px;}
   .fc-btns .big{flex:1; font-size:16px; padding:14px 6px;}
+  .fc-btns button:disabled{opacity:.42; filter:saturate(.25); cursor:not-allowed;}
   .know{background-color:var(--lc-success);
     background-image:linear-gradient(180deg,var(--lc-success-hi),var(--lc-success) 55%,var(--lc-success-deep));
     color:var(--lc-cream); border-color:var(--lc-success-deep);
@@ -663,8 +674,8 @@
   .typed-letters{font:inherit; font-size:18px; padding:10px 12px; border-radius:14px;
     border:2px solid var(--lc-brown); background-color:var(--lc-sand); color:var(--lc-ink); width:100%;}
   #opts .tone-row{display:flex; align-items:center; gap:6px;}
-  .tone-label{min-width:56px; color:var(--muted); font-size:14px;}
-  #opts .tone-chip{min-width:40px;}
+  .tone-label{min-width:44px; color:var(--muted); font-size:14px;}
+  #opts .tone-chip{min-width:44px; min-height:44px; padding:6px;}
   #opts .tone-chip.on{background-color:var(--lc-success); color:var(--lc-cream); border-color:var(--lc-success-deep);}
   #opts .typed-go{font-weight:700; padding:12px; border-radius:14px;}
   #opts .typed-go:disabled{opacity:.45;}
@@ -994,6 +1005,7 @@
     filter:drop-shadow(0 8px 10px rgba(46,42,36,.3));}
   .welcome-title{text-align:center; margin:6px 0 0;}
   .welcome-blurb{text-align:center; color:var(--muted); font-size:14.5px; margin:2px 0 6px;}
+  .welcome-hint{color:var(--muted); font-size:12.5px; line-height:1.4; margin:8px 0 0; max-width:34ch;}
   .welcome-start{margin-top:16px; flex:none;}
 
   /* festive decor — swaying lantern.png corners + a soft cloud.png behind the
@@ -1112,6 +1124,26 @@
     #bottom-nav{margin-top:3px; padding:2px 3px;}
     .nav-btn{min-height:44px; padding:1px 2px; gap:1px; font-size:9px;}
     .nav-btn .asset-icon{width:16px; height:16px;}
+    /* Flashcards are a no-scroll drill in landscape: card left, verdicts
+       right. Previously the card consumed the fold and hid every action. */
+    #s-learn{padding:5px 12px; gap:8px; grid-template-columns:minmax(0,1fr) 172px;
+      grid-template-rows:45px minmax(0,1fr); grid-template-areas:"top top" "card actions";
+      height:100vh; height:100dvh; overflow:hidden;}
+    #s-learn.on{display:grid;}
+    #s-learn .fc-top{grid-area:top;}
+    #s-learn .card{grid-area:card; min-height:0; margin:0; padding:10px;}
+    #s-learn .card .hz{font-size:48px;}
+    #s-learn .card .py{font-size:20px; margin-top:4px;}
+    #s-learn .card .mean{font-size:17px; margin-top:3px;}
+    #s-learn .card .mean .th{font-size:18px; margin-top:3px;}
+    #s-learn .card .hint{font-size:11px; margin-top:10px;}
+    #s-learn .fc-btns{grid-area:actions; flex-direction:column; align-self:center; width:100%;}
+    /* One extra CSS pixel avoids fractional grid rounding landing at 43.98px
+       on 844x390 while preserving the 44px physical tap-target floor. */
+    #s-learn .fc-btns .big,#s-learn .fc-btns .spk{width:100%; min-height:45px; padding:8px 5px;}
+    #opts .typed-box{gap:4px;}
+    #opts .tone-row{gap:4px;}
+    #opts .typed-go{min-height:44px;}
     /* ---- tone trainer ---- */
     /* Short landscape can't stack a 2x2 tone grid + big reveal under the
        replay button without pushing tones 3/4 below the fold (caught by the
@@ -1215,7 +1247,10 @@
         <button class="chip" data-wlv="2">HSK2</button>
         <button class="chip" data-wlv="3">HSK3</button>
         <button class="chip" data-wlv="4">HSK4</button>
+        <button class="chip" data-wlv="5">HSK5</button>
+        <button class="chip" data-wlv="6">HSK6</button>
       </div>
+      <p class="welcome-hint" data-i18n="welcome.levelHint">New to HSK? Start with HSK1 — you can change this any time.</p>
       <button class="start-btn welcome-start" id="welcome-start" data-i18n="welcome.start">START LEARNING</button>
     </div>
   </div>
@@ -1233,10 +1268,10 @@
          (#pause-overlay in #s-battle) — #quest-panel is the SAME element
          renderQuests() already targets, just relocated here so no rendering
          logic is duplicated. -->
-    <div class="pause-overlay" id="quest-overlay">
+    <div class="pause-overlay" id="quest-overlay" role="dialog" aria-modal="true" aria-labelledby="quest-dialog-title">
       <div class="pause-panel">
         <div class="quest-popup-head">
-          <h3 class="pause-title" data-i18n="quests.title">Daily Quests</h3>
+          <h3 class="pause-title" id="quest-dialog-title" data-i18n="quests.title">Daily Quests</h3>
           <button class="overlay-close" id="quest-popup-close" data-i18n-title="common.close" aria-label="Close">×</button>
         </div>
         <div id="quest-panel"></div>
@@ -1259,7 +1294,7 @@
       <button class="chip" data-uilang="th">ไทย</button>
     </div>
     <div class="more-foot">
-      <img src="assets/more-cat-icon.png" alt="" width="72" height="72">
+      <img src="assets/more-cat-icon.png" alt="" width="72" height="72" loading="lazy" decoding="async">
       <p data-i18n="more.tagline">Lucky Cat HSK — learn the words that actually appear on the test</p>
     </div>
   </div>
@@ -1326,7 +1361,7 @@
       <button class="back" style="margin:0" data-go="home" data-i18n="learn.exit">Exit</button>
       <span id="fc-count"></span>
     </div>
-    <div class="card" id="fc-card"></div>
+    <button class="card" id="fc-card" type="button" aria-pressed="false"></button>
     <div class="fc-btns">
       <button class="big learn2" id="fc-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#repeat"></use></svg><span data-i18n="learn.stillLearning">Still learning</span></span></button>
       <button class="spk" id="fc-spk" data-i18n-title="common.playAudio" aria-label="Play audio"><svg class="asset-icon"><use href="assets/ui-icons.svg#sound"></use></svg></button>
@@ -1348,8 +1383,8 @@
       <span class="hud-pill hud-review" id="hud-review"></span>
       <button class="hud-round" id="hud-pause" title="Pause" aria-label="Pause" data-i18n-title="battle.pause"><svg class="asset-icon"><use href="assets/ui-icons.svg#pause"></use></svg></button>
     </div>
-    <div class="cv-wrap"><canvas id="cv" tabindex="0" role="img" data-i18n-title="battle.canvasLabel"></canvas></div>
-    <div id="quest-feedback" role="status" aria-live="polite" data-i18n="battle.promptChoose">Choose the best answer to light the trail.</div>
+    <div class="cv-wrap"><canvas id="cv" tabindex="0" role="button" aria-keyshortcuts="Enter Space" data-i18n-title="battle.canvasLabel"></canvas></div>
+    <div id="quest-feedback" role="status" aria-live="polite" data-i18n="battle.promptChoose">Choose the correct meaning to light the trail.</div>
     <!-- Lucky Flow strip: streak count · lantern flames · multiplier. Hidden
          (via .hidden) below a 2-combo by updateComboStrip() in main.js. -->
     <div id="combo-strip" class="hidden">
@@ -1357,15 +1392,15 @@
       <span class="combo-strip-fires" id="combo-fires"></span>
       <span class="combo-strip-badge" id="combo-badge"></span>
     </div>
-    <div id="opts"></div>
+    <div id="opts" role="group" aria-labelledby="quest-feedback"></div>
 
     <!-- Pause overlay: hidden by default (no .on class); covers the whole
          battle screen (#s-battle is position:relative). Toggle rows are
          rendered by renderPauseToggles() in main.js so icon/label/state stay
          in sync with the store without duplicating markup per language. -->
-    <div class="pause-overlay" id="pause-overlay">
+    <div class="pause-overlay" id="pause-overlay" role="dialog" aria-modal="true" aria-labelledby="pause-title">
       <div class="pause-panel">
-        <h3 class="pause-title" data-i18n="battle.paused">Paused</h3>
+        <h3 class="pause-title" id="pause-title" data-i18n="battle.paused">Paused</h3>
         <button class="pause-resume" id="pause-resume">
           <span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span data-i18n="battle.resume">Resume</span></span>
         </button>
@@ -1388,9 +1423,9 @@
 
     <!-- v6 soft-intro: first-ever meeting of a question format. Walker is
          frozen (z.frozen) behind this; dismiss resets it to the spawn edge. -->
-    <div id="format-intro">
+    <div id="format-intro" role="dialog" aria-modal="true" aria-labelledby="fi-text">
       <div class="fi-card">
-        <img src="assets/cat-guide.png" alt="" width="96">
+        <img src="assets/cat-guide.png" alt="" width="96" loading="lazy" decoding="async">
         <p id="fi-text"></p>
         <button id="fi-ok" class="pause-resume"></button>
       </div>
@@ -1405,7 +1440,7 @@
         <span data-i18n="results.routeLabel">Village Gate journey</span>
         <strong id="r-chapter"></strong>
       </div>
-      <img class="r-cat" src="assets/cat-celebrate.png" alt="">
+      <img class="r-cat" src="assets/cat-celebrate.png" alt="" loading="lazy" decoding="async">
       <div class="results-lanterns" id="r-lanterns"></div>
       <div class="results-learned" id="r-learned"></div>
       <div class="results-stats">
@@ -1465,14 +1500,20 @@
     <button class="back" data-go="home" data-i18n="common.back">← Home</button>
     <h2 data-i18n="progress.title">Profile</h2>
     <section class="profile-hero" aria-labelledby="profile-name">
-      <div class="profile-cat-wrap"><canvas id="profile-cat" aria-hidden="true"></canvas></div>
+      <div class="profile-avatar" id="profile-avatar" role="img" aria-label="Player profile">
+        <span class="profile-avatar-initial" id="profile-avatar-initial" aria-hidden="true"></span>
+        <svg class="profile-avatar-fallback" viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="22" r="12" fill="currentColor"></circle>
+          <path d="M10 56c1-14 9-22 22-22s21 8 22 22" fill="currentColor"></path>
+        </svg>
+      </div>
       <div class="profile-identity">
         <div class="profile-name-row" id="profile-name-row">
           <h3 id="profile-name">Lucky Learner</h3>
           <button class="profile-edit" id="profile-edit-name" type="button" data-i18n="profile.editName">Edit</button>
         </div>
         <form class="profile-name-form" id="profile-name-form" hidden>
-          <input class="account-input" id="profile-name-input" maxlength="48" autocomplete="nickname" data-i18n-ph="profile.namePh" placeholder="Player name">
+          <input class="account-input" id="profile-name-input" maxlength="48" autocomplete="nickname" data-i18n-ph="profile.namePh" data-i18n-title="profile.namePh" aria-label="Player name" placeholder="Player name">
           <button class="big" type="submit" data-i18n="profile.saveName">Save</button>
           <button class="big" id="profile-cancel-name" type="button" data-i18n="profile.cancelName">Cancel</button>
         </form>
@@ -1584,7 +1625,7 @@
   </div>
 
   <!-- BOTTOM NAV -->
-  <nav id="bottom-nav">
+  <nav id="bottom-nav" aria-label="Primary">
     <button class="nav-btn" data-go="home" data-tab="home"><svg class="asset-icon"><use href="assets/ui-icons.svg#home"></use></svg><span data-i18n="nav.home">Home</span></button>
     <button class="nav-btn" data-go="street" data-tab="street"><svg class="asset-icon"><use href="assets/ui-icons.svg#street"></use></svg><span data-i18n="nav.street">Street</span></button>
     <button class="nav-btn" data-go="progress" data-tab="progress"><svg class="asset-icon"><use href="assets/ui-icons.svg#progress"></use></svg><span data-i18n="nav.progress">Profile</span></button>

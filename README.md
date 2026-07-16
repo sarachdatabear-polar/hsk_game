@@ -11,7 +11,7 @@ Live URL (goes live after the first deploy):
 
 ```sh
 npm ci            # install dependencies
-npm test          # run unit tests (vitest, ~30 tests)
+npm test          # run the full Vitest regression suite
 npm run build     # bundle src/ → dist/app.js via esbuild
 npm run serve     # serve repo root at http://localhost:8000
 ```

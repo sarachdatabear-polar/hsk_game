@@ -1,14 +1,19 @@
-# Supabase backend (P0 draft)
+# Supabase backend
 
 Cloud backend for Lucky Cat HSK, per the Monetization & Production PRD §6.
-**Nothing in the shipped game reads or writes this yet** — this directory lets
-the backend be stood up and reviewed independently of client work.
+The game has a dark, locally tested cloud-sync and RevenueCat server-grant path.
+Live project migrations, Edge Function deployment, and production smoke tests
+remain operational owner actions.
 
 ## Files
 
 - **`schema.sql`** — tables (`profiles`, `progress`, `wallet`, `entitlements`,
   `ledger`), the `updated_at` trigger, and Row-Level Security policies. Each
   column is commented with the `nbhsk.*` localStorage key it mirrors.
+- **`migrations/2026-07-12-iap-golive.sql`** — idempotent purchase ledger,
+  atomic `grant_purchase`, and service-role privileges required before IAP.
+- **`../../supabase/functions/rc-webhook/`** — bearer + HMAC authenticated
+  RevenueCat webhook that grants through `grant_purchase`.
 
 ## Apply to a project
 
@@ -43,7 +48,15 @@ Device preferences and transient UI state stay on-device and are absent from the
 schema by design: `nbhsk.settings`, `nbhsk.sfx`, `nbhsk.scope`,
 `nbhsk.scopeView`, `nbhsk.formatIntros`, `nbhsk.introDone`.
 
-## Next (later slices, not this one)
+## RevenueCat deployment prerequisites
 
-RevenueCat webhook → Edge Function that writes `entitlements`/`ledger`; the
-reconcile logic on the client; and the earned-coin clamp trigger. See PRD §6–§7.
+1. Apply `migrations/2026-07-12-iap-golive.sql` to the live project.
+2. Deploy `supabase/functions/rc-webhook` with JWT verification disabled for
+   that endpoint; the function performs its own RevenueCat authentication.
+3. Set `RC_WEBHOOK_SECRET` and `RC_WEBHOOK_SIGNING_SECRET` as Edge Function
+   secrets. Never place either value in source control.
+4. Configure the matching bearer authorization and HMAC signing secret in the
+   RevenueCat webhook settings.
+5. Run the grant replay, ledger RLS, and closed-track purchase smokes in
+   `docs/planning/2026-07-12-coin-purchase-golive.md` before adding the public
+   Android SDK key to the client config.

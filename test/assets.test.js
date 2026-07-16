@@ -99,12 +99,10 @@ const fixture = {
 };
 
 describe("createAssets", () => {
-  it("preload() only fetches P0 approved/integrated PNGs", () => {
+  it("preload() only fetches sliced P0 UI chrome", () => {
     const { created, makeImage } = fakeImages();
     createAssets(fixture, { makeImage, root: fakeRoot() }).preload();
     expect(created.map(i => i._src).sort()).toEqual([
-      "assets/cat-walk.png",
-      "assets/ui-badge-mastery.png",
       "assets/ui-button-primary-disabled.png",
       "assets/ui-button-primary-pressed.png",
       "assets/ui-button-primary.png",
@@ -117,6 +115,7 @@ describe("createAssets", () => {
     const assets = createAssets(fixture, { makeImage, root: fakeRoot() });
     assets.preload();
     expect(assets.img("cat-walk")).toBeNull();
+    assets.img("cat-walk");
     const image = created.find(i => i._src === "assets/cat-walk.png");
     image.complete = true;
     image.naturalWidth = 1536;
@@ -185,6 +184,7 @@ describe("createAssets", () => {
     const { created, makeImage } = fakeImages();
     const assets = createAssets(fixture, { makeImage, root: fakeRoot() });
     assets.preload();
+    assets.img("ui-badge-mastery");
     const image = created.find(i => i._src === "assets/ui-badge-mastery.png");
     image.complete = true;
     image.naturalWidth = 48;
