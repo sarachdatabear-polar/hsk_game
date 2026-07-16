@@ -12,7 +12,9 @@
     "assets:shop": "node scripts/generate-shop-assets.mjs",
     "serve": "node scripts/serve.mjs",
     "cap:sync": "npm run build && node scripts/stage-www.js && npx cap sync android",
-    "apk:release": "powershell -ExecutionPolicy Bypass -File scripts/build_apk.ps1"
+    "apk:release": "powershell -ExecutionPolicy Bypass -File scripts/build_apk.ps1",
+    "aab:release": "powershell -ExecutionPolicy Bypass -File scripts/build_apk.ps1 -Artifact Aab",
+    "android:release": "powershell -ExecutionPolicy Bypass -File scripts/build_apk.ps1 -Artifact Both"
   },
   "devDependencies": {
     "@capacitor/android": "^6.2.1",

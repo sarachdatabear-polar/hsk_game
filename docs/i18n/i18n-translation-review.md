@@ -3,13 +3,13 @@
 ## Status
 
 **Owner action required before store launch:** no native-Thai approval is
-recorded for `STRINGS.th` in `src/i18n.js`. Treat all 362 Thai values as draft,
+recorded for `STRINGS.th` in `src/i18n.js`. Treat all 363 Thai values as draft,
 even when they read naturally. A native reviewer should edit the source table,
 then record the reviewer, date, and reviewed commit below.
 
 Local engineering audit completed 2026-07-16:
 
-- 362/362 English keys have Thai values.
+- 363/363 English keys have Thai values.
 - Every `{placeholder}` set matches its English source.
 - Allowed inline HTML tag structure matches across languages.
 - Every translatable value contains Thai script; the 12 exceptions are

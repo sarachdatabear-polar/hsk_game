@@ -81,6 +81,8 @@ The release keystore is at `android-signing/nbhsk-release.keystore` (git-ignored
 $env:NBHSK_STORE_PASS = "<store pass from KEYSTORE_INFO.txt>"
 $env:NBHSK_KEY_PASS   = "<key pass from KEYSTORE_INFO.txt>"
 npm run apk:release      # -> dist-apk/LuckyCatHSK-1.0.0.apk (release-signed, ~19 MB)
+npm run aab:release      # -> dist-apk/LuckyCatHSK-1.0.0.aab (Play Console)
+npm run android:release  # builds both artifacts in one signed release cut
 ```
 Verify: `apksigner verify --print-certs dist-apk/LuckyCatHSK-1.0.0.apk` → `CN=NorthBear` (the
 signing certificate predates this rename; the cert subject doesn't need to match the app name
@@ -96,7 +98,8 @@ cd android; .\gradlew.bat assembleDebug --no-daemon
   since it writes into the git-ignored `android/` res tree). Produces the green 熊 adaptive launcher
   icon (dark-green background) and the centered-bear splash on `#141a14`. Uses `msyhbd.ttc` (Microsoft
   YaHei Bold) — the plan referenced `.ttf`, but this machine has the `.ttc` collection.
-- Signed release APK: `npm run apk:release` (Task 8)
+- Signed release APK: `npm run apk:release`; Play bundle: `npm run aab:release`;
+  both: `npm run android:release`.
 
 ## Emulator verification (Task 7)
 
@@ -129,7 +132,20 @@ The app is distributed as a private signed APK — no Google Play, no account ne
 To update later: bump `versionCode`/`versionName` in `android/app/build.gradle`, rebuild, reinstall.
 **The same keystore must sign every update** — back up `android-signing/` now.
 
-## Latest release candidate (Lantern Trail Phase 6, 2026-07-13)
+## Latest verified signed APK (Profile v74, 2026-07-16)
+
+- PWA/source cache: SHELL v74.
+- Signed APK: `dist-apk/LuckyCatHSK-1.0.0.apk`, 37,950,849 bytes.
+- SHA-256: `16E9A56C657A38E3D326516CF08FC63F45C37110DDDBA3B598D92B2598CB347D`.
+- Emulator acceptance: clean cold launch; Home and Profile render; edited name
+  persists after force-stop/relaunch; notification permission is declared and
+  requestable; portrait/landscape reflow without clipping; full-session scan
+  found no `FATAL EXCEPTION`, `AndroidRuntime`, or Capacitor console errors.
+- This artifact predates the combined v75 player-avatar, RevenueCat-readiness,
+  and Thai-hardening integration. Build and verify a new signed APK after that
+  branch is promoted; do not describe the v74 file as containing those changes.
+
+## Superseded candidate (Lantern Trail Phase 6, 2026-07-13)
 
 - Web gate: 62 test files / 1,827 tests, production build, and 95 manifest assets pass.
 - Responsive gate: two consecutive 10-viewport sweeps plus both listening probes and real Results
@@ -138,8 +154,7 @@ To update later: bump `versionCode`/`versionName` in `android/app/build.gradle`,
 - Signed APK: `dist-apk/LuckyCatHSK-1.0.0.apk`, 38,282,269 bytes.
 - SHA-256: `A81970806068EDF0FD436A9B000CF228844081CFDB0EDB264BE3A6CB1526488F`.
 - Signature: verified with `apksigner`; existing certificate DN starts `CN=NorthBear`.
-- Remaining gate: install this exact APK on a mid-range Android phone and complete the Lantern Trail
-  manual matrix in the live migration plan before releasing to `main`.
+- Historical artifact; superseded by the verified v74 APK above.
 
 ## Notes
 - `android/` and `android-signing/` are **git-ignored**. `android/` is fully regenerable

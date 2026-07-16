@@ -1,9 +1,16 @@
-# One-command release build: stage web -> sync -> write keystore.properties ->
-# gradle assembleRelease -> copy signed APK out -> delete the secret props.
+# One-command signed Android release build: stage web -> sync -> write
+# keystore.properties -> run the requested Gradle task(s) -> copy artifact(s)
+# out -> delete the secret props. Default stays APK for backwards compatibility;
+# use -Artifact Aab for Play Console or -Artifact Both for a release cut.
 #
 # Set the keystore passwords in the environment first (values are in
 # android-signing/KEYSTORE_INFO.txt):
 #   $env:NBHSK_STORE_PASS = "..."; $env:NBHSK_KEY_PASS = "..."
+param(
+  [ValidateSet("Apk", "Aab", "Both")]
+  [string]$Artifact = "Apk"
+)
+
 $ErrorActionPreference = "Stop"
 $game = "C:\Users\sarac\Desktop\HSK\game"
 $env:JAVA_HOME = [Environment]::GetEnvironmentVariable("JAVA_HOME", "User")
@@ -30,12 +37,26 @@ keyPassword=$env:NBHSK_KEY_PASS
 
 try {
   Set-Location "$game\android"
-  .\gradlew.bat assembleRelease --no-daemon
-  $apk = "app\build\outputs\apk\release\app-release.apk"
-  if (-not (Test-Path $apk)) { throw "release APK not produced at $apk" }
+  $tasks = switch ($Artifact) {
+    "Apk"  { @("assembleRelease") }
+    "Aab"  { @("bundleRelease") }
+    "Both" { @("assembleRelease", "bundleRelease") }
+  }
+  & .\gradlew.bat @tasks --no-daemon
+  if ($LASTEXITCODE -ne 0) { throw "Gradle release build failed with exit code $LASTEXITCODE" }
   New-Item -ItemType Directory -Force "$game\dist-apk" | Out-Null
-  Copy-Item $apk "$game\dist-apk\LuckyCatHSK-1.0.0.apk" -Force
-  Write-Host "Signed APK: $game\dist-apk\LuckyCatHSK-1.0.0.apk"
+  if ($Artifact -in @("Apk", "Both")) {
+    $apk = "app\build\outputs\apk\release\app-release.apk"
+    if (-not (Test-Path $apk)) { throw "release APK not produced at $apk" }
+    Copy-Item $apk "$game\dist-apk\LuckyCatHSK-1.0.0.apk" -Force
+    Write-Host "Signed APK: $game\dist-apk\LuckyCatHSK-1.0.0.apk"
+  }
+  if ($Artifact -in @("Aab", "Both")) {
+    $aab = "app\build\outputs\bundle\release\app-release.aab"
+    if (-not (Test-Path $aab)) { throw "release AAB not produced at $aab" }
+    Copy-Item $aab "$game\dist-apk\LuckyCatHSK-1.0.0.aab" -Force
+    Write-Host "Signed AAB: $game\dist-apk\LuckyCatHSK-1.0.0.aab"
+  }
 }
 finally {
   # never leave the signing passwords on disk

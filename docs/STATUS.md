@@ -1,15 +1,19 @@
 # Lucky Cat HSK — Status
 
-**Last updated:** 2026-07-13
-**TL;DR:** Lantern Trail is live on `main` and GitHub Pages at **SHELL v69** (PR #98). The public Word Quest release and signed Android candidate passed their accepted release gates. Since then, the **re-engagement notification** (day-3 lapsed-streak nudge) shipped to `main` (PRs #101/#102, deploy `29262391961`) — **native-only, so no SHELL bump** (web-inert; runs on the next Android cut).
+**Last updated:** 2026-07-16
+**TL;DR:** The offline-first Profile release is on `main` at **SHELL v74**.
+The combined v75 integration branch adds a neutral player avatar, dark
+RevenueCat readiness, Thai copy/QA hardening, and refreshed roadmap/docs. Its
+local release gates pass; a new signed APK and owner-controlled store/backend
+setup remain.
 
 ## Where the game is
 
 | Tier | State |
 |---|---|
-| **Live on `main` / GitHub Pages** | SHELL **v69** (PR #98, merge `336a56d`, 2026-07-13): complete Lantern Trail Word Quest, Review Pouch retries, semantic Review Challenge, postcard Results/rewards, responsive/accessibility repairs, updated EN/TH how-to, and the preceding v66 retention/content/battle/coin-purchase foundation. Pages deployment `29238824245` passed. |
-| **Merged to `development`, unreleased** | No unreleased gameplay changes. `development` and `main` both carry the v69 content plus the re-engagement notification (native-only). |
-| **On feature branches** | `docs/plan-refresh-2026-07-13-lantern-release` archives the completed migration plan and records the live release. No gameplay changes live on this docs branch. |
+| **Live on `main` / GitHub Pages source** | SHELL **v74**, commit `0604149`: Lantern Trail plus native lifecycle/cloud hardening and the offline-first player Profile dashboard. |
+| **`development`** | Profile source at `1115e1d`; functionally the v74 feature content before the release-only cache commit. |
+| **Combined candidate** | `integration/release-readiness-2026-07-16`, SHELL **v75**: player monogram/silhouette avatar, dark RevenueCat provider + HMAC webhook, Thai hardening, and next-roadmap/docs. 64 files / 1,901 tests, 95 assets, build, Capacitor sync, EN+TH responsive/listening/Results gates all pass. |
 
 ## Done
 
@@ -49,19 +53,35 @@
 - **Lantern Trail Phase 5** — semantic Review Challenge, postcard results/rewards, missed-word recap, tomorrow hook, and retry-economy protection; 62 test files / 1,827 tests and 95 assets green (2026-07-13, PR #93, merge `3d3f821`) → [archived migration plan](archive/planning/2026-07-13-lantern-trail-migration-plan.md)
 - **Lantern Trail Phase 6 and release** — SHELL v69, 44px target floor, responsive/listening/real-Results sweeps, signed APK, accepted emulator playthrough, and successful live Pages verification (2026-07-13, PRs #95 and #98, live merge `336a56d`) → [archived migration plan](archive/planning/2026-07-13-lantern-trail-migration-plan.md)
 - **Re-engagement notification** — day-3 lapsed-streak "come back" local notification for players with an established streak (notification id 1002, distinct from the same-day streak-saver 1001); pure `reengagePlan()` + native `syncReengageReminder()`, EN/TH copy (TH queued for native review). Native-only, **no SHELL bump**; suite 1833, whole-branch review clean (2026-07-13, PRs #101/#102, live merge `223ca53`) → design/plan `planning/2026-07-13-reengagement-notification-{design,plan}.md`. Owed on next Android cut: `cap sync` + emulator check of id-1002 firing/cancel.
+- **Audit/hardening + Profile release** — battle readability, clean-matte cat
+  art, cloud-purchase/native lifecycle hardening, and Profile-first dashboard
+  released through SHELL v74 on 2026-07-15/16.
+- **v75 local release-readiness integration** — Profile uses a player monogram
+  instead of the cat mascot; Capacitor-6-compatible RevenueCat provider is
+  installed but disabled by blank public config; webhook adds bearer + HMAC
+  checks; Thai mechanical gates and dual-language viewport sweeps pass.
 
 ## In progress
 
-- **Post-release observation:** compare completion, wrong-answer recovery, delayed recall, and D1/D7 return after the v69 release. No corrective feature branch is open.
-- **Physical-device follow-up:** haptic feel and real mid-range-device performance could not be proven because no phone is available. They remain explicit non-blocking follow-ups. The signed APK is `dist-apk/LuckyCatHSK-1.0.0.apk` (SHA-256 `A81970806068EDF0FD436A9B000CF228844081CFDB0EDB264BE3A6CB1526488F`).
+- **v75 promotion:** the combined tree is locally verified. A Windows-signed
+  v75 APK has not been produced; the previously verified v74 APK is recorded
+  in [ANDROID_BUILD.md](build/ANDROID_BUILD.md).
+- **Post-release measurement:** no production analytics pipeline exists, so
+  completion, recovery, delayed recall, and D1/D7 return cannot yet be compared
+  reliably.
+- **Dependency maintenance:** `npm audit` on 2026-07-16 reported seven findings
+  in the Capacitor CLI/test/build toolchain. RevenueCat was not among them;
+  suggested automatic fixes cross Capacitor/Vitest/esbuild major versions, so
+  handle this as a separate upgrade branch after v75 rather than changing the
+  release candidate blindly.
 
-## Planned
+## Planned / owner queue
 
-Ordered by priority. `(owner)` = needs a human action Claude can't do; `(needs direction)` = Claude can build once you pick an approach; `(Claude-ready)` = actionable now.
-
-1. **Coin purchase Phase 2 / monetization production gates** `(owner + implementation)` — configure the real provider/products and closed-track testing, then implement the deferred provider/join-key/fresh-cursor gates in the [go-live plan](planning/2026-07-12-coin-purchase-golive.md). See also the [PRD](prd/PRD-monetization-and-production.md).
-2. **Native Thai review of UI strings** `(owner)` — including later account, IAP, and Lantern Trail terminology ([i18n-translation-review.md](i18n/i18n-translation-review.md)).
-3. **Later roadmaps** — HSK 3.0 content refresh, social layer, notifications/widget, and Android release refresh ([ANDROID_BUILD.md](build/ANDROID_BUILD.md)).
+The single authoritative human-action checklist is
+[OWNER-ACTIONS.md](OWNER-ACTIONS.md). Engineering defaults to the recommended
+sequence in [the next-roadmap decision](planning/2026-07-16-next-roadmap.md):
+finish release/store readiness, while an HSK 3.0 compatibility audit runs in
+parallel. Public social/leaderboard work remains deferred.
 
 _UX-audit polish complete: tone glyphs (#60) + desktop ambient (#61) shipped; **dark theme decided against** (light-only is fine for this mobile learning game)._
 _All 7 shop preview tiles shipped (2026-07-10): the 4 originals plus regenerated `tile-arcade`/`tile-lion-drum` and the new `tile-streak-freeze` consumable tile (audit-v50 F6 closed). Archive note: the 3 final dark-glow raws were pruned before being committed — git history only holds the old white-bg arcade/lion-drum raws; re-drop the originals to `art-drop/` if full-res archival is wanted._
