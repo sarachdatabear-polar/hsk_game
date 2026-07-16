@@ -1,26 +1,44 @@
 # Owner actions
 
-Everything that can be completed safely in the local repository is already on
-`fix/release-readiness-audit`. Review and merge that branch into `development`
-first. Do not merge or push it directly to `main`; promote `development` only
-after the signed/device/store gates below pass. This file contains only actions
-that require the app owner, private credentials, legal attestations, external
-accounts, payments, a real device, or a product decision.
+The v76 app code was merged into `development` by
+[PR #103](https://github.com/sarachdatabear-polar/hsk_game/pull/103) at
+`cb17797`, then promoted to `main` by
+[PR #104](https://github.com/sarachdatabear-polar/hsk_game/pull/104) (merge
+`57fbc42`). **The web/PWA release is done** — v76 is live on GitHub Pages
+(verified serving `nbhsk-shell-v76`). Shipping the web build to `main` is
+routine and does not wait on the gates below; those gates govern the **signed
+Android build and store/legal submission**, which are separate artifacts. This
+file contains only actions that require the app owner, private credentials,
+legal attestations, external accounts, payments, a real device, or a product
+decision.
+
+## Current handoff snapshot
+
+- Web release: **live**. `main` (merge `57fbc42`, app code `cb17797`) is
+  deployed to GitHub Pages at SHELL v76.
+- PRs: **#103 merged** (`fix/release-readiness-audit` → `development`),
+  **#104 merged** (`development` → `main`).
+- GitHub CI: no checks were configured or reported on the PRs at merge time.
+- Recorded local gates: 68 files / 1,916 tests, build, 95 assets, EN+TH browser
+  matrices, offline launch, performance/cache budgets, and Capacitor branding
+  sync pass.
+- Remaining owner gates are **Android + store only** — the web build needs no
+  further promotion.
 
 Do these in order. The Google/RevenueCat/backend tracks can overlap once the
 accounts exist.
 
-## 1. Review into development, then build the v76 APK/AAB
+## 1. Build and accept the v76 APK/AAB
 
-The source candidate passes 68 test files / 1,916 tests, 95 asset checks,
+This is the one gate still fully open. The v76 source (now on both `main` and
+`development` at `cb17797`) passes 68 test files / 1,916 tests, 95 asset checks,
 production build, Capacitor sync, offline launch, and the expanded EN+TH
-viewport/format/accessibility gates. It has not been signed on Windows.
+viewport/format/accessibility gates. **It has not been signed on Windows** — the
+signed APK/AAB is a separate artifact from the already-live web build.
 
-First review `fix/release-readiness-audit` and merge it into `development`.
-Keep `main` unchanged while the candidate is signed and accepted.
-
-After the integration branch is promoted to the Windows checkout, open a fresh
-PowerShell in `C:\Users\sarac\Desktop\HSK\game` and run these as separate lines:
+Pull `main` (or `development`, same app code) at `cb17797` onto the Windows
+release checkout, then open a fresh PowerShell in
+`C:\Users\sarac\Desktop\HSK\game` and run these as separate lines:
 
 ```powershell
 $storeSecure = Read-Host "Keystore store password" -AsSecureString
@@ -55,8 +73,10 @@ portrait and landscape, launcher/splash branding, offline mode, and a final
 empty scan for fatal Android/WebView errors. Real IAP is expected to remain
 hidden because the public RevenueCat key is blank.
 
-After those gates and the applicable store/legal gates pass, open the release
-PR from `development` to `main`. Never merge the fix branch directly to `main`.
+Once the signed build passes this matrix, it is ready for the store tracks below
+(§3–§7). The web release to `main` is already done, so no further
+`development` → `main` promotion is required for v76; the signed APK/AAB is
+uploaded to the Play Console, not merged to `main`.
 
 ## 2. Obtain native Thai sign-off
 
