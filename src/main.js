@@ -15,7 +15,7 @@ import { loadSprites, sprite } from "./sprites.js";
 import { nineSliceRects } from "./nineslice.js";
 import { preload as preloadAssets } from "./assets.js";
 import { recordAnswer, levelMastery } from "./mastery.js";
-import { levelForXp, xpToNext, accessoriesFor, nextMilestone, MILESTONES } from "./growth.js";
+import { levelForXp, xpToNext, accessoriesFor, MILESTONES } from "./growth.js";
 import { smartDeck, weakWords } from "./srs.js";
 import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
 import { REMINDER_HOUR, reminderPlan, reengagePlan } from "./notify.js";
@@ -35,8 +35,9 @@ import { comboGlowTier, plaqueBounce, countUpValue, trailMoveX } from "./juice.j
 import { isFirstRun, introDeck } from "./firstrun.js";
 import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue } from "./stickers.js";
 import { journeyNodes, currentNodeId } from "./journey.js";
+import { defaultProfile, normalizeDisplayName, profileStats, equippedSummary } from "./profile.js";
 import { accountState, accountView, canSendCode, codeLooksValid } from "./account.js";
-import { getSession, ensureGuest, sendCode, verifyCode, signOut } from "./cloud.js";
+import { getSession, ensureGuest, sendCode, verifyCode, saveDisplayName, signOut } from "./cloud.js";
 import { SYNC_KEYS } from "./merge.js";
 import { reconcile, pushDirty } from "./sync.js";
 import { PRODUCTS, productById, displayPrice } from "./monetization/products.js";
@@ -114,6 +115,8 @@ let lastMode = "round";
 let introPhase = null;
 let introWords = [];
 let masteryStore = store.get("mastery", {});
+let playerProfile = Object.assign(defaultProfile(), store.get("profile", {}));
+playerProfile.displayName = normalizeDisplayName(playerProfile.displayName);
 function noteAnswer(hanzi, correct){
   recordAnswer(masteryStore, hanzi, correct);
   store.set("mastery", masteryStore);
@@ -595,7 +598,12 @@ function accountChangeEmailBtn(){
 
 async function refreshAccountSession(){
   const r = await getSession();
-  if(r.ok){ accountUI.session = r.session; renderAccount(); }
+  if(r.ok){
+    accountUI.session = r.session;
+    renderAccount();
+    if(r.session && playerProfile.displayName)
+      saveDisplayName(r.session, getLocale(), playerProfile.displayName);
+  }
 }
 
 // cloud-save: module-scope caches don't see localStorage writes — after a
@@ -637,7 +645,7 @@ function pushEdge(reason){
 }
 
 async function onAccountConnect(){
-  const r = await ensureGuest(getLocale());
+  const r = await ensureGuest(getLocale(), playerProfile.displayName || undefined);
   if(r.ok){ accountUI.session = r.session; renderAccount(); syncEdge("sign-in"); }
   else toast(t("account.err." + (r.reason === "offline" ? "offline" : "network")));
 }
@@ -665,7 +673,8 @@ async function onAccountSendCode(email){
 
 async function onAccountVerify(code){
   if(!codeLooksValid(code)){ toast(t("account.err.badCode")); return; }
-  const r = await verifyCode(accountUI.email, String(code).trim(), accountUI.verifyType, getLocale());
+  const r = await verifyCode(accountUI.email, String(code).trim(), accountUI.verifyType, getLocale(),
+    playerProfile.displayName || undefined);
   if(!r.ok){
     toast(t("account.err." + (r.reason === "bad-code" ? "badCode" : r.reason === "offline" ? "offline" : "network")));
     return;
@@ -855,7 +864,14 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
   else if(tab==="scope-learn"){ renderScope(); applyScopeView(); show("scope"); }
   else if(tab==="scores"){ renderScores(); show("scores"); }
   else if(tab==="progress"){ renderProgress(); show("progress"); }
-  else if(tab==="shop"){ renderShop(); show("shop"); }
+  else if(tab==="shop"){
+    const fromProfile = currentScreen === "progress";
+    const back = $("#shop-back");
+    back.dataset.go = fromProfile ? "progress" : "home";
+    back.setAttribute("data-i18n", fromProfile ? "common.backProfile" : "common.back");
+    back.textContent = t(fromProfile ? "common.backProfile" : "common.back");
+    renderShop(); show("shop");
+  }
   else if(tab==="album"){ renderAlbum(); show("album"); }
   else if(tab==="tones"){ startToneRound(); show("tones"); }
   else if(tab==="account"){ renderAccount(); show("account"); refreshAccountSession(); }
@@ -3664,28 +3680,75 @@ function drawStreetDeco(c, id, x, gy, h){
   c.restore();
 }
 
-/* ============================== progress ============================== */
-function renderGrowthCard(){
-  const card = $("#growth-card");
-  if(!card) return;
+/* ============================== profile / progress ============================== */
+function renderProfileDashboard(){
   const level = levelForXp(xp);
   const prog = xpToNext(xp);
   const pct = prog.need ? Math.round(100*prog.into/prog.need) : 100;
-  const nm = nextMilestone(level);
-  const row = document.createElement("div");
-  row.className = "scorerow";
-  row.style.flexDirection = "column"; row.style.alignItems = "stretch"; row.style.gap = "6px";
-  row.innerHTML = `<div style="display:flex; justify-content:space-between">
-      <span>${t("growth.title", { lv: level })}</span>
-      <span>${prog.into}/${prog.need} xp</span>
-    </div>
-    <div class="mbar"><i style="width:${pct}%"></i></div>
-    <div style="color:var(--muted); font-size:12.5px">${nm ? t("street.next", { lv: nm.lv, name: tOr("milestone."+nm.id, nm.name) }) : t("growth.allUnlocked")}</div>`;
-  card.innerHTML = "";
-  card.appendChild(row);
+
+  const displayName = playerProfile.displayName || t("profile.defaultName");
+  $("#profile-name").textContent = displayName;
+  $("#profile-level").textContent = t("profile.level", { lv: level });
+  $("#profile-xp-bar").style.width = pct + "%";
+  $("#profile-xp-copy").textContent = t("profile.xp", {
+    into: prog.into.toLocaleString(), need: prog.need.toLocaleString(),
+  });
+  const streak = streakInfo(daily, todayStr(), freezes).streak;
+  $("#profile-streak").textContent = t("profile.streak", { n: streak });
+  $("#profile-coins").textContent = t("profile.coins", { n: wallet.toLocaleString() });
+
+  const stats = profileStats({
+    levels: D.levels, mastery: masteryStore, stickerState, stickerDefs: STICKER_DEFS,
+    shop: shopState, catalog: CATALOG,
+  });
+  $("#profile-mastered").textContent = stats.masteredWords.toLocaleString();
+  $("#profile-seen").textContent = stats.seenWords.toLocaleString();
+  $("#profile-stickers").textContent = `${stats.earnedStickers}/${stats.totalStickers}`;
+  $("#profile-cosmetics").textContent = `${stats.ownedCosmetics}/${stats.totalCosmetics}`;
+  $("#profile-collection-count").textContent = t("profile.collectionCount", {
+    owned: stats.ownedCosmetics, total: stats.totalCosmetics,
+  });
+  $("#profile-sticker-count").textContent = t("profile.stickerCount", {
+    earned: stats.earnedStickers, total: stats.totalStickers,
+  });
+
+  const equipped = equippedSummary(shopState, CATALOG);
+  const skinName = equipped.skin ? tOr("item."+equipped.skin.id, equipped.skin.name) : t("profile.defaultCat");
+  const backdropName = equipped.backdrop
+    ? tOr("item."+equipped.backdrop.id, equipped.backdrop.name) : t("profile.defaultBackdrop");
+  $("#profile-skin").textContent = t("profile.skin", { name: skinName });
+  $("#profile-backdrop").textContent = t("profile.backdrop", { name: backdropName });
+
+  const canvas = $("#profile-cat"), dpr = window.devicePixelRatio || 1;
+  const w = 112, h = 112;
+  canvas.width = Math.round(w*dpr); canvas.height = Math.round(h*dpr);
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
+  const accessories = accessoriesFor(level);
+  drawCat(ctx, 55, 105, 0, "happy", SKIN_PALETTES[shopState.skin], 1.12,
+    accessories.filter(id=>id!=="kitten"), false);
+  if(accessories.includes("kitten"))
+    drawCat(ctx, 91, 108, 120, "happy", SKIN_PALETTES[shopState.skin], .46, [], false);
+
+  const nameRow = $("#profile-name-row"), form = $("#profile-name-form");
+  const input = $("#profile-name-input");
+  nameRow.hidden = false; form.hidden = true;
+  $("#profile-edit-name").onclick = ()=>{
+    input.value = playerProfile.displayName;
+    nameRow.hidden = true; form.hidden = false;
+    input.focus(); input.select();
+  };
+  $("#profile-cancel-name").onclick = ()=>{ form.hidden = true; nameRow.hidden = false; };
+  form.onsubmit = e=>{
+    e.preventDefault();
+    playerProfile = { displayName: normalizeDisplayName(input.value) };
+    store.set("profile", playerProfile);
+    saveDisplayName(accountUI.session, getLocale(), playerProfile.displayName);
+    renderProfileDashboard();
+  };
 }
 function renderProgress(){
-  renderGrowthCard();
+  renderProfileDashboard();
   // #go-smart now lives on this screen (2026-07-11 audit F1) — refresh its
   // label here too, not just on renderHome(), so it reflects the latest
   // deck size the moment the player opens Progress.

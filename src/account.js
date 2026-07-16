@@ -46,8 +46,12 @@ export function codeLooksValid(code) {
   return /^\d{6,10}$/.test(String(code || "").trim());
 }
 
-export function profileRowFor(userId, locale) {
-  return { id: userId, locale: locale === "th" ? "th" : "en" };
+export function profileRowFor(userId, locale, displayName) {
+  const row = { id: userId, locale: locale === "th" ? "th" : "en" };
+  // Preserve the existing two-argument payload for callers that are not
+  // managing a player profile. An explicit blank name resets the cloud field.
+  if (displayName !== undefined) row.display_name = String(displayName || "").trim() || null;
+  return row;
 }
 
 // The merge-correctness pivot: upgrading an existing (anonymous) guest sends

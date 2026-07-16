@@ -159,7 +159,7 @@
   :root.has-ui-button-primary .big.primary{background:none; border-color:transparent; border-radius:22px;
     color:var(--lc-cream); box-shadow:0 4px 9px rgba(60,42,22,.22);}
   .back{align-self:flex-start; background:none; color:var(--lc-teal); font-weight:700; font-size:15px; padding:6px 2px; margin-bottom:6px;
-    min-height:44px; display:inline-flex; align-items:center;}
+    min-height:45px; display:inline-flex; align-items:center;}
   h2{font-size:20px; margin:4px 0 14px; color:var(--lc-green);}
   .sect{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:16px 0 8px;}
   .chips{display:flex; flex-wrap:wrap; gap:8px;}
@@ -219,6 +219,49 @@
   .account-input{padding:12px 14px; border-radius:12px; border:1px solid var(--panel-border);
     font:inherit; background:var(--panel-wash); color:var(--ink);}
   .account-change-email{background:none; border:none; color:var(--muted); text-decoration:underline; font:inherit; padding:4px; cursor:pointer;}
+  /* Profile-first dashboard — reuses the Progress route and existing data. */
+  .profile-hero{display:grid; grid-template-columns:112px minmax(0,1fr); gap:14px; align-items:center;
+    padding:14px; margin-bottom:12px; border:1px solid var(--panel-border); border-radius:16px;
+    background:var(--panel-wash); border-image:var(--f-ui-card-paper, none); box-shadow:0 3px 10px rgba(132,96,67,.16);}
+  .profile-cat-wrap{width:112px; height:112px; border-radius:50%; display:flex; align-items:center;
+    justify-content:center; overflow:hidden; background:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-cream));
+    border:2px solid var(--lc-sun-deep);}
+  #profile-cat{display:block; width:112px; height:112px;}
+  .profile-identity{min-width:0; display:flex; flex-direction:column; gap:8px;}
+  .profile-name-row{display:flex; align-items:center; gap:8px; min-width:0;}
+  .profile-name-row h3{margin:0; min-width:0; overflow-wrap:anywhere; color:var(--ink); font-size:21px;}
+  .profile-edit{min-width:44px; min-height:44px; padding:8px 10px; margin-left:auto; border-radius:10px;
+    border:1px solid var(--panel-border); background:var(--panel-wash); color:var(--lc-green); font:inherit;
+    font-weight:700; cursor:pointer;}
+  .profile-name-form{display:flex; flex-wrap:wrap; gap:8px; align-items:center;}
+  .profile-name-form[hidden]{display:none;}
+  .profile-name-form .account-input{flex:1 1 150px; min-width:0;}
+  .profile-name-form .big{min-height:44px; padding:8px 12px; font-size:13px;}
+  .profile-level{font-weight:800; color:var(--lc-green);}
+  .profile-xp-copy{font-size:12px; color:var(--muted);}
+  .profile-mini{display:flex; flex-wrap:wrap; gap:7px;}
+  .profile-mini span{padding:5px 9px; border-radius:999px; background:var(--panel-wash);
+    border:1px solid var(--panel-border); color:var(--ink); font-size:12px; font-weight:700;}
+  .profile-stats{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin-bottom:12px;}
+  .profile-stat{display:flex; flex-direction:column; gap:3px; padding:12px; min-width:0; text-align:center;
+    border:1px solid var(--panel-border); border-radius:13px; background:var(--panel-wash); border-image:var(--f-ui-card-soft, none);}
+  .profile-stat b{font-size:21px; color:var(--lc-green); line-height:1.1;}
+  .profile-stat span{font-size:12px; color:var(--muted); line-height:1.25;}
+  .profile-collection{padding:13px; margin-bottom:12px; border:1px solid var(--panel-border); border-radius:14px;
+    background:var(--panel-wash); border-image:var(--f-ui-card-soft, none);}
+  .profile-collection-main{display:flex; justify-content:space-between; gap:10px; align-items:baseline; margin-bottom:8px;}
+  .profile-collection-main b{color:var(--lc-green);}
+  .profile-collection-main span{color:var(--muted); font-size:12px; text-align:right;}
+  .profile-equipped{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; color:var(--muted);
+    font-size:12.5px; margin-bottom:10px;}
+  .profile-actions{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px;}
+  .profile-actions .big{min-height:44px; padding:10px 8px; font-size:13px;}
+  @media (max-width:380px){
+    .profile-hero{grid-template-columns:88px minmax(0,1fr); gap:10px; padding:10px;}
+    .profile-cat-wrap,#profile-cat{width:88px; height:88px;}
+    .profile-name-row h3{font-size:18px;}
+    .profile-equipped,.profile-actions{grid-template-columns:1fr;}
+  }
   .startrow{display:flex; gap:10px; margin-top:14px;}
   .startrow .big{flex:1; padding:14px 6px; font-size:16px;}
   /* #9 audit: cap "Choose your words" cards & buttons at two lines so long
@@ -1420,14 +1463,46 @@
   <!-- PROGRESS -->
   <div class="screen festive" id="s-progress">
     <button class="back" data-go="home" data-i18n="common.back">← Home</button>
-    <h2 data-i18n="progress.title">Progress</h2>
-    <button class="big" data-go="album"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="progress.album">Sticker Album</span></span></button>
+    <h2 data-i18n="progress.title">Profile</h2>
+    <section class="profile-hero" aria-labelledby="profile-name">
+      <div class="profile-cat-wrap"><canvas id="profile-cat" aria-hidden="true"></canvas></div>
+      <div class="profile-identity">
+        <div class="profile-name-row" id="profile-name-row">
+          <h3 id="profile-name">Lucky Learner</h3>
+          <button class="profile-edit" id="profile-edit-name" type="button" data-i18n="profile.editName">Edit</button>
+        </div>
+        <form class="profile-name-form" id="profile-name-form" hidden>
+          <input class="account-input" id="profile-name-input" maxlength="48" autocomplete="nickname" data-i18n-ph="profile.namePh" placeholder="Player name">
+          <button class="big" type="submit" data-i18n="profile.saveName">Save</button>
+          <button class="big" id="profile-cancel-name" type="button" data-i18n="profile.cancelName">Cancel</button>
+        </form>
+        <div class="profile-level" id="profile-level"></div>
+        <div class="mbar"><i id="profile-xp-bar" style="width:0%"></i></div>
+        <div class="profile-xp-copy" id="profile-xp-copy"></div>
+        <div class="profile-mini"><span id="profile-streak"></span><span id="profile-coins"></span></div>
+      </div>
+    </section>
+    <div class="profile-stats">
+      <div class="profile-stat"><b id="profile-mastered">0</b><span data-i18n="profile.mastered">Words mastered</span></div>
+      <div class="profile-stat"><b id="profile-seen">0</b><span data-i18n="profile.seen">Words seen</span></div>
+      <div class="profile-stat"><b id="profile-stickers">0/0</b><span data-i18n="profile.stickers">Stickers earned</span></div>
+      <div class="profile-stat"><b id="profile-cosmetics">0/0</b><span data-i18n="profile.cosmetics">Cosmetics owned</span></div>
+    </div>
+    <div class="sect" data-i18n="profile.collectionTitle">Your collection</div>
+    <section class="profile-collection">
+      <div class="profile-collection-main"><b id="profile-collection-count"></b><span id="profile-sticker-count"></span></div>
+      <div class="profile-equipped"><span id="profile-skin"></span><span id="profile-backdrop"></span></div>
+      <div class="profile-actions">
+        <button class="big" data-go="shop"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#shop"></use></svg><span data-i18n="profile.viewCollection">View Collection</span></span></button>
+        <button class="big" data-go="album"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="profile.viewAlbum">Sticker Album</span></span></button>
+      </div>
+    </section>
+    <div class="sect" data-i18n="profile.learningTitle">Learning progress</div>
     <!-- Smart Review moved here from the home quick row (2026-07-11 audit F1)
          — same #go-smart element, same updateSmartBtn() label states
          (base/progress/ready) + .locked/toast empty-state (audit-v55), same
          deck-start onclick; only the markup location changed. -->
     <button class="big" id="go-smart"></button>
-    <div class="scorelist" id="growth-card"></div>
     <div class="scorelist" id="progresslist"></div>
     <div class="sect" data-i18n="progress.needsWork">Needs work</div>
     <div class="misslist" id="needswork-list"></div>
@@ -1440,14 +1515,14 @@
   <!-- STICKER ALBUM (B2 — earn-only; sticker art lands via the A2 pipeline,
        tiles use ui-icons placeholders until then) -->
   <div class="screen festive" id="s-album">
-    <button class="back" data-go="progress" data-i18n="album.back">← Progress</button>
+    <button class="back" data-go="progress" data-i18n="album.back">← Profile</button>
     <h2 data-i18n="album.title">Sticker Album</h2>
     <div id="album-list"></div>
   </div>
 
   <!-- SHOP -->
   <div class="screen festive" id="s-shop">
-    <button class="back" data-go="home" data-i18n="common.back">← Home</button>
+    <button class="back" id="shop-back" data-go="home" data-i18n="common.back">← Home</button>
     <h2 data-i18n="shop.title">Collection</h2>
     <div class="readout" id="shop-wallet"></div>
     <!-- IAP (mock-provider v1): ships dark — unhidden by renderIapSections()
@@ -1512,7 +1587,7 @@
   <nav id="bottom-nav">
     <button class="nav-btn" data-go="home" data-tab="home"><svg class="asset-icon"><use href="assets/ui-icons.svg#home"></use></svg><span data-i18n="nav.home">Home</span></button>
     <button class="nav-btn" data-go="street" data-tab="street"><svg class="asset-icon"><use href="assets/ui-icons.svg#street"></use></svg><span data-i18n="nav.street">Street</span></button>
-    <button class="nav-btn" data-go="progress" data-tab="progress"><svg class="asset-icon"><use href="assets/ui-icons.svg#progress"></use></svg><span data-i18n="nav.progress">Progress</span></button>
+    <button class="nav-btn" data-go="progress" data-tab="progress"><svg class="asset-icon"><use href="assets/ui-icons.svg#progress"></use></svg><span data-i18n="nav.progress">Profile</span></button>
     <button class="nav-btn" data-go="more" data-tab="more"><svg class="asset-icon"><use href="assets/ui-icons.svg#more"></use></svg><span data-i18n="nav.more">More</span></button>
   </nav>
 </div>

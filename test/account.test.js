@@ -91,6 +91,12 @@ describe("profileRowFor / otpVerifyType", () => {
     expect(profileRowFor("u1", "th")).toEqual({ id: "u1", locale: "th" }));
   it("defaults unknown locale to en", () =>
     expect(profileRowFor("u1", "xx")).toEqual({ id: "u1", locale: "en" }));
+  it("adds or resets display_name only when explicitly supplied", () => {
+    expect(profileRowFor("u1", "en", " Lucky Learner "))
+      .toEqual({ id: "u1", locale: "en", display_name: "Lucky Learner" });
+    expect(profileRowFor("u1", "en", ""))
+      .toEqual({ id: "u1", locale: "en", display_name: null });
+  });
   it("guest upgrade verifies as email_change; fresh sign-in as email", () => {
     expect(otpVerifyType(true)).toBe("email_change");
     expect(otpVerifyType(false)).toBe("email");
