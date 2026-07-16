@@ -2,19 +2,20 @@
 
 **Last updated:** 2026-07-16
 **TL;DR:** The offline-first Profile release is on `main` at **SHELL v74**.
-The UX/UI launch-readiness fixes are isolated on
-`fix/release-readiness-audit` at **SHELL v76**. They must be reviewed into
-`development` first; `main` stays untouched until the signed/device/store
-release gates pass.
+The UX/UI launch-readiness fixes at **SHELL v76** were merged into
+`development` by
+[PR #103](https://github.com/sarachdatabear-polar/hsk_game/pull/103)
+(`cb17797`). `Main` stays untouched until the signed/device/store release gates
+pass.
 
 ## Where the game is
 
 | Tier | State |
 |---|---|
 | **Live on `main` / GitHub Pages source** | SHELL **v74**, commit `0604149`: Lantern Trail plus native lifecycle/cloud hardening and the offline-first player Profile dashboard. |
-| **`development`** | Profile source at `1115e1d`; functionally the v74 feature content before the release-only cache commit. |
+| **`development`** | SHELL **v76**, commit `cb17797` from [PR #103](https://github.com/sarachdatabear-polar/hsk_game/pull/103): combined v75 work plus the UX/UI launch-readiness repair. Local release gates pass; owner-controlled acceptance remains. |
 | **Combined candidate** | `integration/release-readiness-2026-07-16`, SHELL **v75**: player monogram/silhouette avatar, dark RevenueCat provider + HMAC webhook, Thai hardening, and next-roadmap/docs. 64 files / 1,901 tests, 95 assets, build, Capacitor sync, EN+TH responsive/listening/Results gates all pass. |
-| **UX/UI release candidate** | `fix/release-readiness-audit`, SHELL **v76**: launch-readiness fixes layered on the combined candidate. 68 files / 1,916 tests, 95 assets, production build, deterministic Android branding, Capacitor sync, offline launch, and expanded EN+TH browser gates pass. |
+| **UX/UI release candidate** | Integrated into `development` by PR #103. 68 files / 1,916 tests, 95 assets, production build, deterministic Android branding, Capacitor sync, offline launch, and expanded EN+TH browser gates pass. |
 
 ## Done
 
@@ -72,9 +73,11 @@ release gates pass.
 
 ## In progress
 
-- **v76 promotion:** review `fix/release-readiness-audit` into `development`.
-  A Windows-signed v76 APK/AAB has not been produced; the previously verified
-  v74 APK is recorded in [ANDROID_BUILD.md](build/ANDROID_BUILD.md).
+- **v76 acceptance:** [PR #103](https://github.com/sarachdatabear-polar/hsk_game/pull/103)
+  is merged into `development` at `cb17797`. GitHub reported no configured CI
+  checks on the PR, so the recorded local gates below remain the engineering
+  evidence. A Windows-signed v76 APK/AAB has not been produced; the previously
+  verified v74 APK is recorded in [ANDROID_BUILD.md](build/ANDROID_BUILD.md).
 - **Post-release measurement:** no production analytics pipeline exists, so
   completion, recovery, delayed recall, and D1/D7 return cannot yet be compared
   reliably.
