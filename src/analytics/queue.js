@@ -4,7 +4,8 @@ const KEY = "analyticsQueue";
 export const DEFAULT_CAP = 200;
 
 export function enqueue(store, event, cap = DEFAULT_CAP) {
-  const q = store.get(KEY, []);
+  const raw = store.get(KEY, []);
+  const q = Array.isArray(raw) ? raw : [];
   q.push(event);
   while (q.length > cap) q.shift(); // drop oldest on overflow
   store.set(KEY, q);
@@ -12,7 +13,8 @@ export function enqueue(store, event, cap = DEFAULT_CAP) {
 }
 
 export function drain(store) {
-  const q = store.get(KEY, []);
+  const raw = store.get(KEY, []);
+  const q = Array.isArray(raw) ? raw : [];
   store.set(KEY, []);
   return q;
 }

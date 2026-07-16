@@ -94,4 +94,20 @@ describe("createAnalytics", () => {
     a.track("session_start");
     expect(store._dump().analyticsQueue[0].platform).toBe("android");
   });
+
+  it("serializes overlapping flushes: rapid tracks batch into one in-flight run, no scatter", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({ ok: true, status: 201 });
+    const store = memStore();
+    const { a } = make({ store, fetchImpl });
+    a.setConsent(true);
+    const p = a.track("session_start"); // starts the only in-flight flush; drains [e1] then awaits send
+    a.track("session_complete", { duration_bucket: "1-5m" }); // enqueued; flush guard prevents a 2nd sender
+    a.track("review_recovery"); // enqueued too
+    await p; // the single flush drain-loop resolves after draining everything
+    expect(store._dump().analyticsQueue.length).toBe(0); // all events drained
+    // exactly two sends (batch [e1], then batch [e2,e3]) — batched, not one-per-event
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    const secondBatch = JSON.parse(fetchImpl.mock.calls[1][1].body);
+    expect(secondBatch.length).toBe(2);
+  });
 });

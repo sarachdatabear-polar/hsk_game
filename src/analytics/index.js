@@ -14,6 +14,7 @@ const APP_VERSION = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "
 export function createAnalytics({ store, fetchImpl, now, gen, isOnline, isNative, config }) {
   const sessionId = newSessionId(gen);
   const platform = isNative && isNative() ? "android" : "web";
+  let flushing = false;
 
   function baseCtx() {
     return {
@@ -26,12 +27,25 @@ export function createAnalytics({ store, fetchImpl, now, gen, isOnline, isNative
   }
 
   async function flush() {
+    if (flushing) return;
     if (!isEnabled(store)) return;
     if (isOnline && !isOnline()) return;
-    const batch = drain(store);
-    if (!batch.length) return;
-    const r = await send(batch, { url: config.url, key: config.key, fetchImpl });
-    if (!r.ok) for (const e of batch) enqueue(store, e);
+    flushing = true;
+    try {
+      while (true) {
+        if (!isEnabled(store)) break;
+        if (isOnline && !isOnline()) break;
+        const batch = drain(store);
+        if (!batch.length) break;
+        const r = await send(batch, { url: config.url, key: config.key, fetchImpl });
+        if (!r.ok) {
+          for (const e of batch) enqueue(store, e);
+          break;
+        }
+      }
+    } finally {
+      flushing = false;
+    }
   }
 
   function track(name, props) {

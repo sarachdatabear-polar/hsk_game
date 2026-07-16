@@ -39,7 +39,8 @@ function pickAllowed(name, props) {
 }
 
 // Build a validated, PII-free event record. Returns null for an unknown name.
-export function makeEvent(name, ctx = {}) {
+export function makeEvent(name, ctx) {
+  ctx = ctx || {};
   if (!EVENT_NAMES.includes(name)) return null;
   const ev = {
     name,
