@@ -1,18 +1,18 @@
 # Owner actions
 
-Everything that can be completed safely in the repository is saved on
-`fix/release-readiness-audit` and pushed in
-[PR #103](https://github.com/sarachdatabear-polar/hsk_game/pull/103), targeting
-`development`. Review and merge that PR first. Do not merge or push the fix
-branch directly to `main`; promote `development` only after the
-signed/device/store gates below pass. This file contains only actions that
-require the app owner, private credentials, legal attestations, external
-accounts, payments, a real device, or a product decision.
+Everything that can be completed safely in the repository was merged into
+`development` by
+[PR #103](https://github.com/sarachdatabear-polar/hsk_game/pull/103) at
+`cb17797`. Do not promote `development` to `main` until the signed/device/store
+gates below pass. This file contains only actions that require the app owner,
+private credentials, legal attestations, external accounts, payments, a real
+device, or a product decision.
 
 ## Current handoff snapshot
 
-- PR: **#103**, open and mergeable, `fix/release-readiness-audit` → `development`.
-- GitHub CI: no checks are currently configured or reported on the PR.
+- PR: **#103 merged**, `fix/release-readiness-audit` → `development`, merge
+  commit `cb17797`.
+- GitHub CI: no checks were configured or reported on the PR at merge time.
 - Recorded local gates: 68 files / 1,916 tests, build, 95 assets, EN+TH browser
   matrices, offline launch, performance/cache budgets, and Capacitor branding
   sync pass.
@@ -22,16 +22,14 @@ accounts, payments, a real device, or a product decision.
 Do these in order. The Google/RevenueCat/backend tracks can overlap once the
 accounts exist.
 
-## 1. Review into development, then build the v76 APK/AAB
+## 1. Build and accept the v76 APK/AAB
 
 The source candidate passes 68 test files / 1,916 tests, 95 asset checks,
 production build, Capacitor sync, offline launch, and the expanded EN+TH
 viewport/format/accessibility gates. It has not been signed on Windows.
 
-First review and merge
-[PR #103](https://github.com/sarachdatabear-polar/hsk_game/pull/103) into
-`development`. Keep `main` unchanged while the candidate is signed and
-accepted.
+Pull `development` at `cb17797` onto the Windows release checkout. Keep `main`
+unchanged while the candidate is signed and accepted.
 
 After the integration branch is promoted to the Windows checkout, open a fresh
 PowerShell in `C:\Users\sarac\Desktop\HSK\game` and run these as separate lines:

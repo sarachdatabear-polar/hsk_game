@@ -7,9 +7,9 @@ not authorized for public production yet. Local engineering gates are green;
 the remaining blockers require native-language, signed-build, physical-device,
 legal, and store acceptance.
 
-Release path: [PR #103](https://github.com/sarachdatabear-polar/hsk_game/pull/103),
-`fix/release-readiness-audit` → review/merge to `development` →
-signed/device/store gates → release PR from `development` to `main`.
+Release path: [PR #103](https://github.com/sarachdatabear-polar/hsk_game/pull/103)
+merged `fix/release-readiness-audit` into `development` at `cb17797`; next are
+the signed/device/store gates, then a release PR from `development` to `main`.
 
 ## Findings closed in v76
 
