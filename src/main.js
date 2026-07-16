@@ -132,7 +132,20 @@ const iapEnabled = () => !!store.get("dev.iap", false);
 let iapProvider = null;
 let iapPending = null;   // productId of the purchase in flight — survives re-renders
 function provider(){
-  if(!iapProvider) iapProvider = getProvider({ get: (k,d)=>store.get(k,d), set: (k,v)=>store.set(k,v) });
+  if(!iapProvider) iapProvider = getProvider({
+    get: (k,d)=>store.get(k,d),
+    set: (k,v)=>store.set(k,v),
+    // A store purchase must be attributed to the UUID accepted by the
+    // Supabase grant_purchase RPC. ensureGuest reuses an existing signed-in
+    // session or creates an anonymous UUID before RevenueCat configures.
+    ensureUserId: async () => {
+      const r = await ensureGuest(getLocale(), playerProfile.displayName || undefined);
+      if(!r.ok || !r.session || !r.session.user) return null;
+      accountUI.session = r.session;
+      renderAccount();
+      return r.session.user.id;
+    },
+  });
   return iapProvider;
 }
 // Availability-driven visibility (go-live plan §4 T1, src/monetization/gating.js):
@@ -534,7 +547,7 @@ function renderAccount(){
   // IAP v1: restore is device-local (mock provider); Apple will require
   // this button once real billing lands, so the UI slot exists now.
   // Availability-aware (iapOn, not iapEnabled()) — see gating.js.
-  if(iapOn) p.appendChild(accountBtn(t("iap.restore"), onRestorePurchases));
+  if(iapOn && provider().supportsRestore()) p.appendChild(accountBtn(t("iap.restore"), onRestorePurchases));
 }
 
 function accountBtn(label, onclick){
@@ -2989,15 +3002,22 @@ function makeShopRow(item, today){
 /* --------------------------- IAP (mock v1) --------------------------- */
 function renderIapSections(){
   const on = iapOn;
-  for(const id of ["shop-coins-sect", "shop-coins", "shop-supporter-sect", "shop-supporter"]){
+  const prov = provider();
+  const coinProducts = PRODUCTS.filter(p => !p.entitlement && prov.supports(p.id));
+  const supporterOn = on && prov.supports("supporter");
+  for(const id of ["shop-coins-sect", "shop-coins"]){
     const el = document.getElementById(id);
-    if(el) el.hidden = !on;
+    if(el) el.hidden = !on || coinProducts.length === 0;
+  }
+  for(const id of ["shop-supporter-sect", "shop-supporter"]){
+    const el = document.getElementById(id);
+    if(el) el.hidden = !supporterOn;
   }
   if(!on) return;
   const coinsBox = $("#shop-coins"), supporterBox = $("#shop-supporter");
   coinsBox.innerHTML = ""; supporterBox.innerHTML = "";
-  for(const p of PRODUCTS.filter(p => !p.entitlement)) coinsBox.appendChild(makeIapRow(p));
-  supporterBox.appendChild(makeSupporterCard());
+  for(const p of coinProducts) coinsBox.appendChild(makeIapRow(p));
+  if(supporterOn) supporterBox.appendChild(makeSupporterCard());
 }
 
 function makeIapRow(p){
@@ -3008,7 +3028,7 @@ function makeIapRow(p){
   copy.innerHTML = `<b>${t("item." + p.id)}</b><small>${t("iap.amount", { coins: p.coins.toLocaleString() })}</small>`;
   const btn = document.createElement("button");
   btn.className = "chip buy-chip";
-  btn.textContent = displayPrice(p, getLocale());
+  btn.textContent = provider().price(p.id) || displayPrice(p, getLocale());
   btn.onclick = () => iapBuy(p, btn);
   if(iapPending){
     btn.disabled = true;
@@ -3031,7 +3051,7 @@ function makeSupporterCard(){
   if(!owned){
     const btn = document.createElement("button");
     btn.className = "chip buy-chip";
-    btn.textContent = displayPrice(productById("supporter"), getLocale());
+    btn.textContent = provider().price("supporter") || displayPrice(productById("supporter"), getLocale());
     btn.onclick = () => iapBuy(productById("supporter"), btn);
     if(iapPending){
       btn.disabled = true;
@@ -3088,7 +3108,8 @@ async function iapBuy(p, btn){
   // plan §3/§4 T4).
   if(!r.ok){
     iapPending = null;
-    if(r.reason !== "cancelled") toast(t("iap.failed"));
+    if(r.reason === "pending") toast(t("iap.processing"));
+    else if(r.reason !== "cancelled") toast(t("iap.failed"));
     renderShop();
     return;
   }

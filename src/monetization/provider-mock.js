@@ -22,6 +22,9 @@ export function mockProvider(opts) {
   return {
     kind: "mock",
     async available() { return true; },
+    supports(productId) { return !!productById(productId); },
+    supportsRestore() { return true; },
+    price() { return null; },
     async purchase(productId) {
       await wait();
       const p = productById(productId);

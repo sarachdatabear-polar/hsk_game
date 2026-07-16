@@ -58,7 +58,7 @@ describe("mock provider", () => {
 });
 
 describe("getProvider", () => {
-  it("returns the mock in v1 (same interface)", async () => {
+  it("returns the mock while RevenueCat is not configured (same interface)", async () => {
     const s = memStore();
     const p = getProvider({ get: s.get, set: s.set, delayMs: 0 });
     expect(await p.available()).toBe(true);
@@ -71,5 +71,20 @@ describe("getProvider", () => {
   it("is tagged kind: \"mock\" (gating.js relies on this)", () => {
     const s = memStore();
     expect(getProvider({ get: s.get, set: s.set, delayMs: 0 }).kind).toBe("mock");
+  });
+
+  it("selects RevenueCat only for a configured native build", () => {
+    const s = memStore();
+    const p = getProvider({
+      get: s.get, set: s.set, ensureUserId: async () => "11111111-1111-4111-8111-111111111111",
+      revenuecat: { apiKey: "public", isNative: () => true, sdk: {}, productIds: ["coins_s"] },
+    });
+    expect(p.kind).toBe("revenuecat");
+  });
+
+  it("keeps the mock on web even when a key is present", () => {
+    const s = memStore();
+    const p = getProvider({ get: s.get, set: s.set, revenuecat: { apiKey: "public", isNative: () => false } });
+    expect(p.kind).toBe("mock");
   });
 });
