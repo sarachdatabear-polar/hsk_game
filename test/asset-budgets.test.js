@@ -4,12 +4,12 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // PRD v5 A2 size budgets (PRD-production-art-v1 §Budgets): backgrounds <350KB,
-// cat sheets <500KB. Hard-gated here for shipped (approved/integrated) assets;
-// other types are advisory-only in scripts/asset-report.mjs.
+// sprite sheets <500KB, runtime decor/shop tiles <120KB. These are hard gates
+// because optional art is cached on first use and still affects mobile data.
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const manifest = JSON.parse(readFileSync(join(ROOT, "assets", "asset-manifest.json"), "utf8"));
-const BUDGETS = { background: 350 * 1024, "sprite-sheet": 500 * 1024 };
+const BUDGETS = { background: 350 * 1024, "sprite-sheet": 500 * 1024, decor: 120 * 1024 };
 const shipped = manifest.assets.filter(
   a => ["approved", "integrated"].includes(a.status) && BUDGETS[a.type]
 );

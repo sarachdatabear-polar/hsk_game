@@ -2,10 +2,10 @@
 
 **Last updated:** 2026-07-16
 **TL;DR:** The offline-first Profile release is on `main` at **SHELL v74**.
-The combined v75 integration branch adds a neutral player avatar, dark
-RevenueCat readiness, Thai copy/QA hardening, and refreshed roadmap/docs. Its
-local release gates pass; a new signed APK and owner-controlled store/backend
-setup remain.
+The UX/UI launch-readiness fixes are isolated on
+`fix/release-readiness-audit` at **SHELL v76**. They must be reviewed into
+`development` first; `main` stays untouched until the signed/device/store
+release gates pass.
 
 ## Where the game is
 
@@ -14,6 +14,7 @@ setup remain.
 | **Live on `main` / GitHub Pages source** | SHELL **v74**, commit `0604149`: Lantern Trail plus native lifecycle/cloud hardening and the offline-first player Profile dashboard. |
 | **`development`** | Profile source at `1115e1d`; functionally the v74 feature content before the release-only cache commit. |
 | **Combined candidate** | `integration/release-readiness-2026-07-16`, SHELL **v75**: player monogram/silhouette avatar, dark RevenueCat provider + HMAC webhook, Thai hardening, and next-roadmap/docs. 64 files / 1,901 tests, 95 assets, build, Capacitor sync, EN+TH responsive/listening/Results gates all pass. |
+| **UX/UI release candidate** | `fix/release-readiness-audit`, SHELL **v76**: launch-readiness fixes layered on the combined candidate. 68 files / 1,916 tests, 95 assets, production build, deterministic Android branding, Capacitor sync, offline launch, and expanded EN+TH browser gates pass. |
 
 ## Done
 
@@ -60,12 +61,20 @@ setup remain.
   instead of the cat mascot; Capacitor-6-compatible RevenueCat provider is
   installed but disabled by blank public config; webhook adds bearer + HMAC
   checks; Thai mechanical gates and dual-language viewport sweeps pass.
+- **v76 UX/UI launch-readiness repair** — HSK1-first onboarding with all six
+  levels, format-specific quest instructions, 44px typed/tone controls,
+  landscape flashcards, bounded resumable card sessions, anti-farming flip
+  guard, zoom/dialog/focus/ARIA improvements, lazy optional art, a 69-file
+  atomic offline shell, compressed street decor, and deterministic Lucky Cat
+  Android launcher/splash resources. The permanent browser gate now covers all
+  major screens, advanced formats, Results, card resume, and keyboard focus in
+  English and Thai.
 
 ## In progress
 
-- **v75 promotion:** the combined tree is locally verified. A Windows-signed
-  v75 APK has not been produced; the previously verified v74 APK is recorded
-  in [ANDROID_BUILD.md](build/ANDROID_BUILD.md).
+- **v76 promotion:** review `fix/release-readiness-audit` into `development`.
+  A Windows-signed v76 APK/AAB has not been produced; the previously verified
+  v74 APK is recorded in [ANDROID_BUILD.md](build/ANDROID_BUILD.md).
 - **Post-release measurement:** no production analytics pipeline exists, so
   completion, recovery, delayed recall, and D1/D7 return cannot yet be compared
   reliably.
@@ -74,6 +83,22 @@ setup remain.
   suggested automatic fixes cross Capacitor/Vitest/esbuild major versions, so
   handle this as a separate upgrade branch after v75 rather than changing the
   release candidate blindly.
+
+## v76 verification snapshot
+
+- Unit/integration: **68 files / 1,916 tests** pass; production bundle builds.
+- Assets: **95/95** validate; every street decoration is below its 120 KB
+  budget.
+- Browser: **10/10 EN + 10/10 TH** viewports pass across every major screen;
+  listen, reverse, tone, cloze, typed, Results, cards resume, and dialog-focus
+  probes pass.
+- PWA: uncached boot dropped from **92 resources / 17.47 MiB** to a measured
+  **27 resources / 5.33 MiB** before the final three hidden-screen images were
+  also marked lazy. Offline cold launch passes with six data levels. The atomic
+  shell dropped from **108 files / 18.50 MiB** to **69 files / 9.52 MiB**.
+- Android staging: `npm run cap:sync` passes and ends by applying the tracked
+  Lucky Cat icon/splash pack; final signing and physical-device acceptance are
+  owner gates.
 
 ## Planned / owner queue
 

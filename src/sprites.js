@@ -1,11 +1,8 @@
 "use strict";
-/* Image registry - each sprite is preloaded fire-and-forget so it never
-   blocks the game loop. sprite(name) returns the Image only once it is
-   fully loaded; otherwise returns null so every draw site can use its
-   vector/canvas fallback instead. Works on file:// because the registry is
-   static and does not fetch JSON at runtime. */
-
-const REGISTRY = {};
+/* Lazy image registry. A canvas draw asks for the sprite it needs; the first
+   request starts a fire-and-forget load and returns null so the existing
+   vector fallback draws that frame. This avoids downloading every costume,
+   season, shop tile, and street decoration on the Home screen. */
 
 // bg-home is CSS-only (ships as WebP) — not a canvas sprite.
 export const SPRITE_NAMES = [
@@ -45,17 +42,40 @@ const SVG_SPRITES = new Set([
   "ui-word-plaque",
 ]);
 
-export function loadSprites() {
-  for (const name of SPRITE_NAMES) {
-    const img = new Image();
-    img.src = "assets/" + name + (SVG_SPRITES.has(name) ? ".svg" : ".png");
-    REGISTRY[name] = img;
+export function createSpriteRegistry({ makeImage, onReady } = {}) {
+  const images = {};
+  const factory = makeImage || (() => typeof Image === "undefined" ? null : new Image());
+  const notifyReady = onReady || (typeof window !== "undefined" && typeof CustomEvent !== "undefined"
+    ? name => window.dispatchEvent(new CustomEvent("nbhsk:sprite-ready", { detail:{ name } }))
+    : null);
+
+  function load(name) {
+    if (!SPRITE_NAMES.includes(name) || images[name]) return images[name] || null;
+    const image = factory();
+    if (!image) return null;
+    if (notifyReady) {
+      const ready = () => notifyReady(name, image);
+      if (typeof image.addEventListener === "function") image.addEventListener("load", ready, { once:true });
+      else image.onload = ready;
+    }
+    image.src = "assets/" + name + (SVG_SPRITES.has(name) ? ".svg" : ".png");
+    images[name] = image;
+    return image;
   }
+
+  function preload(names = []) {
+    for (const name of names) load(name);
+  }
+
+  function get(name) {
+    const image = images[name] || load(name);
+    if (!image || !image.complete || !image.naturalWidth) return null;
+    return image;
+  }
+
+  return { loadSprites: preload, sprite: get };
 }
 
-export function sprite(name) {
-  const img = REGISTRY[name];
-  if (!img) return null;
-  if (!img.complete || !img.naturalWidth) return null;
-  return img;
-}
+const sprites = createSpriteRegistry();
+export const loadSprites = sprites.loadSprites;
+export const sprite = sprites.sprite;

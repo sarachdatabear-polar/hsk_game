@@ -1,18 +1,23 @@
 # Owner actions
 
 Everything that can be completed safely in the local repository is already on
-`integration/release-readiness-2026-07-16`. This file contains only actions
+`fix/release-readiness-audit`. Review and merge that branch into `development`
+first. Do not merge or push it directly to `main`; promote `development` only
+after the signed/device/store gates below pass. This file contains only actions
 that require the app owner, private credentials, legal attestations, external
 accounts, payments, a real device, or a product decision.
 
 Do these in order. The Google/RevenueCat/backend tracks can overlap once the
 accounts exist.
 
-## 1. Approve and build the combined v75 APK
+## 1. Review into development, then build the v76 APK/AAB
 
-The source candidate passes 64 test files / 1,901 tests, 95 asset checks,
-production build, Capacitor sync, and the complete EN+TH viewport gates. It has
-not been signed on Windows.
+The source candidate passes 68 test files / 1,916 tests, 95 asset checks,
+production build, Capacitor sync, offline launch, and the expanded EN+TH
+viewport/format/accessibility gates. It has not been signed on Windows.
+
+First review `fix/release-readiness-audit` and merge it into `development`.
+Keep `main` unchanged while the candidate is signed and accepted.
 
 After the integration branch is promoted to the Windows checkout, open a fresh
 PowerShell in `C:\Users\sarac\Desktop\HSK\game` and run these as separate lines:
@@ -44,13 +49,18 @@ Get-FileHash $artifacts -Algorithm SHA256
 ```
 
 Repeat the accepted emulator matrix: cold launch, Home/Profile, player-avatar
-state, name persistence, notification permission requestability, portrait and
-landscape, and a final empty scan for fatal Android/WebView errors. Real IAP is
-expected to remain hidden because the public RevenueCat key is blank.
+state, name persistence, HSK1-first welcome, bounded/resumable Cards, every
+question format, pause focus/return, notification permission requestability,
+portrait and landscape, launcher/splash branding, offline mode, and a final
+empty scan for fatal Android/WebView errors. Real IAP is expected to remain
+hidden because the public RevenueCat key is blank.
+
+After those gates and the applicable store/legal gates pass, open the release
+PR from `development` to `main`. Never merge the fix branch directly to `main`.
 
 ## 2. Obtain native Thai sign-off
 
-Give the reviewer [the prioritized 363-string queue](i18n/i18n-translation-review.md).
+Give the reviewer [the prioritized 377-string queue](i18n/i18n-translation-review.md).
 They must edit `src/i18n.js` or return exact key/value corrections, then supply
 their name, review date, and reviewed commit for the sign-off block. Money,
 account-loss, cloud-backup, and notification copy is P0.

@@ -49,7 +49,7 @@ $env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
 cd C:\Users\sarac\Desktop\HSK\game
 npm run build; node scripts/stage-www.js   # stage web assets into www/
 npx cap add android                          # scaffold android/ (only if missing)
-npx cap sync android                         # copy www/ -> android assets + plugins
+npm run cap:sync                             # build, stage, Capacitor sync, Lucky Cat branding
 ```
 
 **Manual edits to reapply after a fresh `cap add android`** (android/ is git-ignored, so these
@@ -94,10 +94,12 @@ cd android; .\gradlew.bat assembleDebug --no-daemon
 # -> android\app\build\outputs\apk\debug\app-debug.apk  (~20 MB, bundles all 2000 mp3s)
 ```
 
-- App icons/splash: `python scripts/make_android_icons.py` (Task 6, re-run after each `cap add android`
-  since it writes into the git-ignored `android/` res tree). Produces the green 熊 adaptive launcher
-  icon (dark-green background) and the centered-bear splash on `#141a14`. Uses `msyhbd.ttc` (Microsoft
-  YaHei Bold) — the plan referenced `.ttf`, but this machine has the `.ttc` collection.
+- App icons/splash are deterministic and tracked. `python scripts/make_android_icons.py`
+  derives `native/android-res/` from `pwa/icons/icon-512.png`; it does not write
+  directly into the ignored Android tree. Every `npm run cap:sync` ends with
+  `npm run android:brand`, which removes generated Capacitor splash variants
+  and copies the tracked Lucky Cat launcher/adaptive/splash resources into
+  `android/app/src/main/res/`. Do not restore the retired 熊/NorthBear artwork.
 - Signed release APK: `npm run apk:release`; Play bundle: `npm run aab:release`;
   both: `npm run android:release`.
 
@@ -144,6 +146,19 @@ To update later: bump `versionCode`/`versionName` in `android/app/build.gradle`,
 - This artifact predates the combined v75 player-avatar, RevenueCat-readiness,
   and Thai-hardening integration. Build and verify a new signed APK after that
   branch is promoted; do not describe the v74 file as containing those changes.
+
+## Current unsigned source candidate (UX/UI readiness v76, 2026-07-16)
+
+- Branch: `fix/release-readiness-audit`; promote to `development` first, never
+  directly to `main`.
+- PWA/source cache: SHELL v76; offline shell 69 files / 9.52 MiB.
+- Local gates: 68 test files / 1,916 tests, 95 assets, production build,
+  Capacitor sync, offline cold launch, and expanded EN+TH browser matrix pass.
+- Branding staging: verified Lucky Cat launcher at 192×192 (xxxhdpi) and splash
+  at 1080×1920 after a clean `npm run cap:sync`.
+- No v76 signed APK/AAB exists yet. Build on the documented Windows/JDK 17
+  release machine and repeat emulator plus physical-device acceptance before
+  promoting `development` to `main`.
 
 ## Superseded candidate (Lantern Trail Phase 6, 2026-07-13)
 

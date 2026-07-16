@@ -3,13 +3,13 @@
 ## Status
 
 **Owner action required before store launch:** no native-Thai approval is
-recorded for `STRINGS.th` in `src/i18n.js`. Treat all 363 Thai values as draft,
+recorded for `STRINGS.th` in `src/i18n.js`. Treat all 377 Thai values as draft,
 even when they read naturally. A native reviewer should edit the source table,
 then record the reviewer, date, and reviewed commit below.
 
 Local engineering audit completed 2026-07-16:
 
-- 363/363 English keys have Thai values.
+- 377/377 English keys have Thai values.
 - Every `{placeholder}` set matches its English source.
 - Allowed inline HTML tag structure matches across languages.
 - Every translatable value contains Thai script; the 12 exceptions are
@@ -17,8 +17,9 @@ Local engineering audit completed 2026-07-16:
   numeric ranges, star ratings, tone numbers, and progress fractions).
 - The previously documented literal `{min}` Smart Review bug is fixed; the
   call site passes both `{have}` and `{min}`.
-- Thai Profile layouts and the permanent 10-viewport responsive suite have
-  passed locally. Layout checks do not replace linguistic review.
+- Thai layouts and the permanent 10-viewport suite have passed across all major
+  screens, every advanced question format, Results, card resume, and dialog
+  focus. Layout checks do not replace linguistic review.
 
 ## Native-review order
 

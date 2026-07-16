@@ -8,7 +8,7 @@
 // Usage:
 //   npm run serve                       # in another shell — python http.server on :8000
 //   node scripts/responsive-sweep.mjs           # full 10-viewport multi-screen sweep (EN)
-//   RESP_LOCALE=th node scripts/responsive-sweep.mjs  # same permanent gate in Thai
+//   node scripts/responsive-sweep.mjs --locale=th    # same permanent gate in Thai
 //   node scripts/responsive-sweep.mjs --battle 390x844   # single-shot battle probe
 //
 // Requires: npm i --no-save playwright-core, and Microsoft Edge installed
@@ -32,7 +32,8 @@ function launchOpts() {
 }
 
 const BASE_URL = process.env.RESP_BASE_URL || "http://localhost:8000";
-const LOCALE = process.env.RESP_LOCALE === "th" ? "th" : "en";
+const localeArg = process.argv.find(arg => arg.startsWith("--locale="))?.split("=", 2)[1];
+const LOCALE = (localeArg || process.env.RESP_LOCALE) === "th" ? "th" : "en";
 const TOL = 1; // px tolerance for viewport-edge comparisons
 const MIN_TAP = 44; // Phase 6 accessibility/release acceptance floor
 
@@ -56,6 +57,8 @@ const VIEWPORTS = [
 // ---------------------------------------------------------------------------
 function installPageHelpers() {
   window.__resp = {
+    spriteReady: [],
+    streetBgDraws: 0,
     // Intersect an element's own rect with the clipping rect of every
     // ancestor whose computed overflow actually clips (hidden/clip/scroll/
     // auto). This is the fix for the false-positive where a naive
@@ -98,6 +101,15 @@ function installPageHelpers() {
       if (w <= 0 || h <= 0) return false;
       return rect.bottom > innerHeight + tol;
     },
+  };
+  window.addEventListener("nbhsk:sprite-ready", event => {
+    window.__resp.spriteReady.push(event.detail?.name || "");
+  });
+  const drawImage = CanvasRenderingContext2D.prototype.drawImage;
+  CanvasRenderingContext2D.prototype.drawImage = function(image, ...args) {
+    if ((image?.currentSrc || image?.src || "").includes("/assets/bg-street.png"))
+      window.__resp.streetBgDraws++;
+    return drawImage.call(this, image, ...args);
   };
 }
 
@@ -172,6 +184,8 @@ function probeStreetScene() {
     cvHeight: r ? Math.round(r.height) : 0,
     btnPresent: !!document.querySelector("#street-quests-btn"),
     overlayOpenBeforeClick: document.querySelector("#quest-overlay")?.classList.contains("on") ?? false,
+    paintedBgReady: window.__resp.spriteReady.includes("bg-street"),
+    paintedBgDraws: window.__resp.streetBgDraws,
   };
 }
 // Scoped to #quest-overlay specifically (not a bare #quest-panel lookup):
@@ -243,6 +257,24 @@ function probeBattle(tol) {
   };
 }
 
+function probeLearn(tol) {
+  const ids = ["fc-card", "fc-again", "fc-spk", "fc-know"];
+  const controls = ids.map(id => document.getElementById(id));
+  const inViewport = controls.every(el => {
+    if (!el) return false;
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0 && r.top >= -tol && r.left >= -tol &&
+      r.bottom <= window.innerHeight + tol && r.right <= window.innerWidth + tol;
+  });
+  const doc = document.documentElement;
+  return {
+    inViewport,
+    scrollNeeded: doc.scrollHeight > window.innerHeight + tol || doc.scrollWidth > window.innerWidth + tol,
+    againDisabled: document.querySelector("#fc-again")?.disabled ?? false,
+    knowDisabled: document.querySelector("#fc-know")?.disabled ?? false,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Navigation helpers shared by the full sweep and the --battle single-shot.
 // ---------------------------------------------------------------------------
@@ -269,6 +301,9 @@ async function goToShop(page) {
 async function goToStreet(page) {
   await page.evaluate(() => document.querySelector('[data-go="street"]')?.click());
   await page.waitForTimeout(250);
+  await page.waitForFunction(() => window.__resp.spriteReady.includes("bg-street"), null, { timeout:3000 })
+    .catch(() => {});
+  await page.waitForTimeout(50);
 }
 
 async function goToProfile(page) {
@@ -306,6 +341,75 @@ async function forceListenFormat(page) {
   });
   await page.reload({ waitUntil: "load" });
   await page.waitForTimeout(700);
+}
+
+async function forceQuestionFormat(page, streak) {
+  await page.evaluate(r => {
+    const D = window.HSK_DATA;
+    const m = {};
+    for (const lv of Object.values(D.levels)) for (const w of lv) m[w.h] = { s: r, k: r, r };
+    localStorage.setItem("nbhsk.mastery", JSON.stringify(m));
+    localStorage.setItem("nbhsk.formatIntros", JSON.stringify({
+      listen: 1, reverse: 1, tone: 1, cloze: 1, typed: 1,
+    }));
+    localStorage.setItem("nbhsk.scope", JSON.stringify({
+      levels:[1], core:false, newOnly:false, topN:100, lang:"both", sessionLen:20,
+    }));
+  }, streak);
+  await page.reload({ waitUntil: "load" });
+  await page.waitForTimeout(500);
+}
+
+async function runQuestionFormatProbe(browser, format, streak, width, height) {
+  const { page, errs } = await preparePage(browser, width, height);
+  await forceQuestionFormat(page, streak);
+  await goToBattle(page);
+
+  const info = await page.evaluate(([expected, tol, minTap]) => {
+    const battle = document.querySelector("#s-battle");
+    const visibleControls = [...document.querySelectorAll("#opts button, #opts input")]
+      .filter(el => el.offsetParent !== null);
+    const rects = visibleControls.map(el => {
+      const r = el.getBoundingClientRect();
+      return { w:r.width, h:r.height, top:r.top, left:r.left, right:r.right, bottom:r.bottom };
+    });
+    const doc = document.documentElement;
+    return {
+      actual:battle?.dataset.format || "",
+      scrollNeeded:doc.scrollHeight > window.innerHeight + tol || doc.scrollWidth > window.innerWidth + tol,
+      allInViewport:rects.every(r => r.top >= -tol && r.left >= -tol &&
+        r.bottom <= window.innerHeight + tol && r.right <= window.innerWidth + tol),
+      small:rects.filter(r => r.w < minTap || r.h < minTap)
+        .map(r => `${Math.round(r.w)}x${Math.round(r.h)}`),
+      toneChips:document.querySelectorAll("#opts .tone-chip").length,
+      typedInput:!!document.querySelector("#opts .typed-letters"),
+      clozePrompt:!!document.querySelector("#opts .cloze-prompt"),
+      reversePrompt:!!document.querySelector("#opts .boss-prompt"),
+      toneSignals:document.querySelectorAll("#opts .tone-sig").length,
+      feedback:(document.querySelector("#quest-feedback")?.textContent || "").trim(),
+      expected,
+    };
+  }, [format, TOL, MIN_TAP]);
+
+  const failures = [];
+  if (info.actual !== format) failures.push(`format=${info.actual || "missing"}, expected=${format}`);
+  if (info.scrollNeeded) failures.push("scroll needed");
+  if (!info.allInViewport) failures.push("controls outside viewport");
+  if (info.small.length) failures.push(`small-controls:[${info.small}]`);
+  if (format === "typed" && (!info.typedInput || info.toneChips < 4))
+    failures.push(`typed controls missing (input=${info.typedInput}, tones=${info.toneChips})`);
+  if (format === "cloze" && !info.clozePrompt) failures.push("cloze prompt missing");
+  if (format === "reverse" && !info.reversePrompt) failures.push("reverse prompt missing");
+  if (format === "tone" && info.toneSignals !== 4)
+    failures.push(`tone signals=${info.toneSignals}, expected=4`);
+  if (!info.feedback) failures.push("format prompt empty");
+  if (errs.length) failures.push(`JSERR:${errs[0]}`);
+
+  const line = `[${failures.length ? "FAIL" : "PASS"}] ${format} ${width}x${height}: ` +
+    `controls=${info.small.length ? "small" : "44px+"} prompt=${info.feedback.slice(0, 36)}` +
+    (failures.length ? ` | FAILURES: ${failures.join("; ")}` : "");
+  await page.close();
+  return { line, failed:failures.length > 0 };
 }
 
 // F9 permanent gate: at the two worst tiers from the diagnosis, drive a
@@ -421,6 +525,104 @@ async function runResultsProbe(browser, width, height) {
   return { line, failed:failures.length > 0 };
 }
 
+async function runCardsResumeProbe(browser) {
+  const { page, errs } = await preparePage(browser, 390, 844);
+  await page.evaluate(() => {
+    localStorage.removeItem("nbhsk.flashcards");
+    localStorage.setItem("nbhsk.scope", JSON.stringify({
+      levels:[1], core:false, newOnly:false, topN:100, lang:"both", sessionLen:5,
+    }));
+  });
+  await page.reload({ waitUntil:"load" });
+  await page.waitForTimeout(350);
+  await page.evaluate(() => document.querySelector("#home-scope-chip")?.click());
+  await page.evaluate(() => document.querySelector("#go-learn")?.click());
+  await page.waitForTimeout(100);
+
+  const disabledBeforeFlip = await page.evaluate(() =>
+    document.querySelector("#fc-again")?.disabled && document.querySelector("#fc-know")?.disabled);
+  await page.evaluate(() => document.querySelector("#fc-card")?.click());
+  await page.evaluate(() => document.querySelector("#fc-know")?.click());
+  await page.waitForTimeout(100);
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("nbhsk.flashcards") || "null"));
+  await page.evaluate(() => document.querySelector('#s-learn [data-go="home"]')?.click());
+  await page.evaluate(() => document.querySelector("#home-scope-chip")?.click());
+  await page.waitForTimeout(100);
+  const resumeLabel = await page.evaluate(() => document.querySelector("#go-learn")?.textContent?.trim() || "");
+  await page.evaluate(() => document.querySelector("#go-learn")?.click());
+  await page.waitForTimeout(100);
+  const resumed = await page.evaluate(expected => ({
+    front:document.querySelector("#fc-card .hz")?.textContent || "",
+    disabled:document.querySelector("#fc-again")?.disabled && document.querySelector("#fc-know")?.disabled,
+    expected:expected?.deck?.[expected?.i] || "",
+  }), saved);
+
+  const failures = [];
+  if (!disabledBeforeFlip) failures.push("answers enabled before first flip");
+  if (!saved || saved.i !== 1 || saved.done !== 1 || saved.total !== 5)
+    failures.push(`bad snapshot=${JSON.stringify(saved)}`);
+  if (!/4/.test(resumeLabel)) failures.push(`resume count missing from label=${resumeLabel}`);
+  if (!resumed.disabled) failures.push("resumed answers enabled before flip");
+  if (!resumed.expected || resumed.front !== resumed.expected)
+    failures.push(`resumed card=${resumed.front}, expected=${resumed.expected}`);
+  if (errs.length) failures.push(`JSERR:${errs[0]}`);
+
+  const line = `[${failures.length ? "FAIL" : "PASS"}] cards resume 390x844: ` +
+    `saved=${saved?.i ?? "?"}/5 label=${resumeLabel.slice(0,30)}` +
+    (failures.length ? ` | FAILURES: ${failures.join("; ")}` : "");
+  await page.close();
+  return { line, failed:failures.length > 0 };
+}
+
+async function runAccessibilityProbe(browser) {
+  const { page, errs } = await preparePage(browser, 390, 844);
+  const navState = await page.evaluate(() => ({
+    current:document.querySelector('#bottom-nav [aria-current="page"]')?.dataset.tab || "",
+    count:document.querySelectorAll('#bottom-nav [aria-current="page"]').length,
+  }));
+  await goToBattle(page);
+  const canvasBefore = await page.evaluate(() => document.querySelector("#cv")?.getAttribute("aria-label") || "");
+  // A real user click focuses the trigger; Element.click() does not, which
+  // would make the return-focus assertion test a synthetic non-user path.
+  await page.click("#hud-pause");
+  await page.waitForTimeout(50);
+  const pauseOpen = await page.evaluate(() => ({
+    on:document.querySelector("#pause-overlay")?.classList.contains("on") || false,
+    active:document.activeElement?.id || "",
+    modal:document.querySelector("#pause-overlay")?.getAttribute("aria-modal") || "",
+  }));
+  await page.keyboard.press("Shift+Tab");
+  const trapped = await page.evaluate(() => !!document.activeElement?.closest("#pause-overlay"));
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(50); // focus restoration is intentionally requestAnimationFrame-scheduled
+  const pauseClosed = await page.evaluate(() => ({
+    on:document.querySelector("#pause-overlay")?.classList.contains("on") || false,
+    active:document.activeElement?.id || "",
+  }));
+  await page.evaluate(() => [...document.querySelectorAll("#opts button")]
+    .find(b => !b.disabled && !b._correct && !b.classList.contains("replay"))?.click());
+  await page.waitForTimeout(50);
+  const canvasAfter = await page.evaluate(() => document.querySelector("#cv")?.getAttribute("aria-label") || "");
+
+  const failures = [];
+  if (navState.current !== "home" || navState.count !== 1)
+    failures.push(`nav current=${navState.current}/${navState.count}`);
+  if (!canvasBefore) failures.push("canvas label missing");
+  if (!pauseOpen.on || pauseOpen.active !== "pause-resume" || pauseOpen.modal !== "true")
+    failures.push(`pause open=${JSON.stringify(pauseOpen)}`);
+  if (!trapped) failures.push("focus escaped pause dialog");
+  if (pauseClosed.on || pauseClosed.active !== "hud-pause")
+    failures.push(`pause close=${JSON.stringify(pauseClosed)}`);
+  if (!canvasAfter || canvasAfter === canvasBefore) failures.push("canvas reveal label did not change");
+  if (errs.length) failures.push(`JSERR:${errs[0]}`);
+
+  const line = `[${failures.length ? "FAIL" : "PASS"}] accessibility 390x844: ` +
+    `nav=${navState.current} focus=${pauseOpen.active}->${pauseClosed.active} canvas=dynamic` +
+    (failures.length ? ` | FAILURES: ${failures.join("; ")}` : "");
+  await page.close();
+  return { line, failed:failures.length > 0 };
+}
+
 // ---------------------------------------------------------------------------
 // Server reachability check — the harness never starts the server itself
 // (the user runs `npm run serve` in another shell); fail fast with a clear
@@ -456,7 +658,7 @@ async function assertServerReachable() {
 // ---------------------------------------------------------------------------
 async function runFullSweep() {
   await assertServerReachable();
-  const browser = await chromium.launch(launchOpts());
+  let browser = await chromium.launch(launchOpts());
   const lines = [];
   let anyFail = false;
 
@@ -534,6 +736,51 @@ async function runFullSweep() {
     await page.evaluate(() => document.querySelector('[data-go="home"]')?.click());
     await page.waitForTimeout(100);
 
+    // Release-readiness expansion: exercise the secondary learning and
+    // information screens that are not reachable through the four bottom
+    // tabs alone. The flashcard check runs both sides of the card because the
+    // back has materially different content height.
+    await page.evaluate(() => document.querySelector("#home-scope-chip")?.click());
+    await page.waitForTimeout(100);
+    const scopePicker = await page.evaluate(probeScreen, ["scope-picker", TOL, MIN_TAP]);
+    await page.evaluate(() => document.querySelector('#scope-view-tabs [data-view="journey"]')?.click());
+    await page.waitForTimeout(100);
+    const scopeJourney = await page.evaluate(probeScreen, ["scope-journey", TOL, MIN_TAP]);
+    await page.evaluate(() => document.querySelector('#scope-view-tabs [data-view="picker"]')?.click());
+    await page.evaluate(() => document.querySelector("#go-learn")?.click());
+    await page.waitForTimeout(150);
+    const learnBefore = await page.evaluate(probeLearn, TOL);
+    await page.evaluate(() => document.querySelector("#fc-card")?.click());
+    await page.waitForTimeout(50);
+    const learn = await page.evaluate(probeScreen, ["learn", TOL, MIN_TAP]);
+    const learnAfter = await page.evaluate(probeLearn, TOL);
+    await page.evaluate(() => document.querySelector('#s-learn [data-go="home"]')?.click());
+    await page.waitForTimeout(100);
+
+    await page.evaluate(() => document.querySelector("#home-tones-btn")?.click());
+    await page.waitForTimeout(150);
+    const tones = await page.evaluate(probeScreen, ["tones", TOL, MIN_TAP]);
+    await page.evaluate(() => document.querySelector('#s-tones [data-go="home"]')?.click());
+    await page.evaluate(() => document.querySelector('#bottom-nav [data-go="more"]')?.click());
+    await page.waitForTimeout(100);
+    const more = await page.evaluate(probeScreen, ["more", TOL, MIN_TAP]);
+    await page.evaluate(() => document.querySelector('#s-more [data-go="scores"]')?.click());
+    await page.waitForTimeout(100);
+    const scores = await page.evaluate(probeScreen, ["scores", TOL, MIN_TAP]);
+    await page.evaluate(() => document.querySelector('#s-scores [data-go="more"]')?.click());
+    await page.evaluate(() => document.querySelector('#s-more [data-go="howto"]')?.click());
+    await page.waitForTimeout(100);
+    const howto = await page.evaluate(probeScreen, ["howto", TOL, MIN_TAP]);
+    await page.evaluate(() => document.querySelector('#s-howto [data-go="more"]')?.click());
+    await page.evaluate(() => document.querySelector('#bottom-nav [data-go="progress"]')?.click());
+    await page.waitForTimeout(100);
+    await page.evaluate(() => document.querySelector('#s-progress [data-go="album"]')?.click());
+    await page.waitForTimeout(100);
+    const album = await page.evaluate(probeScreen, ["album", TOL, MIN_TAP]);
+    await page.evaluate(() => document.querySelector('#s-album [data-go="progress"]')?.click());
+    await page.evaluate(() => document.querySelector('#s-progress [data-go="home"]')?.click());
+    await page.waitForTimeout(100);
+
     await goToBattle(page);
     const battle = await page.evaluate(probeScreen, ["battle", TOL, MIN_TAP]);
     const battleInfo = await page.evaluate(probeBattle, TOL);
@@ -568,6 +815,20 @@ async function runFullSweep() {
     if (profileEdit.wide.length) failures.push(`profile-edit wide:[${profileEdit.wide}]`);
     if (battle.wide.length) failures.push(`battle wide:[${battle.wide}]`);
     if (account.wide.length) failures.push(`account wide:[${account.wide}]`);
+    for (const [screenName, result] of [
+      ["scope-picker", scopePicker], ["scope-journey", scopeJourney], ["learn", learn],
+      ["tones", tones], ["more", more], ["scores", scores], ["howto", howto], ["album", album],
+    ]) {
+      if (result.overflowX) failures.push(`${screenName} overflow-x`);
+      if (result.small.length) failures.push(`${screenName} small-taps:[${result.small}]`);
+      if (result.wide.length) failures.push(`${screenName} wide:[${result.wide}]`);
+    }
+    if (!learnBefore.againDisabled || !learnBefore.knowDisabled)
+      failures.push("learn answers enabled before flip");
+    if (learnAfter.againDisabled || learnAfter.knowDisabled)
+      failures.push("learn answers disabled after flip");
+    if (!learnAfter.inViewport) failures.push("learn controls outside viewport after flip");
+    if (height <= 500 && learnAfter.scrollNeeded) failures.push("learn landscape scroll needed");
     if (battle.clippedBelow > 0) failures.push(`battle clipped-below=${battle.clippedBelow}`);
     if (overscrollY !== "none") failures.push(`overscroll-behavior-y=${overscrollY}`);
     if (!streetScene.active) failures.push("street: #s-street not active");
@@ -576,6 +837,8 @@ async function runFullSweep() {
     // this just catches an actual regression (e.g. cv collapsing to 0).
     if (streetScene.cvHeight < 150) failures.push(`street: cv height=${streetScene.cvHeight}<150`);
     if (!streetScene.btnPresent) failures.push("street-quests: #street-quests-btn missing");
+    if (!streetScene.paintedBgReady || streetScene.paintedBgDraws < 1)
+      failures.push(`street: lazy painted background did not redraw (ready=${streetScene.paintedBgReady}, draws=${streetScene.paintedBgDraws})`);
     if (streetScene.overlayOpenBeforeClick) failures.push("street-quests: popup open before click");
     if (!questPopup.open) failures.push("street-quests: popup did not open on button click");
     if (questPopup.questPanelChildren < 1)
@@ -631,6 +894,12 @@ async function runFullSweep() {
     `\n${lines.filter(l => l.startsWith("[PASS]")).length}/${VIEWPORTS.length} ${LOCALE.toUpperCase()} viewports passed`
   );
 
+  // The full screen sweep deliberately visits the art-heavy Shop ten times.
+  // Recycle Chromium before the focused probes so decoded image memory cannot
+  // accumulate until a later Results target crashes despite each page closing.
+  await browser.close();
+  browser = await chromium.launch(launchOpts());
+
   // F9 permanent gate: listen-format overflow probe, run as an extra
   // mini-pass rather than growing the 10-viewport matrix above. 360x640
   // matches the s-360 tier's dimensions exactly; 390x680 is one of the two
@@ -647,6 +916,24 @@ async function runFullSweep() {
     `\n${listenLines.filter(l => l.startsWith("[PASS]")).length}/${listenTiers.length} listen-format probes passed`
   );
 
+  const formatSpecs = [["reverse",3], ["tone",5], ["cloze",7], ["typed",9]];
+  const formatTiers = [[320,568], [640,360]];
+  const formatLines = [];
+  for (const [format, streak] of formatSpecs) {
+    for (const [w, h] of formatTiers) {
+      const r = await runQuestionFormatProbe(browser, format, streak, w, h);
+      formatLines.push(r.line);
+      if (r.failed) anyFail = true;
+    }
+  }
+  console.log("\n" + formatLines.join("\n"));
+  console.log(
+    `\n${formatLines.filter(l => l.startsWith("[PASS]")).length}/${formatLines.length} advanced-format probes passed`
+  );
+
+  await browser.close();
+  browser = await chromium.launch(launchOpts());
+
   const resultsTiers = [[360,640], [390,844], [640,360]];
   const resultsLines = [];
   for(const [w,h] of resultsTiers){
@@ -658,6 +945,14 @@ async function runFullSweep() {
   console.log(
     `\n${resultsLines.filter(l => l.startsWith("[PASS]")).length}/${resultsTiers.length} results probes passed`
   );
+
+  const cardsResume = await runCardsResumeProbe(browser);
+  console.log("\n" + cardsResume.line);
+  if (cardsResume.failed) anyFail = true;
+
+  const accessibility = await runAccessibilityProbe(browser);
+  console.log(accessibility.line);
+  if (accessibility.failed) anyFail = true;
 
   await browser.close();
   process.exit(anyFail ? 1 : 0);

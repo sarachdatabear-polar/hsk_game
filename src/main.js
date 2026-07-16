@@ -11,7 +11,7 @@ import { drawCat } from "./cat.js";
 import { drawRaccoon } from "./raccoon.js";
 import { CONTENT_H } from "./sprite-draw.js";
 import { uiScale, layout, lanternTrailLayout, lanternTrailBackdrop, lanternApproachScale } from "./layout.js";
-import { loadSprites, sprite } from "./sprites.js";
+import { sprite } from "./sprites.js";
 import { nineSliceRects } from "./nineslice.js";
 import { preload as preloadAssets } from "./assets.js";
 import { recordAnswer, levelMastery } from "./mastery.js";
@@ -49,6 +49,7 @@ import { createQuestSession } from "./quest-session.js";
 import { questFeedbackFor } from "./quest-feedback.js";
 import { questResultsSummary } from "./quest-results.js";
 import { questRewardPolicy } from "./quest-rewards.js";
+import { cardSessionKey, newCardSession, restoreCardSession, cardSessionSnapshot } from "./flashcards.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -62,6 +63,11 @@ const CLOZE = window.HSK_CLOZE || {};
 const BY_HANZI = {};
 for (const lv of Object.values(D.levels)) for (const w of lv) BY_HANZI[w.h] = w;
 const $ = s => document.querySelector(s);
+function setPressed(el, on){
+  if(!el) return;
+  el.classList.toggle("on", !!on);
+  el.setAttribute("aria-pressed", String(!!on));
+}
 // Thai-primary answers (battle-interface round T2): Thai-locale players see
 // Thai as the bold main line, English as the smaller sub line — everywhere
 // else keeps English-main/Thai-sub (or single-language en/th modes, which
@@ -90,7 +96,7 @@ const store = {
     }
   }
 };
-const scope = Object.assign({levels:[3], core:false, newOnly:false, topN:0, lang:"both", sessionLen:20},
+const scope = Object.assign({levels:[1], core:false, newOnly:false, topN:0, lang:"both", sessionLen:20},
                             store.get("scope", {}));
 let settings = Object.assign({autoSpeak:true, showPinyin:true, sfxVol:1, voiceVol:1}, store.get("settings", {}));
 // Defensive clamp — a corrupt/out-of-range stored value shouldn't survive a
@@ -251,6 +257,69 @@ function toast(msg){
   requestAnimationFrame(()=> el.classList.add("show"));
   toastTimer = setTimeout(()=>{ el.classList.remove("show"); }, 2600);
 }
+
+/* ============================== accessible dialogs ============================== */
+let activeDialog = null;
+const dialogFocusable = el => [...el.querySelectorAll(
+  'button:not(:disabled), input:not(:disabled), [href], [tabindex]:not([tabindex="-1"])'
+)].filter(node => node.offsetParent !== null);
+
+function setDialogSiblings(dialog, inert){
+  for(const sibling of dialog.parentElement.children){
+    if(sibling === dialog) continue;
+    if(inert){
+      sibling.dataset.preDialogAriaHidden = sibling.getAttribute("aria-hidden") ?? "__none__";
+      sibling.setAttribute("aria-hidden", "true");
+      sibling.inert = true;
+    }else{
+      const previous = sibling.dataset.preDialogAriaHidden;
+      if(previous === "__none__") sibling.removeAttribute("aria-hidden");
+      else if(previous !== undefined) sibling.setAttribute("aria-hidden", previous);
+      delete sibling.dataset.preDialogAriaHidden;
+      sibling.inert = false;
+    }
+  }
+}
+
+function openDialog(dialog, initialFocus, onEscape){
+  if(!dialog) return;
+  if(activeDialog && activeDialog.dialog !== dialog) closeDialog(activeDialog.dialog, false);
+  const returnFocus = document.activeElement;
+  dialog.classList.add("on");
+  setDialogSiblings(dialog, true);
+  activeDialog = { dialog, returnFocus, onEscape };
+  requestAnimationFrame(()=> (initialFocus || dialogFocusable(dialog)[0])?.focus());
+}
+
+function closeDialog(dialog, restoreFocus = true){
+  if(!dialog) return;
+  dialog.classList.remove("on");
+  setDialogSiblings(dialog, false);
+  if(activeDialog?.dialog === dialog){
+    const target = activeDialog.returnFocus;
+    activeDialog = null;
+    if(restoreFocus && target?.isConnected) requestAnimationFrame(()=>target.focus());
+  }
+}
+
+document.addEventListener("keydown", event => {
+  if(!activeDialog) return;
+  if(event.key === "Escape" && activeDialog.onEscape){
+    event.preventDefault();
+    activeDialog.onEscape();
+    return;
+  }
+  if(event.key !== "Tab") return;
+  const focusable = dialogFocusable(activeDialog.dialog);
+  if(!focusable.length){ event.preventDefault(); return; }
+  const first = focusable[0], last = focusable[focusable.length - 1];
+  if(event.shiftKey && document.activeElement === first){ event.preventDefault(); last.focus(); }
+  else if(!event.shiftKey && document.activeElement === last){ event.preventDefault(); first.focus(); }
+  else if(!activeDialog.dialog.contains(document.activeElement)){
+    event.preventDefault(); (event.shiftKey ? last : first).focus();
+  }
+}, true);
+
 function noteDaily(count){
   const wasGoalMet = streakInfo(daily, todayStr(), freezes).goalMet;
   const r = noteActivity(daily, todayStr(), count, freezes);
@@ -438,10 +507,14 @@ function renderQuests(){
 // unchanged. Open/close just toggles the overlay, same convention as
 // #pause-overlay, plus a backdrop-tap close (safe here — unlike the battle
 // pause overlay, an accidental dismiss costs nothing).
-$("#street-quests-btn").onclick = ()=>{ renderQuests(); $("#quest-overlay").classList.add("on"); };
-$("#quest-popup-close").onclick = ()=> $("#quest-overlay").classList.remove("on");
+function closeQuestDialog(){ closeDialog($("#quest-overlay")); }
+$("#street-quests-btn").onclick = ()=>{
+  renderQuests();
+  openDialog($("#quest-overlay"), $("#quest-popup-close"), closeQuestDialog);
+};
+$("#quest-popup-close").onclick = closeQuestDialog;
 $("#quest-overlay").addEventListener("click", e=>{
-  if(e.target.id === "quest-overlay") $("#quest-overlay").classList.remove("on");
+  if(e.target.id === "quest-overlay") closeQuestDialog();
 });
 function updateSmartBtn(){
   const deck = smartDeck(masteryStore, pool, Date.now());
@@ -741,6 +814,10 @@ function renderHome(){
   const startBtn = $("#home-start");
   const hint = $("#home-start-hint");
   if(startBtn) startBtn.disabled = !startable;
+  const smart = smartDeck(masteryStore, pool, Date.now());
+  if(startBtn) startBtn.textContent = smart.length >= 8
+    ? t("home.startReview", { n: smart.length })
+    : t("home.start");
   if(hint) hint.hidden = startable;
   const chip = $("#home-scope-chip");
   if(chip) chip.textContent = scopeChipLabel();
@@ -773,10 +850,10 @@ $("#home-start").onclick = ()=>{
 function renderWelcome(){
   const lang = getLocale();
   document.querySelectorAll("#welcome-lang-chips .chip").forEach(b=>
-    b.classList.toggle("on", b.dataset.wlang === lang));
-  const lv = scope.levels[0] || 3;
+    setPressed(b, b.dataset.wlang === lang));
+  const lv = scope.levels[0] || 1;
   document.querySelectorAll("#welcome-level-chips .chip").forEach(b=>
-    b.classList.toggle("on", Number(b.dataset.wlv) === lv));
+    setPressed(b, Number(b.dataset.wlv) === lv));
 }
 document.querySelectorAll("#welcome-lang-chips .chip").forEach(b=>
   b.addEventListener("click", ()=>{ setUiLocale(b.dataset.wlang); renderWelcome(); }));
@@ -806,8 +883,9 @@ fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>in
   // gate (which reads hasMp3) reflects real audio availability, not the default.
   .finally(()=>{ if(currentScreen === "home") renderHome(); });
 
-/* ============================== sprite preload ============================== */
-loadSprites();
+/* ============================== UI-frame preload ============================== */
+// Canvas sprites are lazy: sprite(name) starts the first load and renders the
+// vector fallback until it arrives. Only tiny global 9-slice UI frames preload.
 preloadAssets();
 
 /* ============================== font preload (guarded, non-blocking) ============================== */
@@ -840,15 +918,33 @@ function tOr(key, fallback){
 
 /* ============================== screens ============================== */
 let currentScreen = "home";
+let streetSpriteRefresh = 0;
+window.addEventListener("nbhsk:sprite-ready", ()=>{
+  // Battle and Shop repaint continuously. Street is a static canvas, so its
+  // initial vector fallback needs one coalesced redraw when lazy PNGs arrive.
+  if(currentScreen !== "street" || streetSpriteRefresh) return;
+  streetSpriteRefresh = requestAnimationFrame(()=>{
+    streetSpriteRefresh = 0;
+    if(currentScreen === "street") renderStreet();
+  });
+});
 function updateNav(name){
   const nav = $("#bottom-nav");
   if(!nav) return;
   const visible = navVisibleOn(name);
   nav.style.display = visible ? "flex" : "none";
   const active = activeTabFor(name);
-  nav.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.tab===active));
+  nav.querySelectorAll(".nav-btn").forEach(b=>{
+    const on = b.dataset.tab===active;
+    b.classList.toggle("active", on);
+    if(on) b.setAttribute("aria-current", "page");
+    else b.removeAttribute("aria-current");
+  });
 }
 function show(name){
+  if(activeDialog && !activeDialog.dialog.closest("#s-"+name)){
+    closeDialog(activeDialog.dialog, false);
+  }
   // A4: ANY route home mid-intro (learn Exit, Android hardware back via
   // initNative's goHome, future shortcuts) abandons the intro for good —
   // never hijack a later session, never re-show welcome. endBattle's own
@@ -903,8 +999,9 @@ function renderScope(){
   lvBox.innerHTML = "";
   for(let n=1;n<=6;n++){
     const b = document.createElement("button");
-    b.className = "chip"+(scope.levels.includes(n)?" on":"");
+    b.className = "chip";
     b.textContent = "HSK"+n;
+    setPressed(b, scope.levels.includes(n));
     b.onclick = ()=>{
       const i = scope.levels.indexOf(n);
       if(i>=0){ if(scope.levels.length>1) scope.levels.splice(i,1); }
@@ -914,10 +1011,10 @@ function renderScope(){
     };
     lvBox.appendChild(b);
   }
-  $("#f-core").classList.toggle("on", scope.core);
-  $("#f-new").classList.toggle("on", scope.newOnly);
-  document.querySelectorAll("#topn-chips .chip").forEach(c=>c.classList.toggle("on", +c.dataset.n===scope.topN));
-  document.querySelectorAll("#lang-chips .chip").forEach(c=>c.classList.toggle("on", c.dataset.lang===scope.lang));
+  setPressed($("#f-core"), scope.core);
+  setPressed($("#f-new"), scope.newOnly);
+  document.querySelectorAll("#topn-chips .chip").forEach(c=>setPressed(c, +c.dataset.n===scope.topN));
+  document.querySelectorAll("#lang-chips .chip").forEach(c=>setPressed(c, c.dataset.lang===scope.lang));
   pool = buildPool(D.levels, scope);
   const noThai = pool.filter(w=>!w.t).length;
   $("#readout").innerHTML =
@@ -928,12 +1025,18 @@ function renderScope(){
   if(![20,40,100].includes(len)) lenCustomOpen = true;
   document.querySelectorAll("#len-chips .chip").forEach(c=>{
     const on = c.dataset.len==="custom" ? lenCustomOpen : (!lenCustomOpen && +c.dataset.len===len);
-    c.classList.toggle("on", on);
+    setPressed(c, on);
   });
   const lenInput = $("#len-custom");
   lenInput.hidden = !lenCustomOpen;
   if(lenCustomOpen && document.activeElement !== lenInput) lenInput.value = len;
   setIconLabel($("#go-battle"), "quest", t("scope.wordQuest", { n: len }));
+  const savedCards = store.get("flashcards", null);
+  const cardsKey = cardSessionKey(scopeKey(scope), len);
+  const cardsLeft = savedCards?.key === cardsKey && Array.isArray(savedCards.deck)
+    ? Math.max(0, savedCards.deck.length - (Number(savedCards.i) || 0)) : 0;
+  setIconLabel($("#go-learn"), "cards", cardsLeft
+    ? t("scope.cardsResume", { n: cardsLeft }) : t("scope.cards"));
   store.set("scope", scope);
   const startable = pool.length >= 8;
   $("#go-battle").disabled = $("#go-endless").disabled = $("#go-learn").disabled = !startable;
@@ -948,7 +1051,7 @@ function applyScopeView(){
   $("#picker-pane").hidden = scopeView !== "picker";
   $("#journey-pane").hidden = scopeView !== "journey";
   document.querySelectorAll("#scope-view-tabs .chip").forEach(c =>
-    c.classList.toggle("on", c.dataset.view === scopeView));
+    setPressed(c, c.dataset.view === scopeView));
   if(scopeView === "journey") renderJourney();
 }
 document.querySelectorAll("#scope-view-tabs .chip").forEach(b =>
@@ -1020,7 +1123,7 @@ function setUiLocale(l){
   renderScope();   // refresh dynamic scope labels (Word Quest · N, readout, Smart Review)
 }
 function syncUiLangChips(){
-  document.querySelectorAll("#ui-lang-chips .chip").forEach(c => c.classList.toggle("on", c.dataset.uilang === getLocale()));
+  document.querySelectorAll("#ui-lang-chips .chip").forEach(c => setPressed(c, c.dataset.uilang === getLocale()));
 }
 document.querySelectorAll("#ui-lang-chips .chip").forEach(c => c.onclick = () => setUiLocale(c.dataset.uilang));
 document.querySelectorAll("#len-chips .chip").forEach(c=>c.onclick = ()=>{
@@ -1041,16 +1144,27 @@ $("#go-endless").onclick = ()=>startBattle("endless");
 $("#go-learn").onclick   = ()=>{ learnDeck = null; startLearn("home"); };
 
 /* ============================== flashcards ============================== */
-const fc = {deck:[], i:0, flipped:false, done:0, total:0};
+const fc = {deck:[], i:0, flipped:false, done:0, total:0, persist:false, key:""};
+function persistCardSession(){
+  if(fc.persist) store.set("flashcards", cardSessionSnapshot(fc, fc.key));
+}
 function startLearn(returnTo = "home"){
   const src = learnDeck && learnDeck.length ? learnDeck : pool;
   fc.returnTo = returnTo;   // screen to land on when the deck runs out
-  fc.deck = shuffle(src.slice(0, 400));       // session cap keeps it sane
-  fc.i = 0; fc.done = 0; fc.total = fc.deck.length; fc.flipped = false;
+  fc.persist = !(learnDeck && learnDeck.length) && returnTo === "home";
+  fc.key = cardSessionKey(scopeKey(scope), normalizeLen(scope.sessionLen));
+  const restored = fc.persist
+    ? restoreCardSession(store.get("flashcards", null), fc.key, BY_HANZI)
+    : null;
+  const session = restored || newCardSession(src, fc.persist ? normalizeLen(scope.sessionLen) : Math.min(400, src.length));
+  fc.deck = session.deck; fc.i = session.i; fc.done = session.done; fc.total = session.total;
+  fc.flipped = false;
+  persistCardSession();
   show("learn");
   renderCard();
 }
 function endLearn(){
+  if(fc.persist) store.set("flashcards", null);
   if(introPhase === "learn"){
     // A4: warm-up done — straight into a short battle over the same 6 words
     // (normal rules, standard distractors; no fake difficulty).
@@ -1075,15 +1189,20 @@ function renderCard(){
     c.innerHTML = `<div class="hz" style="font-size:40px">${w.h}</div><div class="py">${w.p}</div>
       <div class="mean">${w.e}${th}</div><div class="hint">${t("learn.hintBack")}</div>`;
   }
+  c.setAttribute("aria-pressed", String(fc.flipped));
+  $("#fc-again").disabled = !fc.flipped;
+  $("#fc-know").disabled = !fc.flipped;
 }
 $("#fc-card").onclick = ()=>{ fc.flipped = !fc.flipped; renderCard(); };
 $("#fc-spk").onclick = e=>{ e.stopPropagation(); const w=fc.deck[fc.i]; if(w) speak(w.h); };
 function nextCard(keep){
+  if(!fc.flipped) return;
   const w = fc.deck[fc.i];
   noteAnswer(w.h, !keep);        // "know it" (keep=false) = correct; "still learning" = incorrect
   if(keep) fc.deck.push(w);      // still learning → resurfaces at the end
   else { fc.done++; noteDaily(1); questEvent("learn"); addXp(1); }   // "know it" counts toward the daily goal, one tap at a time
   fc.i++; fc.flipped = false;
+  persistCardSession();
   if(fc.i >= fc.deck.length){ endLearn(); return; }
   renderCard();
 }
@@ -1256,6 +1375,18 @@ $("#tones-replay").onclick = ()=>{ if(TG.q) speak(TG.q.word.h); };   // never lo
    Correct answers light the trail; missed words return through the Review Pouch. */
 const cv = $("#cv"), ctx = cv.getContext("2d");
 const B = {on:false};
+function updateCanvasA11y(word, format = "meaning", revealed = false){
+  if(!cv || !word) return;
+  let key = "battle.canvasHidden";
+  const params = { h:word.h, p:word.p };
+  if(revealed) key = "battle.canvasRevealed";
+  else if(format === "meaning") key = "battle.canvasWord";
+  else if(format === "listen") key = "battle.canvasListen";
+  else if(format === "tone" || format === "typed") key = "battle.canvasHanzi";
+  const label = t(key, params);
+  cv.setAttribute("aria-label", label);
+  cv.title = label;
+}
 function trailView(){
   const learned = B.quest ? B.quest.view().learned : 0;
   const startNextSegment = learned > 0 && learned % 5 === 0
@@ -1399,8 +1530,8 @@ function startBattle(mode){
   B.recent = []; B.misses = []; B.missSet = new Set();
   B.nextAt = 0; B.lastT = 0; B.locked = false; B.bossStageAt = 0;
   B.paused = false; B.pausedAt = 0;
-  $("#pause-overlay").classList.remove("on");
-  $("#format-intro").classList.remove("on");   // a quit mid soft-intro must not carry it into the next battle
+  closeDialog($("#pause-overlay"), false);
+  closeDialog($("#format-intro"), false);   // a quit mid soft-intro must not carry it into the next battle
   questToasts = [];
   B.levelUps = [];
   const acc0 = accessoriesFor(levelForXp(xp));
@@ -1420,7 +1551,12 @@ function startBattle(mode){
   $("#opts").innerHTML = "";
   requestAnimationFrame(loop);
 }
-function stopBattle(){ B.on = false; keepAwake(false); if(window.speechSynthesis) speechSynthesis.cancel(); }
+function stopBattle(){
+  B.on = false; keepAwake(false);
+  closeDialog($("#pause-overlay"), false);
+  closeDialog($("#format-intro"), false);
+  if(window.speechSynthesis) speechSynthesis.cancel();
+}
 /* More-screen sound toggle mirrors the old hud-sfx (dims when muted); both stay
    in sync via the same nbhsk.sfx store key. The old home-screen sound icon was
    removed in M3 — #more-sound is now the single toggle outside battle. The
@@ -1447,10 +1583,10 @@ function updateHud(){
   $("#hud-progress-count").textContent = t("battle.learnedProgress", { label });
   updateComboStrip();
 }
-function showQuestFeedback(state){
+function showQuestFeedback(state, format = "meaning"){
   const rail = $("#quest-feedback");
   if(!rail) return;
-  const feedback = questFeedbackFor(state);
+  const feedback = questFeedbackFor(state, format);
   rail.textContent = t(feedback.key);
   rail.classList.toggle("feedback-correct", feedback.tone === "correct");
   rail.classList.toggle("feedback-review", feedback.tone === "review");
@@ -1551,7 +1687,7 @@ function pauseBattle(){
   keepAwake(false);   // nothing moves while paused — let the screen sleep
   renderPauseToggles();
   syncPauseSliders();
-  $("#pause-overlay").classList.add("on");
+  openDialog($("#pause-overlay"), $("#pause-resume"), resumeBattle);
 }
 function resumeBattle(){
   if(!B.on || !B.paused) return;
@@ -1568,7 +1704,7 @@ function resumeBattle(){
   if(B.trailMove) B.trailMove.at += shift;
   B.paused = false;
   keepAwake(true);
-  $("#pause-overlay").classList.remove("on");
+  closeDialog($("#pause-overlay"));
 }
 // Auto-pause (never auto-resume) when the tab/app is backgrounded, so a word's
 // timer can't silently expire while the player isn't looking.
@@ -1594,7 +1730,7 @@ document.addEventListener("visibilitychange", ()=>{
 window.addEventListener("online", ()=> syncEdge("online"));
 $("#hud-pause").onclick = ()=> pauseBattle();
 $("#pause-resume").onclick = ()=> resumeBattle();
-$("#pause-quit").onclick = ()=>{ $("#pause-overlay").classList.remove("on"); endBattle(true); };
+$("#pause-quit").onclick = ()=>{ closeDialog($("#pause-overlay"), false); endBattle(true); };
 function syncQuestOutcome(correct, timedOut=false){
   const result = B.quest.resolve({ correct, timedOut });
   const q = B.quest.view();
@@ -1637,7 +1773,7 @@ function spawnZombie(){
   // during an intro the audio waits for dismiss (played in showFormatIntro's OK)
   if(!z.frozen && (pol === "always" || (pol === "setting" && settings.autoSpeak))) speak(w.h);
   renderQuestion(w, z.format, z.format === "reverse" ? "battle.reversePrompt" : null);
-  showQuestFeedback(encounter.reviewChallenge ? "challenge" : "choose");
+  showQuestFeedback(encounter.reviewChallenge ? "challenge" : "choose", z.format);
   updateHud();   // round capsule tracks B.spawned — refresh as each word enters
   // per-word ramp on the unscaled base, then re-derive the screen-scaled
   // speed (a plain B.speed *= 1.03 would be wiped by the next resize)
@@ -1701,6 +1837,11 @@ function renderQuestion(word, format, promptKey){
   const deck = B.deck.length >= 8 ? B.deck : pool;
   const box = $("#opts");
   box.innerHTML = "";
+  // Stable DOM state for accessibility tooling and release probes. Classes
+  // are reserved for visual layout; this attribute names every active format
+  // (including formats that do not need special CSS).
+  $("#s-battle").dataset.format = format;
+  updateCanvasA11y(word, format, false);
   // F9: the listen format's extra full-width replay row can overflow the
   // .cv-wrap min-height floor on short viewports — this class lets CSS
   // shrink that floor exactly (and only) while a listen question is live.
@@ -1818,9 +1959,9 @@ function renderTypedInput(word){
 function showFormatIntro(key){
   $("#fi-text").textContent = t(key);
   $("#fi-ok").textContent = t("battle.introOk");
-  $("#format-intro").classList.add("on");
+  openDialog($("#format-intro"), $("#fi-ok"), null);
   $("#fi-ok").onclick = ()=>{
-    $("#format-intro").classList.remove("on");
+    closeDialog($("#format-intro"));
     const z = B.zombie;
     if(z){
       // Persist the once-ever intro flag only on dismissal (not at spawn):
@@ -1870,6 +2011,7 @@ function answer(btn, o){
   // wrong tap, or — via bite() — a timeout): unmask the plaque's hanzi/pinyin
   // from here on (drawWordPlate reads z.revealed, not the answer state).
   z.revealed = true;
+  updateCanvasA11y(z.w, z.format, true);
   if(correct){
     const trailBefore = trailView();
     const resolvedAt = performance.now();
@@ -1967,6 +2109,7 @@ function killZombie(z){
 function bite(timedOut){
   const z = B.zombie;
   B.reveal = { w:z.w, boss:!!z.boss, format:z.format || "meaning", trailSegmentStart:!!z.trailSegmentStart };   // T6: reveal-window snapshot
+  updateCanvasA11y(z.w, z.format, true);
   if(timedOut){
     // boss word already counted its one attempt on the first tap (see answer());
     // only count here if it timed out before ever being tapped.
@@ -3820,7 +3963,6 @@ if(isFirstRun(store.get("introDone", false), masteryStore)){
 }
 renderHome();
 renderQuests();
-renderStreet();
 updateNav(currentScreen);
 // Availability-driven IAP gating (go-live plan §4 T1): resolve once at boot.
 // renderIapSections() is safe to call standalone (see its hidden-toggling

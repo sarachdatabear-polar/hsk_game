@@ -21,9 +21,7 @@ if (-not $env:NBHSK_STORE_PASS -or -not $env:NBHSK_KEY_PASS) {
 }
 
 Set-Location $game
-npm run build
-node scripts/stage-www.js
-npx cap sync android
+npm run cap:sync
 
 # Java .properties treats backslash as an escape char, so write the path with
 # forward slashes (Gradle's file() accepts them on Windows).

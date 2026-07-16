@@ -21,6 +21,7 @@ Finished and superseded docs move to [`archive/`](archive/README.md) (run
 - [ASSET-INVENTORY.md](art/ASSET-INVENTORY.md) — asset audit baseline
 
 ## 📌 `planning/` — Living checklists & status
+- [2026-07-16-ux-ui-launch-readiness-audit.md](planning/2026-07-16-ux-ui-launch-readiness-audit.md) — v76 findings, fixes, verification evidence, and remaining go-live gates
 - [2026-07-12-coin-purchase-golive.md](planning/2026-07-12-coin-purchase-golive.md) — Phase 1 merged dark; real-provider Phase 2 and owner gates remain pending
 - [2026-07-16-next-roadmap.md](planning/2026-07-16-next-roadmap.md) — ranked next choices and recommended release + HSK 3.0 audit sequence
 - [2026-07-09-duolingo-comparison.md](planning/2026-07-09-duolingo-comparison.md) — evergreen verified comparison and adoption reference

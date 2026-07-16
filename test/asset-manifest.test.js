@@ -69,16 +69,11 @@ describe("education asset manifest contract", () => {
     expect(Object.keys(REGISTRY).sort()).toEqual(manifest.assets.map(a => a.id).sort());
   });
 
-  it("pre-caches every P0 PNG (incl. state variants) tolerantly in sw.js", () => {
-    // planned/concept art has no file to cache yet — only shipped statuses must be precached
-    const p0 = manifest.assets.filter(a => ["approved", "integrated"].includes(a.status)
-      && a.priority === "P0" && a.file.endsWith(".png"));
-    for (const a of p0) {
-      for (const f of allFiles(a)) {
-        expect(sw, `assets/${f} missing from sw.js PRECACHE`).toContain(`assets/${f}`);
-      }
-    }
-    expect(sw).toContain("c.add(u).catch(() => {})");
+  it("uses an atomic core shell plus lazy runtime cache for optional P0 art", () => {
+    expect(sw).toContain("cache.addAll(PRECACHE)");
+    expect(sw).toContain("cacheAfterFetch(RUNTIME, request)");
+    expect(sw).toContain("assets/cat-walk.png");
+    expect(sw).not.toContain("assets/cat-astronaut-walk.png");
   });
 
   it("includes every required icon id in assets/ui-icons.svg", () => {
