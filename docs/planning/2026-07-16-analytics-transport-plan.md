@@ -364,7 +364,7 @@ export function isEnabled(store) {
 }
 
 export function setEnabled(store, on) {
-  store.set(KEY, on === true);
+  store.set(KEY, !!on);
 }
 ```
 
