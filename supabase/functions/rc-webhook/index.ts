@@ -3,24 +3,29 @@
 // test/rc-webhook.test.js). This file only does auth, parsing, and the
 // Supabase service-role writes that core.js can't do (no Deno APIs there).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { authorizeWebhook, processEvent } from "./core.js";
+import { authorizeWebhook, processEvent, verifyWebhookSignature } from "./core.js";
 import { PRODUCTS } from "../../../src/monetization/products.js";
 
 Deno.serve(async (req) => {
   // RC signs webhook calls with a bearer secret we configure on their side.
   const webhookSecret = Deno.env.get("RC_WEBHOOK_SECRET");
+  const signingSecret = Deno.env.get("RC_WEBHOOK_SIGNING_SECRET");
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!webhookSecret || !supabaseUrl || !serviceRoleKey) {
+  if (!webhookSecret || !signingSecret || !supabaseUrl || !serviceRoleKey) {
     return new Response("service unavailable", { status: 503 });
   }
   if (!authorizeWebhook(req.headers.get("Authorization"), webhookSecret)) {
     return new Response("unauthorized", { status: 401 });
   }
 
-  let body;
+  let body, rawBody;
   try {
-    body = await req.json();
+    rawBody = await req.text();
+    if (!await verifyWebhookSignature(rawBody, req.headers.get("X-RevenueCat-Webhook-Signature"), signingSecret)) {
+      return new Response("unauthorized", { status: 401 });
+    }
+    body = JSON.parse(rawBody);
   } catch {
     return new Response("bad request", { status: 400 });
   }
