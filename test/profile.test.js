@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { defaultProfile, normalizeDisplayName, profileStats, equippedSummary } from "../src/profile.js";
+import { defaultProfile, normalizeDisplayName, profileInitial, profileStats, equippedSummary } from "../src/profile.js";
 
 describe("profile identity", () => {
   it("returns a fresh empty profile", () => {
@@ -19,6 +19,17 @@ describe("profile identity", () => {
   it("handles empty/corrupt values and invalid limits", () => {
     expect(normalizeDisplayName(null)).toBe("");
     expect(normalizeDisplayName("Player", -1)).toBe("");
+  });
+
+  it("derives a player monogram without splitting Unicode graphemes", () => {
+    expect(profileInitial("  jordan ")).toBe("J");
+    expect(profileInitial("น้องหมี")).toBe("น้");
+    expect(profileInitial("👩🏽‍💻 Coder")).toBe("👩🏽‍💻");
+  });
+
+  it("uses an empty initial for the neutral fallback avatar", () => {
+    expect(profileInitial("")).toBe("");
+    expect(profileInitial(null)).toBe("");
   });
 });
 

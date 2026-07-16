@@ -25,6 +25,39 @@ export function authorizeWebhook(header, secret) {
   return typeof secret === "string" && secret.length > 0 && header === `Bearer ${secret}`;
 }
 
+function bytesFromHex(hex) {
+  if (!/^[0-9a-f]{64}$/i.test(hex || "")) return null;
+  return new Uint8Array(hex.match(/../g).map(byte => parseInt(byte, 16)));
+}
+
+function constantTimeEqual(a, b) {
+  if (!a || !b || a.length !== b.length) return false;
+  let different = 0;
+  for (let i = 0; i < a.length; i++) different |= a[i] ^ b[i];
+  return different === 0;
+}
+
+// RevenueCat signs `${timestamp}.${raw request body}` with HMAC-SHA256 and
+// sends `t=<unix>,v1=<hex>` in X-RevenueCat-Webhook-Signature. Verify the raw
+// bytes before JSON parsing and reject stale/replayed deliveries.
+export async function verifyWebhookSignature(rawBody, header, secret, nowSeconds = Math.floor(Date.now() / 1000), toleranceSeconds = 300) {
+  if (typeof rawBody !== "string" || typeof header !== "string" || typeof secret !== "string" || !secret) return false;
+  try {
+    const fields = Object.fromEntries(header.split(",").map(part => part.trim().split("=", 2)));
+    const timestamp = Number(fields.t);
+    const received = bytesFromHex(fields.v1);
+    if (!Number.isInteger(timestamp) || !received || Math.abs(nowSeconds - timestamp) > toleranceSeconds) return false;
+    const encoder = new TextEncoder();
+    const key = await globalThis.crypto.subtle.importKey(
+      "raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const signature = new Uint8Array(await globalThis.crypto.subtle.sign(
+      "HMAC", key, encoder.encode(`${timestamp}.${rawBody}`)));
+    return constantTimeEqual(signature, received);
+  } catch {
+    return false;
+  }
+}
+
 export function processEvent(body, catalog) {
   const fail = reason => ({ ok: false, reason });
   const event = body && typeof body === "object" ? body.event : null;

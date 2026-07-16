@@ -1,6 +1,10 @@
 # Coin Purchase Go-Live ("user can buy coins") — Design + Plan
 
-**Status: AWAITING JORDAN'S REVIEW** — design decisions + prerequisite chores below are his; no implementation until his go.
+**Status: LOCAL CODE READY (2026-07-16); OWNER/STORE SETUP PENDING.** The
+RevenueCat provider, stable Supabase identity, localized store prices,
+server-grant polling, and signed webhook path are implemented and dark. No
+real purchase UI appears until the owner completes Phase 0 and adds the public
+Android SDK key.
 
 **Goal:** Take the already-shipped-dark IAP slice live so a real user can buy coin packs (and Supporter) with real money on the Android app.
 
@@ -39,9 +43,12 @@ Purchased coins are granted server-side (webhook adds to the `wallet` row + `led
 
 ### Phase 0 — Jordan's prerequisite chores (everything below is blocked on these)
 1. **Play Console account ($25)** + app created. *Note: new personal accounts must run closed testing with 12 testers opted in for 14 continuous days before production (PRD §8.1) — start this clock early.*
-2. **RevenueCat account**, Android app configured, public SDK key + webhook auth secret to hand off (same pattern as the Supabase token file).
-3. **Register the 5 products** in Play Console (ids: `supporter`, `coins_s/m/l/xl`); hand-set TH (+ ID/VN/PH) prices per PRD §7.3; link Play ↔ RevenueCat.
-4. Decisions in §6 answered.
+2. **RevenueCat account**, Android app configured, public SDK key, webhook bearer
+   secret, and webhook HMAC signing secret. Secrets go in Supabase/RevenueCat,
+   never git; only the public key goes in `src/monetization/revenuecat-config.js`.
+3. **Register the 4 launch products** in Play Console (ids:
+   `coins_s/m/l/xl`); hand-set TH (+ ID/VN/PH) prices per PRD §7.3; link Play ↔
+   RevenueCat. `supporter` remains dark until ads and its benefit are live.
 
 ### Phase 1 — unblocked now (no SDK, no store account needed)
 - **T1. Availability gating:** `iapEnabled()` becomes `provider.available() || devFlag`. Mock provider's `available()` returns the dev flag; the future RC provider returns true only on native with the SDK initialized. Web/PWA: sections stay hidden. (Pure change + tests; UI untouched.)
@@ -66,7 +73,17 @@ Purchased coins are granted server-side (webhook adds to the `wallet` row + `led
    Must NOT return `permission denied`. Clean up the test ledger/wallet rows after.
 3. **Ledger-read RLS reliability** — confirm a signed-in client can select its own ledger rows. The client now fails closed on this error, so the smoke protects availability rather than coin correctness.
 
-- **T5. `provider-revenuecat.js`** behind the seam: `available()` (native + configured), `purchase(productId)` mapping RC results to `{ok, orderId}` / `{ok:false, reason:"cancelled"|"failed"|"unavailable"}` (never throws — seam contract), `restore()` → owned non-consumable ids. Store-localized price strings from RC offerings **replace** `displayPrice`'s mock prices (products.js contract).
+- **T5. `provider-revenuecat.js` — COMPLETE LOCALLY 2026-07-16.** Uses the
+  Capacitor-6-compatible `@revenuecat/purchases-capacitor@9.2.2`; configures
+  only on native with an explicit Supabase UUID; re-identifies after account
+  changes; maps cancel/pending/failure without throwing; returns exact store
+  transaction ids; filters restore to configured non-consumables; and renders
+  only store-returned products with localized `priceString` values. The launch
+  config contains coin packs only and a blank public key, so it remains dark.
+- **Webhook defense — COMPLETE LOCALLY 2026-07-16.** The Edge Function requires
+  both `Authorization: Bearer <RC_WEBHOOK_SECRET>` and a fresh RevenueCat HMAC
+  signature over the raw body (`RC_WEBHOOK_SIGNING_SECRET`, five-minute replay
+  window) before parsing or granting.
 - **T6. `npm run cap:sync`**, sandbox E2E on the closed track (license testers): buy each pack once, kill-app-mid-purchase replay (PRD §7.4 idempotency), Restore on a wiped device, price display shows ฿ exactly per catalog.
 - **T7. Un-dark + release:** availability gate goes live for Android builds, SHELL bump, release ritual. Web remains earn-only.
 
@@ -79,8 +96,12 @@ Phase 1 is all pure/unit-testable: gating fold, webhook handler (Deno test or fi
 
 ## 6. Decisions Jordan owns
 
-1. **Ship Supporter in the same slice, or coin packs first?** Supporter's headline is "remove ads" — but ads aren't live yet (AdMob approval still pending). Recommendation: **coin packs only** in the first live cut; Supporter un-darks when ads land, so we never sell an ad-removal that removes nothing. (Catalog/UI already handle both; it's one filter.)
-2. **Purchases require sign-in?** Server-side grants key on `app_user_id`. Anonymous Supabase users work (RC app_user_id = Supabase uid), but a reinstall without sign-in orphans purchased coins. Recommendation: allow guest purchase (RC restore still covers Supporter), and show a one-line "sign in to protect your coins across devices" nudge on the Get Coins shelf.
+1. **Supporter timing — defaulted safely:** coin packs only in the first live
+   cut. Add `supporter` to both product arrays only after ads and the advertised
+   removal benefit exist.
+2. **Purchase identity — implemented safely:** purchases may use a Supabase
+   guest UUID; RevenueCat never configures with its own anonymous id. The owner
+   still needs to approve final account-protection copy before un-darking.
 3. **Phase 0 timing** — when to buy the Play Console account and start the 14-day closed-testing clock.
 4. Go/no-go on the §3 ledger-cursor design (it amends the cloud-save PRD §6.3 merge rules; one-paragraph PRD amendment at release, same as the per-key-folds precedent).
 

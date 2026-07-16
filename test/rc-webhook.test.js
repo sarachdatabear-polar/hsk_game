@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { authorizeWebhook, processEvent } from "../supabase/functions/rc-webhook/core.js";
+import { authorizeWebhook, processEvent, verifyWebhookSignature } from "../supabase/functions/rc-webhook/core.js";
 import { PRODUCTS, productById } from "../src/monetization/products.js";
 
 // NOTE: this file tests core.js only — the pure event-to-grant decision
@@ -20,6 +20,16 @@ function rcEvent(overrides) {
       ...overrides,
     },
   };
+}
+
+async function signedHeader(rawBody, secret, timestamp) {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const bytes = new Uint8Array(await crypto.subtle.sign(
+    "HMAC", key, encoder.encode(`${timestamp}.${rawBody}`)));
+  const hex = [...bytes].map(byte => byte.toString(16).padStart(2, "0")).join("");
+  return `t=${timestamp},v1=${hex}`;
 }
 
 describe("processEvent — grants per product", () => {
@@ -123,6 +133,31 @@ describe("webhook authorization", () => {
   it("fails closed when the secret is missing", () => {
     expect(authorizeWebhook("Bearer undefined", undefined)).toBe(false);
     expect(authorizeWebhook("Bearer ", "")).toBe(false);
+  });
+
+  it("accepts a fresh HMAC over the exact raw body", async () => {
+    const now = 1_800_000_000;
+    const body = JSON.stringify(rcEvent({ id: "signed" }));
+    const header = await signedHeader(body, "signing-secret", now);
+    expect(await verifyWebhookSignature(body, header, "signing-secret", now)).toBe(true);
+  });
+
+  it("rejects tampering, wrong secrets, malformed headers, and missing configuration", async () => {
+    const now = 1_800_000_000;
+    const body = JSON.stringify(rcEvent({}));
+    const header = await signedHeader(body, "signing-secret", now);
+    expect(await verifyWebhookSignature(`${body} `, header, "signing-secret", now)).toBe(false);
+    expect(await verifyWebhookSignature(body, header, "wrong", now)).toBe(false);
+    expect(await verifyWebhookSignature(body, "garbage", "signing-secret", now)).toBe(false);
+    expect(await verifyWebhookSignature(body, header, "", now)).toBe(false);
+  });
+
+  it("rejects replayed signatures outside the five-minute window", async () => {
+    const signedAt = 1_800_000_000;
+    const body = JSON.stringify(rcEvent({}));
+    const header = await signedHeader(body, "signing-secret", signedAt);
+    expect(await verifyWebhookSignature(body, header, "signing-secret", signedAt + 300)).toBe(true);
+    expect(await verifyWebhookSignature(body, header, "signing-secret", signedAt + 301)).toBe(false);
   });
 });
 

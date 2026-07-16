@@ -8,16 +8,28 @@ export function defaultProfile() {
   return { displayName: "" };
 }
 
+function graphemes(value) {
+  const text = String(value || "");
+  // Segment by user-perceived characters when available so Thai combining
+  // marks and emoji sequences are never split. Array.from is the safe older-
+  // WebView fallback (at least preserves surrogate pairs).
+  return typeof Intl !== "undefined" && typeof Intl.Segmenter === "function"
+    ? [...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(text)].map(x => x.segment)
+    : Array.from(text);
+}
+
 export function normalizeDisplayName(value, maxLength = 24) {
   const limit = Math.max(0, Math.floor(Number(maxLength) || 0));
   const clean = String(value || "").trim().replace(/\s+/gu, " ");
-  // Segment by user-perceived characters when available so Thai combining
-  // marks and emoji sequences are never cut in half. Array.from is the safe
-  // older-WebView fallback (at least preserves surrogate pairs).
-  const chars = typeof Intl !== "undefined" && typeof Intl.Segmenter === "function"
-    ? [...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(clean)].map(x => x.segment)
-    : Array.from(clean);
-  return chars.slice(0, limit).join("");
+  return graphemes(clean).slice(0, limit).join("");
+}
+
+// The Profile avatar represents the player, not the Lucky Cat character.
+// Return one user-perceived initial when the player has chosen a name; the UI
+// renders a neutral person icon for an empty profile.
+export function profileInitial(value) {
+  const first = graphemes(normalizeDisplayName(value))[0] || "";
+  return /^[a-z]$/i.test(first) ? first.toUpperCase() : first;
 }
 
 export function profileStats({ levels, mastery, stickerState, stickerDefs, shop, catalog } = {}) {

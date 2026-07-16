@@ -9,7 +9,7 @@ Finished and superseded docs move to [`archive/`](archive/README.md) (run
 
 ## 📋 `prd/` — Product requirements (what to build)
 - [PRD-v5-visual-retention.md](prd/PRD-v5-visual-retention.md) — shipped 2026-07-07 (phases 1–5); stays live because §8 is the standing v-next roadmap (question types, HSK 3.0, social)
-- [PRD-monetization-and-production.md](prd/PRD-monetization-and-production.md) — store launch + monetization roadmap (not started)
+- [PRD-monetization-and-production.md](prd/PRD-monetization-and-production.md) — store launch + monetization roadmap; local dark foundations/provider are ready, live operations pending
 
 ## 🎨 `art/` — Art direction & production (active pipeline)
 - [Lucky_Cat_HSK_PRD_Visual_Spec_v1.0.md](art/Lucky_Cat_HSK_PRD_Visual_Spec_v1.0.md) — visual-exact source spec (warm-daylight look)
@@ -21,7 +21,9 @@ Finished and superseded docs move to [`archive/`](archive/README.md) (run
 - [ASSET-INVENTORY.md](art/ASSET-INVENTORY.md) — asset audit baseline
 
 ## 📌 `planning/` — Living checklists & status
+- [2026-07-16-ux-ui-launch-readiness-audit.md](planning/2026-07-16-ux-ui-launch-readiness-audit.md) — v76 findings, fixes, verification evidence, and remaining go-live gates
 - [2026-07-12-coin-purchase-golive.md](planning/2026-07-12-coin-purchase-golive.md) — Phase 1 merged dark; real-provider Phase 2 and owner gates remain pending
+- [2026-07-16-next-roadmap.md](planning/2026-07-16-next-roadmap.md) — ranked next choices and recommended release + HSK 3.0 audit sequence
 - [2026-07-09-duolingo-comparison.md](planning/2026-07-09-duolingo-comparison.md) — evergreen verified comparison and adoption reference
 - [V2-EXECUTION-PLAN.md](planning/V2-EXECUTION-PLAN.md) — cross-session technical log across v2–v7
 
@@ -30,6 +32,10 @@ Finished and superseded docs move to [`archive/`](archive/README.md) (run
 
 ## 🌏 `i18n/` — Localization
 - [i18n-translation-review.md](i18n/i18n-translation-review.md) — Thai UI strings pending native review (incl. v7 shop strings)
+
+## 👤 Owner handoff
+
+- [OWNER-ACTIONS.md](OWNER-ACTIONS.md) — consolidated account, signing, native-review, live-backend, and closed-test queue
 
 ## 🗄️ `archive/` — Finished & superseded
 - [archive/README.md](archive/README.md) — index of shipped PRDs and superseded art docs

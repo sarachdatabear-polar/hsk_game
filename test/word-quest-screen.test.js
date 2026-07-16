@@ -27,6 +27,6 @@ describe("Word Quest screen contract", () => {
   });
 
   it("preserves the existing answer-format mount point", () => {
-    expect(battleScreen).toContain('<div id="opts"></div>');
+    expect(battleScreen).toContain('<div id="opts" role="group" aria-labelledby="quest-feedback"></div>');
   });
 });

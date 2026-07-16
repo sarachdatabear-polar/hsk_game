@@ -4,7 +4,6 @@ import { setLocale, t } from "../src/i18n.js";
 
 describe("questFeedbackFor", () => {
   it.each([
-    ["choose", { key: "battle.promptChoose", tone: "prompt" }],
     ["challenge", { key: "battle.reviewChallengeIntro", tone: "challenge" }],
     ["learned", { key: "battle.feedbackLearned", tone: "correct" }],
     ["review", { key: "battle.feedbackReview", tone: "review" }],
@@ -12,8 +11,16 @@ describe("questFeedbackFor", () => {
     expect(questFeedbackFor(state)).toEqual(expected);
   });
 
+  it.each([
+    ["meaning", "battle.promptMeaning"], ["listen", "battle.promptListen"],
+    ["reverse", "battle.promptReverse"], ["tone", "battle.promptTone"],
+    ["cloze", "battle.promptCloze"], ["typed", "battle.promptTyped"],
+  ])("uses a task-specific %s prompt", (format, key) => {
+    expect(questFeedbackFor("choose", format)).toEqual({ key, tone: "prompt" });
+  });
+
   it("falls back to the prompt for an unknown state", () => {
-    expect(questFeedbackFor("unexpected")).toEqual({ key: "battle.promptChoose", tone: "prompt" });
+    expect(questFeedbackFor("unexpected")).toEqual({ key: "battle.promptMeaning", tone: "prompt" });
   });
 });
 

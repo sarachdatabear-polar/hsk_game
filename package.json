@@ -11,8 +11,13 @@
     "assets:report": "node scripts/asset-report.mjs",
     "assets:shop": "node scripts/generate-shop-assets.mjs",
     "serve": "node scripts/serve.mjs",
-    "cap:sync": "npm run build && node scripts/stage-www.js && npx cap sync android",
-    "apk:release": "powershell -ExecutionPolicy Bypass -File scripts/build_apk.ps1"
+    "qa:responsive": "node scripts/responsive-sweep.mjs",
+    "qa:responsive:th": "node scripts/responsive-sweep.mjs --locale=th",
+    "android:brand": "node scripts/sync-android-branding.mjs",
+    "cap:sync": "npm run build && node scripts/stage-www.js && npx cap sync android && npm run android:brand",
+    "apk:release": "powershell -ExecutionPolicy Bypass -File scripts/build_apk.ps1",
+    "aab:release": "powershell -ExecutionPolicy Bypass -File scripts/build_apk.ps1 -Artifact Aab",
+    "android:release": "powershell -ExecutionPolicy Bypass -File scripts/build_apk.ps1 -Artifact Both"
   },
   "devDependencies": {
     "@capacitor/android": "^6.2.1",
@@ -30,6 +35,7 @@
     "@capacitor/local-notifications": "^6.1.3",
     "@capacitor/splash-screen": "^6.0.4",
     "@capacitor/status-bar": "^6.0.3",
+    "@revenuecat/purchases-capacitor": "9.2.2",
     "@supabase/supabase-js": "^2.110.2"
   }
 }
