@@ -56,6 +56,25 @@ describe("i18n engine", () => {
     expect(mismatched).toEqual([]);
   });
 
+  it("keeps the same allowed HTML-tag structure in both locales", () => {
+    const tags = s => (s.match(/<\/?[a-z][^>]*>/gi) || []).join("|");
+    const mismatched = Object.keys(STRINGS.en)
+      .filter(k => tags(STRINGS.en[k]) !== tags(STRINGS.th[k]));
+    expect(mismatched).toEqual([]);
+  });
+
+  it("contains Thai script except for intentional codes, numbers, and input formats", () => {
+    const languageNeutral = new Set([
+      "home.levelChip", "account.emailPh", "scope.customPh", "journey.nodeTop",
+      "sticker.scopeName", "sticker.msName", "shop.maxed", "tones.progress",
+      "tones.tone1", "tones.tone2", "tones.tone3", "tones.tone4",
+    ]);
+    const missingThai = Object.entries(STRINGS.th)
+      .filter(([key, value]) => !languageNeutral.has(key) && !/[\u0E00-\u0E7F]/.test(value))
+      .map(([key]) => key);
+    expect(missingThai).toEqual([]);
+  });
+
   it("has a quest.<id> key for every quest in QUEST_POOL", () => {
     const missing = QUEST_POOL.map(q => "quest." + q.id).filter(k => !(k in STRINGS.en));
     expect(missing).toEqual([]);

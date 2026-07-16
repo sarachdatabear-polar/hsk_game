@@ -7,7 +7,8 @@
 //
 // Usage:
 //   npm run serve                       # in another shell — python http.server on :8000
-//   node scripts/responsive-sweep.mjs           # full 10-viewport multi-screen sweep
+//   node scripts/responsive-sweep.mjs           # full 10-viewport multi-screen sweep (EN)
+//   RESP_LOCALE=th node scripts/responsive-sweep.mjs  # same permanent gate in Thai
 //   node scripts/responsive-sweep.mjs --battle 390x844   # single-shot battle probe
 //
 // Requires: npm i --no-save playwright-core, and Microsoft Edge installed
@@ -31,6 +32,7 @@ function launchOpts() {
 }
 
 const BASE_URL = process.env.RESP_BASE_URL || "http://localhost:8000";
+const LOCALE = process.env.RESP_LOCALE === "th" ? "th" : "en";
 const TOL = 1; // px tolerance for viewport-edge comparisons
 const MIN_TAP = 44; // Phase 6 accessibility/release acceptance floor
 
@@ -249,11 +251,11 @@ async function preparePage(browser, width, height) {
   const errs = [];
   page.on("pageerror", e => errs.push(e.message));
   await page.addInitScript(installPageHelpers);
-  await page.addInitScript(() => {
+  await page.addInitScript(locale => {
     localStorage.setItem("nbhsk.introDone", "true");
-    localStorage.setItem("nbhsk.locale", '"en"');
+    localStorage.setItem("nbhsk.locale", JSON.stringify(locale));
     localStorage.setItem("nbhsk.wallet", "5000");
-  });
+  }, LOCALE);
   await page.goto(`${BASE_URL}/index.html`, { waitUntil: "load" });
   await page.waitForTimeout(700);
   return { page, errs };
@@ -404,7 +406,9 @@ async function runResultsProbe(browser, width, height) {
 
   const failures = [];
   if(info.overflowX) failures.push("results overflow-x");
-  if(!/^5 \/ 5\b/.test(info.learned)) failures.push(`results learned=${info.learned}`);
+  // Locale-neutral: English begins with "5 / 5" while Thai wraps the same
+  // learned/target values in translated copy.
+  if(!/5\s*\/\s*5/.test(info.learned)) failures.push(`results learned=${info.learned}`);
   if(!info.nextVisible) failures.push("results next-review hidden");
   if(info.missedRows < 1) failures.push("results missed-word recap absent");
   if(info.small.length) failures.push(`results small-taps:[${info.small}]`);
@@ -624,7 +628,7 @@ async function runFullSweep() {
 
   console.log(lines.join("\n"));
   console.log(
-    `\n${lines.filter(l => l.startsWith("[PASS]")).length}/${VIEWPORTS.length} viewports passed`
+    `\n${lines.filter(l => l.startsWith("[PASS]")).length}/${VIEWPORTS.length} ${LOCALE.toUpperCase()} viewports passed`
   );
 
   // F9 permanent gate: listen-format overflow probe, run as an extra
