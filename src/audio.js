@@ -4,12 +4,50 @@ import { clampVol } from "./sfx.js";
 let mp3Set = new Set();
 let base = "audio/";
 let zhVoice = null;
-let current = null;
+// One reused <audio> element for word playback. Mobile browsers unlock media
+// per-element on the first gesture-initiated play(); reusing a single element
+// (rather than `new Audio()` per word) keeps that unlock alive for the session
+// so the auto-spoken word (fired on card appearance, NOT a gesture) is allowed.
+let wordEl = null;
+function wordAudio() {
+  if (!wordEl && typeof Audio !== "undefined") { wordEl = new Audio(); wordEl.preload = "auto"; }
+  return wordEl;
+}
 // Pronunciation volume (settings.voiceVol, wave-2 volume controls). Applied
 // to both playback paths: the bundled-mp3 Audio element and the Web Speech
 // SpeechSynthesisUtterance fallback.
 let voiceVol = 1;
 export function setVoiceVolume(v) { voiceVol = clampVol(v); }
+
+// A hair of silence — a valid, always-supported source used only to unlock the
+// reused word element inside the first user gesture (see unlockAudio).
+const SILENT_WAV = "data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YSADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
+
+let unlocked = false;
+// Mobile browsers gate audio until the first real user gesture: the Web Audio
+// context starts suspended, HTMLAudioElement.play() is rejected, and
+// speechSynthesis.speak() is silently dropped — all outside a gesture. Call
+// this from a first pointerdown/touch/click so every path is primed before the
+// game speaks a word on its own. Idempotent; best-effort (every step guarded).
+export function unlockAudio() {
+  if (unlocked || typeof window === "undefined") return;
+  unlocked = true;
+  // Prime web speech — iOS requires the first utterance inside a gesture.
+  const synth = window.speechSynthesis;
+  if (synth) { try { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; synth.speak(u); } catch (e) {} }
+  // Prime the reused word element with a blip of silence so later
+  // programmatic (non-gesture) play() calls are allowed for the session.
+  const el = wordAudio();
+  if (el) {
+    try {
+      el.muted = true;
+      el.src = SILENT_WAV;
+      const p = el.play();
+      if (p && p.then) p.then(() => { el.pause(); el.currentTime = 0; el.muted = false; }).catch(() => { el.muted = false; });
+      else { el.muted = false; }
+    } catch (e) { el.muted = false; }
+  }
+}
 
 // Bundled-MP3 presence — reliable tone (browser TTS can't be trusted for tones).
 export function hasMp3(hanzi){ return mp3Set.has(hanzi); }
@@ -41,7 +79,8 @@ export function audioAvailable(hanzi) {
 
 export function speak(hanzi) {
   if (!hanzi) return;
-  if (current) { current.pause(); current = null; }
+  const el = wordAudio();
+  if (el && !el.paused) { el.pause(); }
   // Chrome's cancel-then-speak race: calling speechSynthesis.cancel() while
   // nothing is speaking/pending is a no-op, but calling speak() immediately
   // after a real cancel can silently drop the new utterance. Only cancel
@@ -53,10 +92,12 @@ export function speak(hanzi) {
     synth.cancel();
     deferred = true;
   }
-  if (mp3Set.has(hanzi)) {
-    current = new Audio(base + encodeURIComponent(hanzi) + ".mp3");
-    current.volume = voiceVol;
-    current.play().catch(() => ttsFallback(hanzi, synth, deferred));
+  if (mp3Set.has(hanzi) && el) {
+    el.muted = false;
+    el.src = base + encodeURIComponent(hanzi) + ".mp3";
+    el.volume = voiceVol;
+    try { el.currentTime = 0; } catch (e) {}
+    el.play().catch(() => ttsFallback(hanzi, synth, deferred));
     return;
   }
   ttsFallback(hanzi, synth, deferred);
