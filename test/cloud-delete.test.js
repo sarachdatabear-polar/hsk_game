@@ -37,4 +37,13 @@ describe("deleteAccount", () => {
     expect(r).toEqual({ ok: false, reason: "network" });
     expect(c._signOut).not.toHaveBeenCalled();
   });
+
+  it("still returns ok when the post-delete local signOut throws (delete already succeeded)", async () => {
+    const c = fakeClient();
+    c.auth.signOut = c._signOut = vi.fn().mockRejectedValue(new Error("storage gone"));
+    __setClientForTests(c);
+    const r = await deleteAccount();
+    expect(r).toEqual({ ok: true });
+    expect(c._invoke).toHaveBeenCalled();
+  });
 });

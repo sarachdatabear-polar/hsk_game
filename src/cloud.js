@@ -205,7 +205,11 @@ export async function deleteAccount() {
       headers: { Authorization: `Bearer ${session.access_token}` },
     });
     if (error) return { ok: false, reason: "network" };
-    await getClient().auth.signOut({ scope: "local" });
+    // Server delete already succeeded once invoke returns clean. The local
+    // sign-out is best-effort cleanup — a (near-impossible) local signOut
+    // throw must NOT report the completed deletion as a failure and strand
+    // the client signed-in on a now-deleted account. Mirrors signOut() above.
+    try { await getClient().auth.signOut({ scope: "local" }); } catch (e) { /* ignore */ }
     return { ok: true };
   } catch (e) { return { ok: false, reason: "network" }; }
 }
