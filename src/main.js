@@ -37,7 +37,7 @@ import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dro
 import { journeyNodes, currentNodeId } from "./journey.js";
 import { defaultProfile, normalizeDisplayName, profileInitial, profileStats, equippedSummary } from "./profile.js";
 import { accountState, accountView, canSendCode, codeLooksValid } from "./account.js";
-import { getSession, ensureGuest, sendCode, verifyCode, saveDisplayName, signOut } from "./cloud.js";
+import { getSession, ensureGuest, sendCode, verifyCode, saveDisplayName, signOut, deleteAccount } from "./cloud.js";
 import { SYNC_KEYS } from "./merge.js";
 import { reconcile, pushDirty } from "./sync.js";
 import { PRODUCTS, productById, displayPrice } from "./monetization/products.js";
@@ -161,6 +161,9 @@ let ent = Object.assign(defaultEnt(), store.get("ent", {}));
 // + reload. Sync/cheap — anything that must stay sync keeps reading this directly.
 // Real visibility (see iapOn below) also honors a real provider's availability.
 const iapEnabled = () => !!store.get("dev.iap", false);
+// Delete-account control ships dark: hidden until the owner deploys the
+// delete-account Edge Function and sets nbhsk.dev.deleteAccount = true.
+const deleteAccountEnabled = () => !!store.get("dev.deleteAccount", false);
 let iapProvider = null;
 let iapPending = null;   // productId of the purchase in flight — survives re-renders
 function provider(){
@@ -570,7 +573,7 @@ $("#go-smart").onclick = ()=>{
 /* ============================== account ============================== */
 // UI-flow state only — truth lives in the supabase session (cloud.js) and
 // the pure view model (account.js). lastSentAt feeds the resend cooldown.
-const accountUI = { session: null, phase: "idle", email: "", verifyType: "email", lastSentAt: 0 };
+const accountUI = { session: null, phase: "idle", email: "", verifyType: "email", lastSentAt: 0, confirmingDelete: false };
 let accountCooldownTimer = 0;
 
 function accountOnline(){
@@ -643,6 +646,7 @@ function renderAccount(){
     p.appendChild(chip);
   }
   if(v.showSignOut) p.appendChild(accountBtn(t("account.signOut"), onAccountSignOut));
+  if(v.showSignOut && deleteAccountEnabled()) renderDeleteAccount(p);
   // IAP v1: restore is device-local (mock provider); Apple will require
   // this button once real billing lands, so the UI slot exists now.
   // Availability-aware (iapOn, not iapEnabled()) — see gating.js.
@@ -805,7 +809,40 @@ async function onAccountSignOut(){
   accountUI.phase = "idle";
   accountUI.email = "";
   accountUI.lastSentAt = 0;
+  accountUI.confirmingDelete = false;
   toast(t("account.signedOut"));
+  renderAccount();
+}
+
+function renderDeleteAccount(p){
+  if(!accountUI.confirmingDelete){
+    // First tap arms the confirm; the destructive action is never one click.
+    const b = accountBtn(t("account.delete"), ()=>{ accountUI.confirmingDelete = true; renderAccount(); });
+    b.classList.add("account-danger");
+    p.appendChild(b);
+    return;
+  }
+  const warn = document.createElement("p");
+  warn.className = "account-explain";
+  warn.textContent = t("account.deleteConfirm");
+  p.appendChild(warn);
+  const yes = accountBtn(t("account.deleteConfirmYes"), onAccountDelete);
+  yes.classList.add("account-danger");
+  p.appendChild(yes);
+  p.appendChild(accountBtn(t("account.deleteCancel"), ()=>{ accountUI.confirmingDelete = false; renderAccount(); }));
+}
+
+async function onAccountDelete(){
+  // accountBtn() already disables the button for the in-flight call.
+  const r = await deleteAccount();
+  if(!r.ok){ toast(t("account.deleteFail")); return; }
+  // Cloud gone; drop to local/guest. Local nbhsk.* progress is intentionally kept.
+  accountUI.session = null;
+  accountUI.phase = "idle";
+  accountUI.email = "";
+  accountUI.lastSentAt = 0;
+  accountUI.confirmingDelete = false;
+  toast(t("account.deleteDone"));
   renderAccount();
 }
 
