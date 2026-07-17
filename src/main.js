@@ -23,7 +23,7 @@ import { defaultQuestState, noteQuestEvent, questStatus,
          defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly } from "./quests.js";
 import { reviewChallengePoints, reviewChallengeSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable, hasMp3, setVoiceVolume } from "./audio.js";
-import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, syncReengageReminder, requestNotifPermission } from "./native.js";
+import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, syncReengageReminder, requestNotifPermission, isNative } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import { BUILDINGS, streetPieces, streetProgress, streetMetrics, DECO_SPRITE_SCALE } from "./street.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
@@ -50,6 +50,9 @@ import { questFeedbackFor } from "./quest-feedback.js";
 import { questResultsSummary } from "./quest-results.js";
 import { questRewardPolicy } from "./quest-rewards.js";
 import { cardSessionKey, newCardSession, restoreCardSession, cardSessionSnapshot } from "./flashcards.js";
+import { createAnalytics } from "./analytics/index.js";
+import { durationBucket } from "./analytics/events.js";
+import { SUPABASE_URL, SUPABASE_KEY } from "./cloud-config.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -96,6 +99,29 @@ const store = {
     }
   }
 };
+// Dark analytics transport (Task 8 wiring): hard no-op until the Settings
+// consent toggle is on. See src/analytics/ for the queue/consent/transport
+// modules constructed here.
+function analyticsUuid() {
+  try {
+    if (globalThis.crypto && crypto.randomUUID) return crypto.randomUUID();
+  } catch {}
+  // Non-crypto fallback (crypto.randomUUID is undefined on file://):
+  return "axxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+const analytics = createAnalytics({
+  store,
+  fetchImpl: (...args) => fetch(...args),
+  now: () => new Date(),
+  gen: analyticsUuid,
+  isOnline: () => navigator.onLine !== false,
+  isNative,
+  config: { url: SUPABASE_URL, key: SUPABASE_KEY },
+});
+let analyticsSessionStart = Date.now();
 const scope = Object.assign({levels:[1], core:false, newOnly:false, topN:0, lang:"both", sessionLen:20},
                             store.get("scope", {}));
 let settings = Object.assign({autoSpeak:true, showPinyin:true, sfxVol:1, voiceVol:1}, store.get("settings", {}));
@@ -713,6 +739,7 @@ function rehydrateFromStore(){
 // not change mid-battle); the next edge catches up.
 async function syncEdge(reason){
   if(B.on) return;
+  analytics.flush();
   const r = await reconcile(store, reason);
   if(r.ok || r.localChanged){
     rehydrateFromStore();
@@ -1572,6 +1599,13 @@ function toggleSfx(){
 }
 $("#more-sound").addEventListener("click", toggleSfx);
 syncSoundToggles();
+const analyticsToggle = document.getElementById("analytics-consent");
+if (analyticsToggle) {
+  analyticsToggle.checked = analytics.isEnabled(); // false by default
+  analyticsToggle.addEventListener("change", () => {
+    analytics.setConsent(analyticsToggle.checked);
+  });
+}
 // The quest HUD shows durable learning progress and the current review pouch.
 // There are no lives: missed words return after a short spacing gap.
 function updateHud(){
@@ -1724,10 +1758,11 @@ document.addEventListener("visibilitychange", ()=>{
     // midRound=B.on: a hide during a (paused) battle must not let a
     // monthly-dirty push redirect into reconcile — see pushDirty/syncEdge.
     pushEdge("hide");
+    analytics.track("session_complete", { duration_bucket: durationBucket(Date.now() - analyticsSessionStart) });
   }
   if(!document.hidden) syncEdge("foreground");
 });
-window.addEventListener("online", ()=> syncEdge("online"));
+window.addEventListener("online", ()=>{ analytics.flush(); syncEdge("online"); });
 $("#hud-pause").onclick = ()=> pauseBattle();
 $("#pause-resume").onclick = ()=> resumeBattle();
 $("#pause-quit").onclick = ()=>{ closeDialog($("#pause-overlay"), false); endBattle(true); };
@@ -3962,6 +3997,8 @@ if(isFirstRun(store.get("introDone", false), masteryStore)){
   show("welcome");
 }
 renderHome();
+analytics.track("session_start");
+analyticsSessionStart = Date.now();
 renderQuests();
 updateNav(currentScreen);
 // Availability-driven IAP gating (go-live plan §4 T1): resolve once at boot.

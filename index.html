@@ -162,6 +162,15 @@
     min-height:45px; min-width:44px; display:inline-flex; align-items:center;}
   h2{font-size:20px; margin:4px 0 14px; color:var(--lc-green);}
   .sect{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:16px 0 8px;}
+  /* Settings toggle row (analytics consent) — a labeled checkbox + hint line,
+     styled to sit inside the More screen's .menu block. Off by default. */
+  .settings-row{margin-top:12px; padding:14px 16px; border-radius:16px;
+    background-color:var(--panel-wash); border:1px solid var(--panel-border);}
+  .settings-row-label{display:flex; align-items:center; gap:12px; cursor:pointer;
+    font-weight:700; font-size:15px; color:var(--ink);}
+  .settings-row-label input[type=checkbox]{width:22px; height:22px; min-width:22px; flex:0 0 auto;
+    accent-color:var(--lc-green); cursor:pointer;}
+  .settings-row-hint{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.4;}
   .chips{display:flex; flex-wrap:wrap; gap:8px;}
   .chip{padding:9px 14px; border-radius:999px; background:var(--chip); color:var(--ink);
     min-height:45px; min-width:44px;
@@ -1287,6 +1296,13 @@
       <button class="big" data-go="howto"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#help"></use></svg><span data-i18n="home.howto">How to play</span></span></button>
       <button class="big" id="more-sound"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#audio"></use></svg><span data-i18n="home.sound">Sound effects</span></span></button>
       <button class="big" data-go="account"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="account.row">Account</span></span></button>
+    </div>
+    <div class="settings-row">
+      <label class="settings-row-label" for="analytics-consent">
+        <input type="checkbox" id="analytics-consent">
+        <span data-i18n="settings.analytics">Share anonymous usage data</span>
+      </label>
+      <p class="settings-row-hint" data-i18n="settings.analyticsHint">Helps improve the game. No personal info, no word history. Off by default.</p>
     </div>
     <div class="sect" data-i18n="common.language">Language</div>
     <div class="chips" id="ui-lang-chips">
