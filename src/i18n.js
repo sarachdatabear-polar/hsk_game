@@ -151,6 +151,7 @@ export const STRINGS = {
     "learn.hintFront": "tap to flip · HSK{lv} · in {ta}/{tt} papers",
     "learn.hintBack": "tap to flip back",
     "fc.noThai": "no Thai yet",
+    "fc.inSentence": "In a sentence",
     // results
     "results.roundOver": "Word Quest complete",
     "results.routeLabel": "Village Gate journey",
@@ -566,6 +567,7 @@ export const STRINGS = {
     "learn.hintFront": "แตะเพื่อพลิก · HSK{lv} · พบใน {ta}/{tt} ชุดข้อสอบ",
     "learn.hintBack": "แตะเพื่อพลิกกลับ",
     "fc.noThai": "ยังไม่มีภาษาไทย",
+    "fc.inSentence": "ในประโยค",
     // results
     "results.roundOver": "จบภารกิจคำศัพท์",
     "results.routeLabel": "เส้นทางประตูหมู่บ้าน",

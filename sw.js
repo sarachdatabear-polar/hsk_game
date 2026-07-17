@@ -3,7 +3,7 @@
 // street decorations enter RUNTIME only after the player actually requests
 // them. This keeps first install substantially smaller without losing offline
 // access to previously viewed cosmetics.
-const SHELL = "nbhsk-shell-v77";
+const SHELL = "nbhsk-shell-v78";
 const RUNTIME = "nbhsk-runtime-v76";
 const AUDIO = "nbhsk-audio-v1";
 
