@@ -16,6 +16,16 @@ export function clampVol(v, dflt = 1) {
 // top of each pack's per-tone `vol` in the gain envelope below.
 let master = 1;
 export function setSfxVolume(v) { master = clampVol(v); }
+
+// Create + resume the AudioContext inside the first user gesture. Mobile
+// browsers hand back a `suspended` context when it's first constructed outside
+// a gesture (e.g. an SFX fired from the rAF loop), and a later resume() is
+// ignored — so nothing ever plays. Constructing it here, in a gesture, means
+// it starts running. Idempotent and best-effort.
+export function unlockSfx() {
+  const a = ac();
+  if (a && a.state === "suspended" && a.resume) a.resume().catch(() => {});
+}
 function tone(freq, dur, type = "square", vol = 0.15, when = 0) {
   const a = ac(); if (!a || !sfx.enabled) return;
   // WebKit can hand back a suspended context when first constructed outside a
