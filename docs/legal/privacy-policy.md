@@ -1,11 +1,11 @@
 # Lucky Cat HSK — Privacy Policy (DRAFT)
 
-> **DRAFT — not legal advice.** This is a developer-authored working draft to
-> unblock store setup and the Supabase/RevenueCat/AdMob integration. It MUST be
-> reviewed by a qualified privacy professional (Thailand PDPA + EU GDPR) and the
-> bracketed placeholders filled before it is published or linked from either app
-> store. It reflects the *intended* data practices per the Monetization &
-> Production PRD (§6.4, §9); confirm each claim against the shipped build.
+> **DRAFT — not legal advice.** Developer-authored working draft. All identity
+> and policy placeholders are now filled; before publishing it still MUST be
+> reviewed by a qualified privacy professional (Thailand PDPA + EU GDPR). It
+> reflects the *intended* data practices per the Monetization & Production PRD
+> (§6.4, §9); confirm each claim against the shipped build (the §2e analytics
+> and §6 sign-out claims were checked against the current code).
 
 **Effective date:** 2026-07-17
 **App:** Lucky Cat HSK
@@ -93,15 +93,21 @@ interest) apply.
 
 ## 4. Who we share it with (processors)
 
-We use these service providers, who process data on our behalf:
-- **Supabase** — authentication, database, cloud storage (hosting region: Singapore, `ap-southeast-1`).
-- **RevenueCat** — purchase validation and entitlement management.
-- **Google AdMob** — ad serving and (with consent) measurement.
+We use these service providers, who process data on our behalf. Each also
+handles data under its own privacy policy:
+- **Supabase** — authentication, database, cloud storage, and our own analytics
+  event store (hosting region: Singapore, `ap-southeast-1`).
+  Policy: https://supabase.com/privacy
+- **RevenueCat** — purchase validation and entitlement management (only if you
+  buy something). Policy: https://www.revenuecat.com/privacy
+- **Google AdMob** — ad serving and, with consent, measurement (only if ads are
+  shown). Policy: https://policies.google.com/privacy
 - **Apple / Google** — sign-in and payment processing for their platforms.
+  Policies: https://www.apple.com/legal/privacy/ · https://policies.google.com/privacy
 
-We do not sell personal data or share it for cross-context behavioral
-advertising beyond the ad-serving described above. [Link each provider's own
-privacy policy before publishing.]
+We use **no third-party analytics or advertising SDK** for the optional analytics
+in §2e — those events go only to our own Supabase. We do not sell personal data or
+share it for cross-context behavioral advertising beyond the ad-serving described above.
 
 ## 5. Children
 
@@ -116,8 +122,9 @@ and we will delete it.
 Subject to PDPA/GDPR, you may **access, correct, delete, or export** your
 personal data, **object to or restrict** processing, and **withdraw consent**
 (including ad-personalization consent) at any time.
-- **In-app:** sign out to stop cloud sync; use **Settings → Delete account** to
-  erase your cloud data. [Confirm this control ships.]
+- **In-app:** use **Settings → Sign out** to stop cloud sync at any time. (An
+  in-app account-deletion control is planned; until it ships, use the email path
+  below and we will erase your cloud data.)
 - **By email:** sarach.northbear@gmail.com. We respond within the statutory timeframe
   (PDPA/GDPR: without undue delay, and within 30 days).
 
@@ -126,16 +133,19 @@ processing already carried out, and you may continue to play as an offline guest
 
 ## 7. Retention
 
-Cloud data is kept while your account is active and deleted [within X days]
-after you delete your account or after [X months] of inactivity. Local device
+Cloud data is kept while your account is active and deleted within 30 days
+after you request account deletion or after 24 months of inactivity. Local device
 data persists until you clear it or uninstall. Purchase records are retained as
 required for tax/audit purposes.
 
 ## 8. International transfers
 
-Your data may be processed outside your country (e.g., our providers' servers).
-Where required, we rely on appropriate safeguards (e.g., Standard Contractual
-Clauses) for such transfers. [Confirm provider regions and safeguards.]
+Your data may be processed outside your country. Our cloud/analytics data is
+hosted with Supabase in **Singapore** (`ap-southeast-1`); RevenueCat and Google
+AdMob (only if you buy something or ads are shown) process data on **US**-based
+infrastructure. Where a transfer requires it (e.g., from the EU/UK), we and our
+providers rely on appropriate safeguards such as the Standard Contractual
+Clauses. Each provider's own policy (§4) describes its transfer mechanisms.
 
 ## 9. Security
 
