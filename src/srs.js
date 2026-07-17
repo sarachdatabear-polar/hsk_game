@@ -13,7 +13,10 @@ const streakOf = rec => (rec && rec.r) || 0;
 const isWeak = rec => !!rec && streakOf(rec) <= 1 && seenOf(rec) >= 2;
 const isMasteredRec = rec => streakOf(rec) >= 3;
 // Missing `ls` (pre-M2 records) counts as due once mastered.
-const isDue = (rec, now) => isMasteredRec(rec)
+// Exported for analytics' delayed_recall wiring (main.js snapshots this at
+// spawn time, before the answer mutates `ls`); dueWords/smartDeck below use
+// it the same way they always have.
+export const isDue = (rec, now) => isMasteredRec(rec)
   && (rec.ls == null || (now - rec.ls) >= dueInterval(rec.r));
 
 export function wordWeight(rec, now = Date.now()) {
