@@ -3,6 +3,7 @@ import { buildPool, coveragePct, scopeKey, meaning, normalizeLen, modeKey, scope
 import { formatFor, FORMATS } from "./formats.js";
 import { gradeTyped, syllables, syllableTones, letters } from "./pinyin.js";
 import { clozeFor } from "./cloze.js";
+import { exampleFor } from "./examples.js";
 import { tonePool, toneQuestion, gradeTone } from "./tone_gym.js";
 import { killPoints } from "./scoring.js";
 import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus, impactBurst as lanternSparkBurst } from "./fx.js";
@@ -1268,8 +1269,18 @@ function renderCard(){
     if(settings.autoSpeak) speak(w.h);
   }else{
     const th = w.t? `<div class="th">${w.t}</div>` : `<div class="th" style="color:var(--muted)">${t("fc.noThai")}</div>`;
+    const ex = exampleFor(w, CLOZE, getLocale());
+    const exampleRow = ex ? `<div class="fc-example">
+        <div class="fc-example-label">${t("fc.inSentence")}</div>
+        <div class="fc-example-cn">${ex.cn}</div>
+        <div class="fc-example-tr">${ex.tr}</div>
+        <button class="spk" id="fc-example-spk" type="button" data-i18n-title="common.playAudio" aria-label="Play audio"><svg class="asset-icon"><use href="assets/ui-icons.svg#sound"></use></svg></button>
+      </div>` : "";
     c.innerHTML = `<div class="hz" style="font-size:40px">${w.h}</div><div class="py">${w.p}</div>
-      <div class="mean">${w.e}${th}</div><div class="hint">${t("learn.hintBack")}</div>`;
+      <div class="mean">${w.e}${th}</div>${exampleRow}<div class="hint">${t("learn.hintBack")}</div>`;
+    if(ex){
+      $("#fc-example-spk").onclick = e=>{ e.stopPropagation(); speak(ex.cn); };
+    }
   }
   c.setAttribute("aria-pressed", String(fc.flipped));
   $("#fc-again").disabled = !fc.flipped;
