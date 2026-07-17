@@ -94,7 +94,7 @@ interest) apply.
 ## 4. Who we share it with (processors)
 
 We use these service providers, who process data on our behalf:
-- **Supabase** — authentication, database, cloud storage (hosting region: [REGION]).
+- **Supabase** — authentication, database, cloud storage (hosting region: Singapore, `ap-southeast-1`).
 - **RevenueCat** — purchase validation and entitlement management.
 - **Google AdMob** — ad serving and (with consent) measurement.
 - **Apple / Google** — sign-in and payment processing for their platforms.
