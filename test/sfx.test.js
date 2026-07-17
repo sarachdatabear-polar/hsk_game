@@ -189,4 +189,24 @@ describe("tone() resumes a suspended AudioContext (iOS PWA silent-session bug)",
 
     expect(resumed).toBe(1);
   });
+
+  it("unlockSfx() reports failure so a later gesture can retry", async () => {
+    vi.resetModules();
+    let attempts = 0;
+    const fakeCtx = {
+      state: "suspended",
+      resume: () => {
+        attempts++;
+        if (attempts === 1) return Promise.reject(new Error("gesture rejected"));
+        fakeCtx.state = "running";
+        return Promise.resolve();
+      },
+    };
+    globalThis.window = { AudioContext: function () { return fakeCtx; } };
+
+    const fresh = await import("../src/sfx.js");
+    expect(await fresh.unlockSfx()).toBe(false);
+    expect(await fresh.unlockSfx()).toBe(true);
+    expect(attempts).toBe(2);
+  });
 });

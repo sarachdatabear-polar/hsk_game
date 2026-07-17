@@ -965,12 +965,19 @@ fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>in
 // until the first real user gesture. Prime every path once on the first
 // interaction so the word audio the game speaks on its own — and SFX fired
 // from the rAF loop — actually play. Passive so it never delays the tap.
+let audioUnlockInFlight = false;
 function unlockAllAudio(){
-  unlockSfx();
-  unlockAudio();
-  window.removeEventListener("pointerdown", unlockAllAudio, true);
-  window.removeEventListener("touchend", unlockAllAudio, true);
-  window.removeEventListener("click", unlockAllAudio, true);
+  if(audioUnlockInFlight) return;
+  audioUnlockInFlight = true;
+  // Keep the gesture listeners until BOTH paths confirm success. Mobile
+  // policies can reject the first attempt; the next real tap must retry
+  // instead of leaving word audio/SFX silent for the rest of the session.
+  Promise.all([unlockSfx(), unlockAudio()]).then(([sfxReady, wordReady])=>{
+    if(!sfxReady || !wordReady) return;
+    window.removeEventListener("pointerdown", unlockAllAudio, true);
+    window.removeEventListener("touchend", unlockAllAudio, true);
+    window.removeEventListener("click", unlockAllAudio, true);
+  }).finally(()=>{ audioUnlockInFlight = false; });
 }
 window.addEventListener("pointerdown", unlockAllAudio, true);
 window.addEventListener("touchend", unlockAllAudio, true);

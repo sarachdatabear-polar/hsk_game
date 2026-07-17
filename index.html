@@ -346,16 +346,26 @@
   .card .py{font-size:24px; font-weight:500; color:var(--lc-brown); margin-top:8px;}
   .card .mean{font-size:22px; margin-top:6px;}
   .card .mean .th{color:var(--lc-green); font-size:24px; margin-top:8px;}
-  .fc-example{margin-top:16px; padding-top:14px; border-top:1px solid var(--lc-sand);
-    max-width:100%; display:flex; flex-direction:column; align-items:center; gap:2px;}
-  .fc-example-label{color:var(--muted); font-size:11px; letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px;}
+  .fc-example{margin-top:10px; padding-top:8px; border-top:1px solid var(--lc-sand);
+    max-width:100%; display:flex; flex-direction:column; align-items:center; gap:1px;}
+  .fc-example-label{color:var(--muted); font-size:11px; letter-spacing:.08em; text-transform:uppercase; margin-bottom:2px;}
   .fc-example-cn{color:var(--ink); font-size:16px; line-height:1.4;}
   .fc-example-tr{color:var(--muted); font-size:13px; line-height:1.35; margin-top:2px;}
-  .fc-example .spk{margin-top:8px; font-size:16px; padding:6px 12px;}
-  .card .hint{color:var(--lc-brown); font-size:13px; margin-top:26px;}
+  /* 45px avoids Chromium fractional layout landing just below the permanent
+     44px accessibility floor on some DPR/viewport combinations. */
+  .fc-example .spk{margin-top:4px; min-width:45px; min-height:45px; font-size:16px; padding:6px 12px;}
+  .card .hint{color:var(--lc-brown); font-size:13px; margin-top:12px;}
   .fc-btns{display:flex; gap:10px;}
   .fc-btns .big{flex:1; font-size:16px; padding:14px 6px;}
   .fc-btns button:disabled{opacity:.42; filter:saturate(.25); cursor:not-allowed;}
+  /* SE-class portrait: Thai's longest HSK1 meaning plus its example needs
+     the same compact back-side treatment as landscape. Preserve every line
+     of learning content; remove only the redundant flip hint and whitespace. */
+  @media (max-height:620px) and (orientation:portrait){
+    #s-learn .card{padding:16px;}
+    #s-learn .card[aria-pressed="true"] .hint{display:none;}
+    #s-learn .card .mean .th{font-size:18px; line-height:1.2; margin-top:4px;}
+  }
   .know{background-color:var(--lc-success);
     background-image:linear-gradient(180deg,var(--lc-success-hi),var(--lc-success) 55%,var(--lc-success-deep));
     color:var(--lc-cream); border-color:var(--lc-success-deep);
@@ -658,6 +668,10 @@
     #opts button .opt-label{display:-webkit-box; -webkit-box-orient:vertical;
       -webkit-line-clamp:3; overflow:hidden; width:100%;}
     #opts button .th{display:block; width:100%; font-size:10px; line-height:1.1; margin-top:2px;}
+    /* A long bilingual cloze prompt needs a little more vertical budget than
+       the plain answer formats. Yield 10px from the painted scene while
+       preserving its 160px absolute readability floor. */
+    #s-battle[data-format="cloze"] .cv-wrap{min-height:160px;}
   }
   /* boss stage-2 reverse-question banner (spans both columns, row 1) */
   /* Meaning/prompt banner shared by Reverse (#2), Cloze (#5, via .cloze-prompt)
@@ -1144,7 +1158,7 @@
        right. Previously the card consumed the fold and hid every action. */
     #s-learn{padding:5px 12px; gap:8px; grid-template-columns:minmax(0,1fr) 172px;
       grid-template-rows:45px minmax(0,1fr); grid-template-areas:"top top" "card actions";
-      height:100vh; height:100dvh; overflow:hidden;}
+      height:100vh; height:100dvh; min-height:0; max-height:100dvh; overflow:hidden;}
     #s-learn.on{display:grid;}
     #s-learn .fc-top{grid-area:top;}
     #s-learn .card{grid-area:card; min-height:0; margin:0; padding:10px;}
@@ -1152,7 +1166,13 @@
     #s-learn .card .py{font-size:20px; margin-top:4px;}
     #s-learn .card .mean{font-size:17px; margin-top:3px;}
     #s-learn .card .mean .th{font-size:18px; margin-top:3px;}
-    #s-learn .card .hint{font-size:11px; margin-top:10px;}
+    #s-learn .card .hint{font-size:11px; margin-top:5px;}
+    #s-learn .card[aria-pressed="true"] .hint{display:none;}
+    #s-learn .fc-example{margin-top:5px; padding-top:4px; gap:0;}
+    #s-learn .fc-example-label{font-size:10px; margin-bottom:1px;}
+    #s-learn .fc-example-cn{font-size:14px; line-height:1.25;}
+    #s-learn .fc-example-tr{font-size:12px; line-height:1.2; margin-top:1px;}
+    #s-learn .fc-example .spk{margin-top:2px; min-width:45px; min-height:45px; padding:5px 10px;}
     #s-learn .fc-btns{grid-area:actions; flex-direction:column; align-self:center; width:100%;}
     /* One extra CSS pixel avoids fractional grid rounding landing at 43.98px
        on 844x390 while preserving the 44px physical tap-target floor. */

@@ -24,28 +24,51 @@ export function setVoiceVolume(v) { voiceVol = clampVol(v); }
 const SILENT_WAV = "data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YSADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
 
 let unlocked = false;
+let unlocking = null;
 // Mobile browsers gate audio until the first real user gesture: the Web Audio
 // context starts suspended, HTMLAudioElement.play() is rejected, and
 // speechSynthesis.speak() is silently dropped — all outside a gesture. Call
 // this from a first pointerdown/touch/click so every path is primed before the
 // game speaks a word on its own. Idempotent; best-effort (every step guarded).
 export function unlockAudio() {
-  if (unlocked || typeof window === "undefined") return;
-  unlocked = true;
+  if (unlocked) return Promise.resolve(true);
+  if (unlocking) return unlocking;
+  if (typeof window === "undefined") return Promise.resolve(false);
   // Prime web speech — iOS requires the first utterance inside a gesture.
   const synth = window.speechSynthesis;
   if (synth) { try { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; synth.speak(u); } catch (e) {} }
   // Prime the reused word element with a blip of silence so later
   // programmatic (non-gesture) play() calls are allowed for the session.
   const el = wordAudio();
-  if (el) {
-    try {
-      el.muted = true;
-      el.src = SILENT_WAV;
-      const p = el.play();
-      if (p && p.then) p.then(() => { el.pause(); el.currentTime = 0; el.muted = false; }).catch(() => { el.muted = false; });
-      else { el.muted = false; }
-    } catch (e) { el.muted = false; }
+  // No HTML media implementation exists (for example a native-only test
+  // shell). Web/native speech was already primed above, so there is nothing
+  // retryable to wait for.
+  if (!el) { unlocked = true; return Promise.resolve(true); }
+  try {
+    el.muted = true;
+    el.src = SILENT_WAV;
+    const unlockSrc = el.src;
+    const p = el.play();
+    if (!p || typeof p.then !== "function") {
+      el.muted = false;
+      unlocked = true;
+      return Promise.resolve(true);
+    }
+    unlocking = Promise.resolve(p).then(() => {
+      // A gesture's bubble handler can start a real word before the silent
+      // play promise settles. Never pause/reset that newer source.
+      if (el.src === unlockSrc) { el.pause(); el.currentTime = 0; }
+      el.muted = false;
+      unlocked = true;
+      return true;
+    }).catch(() => {
+      el.muted = false;
+      return false;
+    }).finally(() => { unlocking = null; });
+    return unlocking;
+  } catch (e) {
+    el.muted = false;
+    return Promise.resolve(false);
   }
 }
 

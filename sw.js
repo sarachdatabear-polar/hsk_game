@@ -3,9 +3,13 @@
 // street decorations enter RUNTIME only after the player actually requests
 // them. This keeps first install substantially smaller without losing offline
 // access to previously viewed cosmetics.
-const SHELL = "nbhsk-shell-v79";
-const RUNTIME = "nbhsk-runtime-v76";
-const AUDIO = "nbhsk-audio-v1";
+// One release version owns every cache. Keeping runtime/audio on older names
+// lets cache-first optional art and regenerated MP3s survive a shell release
+// indefinitely, so all three advance together.
+const CACHE_VERSION = "v80";
+const SHELL = `nbhsk-shell-${CACHE_VERSION}`;
+const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`;
+const AUDIO = `nbhsk-audio-${CACHE_VERSION}`;
 
 const PRECACHE = [
   "index.html", "dist/app.js", "data/words.js", "data/cloze.js", "audio/index.json",
