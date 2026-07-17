@@ -122,9 +122,11 @@ and we will delete it.
 Subject to PDPA/GDPR, you may **access, correct, delete, or export** your
 personal data, **object to or restrict** processing, and **withdraw consent**
 (including ad-personalization consent) at any time.
-- **In-app:** use **Settings → Sign out** to stop cloud sync at any time. (An
-  in-app account-deletion control is planned; until it ships, use the email path
-  below and we will erase your cloud data.)
+- **In-app:** use **Settings → Sign out** to stop cloud sync at any time.
+  Email-signed-in users also get **Settings → Account → Delete account** (a
+  two-step confirm) that permanently erases your cloud account and all
+  associated data. (Available in the web/PWA app now; the Android app gains it
+  with its next release. On any build, the email path below also works.)
 - **By email:** sarach.northbear@gmail.com. We respond within the statutory timeframe
   (PDPA/GDPR: without undue delay, and within 30 days).
 

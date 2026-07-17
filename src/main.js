@@ -161,9 +161,11 @@ let ent = Object.assign(defaultEnt(), store.get("ent", {}));
 // + reload. Sync/cheap — anything that must stay sync keeps reading this directly.
 // Real visibility (see iapOn below) also honors a real provider's availability.
 const iapEnabled = () => !!store.get("dev.iap", false);
-// Delete-account control ships dark: hidden until the owner deploys the
-// delete-account Edge Function and sets nbhsk.dev.deleteAccount = true.
-const deleteAccountEnabled = () => !!store.get("dev.deleteAccount", false);
+// Delete-account control (right-to-erasure) ships LIVE for email-signed-in
+// users as of v77 — the Edge Function is deployed + E2E-smoke-verified
+// (2026-07-17). The dev flag stays as a local testing escape hatch:
+// nbhsk.dev.deleteAccount = false hides the control on this device.
+const deleteAccountEnabled = () => !!store.get("dev.deleteAccount", true);
 let iapProvider = null;
 let iapPending = null;   // productId of the purchase in flight — survives re-renders
 // analytics (dark) product_view dedup: renderIapSections() runs on every
@@ -1654,10 +1656,20 @@ $("#more-sound").addEventListener("click", toggleSfx);
 syncSoundToggles();
 const analyticsToggle = document.getElementById("analytics-consent");
 if (analyticsToggle) {
-  analyticsToggle.checked = analytics.isEnabled(); // false by default
-  analyticsToggle.addEventListener("change", () => {
-    analytics.setConsent(analyticsToggle.checked);
-  });
+  // Analytics consent UI ships DARK: the toggle stays hidden until the R3
+  // legal gate clears (published privacy policy + Play Data Safety answers).
+  // The transport is already a hard no-op without consent; hiding the toggle
+  // removes the only surface that could grant it. Un-dark: set
+  // nbhsk.dev.analytics = true (then release with the legal docs published).
+  const analyticsRow = analyticsToggle.closest(".settings-row");
+  if (!store.get("dev.analytics", false)) {
+    if (analyticsRow) analyticsRow.style.display = "none";
+  } else {
+    analyticsToggle.checked = analytics.isEnabled(); // false by default
+    analyticsToggle.addEventListener("change", () => {
+      analytics.setConsent(analyticsToggle.checked);
+    });
+  }
 }
 // The quest HUD shows durable learning progress and the current review pouch.
 // There are no lives: missed words return after a short spacing gap.
