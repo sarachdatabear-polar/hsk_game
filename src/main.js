@@ -1047,7 +1047,7 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
   }
   else if(tab==="album"){ renderAlbum(); show("album"); }
   else if(tab==="tones"){ startToneRound(); show("tones"); }
-  else if(tab==="account"){ renderAccount(); show("account"); refreshAccountSession(); }
+  else if(tab==="account"){ accountUI.confirmingDelete = false; renderAccount(); show("account"); refreshAccountSession(); }
   else {
     if(tab==="home"){
       if(B.on){ endBattle(true); return; }   // banks partial round + shows home itself
