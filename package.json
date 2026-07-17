@@ -5,6 +5,7 @@
   "type": "module",
   "description": "HSK vocabulary arcade game - Lucky Cat HSK",
   "scripts": {
+    "postinstall": "node scripts/patch-capacitor-tar.mjs",
     "test": "vitest run",
     "build": "node scripts/build.mjs",
     "assets:validate": "node scripts/validate-assets.mjs",
@@ -37,5 +38,10 @@
     "@capacitor/status-bar": "^6.0.3",
     "@revenuecat/purchases-capacitor": "9.2.2",
     "@supabase/supabase-js": "^2.110.2"
+  },
+  "overrides": {
+    "@capacitor/cli": {
+      "tar": "7.5.20"
+    }
   }
 }

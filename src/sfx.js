@@ -24,7 +24,11 @@ export function setSfxVolume(v) { master = clampVol(v); }
 // it starts running. Idempotent and best-effort.
 export function unlockSfx() {
   const a = ac();
-  if (a && a.state === "suspended" && a.resume) a.resume().catch(() => {});
+  if (!a || a.state !== "suspended") return Promise.resolve(true);
+  if (!a.resume) return Promise.resolve(false);
+  return Promise.resolve(a.resume())
+    .then(() => a.state !== "suspended")
+    .catch(() => false);
 }
 function tone(freq, dur, type = "square", vol = 0.15, when = 0) {
   const a = ac(); if (!a || !sfx.enabled) return;

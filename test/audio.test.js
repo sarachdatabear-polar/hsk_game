@@ -113,6 +113,29 @@ describe("speak() utterance error retry", () => {
   });
 });
 
+describe("unlockAudio() mobile gesture retry", () => {
+  it("does not latch unlocked after a rejected play and succeeds on the next gesture", async () => {
+    vi.resetModules();
+    let plays = 0;
+    globalThis.window = {};
+    globalThis.Audio = class {
+      constructor() { this.src = ""; this.muted = false; this.currentTime = 0; }
+      play() {
+        plays++;
+        return plays === 1 ? Promise.reject(new Error("gesture rejected")) : Promise.resolve();
+      }
+      pause() {}
+    };
+
+    const fresh = await import("../src/audio.js");
+    expect(await fresh.unlockAudio()).toBe(false);
+    expect(await fresh.unlockAudio()).toBe(true);
+    expect(plays).toBe(2);
+
+    delete globalThis.Audio;
+  });
+});
+
 describe("setVoiceVolume — applied to both playback paths", () => {
   it("sets .volume on the SpeechSynthesisUtterance (web TTS path)", () => {
     const synth = makeSynth();

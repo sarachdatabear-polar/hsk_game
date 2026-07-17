@@ -1,23 +1,20 @@
 # Lucky Cat HSK — Status
 
-**Last updated:** 2026-07-16
-**TL;DR:** The UX/UI launch-readiness release at **SHELL v76** is **live on
-`main` / GitHub Pages** — promoted by
-[PR #104](https://github.com/sarachdatabear-polar/hsk_game/pull/104)
-(`development` → `main`, merge `57fbc42`, deployed 2026-07-16 09:28 UTC). `main`
-and `development` share the same app code (`cb17797`); `development` leads only
-by docs. The **web** release is done; the remaining owner gates
-([OWNER-ACTIONS.md](OWNER-ACTIONS.md)) govern the **signed Android build and
-store/legal** submission, not a further web release.
+**Last updated:** 2026-07-17
+**TL;DR:** The current web/PWA release is **v80**. It repairs the v78
+example-sentence Cards overflow in English/Thai, makes mobile audio unlock
+retryable, versions every PWA cache together, removes the remaining npm audit
+findings without breaking Capacitor 6, and makes the browser release gate
+deterministic. The web release is complete; signed Android and store/legal
+work remains in [OWNER-ACTIONS.md](OWNER-ACTIONS.md).
 
 ## Where the game is
 
 | Tier | State |
 |---|---|
-| **Live on `main` / GitHub Pages** | SHELL **v76**, app code `cb17797` (merge `57fbc42` via [PR #104](https://github.com/sarachdatabear-polar/hsk_game/pull/104), deployed 2026-07-16): Lantern Trail, native/cloud hardening, offline-first Profile dashboard, and the UX/UI launch-readiness repair. Live site verified serving `nbhsk-shell-v76`. |
-| **`development`** | Same app code as `main` (`cb17797`); leads only by handoff docs. No unreleased gameplay/web change pending. |
-| **Combined candidate** | `integration/release-readiness-2026-07-16`, SHELL **v75**: player monogram/silhouette avatar, dark RevenueCat provider + HMAC webhook, Thai hardening, and next-roadmap/docs. 64 files / 1,901 tests, 95 assets, build, Capacitor sync, EN+TH responsive/listening/Results gates all pass. |
-| **UX/UI release candidate** | Integrated into `development` by PR #103. 68 files / 1,916 tests, 95 assets, production build, deterministic Android branding, Capacitor sync, offline launch, and expanded EN+TH browser gates pass. |
+| **`main` / GitHub Pages** | **v80 corrective release**: 78 files / 1,970 tests, 95 assets, build, zero npm advisories, Capacitor sync, deterministic EN+TH browser matrices, `file://` launch, and offline PWA reload pass. |
+| **Previous release** | SHELL v79 (`ab9c550`): v77 delete-account release, v78 flashcard examples, and v79 static battle/mobile-audio unlock. |
+| **Latest signed Android artifact** | Profile v74 APK. A v80 APK/AAB still needs the Windows signing and emulator/physical-device acceptance matrix. |
 
 ## Done
 
@@ -72,42 +69,42 @@ store/legal** submission, not a further web release.
   Android launcher/splash resources. The permanent browser gate now covers all
   major screens, advanced formats, Results, card resume, and keyboard focus in
   English and Thai.
+- **v77–v79 releases** — live account deletion, example sentences on Cards,
+  the static battle scene, and the first mobile-audio unlock pass (2026-07-17).
 
 ## In progress
 
-- **v76 Android build (web already live):** the v76 **web** release shipped to
-  `main`/Pages via [PR #104](https://github.com/sarachdatabear-polar/hsk_game/pull/104)
-  and is verified live. What remains is Android-only: a **Windows-signed v76
-  APK/AAB has not been produced**, and the emulator acceptance matrix must be
-  re-run against it. The previously verified v74 APK is recorded in
-  [ANDROID_BUILD.md](build/ANDROID_BUILD.md). GitHub reported no configured CI
-  checks on the PRs, so the recorded local gates below remain the engineering
-  evidence. Also owed on the next Android cut: `cap sync` + emulator check of
-  the re-engagement notification (id 1002) firing/cancel.
+- **v80 Android cut:** produce a Windows-signed APK/AAB and repeat the
+  emulator/physical-device matrix. The previously verified v74 APK is recorded
+  in [ANDROID_BUILD.md](build/ANDROID_BUILD.md). The Android cut also owes a
+  device check of re-engagement notification id 1002 firing/canceling and
+  first-gesture word audio/SFX retry behavior.
 - **Post-release measurement:** no production analytics pipeline exists, so
   completion, recovery, delayed recall, and D1/D7 return cannot yet be compared
   reliably.
-- **Dependency maintenance:** `npm audit` on 2026-07-16 reported seven findings
-  in the Capacitor CLI/test/build toolchain. RevenueCat was not among them;
-  suggested automatic fixes cross Capacitor/Vitest/esbuild major versions, so
-  handle this as a separate upgrade branch after v75 rather than changing the
-  release candidate blindly.
+- **Capacitor major upgrade:** v80 removes current advisories with patched
+  `tar` 7.5.20 plus a fail-fast Capacitor-6 export compatibility shim. A full
+  Capacitor major upgrade remains a separate native-platform project.
 
-## v76 verification snapshot
+## v80 verification snapshot
 
-- Unit/integration: **68 files / 1,916 tests** pass; production bundle builds.
+- Unit/integration: **78 files / 1,970 tests** pass; production bundle builds.
 - Assets: **95/95** validate; every street decoration is below its 120 KB
   budget.
-- Browser: **10/10 EN + 10/10 TH** viewports pass across every major screen;
-  listen, reverse, tone, cloze, typed, Results, cards resume, and dialog-focus
-  probes pass.
+- Browser: deterministic **10/10 EN + 10/10 TH** viewports pass across every
+  major screen; 2/2 listen, 8/8 advanced-format, 3/3 Results, Cards resume, and
+  dialog-focus probes pass in each language. Fixtures include the long `了`
+  Cards back and `下午` bilingual cloze prompt.
 - PWA: uncached boot dropped from **92 resources / 17.47 MiB** to a measured
   **27 resources / 5.33 MiB** before the final three hidden-screen images were
   also marked lazy. Offline cold launch passes with six data levels. The atomic
   shell dropped from **108 files / 18.50 MiB** to **69 files / 9.52 MiB**.
-- Android staging: `npm run cap:sync` passes and ends by applying the tracked
-  Lucky Cat icon/splash pack; final signing and physical-device acceptance are
-  owner gates.
+- PWA/platform: shell/runtime/audio caches advance together at v80; direct
+  `file://` launch passes; both production-only and full `npm audit` report zero
+  vulnerabilities.
+- Android staging: `npm run cap:sync` passes with patched `tar` 7.5.20 and ends
+  by applying the tracked Lucky Cat icon/splash pack; final signing and
+  physical-device acceptance are owner gates.
 
 ## Planned / owner queue
 

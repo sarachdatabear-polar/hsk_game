@@ -275,6 +275,23 @@ function probeLearn(tol) {
   };
 }
 
+// The Cards deck is intentionally shuffled in production. A release gate must
+// not inherit that randomness: advance to a fixed, layout-stressing example
+// before measuring the flipped card. These words are in the default HSK1 top
+// 20 and exercise long English-sentence / Thai-meaning wrapping respectively.
+async function selectFlashcardWord(page, hanzi) {
+  for (let i = 0; i < 25; i++) {
+    const current = await page.evaluate(
+      () => (document.querySelector("#fc-card .hz")?.textContent || "").trim()
+    );
+    if (current === hanzi) return true;
+    await page.evaluate(() => document.querySelector("#fc-card")?.click());
+    await page.evaluate(() => document.querySelector("#fc-know")?.click());
+    await page.waitForTimeout(10);
+  }
+  return false;
+}
+
 // ---------------------------------------------------------------------------
 // Navigation helpers shared by the full sweep and the --battle single-shot.
 // ---------------------------------------------------------------------------
@@ -283,6 +300,13 @@ async function preparePage(browser, width, height) {
   const errs = [];
   page.on("pageerror", e => errs.push(e.message));
   await page.addInitScript(installPageHelpers);
+  // Production randomness must not make a release gate intermittently green.
+  // Seed 9 deliberately selects the long HSK1 `下午` bilingual cloze prompt,
+  // which is the 320x568 stress case that exposed an 8px document overflow.
+  await page.addInitScript(seed => {
+    let state = seed >>> 0;
+    Math.random = () => ((state = (Math.imul(state, 1664525) + 1013904223) >>> 0) / 4294967296);
+  }, 9);
   await page.addInitScript(locale => {
     localStorage.setItem("nbhsk.introDone", "true");
     localStorage.setItem("nbhsk.locale", JSON.stringify(locale));
@@ -749,6 +773,8 @@ async function runFullSweep() {
     await page.evaluate(() => document.querySelector('#scope-view-tabs [data-view="picker"]')?.click());
     await page.evaluate(() => document.querySelector("#go-learn")?.click());
     await page.waitForTimeout(150);
+    const learnTarget = LOCALE === "th" ? "了" : "商店";
+    const learnTargetFound = await selectFlashcardWord(page, learnTarget);
     const learnBefore = await page.evaluate(probeLearn, TOL);
     await page.evaluate(() => document.querySelector("#fc-card")?.click());
     await page.waitForTimeout(50);
@@ -825,6 +851,7 @@ async function runFullSweep() {
     }
     if (!learnBefore.againDisabled || !learnBefore.knowDisabled)
       failures.push("learn answers enabled before flip");
+    if (!learnTargetFound) failures.push(`learn fixture missing:${learnTarget}`);
     if (learnAfter.againDisabled || learnAfter.knowDisabled)
       failures.push("learn answers disabled after flip");
     if (!learnAfter.inViewport) failures.push("learn controls outside viewport after flip");
