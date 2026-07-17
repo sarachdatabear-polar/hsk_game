@@ -7,10 +7,10 @@
 > store. It reflects the *intended* data practices per the Monetization &
 > Production PRD (§6.4, §9); confirm each claim against the shipped build.
 
-**Effective date:** [DATE]
+**Effective date:** 2026-07-17
 **App:** Lucky Cat HSK
-**Provider / data controller:** [LEGAL NAME / ENTITY], [ADDRESS]
-**Contact:** [privacy@DOMAIN]
+**Provider / data controller:** Sarach Sriklab, Bangkok 10400, Thailand
+**Contact:** sarach.northbear@gmail.com
 
 ---
 
@@ -118,7 +118,7 @@ personal data, **object to or restrict** processing, and **withdraw consent**
 (including ad-personalization consent) at any time.
 - **In-app:** sign out to stop cloud sync; use **Settings → Delete account** to
   erase your cloud data. [Confirm this control ships.]
-- **By email:** [privacy@DOMAIN]. We respond within the statutory timeframe
+- **By email:** sarach.northbear@gmail.com. We respond within the statutory timeframe
   (PDPA/GDPR: without undue delay, and within 30 days).
 
 Withdrawing consent or deleting your account does not affect the lawfulness of
@@ -151,6 +151,6 @@ here; material changes will be surfaced in-app.
 
 ## 11. Contact
 
-Questions or requests: **[privacy@DOMAIN]** — [LEGAL NAME], [ADDRESS].
+Questions or requests: **sarach.northbear@gmail.com** — Sarach Sriklab, Bangkok 10400, Thailand.
 Thailand users may also lodge a complaint with the PDPC; EU/UK users with their
 local supervisory authority.
