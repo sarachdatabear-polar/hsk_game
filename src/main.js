@@ -16,7 +16,7 @@ import { nineSliceRects } from "./nineslice.js";
 import { preload as preloadAssets } from "./assets.js";
 import { recordAnswer, levelMastery } from "./mastery.js";
 import { levelForXp, xpToNext, accessoriesFor, MILESTONES } from "./growth.js";
-import { smartDeck, weakWords } from "./srs.js";
+import { smartDeck, weakWords, isDue } from "./srs.js";
 import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
 import { REMINDER_HOUR, reminderPlan, reengagePlan } from "./notify.js";
 import { defaultQuestState, noteQuestEvent, questStatus,
@@ -163,6 +163,11 @@ let ent = Object.assign(defaultEnt(), store.get("ent", {}));
 const iapEnabled = () => !!store.get("dev.iap", false);
 let iapProvider = null;
 let iapPending = null;   // productId of the purchase in flight — survives re-renders
+// analytics (dark) product_view dedup: renderIapSections() runs on every
+// renderShop() (initial open + every in-place re-render after a purchase),
+// but the funnel event should fire once per product per shop *open* — cleared
+// at the shop-tab entry point (see "shop" branch of the [data-go] handler).
+const shopViewedProducts = new Set();
 function provider(){
   if(!iapProvider) iapProvider = getProvider({
     get: (k,d)=>store.get(k,d),
@@ -371,7 +376,13 @@ function noteDaily(count){
   // the grant — the prompt has to happen during active play. Once per session.
   if(!notifPermAsked && (reminderPlan(info, new Date().getHours()).schedule || reengagePlan(info).schedule)){
     notifPermAsked = true;
-    requestNotifPermission();
+    requestNotifPermission().then(result => {
+      // analytics (dark): notif_permission — fires when the foreground Android
+      // notification-permission prompt resolves; map to the contract's closed
+      // set so an unexpected native status doesn't get silently dropped.
+      const mapped = result === "granted" ? "granted" : result === "denied" ? "denied" : "dismissed";
+      analytics.track("notif_permission", { result: mapped });
+    });
   }
 }
 let notifPermAsked = false;
@@ -1001,6 +1012,11 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
   else if(tab==="scores"){ renderScores(); show("scores"); }
   else if(tab==="progress"){ renderProgress(); show("progress"); }
   else if(tab==="shop"){
+    // analytics (dark): store_open — fires once here (the shop-tab entry
+    // point), not on the repeated in-place renderShop() re-renders that
+    // follow a purchase/equip while already on the shop screen.
+    analytics.track("store_open");
+    shopViewedProducts.clear();   // fresh "shown once per open" window for product_view
     const fromProfile = currentScreen === "progress";
     const back = $("#shop-back");
     back.dataset.go = fromProfile ? "progress" : "home";
@@ -1786,6 +1802,11 @@ function spawnZombie(){
   B.zombie = {
     w, encounter, x:B.w+30, state:"walk",
     trailSegmentStart: learnedAtStart > 0 && learnedAtStart % 5 === 0,
+    // Snapshot SRS due status *before* this encounter's answer can mutate the
+    // mastery record (recordAnswer always rewrites `ls`, so a due check made
+    // later — inside answer()'s correct branch — would always read false).
+    // Used to fire analytics' delayed_recall on a successful spaced recall.
+    dueAtSpawn: isDue(masteryStore[w.h], Date.now()),
   };
   B.spawned++; B.locked = false;
   if(encounter.reviewChallenge){
@@ -2073,6 +2094,18 @@ function answer(btn, o){
     // (word audio fires once, on spawn — no replay on the answer tap)
     if(boss){ noteAnswer(z.w.h, true); B.bossDefeated = true; }   // both stages passed
     syncQuestOutcome(true, false);
+    if(z.encounter?.origin === "review"){
+      // analytics (dark): review_recovery — fires when a word that had been
+      // missed this session (queued into the quest-session Review Pouch,
+      // origin:"review") is now recalled correctly.
+      analytics.track("review_recovery");
+    }
+    if(z.dueAtSpawn){
+      // analytics (dark): delayed_recall — fires when a word whose SRS record
+      // (srs.js isDue, snapshotted at spawn) was due is answered correctly —
+      // a successful spaced recall after its interval elapsed.
+      analytics.track("delayed_recall");
+    }
     const trailAfter = trailView();
     B.trailMove = { from:trailBefore.catX, to:trailAfter.catX, at:resolvedAt };
     refreshGuideSpeed();
@@ -3199,6 +3232,12 @@ function renderIapSections(){
 }
 
 function makeIapRow(p){
+  if(!shopViewedProducts.has(p.id)){
+    shopViewedProducts.add(p.id);
+    // analytics (dark): product_view — fires once per IAP product tile shown
+    // in the shop, the first time it renders after the shop was opened.
+    analytics.track("product_view", { product: p.id });
+  }
   const row = document.createElement("div");
   row.className = "scorerow shoprow";
   const copy = document.createElement("span");
@@ -3227,6 +3266,13 @@ function makeSupporterCard(){
     : `<b>${t("shop.supporterTitle")}</b><small>${t("shop.supporterDesc")}</small>`;
   row.appendChild(copy);
   if(!owned){
+    if(!shopViewedProducts.has("supporter")){
+      shopViewedProducts.add("supporter");
+      // analytics (dark): product_view — supporter card only counts as "shown"
+      // when it's actually buyable (unowned); the owned/"thanks" state isn't a
+      // product tile.
+      analytics.track("product_view", { product: "supporter" });
+    }
     const btn = document.createElement("button");
     btn.className = "chip buy-chip";
     btn.textContent = provider().price("supporter") || displayPrice(productById("supporter"), getLocale());
@@ -3251,6 +3297,9 @@ async function iapBuy(p, btn){
   iapPending = p.id;
   btn.disabled = true;
   btn.textContent = t("iap.pending");
+  // analytics (dark): purchase_start — fires once the double-tap/disabled
+  // guard above has cleared, i.e. a real purchase attempt is starting.
+  analytics.track("purchase_start", { product: p.id });
   try{
     const prov = provider();
     const r = await prov.purchase(p.id);
@@ -3261,6 +3310,9 @@ async function iapBuy(p, btn){
     // see the real path below for the split's other half).
     iapPending = null;
     if(!r.ok){
+      // analytics (dark): purchase_fail — terminal mock-provider outcome
+      // (cancel vs. anything else the mock reports as not-ok).
+      analytics.track("purchase_fail", { product: p.id, reason: r.reason === "cancelled" ? "cancelled" : "provider_error" });
       if(r.reason !== "cancelled") toast(t("iap.failed"));
       renderShop();
       return;
@@ -3272,6 +3324,12 @@ async function iapBuy(p, btn){
       pushEdge("purchase");
       updateWalletChip();
       toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: p.coins.toLocaleString() }));
+      // analytics (dark): purchase_success — mock self-grant confirmed.
+      analytics.track("purchase_success", { product: p.id });
+    }else{
+      // analytics (dark): purchase_fail — store transaction ok but the local
+      // grant didn't apply (duplicate/already-owned); no coins/entitlement moved.
+      analytics.track("purchase_fail", { product: p.id, reason: "no_credit" });
     }
     renderShop();   // duplicate/already-owned fall through to the owned state
     return;
@@ -3286,8 +3344,12 @@ async function iapBuy(p, btn){
   // plan §3/§4 T4).
   if(!r.ok){
     iapPending = null;
+    // analytics (dark): purchase_fail — only for terminal outcomes; "pending"
+    // is not a failure (the store transaction may still resolve), so it does
+    // not fire an event here.
     if(r.reason === "pending") toast(t("iap.processing"));
-    else if(r.reason !== "cancelled") toast(t("iap.failed"));
+    else if(r.reason !== "cancelled"){ toast(t("iap.failed")); analytics.track("purchase_fail", { product: p.id, reason: "provider_error" }); }
+    else analytics.track("purchase_fail", { product: p.id, reason: "cancelled" });
     renderShop();
     return;
   }
@@ -3310,6 +3372,9 @@ async function iapBuy(p, btn){
     // Server is authoritative: toast the delta on this exact transaction's
     // ledger row, never an aggregate wallet increase or the local catalog.
     toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: poll.delta.toLocaleString() }));
+    // analytics (dark): purchase_success — server-side grant confirmed via
+    // the reconcile poll (the actual credit, not just the store transaction).
+    analytics.track("purchase_success", { product: p.id });
   }else{
     // Exhausted the poll with no visible credit yet. The webhook's grant is
     // idempotent and guaranteed eventually — the next ordinary sync (or the
@@ -3337,6 +3402,9 @@ async function iapBuy(p, btn){
     // Provider plugins promise a never-throw contract, but a bridge/SDK fault
     // must still release the pending guard instead of disabling IAP forever.
     toast(t("iap.failed"));
+    // analytics (dark): purchase_fail — bridge/SDK threw despite the
+    // never-throw contract; the transaction outcome is unknown.
+    analytics.track("purchase_fail", { product: p.id, reason: "exception" });
   }finally{
     iapPending = null;
     renderShop();
