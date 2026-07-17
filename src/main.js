@@ -16,14 +16,14 @@ import { nineSliceRects } from "./nineslice.js";
 import { preload as preloadAssets } from "./assets.js";
 import { recordAnswer, levelMastery } from "./mastery.js";
 import { levelForXp, xpToNext, accessoriesFor, MILESTONES } from "./growth.js";
-import { smartDeck, weakWords } from "./srs.js";
+import { smartDeck, weakWords, isDue } from "./srs.js";
 import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
 import { REMINDER_HOUR, reminderPlan, reengagePlan } from "./notify.js";
 import { defaultQuestState, noteQuestEvent, questStatus,
          defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly } from "./quests.js";
 import { reviewChallengePoints, reviewChallengeSpeedFactor } from "./boss.js";
 import { initAudio, speak, audioAvailable, hasMp3, setVoiceVolume } from "./audio.js";
-import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, syncReengageReminder, requestNotifPermission } from "./native.js";
+import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, syncReengageReminder, requestNotifPermission, isNative } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import { BUILDINGS, streetPieces, streetProgress, streetMetrics, DECO_SPRITE_SCALE } from "./street.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
@@ -37,7 +37,7 @@ import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dro
 import { journeyNodes, currentNodeId } from "./journey.js";
 import { defaultProfile, normalizeDisplayName, profileInitial, profileStats, equippedSummary } from "./profile.js";
 import { accountState, accountView, canSendCode, codeLooksValid } from "./account.js";
-import { getSession, ensureGuest, sendCode, verifyCode, saveDisplayName, signOut } from "./cloud.js";
+import { getSession, ensureGuest, sendCode, verifyCode, saveDisplayName, signOut, deleteAccount } from "./cloud.js";
 import { SYNC_KEYS } from "./merge.js";
 import { reconcile, pushDirty } from "./sync.js";
 import { PRODUCTS, productById, displayPrice } from "./monetization/products.js";
@@ -50,6 +50,9 @@ import { questFeedbackFor } from "./quest-feedback.js";
 import { questResultsSummary } from "./quest-results.js";
 import { questRewardPolicy } from "./quest-rewards.js";
 import { cardSessionKey, newCardSession, restoreCardSession, cardSessionSnapshot } from "./flashcards.js";
+import { createAnalytics } from "./analytics/index.js";
+import { durationBucket } from "./analytics/events.js";
+import { SUPABASE_URL, SUPABASE_KEY } from "./cloud-config.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -96,6 +99,29 @@ const store = {
     }
   }
 };
+// Dark analytics transport (Task 8 wiring): hard no-op until the Settings
+// consent toggle is on. See src/analytics/ for the queue/consent/transport
+// modules constructed here.
+function analyticsUuid() {
+  try {
+    if (globalThis.crypto && crypto.randomUUID) return crypto.randomUUID();
+  } catch {}
+  // Non-crypto fallback (crypto.randomUUID is undefined on file://):
+  return "axxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+const analytics = createAnalytics({
+  store,
+  fetchImpl: (...args) => fetch(...args),
+  now: () => new Date(),
+  gen: analyticsUuid,
+  isOnline: () => navigator.onLine !== false,
+  isNative,
+  config: { url: SUPABASE_URL, key: SUPABASE_KEY },
+});
+let analyticsSessionStart = Date.now();
 const scope = Object.assign({levels:[1], core:false, newOnly:false, topN:0, lang:"both", sessionLen:20},
                             store.get("scope", {}));
 let settings = Object.assign({autoSpeak:true, showPinyin:true, sfxVol:1, voiceVol:1}, store.get("settings", {}));
@@ -135,8 +161,18 @@ let ent = Object.assign(defaultEnt(), store.get("ent", {}));
 // + reload. Sync/cheap — anything that must stay sync keeps reading this directly.
 // Real visibility (see iapOn below) also honors a real provider's availability.
 const iapEnabled = () => !!store.get("dev.iap", false);
+// Delete-account control (right-to-erasure) ships LIVE for email-signed-in
+// users as of v77 — the Edge Function is deployed + E2E-smoke-verified
+// (2026-07-17). The dev flag stays as a local testing escape hatch:
+// nbhsk.dev.deleteAccount = false hides the control on this device.
+const deleteAccountEnabled = () => !!store.get("dev.deleteAccount", true);
 let iapProvider = null;
 let iapPending = null;   // productId of the purchase in flight — survives re-renders
+// analytics (dark) product_view dedup: renderIapSections() runs on every
+// renderShop() (initial open + every in-place re-render after a purchase),
+// but the funnel event should fire once per product per shop *open* — cleared
+// at the shop-tab entry point (see "shop" branch of the [data-go] handler).
+const shopViewedProducts = new Set();
 function provider(){
   if(!iapProvider) iapProvider = getProvider({
     get: (k,d)=>store.get(k,d),
@@ -345,7 +381,13 @@ function noteDaily(count){
   // the grant — the prompt has to happen during active play. Once per session.
   if(!notifPermAsked && (reminderPlan(info, new Date().getHours()).schedule || reengagePlan(info).schedule)){
     notifPermAsked = true;
-    requestNotifPermission();
+    requestNotifPermission().then(result => {
+      // analytics (dark): notif_permission — fires when the foreground Android
+      // notification-permission prompt resolves; map to the contract's closed
+      // set so an unexpected native status doesn't get silently dropped.
+      const mapped = result === "granted" ? "granted" : result === "denied" ? "denied" : "dismissed";
+      analytics.track("notif_permission", { result: mapped });
+    });
   }
 }
 let notifPermAsked = false;
@@ -544,7 +586,7 @@ $("#go-smart").onclick = ()=>{
 /* ============================== account ============================== */
 // UI-flow state only — truth lives in the supabase session (cloud.js) and
 // the pure view model (account.js). lastSentAt feeds the resend cooldown.
-const accountUI = { session: null, phase: "idle", email: "", verifyType: "email", lastSentAt: 0 };
+const accountUI = { session: null, phase: "idle", email: "", verifyType: "email", lastSentAt: 0, confirmingDelete: false };
 let accountCooldownTimer = 0;
 
 function accountOnline(){
@@ -617,6 +659,7 @@ function renderAccount(){
     p.appendChild(chip);
   }
   if(v.showSignOut) p.appendChild(accountBtn(t("account.signOut"), onAccountSignOut));
+  if(v.showSignOut && deleteAccountEnabled()) renderDeleteAccount(p);
   // IAP v1: restore is device-local (mock provider); Apple will require
   // this button once real billing lands, so the UI slot exists now.
   // Availability-aware (iapOn, not iapEnabled()) — see gating.js.
@@ -713,6 +756,7 @@ function rehydrateFromStore(){
 // not change mid-battle); the next edge catches up.
 async function syncEdge(reason){
   if(B.on) return;
+  analytics.flush();
   const r = await reconcile(store, reason);
   if(r.ok || r.localChanged){
     rehydrateFromStore();
@@ -778,7 +822,40 @@ async function onAccountSignOut(){
   accountUI.phase = "idle";
   accountUI.email = "";
   accountUI.lastSentAt = 0;
+  accountUI.confirmingDelete = false;
   toast(t("account.signedOut"));
+  renderAccount();
+}
+
+function renderDeleteAccount(p){
+  if(!accountUI.confirmingDelete){
+    // First tap arms the confirm; the destructive action is never one click.
+    const b = accountBtn(t("account.delete"), ()=>{ accountUI.confirmingDelete = true; renderAccount(); });
+    b.classList.add("account-danger");
+    p.appendChild(b);
+    return;
+  }
+  const warn = document.createElement("p");
+  warn.className = "account-explain";
+  warn.textContent = t("account.deleteConfirm");
+  p.appendChild(warn);
+  const yes = accountBtn(t("account.deleteConfirmYes"), onAccountDelete);
+  yes.classList.add("account-danger");
+  p.appendChild(yes);
+  p.appendChild(accountBtn(t("account.deleteCancel"), ()=>{ accountUI.confirmingDelete = false; renderAccount(); }));
+}
+
+async function onAccountDelete(){
+  // accountBtn() already disables the button for the in-flight call.
+  const r = await deleteAccount();
+  if(!r.ok){ toast(t("account.deleteFail")); return; }
+  // Cloud gone; drop to local/guest. Local nbhsk.* progress is intentionally kept.
+  accountUI.session = null;
+  accountUI.phase = "idle";
+  accountUI.email = "";
+  accountUI.lastSentAt = 0;
+  accountUI.confirmingDelete = false;
+  toast(t("account.deleteDone"));
   renderAccount();
 }
 
@@ -974,6 +1051,11 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
   else if(tab==="scores"){ renderScores(); show("scores"); }
   else if(tab==="progress"){ renderProgress(); show("progress"); }
   else if(tab==="shop"){
+    // analytics (dark): store_open — fires once here (the shop-tab entry
+    // point), not on the repeated in-place renderShop() re-renders that
+    // follow a purchase/equip while already on the shop screen.
+    analytics.track("store_open");
+    shopViewedProducts.clear();   // fresh "shown once per open" window for product_view
     const fromProfile = currentScreen === "progress";
     const back = $("#shop-back");
     back.dataset.go = fromProfile ? "progress" : "home";
@@ -983,7 +1065,7 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
   }
   else if(tab==="album"){ renderAlbum(); show("album"); }
   else if(tab==="tones"){ startToneRound(); show("tones"); }
-  else if(tab==="account"){ renderAccount(); show("account"); refreshAccountSession(); }
+  else if(tab==="account"){ accountUI.confirmingDelete = false; renderAccount(); show("account"); refreshAccountSession(); }
   else {
     if(tab==="home"){
       if(B.on){ endBattle(true); return; }   // banks partial round + shows home itself
@@ -1572,6 +1654,23 @@ function toggleSfx(){
 }
 $("#more-sound").addEventListener("click", toggleSfx);
 syncSoundToggles();
+const analyticsToggle = document.getElementById("analytics-consent");
+if (analyticsToggle) {
+  // Analytics consent UI ships DARK: the toggle stays hidden until the R3
+  // legal gate clears (published privacy policy + Play Data Safety answers).
+  // The transport is already a hard no-op without consent; hiding the toggle
+  // removes the only surface that could grant it. Un-dark: set
+  // nbhsk.dev.analytics = true (then release with the legal docs published).
+  const analyticsRow = analyticsToggle.closest(".settings-row");
+  if (!store.get("dev.analytics", false)) {
+    if (analyticsRow) analyticsRow.style.display = "none";
+  } else {
+    analyticsToggle.checked = analytics.isEnabled(); // false by default
+    analyticsToggle.addEventListener("change", () => {
+      analytics.setConsent(analyticsToggle.checked);
+    });
+  }
+}
 // The quest HUD shows durable learning progress and the current review pouch.
 // There are no lives: missed words return after a short spacing gap.
 function updateHud(){
@@ -1724,10 +1823,11 @@ document.addEventListener("visibilitychange", ()=>{
     // midRound=B.on: a hide during a (paused) battle must not let a
     // monthly-dirty push redirect into reconcile — see pushDirty/syncEdge.
     pushEdge("hide");
+    analytics.track("session_complete", { duration_bucket: durationBucket(Date.now() - analyticsSessionStart) });
   }
   if(!document.hidden) syncEdge("foreground");
 });
-window.addEventListener("online", ()=> syncEdge("online"));
+window.addEventListener("online", ()=>{ analytics.flush(); syncEdge("online"); });
 $("#hud-pause").onclick = ()=> pauseBattle();
 $("#pause-resume").onclick = ()=> resumeBattle();
 $("#pause-quit").onclick = ()=>{ closeDialog($("#pause-overlay"), false); endBattle(true); };
@@ -1751,6 +1851,11 @@ function spawnZombie(){
   B.zombie = {
     w, encounter, x:B.w+30, state:"walk",
     trailSegmentStart: learnedAtStart > 0 && learnedAtStart % 5 === 0,
+    // Snapshot SRS due status *before* this encounter's answer can mutate the
+    // mastery record (recordAnswer always rewrites `ls`, so a due check made
+    // later — inside answer()'s correct branch — would always read false).
+    // Used to fire analytics' delayed_recall on a successful spaced recall.
+    dueAtSpawn: isDue(masteryStore[w.h], Date.now()),
   };
   B.spawned++; B.locked = false;
   if(encounter.reviewChallenge){
@@ -2038,6 +2143,18 @@ function answer(btn, o){
     // (word audio fires once, on spawn — no replay on the answer tap)
     if(boss){ noteAnswer(z.w.h, true); B.bossDefeated = true; }   // both stages passed
     syncQuestOutcome(true, false);
+    if(z.encounter?.origin === "review"){
+      // analytics (dark): review_recovery — fires when a word that had been
+      // missed this session (queued into the quest-session Review Pouch,
+      // origin:"review") is now recalled correctly.
+      analytics.track("review_recovery");
+    }
+    if(z.dueAtSpawn){
+      // analytics (dark): delayed_recall — fires when a word whose SRS record
+      // (srs.js isDue, snapshotted at spawn) was due is answered correctly —
+      // a successful spaced recall after its interval elapsed.
+      analytics.track("delayed_recall");
+    }
     const trailAfter = trailView();
     B.trailMove = { from:trailBefore.catX, to:trailAfter.catX, at:resolvedAt };
     refreshGuideSpeed();
@@ -3164,6 +3281,12 @@ function renderIapSections(){
 }
 
 function makeIapRow(p){
+  if(!shopViewedProducts.has(p.id)){
+    shopViewedProducts.add(p.id);
+    // analytics (dark): product_view — fires once per IAP product tile shown
+    // in the shop, the first time it renders after the shop was opened.
+    analytics.track("product_view", { product: p.id });
+  }
   const row = document.createElement("div");
   row.className = "scorerow shoprow";
   const copy = document.createElement("span");
@@ -3192,6 +3315,13 @@ function makeSupporterCard(){
     : `<b>${t("shop.supporterTitle")}</b><small>${t("shop.supporterDesc")}</small>`;
   row.appendChild(copy);
   if(!owned){
+    if(!shopViewedProducts.has("supporter")){
+      shopViewedProducts.add("supporter");
+      // analytics (dark): product_view — supporter card only counts as "shown"
+      // when it's actually buyable (unowned); the owned/"thanks" state isn't a
+      // product tile.
+      analytics.track("product_view", { product: "supporter" });
+    }
     const btn = document.createElement("button");
     btn.className = "chip buy-chip";
     btn.textContent = provider().price("supporter") || displayPrice(productById("supporter"), getLocale());
@@ -3216,6 +3346,9 @@ async function iapBuy(p, btn){
   iapPending = p.id;
   btn.disabled = true;
   btn.textContent = t("iap.pending");
+  // analytics (dark): purchase_start — fires once the double-tap/disabled
+  // guard above has cleared, i.e. a real purchase attempt is starting.
+  analytics.track("purchase_start", { product: p.id });
   try{
     const prov = provider();
     const r = await prov.purchase(p.id);
@@ -3226,6 +3359,9 @@ async function iapBuy(p, btn){
     // see the real path below for the split's other half).
     iapPending = null;
     if(!r.ok){
+      // analytics (dark): purchase_fail — terminal mock-provider outcome
+      // (cancel vs. anything else the mock reports as not-ok).
+      analytics.track("purchase_fail", { product: p.id, reason: r.reason === "cancelled" ? "cancelled" : "provider_error" });
       if(r.reason !== "cancelled") toast(t("iap.failed"));
       renderShop();
       return;
@@ -3237,6 +3373,12 @@ async function iapBuy(p, btn){
       pushEdge("purchase");
       updateWalletChip();
       toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: p.coins.toLocaleString() }));
+      // analytics (dark): purchase_success — mock self-grant confirmed.
+      analytics.track("purchase_success", { product: p.id });
+    }else{
+      // analytics (dark): purchase_fail — store transaction ok but the local
+      // grant didn't apply (duplicate/already-owned); no coins/entitlement moved.
+      analytics.track("purchase_fail", { product: p.id, reason: "no_credit" });
     }
     renderShop();   // duplicate/already-owned fall through to the owned state
     return;
@@ -3251,8 +3393,12 @@ async function iapBuy(p, btn){
   // plan §3/§4 T4).
   if(!r.ok){
     iapPending = null;
+    // analytics (dark): purchase_fail — only for terminal outcomes; "pending"
+    // is not a failure (the store transaction may still resolve), so it does
+    // not fire an event here.
     if(r.reason === "pending") toast(t("iap.processing"));
-    else if(r.reason !== "cancelled") toast(t("iap.failed"));
+    else if(r.reason !== "cancelled"){ toast(t("iap.failed")); analytics.track("purchase_fail", { product: p.id, reason: "provider_error" }); }
+    else analytics.track("purchase_fail", { product: p.id, reason: "cancelled" });
     renderShop();
     return;
   }
@@ -3275,6 +3421,9 @@ async function iapBuy(p, btn){
     // Server is authoritative: toast the delta on this exact transaction's
     // ledger row, never an aggregate wallet increase or the local catalog.
     toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: poll.delta.toLocaleString() }));
+    // analytics (dark): purchase_success — server-side grant confirmed via
+    // the reconcile poll (the actual credit, not just the store transaction).
+    analytics.track("purchase_success", { product: p.id });
   }else{
     // Exhausted the poll with no visible credit yet. The webhook's grant is
     // idempotent and guaranteed eventually — the next ordinary sync (or the
@@ -3302,6 +3451,9 @@ async function iapBuy(p, btn){
     // Provider plugins promise a never-throw contract, but a bridge/SDK fault
     // must still release the pending guard instead of disabling IAP forever.
     toast(t("iap.failed"));
+    // analytics (dark): purchase_fail — bridge/SDK threw despite the
+    // never-throw contract; the transaction outcome is unknown.
+    analytics.track("purchase_fail", { product: p.id, reason: "exception" });
   }finally{
     iapPending = null;
     renderShop();
@@ -3962,6 +4114,8 @@ if(isFirstRun(store.get("introDone", false), masteryStore)){
   show("welcome");
 }
 renderHome();
+analytics.track("session_start");
+analyticsSessionStart = Date.now();
 renderQuests();
 updateNav(currentScreen);
 // Availability-driven IAP gating (go-live plan §4 T1): resolve once at boot.

@@ -6,7 +6,7 @@
   "description": "HSK vocabulary arcade game - Lucky Cat HSK",
   "scripts": {
     "test": "vitest run",
-    "build": "esbuild src/main.js --bundle --format=iife --minify --outfile=dist/app.js",
+    "build": "node scripts/build.mjs",
     "assets:validate": "node scripts/validate-assets.mjs",
     "assets:report": "node scripts/asset-report.mjs",
     "assets:shop": "node scripts/generate-shop-assets.mjs",
@@ -22,9 +22,9 @@
   "devDependencies": {
     "@capacitor/android": "^6.2.1",
     "@capacitor/cli": "^6.2.1",
-    "esbuild": "^0.24.0",
+    "esbuild": "^0.28.1",
     "playwright-core": "^1.61.1",
-    "vitest": "^2.1.0"
+    "vitest": "^4.1.10"
   },
   "dependencies": {
     "@capacitor-community/keep-awake": "^5.0.1",

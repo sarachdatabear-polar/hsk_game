@@ -63,6 +63,12 @@ export const STRINGS = {
     "account.resend": "Resend code",
     "account.resendWait": "Resend in {s}s",
     "account.signOut": "Sign out",
+    "account.delete": "Delete account",
+    "account.deleteConfirm": "Permanently erase your cloud data? Signing out instead keeps it.",
+    "account.deleteConfirmYes": "Delete permanently",
+    "account.deleteCancel": "Cancel",
+    "account.deleteDone": "Cloud account deleted",
+    "account.deleteFail": "Couldn't delete — try again",
     "account.emailPh": "your@email.com",
     "account.codePh": "code from the email",
     "account.codeSent": "Code sent — check your email",
@@ -371,6 +377,8 @@ export const STRINGS = {
     "battle.off": "Off",
     "settings.sfxVol": "SFX volume",
     "settings.voiceVol": "Pronunciation",
+    "settings.analytics": "Share anonymous usage data",
+    "settings.analyticsHint": "Helps improve the game. No personal info, no word history. Off by default.",
     "battle.canvasLabel": "Word Quest scene. Press Enter or Space to replay the word's audio (when available).",
     "battle.canvasWord": "Current word: {h}, pinyin {p}. Press Enter or Space to replay its audio.",
     "battle.canvasHanzi": "Current hanzi: {h}. Use the task below to recall its pinyin.",
@@ -470,6 +478,12 @@ export const STRINGS = {
     "account.resend": "ส่งรหัสอีกครั้ง",
     "account.resendWait": "ส่งใหม่ได้ใน {s} วิ",
     "account.signOut": "ออกจากระบบ",
+    "account.delete": "ลบบัญชี", // TH-REVIEW
+    "account.deleteConfirm": "ลบข้อมูลบนคลาวด์อย่างถาวรหรือไม่? การออกจากระบบจะเก็บข้อมูลไว้", // TH-REVIEW
+    "account.deleteConfirmYes": "ลบถาวร", // TH-REVIEW
+    "account.deleteCancel": "ยกเลิก", // TH-REVIEW
+    "account.deleteDone": "ลบบัญชีคลาวด์แล้ว", // TH-REVIEW
+    "account.deleteFail": "ลบไม่สำเร็จ — ลองอีกครั้ง", // TH-REVIEW
     "account.emailPh": "your@email.com",
     "account.codePh": "รหัสจากอีเมล",
     "account.codeSent": "ส่งรหัสแล้ว — เช็กอีเมลของคุณ",
@@ -775,6 +789,8 @@ export const STRINGS = {
     "battle.off": "ปิด",
     "settings.sfxVol": "ระดับเสียงเอฟเฟกต์", // TH-REVIEW 2026-07-12: relabeled from เสียงเอฟเฟกต์
     "settings.voiceVol": "ระดับเสียงอ่าน",
+    "settings.analytics": "แชร์ข้อมูลการใช้งานแบบไม่ระบุตัวตน",
+    "settings.analyticsHint": "ช่วยพัฒนาเกม ไม่มีข้อมูลส่วนตัว ไม่มีประวัติคำศัพท์ ปิดไว้เป็นค่าเริ่มต้น",
     "battle.canvasLabel": "ฉากภารกิจคำศัพท์ กด Enter หรือ Space เพื่อฟังเสียงคำศัพท์อีกครั้ง (เมื่อเปิดให้ฟัง)",
     "battle.canvasWord": "คำปัจจุบัน: {h} พินอิน {p} กด Enter หรือ Space เพื่อฟังเสียงอีกครั้ง",
     "battle.canvasHanzi": "อักษรจีนปัจจุบัน: {h} ทำโจทย์ด้านล่างเพื่อนึกพินอิน",
