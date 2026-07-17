@@ -7,7 +7,7 @@ import { exampleFor } from "./examples.js";
 import { tonePool, toneQuestion, gradeTone } from "./tone_gym.js";
 import { killPoints } from "./scoring.js";
 import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus, impactBurst as lanternSparkBurst } from "./fx.js";
-import { sfx, setSfxVolume, clampVol } from "./sfx.js";
+import { sfx, setSfxVolume, clampVol, unlockSfx } from "./sfx.js";
 import { drawCat } from "./cat.js";
 import { drawRaccoon } from "./raccoon.js";
 import { CONTENT_H } from "./sprite-draw.js";
@@ -23,7 +23,7 @@ import { REMINDER_HOUR, reminderPlan, reengagePlan } from "./notify.js";
 import { defaultQuestState, noteQuestEvent, questStatus,
          defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly } from "./quests.js";
 import { reviewChallengePoints, reviewChallengeSpeedFactor } from "./boss.js";
-import { initAudio, speak, audioAvailable, hasMp3, setVoiceVolume } from "./audio.js";
+import { initAudio, speak, audioAvailable, hasMp3, setVoiceVolume, unlockAudio } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, syncReengageReminder, requestNotifPermission, isNative } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import { BUILDINGS, streetPieces, streetProgress, streetMetrics, DECO_SPRITE_SCALE } from "./street.js";
@@ -961,6 +961,21 @@ fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>in
   // gate (which reads hasMp3) reflects real audio availability, not the default.
   .finally(()=>{ if(currentScreen === "home") renderHome(); });
 
+// Mobile browsers block all audio (Web Audio, <audio>.play, speech synthesis)
+// until the first real user gesture. Prime every path once on the first
+// interaction so the word audio the game speaks on its own — and SFX fired
+// from the rAF loop — actually play. Passive so it never delays the tap.
+function unlockAllAudio(){
+  unlockSfx();
+  unlockAudio();
+  window.removeEventListener("pointerdown", unlockAllAudio, true);
+  window.removeEventListener("touchend", unlockAllAudio, true);
+  window.removeEventListener("click", unlockAllAudio, true);
+}
+window.addEventListener("pointerdown", unlockAllAudio, true);
+window.addEventListener("touchend", unlockAllAudio, true);
+window.addEventListener("click", unlockAllAudio, true);
+
 /* ============================== UI-frame preload ============================== */
 // Canvas sprites are lazy: sprite(name) starts the first load and renders the
 // vector fallback until it arrives. Only tiny global 9-slice UI frames preload.
@@ -1481,10 +1496,12 @@ function updateCanvasA11y(word, format = "meaning", revealed = false){
   cv.title = label;
 }
 function trailView(){
-  const learned = B.quest ? B.quest.view().learned : 0;
-  const startNextSegment = learned > 0 && learned % 5 === 0
-    && !!(B.zombie?.trailSegmentStart || B.reveal?.trailSegmentStart);
-  return lanternTrailLayout(B.w || 0, B.h || 0, learned, B.L ? B.L.ground : 0, { startNextSegment });
+  // 2026-07-17 (owner): the battle scene is static. The cat holds its
+  // start-of-trail position and the lantern path is not drawn (see draw()).
+  // Pinning learned=0 keeps catX at startX so the cat never drifts under the
+  // centred word plate as words are learned, while the raccoon (guideTargetX)
+  // still approaches that fixed point — its walk-in is the answer timer.
+  return lanternTrailLayout(B.w || 0, B.h || 0, 0, B.L ? B.L.ground : 0, { startNextSegment: false });
 }
 function guideTargetX(){
   return trailView().catX + (B.L ? B.L.catHalf : 0);
@@ -2454,8 +2471,8 @@ function draw(now){
   // ground line — subtle gold
   ctx.strokeStyle = "rgba(245,197,24,.35)"; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(0,gy+12); ctx.lineTo(B.w,gy+12); ctx.stroke();
-  const trail = trailView();
-  drawLanternTrail(trail, now);
+  // Lantern trail (path + nodes) intentionally not drawn — the scene is static
+  // now (owner 2026-07-17). The cat and raccoon still render below.
   ctx.textAlign = "center";
   // player cat (left side, was the maneki) — shop skin + growth accessories +
   // kitten companion now live here instead of on the walker (M5 role swap).
