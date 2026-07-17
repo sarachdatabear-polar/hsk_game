@@ -15,3 +15,4 @@ scripts/.fontcache/
 # session-local agent scratch (ledger, task reports, probe scripts) — never ship
 .superpowers/
 scripts/cloze/.cache/
+supabase/.temp/

@@ -147,18 +147,18 @@ To update later: bump `versionCode`/`versionName` in `android/app/build.gradle`,
   and Thai-hardening integration. Build and verify a new signed APK after that
   branch is promoted; do not describe the v74 file as containing those changes.
 
-## Current unsigned source candidate (UX/UI readiness v76, 2026-07-16)
+## Current unsigned source candidate (corrective v80, 2026-07-17)
 
-- Branch: `fix/release-readiness-audit`; promote to `development` first, never
-  directly to `main`.
-- PWA/source cache: SHELL v76; offline shell 69 files / 9.52 MiB.
-- Local gates: 68 test files / 1,916 tests, 95 assets, production build,
-  Capacitor sync, offline cold launch, and expanded EN+TH browser matrix pass.
+- Source: committed `main` v80 release; sign from that immutable release commit.
+- PWA/source caches: shell/runtime/audio v80.
+- Local gates: 78 test files / 1,970 tests, 95 assets, production build, zero
+  npm advisories, Capacitor sync, direct `file://` launch, and deterministic
+  EN+TH browser matrices pass.
 - Branding staging: verified Lucky Cat launcher at 192×192 (xxxhdpi) and splash
   at 1080×1920 after a clean `npm run cap:sync`.
-- No v76 signed APK/AAB exists yet. Build on the documented Windows/JDK 17
-  release machine and repeat emulator plus physical-device acceptance before
-  promoting `development` to `main`.
+- No v80 signed APK/AAB exists yet. Build on the documented Windows/JDK 17
+  release machine from the committed v80 release and repeat emulator plus
+  physical-device acceptance.
 
 ## Superseded candidate (Lantern Trail Phase 6, 2026-07-13)
 

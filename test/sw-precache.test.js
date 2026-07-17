@@ -49,8 +49,16 @@ describe("sw.js precache list", () => {
       "assets/cat-astronaut-walk.png", "assets/bg-island-sunset.png",
       "assets/deco-noodle-stall.png", "assets/tile-arcade.png",
     ]) expect(precacheSet.has(entry), entry).toBe(false);
-    expect(swSrc).toContain('const RUNTIME = "nbhsk-runtime-v76"');
+    expect(swSrc).toContain('const CACHE_VERSION = "v80"');
+    expect(swSrc).toContain("const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`");
     expect(swSrc).toContain("cacheAfterFetch(RUNTIME, request)");
+  });
+
+  it("versions shell, runtime, and audio caches from the same release value", () => {
+    expect(swSrc).toContain("const SHELL = `nbhsk-shell-${CACHE_VERSION}`");
+    expect(swSrc).toContain("const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`");
+    expect(swSrc).toContain("const AUDIO = `nbhsk-audio-${CACHE_VERSION}`");
+    expect(swSrc).not.toMatch(/nbhsk-(?:shell|runtime|audio)-v\d+/);
   });
 
   it("fails an incomplete core install instead of swallowing missing files", () => {
