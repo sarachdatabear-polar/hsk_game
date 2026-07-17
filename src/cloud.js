@@ -190,3 +190,26 @@ export async function signOut() {
   try { await getClient().auth.signOut({ scope: "local" }); } catch (e) { /* ignore */ }
   return { ok: true };
 }
+
+// Delete the caller's cloud account + all cloud data (via the delete-account
+// Edge Function, which resolves the uid from this JWT and service-role deletes
+// it — cascade wipes every user table). Local nbhsk.* is intentionally kept:
+// on success we only sign out locally, so the player drops to offline guest.
+// Never throws — {ok:false, reason} on any failure, matching this file.
+export async function deleteAccount() {
+  if (offline()) return { ok: false, reason: "offline" };
+  try {
+    const session = await currentSession();
+    if (!session) return { ok: false, reason: "no-session" };
+    const { error } = await getClient().functions.invoke("delete-account", {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    if (error) return { ok: false, reason: "network" };
+    // Server delete already succeeded once invoke returns clean. The local
+    // sign-out is best-effort cleanup — a (near-impossible) local signOut
+    // throw must NOT report the completed deletion as a failure and strand
+    // the client signed-in on a now-deleted account. Mirrors signOut() above.
+    try { await getClient().auth.signOut({ scope: "local" }); } catch (e) { /* ignore */ }
+    return { ok: true };
+  } catch (e) { return { ok: false, reason: "network" }; }
+}

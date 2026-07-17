@@ -63,6 +63,12 @@ export const STRINGS = {
     "account.resend": "Resend code",
     "account.resendWait": "Resend in {s}s",
     "account.signOut": "Sign out",
+    "account.delete": "Delete account",
+    "account.deleteConfirm": "Permanently erase your cloud data? Signing out instead keeps it.",
+    "account.deleteConfirmYes": "Delete permanently",
+    "account.deleteCancel": "Cancel",
+    "account.deleteDone": "Cloud account deleted",
+    "account.deleteFail": "Couldn't delete — try again",
     "account.emailPh": "your@email.com",
     "account.codePh": "code from the email",
     "account.codeSent": "Code sent — check your email",
@@ -472,6 +478,12 @@ export const STRINGS = {
     "account.resend": "ส่งรหัสอีกครั้ง",
     "account.resendWait": "ส่งใหม่ได้ใน {s} วิ",
     "account.signOut": "ออกจากระบบ",
+    "account.delete": "ลบบัญชี", // TH-REVIEW
+    "account.deleteConfirm": "ลบข้อมูลบนคลาวด์อย่างถาวรหรือไม่? การออกจากระบบจะเก็บข้อมูลไว้", // TH-REVIEW
+    "account.deleteConfirmYes": "ลบถาวร", // TH-REVIEW
+    "account.deleteCancel": "ยกเลิก", // TH-REVIEW
+    "account.deleteDone": "ลบบัญชีคลาวด์แล้ว", // TH-REVIEW
+    "account.deleteFail": "ลบไม่สำเร็จ — ลองอีกครั้ง", // TH-REVIEW
     "account.emailPh": "your@email.com",
     "account.codePh": "รหัสจากอีเมล",
     "account.codeSent": "ส่งรหัสแล้ว — เช็กอีเมลของคุณ",
