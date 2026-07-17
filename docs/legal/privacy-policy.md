@@ -19,7 +19,8 @@
 Lucky Cat HSK helps people learn HSK Chinese vocabulary. **You can install and
 play entirely as a guest, offline, without an account.** In that mode your
 progress lives only on your device and is not sent to us. Cloud features, ads,
-and purchases add data collection, described below. We collect the minimum
+purchases, and the optional analytics setting add data collection, described
+below. We collect the minimum
 needed to run those features and never sell your personal data.
 
 This policy covers our obligations under Thailand's **Personal Data Protection
@@ -52,8 +53,26 @@ state to serve personalized or non-personalized ads. On first run (and on iOS,
 via App Tracking Transparency) you choose your consent; non-consented users
 receive **non-personalized** ads.
 
-**e) Diagnostics.** Basic crash/technical data may be collected to keep the app
-working. [Confirm exact analytics SDKs before publishing.]
+**e) Product analytics (only if you turn it on).**
+Lucky Cat HSK includes an **optional, off-by-default** setting — *Settings → "Share
+anonymous usage data."* If, and only if, you switch it on, the app sends a small set of
+**anonymous, aggregate usage events** so we can see how the game is used and improve it:
+- **What events:** app session start/end (with a coarse duration bucket such as "5–15m"),
+  learning-recovery and delayed-recall milestones, your response to the notification-permission
+  prompt (granted / denied / dismissed), and store/purchase funnel steps (store opened, product
+  viewed, purchase started / succeeded / failed — with the product id and a failure reason).
+- **What is attached:** a random **analytics id** generated on your device *only after you opt
+  in* (never an advertising or device identifier), a per-session id, the app version, the
+  platform (web / Android), and the HSK level you're studying.
+- **What is never collected:** your name, email, account id, IP-derived identity, the specific
+  words you study, your answers, or any free text. Events carry only the enumerated fields above.
+- **Where it goes:** our own **Supabase** backend (§4) — there is **no third-party analytics or
+  advertising SDK**. Events are write-only from the app.
+
+You can turn this off again at any time in Settings; turning it off stops all event collection
+immediately. This setting is independent of ads (§2d) and is **off unless you choose it**. Basic
+crash/technical diagnostics provided by the app stores or operating system may still apply under
+their own policies.
 
 We do **not** collect contacts, precise location, photos, microphone, or health
 data.
@@ -66,7 +85,8 @@ data.
 | Optional cloud save & cross-device sync | §2b | Contract (you chose to sign in) |
 | Process purchases & restore entitlements | §2c | Contract |
 | Show ads to support the free app | §2d | **Consent** (personalized) / legitimate interest (non-personalized), per your choice |
-| Keep the app stable and secure | §2e | Legitimate interest |
+| Optional product analytics to improve the game | §2e | **Consent** (opt-in, off by default; withdraw any time in Settings) |
+| Keep the app stable and secure (store/OS crash diagnostics) | §2e | Legitimate interest |
 
 Under PDPA the equivalent bases (consent, contractual necessity, legitimate
 interest) apply.
