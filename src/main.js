@@ -64,6 +64,10 @@ const D = window.HSK_DATA;
 // tag before dist/app.js. Undefined on file:// if the tag is missing → the
 // cloze format never triggers (caps.cloze returns false for every word).
 const CLOZE = window.HSK_CLOZE || {};
+// Flashcard-back example sentences: cloze words provide their own sentence, plus
+// the broader HSK3 example set (data/examples.js, EN-only). Merged for the
+// example surface only — the cloze GAME still uses CLOZE (it needs distractors).
+const EXAMPLES = Object.assign({}, CLOZE, window.HSK_EXAMPLES || {});
 // hanzi → full record, over the WHOLE dataset (not the scoped pool). Cloze
 // distractors may be words outside a top-N scope, so their pinyin subs must
 // resolve here. Built once at boot.
@@ -1291,7 +1295,7 @@ function renderCard(){
     if(settings.autoSpeak) speak(w.h);
   }else{
     const th = w.t? `<div class="th">${w.t}</div>` : `<div class="th" style="color:var(--muted)">${t("fc.noThai")}</div>`;
-    const ex = exampleFor(w, CLOZE, getLocale());
+    const ex = exampleFor(w, EXAMPLES, getLocale());
     const exampleRow = ex ? `<div class="fc-example">
         <div class="fc-example-label">${t("fc.inSentence")}</div>
         <div class="fc-example-cn">${ex.cn}</div>
