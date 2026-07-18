@@ -14,11 +14,11 @@
 // Requires: npm i --no-save playwright-core, and Microsoft Edge installed
 // (uses channel:"msedge" so it doesn't need a separate browser download).
 import { chromium } from "playwright-core";
-import http from "node:http";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { layout } from "../src/layout.js";
+import { getUrl } from "./url-get.mjs";
 
 // Prefer Edge (Windows dev box); fall back to the playwright-cached chromium
 // (VPS — `npx playwright install chromium`). PW_CHROMIUM overrides both.
@@ -653,12 +653,12 @@ async function runAccessibilityProbe(browser) {
 // message rather than letting every page.goto() time out one by one.
 // ---------------------------------------------------------------------------
 async function assertServerReachable() {
-  // Deliberately uses node:http rather than global fetch()/undici: Node 24's
-  // undici client crashes the whole process with an uncaught
+  // Deliberately uses Node's protocol-specific clients rather than global
+  // fetch()/undici: Node 24's undici client crashes the whole process with an uncaught
   // `assert(!this.paused)` when talking to Python's http.server (HTTP/1.0,
-  // connection: close). node:http doesn't hit that path.
+  // connection: close). The native http/https clients don't hit that path.
   const reachable = await new Promise(resolve => {
-    const req = http.get(`${BASE_URL}/index.html`, res => {
+    const req = getUrl(`${BASE_URL}/index.html`, res => {
       res.resume();
       resolve(res.statusCode >= 200 && res.statusCode < 400);
     });

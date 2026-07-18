@@ -151,7 +151,7 @@ To update later: bump `versionCode`/`versionName` in `android/app/build.gradle`,
 
 - Source: committed `main` v80 release; sign from that immutable release commit.
 - PWA/source caches: shell/runtime/audio v80.
-- Local gates: 78 test files / 1,970 tests, 95 assets, production build, zero
+- Local gates: 79 test files / 1,973 tests, 95 assets, production build, zero
   npm advisories, Capacitor sync, direct `file://` launch, and deterministic
   EN+TH browser matrices pass.
 - Branding staging: verified Lucky Cat launcher at 192×192 (xxxhdpi) and splash

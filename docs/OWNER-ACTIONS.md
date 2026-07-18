@@ -10,7 +10,7 @@ the signed Android artifact, device acceptance, and store/legal work.
 
 - Current committed/deployed source: `main` v80; service-worker cache version
   `v80`.
-- Recorded release gates: 78 files / 1,970 tests, build, 95 assets, zero npm
+- Recorded release gates: 79 files / 1,973 tests, build, 95 assets, zero npm
   advisories, deterministic EN+TH browser matrices, `file://` launch, and
   Capacitor branding sync pass.
 - Latest signed artifact remains Profile v74; no v80 APK/AAB exists yet.
@@ -20,7 +20,7 @@ accounts exist.
 
 ## 1. Build and accept the v80 APK/AAB
 
-Use the exact v80 `main` release for Android. It passes 78 test files / 1,970
+Use the exact v80 `main` release for Android. It passes 79 test files / 1,973
 tests, 95 asset checks, production build, Capacitor sync, deterministic EN+TH
 viewport/format/accessibility gates, and both npm audits. **It has not been
 signed on Windows.**
