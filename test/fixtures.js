@@ -17,3 +17,17 @@ export const MANIFEST = {
     "2": { freq_total: 66 }
   }
 };
+
+// Minimal localStorage stand-in for storage/migrations tests. `writes` records
+// every setItem key in order so tests can assert write-once behaviour.
+export function fakeStorage(init = {}) {
+  const m = new Map(Object.entries(init));
+  const writes = [];
+  return {
+    getItem: (k) => (m.has(k) ? m.get(k) : null),
+    setItem: (k, v) => { writes.push(k); m.set(k, String(v)); },
+    removeItem: (k) => { m.delete(k); },
+    dump: () => Object.fromEntries(m),
+    writes,
+  };
+}

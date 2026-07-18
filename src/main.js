@@ -40,6 +40,7 @@ import { defaultProfile, normalizeDisplayName, profileInitial, profileStats, equ
 import { accountState, accountView, canSendCode, codeLooksValid } from "./account.js";
 import { getSession, ensureGuest, sendCode, verifyCode, saveDisplayName, signOut, deleteAccount } from "./cloud.js";
 import { SYNC_KEYS } from "./merge.js";
+import { createStore } from "./storage.js";
 import { reconcile, pushDirty } from "./sync.js";
 import { PRODUCTS, productById, displayPrice } from "./monetization/products.js";
 import { defaultEnt, isSupporter, applyPurchase, restoreFrom } from "./monetization/purchases.js";
@@ -84,22 +85,7 @@ const meaningOf = (w, lang) => meaning(w, lang, getLocale() === "th");
 const REDUCED_MOTION = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 function fxDuration(ms){ return REDUCED_MOTION ? Math.round(ms/2) : ms; }
 function fxUntil(ms){ return performance.now() + fxDuration(ms); }
-const store = {
-  get(k, d){ try{ const v = localStorage.getItem("nbhsk."+k); return v===null? d : JSON.parse(v);}catch(e){ return d; } },
-  set(k, v){
-    try{ localStorage.setItem("nbhsk."+k, JSON.stringify(v)); }catch(e){}
-    // cloud-save: persist a dirty flag per synced key so a mid-session kill
-    // doesn't forget unpushed changes. Writes only on false->true flips.
-    if(SYNC_KEYS.includes(k)){
-      try{
-        const raw = localStorage.getItem("nbhsk.sync");
-        const meta = raw ? JSON.parse(raw) : { dirty:{}, lastSyncAt:0 };
-        if(!meta.dirty) meta.dirty = {};
-        if(!meta.dirty[k]){ meta.dirty[k] = true; localStorage.setItem("nbhsk.sync", JSON.stringify(meta)); }
-      }catch(e){}
-    }
-  }
-};
+const store = createStore({ storage: localStorage, syncKeys: SYNC_KEYS });
 // Dark analytics transport (Task 8 wiring): hard no-op until the Settings
 // consent toggle is on. See src/analytics/ for the queue/consent/transport
 // modules constructed here.
