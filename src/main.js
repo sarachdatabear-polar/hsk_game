@@ -41,6 +41,7 @@ import { accountState, accountView, canSendCode, codeLooksValid } from "./accoun
 import { getSession, ensureGuest, sendCode, verifyCode, saveDisplayName, signOut, deleteAccount } from "./cloud.js";
 import { SYNC_KEYS } from "./merge.js";
 import { createStore } from "./storage.js";
+import { runMigrations } from "./migrations.js";
 import { reconcile, pushDirty } from "./sync.js";
 import { PRODUCTS, productById, displayPrice } from "./monetization/products.js";
 import { defaultEnt, isSupporter, applyPurchase, restoreFrom } from "./monetization/purchases.js";
@@ -85,6 +86,8 @@ const meaningOf = (w, lang) => meaning(w, lang, getLocale() === "th");
 const REDUCED_MOTION = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 function fxDuration(ms){ return REDUCED_MOTION ? Math.round(ms/2) : ms; }
 function fxUntil(ms){ return performance.now() + fxDuration(ms); }
+// Must run before anything reads through the store: migrations see raw values.
+runMigrations(localStorage);
 const store = createStore({ storage: localStorage, syncKeys: SYNC_KEYS });
 // Dark analytics transport (Task 8 wiring): hard no-op until the Settings
 // consent toggle is on. See src/analytics/ for the queue/consent/transport
