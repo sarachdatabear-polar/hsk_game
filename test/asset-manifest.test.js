@@ -12,13 +12,6 @@ const statusValues = new Set(manifest.status_values);
 const types = new Set(manifest.types);
 const FRAME_TYPES = new Set(["ui-surface", "ui-frame"]);
 
-function allFiles(asset) {
-  const extra = (asset.states || [])
-    .filter(s => s !== "default")
-    .map(s => asset.file.replace(/\.png$/, `-${s}.png`));
-  return [asset.file, ...extra];
-}
-
 describe("education asset manifest contract", () => {
   it("has a unique id for every asset", () => {
     const ids = manifest.assets.map(a => a.id);

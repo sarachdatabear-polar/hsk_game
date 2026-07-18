@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { MIN_SYNC_GAP_MS, localSnapshot, rowsFromLocal, localFromRows,
+import { MIN_SYNC_GAP_MS, rowsFromLocal, localFromRows,
          reconcile, pushDirty, __resetForTests } from "../src/sync.js";
 import { __setClientForTests, LEDGER_EPOCH } from "../src/cloud.js";
 import { SYNC_KEYS } from "../src/merge.js";
