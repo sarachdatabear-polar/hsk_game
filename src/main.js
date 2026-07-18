@@ -42,6 +42,7 @@ import { getSession, ensureGuest, sendCode, verifyCode, saveDisplayName, signOut
 import { SYNC_KEYS } from "./merge.js";
 import { createStore } from "./storage.js";
 import { runMigrations } from "./migrations.js";
+import { errorEntry, pushError, describeErrorEvent } from "./errlog.js";
 import { reconcile, pushDirty } from "./sync.js";
 import { PRODUCTS, productById, displayPrice } from "./monetization/products.js";
 import { defaultEnt, isSupporter, applyPurchase, restoreFrom } from "./monetization/purchases.js";
@@ -89,6 +90,16 @@ function fxUntil(ms){ return performance.now() + fxDuration(ms); }
 // Must run before anything reads through the store: migrations see raw values.
 runMigrations(localStorage);
 const store = createStore({ storage: localStorage, syncKeys: SYNC_KEYS });
+// Crash visibility: persist uncaught errors/rejections to a local-only ring
+// buffer (nbhsk.errlog). Inspect via devtools: JSON.parse(localStorage["nbhsk.errlog"]).
+function logGlobalError(ev){
+  try{
+    const d = describeErrorEvent(ev);
+    store.set("errlog", pushError(store.get("errlog", []), errorEntry(d.source, d.message, d.stack, Date.now())));
+  }catch(e){}
+}
+window.addEventListener("error", logGlobalError);
+window.addEventListener("unhandledrejection", logGlobalError);
 // Dark analytics transport (Task 8 wiring): hard no-op until the Settings
 // consent toggle is on. See src/analytics/ for the queue/consent/transport
 // modules constructed here.
