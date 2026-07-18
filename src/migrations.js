@@ -19,6 +19,22 @@ export const MIGRATIONS = [
   // { to: 2, up(storage) { ...rewrite keys in place... } },
 ];
 
+// Dev-time invariant: runMigrations skips any entry with `to <= v`, so an
+// out-of-order (or duplicate-`to`) ladder would silently drop a migration
+// instead of failing loud. Assert ascending order at module load — a no-op
+// while the ladder is empty, a hard error the moment a bad entry is added.
+export function assertSortedLadder(migrations) {
+  for (let i = 1; i < migrations.length; i++) {
+    if (migrations[i].to <= migrations[i - 1].to) {
+      throw new Error(
+        `MIGRATIONS must be sorted ascending by \`to\` (entry ${i}: ${migrations[i].to} <= ${migrations[i - 1].to})`,
+      );
+    }
+  }
+  return migrations;
+}
+assertSortedLadder(MIGRATIONS);
+
 export function readVersion(storage) {
   try {
     const raw = storage.getItem(VERSION_KEY);
