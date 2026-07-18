@@ -12,7 +12,7 @@ work remains in [OWNER-ACTIONS.md](OWNER-ACTIONS.md).
 
 | Tier | State |
 |---|---|
-| **`main` / GitHub Pages** | **v80 corrective release**: 78 files / 1,970 tests, 95 assets, build, zero npm advisories, Capacitor sync, deterministic EN+TH browser matrices, `file://` launch, and offline PWA reload pass. |
+| **`main` / GitHub Pages** | **v80 corrective release**: 79 files / 1,973 tests, 95 assets, build, zero npm advisories, Capacitor sync, deterministic EN+TH browser matrices, `file://` launch, and offline PWA reload pass. |
 | **Previous release** | SHELL v79 (`ab9c550`): v77 delete-account release, v78 flashcard examples, and v79 static battle/mobile-audio unlock. |
 | **Latest signed Android artifact** | Profile v74 APK. A v80 APK/AAB still needs the Windows signing and emulator/physical-device acceptance matrix. |
 
@@ -88,7 +88,7 @@ work remains in [OWNER-ACTIONS.md](OWNER-ACTIONS.md).
 
 ## v80 verification snapshot
 
-- Unit/integration: **78 files / 1,970 tests** pass; production bundle builds.
+- Unit/integration: **79 files / 1,973 tests** pass; production bundle builds.
 - Assets: **95/95** validate; every street decoration is below its 120 KB
   budget.
 - Browser: deterministic **10/10 EN + 10/10 TH** viewports pass across every
