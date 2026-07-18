@@ -42,7 +42,7 @@ import { getSession, ensureGuest, sendCode, verifyCode, saveDisplayName, signOut
 import { SYNC_KEYS } from "./merge.js";
 import { createStore } from "./storage.js";
 import { runMigrations } from "./migrations.js";
-import { errorEntry, pushError, describeErrorEvent } from "./errlog.js";
+import { errorEntry, pushErrorThrottled, describeErrorEvent } from "./errlog.js";
 import { reconcile, pushDirty } from "./sync.js";
 import { PRODUCTS, productById, displayPrice } from "./monetization/products.js";
 import { defaultEnt, isSupporter, applyPurchase, restoreFrom } from "./monetization/purchases.js";
@@ -95,7 +95,9 @@ const store = createStore({ storage: localStorage, syncKeys: SYNC_KEYS });
 function logGlobalError(ev){
   try{
     const d = describeErrorEvent(ev);
-    store.set("errlog", pushError(store.get("errlog", []), errorEntry(d.source, d.message, d.stack, Date.now())));
+    const cur = store.get("errlog", []);
+    const next = pushErrorThrottled(cur, errorEntry(d.source, d.message, d.stack, Date.now()));
+    if (next !== cur) store.set("errlog", next);  // throttled repeats skip the write
   }catch(e){}
 }
 window.addEventListener("error", logGlobalError);

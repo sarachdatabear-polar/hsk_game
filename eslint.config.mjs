@@ -11,10 +11,12 @@ const houseRules = {
 
 export default [
   {
-    // Generated/bundled/vendored trees — never lint. docs/ holds one-off
-    // Node tooling scripts outside the src/test/scripts trees this task
-    // targets; out of scope here (see task-6 report).
-    ignores: ["dist/", "www/", "android/", "data/", "audio/", "art/", "node_modules/", "supabase/", "docs/"],
+    // Generated/bundled/vendored trees — never lint. docs/ is NOT wholesale
+    // ignored: its one-off Node tooling scripts (docs/i18n/scripts/*.mjs) are
+    // linted via the node-globals files block below; no other JS lives there.
+    // Also ignore local-only artifacts that appear on dev machines but never in
+    // CI: the Python audio venv and superpowers session scratch.
+    ignores: ["dist/", "www/", "android/", "data/", "audio/", "art/", "node_modules/", "supabase/", ".venv/", ".superpowers/"],
   },
   js.configs.recommended,
   {
@@ -33,7 +35,7 @@ export default [
     rules: houseRules,
   },
   {
-    files: ["test/**/*.js", "scripts/**/*.{js,mjs}", "*.mjs"],
+    files: ["test/**/*.js", "scripts/**/*.{js,mjs}", "*.mjs", "docs/i18n/scripts/*.mjs"],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: "module",

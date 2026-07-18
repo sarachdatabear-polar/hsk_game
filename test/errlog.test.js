@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ERRLOG_MAX, errorEntry, pushError, describeErrorEvent } from "../src/errlog.js";
+import { ERRLOG_MAX, ERRLOG_DEDUPE_MS, errorEntry, pushError, pushErrorThrottled, describeErrorEvent } from "../src/errlog.js";
 
 describe("errorEntry", () => {
   it("builds a compact entry", () => {
@@ -36,6 +36,52 @@ describe("pushError", () => {
   });
   it("recovers from a corrupt (non-array) stored log", () => {
     expect(pushError("garbage", { at: 1 })).toEqual([{ at: 1 }]);
+  });
+});
+
+describe("pushErrorThrottled", () => {
+  const entry = (msg, stk, at) => ({ at, src: "error", msg, stk });
+
+  it("appends the first error", () => {
+    const log = [];
+    const next = pushErrorThrottled(log, entry("boom", "at a", 1000));
+    expect(next).toHaveLength(1);
+    expect(next[0].msg).toBe("boom");
+  });
+
+  it("returns the SAME array reference when a duplicate repeats within the window (so the caller skips the write)", () => {
+    const log = pushErrorThrottled([], entry("boom", "at a", 1000));
+    const next = pushErrorThrottled(log, entry("boom", "at a", 1000 + ERRLOG_DEDUPE_MS - 1));
+    expect(next).toBe(log); // identity — nothing to persist
+  });
+
+  it("appends again once the duplicate falls outside the window", () => {
+    const log = pushErrorThrottled([], entry("boom", "at a", 1000));
+    const next = pushErrorThrottled(log, entry("boom", "at a", 1000 + ERRLOG_DEDUPE_MS));
+    expect(next).not.toBe(log);
+    expect(next).toHaveLength(2);
+  });
+
+  it("appends a distinct error inside the window (different msg)", () => {
+    const log = pushErrorThrottled([], entry("boom", "at a", 1000));
+    const next = pushErrorThrottled(log, entry("splat", "at a", 1001));
+    expect(next).toHaveLength(2);
+  });
+
+  it("appends a distinct error inside the window (same msg, different stack)", () => {
+    const log = pushErrorThrottled([], entry("boom", "at a", 1000));
+    const next = pushErrorThrottled(log, entry("boom", "at b", 1001));
+    expect(next).toHaveLength(2);
+  });
+
+  it("still honors the ring-buffer cap", () => {
+    let log = [];
+    for (let i = 0; i < ERRLOG_MAX + 5; i++) log = pushErrorThrottled(log, entry("m" + i, "s", i));
+    expect(log).toHaveLength(ERRLOG_MAX);
+  });
+
+  it("recovers from a corrupt (non-array) stored log", () => {
+    expect(pushErrorThrottled("garbage", entry("boom", "at a", 1))).toEqual([entry("boom", "at a", 1)]);
   });
 });
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { readVersion, runMigrations } from "../src/migrations.js";
+import { readVersion, runMigrations, assertSortedLadder, MIGRATIONS } from "../src/migrations.js";
 import { fakeStorage } from "./fixtures.js";
 
 describe("readVersion", () => {
@@ -15,6 +15,25 @@ describe("readVersion", () => {
   it("treats a corrupt stamp with save data present as legacy (0)", () => {
     const s = fakeStorage({ "nbhsk.schemaVersion": "{bad", "nbhsk.mastery": "{}" });
     expect(readVersion(s)).toBe(0);
+  });
+  it("treats a corrupt stamp with NO save data as a fresh install (null)", () => {
+    const s = fakeStorage({ "nbhsk.schemaVersion": "{bad" });
+    expect(readVersion(s)).toBe(null);
+  });
+});
+
+describe("assertSortedLadder", () => {
+  it("passes on the empty exported ladder", () => {
+    expect(() => assertSortedLadder(MIGRATIONS)).not.toThrow();
+  });
+  it("passes on an ascending ladder", () => {
+    expect(() => assertSortedLadder([{ to: 2 }, { to: 3 }, { to: 5 }])).not.toThrow();
+  });
+  it("throws on an out-of-order ladder", () => {
+    expect(() => assertSortedLadder([{ to: 3 }, { to: 2 }])).toThrow(/ascending/i);
+  });
+  it("throws on a duplicate `to` (would silently skip)", () => {
+    expect(() => assertSortedLadder([{ to: 2 }, { to: 2 }])).toThrow(/ascending/i);
   });
 });
 
