@@ -32,16 +32,16 @@ describe("data/examples.json", () => {
     expect(JSON.parse(m[1])).toEqual(examples);
   });
 
-  it("covers the HSK3 beginner-core round (non-trivial, no cloze overlap)", () => {
+  it("covers the HSK3 + HSK4 rounds (non-trivial, no cloze overlap)", () => {
     const keys = Object.keys(examples);
-    expect(keys.length).toBeGreaterThan(900);
+    expect(keys.length).toBeGreaterThan(2000);
     // These are the words WITHOUT a cloze sentence — the two sets are disjoint.
     for (const h of keys) expect(h in cloze, `${h} overlaps cloze`).toBe(false);
   });
 
   for (const [h, e] of Object.entries(examples)) {
     it(`${h}: valid example row`, () => {
-      expect(levelOf[h], `${h} should be an HSK3 word`).toBe(3);
+      expect([3, 4].includes(levelOf[h]), `${h} should be an HSK3/HSK4 word`).toBe(true);
       expect(e.s.includes(h), `${h} present in sentence`).toBe(true);
       expect(["。", "？", "！"].includes(e.s.slice(-1)), "terminal punctuation").toBe(true);
       const body = e.s.slice(0, -1);
