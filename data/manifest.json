@@ -15,32 +15,32 @@
       "freq_total": 5832
     },
     "3": {
-      "words": 1356,
+      "words": 1349,
       "core": 846,
-      "new": 934,
-      "thai": 1356,
-      "freq_total": 9724
+      "new": 927,
+      "thai": 1349,
+      "freq_total": 9716
     },
     "4": {
-      "words": 3362,
-      "core": 2071,
-      "new": 2249,
-      "thai": 3362,
-      "freq_total": 35364
+      "words": 3337,
+      "core": 2050,
+      "new": 2225,
+      "thai": 3337,
+      "freq_total": 35184
     },
     "5": {
-      "words": 6570,
-      "core": 2723,
-      "new": 4423,
-      "thai": 6570,
-      "freq_total": 35197
+      "words": 6491,
+      "core": 2691,
+      "new": 4358,
+      "thai": 6491,
+      "freq_total": 34727
     },
     "6": {
-      "words": 10055,
-      "core": 4065,
+      "words": 10008,
+      "core": 4044,
       "new": 5916,
-      "thai": 10055,
-      "freq_total": 50284
+      "thai": 10008,
+      "freq_total": 49916
     }
   }
 }
