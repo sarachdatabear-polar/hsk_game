@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   QUEST_POOL, questsForDate, defaultQuestState, noteQuestEvent, questStatus,
-  monthKey, defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly, MONTHLY_TARGET, MONTHLY_REWARD,
+  monthKey, defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly, MONTHLY_REWARD,
 } from "../src/quests.js";
 
 describe("quests: questsForDate", () => {

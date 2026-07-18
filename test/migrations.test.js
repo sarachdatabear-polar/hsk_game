@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { CURRENT_SCHEMA_VERSION, readVersion, runMigrations } from "../src/migrations.js";
+import { readVersion, runMigrations } from "../src/migrations.js";
 import { fakeStorage } from "./fixtures.js";
 
 describe("readVersion", () => {

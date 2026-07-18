@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   defaultStickers, scopeNodes, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue,
-  TOP_NS, MILESTONE_PCTS, EVENT_STICKERS,
+  EVENT_STICKERS,
 } from "../src/stickers.js";
 
 // tiny fixture level: 4 words so Top-N nodes vanish (4 ≤ 100) and pcts are easy
