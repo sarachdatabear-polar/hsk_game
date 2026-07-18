@@ -40,6 +40,9 @@ import { defaultProfile, normalizeDisplayName, profileInitial, profileStats, equ
 import { accountState, accountView, canSendCode, codeLooksValid } from "./account.js";
 import { getSession, ensureGuest, sendCode, verifyCode, saveDisplayName, signOut, deleteAccount } from "./cloud.js";
 import { SYNC_KEYS } from "./merge.js";
+import { createStore } from "./storage.js";
+import { runMigrations } from "./migrations.js";
+import { errorEntry, pushError, describeErrorEvent } from "./errlog.js";
 import { reconcile, pushDirty } from "./sync.js";
 import { PRODUCTS, productById, displayPrice } from "./monetization/products.js";
 import { defaultEnt, isSupporter, applyPurchase, restoreFrom } from "./monetization/purchases.js";
@@ -84,22 +87,19 @@ const meaningOf = (w, lang) => meaning(w, lang, getLocale() === "th");
 const REDUCED_MOTION = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 function fxDuration(ms){ return REDUCED_MOTION ? Math.round(ms/2) : ms; }
 function fxUntil(ms){ return performance.now() + fxDuration(ms); }
-const store = {
-  get(k, d){ try{ const v = localStorage.getItem("nbhsk."+k); return v===null? d : JSON.parse(v);}catch(e){ return d; } },
-  set(k, v){
-    try{ localStorage.setItem("nbhsk."+k, JSON.stringify(v)); }catch(e){}
-    // cloud-save: persist a dirty flag per synced key so a mid-session kill
-    // doesn't forget unpushed changes. Writes only on false->true flips.
-    if(SYNC_KEYS.includes(k)){
-      try{
-        const raw = localStorage.getItem("nbhsk.sync");
-        const meta = raw ? JSON.parse(raw) : { dirty:{}, lastSyncAt:0 };
-        if(!meta.dirty) meta.dirty = {};
-        if(!meta.dirty[k]){ meta.dirty[k] = true; localStorage.setItem("nbhsk.sync", JSON.stringify(meta)); }
-      }catch(e){}
-    }
-  }
-};
+// Must run before anything reads through the store: migrations see raw values.
+runMigrations(localStorage);
+const store = createStore({ storage: localStorage, syncKeys: SYNC_KEYS });
+// Crash visibility: persist uncaught errors/rejections to a local-only ring
+// buffer (nbhsk.errlog). Inspect via devtools: JSON.parse(localStorage["nbhsk.errlog"]).
+function logGlobalError(ev){
+  try{
+    const d = describeErrorEvent(ev);
+    store.set("errlog", pushError(store.get("errlog", []), errorEntry(d.source, d.message, d.stack, Date.now())));
+  }catch(e){}
+}
+window.addEventListener("error", logGlobalError);
+window.addEventListener("unhandledrejection", logGlobalError);
 // Dark analytics transport (Task 8 wiring): hard no-op until the Settings
 // consent toggle is on. See src/analytics/ for the queue/consent/transport
 // modules constructed here.
@@ -949,8 +949,6 @@ $("#welcome-start").onclick = ()=>{
   learnDeck = introWords.slice();
   startLearn();
 };
-
-function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
 /* ============================== audio (pre-recorded mp3 first, Web Speech fallback) ============================== */
 // index.json lists which words have a bundled mp3; fetch fails silently on file://
@@ -2423,49 +2421,6 @@ function drawBackdrop(gy){
 // Boss stays at CHAR_BASE*1.5 on top of this, unchanged.
 const CHAR_SCALE = 1.4;
 const CHAR_BASE = 0.9 * CHAR_SCALE;
-function drawLanternTrail(trail, now){
-  if(!trail.nodes.length) return;
-  const first = trail.nodes[0], last = trail.nodes[trail.nodes.length-1];
-  const catX = renderedTrailCatX(now);
-  ctx.save();
-  ctx.lineCap = "round";
-  ctx.strokeStyle = "rgba(46,42,36,.42)";
-  ctx.lineWidth = Math.max(3, 5*B.S);
-  ctx.beginPath(); ctx.moveTo(first.x, trail.pathY); ctx.lineTo(last.x, trail.pathY); ctx.stroke();
-  ctx.strokeStyle = "rgba(242,188,87,.92)";
-  ctx.lineWidth = Math.max(2, 3*B.S);
-  ctx.beginPath(); ctx.moveTo(first.x, trail.pathY); ctx.lineTo(catX, trail.pathY); ctx.stroke();
-
-  const lanternImg = sprite("lantern");
-  for(const node of trail.nodes){
-    const scale = node.landmark ? 1.12 : 1;
-    const lw = 24 * B.L.mascotS * scale;
-    const lh = lw * 1.45;
-    const ly = trail.pathY - lh - 7*B.S;
-    if(node.lit){
-      const glow = ctx.createRadialGradient(node.x, ly+lh*.5, 2, node.x, ly+lh*.5, lw*1.45);
-      glow.addColorStop(0, "rgba(255,225,132,.58)");
-      glow.addColorStop(1, "rgba(242,188,87,0)");
-      ctx.fillStyle = glow;
-      ctx.beginPath(); ctx.arc(node.x, ly+lh*.5, lw*1.45, 0, Math.PI*2); ctx.fill();
-    }
-    ctx.globalAlpha = node.lit ? 1 : .34;
-    if(lanternImg){
-      ctx.drawImage(lanternImg, node.x-lw/2, ly, lw, lh);
-    }else{
-      ctx.fillStyle = node.lit ? "#F2BC57" : "#C8BFAE";
-      ctx.beginPath(); ctx.ellipse(node.x, ly+lh*.48, lw*.38, lh*.34, 0, 0, Math.PI*2); ctx.fill();
-      ctx.strokeStyle = "#846043"; ctx.lineWidth = Math.max(1, B.S);
-      ctx.stroke();
-    }
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = node.lit ? "#F2BC57" : "#D5C7AC";
-    ctx.strokeStyle = "rgba(46,42,36,.58)";
-    ctx.lineWidth = Math.max(1, 1.5*B.S);
-    ctx.beginPath(); ctx.arc(node.x, trail.pathY, (node.landmark?6:5)*B.S, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-  }
-  ctx.restore();
-}
 function draw(now){
   ctx.clearRect(0,0,B.w,B.h);
   const gy = B.h - B.L.ground;
@@ -2913,16 +2868,6 @@ function drawCoverImage(c, img, x, y, w, h){
   const sx = (img.naturalWidth - sw) / 2;
   const sy = (img.naturalHeight - sh) / 2;
   c.drawImage(img, sx, sy, sw, sh, x, y, w, h);
-}
-function drawCoinMark(c, x, y, r){
-  c.save();
-  const g = c.createRadialGradient(x-r*.35,y-r*.35,r*.2,x,y,r);
-  g.addColorStop(0,"#fff1a6"); g.addColorStop(.58,"#f5c518"); g.addColorStop(1,"#a86d00");
-  c.fillStyle = g; c.beginPath(); c.arc(x,y,r,0,Math.PI*2); c.fill();
-  c.strokeStyle = "#5a3c00"; c.lineWidth = Math.max(1,r*.16); c.stroke();
-  c.strokeStyle = "rgba(90,60,0,.65)"; c.lineWidth = Math.max(1,r*.12);
-  c.beginPath(); c.arc(x,y,r*.48,0,Math.PI*2); c.stroke();
-  c.restore();
 }
 function drawPagodaSilhouette(c, x, baseY, s){
   c.save(); c.translate(x, baseY);
@@ -3742,77 +3687,6 @@ function drawStreetPads(c, w, gy, h, pieces, m){
     drawPad(slot*w, backGy, m.unit * m.backScale);
   }
 }
-// Each piece is a small, distinct dark-shape-with-gold/red-accent group,
-// legible at ~72-88px tall. Buildings are silhouettes with lit windows/roof;
-// decos are smaller items (lantern, awning, sign, statue, arch).
-function drawStreetBuildingLegacy(c, id, x, gy, h){
-  const bw = h*0.5, bh = h*0.62;
-  c.save(); c.translate(x, gy);
-  switch(id){
-    case "lantern-post":
-      c.fillStyle = "#2e1030"; c.fillRect(-2, -bh, 4, bh);
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0, -bh, bw*0.22, 0, Math.PI*2); c.fill();
-      break;
-    case "coin-bank":
-      c.fillStyle = "#2e1030"; c.fillRect(-bw/2, -bh, bw, bh);
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0, -bh*0.58, bw*0.18, 0, Math.PI*2); c.fill();
-      c.fillStyle = "#8a2a24"; c.font = `${Math.round(bw*0.22)}px serif`; c.textAlign = "center";
-      c.fillText("$", 0, -bh*0.5);
-      break;
-    case "tailor":
-      c.fillStyle = "#2e1030"; c.fillRect(-bw/2, -bh*0.85, bw, bh*0.85);
-      c.fillStyle = "#c1272d"; c.fillRect(-bw/2-4, -bh*0.85-8, bw+8, 8);
-      c.fillStyle = "#f5c518";
-      c.fillRect(-bw*0.18, -bh*0.55, bw*0.14, bh*0.14); c.fillRect(bw*0.04, -bh*0.55, bw*0.14, bh*0.14);
-      break;
-    case "kitten-cafe":
-      c.fillStyle = "#2e1030"; c.fillRect(-bw/2, -bh*0.75, bw, bh*0.75);
-      c.fillStyle = "#8a2a24";
-      c.beginPath(); c.moveTo(-bw/2-6,-bh*0.75); c.lineTo(0,-bh); c.lineTo(bw/2+6,-bh*0.75); c.closePath(); c.fill();
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-bh*0.4,bw*0.16,0,Math.PI*2); c.fill();
-      break;
-    case "emperor-gate":
-      c.fillStyle = "#c1272d";
-      c.fillRect(-bw*0.7, -bh*1.15, bw*0.16, bh*1.15);
-      c.fillRect(bw*0.54, -bh*1.15, bw*0.16, bh*1.15);
-      c.fillRect(-bw*0.7, -bh*1.15, bw*1.4, bh*0.14);
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-bh*1.08,bw*0.12,0,Math.PI*2); c.fill();
-      break;
-  }
-  c.restore();
-}
-function drawStreetDecoLegacy(c, id, x, gy, h){
-  const s = h*0.32;
-  c.save(); c.translate(x, gy);
-  switch(id){
-    case "red-lantern":
-      c.strokeStyle = "#8a2a24"; c.beginPath(); c.moveTo(0,-s*1.6); c.lineTo(0,-s*1.1); c.stroke();
-      c.fillStyle = "#c1272d"; c.beginPath(); c.ellipse(0,-s*0.8,s*0.32,s*0.42,0,0,Math.PI*2); c.fill();
-      c.fillStyle = "#f5c518"; c.fillRect(-2,-s*0.38,4,s*0.12);
-      break;
-    case "noodle-stall":
-      c.fillStyle = "#5a2c22"; c.fillRect(-s*0.4,-s*0.6,s*0.8,s*0.6);
-      c.fillStyle = "#f5c518"; c.fillRect(-s*0.5,-s*0.78,s,s*0.16);
-      break;
-    case "tea-sign":
-      c.strokeStyle = "#f5c518"; c.beginPath(); c.moveTo(0,-s*1.3); c.lineTo(0,-s*0.9); c.stroke();
-      c.fillStyle = "#3a1a1a"; c.fillRect(-s*0.35,-s*1.3,s*0.7,s*0.32);
-      c.fillStyle = "#f5c518"; c.font = `${Math.round(s*0.22)}px serif`; c.textAlign = "center";
-      c.fillText("茶", 0, -s*1.06);
-      break;
-    case "foo-dog":
-      c.fillStyle = "#2e1030"; c.beginPath(); c.ellipse(0,-s*0.3,s*0.28,s*0.4,0,0,Math.PI*2); c.fill();
-      c.fillStyle = "#f5c518"; c.beginPath(); c.arc(0,-s*0.62,s*0.18,0,Math.PI*2); c.fill();
-      break;
-    case "golden-arch":
-      c.strokeStyle = "#f5c518"; c.lineWidth = 3;
-      c.beginPath(); c.arc(0,-s*0.5, s*0.9, Math.PI, 0); c.stroke();
-      c.beginPath(); c.moveTo(-s*0.9,-s*0.5); c.lineTo(-s*0.9,0); c.moveTo(s*0.9,-s*0.5); c.lineTo(s*0.9,0); c.stroke();
-      break;
-  }
-  c.restore();
-}
-
 function drawStreetBuilding(c, id, x, gy, h){
   const bw = h*0.54, bh = h*0.62;
   c.save(); c.translate(x, gy);

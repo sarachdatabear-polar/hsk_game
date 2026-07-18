@@ -28,16 +28,16 @@ the vocabulary without the sibling `product/` directory.
 
 ```sh
 npm ci            # install
-npm test          # vitest, ~350 tests
+npm test          # vitest, ~2,000 tests
 npm run build     # esbuild src/main.js → dist/app.js (IIFE bundle)
 npm run serve     # python http.server at :8000
 npm run cap:sync  # build + stage www/ + npx cap sync android
 npm run apk:release  # signed release APK (scripts/build_apk.ps1) — Windows desktop only, keystore-bound
 ```
 
-## `src/` modules (~27 files)
+## `src/` modules (~65 files)
 
-- `main.js` (~1,750 LOC) — DOM/canvas wiring: screens, scope selector, flashcards, battle
+- `main.js` (~4,200 LOC) — DOM/canvas wiring: screens, scope selector, flashcards, battle
   loop, shop/street/progress rendering, pause/resume. Everything else is a small pure helper.
 - Game rules: `pool.js` (buildPool/coverage/scope keys/`meaning()`/`normalizeLen`),
   `distractors.js` (3 wrong answers near the target, same-meaning excluded by content-token
@@ -51,7 +51,7 @@ npm run apk:release  # signed release APK (scripts/build_apk.ps1) — Windows de
 - Monetization: `src/monetization/` (`purchases.js`, `purchase-poll.js`; server side in
   `supabase/functions/rc-webhook/`). Ships **dark** until a real provider is wired.
 
-Tests in `test/*.test.js` (~350) cover every pure module plus asset/precache validation;
+Tests in `test/*.test.js` (~2,000) cover every pure module plus asset/precache validation;
 `main.js` wiring is untested by design.
 
 ## Data build scripts
@@ -86,6 +86,20 @@ Android build details: `docs/build/ANDROID_BUILD.md`.
 - `localStorage` keys are namespaced `nbhsk.*`.
 - Never mask the test exit code (don't pipe `npm test` to `tail`/`grep`) when gating a
   commit — catalog tests hardcode prices and must actually fail loudly.
+- **Persistence goes through `src/storage.js`** (`createStore`) — never call
+  `localStorage` directly from feature code. New `nbhsk.*` keys: decide sync vs
+  local-only explicitly (sync = add to `SYNC_KEYS` in `merge.js`).
+- **Changing a stored shape requires a migration:** bump `CURRENT_SCHEMA_VERSION`
+  in `src/migrations.js` and append a `{ to, up(storage) }` ladder entry. Never
+  change a stored shape without one — old installs will silently lose that data.
+- **`main.js` is frozen at its current scope.** Each NEW screen/feature gets its
+  own wiring module (e.g. `src/ui/<feature>-screen.js`) that `main.js` only
+  mounts; don't grow `main.js` with new feature wiring. When touching an existing
+  feature's wiring, extracting it is welcome but not required.
+- **Lint before pushing:** `npm run lint` (ESLint flat config, `eslint.config.mjs`).
+  CI runs lint + test + build on every PR and push to `development`.
+- **Crash log:** uncaught errors land in the local-only `nbhsk.errlog` ring buffer
+  (30 entries). To inspect on a device: `JSON.parse(localStorage["nbhsk.errlog"])`.
 
 ## Handoff between sessions / machines
 
