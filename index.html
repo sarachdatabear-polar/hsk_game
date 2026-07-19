@@ -813,6 +813,19 @@
   #word-panel .wd-example-label{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em;}
   #word-panel .wd-example-cn{font-size:18px; margin-top:2px;}
   #word-panel .wd-example-tr{color:var(--muted);}
+  #friend-panel{width:100%; max-width:340px; margin:6px auto 0; display:flex; flex-direction:column; gap:12px;}
+  #friend-panel .fr-section{display:flex; flex-direction:column; gap:6px;}
+  #friend-panel .fr-label{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em;}
+  #friend-panel .fr-code{width:100%; padding:9px 10px; border:1px solid var(--line, #ddd); border-radius:8px; font-size:14px; background:var(--panel-wash); color:var(--ink);}
+  #friend-panel .fr-btn{min-height:44px; border-radius:10px;}
+  #friend-panel .fr-result{font-size:13px; color:var(--muted); min-height:1em;}
+  #friend-panel .fr-lead{font-size:15px; font-weight:600; text-align:center; color:var(--ink);}
+  #friend-panel .fr-row{display:grid; grid-template-columns:1fr 64px 64px; gap:8px; align-items:center; padding:7px 0; border-top:1px solid var(--line, #ddd);}
+  #friend-panel .fr-head{font-size:12px; color:var(--muted); border-top:none;}
+  #friend-panel .fr-metric{color:var(--muted); font-size:13px; overflow-wrap:anywhere;}
+  #friend-panel .fr-mine, #friend-panel .fr-theirs{text-align:right; font-variant-numeric:tabular-nums; font-size:14px; color:var(--ink);}
+  #friend-panel .fr-row.fr-mine .fr-mine{color:var(--lc-green, #2a8); font-weight:700;}
+  #friend-panel .fr-row.fr-theirs .fr-theirs{color:var(--lc-green, #2a8); font-weight:700;}
   .wd-info{position:absolute; top:4px; right:4px; width:44px; height:44px; border:none; background:transparent; font-size:20px; color:var(--muted); cursor:pointer; line-height:1; display:flex; align-items:center; justify-content:center;}
   .quest-row{display:flex; align-items:center; gap:6px; font-size:12.5px; line-height:1.3;
     border:1px solid var(--panel-border); border-radius:10px; padding:8px 22px; color:var(--ink);}
@@ -1592,6 +1605,7 @@
       <div class="profile-actions">
         <button class="big" data-go="shop"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#shop"></use></svg><span data-i18n="profile.viewCollection">View Collection</span></span></button>
         <button class="big" data-go="album"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="profile.viewAlbum">Sticker Album</span></span></button>
+        <button class="big" id="go-friend" type="button"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="friend.compareCta">Compare with a friend</span></span></button>
       </div>
     </section>
     <div class="sect" data-i18n="profile.learningTitle">Learning progress</div>
@@ -1690,6 +1704,19 @@
         <button class="overlay-close" id="word-popup-close" data-i18n-title="common.close" aria-label="Close">×</button>
       </div>
       <div id="word-panel"></div>
+    </div>
+  </div>
+
+  <!-- Friend-compare panel: same dialog pattern as #word-overlay. Body filled by
+       createFriendCompare() in src/ui/friend-screen.js. No accounts — a compact
+       score card is shared as a code/link and compared locally. -->
+  <div class="pause-overlay" id="friend-overlay" role="dialog" aria-modal="true" aria-labelledby="friend-dialog-title">
+    <div class="pause-panel">
+      <div class="quest-popup-head">
+        <h3 class="pause-title" id="friend-dialog-title" data-i18n="friend.title">Compare with a friend</h3>
+        <button class="overlay-close" id="friend-popup-close" data-i18n-title="common.close" aria-label="Close">×</button>
+      </div>
+      <div id="friend-panel"></div>
     </div>
   </div>
 
