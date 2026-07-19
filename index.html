@@ -339,7 +339,7 @@
   }
   .card{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;
     color:var(--ink); border:2px solid var(--lc-sand); border-radius:20px; margin:14px 0;
-    border-image:var(--f-ui-card-paper, none);
+    border-image:var(--f-ui-card-paper, none); position:relative;
     padding:24px; text-align:center; min-height:280px; cursor:pointer; user-select:none;
     box-shadow:0 4px 14px rgba(46,42,36,.12);}
   .card .hz{font-size:64px; line-height:1.15;}
@@ -801,6 +801,17 @@
   /* daily quests */
   #quest-panel{width:100%; max-width:320px; margin:10px auto 0; display:flex; flex-direction:column; gap:5px;
     border-image:var(--f-ui-panel, none);}
+  #word-panel{width:100%; max-width:320px; margin:6px auto 0; display:flex; flex-direction:column; gap:6px; text-align:center;}
+  #word-panel .wd-py{color:var(--muted); font-size:16px;}
+  #word-panel .wd-en{font-size:17px;}
+  #word-panel .wd-th{color:var(--muted);}
+  #word-panel .wd-meta{font-size:13px; color:var(--muted);}
+  #word-panel .wd-papers{font-size:13px; color:var(--muted);}
+  #word-panel .wd-example{margin-top:8px; padding-top:8px; border-top:1px solid var(--line, #ddd);}
+  #word-panel .wd-example-label{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em;}
+  #word-panel .wd-example-cn{font-size:18px; margin-top:2px;}
+  #word-panel .wd-example-tr{color:var(--muted);}
+  .wd-info{position:absolute; top:8px; right:8px; width:32px; height:32px; border:none; background:transparent; font-size:20px; color:var(--muted); cursor:pointer; line-height:1;}
   .quest-row{display:flex; align-items:center; gap:6px; font-size:12.5px; line-height:1.3;
     border:1px solid var(--panel-border); border-radius:10px; padding:8px 22px; color:var(--ink);}
   .quest-row.done{opacity:.6;}
@@ -1665,6 +1676,19 @@
     <button class="back" data-go="more" data-i18n="common.backMore">← More</button>
     <h2 data-i18n="account.title">Account</h2>
     <div id="account-panel"></div>
+  </div>
+
+  <!-- Word-detail panel: clones the #quest-overlay dialog pattern (scrim +
+       .pause-panel + backdrop-tap close). Body filled by createWordDetail()
+       in src/ui/word-detail-screen.js; title set to the hanzi on open. -->
+  <div class="pause-overlay" id="word-overlay" role="dialog" aria-modal="true" aria-labelledby="word-dialog-title">
+    <div class="pause-panel">
+      <div class="quest-popup-head">
+        <h3 class="pause-title" id="word-dialog-title">词</h3>
+        <button class="overlay-close" id="word-popup-close" data-i18n-title="common.close" aria-label="Close">×</button>
+      </div>
+      <div id="word-panel"></div>
+    </div>
   </div>
 
   <!-- BOTTOM NAV -->
