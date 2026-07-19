@@ -1,20 +1,21 @@
 # Lucky Cat HSK — Status
 
-**Last updated:** 2026-07-17
-**TL;DR:** The current web/PWA release is **v80**. It repairs the v78
-example-sentence Cards overflow in English/Thai, makes mobile audio unlock
-retryable, versions every PWA cache together, removes the remaining npm audit
-findings without breaking Capacitor 6, and makes the browser release gate
-deterministic. The web release is complete; signed Android and store/legal
-work remains in [OWNER-ACTIONS.md](OWNER-ACTIONS.md).
+**Last updated:** 2026-07-19
+**TL;DR:** The current web/PWA release is **v85** (`ead3ff2`, live-verified). It
+ships the HSK 3.0 (GF0025-2021) compatibility audit and an additive read-only
+`h3` band on word records that is **dormant** (rendered nowhere yet), so it is a
+data-only cut with no behavior change — `dist/app.js` is byte-identical and the
+SHELL bump only busts the PWA cache for the regenerated `data/words.js`. The web
+release is complete; signed Android and store/legal work remains in
+[OWNER-ACTIONS.md](OWNER-ACTIONS.md).
 
 ## Where the game is
 
 | Tier | State |
 |---|---|
-| **`main` / GitHub Pages** | **v80 corrective release**: 79 files / 1,973 tests, 95 assets, build, zero npm advisories, Capacitor sync, deterministic EN+TH browser matrices, `file://` launch, and offline PWA reload pass. |
-| **Previous release** | SHELL v79 (`ab9c550`): v77 delete-account release, v78 flashcard examples, and v79 static battle/mobile-audio unlock. |
-| **Latest signed Android artifact** | Profile v74 APK. A v80 APK/AAB still needs the Windows signing and emulator/physical-device acceptance matrix. |
+| **`main` / GitHub Pages** | **v85 HSK 3.0 audit + dormant `h3` data** (`ead3ff2`): 87 files / 5,931 tests, build clean, `dist/app.js` byte-identical to v84. Live-verified — `sw.js` serves `CACHE_VERSION "v85"`, site HTTP 200, `data/words.js` carries `h3`. |
+| **Previous releases** | v84 word-detail panel (flashcard ⓘ + needs-work rows); v83 #127 Thai fix + HSK6 example sentences; v82 HSK3/4/5 examples + production hardening (v81); v80 corrective release. |
+| **Latest signed Android artifact** | Profile v74 APK. A v85 APK/AAB still needs the Windows signing and emulator/physical-device acceptance matrix. |
 
 ## Done
 
@@ -71,10 +72,19 @@ work remains in [OWNER-ACTIONS.md](OWNER-ACTIONS.md).
   English and Thai.
 - **v77–v79 releases** — live account deletion, example sentences on Cards,
   the static battle scene, and the first mobile-audio unlock pass (2026-07-17).
+- **v80–v85 releases** (2026-07-17→19) — v80 corrective hardening; **v81**
+  production hardening (CI on PRs, crash log, schema versioning, storage seam,
+  ESLint, provider tests); **v82** HSK3/4/5 flashcard example sentences + #123
+  hardening; **v83** #127 Thai wrong-meaning fix + HSK6 example sentences
+  (examples now 3,887); **v84** tappable word-detail panel (flashcard ⓘ +
+  needs-work rows); **v85** HSK 3.0 (GF0025-2021) compatibility audit + dormant
+  additive `h3` band on word records (data-only, nothing reads it yet) + coin §6
+  decisions/PRD §6.3 ledger-cursor amendment. Catalog data-quality (#126) fixed
+  and closed; #127 Thai native-review remains open.
 
 ## In progress
 
-- **v80 Android cut:** produce a Windows-signed APK/AAB and repeat the
+- **v85 Android cut:** produce a Windows-signed APK/AAB and repeat the
   emulator/physical-device matrix. The previously verified v74 APK is recorded
   in [ANDROID_BUILD.md](build/ANDROID_BUILD.md). The Android cut also owes a
   device check of re-engagement notification id 1002 firing/canceling and
