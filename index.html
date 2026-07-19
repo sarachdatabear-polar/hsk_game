@@ -1325,18 +1325,6 @@
       </div>
     </div>
 
-    <!-- Word-detail panel: clones the #quest-overlay dialog pattern (scrim +
-         .pause-panel + backdrop-tap close). Body filled by createWordDetail()
-         in src/ui/word-detail-screen.js; title set to the hanzi on open. -->
-    <div class="pause-overlay" id="word-overlay" role="dialog" aria-modal="true" aria-labelledby="word-dialog-title">
-      <div class="pause-panel">
-        <div class="quest-popup-head">
-          <h3 class="pause-title" id="word-dialog-title">词</h3>
-          <button class="overlay-close" id="word-popup-close" data-i18n-title="common.close" aria-label="Close">×</button>
-        </div>
-        <div id="word-panel"></div>
-      </div>
-    </div>
   </div>
 
   <!-- MORE -->
@@ -1689,6 +1677,19 @@
     <button class="back" data-go="more" data-i18n="common.backMore">← More</button>
     <h2 data-i18n="account.title">Account</h2>
     <div id="account-panel"></div>
+  </div>
+
+  <!-- Word-detail panel: clones the #quest-overlay dialog pattern (scrim +
+       .pause-panel + backdrop-tap close). Body filled by createWordDetail()
+       in src/ui/word-detail-screen.js; title set to the hanzi on open. -->
+  <div class="pause-overlay" id="word-overlay" role="dialog" aria-modal="true" aria-labelledby="word-dialog-title">
+    <div class="pause-panel">
+      <div class="quest-popup-head">
+        <h3 class="pause-title" id="word-dialog-title">词</h3>
+        <button class="overlay-close" id="word-popup-close" data-i18n-title="common.close" aria-label="Close">×</button>
+      </div>
+      <div id="word-panel"></div>
+    </div>
   </div>
 
   <!-- BOTTOM NAV -->
