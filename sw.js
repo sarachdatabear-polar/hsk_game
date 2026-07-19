@@ -6,7 +6,7 @@
 // One release version owns every cache. Keeping runtime/audio on older names
 // lets cache-first optional art and regenerated MP3s survive a shell release
 // indefinitely, so all three advance together.
-const CACHE_VERSION = "v91";
+const CACHE_VERSION = "v92";
 const SHELL = `nbhsk-shell-${CACHE_VERSION}`;
 const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`;
 const AUDIO = `nbhsk-audio-${CACHE_VERSION}`;
@@ -18,7 +18,7 @@ const AUDIO = `nbhsk-audio-${CACHE_VERSION}`;
 // runtime-caches it after first use (like the optional art) — offline-capable
 // from the second launch on, degrading to no-example before then / on file://.
 const PRECACHE = [
-  "index.html", "dist/app.js", "data/words.js", "data/cloze.js", "audio/index.json",
+  "index.html", "privacy.html", "dist/app.js", "data/words.js", "data/cloze.js", "audio/index.json",
   "pwa/manifest.webmanifest", "pwa/icons/icon-192.png", "pwa/icons/icon-512.png",
 
   // CSS screen art and first-run/home characters.

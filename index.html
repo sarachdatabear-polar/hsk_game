@@ -7,6 +7,19 @@
 <link rel="icon" href="data:,">
 <link rel="manifest" href="pwa/manifest.webmanifest">
 <title>Lucky Cat HSK 招财猫</title>
+<meta name="description" content="HSK vocab arcade: words ranked by real exam frequency. English & Thai, fully offline.">
+<link rel="canonical" href="https://sarachdatabear-polar.github.io/hsk_game/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Lucky Cat HSK 招财猫">
+<meta property="og:description" content="HSK vocab arcade: words ranked by real exam frequency. English & Thai, fully offline.">
+<meta property="og:url" content="https://sarachdatabear-polar.github.io/hsk_game/">
+<meta property="og:image" content="https://sarachdatabear-polar.github.io/hsk_game/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Lucky Cat HSK 招财猫">
+<meta name="twitter:description" content="HSK vocab arcade: words ranked by real exam frequency. English & Thai, fully offline.">
+<meta name="twitter:image" content="https://sarachdatabear-polar.github.io/hsk_game/assets/og-image.png">
 <style>
   @font-face{
     font-family:'LC Hanzi';
@@ -171,6 +184,7 @@
   .settings-row-label input[type=checkbox]{width:22px; height:22px; min-width:22px; flex:0 0 auto;
     accent-color:var(--lc-green); cursor:pointer;}
   .settings-row-hint{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.4;}
+  .settings-row-hint a{color:var(--lc-teal); font-weight:600;}
   .chips{display:flex; flex-wrap:wrap; gap:8px;}
   .chip{padding:9px 14px; border-radius:999px; background:var(--chip); color:var(--ink);
     min-height:45px; min-width:44px;
@@ -1063,6 +1077,11 @@
   .welcome-blurb{text-align:center; color:var(--muted); font-size:14.5px; margin:2px 0 6px;}
   .welcome-hint{color:var(--muted); font-size:12.5px; line-height:1.4; margin:8px 0 0; max-width:34ch;}
   .welcome-start{margin-top:16px; flex:none;}
+  /* Grouping wrappers for the landscape two-column variant below — flex-column
+     with the same gap the flat .welcome-wrap used, so portrait (where these
+     stay column-stacked, just one nesting level deeper) renders identically
+     to before this split. */
+  .welcome-intro,.welcome-controls{display:flex; flex-direction:column; gap:4px;}
 
   /* festive decor — swaying lantern.png corners + a soft cloud.png behind the
      title. Applied to the bare screens (Results/Scores/Progress/How-to) only;
@@ -1234,6 +1253,30 @@
        #s-tones just above: top-align and let it scroll instead of center. */
     #s-more{justify-content:flex-start; overflow-y:auto;}
     .more-foot{margin-top:14px;}
+
+    /* ---- welcome (launch audit F2, 2026-07-26) ---- */
+    /* The first-run Welcome screen had no landscape variant at all: centered,
+       single-column, ~580px tall content in a 360/390px-tall viewport, no
+       scroll affordance — START LEARNING and the HSK5/6 chips sat entirely
+       below the fold on a new user's very first screen. Regroups into the
+       same two-column, no-scroll shape as the flashcard block above: intro
+       (cat + title) fixed-width on the left, all interactive chips/hint/CTA
+       filling the right column. The blurb line is dropped the same way
+       .home-hero is dropped above — decorative copy the fold can't afford —
+       and .welcome-intro/.welcome-controls flip from column to a shared row
+       via .welcome-wrap so both languages fit comfortably under the 360px
+       floor (measured ~200px tall at 640x360 in both EN and TH). */
+    #s-welcome{padding:6px 14px 4px; justify-content:flex-start;}
+    .welcome-wrap{flex-direction:row; align-items:center; gap:14px; max-width:none; margin:0;}
+    .welcome-intro{flex:0 0 140px;}
+    .welcome-cat{width:56px; height:56px;}
+    .welcome-title{font-size:15px; margin:2px 0 0;}
+    .welcome-blurb{display:none;}
+    .welcome-controls{flex:1 1 auto; min-width:0; gap:2px; justify-content:center;}
+    .welcome-controls .sect{margin:4px 0 3px; font-size:10px;}
+    .welcome-controls .chips{gap:6px;}
+    .welcome-hint{font-size:10px; line-height:1.25; margin:4px 0 0; max-width:none;}
+    .welcome-start{margin-top:6px;}
   }
 </style>
 </head>
@@ -1295,25 +1338,29 @@
   <!-- WELCOME (A4 first run — shown once for fresh profiles; see firstrun.js) -->
   <div class="screen" id="s-welcome">
     <div class="welcome-wrap">
-      <img class="welcome-cat" src="assets/cat-study.png" alt="">
-      <h2 class="welcome-title" data-i18n="welcome.title">Welcome!</h2>
-      <p class="welcome-blurb" data-i18n="welcome.blurb">Learn Chinese words by playing — a couple of minutes a day.</p>
-      <div class="sect" data-i18n="welcome.language">Your language</div>
-      <div class="chips" id="welcome-lang-chips">
-        <button class="chip" data-wlang="en">English</button>
-        <button class="chip" data-wlang="th">ไทย</button>
+      <div class="welcome-intro">
+        <img class="welcome-cat" src="assets/cat-study.png" alt="">
+        <h2 class="welcome-title" data-i18n="welcome.title">Welcome!</h2>
+        <p class="welcome-blurb" data-i18n="welcome.blurb">Learn Chinese words by playing — a couple of minutes a day.</p>
       </div>
-      <div class="sect" data-i18n="welcome.level">Start at</div>
-      <div class="chips" id="welcome-level-chips">
-        <button class="chip" data-wlv="1">HSK1</button>
-        <button class="chip" data-wlv="2">HSK2</button>
-        <button class="chip" data-wlv="3">HSK3</button>
-        <button class="chip" data-wlv="4">HSK4</button>
-        <button class="chip" data-wlv="5">HSK5</button>
-        <button class="chip" data-wlv="6">HSK6</button>
+      <div class="welcome-controls">
+        <div class="sect" data-i18n="welcome.language">Your language</div>
+        <div class="chips" id="welcome-lang-chips">
+          <button class="chip" data-wlang="en">English</button>
+          <button class="chip" data-wlang="th">ไทย</button>
+        </div>
+        <div class="sect" data-i18n="welcome.level">Start at</div>
+        <div class="chips" id="welcome-level-chips">
+          <button class="chip" data-wlv="1">HSK1</button>
+          <button class="chip" data-wlv="2">HSK2</button>
+          <button class="chip" data-wlv="3">HSK3</button>
+          <button class="chip" data-wlv="4">HSK4</button>
+          <button class="chip" data-wlv="5">HSK5</button>
+          <button class="chip" data-wlv="6">HSK6</button>
+        </div>
+        <p class="welcome-hint" data-i18n="welcome.levelHint">New to HSK? Start with HSK1 — you can change this any time.</p>
+        <button class="start-btn welcome-start" id="welcome-start" data-i18n="welcome.start">START LEARNING</button>
       </div>
-      <p class="welcome-hint" data-i18n="welcome.levelHint">New to HSK? Start with HSK1 — you can change this any time.</p>
-      <button class="start-btn welcome-start" id="welcome-start" data-i18n="welcome.start">START LEARNING</button>
     </div>
   </div>
 
@@ -1356,6 +1403,7 @@
         <span data-i18n="settings.analytics">Share anonymous usage data</span>
       </label>
       <p class="settings-row-hint" data-i18n="settings.analyticsHint">Helps improve the game. No personal info, no word history. Off by default.</p>
+      <p class="settings-row-hint"><a href="privacy.html" target="_blank" rel="noopener" data-i18n="settings.privacy">Privacy Policy</a></p>
     </div>
     <div class="sect" data-i18n="common.language">Language</div>
     <div class="chips" id="ui-lang-chips">
