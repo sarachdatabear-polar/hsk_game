@@ -45,9 +45,6 @@ export function mergeStickers(a, b) {
   return { earned, queue: Array.isArray(A.queue) ? A.queue.slice() : [] };
 }
 
-// Equipped slots resolve by dirty-bit LWW: local wins iff the shop key changed
-// locally since the last successful sync — so a fresh install adopts the
-// cloud outfit, but an unsynced re-dress isn't undone by an old cloud row.
 // The four equipped-cosmetic slots, normalized through defaultShop so null/
 // partial shop states compare stably. sync.js diffs these against the
 // last-synced baseline (meta.shopSlots) to detect a REAL local re-dress.
@@ -56,6 +53,11 @@ export function slotsOf(shop) {
   return { skin: s.skin, backdrop: s.backdrop, effect: s.effect, soundpack: s.soundpack };
 }
 
+// Equipped slots resolve by dirty-bit LWW: local wins iff the equip slots
+// themselves changed locally since the last successful sync (sync.js diffs
+// slotsOf(local.shop) against the meta.shopSlots baseline) — so a fresh
+// install adopts the cloud outfit, but an unsynced re-dress isn't undone by
+// an old cloud row.
 export function mergeShop(a, b, localSlotsDirty) {
   const A = Object.assign(defaultShop(), a || {});
   if (!b) {
