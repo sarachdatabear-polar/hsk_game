@@ -57,6 +57,7 @@ import { cardSessionKey, newCardSession, restoreCardSession, cardSessionSnapshot
 import { createAnalytics } from "./analytics/index.js";
 import { durationBucket } from "./analytics/events.js";
 import { SUPABASE_URL, SUPABASE_KEY } from "./cloud-config.js";
+import { createWordDetail } from "./ui/word-detail-screen.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -362,6 +363,8 @@ document.addEventListener("keydown", event => {
     event.preventDefault(); (event.shiftKey ? last : first).focus();
   }
 }, true);
+
+const wordDetail = createWordDetail({ $, openDialog, closeDialog, examples: EXAMPLES, getLocale });
 
 function noteDaily(count){
   const wasGoalMet = streakInfo(daily, todayStr(), freezes).goalMet;
@@ -1302,8 +1305,10 @@ function renderCard(){
         <div class="fc-example-tr">${ex.tr}</div>
         <button class="spk" id="fc-example-spk" type="button" data-i18n-title="common.playAudio" aria-label="Play audio"><svg class="asset-icon"><use href="assets/ui-icons.svg#sound"></use></svg></button>
       </div>` : "";
-    c.innerHTML = `<div class="hz" style="font-size:40px">${w.h}</div><div class="py">${w.p}</div>
+    c.innerHTML = `<button class="wd-info" id="fc-info" type="button" data-i18n-title="wd.info" aria-label="Word detail">ⓘ</button>
+      <div class="hz" style="font-size:40px">${w.h}</div><div class="py">${w.p}</div>
       <div class="mean">${w.e}${th}</div>${exampleRow}<div class="hint">${t("learn.hintBack")}</div>`;
+    $("#fc-info").onclick = e=>{ e.stopPropagation(); wordDetail.open(w); };
     if(ex){
       $("#fc-example-spk").onclick = e=>{ e.stopPropagation(); speak(ex.cn); };
     }
@@ -4005,10 +4010,15 @@ function renderNeedsWork(){
   for(const w of weak){
     const row = document.createElement("div");
     row.className = "missrow";
+    row.setAttribute("role", "button");
+    row.tabIndex = 0;
+    row.style.cursor = "pointer";
     row.innerHTML = `<span class="hz">${w.h}</span>
       <span class="det"><span class="py">${w.p}</span> — ${w.e}${w.t? " · "+w.t:""}</span>`;
+    row.onclick = ()=> wordDetail.open(w);
+    row.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); wordDetail.open(w); } };
     const sp = document.createElement("button");
-    sp.className = "sp"; sp.setAttribute("aria-label", t("common.playAudio")); sp.replaceChildren(iconSvg("sound")); sp.onclick = ()=>speak(w.h);
+    sp.className = "sp"; sp.setAttribute("aria-label", t("common.playAudio")); sp.replaceChildren(iconSvg("sound")); sp.onclick = e=>{ e.stopPropagation(); speak(w.h); };
     row.appendChild(sp);
     list.appendChild(row);
   }

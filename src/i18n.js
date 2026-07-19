@@ -152,6 +152,10 @@ export const STRINGS = {
     "learn.hintBack": "tap to flip back",
     "fc.noThai": "no Thai yet",
     "fc.inSentence": "In a sentence",
+    "wd.info": "Word detail",
+    "wd.core": "Core",
+    "wd.extended": "Extended",
+    "wd.appearsInPapers": "Appears in {n} of {total} papers",
     // results
     "results.roundOver": "Word Quest complete",
     "results.routeLabel": "Village Gate journey",
@@ -568,6 +572,10 @@ export const STRINGS = {
     "learn.hintBack": "แตะเพื่อพลิกกลับ",
     "fc.noThai": "ยังไม่มีภาษาไทย",
     "fc.inSentence": "ในประโยค",
+    "wd.info": "รายละเอียดคำ",
+    "wd.core": "หลัก",
+    "wd.extended": "เพิ่มเติม",
+    "wd.appearsInPapers": "พบใน {n} จาก {total} ชุดข้อสอบ",
     // results
     "results.roundOver": "จบภารกิจคำศัพท์",
     "results.routeLabel": "เส้นทางประตูหมู่บ้าน",
