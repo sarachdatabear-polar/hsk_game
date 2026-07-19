@@ -1,13 +1,31 @@
 # Lucky Cat HSK — Status
 
 **Last updated:** 2026-07-19
-**TL;DR:** The current web/PWA release is **v85** (`ead3ff2`, live-verified). It
-ships the HSK 3.0 (GF0025-2021) compatibility audit and an additive read-only
-`h3` band on word records that is **dormant** (rendered nowhere yet), so it is a
-data-only cut with no behavior change — `dist/app.js` is byte-identical and the
-SHELL bump only busts the PWA cache for the regenerated `data/words.js`. The web
+**TL;DR:** The current web/PWA release is **v92** (`28c789a`, live-verified —
+deploy 29698350501 SUCCESS, served `sw.js` = `CACHE_VERSION "v92"`, `/privacy.html`
+200, `/assets/og-image.png` 200, OG tags live). It ships the **public-launch
+readiness** round for the 26 Jul web launch: social/OG + Twitter meta so shared
+links render preview cards, a 1200×630 `assets/og-image.png`, a hosted
+`privacy.html` (deployed + linked from Settings, EN/TH, offline-precached), and
+the **F2** fix — a landscape two-column layout for the first-run Welcome screen so
+the START LEARNING CTA is above the fold (with a new first-run onboarding probe in
+`scripts/responsive-sweep.mjs`, closing the gap that let F2 ship). Suite 9,193
+green. The prior v85–v91 content/gloss line is superseded for current-state.
+Android/Play production is a **decoupled Aug+ beat** gated on an org D-U-N-S
+(see [OWNER-ACTIONS.md](OWNER-ACTIONS.md); plan in
+[planning/2026-07-26-public-pwa-launch-design.md](planning/2026-07-26-public-pwa-launch-design.md)).
+
+<details><summary>Prior v85 TL;DR (superseded)</summary>
+
+The v85 release (`ead3ff2`) shipped the HSK 3.0 (GF0025-2021) compatibility
+audit and an additive read-only `h3` band on word records that is **dormant**
+(rendered nowhere yet), so it was a data-only cut with no behavior change —
+`dist/app.js` byte-identical and the SHELL bump only busted the PWA cache for the
+regenerated `data/words.js`. The web
 release is complete; signed Android and store/legal work remains in
 [OWNER-ACTIONS.md](OWNER-ACTIONS.md).
+
+</details>
 
 ## Where the game is
 
