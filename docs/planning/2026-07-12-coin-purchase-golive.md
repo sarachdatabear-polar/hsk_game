@@ -103,7 +103,9 @@ Phase 1 is all pure/unit-testable: gating fold, webhook handler (Deno test or fi
    guest UUID; RevenueCat never configures with its own anonymous id. The owner
    still needs to approve final account-protection copy before un-darking.
 3. **Phase 0 timing** — when to buy the Play Console account and start the 14-day closed-testing clock.
+   → **DECIDED 2026-07-19: deferred.** No spend yet; the billing/Android clock stays unstarted. Engineering proceeds on the code half only.
 4. Go/no-go on the §3 ledger-cursor design (it amends the cloud-save PRD §6.3 merge rules; one-paragraph PRD amendment at release, same as the per-key-folds precedent).
+   → **DECIDED 2026-07-19: GO (approved).** The design was already implemented and unit-tested dark (`src/sync.js`/`cloud.js`/`merge.js`; 103 tests). The §6.3 PRD amendment has been written now (`docs/prd/PRD-monetization-and-production.md` §6.3) rather than deferred to release, since the code already exists. Activation still gated on Phase 0 (deferred) + a real provider key.
 
 ## 7. Suggested execution order
 
