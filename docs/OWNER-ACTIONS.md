@@ -1,31 +1,34 @@
 # Owner actions
 
-The v80 corrective release is on `main` and deployed to the web/PWA. It repairs
-Cards/example responsive regressions, retry-hardens mobile audio, unifies PWA
-cache invalidation, makes browser fixtures deterministic, and clears npm
-advisories while retaining Capacitor 6 compatibility. The remaining gates are
-the signed Android artifact, device acceptance, and store/legal work.
+The v85 release is on `main` (`ead3ff2`) and deployed to the web/PWA. It ships
+the HSK 3.0 (GF0025-2021) compatibility audit and an additive read-only `h3`
+band on word records that is **dormant** (rendered nowhere yet), so it is a
+data-only cut with no behavior change — `dist/app.js` is byte-identical to v84
+and the SHELL bump only busts the PWA cache for the regenerated `data/words.js`.
+The web release is complete since v80's corrective hardening; the remaining
+gates are the signed Android artifact, device acceptance, and store/legal work.
 
 ## Current handoff snapshot
 
-- Current committed/deployed source: `main` v80; service-worker cache version
-  `v80`.
-- Recorded release gates: 79 files / 1,973 tests, build, 95 assets, zero npm
-  advisories, deterministic EN+TH browser matrices, `file://` launch, and
-  Capacitor branding sync pass.
-- Latest signed artifact remains Profile v74; no v80 APK/AAB exists yet.
+- Current committed/deployed source: `main` v85; service-worker cache version
+  `v85`. Live-verified: `sw.js` serves `CACHE_VERSION "v85"`, site HTTP 200.
+- Recorded release gates: 87 files / 5,931 tests, build clean, `dist/app.js`
+  byte-identical to v84 (data-only cut). Prior v80 gates (95 assets, `file://`
+  launch, deterministic EN+TH browser matrices, Capacitor branding sync) remain
+  valid since no `src`/asset/build change has landed since.
+- Latest signed artifact remains Profile v74; no v85 APK/AAB exists yet.
 
 Do these in order. The Google/RevenueCat/backend tracks can overlap once the
 accounts exist.
 
-## 1. Build and accept the v80 APK/AAB
+## 1. Build and accept the v85 APK/AAB
 
-Use the exact v80 `main` release for Android. It passes 79 test files / 1,973
-tests, 95 asset checks, production build, Capacitor sync, deterministic EN+TH
-viewport/format/accessibility gates, and both npm audits. **It has not been
-signed on Windows.**
+Use the exact v85 `main` release for Android. It passes 87 test files / 5,931
+tests, production build, Capacitor sync, and (from the unchanged v80 baseline)
+95 asset checks, deterministic EN+TH viewport/format/accessibility gates, and
+both npm audits. **It has not been signed on Windows.**
 
-Pull `main` v80 onto the Windows release checkout, then open a
+Pull `main` v85 onto the Windows release checkout, then open a
 fresh PowerShell in
 `C:\Users\sarac\Desktop\HSK\game` and run these as separate lines:
 
