@@ -598,6 +598,70 @@ async function runCardsResumeProbe(browser) {
   return { line, failed:failures.length > 0 };
 }
 
+// F2 (2026-07-26 audit): true first-run onboarding probe. Every other probe
+// in this file seeds nbhsk.introDone=true via preparePage() specifically to
+// skip onboarding and test the returning-user app — which structurally kept
+// the Welcome screen invisible to this permanent gate and let the landscape
+// CTA-below-the-fold regression (F2) ship undetected (see
+// docs/planning/2026-07-26-launch-audit-findings.md). This probe seeds NO
+// localStorage keys except locale, so isFirstRun() (src/firstrun.js) sees a
+// genuinely fresh profile and main.js's boot path calls show("welcome").
+async function prepareWelcomePage(browser, width, height) {
+  const page = await browser.newPage({ viewport: { width, height } });
+  const errs = [];
+  page.on("pageerror", e => errs.push(e.message));
+  await page.addInitScript(locale => {
+    localStorage.setItem("nbhsk.locale", JSON.stringify(locale));
+  }, LOCALE);
+  await page.goto(`${BASE_URL}/index.html`, { waitUntil: "load" });
+  await page.waitForTimeout(700);
+  return { page, errs };
+}
+
+async function runWelcomeProbe(browser, width, height) {
+  const { page, errs } = await prepareWelcomePage(browser, width, height);
+
+  const info = await page.evaluate(tol => {
+    const rectIn = el => {
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return {
+        bottom: r.bottom,
+        inView: r.width > 0 && r.height > 0 &&
+          r.top >= -tol && r.bottom <= window.innerHeight + tol,
+      };
+    };
+    const doc = document.documentElement;
+    return {
+      active: document.querySelector("#s-welcome")?.classList.contains("on") ?? false,
+      startBtn: rectIn(document.querySelector("#welcome-start")),
+      hsk6Chip: rectIn(document.querySelector('#welcome-level-chips [data-wlv="6"]')),
+      scrollNeeded: doc.scrollHeight > window.innerHeight + tol,
+      innerHeight: window.innerHeight,
+      scrollHeight: doc.scrollHeight,
+    };
+  }, TOL);
+
+  const failures = [];
+  if (!info.active) failures.push("welcome: #s-welcome not active (first-run state not reached)");
+  if (!info.startBtn) failures.push("welcome: #welcome-start missing");
+  else if (!info.startBtn.inView)
+    failures.push(`welcome: #welcome-start below fold (bottom=${Math.round(info.startBtn.bottom)}>innerHeight=${info.innerHeight})`);
+  if (!info.hsk6Chip) failures.push("welcome: HSK6 level chip missing");
+  else if (!info.hsk6Chip.inView)
+    failures.push(`welcome: HSK6 level chip below fold (bottom=${Math.round(info.hsk6Chip.bottom)}>innerHeight=${info.innerHeight})`);
+  if (info.scrollNeeded)
+    failures.push(`welcome: scroll needed (scrollHeight=${info.scrollHeight}>innerHeight=${info.innerHeight})`);
+  if (errs.length) failures.push(`JSERR:${errs[0]}`);
+
+  const status = failures.length ? "FAIL" : "PASS";
+  const line = `[${status}] welcome ${width}x${height} (${LOCALE}): ` +
+    `start=${info.startBtn?.inView ? "in-fold" : "BELOW-FOLD"}` +
+    (failures.length ? ` | FAILURES: ${failures.join("; ")}` : "");
+  await page.close();
+  return { line, failed: failures.length > 0 };
+}
+
 async function runAccessibilityProbe(browser) {
   const { page, errs } = await preparePage(browser, 390, 844);
   const navState = await page.evaluate(() => ({
@@ -971,6 +1035,22 @@ async function runFullSweep() {
   console.log("\n" + resultsLines.join("\n"));
   console.log(
     `\n${resultsLines.filter(l => l.startsWith("[PASS]")).length}/${resultsTiers.length} results probes passed`
+  );
+
+  // F2 (2026-07-26 audit): true first-run Welcome screen, landscape only —
+  // the two tiers the audit found the CTA below the fold on. Portrait was
+  // already clean (v76 fix) and isn't re-checked here to keep this probe
+  // focused on the regression class it exists to catch.
+  const welcomeTiers = [[640, 360], [844, 390]];
+  const welcomeLines = [];
+  for (const [w, h] of welcomeTiers) {
+    const r = await runWelcomeProbe(browser, w, h);
+    welcomeLines.push(r.line);
+    if (r.failed) anyFail = true;
+  }
+  console.log("\n" + welcomeLines.join("\n"));
+  console.log(
+    `\n${welcomeLines.filter(l => l.startsWith("[PASS]")).length}/${welcomeTiers.length} welcome onboarding probes passed`
   );
 
   const cardsResume = await runCardsResumeProbe(browser);
