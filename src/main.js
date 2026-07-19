@@ -1756,6 +1756,10 @@ function updateHud(){
   const q = B.quest.view();
   $("#hud-review").textContent = t("battle.reviewPouch", { n: q.reviewPouch });
   const label = q.endless ? `${q.learned} · ∞` : `${q.learned}/${q.target}`;
+  // Endless has no session length: roundProgress reads 0 by design (hud.js),
+  // so the track would sit empty all session and read as broken — hide it
+  // and let the "N · ∞" count carry the state. Idempotent per update.
+  $("#hud-progress").querySelector(".hud-progress-track").style.display = q.endless ? "none" : "";
   $("#hud-progress-fill").style.width = (roundProgress(q.learned, q.target) * 100) + "%";
   $("#hud-progress-count").textContent = t("battle.learnedProgress", { label });
   updateComboStrip();
