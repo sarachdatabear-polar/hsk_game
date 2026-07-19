@@ -156,6 +156,7 @@ export const STRINGS = {
     "wd.core": "Core",
     "wd.extended": "Extended",
     "wd.appearsInPapers": "Appears in {n} of {total} papers",
+    "wd.alsoInHsk3": "Also in HSK 3.0 · Band {band}",
     // results
     "results.roundOver": "Word Quest complete",
     "results.routeLabel": "Village Gate journey",
@@ -576,6 +577,7 @@ export const STRINGS = {
     "wd.core": "หลัก",
     "wd.extended": "เพิ่มเติม",
     "wd.appearsInPapers": "พบใน {n} จาก {total} ชุดข้อสอบ",
+    "wd.alsoInHsk3": "มีใน HSK 3.0 · ระดับ {band}",
     // results
     "results.roundOver": "จบภารกิจคำศัพท์",
     "results.routeLabel": "เส้นทางประตูหมู่บ้าน",

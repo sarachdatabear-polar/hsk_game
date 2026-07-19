@@ -15,6 +15,7 @@ export function buildWordDetail(word, examples, locale) {
     level: word.lv,
     tier: word.c === 1 ? "core" : "extended",
     examLine: { n: word.ta, total: word.tt },
+    hsk3Band: word.h3 || null,               // HSK 3.0 (GF0025-2021) band, e.g. "2" or "7-9"; null when off-list
     example: exampleFor(word, examples, locale),   // { cn, tr } or null
   };
 }

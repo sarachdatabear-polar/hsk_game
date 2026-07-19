@@ -17,6 +17,7 @@ export function createWordDetail({ $, openDialog, closeDialog, examples, getLoca
     const tierLabel = t(vm.tier === "core" ? "wd.core" : "wd.extended");
     const meta = `HSK${vm.level} · ${tierLabel}`;
     const papers = t("wd.appearsInPapers", { n: vm.examLine.n, total: vm.examLine.total });
+    const hsk3 = vm.hsk3Band ? `<div class="wd-hsk3">${t("wd.alsoInHsk3", { band: vm.hsk3Band })}</div>` : "";
     const ex = vm.example ? `<div class="wd-example">
         <div class="wd-example-label">${t("fc.inSentence")}</div>
         <div class="wd-example-cn">${vm.example.cn}</div>
@@ -26,7 +27,7 @@ export function createWordDetail({ $, openDialog, closeDialog, examples, getLoca
       <div class="wd-en">${vm.english}</div>
       <div class="wd-th">${vm.thai}</div>
       <div class="wd-meta">${meta}</div>
-      <div class="wd-papers">${papers}</div>${ex}`;
+      <div class="wd-papers">${papers}</div>${hsk3}${ex}`;
   }
 
   function open(word) {
