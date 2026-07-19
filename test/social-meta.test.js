@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync, statSync } from "node:fs";
 import { describe, it, expect } from "vitest";
 
 const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
@@ -19,4 +19,9 @@ describe("social / Open Graph meta", () => {
   }
   it("og:url is the canonical Pages URL", () =>
     expect(html).toContain("https://sarachdatabear-polar.github.io/hsk_game/"));
+  it("og-image asset exists and is non-trivial", () => {
+    const p = new URL("../assets/og-image.png", import.meta.url);
+    expect(existsSync(p)).toBe(true);
+    expect(statSync(p).size).toBeGreaterThan(5000);
+  });
 });
