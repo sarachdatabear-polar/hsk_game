@@ -4,7 +4,7 @@
 // notices. Pure data flow: cloud rows -> mergeAll -> store -> cloud rows.
 // `store` is injected ({get,set}) so node probes/tests can shim localStorage.
 import { getSession, fetchSyncRows, pushSyncRows, fetchLedgerSince, fetchLedgerOrder } from "./cloud.js";
-import { mergeAll, defaultSyncMeta } from "./merge.js";
+import { mergeAll, defaultSyncMeta, slotsOf } from "./merge.js";
 
 export const MIN_SYNC_GAP_MS = 30000;
 
@@ -83,6 +83,10 @@ function settleDirty(store, expected, lastSyncAt) {
   for (const k of Object.keys(expected)) {
     if (eq(store.get(k, null), expected[k])) delete meta.dirty[k];
   }
+  // Baseline for the slot-level shop dirtiness below: after a successful
+  // push the cloud row holds exactly `expected.shop`, so its slots become
+  // the reference a future reconcile diffs against.
+  if ("shop" in expected) meta.shopSlots = slotsOf(expected.shop);
   if (lastSyncAt) meta.lastSyncAt = lastSyncAt;
   store.set("sync", meta);
 }
@@ -165,7 +169,17 @@ export async function reconcile(store, reason, now = Date.now(), expectedOrderId
     // On the safe not-migrated path unseenPurchased is 0; real ledger failures
     // already returned above.
     const local = localSnapshot(store);
-    const shopDirty = !!(meta.dirty && meta.dirty.shop);
+    // Slot-level dirtiness (review 2026-07-19): the per-key dirty bit marks
+    // the WHOLE shop key dirty on any owned/tier mutation, so a device that
+    // only bought a deco would LWW its stale equips over a newer cloud
+    // outfit. Only a real local re-dress — slots differing from the
+    // last-synced baseline stamped by settleDirty — wins the slot fold. A
+    // missing baseline (legacy meta / never synced) keeps the old plain
+    // dirty-bit behavior, which also preserves "an unsynced re-dress isn't
+    // undone by an old cloud row" for fresh installs.
+    const slotsBaseline = meta.shopSlots || null;
+    const shopDirty = !!(meta.dirty && meta.dirty.shop) &&
+      (!slotsBaseline || !eq(slotsOf(local.shop), slotsBaseline));
     const today = localDateStr(now);
     // Both calls get `today` (not just the cloud-merged one): mergeAll's
     // stale-monthly settle is symmetric in local/cloud, so the baseline must

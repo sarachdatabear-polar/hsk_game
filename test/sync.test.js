@@ -166,6 +166,64 @@ describe("reconcile", () => {
     expect(r.ok).toBe(false);
     expect(store.get("sync", {}).dirty).toEqual({ xp: true });
   });
+
+  describe("slot-baseline shop dirtiness (review 2026-07-19)", () => {
+    const LOCAL_SHOP = { owned: ["skin-base", "deco-noodle"], skin: "skin-base",
+                         backdrop: "market", effect: "", soundpack: "", tiers: {} };
+    const CLOUD_SHOP = { owned: ["skin-base"], skin: "skin-base",
+                         backdrop: "temple", effect: "", soundpack: "", tiers: {} };
+    const cloudRows = () => ({ session: SESSION,
+      progressRow: { user_id: "u1", xp: 0, mastery: {},
+        daily: { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" },
+        quests: {}, monthly: {}, best: {}, cosmetics: CLOUD_SHOP, stickers: { earned: {} } },
+      walletRow: { user_id: "u1", coins: 0, freezes: 0 } });
+
+    it("an unrelated owned/tier write does NOT revert a newer cloud equip", async () => {
+      const { client } = fakeClient(cloudRows());
+      __setClientForTests(client);
+      // dirty.shop is set (the deco purchase wrote the shop key), but the local
+      // slots still equal the last-synced baseline -> cloud outfit must win.
+      const store = memStore({ shop: LOCAL_SHOP,
+        sync: { dirty: { shop: true }, lastSyncAt: 0, lastLedgerAt: "",
+                shopSlots: { skin: "skin-base", backdrop: "market", effect: "", soundpack: "" } } });
+      const r = await reconcile(store, "sign-in");
+      expect(r.ok).toBe(true);
+      expect(store.get("shop", null).backdrop).toBe("temple");      // cloud equip adopted
+      expect(store.get("shop", null).owned).toContain("deco-noodle"); // purchase still merged
+    });
+
+    it("a real local re-dress (slots differ from baseline) still wins the slot fold", async () => {
+      const { client } = fakeClient(cloudRows());
+      __setClientForTests(client);
+      const store = memStore({ shop: LOCAL_SHOP,   // local backdrop: market
+        sync: { dirty: { shop: true }, lastSyncAt: 0, lastLedgerAt: "",
+                shopSlots: { skin: "skin-base", backdrop: "beach", effect: "", soundpack: "" } } });
+      const r = await reconcile(store, "sign-in");
+      expect(r.ok).toBe(true);
+      expect(store.get("shop", null).backdrop).toBe("market");      // local re-dress kept
+    });
+
+    it("no baseline yet (legacy meta) falls back to the plain dirty bit", async () => {
+      const { client } = fakeClient(cloudRows());
+      __setClientForTests(client);
+      const store = memStore({ shop: LOCAL_SHOP,
+        sync: { dirty: { shop: true }, lastSyncAt: 0, lastLedgerAt: "" } });   // no shopSlots
+      const r = await reconcile(store, "sign-in");
+      expect(r.ok).toBe(true);
+      expect(store.get("shop", null).backdrop).toBe("market");      // pre-fix behavior preserved
+    });
+
+    it("a successful reconcile stamps the merged slots as the new baseline", async () => {
+      const { client } = fakeClient(cloudRows());
+      __setClientForTests(client);
+      const store = memStore({ shop: LOCAL_SHOP,
+        sync: { dirty: { shop: true }, lastSyncAt: 0, lastLedgerAt: "",
+                shopSlots: { skin: "skin-base", backdrop: "market", effect: "", soundpack: "" } } });
+      await reconcile(store, "sign-in");
+      expect(store.get("sync", {}).shopSlots)
+        .toEqual({ skin: "skin-base", backdrop: "temple", effect: "", soundpack: "" });
+    });
+  });
 });
 
 describe("reconcile: ledger-cursor purchase fold (coin-purchase go-live, THE FOLD)", () => {
