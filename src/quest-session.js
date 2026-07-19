@@ -1,6 +1,7 @@
 "use strict";
 
 import { wordWeight } from "./srs.js";
+import { isReviewChallenge } from "./boss.js";
 
 const DEFAULT_RETRY_GAP = 2;
 const DEFAULT_MILESTONE = 5;
@@ -123,7 +124,7 @@ export function createQuestSession({
       word,
       slotId: nextSlotId++,
       plannedIndex: planned,
-      reviewChallenge: planned % 10 === 0,
+      reviewChallenge: isReviewChallenge(planned),
       origin: "fresh",
     };
   }
