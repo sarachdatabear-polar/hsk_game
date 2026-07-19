@@ -15,14 +15,6 @@ export function defaultSyncMeta() { return { dirty: {}, lastSyncAt: 0, lastLedge
 
 const num = v => Number(v) || 0;
 
-// The four equipped-cosmetic slots, normalized through defaultShop so null/
-// partial shop states compare stably. sync.js diffs these against the
-// last-synced baseline (meta.shopSlots) to detect a REAL local re-dress.
-export function slotsOf(shop) {
-  const s = Object.assign(defaultShop(), shop || {});
-  return { skin: s.skin, backdrop: s.backdrop, effect: s.effect, soundpack: s.soundpack };
-}
-
 export function mergeXp(a, b) { return Math.max(num(a), num(b), 0); }
 export function mergeWallet(a, b) { return Math.max(num(a), num(b), 0); }
 export function mergeFreezes(a, b) {
@@ -56,6 +48,14 @@ export function mergeStickers(a, b) {
 // Equipped slots resolve by dirty-bit LWW: local wins iff the shop key changed
 // locally since the last successful sync — so a fresh install adopts the
 // cloud outfit, but an unsynced re-dress isn't undone by an old cloud row.
+// The four equipped-cosmetic slots, normalized through defaultShop so null/
+// partial shop states compare stably. sync.js diffs these against the
+// last-synced baseline (meta.shopSlots) to detect a REAL local re-dress.
+export function slotsOf(shop) {
+  const s = Object.assign(defaultShop(), shop || {});
+  return { skin: s.skin, backdrop: s.backdrop, effect: s.effect, soundpack: s.soundpack };
+}
+
 export function mergeShop(a, b, localSlotsDirty) {
   const A = Object.assign(defaultShop(), a || {});
   if (!b) {
