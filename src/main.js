@@ -58,6 +58,8 @@ import { createAnalytics } from "./analytics/index.js";
 import { durationBucket } from "./analytics/events.js";
 import { SUPABASE_URL, SUPABASE_KEY } from "./cloud-config.js";
 import { createWordDetail } from "./ui/word-detail-screen.js";
+import { createFriendCompare } from "./ui/friend-screen.js";
+import { friendCardFromHash } from "./friend-compare.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -365,6 +367,38 @@ document.addEventListener("keydown", event => {
 }, true);
 
 const wordDetail = createWordDetail({ $, openDialog, closeDialog, examples: EXAMPLES, getLocale });
+
+// Friend compare — no accounts; a compact score card is shared as a code/link
+// and compared locally. getMyCard() derives from the same authoritative state
+// the profile dashboard reads.
+async function shareFriendCard(text, link, code){
+  try { if(navigator.share){ await navigator.share({ title: t("friend.title"), text, url: link }); return; } }
+  catch { /* user dismissed the share sheet, or unsupported — fall through */ }
+  try { if(navigator.clipboard?.writeText){ await navigator.clipboard.writeText(code); toast(t("friend.copied")); return; } }
+  catch { /* clipboard blocked (file://, permissions) — fall through */ }
+  $("#fr-code")?.select?.();
+}
+const friendCompare = createFriendCompare({
+  $, openDialog, closeDialog, share: shareFriendCard,
+  getOrigin: () => location.origin + location.pathname,
+  getMyCard: () => {
+    const stats = profileStats({
+      levels: D.levels, mastery: masteryStore, stickerState, stickerDefs: STICKER_DEFS,
+      shop: shopState, catalog: CATALOG,
+    });
+    return {
+      name: playerProfile.displayName,
+      level: levelForXp(xp),
+      streak: streakInfo(daily, todayStr(), freezes).streak,
+      mastered: stats.masteredWords,
+      stickers: stats.earnedStickers,
+    };
+  },
+});
+$("#go-friend").onclick = () => friendCompare.open();
+// Deep link: opening a shared `#f=<code>` link lands straight in the compare view.
+const incomingFriendCard = friendCardFromHash(location.hash);
+if(incomingFriendCard) requestAnimationFrame(() => friendCompare.open(incomingFriendCard));
 
 function noteDaily(count){
   const wasGoalMet = streakInfo(daily, todayStr(), freezes).goalMet;

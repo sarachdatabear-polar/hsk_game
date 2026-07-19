@@ -43,4 +43,13 @@ describe("buildWordDetail", () => {
   it("returns null example when the word has none", () => {
     expect(buildWordDetail(W, {}, "en").example).toBeNull();
   });
+
+  it("exposes the HSK 3.0 band when the record carries h3", () => {
+    expect(buildWordDetail({ ...W, h3: "4" }, EX, "en").hsk3Band).toBe("4");
+    expect(buildWordDetail({ ...W, h3: "7-9" }, EX, "en").hsk3Band).toBe("7-9");
+  });
+
+  it("returns null hsk3Band when the record is off the HSK 3.0 list", () => {
+    expect(buildWordDetail(W, EX, "en").hsk3Band).toBeNull();
+  });
 });
