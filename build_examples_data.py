@@ -53,10 +53,18 @@ def main():
             h = row["hanzi"].strip()
             s = row["sentence"].strip()
             en = row["en"].strip()
+            th = (row.get("th") or "").strip()
             errors.extend(row_errors(h, s, en, cloze_keys))
             if h in payload:
                 dupes.append(h)
-            payload[h] = {"s": s, "en": en}
+            rec = {"s": s, "en": en}
+            # Optional Thai gloss: emitted only once a native-reviewed `th` column
+            # lands in examples.csv. Absent -> src/examples.js falls back to `en`
+            # for Thai users (see exampleFor). Machine drafts stay in the review
+            # queue (data/examples-thai-review.csv), NOT here, until reviewed.
+            if th:
+                rec["th"] = th
+            payload[h] = rec
     if dupes:
         errors.append(f"duplicate hanzi rows: {dupes}")
     if errors:

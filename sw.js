@@ -6,13 +6,19 @@
 // One release version owns every cache. Keeping runtime/audio on older names
 // lets cache-first optional art and regenerated MP3s survive a shell release
 // indefinitely, so all three advance together.
-const CACHE_VERSION = "v86";
+const CACHE_VERSION = "v87";
 const SHELL = `nbhsk-shell-${CACHE_VERSION}`;
 const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`;
 const AUDIO = `nbhsk-audio-${CACHE_VERSION}`;
 
+// data/examples.js (flashcard-back "in a sentence" enrichment) is deliberately
+// NOT precached: it is not part of the core playable loop, and after the tail
+// example round it grew past what the atomic-shell budget allows. index.html
+// loads it on every online launch, so the same-origin cache-first fetch handler
+// runtime-caches it after first use (like the optional art) — offline-capable
+// from the second launch on, degrading to no-example before then / on file://.
 const PRECACHE = [
-  "index.html", "dist/app.js", "data/words.js", "data/cloze.js", "data/examples.js", "audio/index.json",
+  "index.html", "dist/app.js", "data/words.js", "data/cloze.js", "audio/index.json",
   "pwa/manifest.webmanifest", "pwa/icons/icon-192.png", "pwa/icons/icon-512.png",
 
   // CSS screen art and first-run/home characters.
