@@ -11,9 +11,17 @@ import { defaultDaily } from "./daily.js";
 export const SYNC_KEYS = ["mastery", "xp", "daily", "quests", "monthly",
   "wallet", "freezes", "shop", "stickers", "best"];
 
-export function defaultSyncMeta() { return { dirty: {}, lastSyncAt: 0, lastLedgerAt: "" }; }
+export function defaultSyncMeta() { return { dirty: {}, lastSyncAt: 0, lastLedgerAt: "", shopSlots: null }; }
 
 const num = v => Number(v) || 0;
+
+// The four equipped-cosmetic slots, normalized through defaultShop so null/
+// partial shop states compare stably. sync.js diffs these against the
+// last-synced baseline (meta.shopSlots) to detect a REAL local re-dress.
+export function slotsOf(shop) {
+  const s = Object.assign(defaultShop(), shop || {});
+  return { skin: s.skin, backdrop: s.backdrop, effect: s.effect, soundpack: s.soundpack };
+}
 
 export function mergeXp(a, b) { return Math.max(num(a), num(b), 0); }
 export function mergeWallet(a, b) { return Math.max(num(a), num(b), 0); }
