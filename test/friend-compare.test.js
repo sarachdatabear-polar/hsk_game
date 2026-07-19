@@ -17,6 +17,22 @@ describe("friend-compare codec", () => {
     }
   });
 
+  it("round-trips a 24-grapheme name ending in an emoji (25 UTF-16 code units) without throwing", () => {
+    const name = "a".repeat(23) + "🐱"; // 24 graphemes, 25 code units (surrogate pair)
+    expect(name.length).toBe(25);
+    const encoded = encodeFriendCard({ ...CARD, name });
+    const back = decodeFriendCard(encoded);
+    expect(back.name).toBe(name);
+  });
+
+  it("clamps a >24-grapheme emoji-heavy name to 24 graphemes with no lone surrogates", () => {
+    const name = "🐱".repeat(30); // 30 graphemes, 60 code units
+    const encoded = encodeFriendCard({ ...CARD, name });
+    const back = decodeFriendCard(encoded);
+    expect([...back.name].length).toBe(24);
+    expect(() => encodeURIComponent(back.name)).not.toThrow();
+  });
+
   it("clamps negative / non-numeric stats to 0", () => {
     const c = decodeFriendCard(encodeFriendCard({ name: "x", level: -3, streak: "nope", mastered: 1.9, stickers: null }));
     expect(c).toMatchObject({ level: 0, streak: 0, mastered: 1, stickers: 0 });
