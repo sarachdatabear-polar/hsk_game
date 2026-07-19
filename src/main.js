@@ -3392,7 +3392,6 @@ async function iapBuy(p, btn){
       // (cancel vs. anything else the mock reports as not-ok).
       analytics.track("purchase_fail", { product: p.id, reason: r.reason === "cancelled" ? "cancelled" : "provider_error" });
       if(r.reason !== "cancelled") toast(t("iap.failed"));
-      renderShop();
       return;
     }
     const g = applyPurchase(wallet, ent, p.id, r.orderId, Date.now());
@@ -3409,7 +3408,6 @@ async function iapBuy(p, btn){
       // grant didn't apply (duplicate/already-owned); no coins/entitlement moved.
       analytics.track("purchase_fail", { product: p.id, reason: "no_credit" });
     }
-    renderShop();   // duplicate/already-owned fall through to the owned state
     return;
   }
 
@@ -3428,7 +3426,6 @@ async function iapBuy(p, btn){
     if(r.reason === "pending") toast(t("iap.processing"));
     else if(r.reason !== "cancelled"){ toast(t("iap.failed")); analytics.track("purchase_fail", { product: p.id, reason: "provider_error" }); }
     else analytics.track("purchase_fail", { product: p.id, reason: "cancelled" });
-    renderShop();
     return;
   }
   const poll = await pollForCredit({
@@ -3475,7 +3472,6 @@ async function iapBuy(p, btn){
       renderAccount();
     }
   }
-  renderShop();
   }catch(e){
     // Provider plugins promise a never-throw contract, but a bridge/SDK fault
     // must still release the pending guard instead of disabling IAP forever.
@@ -3485,7 +3481,7 @@ async function iapBuy(p, btn){
     analytics.track("purchase_fail", { product: p.id, reason: "exception" });
   }finally{
     iapPending = null;
-    renderShop();
+    renderShop();   // single render point for every outcome, incl. duplicate/already-owned fallthrough
   }
 }
 
