@@ -12,14 +12,23 @@ export const MIN_SYNC_GAP_MS = 30000;
 // always get one reconcile), monthly-dirty (pushDirty's redirect for a
 // stale-monthly settle — it must run even if a routine reconcile just fired,
 // since skipping it would fall through to nothing and leave the dirty flag
-// unsettled indefinitely), and purchase (purchase-poll.js's real-provider
+// unsettled indefinitely), purchase (purchase-poll.js's real-provider
 // poll retries ~2s apart — well under MIN_SYNC_GAP_MS — so every retry after
 // the first would otherwise be dropped as "cooldown", making the poll a
-// no-op past try 1).
-const BYPASS_COOLDOWN = new Set(["sign-in", "monthly-dirty", "purchase"]);
+// no-op past try 1), and "first-settle" is pushDirty's first-push-of-session
+// redirect — same must-run rationale as monthly-dirty.
+const BYPASS_COOLDOWN = new Set(["sign-in", "monthly-dirty", "purchase", "first-settle"]);
 
 let inFlight = false;
-export function __resetForTests() { inFlight = false; }
+// Latched once a reconcile has folded cloud state into this session's local
+// store (set at the merged store-writes, so even a failed FINAL push counts —
+// the clobber hazard is gone once cloud is merged in). Until then, pushDirty
+// must not blind-overwrite the cloud row (review 2026-07-19): a purchase or
+// hide edge can fire before any reconcile on a cold boot (visibilitychange
+// only fires on a foreground TRANSITION, never on first paint).
+let sessionReconciled = false;
+export function __resetForTests() { inFlight = false; sessionReconciled = false; }
+export function __setSessionReconciledForTests(v = true) { sessionReconciled = v; }
 
 export function localSnapshot(store) {
   return {
@@ -231,6 +240,7 @@ export async function reconcile(store, reason, now = Date.now(), expectedOrderId
       store.set("sync", cursorMeta);
     }
     for (const k of Object.keys(merged)) store.set(k, merged[k]);
+    sessionReconciled = true;
     const built = rowsFromLocal(uid, merged);
     const push = await pushSyncRows(built.progress, built.wallet);
     // The merged keys above are durable local writes even when the following
@@ -268,6 +278,14 @@ export async function pushDirty(store, reason, now = Date.now(), midRound = fals
     // the next battle-free sync edge catches up.
     if (midRound) return { ok: false, reason: "mid-round" };
     return reconcile(store, "monthly-dirty", now);
+  }
+  // First push of the session: no reconcile has folded cloud state in yet,
+  // so a blind push could overwrite cloud-only progress (another device's
+  // sync, a webhook wallet credit). Redirect through reconcile — same shape
+  // as the monthly redirect above, including the mid-round deferral.
+  if (!sessionReconciled) {
+    if (midRound) return { ok: false, reason: "mid-round" };
+    return reconcile(store, "first-settle", now);
   }
   if (inFlight) return { ok: false, reason: "busy" };
   inFlight = true;

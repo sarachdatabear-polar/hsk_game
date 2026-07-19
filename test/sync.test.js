@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { MIN_SYNC_GAP_MS, rowsFromLocal, localFromRows,
-         reconcile, pushDirty, __resetForTests } from "../src/sync.js";
+         reconcile, pushDirty, __resetForTests, __setSessionReconciledForTests } from "../src/sync.js";
 import { __setClientForTests, LEDGER_EPOCH } from "../src/cloud.js";
 import { SYNC_KEYS } from "../src/merge.js";
 
@@ -436,6 +436,7 @@ describe("pushDirty", () => {
     const { client, calls } = fakeClient({ session: SESSION });
     __setClientForTests(client);
     const store = memStore({ xp: 42, sync: { dirty: { xp: true }, lastSyncAt: 777 } });
+    __setSessionReconciledForTests();   // a reconcile already ran this session
     const r = await pushDirty(store, "hide");
     expect(r.ok).toBe(true);
     expect(calls.upserts.length).toBe(2);
@@ -444,7 +445,7 @@ describe("pushDirty", () => {
     expect(meta.lastSyncAt).toBe(777);
   });
 
-  it("non-monthly dirty push stays on the plain path: local wallet pushed verbatim, cloud ignored, lastSyncAt untouched", async () => {
+  it("non-monthly dirty push stays on the plain path AFTER the session's first reconcile: local wallet pushed verbatim, cloud ignored, lastSyncAt untouched", async () => {
     const { client, calls } = fakeClient({ session: SESSION,
       // Cloud holds a much larger wallet — if pushDirty ever consulted it,
       // the pushed row would reflect that. The plain path must never fetch
@@ -455,6 +456,7 @@ describe("pushDirty", () => {
       walletRow: { user_id: "u1", coins: 5000, freezes: 0 } });
     __setClientForTests(client);
     const store = memStore({ wallet: 200, sync: { dirty: { xp: true }, lastSyncAt: 777 } });
+    __setSessionReconciledForTests();   // a reconcile already ran this session
     const r = await pushDirty(store, "purchase");
     expect(r.ok).toBe(true);
     const pushedWallet = calls.upserts.find(u => u.table === "wallet").row;
@@ -522,15 +524,62 @@ describe("pushDirty", () => {
     // The blind push never writes gameplay keys back to the store (settleDirty
     // only clears dirty bits + meta), so it can't violate the mid-battle
     // invariant — keep it flowing so purchases made from the shop mid-pause
-    // still reach the cloud promptly.
+    // still reach the cloud promptly. Precondition: this is only the plain
+    // path once the session's first reconcile has already run (first-settle,
+    // review 2026-07-19) — a cold-boot first push instead defers as mid-round.
     const { client, calls } = fakeClient({ session: SESSION });
     __setClientForTests(client);
     const store = memStore({ wallet: 950, sync: { dirty: { wallet: true }, lastSyncAt: 777 } });
+    __setSessionReconciledForTests();   // a reconcile already ran this session
     const r = await pushDirty(store, "purchase", undefined, true);   // midRound = true
     expect(r.ok).toBe(true);
     expect(calls.upserts.find(u => u.table === "wallet").row.coins).toBe(950);
     const meta = store.get("sync", {});
     expect(meta.dirty).toEqual({});
     expect(meta.lastSyncAt).toBe(777);
+  });
+
+  it("first non-monthly push of a session redirects through reconcile (no blind overwrite)", async () => {
+    const { client, calls } = fakeClient({ session: SESSION,
+      progressRow: { user_id: "u1", xp: 0, mastery: {},
+        daily: { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" },
+        quests: {}, monthly: {}, best: {}, cosmetics: {}, stickers: { earned: {} } },
+      walletRow: { user_id: "u1", coins: 5000, freezes: 0 } });
+    __setClientForTests(client);
+    const store = memStore({ wallet: 200, sync: { dirty: { wallet: true }, lastSyncAt: 0 } });
+    const r = await pushDirty(store, "hide");
+    expect(r.ok).toBe(true);
+    expect("changed" in r).toBe(true);                     // reconcile contract, not plain push
+    const pushedWallet = calls.upserts.find(u => u.table === "wallet").row;
+    expect(pushedWallet.coins).toBe(5000);                 // max(200, 5000) — cloud folded, not clobbered
+    expect(store.get("wallet", 0)).toBe(5000);
+  });
+
+  it("after a successful reconcile the same session, pushes are plain again", async () => {
+    const { client, calls } = fakeClient({ session: SESSION,
+      progressRow: null, walletRow: { user_id: "u1", coins: 5000, freezes: 0 } });
+    __setClientForTests(client);
+    const store = memStore({ wallet: 200, sync: { dirty: { wallet: true }, lastSyncAt: 0 } });
+    await reconcile(store, "sign-in");                     // latches the session
+    store.set("wallet", 6000);                             // post-reconcile local earn
+    // memStore is a dumb {get,set} shim: a real earn re-flags dirty via
+    // storage.js's SYNC_KEYS wiring, which this fake doesn't model — do it
+    // by hand so the push below has something to push.
+    store.set("sync", { ...store.get("sync", {}), dirty: { wallet: true } });
+    const before = calls.upserts.length;
+    const r = await pushDirty(store, "hide");
+    expect(r.ok).toBe(true);
+    expect("changed" in r).toBe(false);                    // plain push path
+    expect(calls.upserts.length).toBe(before + 2);
+  });
+
+  it("first-settle respects midRound: defers wholesale, dirty intact", async () => {
+    const { client, calls } = fakeClient({ session: SESSION, progressRow: null, walletRow: null });
+    __setClientForTests(client);
+    const store = memStore({ wallet: 200, sync: { dirty: { wallet: true }, lastSyncAt: 0 } });
+    const r = await pushDirty(store, "hide", undefined, true);   // midRound
+    expect(r).toEqual({ ok: false, reason: "mid-round" });
+    expect(calls.upserts.length).toBe(0);
+    expect(store.get("sync", {}).dirty).toEqual({ wallet: true });
   });
 });
