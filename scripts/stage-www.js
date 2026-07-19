@@ -15,7 +15,7 @@ const ROOT = path.resolve(__dirname, "..");
 const WWW = path.join(ROOT, "www");
 
 // files/dirs the running game actually references (index.html + bundle + data + audio + pwa)
-const ITEMS = ["index.html", "dist", "data", "audio", "pwa", "sw.js", "assets"];
+const ITEMS = ["index.html", "privacy.html", "dist", "data", "audio", "pwa", "sw.js", "assets"];
 
 fs.rmSync(WWW, { recursive: true, force: true });
 fs.mkdirSync(WWW, { recursive: true });

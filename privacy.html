@@ -1,0 +1,310 @@
+<!-- Source of truth: docs/legal/privacy-policy.md — keep in sync -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FBF5E8">
+<link rel="icon" href="data:,">
+<title>Privacy Policy — Lucky Cat HSK</title>
+<meta name="description" content="Lucky Cat HSK privacy policy: what data we collect, why, and your rights under PDPA/GDPR.">
+<style>
+  :root{
+    --lc-green:#32775E; --lc-cream:#FBF5E8; --lc-ink:#2E2A24;
+    --lc-brown:#846043; --lc-sand:#EAC796; --lc-gray:#B2AEA9;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--lc-cream);
+    color:var(--lc-ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.6;
+    padding:0 16px 64px;
+  }
+  .wrap{
+    max-width:720px;
+    margin:0 auto;
+    padding-top:32px;
+  }
+  a{color:var(--lc-green);}
+  a:hover{color:var(--lc-brown);}
+  h1{
+    color:var(--lc-green);
+    font-size:1.8rem;
+    margin-bottom:4px;
+  }
+  h2{
+    color:var(--lc-green);
+    font-size:1.25rem;
+    margin-top:2em;
+    border-bottom:2px solid var(--lc-sand);
+    padding-bottom:4px;
+  }
+  .meta{
+    background:#fff;
+    border:1px solid var(--lc-sand);
+    border-radius:10px;
+    padding:12px 16px;
+    margin:16px 0 24px;
+    font-size:0.95rem;
+  }
+  .meta p{margin:4px 0;}
+  .draft-notice{
+    background:#FDEFD2;
+    border:1px solid var(--lc-brown);
+    border-radius:10px;
+    padding:12px 16px;
+    margin-bottom:24px;
+    font-size:0.9rem;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin:16px 0;
+    font-size:0.92rem;
+  }
+  th,td{
+    text-align:left;
+    padding:8px 10px;
+    border:1px solid var(--lc-sand);
+    vertical-align:top;
+  }
+  th{background:#fff;}
+  ul,ol{padding-left:1.4em;}
+  li{margin-bottom:6px;}
+  hr{border:none;border-top:1px solid var(--lc-sand);margin:24px 0;}
+  .back-link{
+    display:inline-block;
+    margin-top:32px;
+    font-weight:bold;
+  }
+  code{
+    background:#fff;
+    border:1px solid var(--lc-sand);
+    border-radius:4px;
+    padding:1px 5px;
+    font-size:0.9em;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Lucky Cat HSK — Privacy Policy</h1>
+
+<div class="draft-notice">
+  <strong>DRAFT — not legal advice.</strong> Developer-authored working draft. All identity
+  and policy placeholders are now filled; before publishing it still MUST be reviewed by a
+  qualified privacy professional (Thailand PDPA + EU GDPR). It reflects the intended data
+  practices per the Monetization &amp; Production PRD (§6.4, §9); confirm each claim against
+  the shipped build (the §2e analytics and §6 sign-out claims were checked against the
+  current code).
+</div>
+
+<div class="meta">
+  <p><strong>Effective date:</strong> 2026-07-17</p>
+  <p><strong>App:</strong> Lucky Cat HSK</p>
+  <p><strong>Provider / data controller:</strong> Sarach Sriklab, Bangkok 10400, Thailand</p>
+  <p><strong>Contact:</strong> <a href="mailto:sarach.northbear@gmail.com">sarach.northbear@gmail.com</a></p>
+</div>
+
+<h2>1. Who this applies to and our approach</h2>
+<p>
+  Lucky Cat HSK helps people learn HSK Chinese vocabulary. <strong>You can install and play
+  entirely as a guest, offline, without an account.</strong> In that mode your progress lives
+  only on your device and is not sent to us. Cloud features, ads, purchases, and the optional
+  analytics setting add data collection, described below. We collect the minimum needed to
+  run those features and never sell your personal data.
+</p>
+<p>
+  This policy covers our obligations under Thailand's <strong>Personal Data Protection Act
+  (PDPA)</strong> and the EU/UK <strong>General Data Protection Regulation (GDPR)</strong>.
+</p>
+
+<h2>2. Data we collect</h2>
+
+<p><strong>a) Guest play (default) — stored only on your device.</strong><br>
+Learning progress, mastery, streak, quests, wallet/coins, owned cosmetics, and preferences
+are saved in your device's local storage (<code>nbhsk.*</code>). This data is
+<strong>not transmitted to us</strong> while you play as an offline guest.</p>
+
+<p><strong>b) Account &amp; cloud save (optional — only if you sign in).</strong></p>
+<ul>
+  <li>Authentication identifier from your chosen sign-in method (Google, Apple, or email
+    magic-link) and, for anonymous sessions, a Supabase-issued anonymous ID.</li>
+  <li>Display name and language (locale) preference.</li>
+  <li>Your learning progress, wallet/coin balance, and entitlements — mirrored to the cloud
+    so they survive reinstalls and sync across your devices.</li>
+</ul>
+
+<p><strong>c) Purchases (only if you buy something).</strong><br>
+In-app purchases (the one-time Supporter unlock and coin packs) are processed by
+<strong>Apple App Store / Google Play</strong> via <strong>RevenueCat</strong>. We receive a
+purchase/entitlement confirmation and a purchase token —
+<strong>we do not receive or store your payment card details.</strong></p>
+
+<p><strong>d) Ads (only if ads are shown).</strong><br>
+We show ads via <strong>Google AdMob</strong>. Depending on your consent choice, AdMob may
+process an advertising identifier, coarse device/usage signals, and your consent state to
+serve personalized or non-personalized ads. On first run (and on iOS, via App Tracking
+Transparency) you choose your consent; non-consented users receive
+<strong>non-personalized</strong> ads.</p>
+
+<p><strong>e) Product analytics (only if you turn it on).</strong><br>
+Lucky Cat HSK includes an <strong>optional, off-by-default</strong> setting —
+<em>Settings → "Share anonymous usage data."</em> If, and only if, you switch it on, the app
+sends a small set of <strong>anonymous, aggregate usage events</strong> so we can see how the
+game is used and improve it:</p>
+<ul>
+  <li><strong>What events:</strong> app session start/end (with a coarse duration bucket such
+    as "5–15m"), learning-recovery and delayed-recall milestones, your response to the
+    notification-permission prompt (granted / denied / dismissed), and store/purchase funnel
+    steps (store opened, product viewed, purchase started / succeeded / failed — with the
+    product id and a failure reason).</li>
+  <li><strong>What is attached:</strong> a random <strong>analytics id</strong> generated on
+    your device <em>only after you opt in</em> (never an advertising or device identifier), a
+    per-session id, the app version, the platform (web / Android), and the HSK level you're
+    studying.</li>
+  <li><strong>What is never collected:</strong> your name, email, account id, IP-derived
+    identity, the specific words you study, your answers, or any free text. Events carry only
+    the enumerated fields above.</li>
+  <li><strong>Where it goes:</strong> our own <strong>Supabase</strong> backend (§4) — there
+    is <strong>no third-party analytics or advertising SDK</strong>. Events are write-only
+    from the app.</li>
+</ul>
+<p>
+  You can turn this off again at any time in Settings; turning it off stops all event
+  collection immediately. This setting is independent of ads (§2d) and is
+  <strong>off unless you choose it</strong>. Basic crash/technical diagnostics provided by
+  the app stores or operating system may still apply under their own policies.
+</p>
+<p>
+  We do <strong>not</strong> collect contacts, precise location, photos, microphone, or
+  health data.
+</p>
+
+<h2>3. Why we use it and the legal basis (GDPR)</h2>
+<table>
+  <thead>
+    <tr><th>Purpose</th><th>Data</th><th>Legal basis</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Run the game / save progress locally</td><td>§2a</td><td>Contract / necessary to provide the service</td></tr>
+    <tr><td>Optional cloud save &amp; cross-device sync</td><td>§2b</td><td>Contract (you chose to sign in)</td></tr>
+    <tr><td>Process purchases &amp; restore entitlements</td><td>§2c</td><td>Contract</td></tr>
+    <tr><td>Show ads to support the free app</td><td>§2d</td><td><strong>Consent</strong> (personalized) / legitimate interest (non-personalized), per your choice</td></tr>
+    <tr><td>Optional product analytics to improve the game</td><td>§2e</td><td><strong>Consent</strong> (opt-in, off by default; withdraw any time in Settings)</td></tr>
+    <tr><td>Keep the app stable and secure (store/OS crash diagnostics)</td><td>§2e</td><td>Legitimate interest</td></tr>
+  </tbody>
+</table>
+<p>
+  Under PDPA the equivalent bases (consent, contractual necessity, legitimate interest)
+  apply.
+</p>
+
+<h2>4. Who we share it with (processors)</h2>
+<p>
+  We use these service providers, who process data on our behalf. Each also handles data
+  under its own privacy policy:
+</p>
+<ul>
+  <li><strong>Supabase</strong> — authentication, database, cloud storage, and our own
+    analytics event store (hosting region: Singapore, <code>ap-southeast-1</code>).
+    Policy: <a href="https://supabase.com/privacy" target="_blank" rel="noopener">https://supabase.com/privacy</a></li>
+  <li><strong>RevenueCat</strong> — purchase validation and entitlement management (only if
+    you buy something).
+    Policy: <a href="https://www.revenuecat.com/privacy" target="_blank" rel="noopener">https://www.revenuecat.com/privacy</a></li>
+  <li><strong>Google AdMob</strong> — ad serving and, with consent, measurement (only if ads
+    are shown).
+    Policy: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">https://policies.google.com/privacy</a></li>
+  <li><strong>Apple / Google</strong> — sign-in and payment processing for their platforms.
+    Policies:
+    <a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">https://www.apple.com/legal/privacy/</a>
+    ·
+    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">https://policies.google.com/privacy</a>
+  </li>
+</ul>
+<p>
+  We use <strong>no third-party analytics or advertising SDK</strong> for the optional
+  analytics in §2e — those events go only to our own Supabase. We do not sell personal data
+  or share it for cross-context behavioral advertising beyond the ad-serving described above.
+</p>
+
+<h2>5. Children</h2>
+<p>
+  Lucky Cat HSK is directed to a <strong>general audience aged 13 and older</strong> (HSK is
+  a formal proficiency exam taken by teens and adults). It is
+  <strong>not directed to children under 13</strong>, and we do not knowingly collect
+  personal data from children under 13. If you believe a child has provided personal data,
+  contact us and we will delete it.
+</p>
+
+<h2>6. Your rights</h2>
+<p>
+  Subject to PDPA/GDPR, you may <strong>access, correct, delete, or export</strong> your
+  personal data, <strong>object to or restrict</strong> processing, and
+  <strong>withdraw consent</strong> (including ad-personalization consent) at any time.
+</p>
+<ul>
+  <li><strong>In-app:</strong> use <strong>Settings → Sign out</strong> to stop cloud sync at
+    any time. Email-signed-in users also get
+    <strong>Settings → Account → Delete account</strong> (a two-step confirm) that permanently
+    erases your cloud account and all associated data. (Available in the web/PWA app now; the
+    Android app gains it with its next release. On any build, the email path below also
+    works.)</li>
+  <li><strong>By email:</strong> <a href="mailto:sarach.northbear@gmail.com">sarach.northbear@gmail.com</a>.
+    We respond within the statutory timeframe (PDPA/GDPR: without undue delay, and within 30
+    days).</li>
+</ul>
+<p>
+  Withdrawing consent or deleting your account does not affect the lawfulness of processing
+  already carried out, and you may continue to play as an offline guest.
+</p>
+
+<h2>7. Retention</h2>
+<p>
+  Cloud data is kept while your account is active and deleted within 30 days after you
+  request account deletion or after 24 months of inactivity. Local device data persists
+  until you clear it or uninstall. Purchase records are retained as required for tax/audit
+  purposes.
+</p>
+
+<h2>8. International transfers</h2>
+<p>
+  Your data may be processed outside your country. Our cloud/analytics data is hosted with
+  Supabase in <strong>Singapore</strong> (<code>ap-southeast-1</code>); RevenueCat and Google
+  AdMob (only if you buy something or ads are shown) process data on <strong>US</strong>-based
+  infrastructure. Where a transfer requires it (e.g., from the EU/UK), we and our providers
+  rely on appropriate safeguards such as the Standard Contractual Clauses. Each provider's
+  own policy (§4) describes its transfer mechanisms.
+</p>
+
+<h2>9. Security</h2>
+<p>
+  We use industry-standard measures (encrypted transport, Supabase Row-Level Security so
+  users can access only their own data, server-side validation of purchases). No system is
+  perfectly secure, but purchased entitlements and coins are server-authoritative to limit
+  abuse.
+</p>
+
+<h2>10. Changes</h2>
+<p>
+  We will update this policy as the app evolves and post the new effective date here;
+  material changes will be surfaced in-app.
+</p>
+
+<h2>11. Contact</h2>
+<p>
+  Questions or requests: <strong><a href="mailto:sarach.northbear@gmail.com">sarach.northbear@gmail.com</a></strong>
+  — Sarach Sriklab, Bangkok 10400, Thailand.
+  Thailand users may also lodge a complaint with the PDPC; EU/UK users with their local
+  supervisory authority.
+</p>
+
+<hr>
+<a class="back-link" href="index.html">&larr; Back to Lucky Cat HSK</a>
+
+</div>
+</body>
+</html>
