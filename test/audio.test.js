@@ -237,6 +237,20 @@ describe("setVoiceVolume — applied to both playback paths", () => {
   });
 });
 
+describe("prefetchAudio", () => {
+  it("fetches only words with a bundled mp3, capped at the limit", async () => {
+    vi.resetModules();
+    const fetched = [];
+    globalThis.fetch = url => { fetched.push(String(url)); return Promise.resolve({ ok: true }); };
+    const mod = await import("../src/audio.js");
+    mod.initAudio(["一", "二", "三"]);
+    mod.prefetchAudio(["一", "无", "二", "三"], 2);
+    expect(fetched.length).toBe(2);
+    expect(fetched[0]).toContain(encodeURIComponent("一"));
+    delete globalThis.fetch;
+  });
+});
+
 describe("retry after unlock", () => {
   it("replays the pending word once unlock succeeds instead of falling to TTS", async () => {
     vi.resetModules();

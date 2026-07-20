@@ -23,7 +23,7 @@ import { REMINDER_HOUR, reminderPlan, reengagePlan } from "./notify.js";
 import { defaultQuestState, noteQuestEvent, questStatus,
          defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly } from "./quests.js";
 import { reviewChallengePoints, reviewChallengeSpeedFactor } from "./boss.js";
-import { initAudio, speak, speakWhenReady, audioAvailable, hasMp3, setVoiceVolume, unlockAudio } from "./audio.js";
+import { initAudio, speak, speakWhenReady, audioAvailable, hasMp3, setVoiceVolume, unlockAudio, prefetchAudio } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, syncReengageReminder, requestNotifPermission, isNative } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import { BUILDINGS, streetPieces, streetProgress, streetMetrics, DECO_SPRITE_SCALE } from "./street.js";
@@ -1669,6 +1669,8 @@ function startBattle(mode){
   // endBattle() must not let them set high scores or earn the perfect bonus.
   B.customDeck = !!(battleDeckOverride && battleDeckOverride.length >= 2);
   battleDeckOverride = null;
+  // Warm the mp3 cache for the session inside this tap's gesture window.
+  prefetchAudio(B.deck.slice(0, 16).map(w => w.h));
   B.smartRound = B.customDeck && smartDeckNext;   // full-rules smart review (owner: perfect bonus yes, best-score no)
   smartDeckNext = false;
   B.zombie = null; B.proj = null; B.parts = []; B.feedback = null;

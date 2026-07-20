@@ -175,6 +175,16 @@ export function speakWhenReady(hanzi, timeoutMs = 1500) {
     .then(() => speak(hanzi));
 }
 
+// Fire-and-forget warm-up of mp3s the session is about to use, called inside
+// the start-button gesture. On the PWA the service worker's cache-first mp3
+// route stores them, so mid-battle playback never waits on the network.
+// Silently a no-op on file:// and native (fetch fails / no SW — harmless).
+export function prefetchAudio(hanziList, limit = 16) {
+  if (typeof fetch !== "function" || !Array.isArray(hanziList)) return;
+  hanziList.filter(h => mp3Set.has(h)).slice(0, limit)
+    .forEach(h => { try { fetch(base + encodeURIComponent(h) + ".mp3").catch(() => {}); } catch (e) {} });
+}
+
 function ttsFallback(hanzi, synth, deferred = false) {
   const mode = chooseTts();
   if (mode === "native") {
