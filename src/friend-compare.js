@@ -10,6 +10,8 @@
 // This is env-agnostic (no base64/btoa) so it runs identically in the WebView
 // and under vitest.
 
+import { normalizeDisplayName } from "./profile.js";
+
 const PREFIX = "LCH1";
 const SEP = "|";
 const MAX_NAME = 24;
@@ -91,5 +93,10 @@ function clampInt(v) {
 }
 
 function clampName(v) {
-  return String(v == null ? "" : v).replace(/\s+/gu, " ").trim().slice(0, MAX_NAME);
+  // Grapheme-aware: name entry (profile.js) allows 24 user-perceived
+  // characters, so a plain .slice(0, MAX_NAME) in UTF-16 code units can cut a
+  // surrogate pair in half (e.g. a name ending in an emoji), leaving a lone
+  // surrogate that later throws `URIError` out of encodeURIComponent. Reuse
+  // the same grapheme clamp profile.js uses for name entry.
+  return normalizeDisplayName(v, MAX_NAME);
 }

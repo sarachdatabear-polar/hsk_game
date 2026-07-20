@@ -42,16 +42,21 @@ export function weekStart(dateStr) {
 // day is absorbed by the week's automatic rest day (Mon–Sun); the rest day
 // itself never increments the streak — only the active return day does.
 export function noteActivity(daily, dateStr, count, freezes = 0) {
-  const before = daily.today.date === dateStr ? daily.today.resolved : 0;
+  // Backward local-date jump guard (timezone travel, clock correction): a
+  // dateStr earlier than daily.last must never reset or rewind the streak.
+  // Treat it as if it were daily.last itself — same-day accounting, `last`
+  // never moves backward. Plain string compare is correct for ISO yyyy-mm-dd.
+  const effectiveDate = daily.last && dateStr < daily.last ? daily.last : dateStr;
+  const before = daily.today.date === effectiveDate ? daily.today.resolved : 0;
   const resolved = before + count;
-  const today = { date: dateStr, resolved };
+  const today = { date: effectiveDate, resolved };
   let { last, streak } = daily;
   let restWeek = daily.restWeek || "";
   let restDay = daily.restDay || "";
   let freezesUsed = 0;
   const crossedNow = before < GOAL && resolved >= GOAL;
-  if (crossedNow && last !== dateStr) {
-    if (isYesterday(last, dateStr)) {
+  if (crossedNow && last !== effectiveDate) {
+    if (isYesterday(last, effectiveDate)) {
       streak += 1;
     } else {
       // Gap coverage, kindest-first: the week's automatic rest day (free,
@@ -62,7 +67,7 @@ export function noteActivity(daily, dateStr, count, freezes = 0) {
       const missed = [];
       if (last) {
         let d = addDays(last, 1);
-        while (d && d !== dateStr && missed.length < 3) { missed.push(d); d = addDays(d, 1); }
+        while (d && d !== effectiveDate && missed.length < 3) { missed.push(d); d = addDays(d, 1); }
       }
       let restUsedDay = "";
       let uncovered = 0;
@@ -79,7 +84,7 @@ export function noteActivity(daily, dateStr, count, freezes = 0) {
         streak = 1;
       }
     }
-    last = dateStr;
+    last = effectiveDate;
   }
   return { last, streak, today, restWeek, restDay, freezesUsed };
 }
@@ -89,16 +94,21 @@ export function noteActivity(daily, dateStr, count, freezes = 0) {
 // (or did) cover — so the player never sees a scary 0 before the rest day is
 // even consumed. restNote marks the calm "🍵 rest day used" return day.
 export function streakInfo(daily, dateStr, freezes = 0) {
-  const todayResolved = daily.today.date === dateStr ? daily.today.resolved : 0;
+  // Backward local-date jump guard: mirrors noteActivity — a dateStr earlier
+  // than daily.last is reported as if it were daily.last, never as a fresh
+  // gap (which would otherwise walk forward, never reach dateStr, and hit
+  // the 3-missed cap, wrongly reporting streak 0).
+  const effectiveDate = daily.last && dateStr < daily.last ? daily.last : dateStr;
+  const todayResolved = daily.today.date === effectiveDate ? daily.today.resolved : 0;
   const restWeek = daily.restWeek || "";
   const restDay = daily.restDay || "";
   // (a consumed rest day always advances `last` past restDay, so the only
   //  question is whether the missed days' coverage — rest first, then owned
   //  freezes — spans the whole gap; mirrors noteActivity's kindest-first walk)
   const missed = [];
-  if (daily.last && daily.last !== dateStr && !isYesterday(daily.last, dateStr)) {
+  if (daily.last && daily.last !== effectiveDate && !isYesterday(daily.last, effectiveDate)) {
     let d = addDays(daily.last, 1);
-    while (d && d !== dateStr && missed.length < 3) { missed.push(d); d = addDays(d, 1); }
+    while (d && d !== effectiveDate && missed.length < 3) { missed.push(d); d = addDays(d, 1); }
   }
   let restUsable = false, uncovered = 0;
   for (const day of missed) {
@@ -106,12 +116,12 @@ export function streakInfo(daily, dateStr, freezes = 0) {
     else uncovered += 1;
   }
   const coverableGap = daily.last !== "" && missed.length >= 1 && missed.length <= 2 && uncovered <= freezes;
-  const chainAlive = daily.last === dateStr || isYesterday(daily.last, dateStr) || coverableGap;
+  const chainAlive = daily.last === effectiveDate || isYesterday(daily.last, effectiveDate) || coverableGap;
   return {
     streak: chainAlive ? daily.streak : 0,
     todayResolved,
     goal: GOAL,
     goalMet: todayResolved >= GOAL,
-    restNote: restDay !== "" && isYesterday(restDay, dateStr),
+    restNote: restDay !== "" && isYesterday(restDay, effectiveDate),
   };
 }
