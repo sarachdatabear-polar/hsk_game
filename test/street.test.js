@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { BUILDINGS, DECO_IDS, BASE_DECO_W, TIER_MAX_FACTOR, DECO_SPRITE_SCALE, UNIT_FRAC, streetPieces, streetProgress, streetMetrics } from "../src/street.js";
+import { BUILDINGS, DECO_IDS, DECO_SPRITE_SCALE, UNIT_FRAC, streetPieces, streetProgress, streetMetrics,
+         assignDecoAnchors, DECO_CLASS, CLASS_SIZE, DECO_ANCHORS, LANES } from "../src/street.js";
 import { MILESTONES } from "../src/growth.js";
 
 describe("street", () => {
@@ -20,10 +21,12 @@ describe("street", () => {
     expect(pieces[0].slot).toBeLessThan(pieces[1].slot);
   });
 
-  it("decos appear only when owned, in DECO_IDS order", () => {
+  it("decos appear only when owned; assignment is independent of the owned array's order", () => {
     const owned = ["golden-arch", "red-lantern"]; // out-of-order ownership
     const pieces = streetPieces(1, owned).filter(p => p.kind === "deco");
-    expect(pieces.map(p => p.id)).toEqual(["red-lantern", "golden-arch"]);
+    expect(pieces.map(p => p.id).sort()).toEqual(["golden-arch", "red-lantern"]);
+    const reordered = streetPieces(1, ["red-lantern", "golden-arch"]).filter(p => p.kind === "deco");
+    expect(pieces).toEqual(reordered);
   });
 
   it("unknown owned ids are ignored", () => {
@@ -37,14 +40,15 @@ describe("street", () => {
     expect(a).toEqual(b);
   });
 
-  it("all slots are within [0,1] and unique per call", () => {
+  it("all slots are within [0,1], and unique within each depth lane (no same-lane overlap)", () => {
     const pieces = streetPieces(50, DECO_IDS.slice());
     for (const p of pieces) {
       expect(p.slot).toBeGreaterThanOrEqual(0);
       expect(p.slot).toBeLessThanOrEqual(1);
     }
-    const slots = pieces.map(p => p.slot);
-    expect(new Set(slots).size).toBe(slots.length);
+    const byLane = {};
+    for (const p of pieces) (byLane[p.laneY] = byLane[p.laneY] || []).push(p.slot);
+    for (const slots of Object.values(byLane)) expect(new Set(slots).size).toBe(slots.length);
   });
 
   it("at max level with everything owned, all 5 buildings + 15 decos appear", () => {
@@ -69,12 +73,13 @@ describe("street", () => {
     expect(DECO_IDS.length).toBe(15);
   });
 
-  it("all 15 deco slots are unique and inside (0,1)", () => {
+  it("all 15 deco slots are inside (0,1), unique within each depth lane", () => {
     const pieces = streetPieces(1, [...DECO_IDS]);
     expect(pieces.length).toBe(15);
-    const slots = pieces.map(p => p.slot);
-    expect(new Set(slots).size).toBe(15);
-    for (const s of slots) { expect(s).toBeGreaterThan(0); expect(s).toBeLessThan(1); }
+    for (const p of pieces) { expect(p.slot).toBeGreaterThan(0); expect(p.slot).toBeLessThan(1); }
+    const byLane = {};
+    for (const p of pieces) (byLane[p.laneY] = byLane[p.laneY] || []).push(p.slot);
+    for (const slots of Object.values(byLane)) expect(new Set(slots).size).toBe(slots.length);
   });
 
   it("deco pieces carry their tier; default 1; buildings carry none", () => {
@@ -90,72 +95,6 @@ describe("street", () => {
   it("two-argument call still works (tiers defaults to {})", () => {
     const pieces = streetPieces(1, ["red-lantern"]);
     expect(pieces[0].tier).toBe(1);
-  });
-});
-
-describe("street deco auto-arrange (even distribution, never overlaps)", () => {
-  const decosOf = pieces => pieces.filter(p => p.kind === "deco");
-
-  it("BASE_DECO_W is a sane footprint fraction", () => {
-    expect(BASE_DECO_W).toBeGreaterThan(0);
-    expect(BASE_DECO_W).toBeLessThan(0.3);
-  });
-
-  it("BASE_DECO_W budgets for the PNG draw box so sprites never overlap", () => {
-    // The rendered footprint is DECO_SPRITE_SCALE * UNIT_FRAC (main.js draws the
-    // sprite at that box); the layout must reserve at least that per deco or
-    // crowded streets overlap. Guards a future DECO_SPRITE_SCALE bump.
-    expect(BASE_DECO_W).toBeGreaterThanOrEqual(DECO_SPRITE_SCALE * UNIT_FRAC);
-  });
-
-  it("every deco carries a scale in (0,1]; buildings carry none", () => {
-    const pieces = streetPieces(50, [...DECO_IDS]);
-    for (const d of decosOf(pieces)) {
-      expect(d.scale).toBeGreaterThan(0);
-      expect(d.scale).toBeLessThanOrEqual(1);
-    }
-    expect(pieces.find(p => p.kind === "building").scale).toBeUndefined();
-  });
-
-  it("a comfortable count (<=4) draws decos at full scale", () => {
-    for (let n = 1; n <= 4; n++) {
-      const decos = decosOf(streetPieces(1, DECO_IDS.slice(0, n)));
-      expect(decos.every(d => d.scale === 1)).toBe(true);
-    }
-  });
-
-  it("a crowded count shrinks decos below full scale", () => {
-    const decos = decosOf(streetPieces(1, [...DECO_IDS]));
-    expect(decos.every(d => d.scale < 1)).toBe(true);
-  });
-
-  it("decos never overlap for any owned count 1..15 — even all at max tier", () => {
-    for (let n = 1; n <= DECO_IDS.length; n++) {
-      const decos = decosOf(streetPieces(1, DECO_IDS.slice(0, n)));
-      expect(decos.length).toBe(n);
-      // Worst case: every deco upgraded, so its drawn footprint is
-      // scale * BASE_DECO_W * TIER_MAX_FACTOR. Adjacent centre gaps must clear
-      // that for the guarantee to hold at the real established-player end-state.
-      for (let i = 0; i + 1 < decos.length; i++) {
-        const gap = decos[i + 1].slot - decos[i].slot;
-        const fp = ((decos[i].scale + decos[i + 1].scale) / 2) * BASE_DECO_W * TIER_MAX_FACTOR;
-        expect(gap + 1e-9).toBeGreaterThanOrEqual(fp);
-      }
-    }
-  });
-
-  it("decos stay left-clear of the mascot and inside the street band", () => {
-    for (let n = 1; n <= DECO_IDS.length; n++) {
-      const decos = decosOf(streetPieces(1, DECO_IDS.slice(0, n)));
-      expect(decos[0].slot).toBeGreaterThanOrEqual(0.15);
-      expect(decos[decos.length - 1].slot).toBeLessThanOrEqual(0.97);
-    }
-  });
-
-  it("buildings keep their fixed level-gated slots regardless of decos", () => {
-    const withDecos = streetPieces(50, [...DECO_IDS]).filter(p => p.kind === "building");
-    const bare = streetPieces(50, []);
-    expect(withDecos.map(b => b.slot)).toEqual(bare.map(b => b.slot));
   });
 });
 
@@ -222,5 +161,58 @@ describe("streetMetrics", () => {
     const a = streetMetrics(300, 400);
     const b = streetMetrics(300, 400);
     expect(a).toEqual(b);
+  });
+});
+
+describe("scene composer", () => {
+  it("every class has a CLASS_SIZE and every lane orders back < mid < front", () => {
+    for (const cls of Object.values(DECO_CLASS)) expect(CLASS_SIZE[cls]).toBeGreaterThan(0);
+    expect(LANES.back.laneY).toBeLessThan(LANES.mid.laneY);
+    expect(LANES.mid.laneY).toBeLessThan(LANES.front.laneY);
+  });
+
+  it("every deco id has a class and every class anchor list fits its census", () => {
+    const census = {};
+    for (const id of DECO_IDS) {
+      expect(DECO_CLASS[id], id).toBeTruthy();
+      census[DECO_CLASS[id]] = (census[DECO_CLASS[id]] || 0) + 1;
+    }
+    for (const cls of Object.keys(census)) expect(DECO_ANCHORS[cls].length).toBe(census[cls]);
+  });
+
+  it("assignment is stable under growth (an item never moves when more are bought)", () => {
+    const some = ["red-lantern", "noodle-stall", "koi-pond"];
+    const more = [...some, "golden-arch", "foo-dog", "drum-tower"];
+    const a = assignDecoAnchors(some), b = assignDecoAnchors(more);
+    for (const id of some) expect(b.get(id)).toEqual(a.get(id));
+  });
+
+  it("all 15 owned: same-lane neighbours overlap at most 40%", () => {
+    const decos = streetPieces(1, DECO_IDS.slice()).filter(p => p.kind === "deco");
+    expect(decos.length).toBe(15);
+    const F = DECO_SPRITE_SCALE * UNIT_FRAC;   // draw-box width fraction at scale 1
+    const byLane = {};
+    for (const p of decos) (byLane[p.laneY] = byLane[p.laneY] || []).push(p);
+    for (const lane of Object.values(byLane)) {
+      lane.sort((x, y) => x.slot - y.slot);
+      for (let i = 1; i < lane.length; i++) {
+        const a = lane[i - 1], b = lane[i];
+        expect(b.slot - a.slot).toBeGreaterThanOrEqual(0.6 * (F * a.scale + F * b.scale) / 2);
+      }
+    }
+  });
+
+  it("gateways sit on the road-center anchors", () => {
+    const decos = streetPieces(1, ["golden-arch", "firecracker-arch"]).filter(p => p.kind === "deco");
+    expect(decos.length).toBe(2);
+    for (const p of decos) expect(p.slot).toBe(0.5);
+  });
+
+  it("pieces come back sorted back-to-front, then left-to-right", () => {
+    const pieces = streetPieces(60, DECO_IDS.slice());
+    for (let i = 1; i < pieces.length; i++) {
+      const prev = pieces[i - 1], cur = pieces[i];
+      expect(prev.laneY < cur.laneY || (prev.laneY === cur.laneY && prev.slot <= cur.slot)).toBe(true);
+    }
   });
 });
