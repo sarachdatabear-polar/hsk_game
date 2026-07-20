@@ -236,3 +236,30 @@ describe("setVoiceVolume — applied to both playback paths", () => {
     setVoiceVolume(1); // reset module-level state for later tests
   });
 });
+
+describe("retry after unlock", () => {
+  it("replays the pending word once unlock succeeds instead of falling to TTS", async () => {
+    vi.resetModules();
+    globalThis.window = {};
+    let failNext = true;
+    const played = [];
+    globalThis.Audio = class {
+      constructor(){ this.paused = true; }
+      play(){
+        if (this.muted) return Promise.resolve();            // silent-WAV priming
+        played.push(this.src);
+        return failNext ? (failNext = false, Promise.reject(new Error("gesture"))) : Promise.resolve();
+      }
+      pause(){}
+    };
+    const mod = await import("../src/audio.js");
+    mod.initAudio(["你"]);
+    mod.speak("你");                       // first play rejects (locked)
+    await Promise.resolve(); await Promise.resolve();
+    await mod.unlockAudio();               // gesture lands -> unlock succeeds
+    await Promise.resolve(); await Promise.resolve();
+    expect(played.length).toBe(2);         // original attempt + one retry
+    expect(played[1]).toContain(encodeURIComponent("你"));
+    delete globalThis.Audio;
+  });
+});

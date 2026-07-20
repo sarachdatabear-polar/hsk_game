@@ -32,6 +32,12 @@ const SILENT_WAV = "data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAI
 
 let unlocked = false;
 let unlocking = null;
+// A rejected play() before the session is unlocked usually means the iOS
+// gesture unlock hasn't landed yet. Remember the word; unlockAudio() replays
+// it on success — so a session's FIRST question is heard on the first tap
+// instead of silently downgrading to a TTS voice iOS also tends to drop.
+let pendingRetry = null; // { hanzi, at }
+const RETRY_WINDOW_MS = 8000;
 // Mobile browsers gate audio until the first real user gesture: the Web Audio
 // context starts suspended, HTMLAudioElement.play() is rejected, and
 // speechSynthesis.speak() is silently dropped — all outside a gesture. Call
@@ -67,6 +73,10 @@ export function unlockAudio() {
       if (el.src === unlockSrc) { el.pause(); el.currentTime = 0; }
       el.muted = false;
       unlocked = true;
+      if (pendingRetry && Date.now() - pendingRetry.at < RETRY_WINDOW_MS) {
+        const h = pendingRetry.hanzi; pendingRetry = null;
+        speak(h);
+      }
       return true;
     }).catch(() => {
       el.muted = false;
@@ -110,6 +120,7 @@ export function audioAvailable(hanzi) {
 
 export function speak(hanzi) {
   if (!hanzi) return;
+  pendingRetry = null;   // a newer word supersedes any queued retry
   const el = wordAudio();
   if (el && !el.paused) { el.pause(); }
   // Chrome's cancel-then-speak race: calling speechSynthesis.cancel() while
@@ -128,7 +139,11 @@ export function speak(hanzi) {
     el.src = base + encodeURIComponent(hanzi) + ".mp3";
     el.volume = voiceVol;
     try { el.currentTime = 0; } catch (e) {}
-    el.play().catch(() => ttsFallback(hanzi, synth, deferred));
+    el.play().catch(() => {
+      console.warn("[audio] mp3 play rejected", hanzi);
+      if (!unlocked) { pendingRetry = { hanzi, at: Date.now() }; return; }
+      ttsFallback(hanzi, synth, deferred);
+    });
     return;
   }
   ttsFallback(hanzi, synth, deferred);
