@@ -147,6 +147,36 @@ describe("daily: streakInfo", () => {
   });
 });
 
+describe("daily: backward local-date jump (timezone travel / clock correction)", () => {
+  // A dateStr earlier than daily.last must never reset or rewind the streak.
+  // Reproduction from the review: daily={last:"2026-07-20",streak:10,
+  // today:{date:"2026-07-20",resolved:20}}; a call with "2026-07-18" used to
+  // walk forward from last, never reach dateStr, hit the 3-missed cap, and
+  // wrongly report/rewind the streak.
+  const daily = { last: "2026-07-20", streak: 10, today: { date: "2026-07-20", resolved: 20 }, restWeek: "", restDay: "" };
+
+  it("streakInfo reports the current streak, not 0, for a backward date", () => {
+    const info = streakInfo(daily, "2026-07-18", 0);
+    expect(info.streak).toBe(10);
+    expect(info.todayResolved).toBe(20);
+    expect(info.goalMet).toBe(true);
+  });
+
+  it("noteActivity keeps last/streak unchanged and accumulates resolved onto the existing day", () => {
+    const after = noteActivity(daily, "2026-07-18", 25, 0);
+    expect(after.last).toBe("2026-07-20");
+    expect(after.streak).toBe(10);
+    expect(after.today).toEqual({ date: "2026-07-20", resolved: 45 });
+  });
+
+  it("a subsequent call on the true next real day advances the streak normally", () => {
+    const after = noteActivity(daily, "2026-07-18", 25, 0); // backward jump first
+    const next = noteActivity(after, "2026-07-21", GOAL, 0); // real next day, goal met
+    expect(next.last).toBe("2026-07-21");
+    expect(next.streak).toBe(11); // 07-20 -> 07-21 is a normal 1-day advance
+  });
+});
+
 describe("daily: kind streak (B1 rest days)", () => {
   // helper: complete the goal on each date in order
   const run = dates => dates.reduce((d, ds) => noteActivity(d, ds, GOAL), defaultDaily());

@@ -1756,6 +1756,10 @@ function updateHud(){
   const q = B.quest.view();
   $("#hud-review").textContent = t("battle.reviewPouch", { n: q.reviewPouch });
   const label = q.endless ? `${q.learned} · ∞` : `${q.learned}/${q.target}`;
+  // Endless has no session length: roundProgress reads 0 by design (hud.js),
+  // so the track would sit empty all session and read as broken — hide it
+  // and let the "N · ∞" count carry the state. Idempotent per update.
+  $("#hud-progress").querySelector(".hud-progress-track").style.display = q.endless ? "none" : "";
   $("#hud-progress-fill").style.width = (roundProgress(q.learned, q.target) * 100) + "%";
   $("#hud-progress-count").textContent = t("battle.learnedProgress", { label });
   updateComboStrip();
@@ -3388,7 +3392,6 @@ async function iapBuy(p, btn){
       // (cancel vs. anything else the mock reports as not-ok).
       analytics.track("purchase_fail", { product: p.id, reason: r.reason === "cancelled" ? "cancelled" : "provider_error" });
       if(r.reason !== "cancelled") toast(t("iap.failed"));
-      renderShop();
       return;
     }
     const g = applyPurchase(wallet, ent, p.id, r.orderId, Date.now());
@@ -3405,7 +3408,6 @@ async function iapBuy(p, btn){
       // grant didn't apply (duplicate/already-owned); no coins/entitlement moved.
       analytics.track("purchase_fail", { product: p.id, reason: "no_credit" });
     }
-    renderShop();   // duplicate/already-owned fall through to the owned state
     return;
   }
 
@@ -3424,7 +3426,6 @@ async function iapBuy(p, btn){
     if(r.reason === "pending") toast(t("iap.processing"));
     else if(r.reason !== "cancelled"){ toast(t("iap.failed")); analytics.track("purchase_fail", { product: p.id, reason: "provider_error" }); }
     else analytics.track("purchase_fail", { product: p.id, reason: "cancelled" });
-    renderShop();
     return;
   }
   const poll = await pollForCredit({
@@ -3471,7 +3472,6 @@ async function iapBuy(p, btn){
       renderAccount();
     }
   }
-  renderShop();
   }catch(e){
     // Provider plugins promise a never-throw contract, but a bridge/SDK fault
     // must still release the pending guard instead of disabling IAP forever.
@@ -3481,7 +3481,7 @@ async function iapBuy(p, btn){
     analytics.track("purchase_fail", { product: p.id, reason: "exception" });
   }finally{
     iapPending = null;
-    renderShop();
+    renderShop();   // single render point for every outcome, incl. duplicate/already-owned fallthrough
   }
 }
 
@@ -4087,11 +4087,23 @@ if(location.hash === "#debug"){
   window.__grantXp = n => { addXp(n); };
 }
 initNative({ getScreen: ()=>currentScreen, goHome: ()=>{ if(B.on){ endBattle(true); } else { stopBattle(); show("home"); } } });
+// The bare BridgeActivity WebView can't open target="_blank" (no multi-window), and a
+// same-host navigation would replace the running game with a dead back button. Same-host
+// links never leave the WebView, so on native, point the privacy link at the hosted
+// absolute URL instead — Capacitor's Bridge opens different-host links via the external
+// ACTION_VIEW intent, which is the correct behavior here. Web/file:// keep the relative href.
+if(isNative()){
+  const privacyLink = document.querySelector('a[data-i18n="settings.privacy"]');
+  if(privacyLink) privacyLink.href = "https://sarachdatabear-polar.github.io/hsk_game/privacy.html";
+}
 // SW is at the app root so its scope covers the whole app; http(s) only (no-op on file://).
 // Never on localhost: the cache-first SW would keep serving a stale shell across dev
 // edits (SHELL only bumps on ship), so the dev server must always hit the real files —
 // and any registration/cache left over from before this guard is torn down.
-const devHost = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+// Capacitor's WebView origin is https://localhost by default, so the shipped Android
+// app must be excluded from this dev guard or every cold start would unregister the
+// SW and wipe Cache Storage instead of ever registering sw.js.
+const devHost = !isNative() && (location.hostname === "localhost" || location.hostname === "127.0.0.1");
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
   if(devHost){
     navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister())).catch(()=>{});

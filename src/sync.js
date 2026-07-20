@@ -4,7 +4,7 @@
 // notices. Pure data flow: cloud rows -> mergeAll -> store -> cloud rows.
 // `store` is injected ({get,set}) so node probes/tests can shim localStorage.
 import { getSession, fetchSyncRows, pushSyncRows, fetchLedgerSince, fetchLedgerOrder } from "./cloud.js";
-import { mergeAll, defaultSyncMeta } from "./merge.js";
+import { mergeAll, defaultSyncMeta, slotsOf } from "./merge.js";
 
 export const MIN_SYNC_GAP_MS = 30000;
 
@@ -12,14 +12,23 @@ export const MIN_SYNC_GAP_MS = 30000;
 // always get one reconcile), monthly-dirty (pushDirty's redirect for a
 // stale-monthly settle — it must run even if a routine reconcile just fired,
 // since skipping it would fall through to nothing and leave the dirty flag
-// unsettled indefinitely), and purchase (purchase-poll.js's real-provider
+// unsettled indefinitely), purchase (purchase-poll.js's real-provider
 // poll retries ~2s apart — well under MIN_SYNC_GAP_MS — so every retry after
 // the first would otherwise be dropped as "cooldown", making the poll a
-// no-op past try 1).
-const BYPASS_COOLDOWN = new Set(["sign-in", "monthly-dirty", "purchase"]);
+// no-op past try 1), and "first-settle" is pushDirty's first-push-of-session
+// redirect — same must-run rationale as monthly-dirty.
+const BYPASS_COOLDOWN = new Set(["sign-in", "monthly-dirty", "purchase", "first-settle"]);
 
 let inFlight = false;
-export function __resetForTests() { inFlight = false; }
+// Latched once a reconcile has folded cloud state into this session's local
+// store (set at the merged store-writes, so even a failed FINAL push counts —
+// the clobber hazard is gone once cloud is merged in). Until then, pushDirty
+// must not blind-overwrite the cloud row (review 2026-07-19): a purchase or
+// hide edge can fire before any reconcile on a cold boot (visibilitychange
+// only fires on a foreground TRANSITION, never on first paint).
+let sessionReconciled = false;
+export function __resetForTests() { inFlight = false; sessionReconciled = false; }
+export function __setSessionReconciledForTests(v = true) { sessionReconciled = v; }
 
 export function localSnapshot(store) {
   return {
@@ -83,6 +92,10 @@ function settleDirty(store, expected, lastSyncAt) {
   for (const k of Object.keys(expected)) {
     if (eq(store.get(k, null), expected[k])) delete meta.dirty[k];
   }
+  // Baseline for the slot-level shop dirtiness below: after a successful
+  // push the cloud row holds exactly `expected.shop`, so its slots become
+  // the reference a future reconcile diffs against.
+  if ("shop" in expected) meta.shopSlots = slotsOf(expected.shop);
   if (lastSyncAt) meta.lastSyncAt = lastSyncAt;
   store.set("sync", meta);
 }
@@ -165,7 +178,17 @@ export async function reconcile(store, reason, now = Date.now(), expectedOrderId
     // On the safe not-migrated path unseenPurchased is 0; real ledger failures
     // already returned above.
     const local = localSnapshot(store);
-    const shopDirty = !!(meta.dirty && meta.dirty.shop);
+    // Slot-level dirtiness (review 2026-07-19): the per-key dirty bit marks
+    // the WHOLE shop key dirty on any owned/tier mutation, so a device that
+    // only bought a deco would LWW its stale equips over a newer cloud
+    // outfit. Only a real local re-dress — slots differing from the
+    // last-synced baseline stamped by settleDirty — wins the slot fold. A
+    // missing baseline (legacy meta / never synced) keeps the old plain
+    // dirty-bit behavior, which also preserves "an unsynced re-dress isn't
+    // undone by an old cloud row" for fresh installs.
+    const slotsBaseline = meta.shopSlots || null;
+    const shopDirty = !!(meta.dirty && meta.dirty.shop) &&
+      (!slotsBaseline || !eq(slotsOf(local.shop), slotsBaseline));
     const today = localDateStr(now);
     // Both calls get `today` (not just the cloud-merged one): mergeAll's
     // stale-monthly settle is symmetric in local/cloud, so the baseline must
@@ -217,6 +240,7 @@ export async function reconcile(store, reason, now = Date.now(), expectedOrderId
       store.set("sync", cursorMeta);
     }
     for (const k of Object.keys(merged)) store.set(k, merged[k]);
+    sessionReconciled = true;
     const built = rowsFromLocal(uid, merged);
     const push = await pushSyncRows(built.progress, built.wallet);
     // The merged keys above are durable local writes even when the following
@@ -254,6 +278,14 @@ export async function pushDirty(store, reason, now = Date.now(), midRound = fals
     // the next battle-free sync edge catches up.
     if (midRound) return { ok: false, reason: "mid-round" };
     return reconcile(store, "monthly-dirty", now);
+  }
+  // First push of the session: no reconcile has folded cloud state in yet,
+  // so a blind push could overwrite cloud-only progress (another device's
+  // sync, a webhook wallet credit). Redirect through reconcile — same shape
+  // as the monthly redirect above, including the mid-round deferral.
+  if (!sessionReconciled) {
+    if (midRound) return { ok: false, reason: "mid-round" };
+    return reconcile(store, "first-settle", now);
   }
   if (inFlight) return { ok: false, reason: "busy" };
   inFlight = true;

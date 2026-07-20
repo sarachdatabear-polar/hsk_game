@@ -1,13 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { SYNC_KEYS, defaultSyncMeta, mergeXp, mergeWallet, mergeFreezes,
+import { SYNC_KEYS, defaultSyncMeta, slotsOf, mergeXp, mergeWallet, mergeFreezes,
          mergeBest, mergeStickers, mergeShop, mergeMastery, mergeQuests,
          mergeMonthly, mergeAll } from "../src/merge.js";
+import { defaultShop } from "../src/shop.js";
 
 describe("merge: scalars", () => {
   it("SYNC_KEYS lists the 10 synced keys", () =>
     expect(SYNC_KEYS).toEqual(["mastery","xp","daily","quests","monthly","wallet","freezes","shop","stickers","best"]));
   it("defaultSyncMeta shape", () =>
-    expect(defaultSyncMeta()).toEqual({ dirty: {}, lastSyncAt: 0, lastLedgerAt: "" }));
+    expect(defaultSyncMeta()).toEqual({ dirty: {}, lastSyncAt: 0, lastLedgerAt: "", shopSlots: null }));
   it("xp/wallet take max; nullish sides are 0", () => {
     expect(mergeXp(120, 80)).toBe(120);
     expect(mergeXp(undefined, 80)).toBe(80);
@@ -264,5 +265,24 @@ describe("merge: ledger-cursor purchase fold (THE FOLD, coin-purchase go-live)",
     const local = { wallet: 5000 };
     const cloud = { wallet: 300 };   // cloud contribution pre-clamp: 300 - 1000 = -700
     expect(mergeAll(local, cloud, { unseenPurchased: 1000 }).wallet).toBe(6000);
+  });
+});
+
+describe("slotsOf", () => {
+  it("extracts exactly the four equip slots", () => {
+    const s = slotsOf({ owned: ["a"], skin: "skin-red", backdrop: "market",
+                        effect: "sparkle", soundpack: "retro", tiers: { a: 2 } });
+    expect(s).toEqual({ skin: "skin-red", backdrop: "market", effect: "sparkle", soundpack: "retro" });
+  });
+  it("normalizes null/undefined through defaultShop", () => {
+    expect(slotsOf(null)).toEqual(slotsOf(undefined));
+    expect(slotsOf(null)).toEqual(slotsOf(defaultShop()));
+    expect(Object.keys(slotsOf(null)).sort()).toEqual(["backdrop", "effect", "skin", "soundpack"]);
+  });
+});
+
+describe("defaultSyncMeta shopSlots", () => {
+  it("defaults shopSlots to null (pre-upgrade metas adopt it via Object.assign)", () => {
+    expect(defaultSyncMeta().shopSlots).toBeNull();
   });
 });
