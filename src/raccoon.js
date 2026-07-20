@@ -111,8 +111,8 @@ export function drawRaccoon(ctx, x, groundY, tMs, state, scale = 1, boss = false
   // Stopgap until a dedicated raccoon-wrong sheet lands (art round, audit
   // 2026-07-20): reuse the walk sheet at a slow amble so the wrong-state
   // raccoon keeps the painted style instead of dropping to the grey vector
-  // ghost. raccoonBob already supplies the retreat hop via groundY; the smug
-  // backward lean stays a vector-only nicety.
+  // ghost. The retreat drift comes from main.js moving z.x; the bob hop and
+  // smug lean stay vector-only niceties.
   if (!drawn && wrong) {
     const img = sprite("raccoon-walk");
     if (img) {

@@ -2658,8 +2658,8 @@ function drawWordPlate(z, vis, now){
   // Goal 2026-07-13: shrink the plate ~15% and lift it (0.36 -> 0.31) so the
   // recap strip below it clears the cat/raccoon on short-and-wide canvases.
   // CARD scales the chrome (padding/badge/min-widths/pinyin) down; the hanzi
-  // glyph shrinks too but is floored at 56 CSS px so it never drops below the
-  // PRD §6.1 legibility floor on narrow phones (where the width term binds).
+  // glyph shrinks too but is floored at 56 CSS px on normal-height stages (PRD
+  // §6.1 legibility floor); squeezed stages bend the floor to 40px.
   // Audit 2026-07-20: when flexbox has genuinely squeezed the stage (short
   // phones + the listen replay row), shrink the whole plate with it instead
   // of holding fixed floors that swallow the scene. squeeze<1 only when a
