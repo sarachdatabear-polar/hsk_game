@@ -1329,7 +1329,7 @@ function renderCard(){
   if(!fc.flipped){
     c.innerHTML = `<div class="hz">${w.h}</div><div class="py">${w.p}</div>
       <div class="hint">${t("learn.hintFront", { lv: w.lv, ta: w.ta, tt: w.tt })}</div>`;
-    if(settings.autoSpeak) speak(w.h);
+    if(settings.autoSpeak) speakWhenReady(w.h);
   }else{
     const th = w.t? `<div class="th">${w.t}</div>` : `<div class="th" style="color:var(--muted)">${t("fc.noThai")}</div>`;
     const ex = exampleFor(w, EXAMPLES, getLocale());
