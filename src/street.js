@@ -57,7 +57,8 @@ export const LANES = {
 // left margin (≥.15 after half-widths) clears the maneki mascot; gateways own
 // the road center so an arch reads as the street's entrance.
 export const DECO_ANCHORS = {
-  gateway: [ { x: 0.50, lane: "mid" }, { x: 0.50, lane: "back" } ],
+  // back first: the first-bought arch reads as a distant gate behind the buildings, keeping the Tailor (building slot .5) visible; the second arch fronts the road.
+  gateway: [ { x: 0.50, lane: "back" }, { x: 0.50, lane: "mid" } ],
   large:   [ { x: 0.25, lane: "front" }, { x: 0.77, lane: "front" },
              { x: 0.30, lane: "back" },  { x: 0.70, lane: "back" } ],
   medium:  [ { x: 0.58, lane: "front" }, { x: 0.93, lane: "front" },
