@@ -67,16 +67,19 @@ export const DECO_ANCHORS = {
              { x: 0.14, lane: "back" },  { x: 0.88, lane: "back" } ],
 };
 
-// Stable anchor assignment: walk DECO_IDS order, give each owned deco the
-// next unused anchor of its class. Owning MORE decos never moves an
-// already-placed one — the street grows, it doesn't reshuffle.
+// Permanent-home assignment: each deco's anchor is fixed by its class-rank
+// position in DECO_IDS (owned or not), so buying ANY deco never moves another
+// — the street grows, it doesn't reshuffle. Unowned homes simply stay empty
+// until purchased. Pure function of the owned set; same result on every
+// machine, nothing persisted.
 export function assignDecoAnchors(ownedIds) {
-  const used = { gateway: 0, large: 0, medium: 0, small: 0 };
+  const rank = { gateway: 0, large: 0, medium: 0, small: 0 };
   const out = new Map();
   for (const id of DECO_IDS) {
-    if (!ownedIds.includes(id)) continue;
     const cls = DECO_CLASS[id];
-    const anchor = DECO_ANCHORS[cls][used[cls]++];
+    const idx = rank[cls]++;
+    if (!ownedIds.includes(id)) continue;
+    const anchor = DECO_ANCHORS[cls][idx];
     if (anchor) out.set(id, { x: anchor.x, lane: anchor.lane, cls });
   }
   return out;

@@ -187,6 +187,17 @@ describe("scene composer", () => {
     for (const id of some) expect(b.get(id)).toEqual(a.get(id));
   });
 
+  it("assignment is permanent — buying any other deco never moves an owned one", () => {
+    for (const owned of DECO_IDS) {
+      const before = assignDecoAnchors([owned]);
+      for (const extra of DECO_IDS) {
+        if (extra === owned) continue;
+        const after = assignDecoAnchors([owned, extra]);
+        expect(after.get(owned)).toEqual(before.get(owned));
+      }
+    }
+  });
+
   it("all 15 owned: same-lane neighbours overlap at most 40%", () => {
     const decos = streetPieces(1, DECO_IDS.slice()).filter(p => p.kind === "deco");
     expect(decos.length).toBe(15);
