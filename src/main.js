@@ -2660,10 +2660,17 @@ function drawWordPlate(z, vis, now){
   // CARD scales the chrome (padding/badge/min-widths/pinyin) down; the hanzi
   // glyph shrinks too but is floored at 56 CSS px so it never drops below the
   // PRD §6.1 legibility floor on narrow phones (where the width term binds).
-  const CARD = 0.85;
+  // Audit 2026-07-20: when flexbox has genuinely squeezed the stage (short
+  // phones + the listen replay row), shrink the whole plate with it instead
+  // of holding fixed floors that swallow the scene. squeeze<1 only when a
+  // full-size plate (~150px) would exceed 58% of the canvas height; the 56px
+  // hanzi legibility floor intentionally bends to 40px there — a smaller
+  // glyph beats an unreadable overlap.
+  const squeeze = Math.max(0.7, Math.min(1, (B.h * 0.58) / 150));
+  const CARD = 0.85 * squeeze;
   const wy = Math.round(B.h * 0.31) + Math.round(bounce);
   const T = B.L.textS * CARD;   // plaque metrics scale with the width-driven text scale
-  const hzPx = Math.max(56, B.L.hanziPx * CARD);
+  const hzPx = Math.max(squeeze < 1 ? 40 : 56, B.L.hanziPx * CARD);
   const pyPx = B.L.pinyinPx * CARD;
   ctx.save();
   ctx.font = fontString(700, hzPx, HANZI_STACK);
@@ -2689,7 +2696,7 @@ function drawWordPlate(z, vis, now){
   const pinyinH = pinyin ? 22*T : 0;
   const hanziH = hzPx * 1.05;
   const lh = padV*2 + instrH + pinyinH + hanziH;
-  const x = B.w/2 - lw/2, y = wy - lh/2;
+  const x = B.w/2 - lw/2, y = Math.max(4, wy - lh/2);
   const plaqueImg = sprite("ui-word-plaque");
   if(plaqueImg){
     // 9-slice so the gold rim + notched frame stay crisp at any plaque size
