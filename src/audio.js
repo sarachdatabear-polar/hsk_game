@@ -4,6 +4,13 @@ import { clampVol } from "./sfx.js";
 let mp3Set = new Set();
 let base = "audio/";
 let zhVoice = null;
+// Resolves the first time initAudio() runs (with real data or the boot
+// catch's empty fallback) — the moment mp3Set is trustworthy. Auto-speak
+// paths race this (with a timeout) instead of reading mp3Set while the boot
+// fetch is still in flight, which used to send a session's first question
+// down the TTS path even when its mp3 exists.
+let indexReadyResolve;
+export const audioIndexReady = new Promise(res => { indexReadyResolve = res; });
 // One reused <audio> element for word playback. Mobile browsers unlock media
 // per-element on the first gesture-initiated play(); reusing a single element
 // (rather than `new Audio()` per word) keeps that unlock alive for the session
@@ -86,6 +93,7 @@ export function initAudio(indexArray, baseUrl = "audio/") {
     };
     pick(); synth.onvoiceschanged = pick;
   }
+  if (indexReadyResolve) { indexReadyResolve(); indexReadyResolve = null; }
 }
 
 // Which TTS path to use for a word that has no bundled mp3.

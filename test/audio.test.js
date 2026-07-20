@@ -136,6 +136,20 @@ describe("unlockAudio() mobile gesture retry", () => {
   });
 });
 
+describe("audioIndexReady", () => {
+  it("resolves once initAudio runs", async () => {
+    vi.resetModules();
+    const mod = await import("../src/audio.js");
+    let settled = false;
+    mod.audioIndexReady.then(() => { settled = true; });
+    await Promise.resolve();
+    expect(settled).toBe(false); // pending before init
+    mod.initAudio(["你"]);
+    await Promise.resolve(); await Promise.resolve();
+    expect(settled).toBe(true);
+  });
+});
+
 describe("setVoiceVolume — applied to both playback paths", () => {
   it("sets .volume on the SpeechSynthesisUtterance (web TTS path)", () => {
     const synth = makeSynth();
