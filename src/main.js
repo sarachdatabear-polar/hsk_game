@@ -3625,21 +3625,22 @@ function renderStreet(){
   const level = levelForXp(xp);
   const pieces = streetPieces(level, shopState.owned, shopState.tiers || {});
   const m = streetMetrics(w, h);
-  const backGy = gy - h * (1 - m.backY);
   drawStreetPads(sc, w, gy, h, pieces, m);
-  // Painter's order: back row (buildings) fully before front row (decos).
+  // streetPieces is pre-sorted by ground line (deco back lane → buildings →
+  // mid → front), so one loop paints the scene back-to-front; slight overlap
+  // between lanes is intended depth, not a layout bug.
   for(const p of pieces){
-    if(p.kind !== "building") continue;
-    const x = p.slot * w, basis = m.unit * m.backScale;
-    drawContactShadow(sc, x, backGy, basis);
-    drawStreetBuilding(sc, p.id, x, backGy, basis);
-  }
-  for(const p of pieces){
-    if(p.kind === "building") continue;
     const x = p.slot * w;
-    const du = m.unit * (p.scale || 1);   // auto-arrange shrinks decos so they never overlap
-    drawContactShadow(sc, x, gy, du);
-    drawTieredDeco(sc, p, x, gy, du);
+    const py = gy - h * (1 - (p.laneY ?? 1));
+    if(p.kind === "building"){
+      const basis = m.unit * m.backScale;
+      drawContactShadow(sc, x, py, basis);
+      drawStreetBuilding(sc, p.id, x, py, basis);
+    }else{
+      const du = m.unit * (p.scale || 1);
+      drawContactShadow(sc, x, py, du);
+      drawTieredDeco(sc, p, x, py, du);
+    }
   }
 
   // mascot - maneki sprite or vector fallback, always far left on the ground.
@@ -3837,9 +3838,10 @@ function drawCrownAccent(c, id, x, gy, basis){
   for(const [sx, sy, r] of sparkles) drawStarMark(c, sx, sy, r);
   c.restore();
 }
-// DECO_SPRITE_SCALE lives in street.js (co-located with BASE_DECO_W so their
-// no-overlap coupling is unit-tested); it's the PNG draw box as a multiple of
-// the deco basis h, bottom-anchored.
+// DECO_SPRITE_SCALE lives in street.js; the PNG draw box is that constant
+// times the piece's scaled unit (h here), bottom-anchored. No-overlap is
+// governed by street.js's DECO_ANCHORS lanes and covered by the overlap
+// test in street.test.js, not by any coupling in this function.
 function drawStreetDeco(c, id, x, gy, h){
   // Prefer the PNG art when loaded; fall back to the vector shape otherwise
   // (manifest: decor + fallback "canvas:drawStreetDeco"). Any caller tier
