@@ -147,6 +147,19 @@ function speakUtterance(hanzi, synth, isRetry) {
   synth.speak(u);
 }
 
+// Auto-speak entry for words the game speaks on its own (question spawn,
+// tone-trainer prompt) — NOT for tap-driven replay buttons, which must stay
+// synchronous inside their gesture. Waits (briefly) for the bundled-mp3
+// index and any in-flight unlock so a session's first auto-spoken word takes
+// the mp3 path instead of losing the boot race.
+export function speakWhenReady(hanzi, timeoutMs = 1500) {
+  if (!hanzi) return;
+  const timeout = new Promise(res => setTimeout(res, timeoutMs));
+  Promise.race([audioIndexReady, timeout])
+    .then(() => unlocking || null)
+    .then(() => speak(hanzi));
+}
+
 function ttsFallback(hanzi, synth, deferred = false) {
   const mode = chooseTts();
   if (mode === "native") {

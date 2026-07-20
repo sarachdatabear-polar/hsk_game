@@ -23,7 +23,7 @@ import { REMINDER_HOUR, reminderPlan, reengagePlan } from "./notify.js";
 import { defaultQuestState, noteQuestEvent, questStatus,
          defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly } from "./quests.js";
 import { reviewChallengePoints, reviewChallengeSpeedFactor } from "./boss.js";
-import { initAudio, speak, audioAvailable, hasMp3, setVoiceVolume, unlockAudio } from "./audio.js";
+import { initAudio, speak, speakWhenReady, audioAvailable, hasMp3, setVoiceVolume, unlockAudio } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, syncReengageReminder, requestNotifPermission, isNative } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import { BUILDINGS, streetPieces, streetProgress, streetMetrics, DECO_SPRITE_SCALE } from "./street.js";
@@ -1411,7 +1411,7 @@ function nextToneQuestion(){
   if(!TG.q){ endToneRound(); return; }   // pool ran out/empty — end early rather than crash
   TG.locked = false;
   renderToneQuestion();
-  speak(TG.q.word.h);
+  speakWhenReady(TG.q.word.h);
 }
 // Mandarin tone pitch-contours drawn in a 44×30 box (Chao 5-level shape):
 // 1 high-level, 2 rising, 3 low-dipping, 4 falling.
@@ -1958,7 +1958,7 @@ function spawnZombie(){
   }
   const pol = FORMATS[z.format].audio;
   // during an intro the audio waits for dismiss (played in showFormatIntro's OK)
-  if(!z.frozen && (pol === "always" || (pol === "setting" && settings.autoSpeak))) speak(w.h);
+  if(!z.frozen && (pol === "always" || (pol === "setting" && settings.autoSpeak))) speakWhenReady(w.h);
   renderQuestion(w, z.format, z.format === "reverse" ? "battle.reversePrompt" : null);
   showQuestFeedback(encounter.reviewChallenge ? "challenge" : "choose", z.format);
   updateHud();   // round capsule tracks B.spawned — refresh as each word enters

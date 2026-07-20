@@ -150,6 +150,40 @@ describe("audioIndexReady", () => {
   });
 });
 
+describe("speakWhenReady", () => {
+  it("waits for the index, then speaks via the mp3 path", async () => {
+    vi.resetModules();
+    vi.useFakeTimers();
+    const played = [];
+    globalThis.Audio = class { constructor(){ this.paused = true; }
+      play(){ played.push(this.src); return Promise.resolve(); } pause(){} };
+    const mod = await import("../src/audio.js");
+    mod.speakWhenReady("你");
+    await vi.advanceTimersByTimeAsync(0);
+    expect(played).toEqual([]);            // index not ready yet — no premature TTS/mp3
+    mod.initAudio(["你"]);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(played.length).toBe(1);
+    expect(played[0]).toContain(encodeURIComponent("你"));
+    vi.useRealTimers(); delete globalThis.Audio;
+  });
+
+  it("gives up waiting after the timeout and speaks anyway", async () => {
+    vi.resetModules();
+    vi.useFakeTimers();
+    const played = [];
+    globalThis.Audio = class { constructor(){ this.paused = true; }
+      play(){ played.push(this.src); return Promise.resolve(); } pause(){} };
+    const mod = await import("../src/audio.js");
+    mod.speakWhenReady("你", 1500);        // never call initAudio
+    await vi.advanceTimersByTimeAsync(1600);
+    // empty mp3Set -> falls to TTS; with no speechSynthesis stub that's a
+    // silent no-op, but speak() must have been reached: play never called.
+    expect(played).toEqual([]);
+    vi.useRealTimers(); delete globalThis.Audio;
+  });
+});
+
 describe("setVoiceVolume — applied to both playback paths", () => {
   it("sets .volume on the SpeechSynthesisUtterance (web TTS path)", () => {
     const synth = makeSynth();
