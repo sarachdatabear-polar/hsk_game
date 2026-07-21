@@ -30,9 +30,9 @@ OUT = ROOT / "src" / "sprite-metrics.js"
 FRAME_W = 256
 
 # character sheets only — cat*-walk.png, cat*-happy.png, raccoon-walk.png,
-# raccoon-happy.png (excludes portrait/guide/study/thinking/celebrate stills,
-# which aren't frame sheets).
-SHEET_RE = re.compile(r"^(cat.*-(walk|happy)|raccoon-(walk|happy))\.png$")
+# raccoon-happy.png, raccoon-wrong.png (excludes portrait/guide/study/thinking/
+# celebrate stills, which aren't frame sheets).
+SHEET_RE = re.compile(r"^(cat.*-(walk|happy)|raccoon-(walk|happy|wrong))\.png$")
 
 
 def union_bbox(path):

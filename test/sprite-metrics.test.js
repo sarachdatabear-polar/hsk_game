@@ -3,10 +3,10 @@ import { SPRITE_METRICS } from "../src/sprite-metrics.js";
 import { SPRITE_NAMES } from "../src/sprites.js";
 
 // sheets that get measured by scripts/gen_sprite_metrics.py: cat*-walk,
-// cat*-happy, raccoon-walk, raccoon-happy (excludes still portraits like
-// cat-guide/cat-portrait, which aren't frame sheets and aren't in
-// SPRITE_NAMES's walk/happy naming anyway).
-const SHEET_RE = /^(cat.*-(walk|happy)|raccoon-(walk|happy))$/;
+// cat*-happy, raccoon-walk, raccoon-happy, raccoon-wrong (excludes still
+// portraits like cat-guide/cat-portrait, which aren't frame sheets and
+// aren't in SPRITE_NAMES's walk/happy/wrong naming anyway).
+const SHEET_RE = /^(cat.*-(walk|happy)|raccoon-(walk|happy|wrong))$/;
 
 describe("SPRITE_METRICS", () => {
   it("has an entry for every character sheet referenced in sprites.js", () => {
@@ -41,6 +41,10 @@ describe("SPRITE_METRICS", () => {
     expect(SPRITE_METRICS["cat-happy"]).toEqual({ l: 78, t: 62, r: 177, b: 189 });
     expect(SPRITE_METRICS["raccoon-walk"]).toEqual({ l: 31, t: 12, r: 225, b: 244 });
     expect(SPRITE_METRICS["raccoon-happy"]).toEqual({ l: 8, t: 12, r: 248, b: 244 });
+    // raccoon-wrong: dedicated retreat-hop sheet (2026-07-21); union bbox
+    // includes frame 3's mid-air apex, so t=0 (top of the hop) while b=232
+    // reflects the grounded frames' feet.
+    expect(SPRITE_METRICS["raccoon-wrong"]).toEqual({ l: 34, t: 0, r: 221, b: 232 });
     expect(SPRITE_METRICS["cat-ninja-walk"]).toEqual({ l: 8, t: 57, r: 248, b: 244 });
   });
 });

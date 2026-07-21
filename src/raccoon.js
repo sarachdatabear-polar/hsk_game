@@ -87,10 +87,12 @@ export function drawRaccoon(ctx, x, groundY, tMs, state, scale = 1, boss = false
     ctx.translate(-x, -groundY);
   }
 
-  /* --- try sprite sheets first (walk/happy sheets; "wrong" borrows the walk sheet as a stopgap — see below). Sheets already face
-     LEFT, same as the vector art, so no mirroring is needed. Frames are
-     scaled into a box the size of RACCOON_HEIGHT so the sprite lines up with
-     the same ground-contact/scale convention the vector fallback uses. --- */
+  /* --- try sprite sheets first (walk/happy/wrong all have dedicated
+     sheets now — the wrong state's own sheet is a smug retreat-hop, see
+     below). Sheets already face LEFT, same as the vector art, so no
+     mirroring is needed. Frames are scaled into a box the size of
+     RACCOON_HEIGHT so the sprite lines up with the same ground-contact/
+     scale convention the vector fallback uses. --- */
   let drawn = false;
   if (state === "walk") {
     const img = sprite("raccoon-walk");
@@ -108,11 +110,21 @@ export function drawRaccoon(ctx, x, groundY, tMs, state, scale = 1, boss = false
       drawn = true;
     }
   }
-  // Stopgap until a dedicated raccoon-wrong sheet lands (art round, audit
-  // 2026-07-20): reuse the walk sheet at a slow amble so the wrong-state
-  // raccoon keeps the painted style instead of dropping to the grey vector
-  // ghost. The retreat drift comes from main.js moving z.x; the bob hop and
-  // smug lean stay vector-only niceties.
+  if (!drawn && wrong) {
+    // Dedicated sheet (Jordan art drop, 2026-07-21): smug retreat hop, 4
+    // frames, frame 3 mid-air — reads as a real hop, not a walk cycle.
+    const img = sprite("raccoon-wrong");
+    if (img) {
+      const frame = Math.floor(tMs / 140) % 4;
+      drawSpriteFrame(ctx, img, frame, x, groundY, "raccoon-wrong", RACCOON_HEIGHT);
+      drawn = true;
+    }
+  }
+  // Fallback until raccoon-wrong finishes loading (or on any load failure):
+  // reuse the walk sheet at a slow amble so the wrong-state raccoon keeps the
+  // painted style instead of dropping straight to the grey vector ghost. The
+  // retreat drift comes from main.js moving z.x; the bob hop and smug lean
+  // stay vector-only niceties in this fallback path.
   if (!drawn && wrong) {
     const img = sprite("raccoon-walk");
     if (img) {

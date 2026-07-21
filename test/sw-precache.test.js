@@ -20,8 +20,11 @@ describe("sw.js precache list", () => {
   });
 
   it("keeps the atomic offline shell within the install budget", () => {
-    expect(PRECACHE.length).toBeLessThanOrEqual(71);
-    expect(precacheBytes).toBeLessThanOrEqual(10 * 1024 * 1024);
+    expect(PRECACHE.length).toBeLessThanOrEqual(72);
+    // Bumped from 10MB: raccoon-wrong.png (dedicated retreat-hop sheet,
+    // ~208KB) joins raccoon-walk/raccoon-happy in the default battle-loop
+    // precache set (Jordan art drop, 2026-07-21).
+    expect(precacheBytes).toBeLessThanOrEqual(10.25 * 1024 * 1024);
   });
 
   for (const entry of PRECACHE) {
@@ -49,7 +52,7 @@ describe("sw.js precache list", () => {
       "assets/cat-astronaut-walk.png", "assets/bg-island-sunset.png",
       "assets/deco-noodle-stall.png", "assets/tile-arcade.png",
     ]) expect(precacheSet.has(entry), entry).toBe(false);
-    expect(swSrc).toContain('const CACHE_VERSION = "v95"');
+    expect(swSrc).toContain('const CACHE_VERSION = "v96"');
     expect(swSrc).toContain("const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`");
     expect(swSrc).toContain("cacheAfterFetch(RUNTIME, request)");
   });

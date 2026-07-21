@@ -66,6 +66,7 @@
     { "id": "coin", "file": "coin.png", "type": "decor", "status": "integrated", "priority": "P2", "w": 128, "h": 128, "fallback": "canvas:coin-vector" },
     { "id": "raccoon-walk", "file": "raccoon-walk.png", "type": "sprite-sheet", "status": "integrated", "priority": "P0", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawRaccoon" },
     { "id": "raccoon-happy", "file": "raccoon-happy.png", "type": "sprite-sheet", "status": "integrated", "priority": "P0", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawRaccoon" },
+    { "id": "raccoon-wrong", "file": "raccoon-wrong.png", "type": "sprite-sheet", "status": "integrated", "priority": "P0", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawRaccoon" },
 
     { "id": "cat-panda-walk", "file": "cat-panda-walk.png", "type": "sprite-sheet", "status": "integrated", "priority": "P0", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
     { "id": "cat-panda-happy", "file": "cat-panda-happy.png", "type": "sprite-sheet", "status": "integrated", "priority": "P0", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat+SKIN_PALETTES" },
