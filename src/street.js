@@ -23,37 +23,65 @@ export const DECO_IDS = [
 
 const BUILDING_SLOTS = [.18, .34, .5, .66, .82];
 
-// Decorations are auto-arranged: however many the player owns are spread evenly
-// across the front-row band and scaled so they NEVER overlap, at any count
-// 1..15. The street is a "proud to show" reward showcase, not a builder — the
-// game curates the layout so it always looks intentional and the art always
-// reads cleanly, rather than asking the player to place pieces by hand.
-const DECO_BAND = { left: 0.15, right: 0.97 }; // usable front-row band; left margin clears the maneki mascot
+// ---- scene composer (2026-07-20) ----
+// The street is a curated scene, not a shelf: each deco has a size class and
+// classes have hand-authored anchors in three depth lanes composed around
+// bg-street.png (road up the middle, fences at the sides). See
+// docs/superpowers/specs/2026-07-20-audit-fixes-design.md.
+export const DECO_CLASS = {
+  "golden-arch": "gateway", "firecracker-arch": "gateway",
+  "drum-tower": "large", "noodle-stall": "large",
+  "mooncake-stall": "large", "shaved-ice-cart": "large",
+  "koi-pond": "medium", "mahjong-table": "medium", "bubble-tea": "medium",
+  "tea-sign": "medium", "neon-cat-sign": "medium",
+  "red-lantern": "small", "paper-umbrella": "small",
+  "goldfish-banner": "small", "foo-dog": "small",
+};
+export const CLASS_SIZE = { gateway: 1.6, large: 1.25, medium: 1.0, small: 0.8 };
 // PNG deco draw box, as a multiple of the deco basis (main.js renderStreet uses
 // it, bottom-anchored). The largest a deco draws — the vector fallback is
-// smaller. Co-located here (not main.js) so its coupling to BASE_DECO_W is
-// unit-testable; street.test.js asserts BASE_DECO_W >= DECO_SPRITE_SCALE * UNIT_FRAC.
+// smaller.
 export const DECO_SPRITE_SCALE = 1.5;
 // streetMetrics' w-bound unit as a fraction of width (unit = min(h*.30, w*.105)).
 export const UNIT_FRAC = 0.105;
-// Tier-1 deco footprint as a fraction of street width. Budgets for the PNG
-// sprite draw box (DECO_SPRITE_SCALE * UNIT_FRAC ≈ 0.158, + padding). Sets the
-// count at which decos start shrinking (full scale while a cell is >= this).
-export const BASE_DECO_W = 0.17;
-// Tier-2/3 upgrades enlarge the drawn silhouette 1.15x (main.js drawTieredDeco).
-// The layout budgets for the worst case so an all-max-tier street never overlaps.
-export const TIER_MAX_FACTOR = 1.15;
+// laneY = the piece's ground line as a fraction of street height (1.0 is the
+// front ground line main.js draws on); laneScale shrinks pieces with
+// distance. Buildings keep their historical 0.86 row between back and mid.
+export const LANES = {
+  back:  { laneY: 0.82, laneScale: 0.72 },
+  mid:   { laneY: 0.91, laneScale: 0.86 },
+  front: { laneY: 1.0,  laneScale: 1.0  },
+};
+// One anchor list per class, list length = class census, so every deco always
+// has a home and classes never compete. List order is fill order. Front-lane
+// left margin (≥.15 after half-widths) clears the maneki mascot; gateways own
+// the road center so an arch reads as the street's entrance.
+export const DECO_ANCHORS = {
+  // back first: the first-bought arch reads as a distant gate behind the buildings, keeping the Tailor (building slot .5) visible; the second arch fronts the road.
+  gateway: [ { x: 0.50, lane: "back" }, { x: 0.50, lane: "mid" } ],
+  large:   [ { x: 0.25, lane: "front" }, { x: 0.77, lane: "front" },
+             { x: 0.30, lane: "back" },  { x: 0.70, lane: "back" } ],
+  medium:  [ { x: 0.58, lane: "front" }, { x: 0.93, lane: "front" },
+             { x: 0.20, lane: "mid" },   { x: 0.35, lane: "mid" },
+             { x: 0.80, lane: "mid" } ],
+  small:   [ { x: 0.42, lane: "front" }, { x: 0.68, lane: "mid" },
+             { x: 0.14, lane: "back" },  { x: 0.88, lane: "back" } ],
+};
 
-// Even "centered-cell" layout for `count` decos: equal end margins, equal gaps,
-// uniform scale so each footprint — at its largest possible (max-tier) draw
-// size — fits its own cell.
-function decoLayout(count) {
-  const span = DECO_BAND.right - DECO_BAND.left;
-  const cell = span / count;
-  const scale = Math.min(1, cell / (BASE_DECO_W * TIER_MAX_FACTOR));
-  const out = [];
-  for (let i = 0; i < count; i++) {
-    out.push({ slot: DECO_BAND.left + (i + 0.5) * cell, scale });
+// Permanent-home assignment: each deco's anchor is fixed by its class-rank
+// position in DECO_IDS (owned or not), so buying ANY deco never moves another
+// — the street grows, it doesn't reshuffle. Unowned homes simply stay empty
+// until purchased. Pure function of the owned set; same result on every
+// machine, nothing persisted.
+export function assignDecoAnchors(ownedIds) {
+  const rank = { gateway: 0, large: 0, medium: 0, small: 0 };
+  const out = new Map();
+  for (const id of DECO_IDS) {
+    const cls = DECO_CLASS[id];
+    const idx = rank[cls]++;
+    if (!ownedIds.includes(id)) continue;
+    const anchor = DECO_ANCHORS[cls][idx];
+    if (anchor) out.set(id, { x: anchor.x, lane: anchor.lane, cls });
   }
   return out;
 }
@@ -61,14 +89,17 @@ function decoLayout(count) {
 export function streetPieces(level, owned, tiers = {}) {
   const pieces = [];
   BUILDINGS.forEach((b, i) => {
-    if (level >= b.lv) pieces.push({ id: b.id, kind: "building", slot: BUILDING_SLOTS[i] });
+    if (level >= b.lv) pieces.push({ id: b.id, kind: "building", slot: BUILDING_SLOTS[i], laneY: 0.86 });
   });
-  const ownedDecos = DECO_IDS.filter(id => owned.includes(id)); // canonical order = stable identity
-  const layout = decoLayout(ownedDecos.length);
-  ownedDecos.forEach((id, i) => {
-    pieces.push({ id, kind: "deco", slot: layout[i].slot, tier: tiers[id] || 1, scale: layout[i].scale });
-  });
-  return pieces.sort((a, b) => a.slot - b.slot);
+  for (const [id, a] of assignDecoAnchors(owned)) {
+    const lane = LANES[a.lane];
+    pieces.push({
+      id, kind: "deco", slot: a.x, tier: tiers[id] || 1,
+      laneY: lane.laneY, scale: CLASS_SIZE[a.cls] * lane.laneScale,
+    });
+  }
+  // Painter's order for the caller: farthest ground line first, then x.
+  return pieces.sort((a, b) => (a.laneY - b.laneY) || (a.slot - b.slot));
 }
 
 export function streetProgress(level) {

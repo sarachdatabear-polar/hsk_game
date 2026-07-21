@@ -6,7 +6,7 @@
 // One release version owns every cache. Keeping runtime/audio on older names
 // lets cache-first optional art and regenerated MP3s survive a shell release
 // indefinitely, so all three advance together.
-const CACHE_VERSION = "v94";
+const CACHE_VERSION = "v95";
 const SHELL = `nbhsk-shell-${CACHE_VERSION}`;
 const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`;
 const AUDIO = `nbhsk-audio-${CACHE_VERSION}`;
@@ -76,6 +76,16 @@ async function cacheAfterFetch(cacheName, request) {
   return response;
 }
 
+// The full-voice set is ~14k files; a heavy session shouldn't grow the audio
+// cache without bound. FIFO approximation of LRU (Cache keys() preserves
+// insertion order): overflow past 600 drops the oldest 100.
+async function trimAudioCache(max = 600, drop = 100) {
+  const cache = await caches.open(AUDIO);
+  const keys = await cache.keys();
+  if (keys.length <= max) return;
+  await Promise.all(keys.slice(0, drop).map(k => cache.delete(k)));
+}
+
 self.addEventListener("fetch", event => {
   const request = event.request;
   if (request.method !== "GET") return;
@@ -84,7 +94,10 @@ self.addEventListener("fetch", event => {
   if (url.pathname.endsWith(".mp3")) {
     event.respondWith(caches.open(AUDIO).then(async cache => {
       const hit = await cache.match(request);
-      return hit || cacheAfterFetch(AUDIO, request);
+      if (hit) return hit;
+      const res = await cacheAfterFetch(AUDIO, request);
+      trimAudioCache();   // fire-and-forget bound
+      return res;
     }));
     return;
   }

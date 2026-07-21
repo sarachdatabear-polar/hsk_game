@@ -136,6 +136,71 @@ describe("unlockAudio() mobile gesture retry", () => {
   });
 });
 
+describe("remote full-voice ladder", () => {
+  it("bundled words use the local base, full-set words the remote base", async () => {
+    vi.resetModules();
+    const played = [];
+    globalThis.Audio = class { constructor(){ this.paused = true; }
+      play(){ played.push(this.src); return Promise.resolve(); } pause(){} };
+    const mod = await import("../src/audio.js");
+    mod.initAudio(["一"]);
+    mod.initRemoteAudio(["一", "龘"], "https://host/audio/");
+    mod.speak("一");
+    mod.speak("龘");
+    expect(played[0].startsWith("audio/")).toBe(true);
+    expect(played[1].startsWith("https://host/audio/")).toBe(true);
+    delete globalThis.Audio;
+  });
+});
+
+describe("audioIndexReady", () => {
+  it("resolves once initAudio runs", async () => {
+    vi.resetModules();
+    const mod = await import("../src/audio.js");
+    let settled = false;
+    mod.audioIndexReady.then(() => { settled = true; });
+    await Promise.resolve();
+    expect(settled).toBe(false); // pending before init
+    mod.initAudio(["你"]);
+    await Promise.resolve(); await Promise.resolve();
+    expect(settled).toBe(true);
+  });
+});
+
+describe("speakWhenReady", () => {
+  it("waits for the index, then speaks via the mp3 path", async () => {
+    vi.resetModules();
+    vi.useFakeTimers();
+    const played = [];
+    globalThis.Audio = class { constructor(){ this.paused = true; }
+      play(){ played.push(this.src); return Promise.resolve(); } pause(){} };
+    const mod = await import("../src/audio.js");
+    mod.speakWhenReady("你");
+    await vi.advanceTimersByTimeAsync(0);
+    expect(played).toEqual([]);            // index not ready yet — no premature TTS/mp3
+    mod.initAudio(["你"]);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(played.length).toBe(1);
+    expect(played[0]).toContain(encodeURIComponent("你"));
+    vi.useRealTimers(); delete globalThis.Audio;
+  });
+
+  it("gives up waiting after the timeout and speaks anyway", async () => {
+    vi.resetModules();
+    vi.useFakeTimers();
+    const played = [];
+    globalThis.Audio = class { constructor(){ this.paused = true; }
+      play(){ played.push(this.src); return Promise.resolve(); } pause(){} };
+    const mod = await import("../src/audio.js");
+    mod.speakWhenReady("你", 1500);        // never call initAudio
+    await vi.advanceTimersByTimeAsync(1600);
+    // empty mp3Set -> falls to TTS; with no speechSynthesis stub that's a
+    // silent no-op, but speak() must have been reached: play never called.
+    expect(played).toEqual([]);
+    vi.useRealTimers(); delete globalThis.Audio;
+  });
+});
+
 describe("setVoiceVolume — applied to both playback paths", () => {
   it("sets .volume on the SpeechSynthesisUtterance (web TTS path)", () => {
     const synth = makeSynth();
@@ -186,5 +251,46 @@ describe("setVoiceVolume — applied to both playback paths", () => {
     speak("好");            // no bundled audio in test env -> ttsFallback -> native path
     expect(calls[0].volume).toBeCloseTo(0.3);
     setVoiceVolume(1); // reset module-level state for later tests
+  });
+});
+
+describe("prefetchAudio", () => {
+  it("fetches only words with a bundled mp3, capped at the limit", async () => {
+    vi.resetModules();
+    const fetched = [];
+    globalThis.fetch = url => { fetched.push(String(url)); return Promise.resolve({ ok: true }); };
+    const mod = await import("../src/audio.js");
+    mod.initAudio(["一", "二", "三"]);
+    mod.prefetchAudio(["一", "无", "二", "三"], 2);
+    expect(fetched.length).toBe(2);
+    expect(fetched[0]).toContain(encodeURIComponent("一"));
+    delete globalThis.fetch;
+  });
+});
+
+describe("retry after unlock", () => {
+  it("replays the pending word once unlock succeeds instead of falling to TTS", async () => {
+    vi.resetModules();
+    globalThis.window = {};
+    let failNext = true;
+    const played = [];
+    globalThis.Audio = class {
+      constructor(){ this.paused = true; }
+      play(){
+        if (this.muted) return Promise.resolve();            // silent-WAV priming
+        played.push(this.src);
+        return failNext ? (failNext = false, Promise.reject(new Error("gesture"))) : Promise.resolve();
+      }
+      pause(){}
+    };
+    const mod = await import("../src/audio.js");
+    mod.initAudio(["你"]);
+    mod.speak("你");                       // first play rejects (locked)
+    await Promise.resolve(); await Promise.resolve();
+    await mod.unlockAudio();               // gesture lands -> unlock succeeds
+    await Promise.resolve(); await Promise.resolve();
+    expect(played.length).toBe(2);         // original attempt + one retry
+    expect(played[1]).toContain(encodeURIComponent("你"));
+    delete globalThis.Audio;
   });
 });
