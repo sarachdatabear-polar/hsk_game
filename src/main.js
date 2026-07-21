@@ -3207,6 +3207,7 @@ function makeShopRow(item, today){
     store.set("wallet", wallet); store.set("shop", shopState);
     pushEdge("purchase");
     justBought = { id: item.id, at: performance.now() };
+    if(item.type === "deco") streetReveal = { id: item.id, start: 0 };
     // no renderStreet() here: the street canvas is display:none while the
     // shop screen is up (renderStreet would no-op) and show("street") always
     // re-renders on entry, so a bought deco appears the moment it can be seen.
@@ -3605,6 +3606,32 @@ function renderShopPreview(canvas, item, now=0){
 }
 
 /* ============================== Lucky Cat Street (home) ============================== */
+// Construction moment (scene composer): the most recent deco purchase/upgrade
+// pops in with a bounce + dust the next time the street is actually seen.
+// In-memory only — losing it on refresh just skips one animation.
+let streetReveal = null; // { id, start } — start stamps on first visible frame
+function revealPopScale(id){
+  if(REDUCED_MOTION) return 1;
+  if(!streetReveal || streetReveal.id !== id || !streetReveal.start) return 1;
+  const t = Math.min(1, (performance.now() - streetReveal.start) / 700);
+  // easeOutBack: overshoot ~12% then settle
+  const s = 1 + 2.2 * Math.pow(t - 1, 3) + 1.2 * Math.pow(t - 1, 2);
+  return Math.max(0.01, s);
+}
+function drawRevealDust(sc, x, py, du){
+  if(REDUCED_MOTION) return;
+  const t = (performance.now() - streetReveal.start) / 900;
+  if(t >= 1) return;
+  sc.save();
+  sc.globalAlpha = 0.5 * (1 - t);
+  sc.fillStyle = "#FBF5E8";
+  for(const [dx, r] of [[-0.4, 0.16], [0.05, 0.22], [0.45, 0.14]]){
+    sc.beginPath();
+    sc.ellipse(x + dx*du, py - 4, du*r*(0.6 + t), du*r*0.6*(0.6 + t), 0, 0, Math.PI*2);
+    sc.fill();
+  }
+  sc.restore();
+}
 // Pure-derived from levelForXp(xp) + shopState.owned — no new storage. Redrawn
 // on boot, show("home"), level-up (see addXp), and any deco purchase.
 function renderStreet(){
@@ -3637,9 +3664,11 @@ function renderStreet(){
       drawContactShadow(sc, x, py, basis);
       drawStreetBuilding(sc, p.id, x, py, basis);
     }else{
-      const du = m.unit * (p.scale || 1);
+      const pop = revealPopScale(p.id);
+      const du = m.unit * (p.scale || 1) * pop;
       drawContactShadow(sc, x, py, du);
       drawTieredDeco(sc, p, x, py, du);
+      if(streetReveal && streetReveal.id === p.id && streetReveal.start) drawRevealDust(sc, x, py, du);
     }
   }
 
@@ -3668,6 +3697,16 @@ function renderStreet(){
   cap.textContent = pieces.length===0
     ? t("street.captionEmpty", { next: nextTxt })
     : t("street.captionProgress", { unlocked: prog.unlocked, total: prog.total, next: nextTxt });
+
+  if(streetReveal && shopState.owned.includes(streetReveal.id)){
+    if(!streetReveal.start) streetReveal.start = performance.now();
+    cap.textContent = t("street.captionNew", { name: tOr("item." + streetReveal.id, streetReveal.id) });
+    if(performance.now() - streetReveal.start > 900){ streetReveal = null; }
+    else requestAnimationFrame(() => {
+      if(currentScreen === "street") renderStreet();
+      else streetReveal = null;
+    });
+  }
 }
 function paintStreetBase(c, w, h){
   // Warm-daylight village street: cream/sky gradient, soft green hills, sun
