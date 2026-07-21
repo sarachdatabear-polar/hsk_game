@@ -3701,7 +3701,12 @@ function renderStreet(){
   if(streetReveal && shopState.owned.includes(streetReveal.id)){
     if(!streetReveal.start) streetReveal.start = performance.now();
     cap.textContent = t("street.captionNew", { name: tOr("item." + streetReveal.id, streetReveal.id) });
-    if(performance.now() - streetReveal.start > 900){ streetReveal = null; }
+    if(performance.now() - streetReveal.start > 900){
+      streetReveal = null;
+      // one final frame so the caption reverts and the piece draws settled —
+      // without this the "New!" caption lingers until an unrelated redraw
+      requestAnimationFrame(() => { if(currentScreen === "street") renderStreet(); });
+    }
     else requestAnimationFrame(() => {
       if(currentScreen === "street") renderStreet();
       else streetReveal = null;
