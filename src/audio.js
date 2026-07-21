@@ -4,6 +4,13 @@ import { clampVol } from "./sfx.js";
 let mp3Set = new Set();
 let base = "audio/";
 let zhVoice = null;
+// Resolves the first time initAudio() runs (with real data or the boot
+// catch's empty fallback) — the moment mp3Set is trustworthy. Auto-speak
+// paths race this (with a timeout) instead of reading mp3Set while the boot
+// fetch is still in flight, which used to send a session's first question
+// down the TTS path even when its mp3 exists.
+let indexReadyResolve;
+export const audioIndexReady = new Promise(res => { indexReadyResolve = res; });
 // One reused <audio> element for word playback. Mobile browsers unlock media
 // per-element on the first gesture-initiated play(); reusing a single element
 // (rather than `new Audio()` per word) keeps that unlock alive for the session
@@ -25,6 +32,12 @@ const SILENT_WAV = "data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAI
 
 let unlocked = false;
 let unlocking = null;
+// A rejected play() before the session is unlocked usually means the iOS
+// gesture unlock hasn't landed yet. Remember the word; unlockAudio() replays
+// it on success — so a session's FIRST question is heard on the first tap
+// instead of silently downgrading to a TTS voice iOS also tends to drop.
+let pendingRetry = null; // { hanzi, at }
+const RETRY_WINDOW_MS = 8000;
 // Mobile browsers gate audio until the first real user gesture: the Web Audio
 // context starts suspended, HTMLAudioElement.play() is rejected, and
 // speechSynthesis.speak() is silently dropped — all outside a gesture. Call
@@ -60,6 +73,10 @@ export function unlockAudio() {
       if (el.src === unlockSrc) { el.pause(); el.currentTime = 0; }
       el.muted = false;
       unlocked = true;
+      if (pendingRetry && Date.now() - pendingRetry.at < RETRY_WINDOW_MS) {
+        const h = pendingRetry.hanzi; pendingRetry = null;
+        speak(h);
+      }
       return true;
     }).catch(() => {
       el.muted = false;
@@ -96,6 +113,7 @@ export function initAudio(indexArray, baseUrl = "audio/") {
     };
     pick(); synth.onvoiceschanged = pick;
   }
+  if (indexReadyResolve) { indexReadyResolve(); indexReadyResolve = null; }
 }
 
 // Which TTS path to use for a word that has no bundled mp3.
@@ -112,6 +130,7 @@ export function audioAvailable(hanzi) {
 
 export function speak(hanzi) {
   if (!hanzi) return;
+  pendingRetry = null;   // a newer word supersedes any queued retry
   const el = wordAudio();
   if (el && !el.paused) { el.pause(); }
   // Chrome's cancel-then-speak race: calling speechSynthesis.cancel() while
@@ -132,7 +151,11 @@ export function speak(hanzi) {
     el.src = (local ? base : remoteBase) + encodeURIComponent(hanzi) + ".mp3";
     el.volume = voiceVol;
     try { el.currentTime = 0; } catch (e) {}
-    el.play().catch(() => ttsFallback(hanzi, synth, deferred));
+    el.play().catch(() => {
+      console.warn("[audio] mp3 play rejected", hanzi);
+      if (!unlocked) { pendingRetry = { hanzi, at: Date.now() }; return; }
+      ttsFallback(hanzi, synth, deferred);
+    });
     return;
   }
   ttsFallback(hanzi, synth, deferred);
@@ -149,6 +172,32 @@ function speakUtterance(hanzi, synth, isRetry) {
   if (zhVoice) u.voice = zhVoice;
   if (!isRetry) u.onerror = () => speakUtterance(hanzi, synth, true);
   synth.speak(u);
+}
+
+// Auto-speak entry for words the game speaks on its own (question spawn,
+// tone-trainer prompt) — NOT for tap-driven replay buttons, which must stay
+// synchronous inside their gesture. Waits (briefly) for the bundled-mp3
+// index and any in-flight unlock so a session's first auto-spoken word takes
+// the mp3 path instead of losing the boot race.
+export function speakWhenReady(hanzi, timeoutMs = 1500) {
+  if (!hanzi) return;
+  const timeout = new Promise(res => setTimeout(res, timeoutMs));
+  Promise.race([audioIndexReady, timeout])
+    .then(() => unlocking || null)
+    .then(() => speak(hanzi));
+}
+
+// Fire-and-forget warm-up of mp3s the session is about to use, called inside
+// the start-button gesture. On the PWA the service worker's cache-first mp3
+// route stores them, so mid-battle playback never waits on the network.
+// Silently a no-op on file:// and native (fetch fails / no SW — harmless).
+export function prefetchAudio(hanziList, limit = 16) {
+  if (typeof fetch !== "function" || !Array.isArray(hanziList)) return;
+  hanziList.filter(h => mp3Set.has(h) || (remoteBase && fullSet.has(h))).slice(0, limit)
+    .forEach(h => {
+      const b = mp3Set.has(h) ? base : remoteBase;
+      try { fetch(b + encodeURIComponent(h) + ".mp3").catch(() => {}); } catch (e) {}
+    });
 }
 
 function ttsFallback(hanzi, synth, deferred = false) {

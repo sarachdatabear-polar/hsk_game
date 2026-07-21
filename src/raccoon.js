@@ -87,8 +87,7 @@ export function drawRaccoon(ctx, x, groundY, tMs, state, scale = 1, boss = false
     ctx.translate(-x, -groundY);
   }
 
-  /* --- try sprite sheets first (walk/happy only — "wrong" has no sheet and
-     always falls through to the vector drawing below). Sheets already face
+  /* --- try sprite sheets first (walk/happy sheets; "wrong" borrows the walk sheet as a stopgap — see below). Sheets already face
      LEFT, same as the vector art, so no mirroring is needed. Frames are
      scaled into a box the size of RACCOON_HEIGHT so the sprite lines up with
      the same ground-contact/scale convention the vector fallback uses. --- */
@@ -106,6 +105,19 @@ export function drawRaccoon(ctx, x, groundY, tMs, state, scale = 1, boss = false
     if (img) {
       const frame = Math.floor(tMs / 80) % 4;
       drawSpriteFrame(ctx, img, frame, x, groundY, "raccoon-happy", RACCOON_HEIGHT);
+      drawn = true;
+    }
+  }
+  // Stopgap until a dedicated raccoon-wrong sheet lands (art round, audit
+  // 2026-07-20): reuse the walk sheet at a slow amble so the wrong-state
+  // raccoon keeps the painted style instead of dropping to the grey vector
+  // ghost. The retreat drift comes from main.js moving z.x; the bob hop and
+  // smug lean stay vector-only niceties.
+  if (!drawn && wrong) {
+    const img = sprite("raccoon-walk");
+    if (img) {
+      const frame = Math.floor(tMs / 160) % 6;
+      drawSpriteFrame(ctx, img, frame, x, groundY, "raccoon-walk", RACCOON_HEIGHT);
       drawn = true;
     }
   }
