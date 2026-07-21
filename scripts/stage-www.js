@@ -61,7 +61,9 @@ for (const f of ["index.json", "index-full.json"]) {
 }
 const fullPath = path.join(AUDIO_SRC, "index-full.json");
 const listFile = AUDIO_SET === "full" && fs.existsSync(fullPath) ? "index-full.json" : "index.json";
-const audioList = JSON.parse(fs.readFileSync(path.join(AUDIO_SRC, listFile), "utf8"));
+const listPath = path.join(AUDIO_SRC, listFile);
+if (!fs.existsSync(listPath)) { console.error(`stage-www: missing audio/${listFile}`); process.exit(1); }
+const audioList = JSON.parse(fs.readFileSync(listPath, "utf8"));
 for (const h of audioList) {
   const f = path.join(AUDIO_SRC, `${h}.mp3`);
   if (fs.existsSync(f)) { fs.copyFileSync(f, path.join(AUDIO_DST, `${h}.mp3`)); files++; }
