@@ -3656,6 +3656,9 @@ function renderStreet(){
   // streetPieces is pre-sorted by ground line (deco back lane → buildings →
   // mid → front), so one loop paints the scene back-to-front; slight overlap
   // between lanes is intended depth, not a layout bug.
+  // Stamp the reveal start before the piece loop so the very first frame
+  // already draws the new piece popping in (not full-size for one frame).
+  if(streetReveal && !streetReveal.start && shopState.owned.includes(streetReveal.id)) streetReveal.start = performance.now();
   for(const p of pieces){
     const x = p.slot * w;
     const py = gy - h * (1 - (p.laneY ?? 1));
@@ -3699,7 +3702,6 @@ function renderStreet(){
     : t("street.captionProgress", { unlocked: prog.unlocked, total: prog.total, next: nextTxt });
 
   if(streetReveal && shopState.owned.includes(streetReveal.id)){
-    if(!streetReveal.start) streetReveal.start = performance.now();
     cap.textContent = t("street.captionNew", { name: tOr("item." + streetReveal.id, streetReveal.id) });
     if(performance.now() - streetReveal.start > 900){
       streetReveal = null;
