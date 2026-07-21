@@ -136,6 +136,23 @@ describe("unlockAudio() mobile gesture retry", () => {
   });
 });
 
+describe("remote full-voice ladder", () => {
+  it("bundled words use the local base, full-set words the remote base", async () => {
+    vi.resetModules();
+    const played = [];
+    globalThis.Audio = class { constructor(){ this.paused = true; }
+      play(){ played.push(this.src); return Promise.resolve(); } pause(){} };
+    const mod = await import("../src/audio.js");
+    mod.initAudio(["一"]);
+    mod.initRemoteAudio(["一", "龘"], "https://host/audio/");
+    mod.speak("一");
+    mod.speak("龘");
+    expect(played[0].startsWith("audio/")).toBe(true);
+    expect(played[1].startsWith("https://host/audio/")).toBe(true);
+    delete globalThis.Audio;
+  });
+});
+
 describe("audioIndexReady", () => {
   it("resolves once initAudio runs", async () => {
     vi.resetModules();

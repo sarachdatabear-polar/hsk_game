@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 """Generate per-word MP3s with Microsoft neural TTS (edge-tts).
 
-Scope: all HSK1-2 words plus the top WORDS_CAP words by frequency, sourced
-from the game's own data/words.json (deduped by hanzi keeping the max
-frequency seen across levels, then sorted descending) - NOT
-product/hsk_top2000_bilingual.csv, which has drifted from the actual game
-vocabulary.
-Output: game/audio/<hanzi>.mp3 + game/audio/index.json
+Scope: the FULL game vocabulary, sourced from the game's own data/words.json
+- NOT product/hsk_top2000_bilingual.csv, which has drifted from the actual
+game vocabulary. Every distinct hanzi across all levels gets an mp3.
+
+Output: game/audio/<hanzi>.mp3 + two indexes:
+  - index.json: the BUNDLED core set (top WORDS_CAP by frequency across
+    every level, deduped by hanzi keeping the max frequency seen, plus all
+    of ALWAYS_LEVELS in full) - this is what ships in the APK/PWA precache
+    and what hasMp3 gating reads.
+  - index-full.json: every hosted mp3 on disk, for the remote-voice ladder.
 Re-runnable: existing files are skipped, so interrupted runs resume.
-index.json is always rebuilt from the actual contents of audio/ so it
-reflects every mp3 on disk, not just the words picked in this run.
+Both indexes are always rebuilt from the actual contents of audio/ so they
+reflect every mp3 on disk, not just the words picked in this run.
 """
 import asyncio, json, sys
 from pathlib import Path
@@ -27,11 +31,14 @@ WORDS_CAP = 2000  # top-N words by frequency to synthesize audio for
 ALWAYS_LEVELS = ("1", "2")
 
 
-def load_words() -> list[str]:
-    """Word source from data/words.json: the top WORDS_CAP by frequency
-    across every level (deduped by hanzi keeping the max frequency seen),
-    plus all of ALWAYS_LEVELS in full."""
-    data = json.loads(WORDS_JSON.read_text(encoding="utf-8"))
+def load_data() -> dict:
+    return json.loads(WORDS_JSON.read_text(encoding="utf-8"))
+
+
+def core_words(data) -> list[str]:
+    """Bundled core set: the top WORDS_CAP by frequency across every level
+    (deduped by hanzi keeping the max frequency seen), plus all of
+    ALWAYS_LEVELS in full."""
     best_freq: dict[str, int] = {}
     for level_words in data["levels"].values():
         for w in level_words:
@@ -50,14 +57,32 @@ def load_words() -> list[str]:
     return words
 
 
+def all_words(data) -> list[str]:
+    """Full voice set: every distinct hanzi across all levels."""
+    seen: set[str] = set()
+    out: list[str] = []
+    for level_words in data["levels"].values():
+        for w in level_words:
+            if w["h"] not in seen:
+                seen.add(w["h"])
+                out.append(w["h"])
+    return out
+
+
 async def synth(word: str, path: Path, sem: asyncio.Semaphore):
     async with sem:
-        await edge_tts.Communicate(word, VOICE).save(str(path))
+        try:
+            await edge_tts.Communicate(word, VOICE).save(str(path))
+        except Exception as e:  # a failed word must not abort the full run
+            print(f"  FAILED {word}: {e}")
+            if path.exists():
+                path.unlink()
 
 
 async def main() -> int:
     OUT.mkdir(exist_ok=True)
-    words = load_words()
+    data = load_data()
+    words = all_words(data)
     sem = asyncio.Semaphore(CONCURRENCY)
     todo = [(w, OUT / f"{w}.mp3") for w in words if not (OUT / f"{w}.mp3").exists()]
     print(f"{len(words)} words, {len(todo)} to synthesize")
@@ -65,11 +90,15 @@ async def main() -> int:
         batch = todo[i:i + 100]
         await asyncio.gather(*(synth(w, p, sem) for w, p in batch))
         print(f"  {min(i + 100, len(todo))}/{len(todo)}")
-    # Rebuild index.json from whatever mp3s actually exist on disk, so it
-    # always reflects audio/ (not just words targeted in this run).
-    have = sorted(p.stem for p in OUT.glob("*.mp3"))
-    (OUT / "index.json").write_text(json.dumps(have, ensure_ascii=False), encoding="utf-8")
-    print(f"index.json: {len(have)} entries")
+    # Both indexes rebuild from what actually exists on disk. index.json is
+    # the BUNDLED core set (APK staging + hasMp3 gating read it); index-full
+    # lists every hosted mp3 for the remote-voice ladder.
+    on_disk = {p.stem for p in OUT.glob("*.mp3")}
+    core = [h for h in core_words(data) if h in on_disk]
+    full = sorted(on_disk)
+    (OUT / "index.json").write_text(json.dumps(core, ensure_ascii=False), encoding="utf-8")
+    (OUT / "index-full.json").write_text(json.dumps(full, ensure_ascii=False), encoding="utf-8")
+    print(f"index.json: {len(core)} core / index-full.json: {len(full)} total")
     return 0
 
 
