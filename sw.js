@@ -31,7 +31,8 @@ const PRECACHE = [
 
   // Default Word Quest + Street art. Alternative skins/backdrops are runtime.
   "assets/cat-walk.png", "assets/cat-happy.png", "assets/raccoon-walk.png",
-  "assets/raccoon-happy.png", "assets/cat-boss-walk.png", "assets/cat-boss-happy.png",
+  "assets/raccoon-happy.png", "assets/raccoon-wrong.png",
+  "assets/cat-boss-walk.png", "assets/cat-boss-happy.png",
   "assets/bg-market.png", "assets/bg-temple.png", "assets/bg-bamboo.png",
   "assets/bg-street.png", "assets/maneki.png", "assets/coin.png", "assets/lantern.png",
 

@@ -26,4 +26,5 @@ export const SPRITE_METRICS = {
   "cat-walk": { l: 78, t: 65, r: 178, b: 189 },
   "raccoon-happy": { l: 8, t: 12, r: 248, b: 244 },
   "raccoon-walk": { l: 31, t: 12, r: 225, b: 244 },
+  "raccoon-wrong": { l: 34, t: 0, r: 221, b: 232 },
 };

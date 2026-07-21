@@ -20,8 +20,11 @@ describe("sw.js precache list", () => {
   });
 
   it("keeps the atomic offline shell within the install budget", () => {
-    expect(PRECACHE.length).toBeLessThanOrEqual(71);
-    expect(precacheBytes).toBeLessThanOrEqual(10 * 1024 * 1024);
+    expect(PRECACHE.length).toBeLessThanOrEqual(72);
+    // Bumped from 10MB: raccoon-wrong.png (dedicated retreat-hop sheet,
+    // ~208KB) joins raccoon-walk/raccoon-happy in the default battle-loop
+    // precache set (Jordan art drop, 2026-07-21).
+    expect(precacheBytes).toBeLessThanOrEqual(10.25 * 1024 * 1024);
   });
 
   for (const entry of PRECACHE) {

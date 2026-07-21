@@ -14,7 +14,7 @@ export const SPRITE_NAMES = [
   "cat-mooncake-walk", "cat-mooncake-happy",
   "cat-dragon-walk", "cat-dragon-happy",
   "cat-boss-walk", "cat-boss-happy",
-  "raccoon-walk", "raccoon-happy",
+  "raccoon-walk", "raccoon-happy", "raccoon-wrong",
   "maneki", "coin", "lantern",
   "bg-quest", "bg-battle", "bg-market", "bg-street",
   "bg-temple", "bg-bamboo",
