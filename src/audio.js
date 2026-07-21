@@ -75,6 +75,16 @@ export function unlockAudio() {
 // Bundled-MP3 presence — reliable tone (browser TTS can't be trusted for tones).
 export function hasMp3(hanzi){ return mp3Set.has(hanzi); }
 
+// Full-voice set (2026-07-20): every word's Xiaoxiao mp3 is hosted with the
+// web deploy; words outside the bundled core stream from there (the SW's
+// cache-first mp3 route makes them offline after first play on the PWA).
+let fullSet = new Set();
+let remoteBase = null;
+export function initRemoteAudio(indexArray, baseUrl) {
+  fullSet = new Set(indexArray || []);
+  remoteBase = baseUrl || null;
+}
+
 export function initAudio(indexArray, baseUrl = "audio/") {
   mp3Set = new Set(indexArray || []);
   base = baseUrl;
@@ -95,9 +105,9 @@ export function chooseTts() {
   return "none";
 }
 
-// Can this word be spoken at all? (bundled mp3, or any TTS path)
+// Can this word be spoken at all? (bundled mp3, remote full-voice mp3, or any TTS path)
 export function audioAvailable(hanzi) {
-  return mp3Set.has(hanzi) || chooseTts() !== "none";
+  return mp3Set.has(hanzi) || fullSet.has(hanzi) || chooseTts() !== "none";
 }
 
 export function speak(hanzi) {
@@ -115,9 +125,11 @@ export function speak(hanzi) {
     synth.cancel();
     deferred = true;
   }
-  if (mp3Set.has(hanzi) && el) {
+  const local = mp3Set.has(hanzi);
+  const remote = !local && remoteBase && fullSet.has(hanzi);
+  if ((local || remote) && el) {
     el.muted = false;
-    el.src = base + encodeURIComponent(hanzi) + ".mp3";
+    el.src = (local ? base : remoteBase) + encodeURIComponent(hanzi) + ".mp3";
     el.volume = voiceVol;
     try { el.currentTime = 0; } catch (e) {}
     el.play().catch(() => ttsFallback(hanzi, synth, deferred));

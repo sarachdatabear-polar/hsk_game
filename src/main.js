@@ -23,7 +23,7 @@ import { REMINDER_HOUR, reminderPlan, reengagePlan } from "./notify.js";
 import { defaultQuestState, noteQuestEvent, questStatus,
          defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly } from "./quests.js";
 import { reviewChallengePoints, reviewChallengeSpeedFactor } from "./boss.js";
-import { initAudio, speak, audioAvailable, hasMp3, setVoiceVolume, unlockAudio } from "./audio.js";
+import { initAudio, speak, audioAvailable, hasMp3, setVoiceVolume, unlockAudio, initRemoteAudio } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, syncReengageReminder, requestNotifPermission, isNative } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import { BUILDINGS, streetPieces, streetProgress, streetMetrics, DECO_SPRITE_SCALE } from "./street.js";
@@ -1001,6 +1001,15 @@ fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>in
   // has already run with an empty set — refresh Home so the Tone Trainer entry
   // gate (which reads hasMp3) reflects real audio availability, not the default.
   .finally(()=>{ if(currentScreen === "home") renderHome(); });
+
+// Full-voice index (audit 2026-07-20): on the web the mp3s are same-origin
+// ("audio/"); the native shell bundles only the core set, so it streams the
+// rest from the deployed origin. file:// / offline: both fetches fail
+// silently and the TTS fallback stands, per the file:// constraint.
+const REMOTE_AUDIO_BASE = isNative()
+  ? "https://sarachdatabear-polar.github.io/hsk_game/audio/" : "audio/";
+fetch("audio/index-full.json").then(r=>r.json())
+  .then(ix=>initRemoteAudio(ix, REMOTE_AUDIO_BASE)).catch(()=>{});
 
 // Mobile browsers block all audio (Web Audio, <audio>.play, speech synthesis)
 // until the first real user gesture. Prime every path once on the first
