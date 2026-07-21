@@ -16,7 +16,7 @@
     "qa:responsive": "node scripts/responsive-sweep.mjs",
     "qa:responsive:th": "node scripts/responsive-sweep.mjs --locale=th",
     "android:brand": "node scripts/sync-android-branding.mjs",
-    "cap:sync": "npm run build && node scripts/stage-www.js && npx cap sync android && npm run android:brand",
+    "cap:sync": "npm run build && node scripts/stage-www.js --audio=core && npx cap sync android && npm run android:brand",
     "apk:release": "powershell -ExecutionPolicy Bypass -File scripts/build_apk.ps1",
     "aab:release": "powershell -ExecutionPolicy Bypass -File scripts/build_apk.ps1 -Artifact Aab",
     "android:release": "powershell -ExecutionPolicy Bypass -File scripts/build_apk.ps1 -Artifact Both"
