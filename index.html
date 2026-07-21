@@ -495,14 +495,16 @@
     .cv-wrap{min-height:170px;}
     #s-battle{padding:6px 10px 8px;}
   }
-  /* F9: the listen format prepends a full-width replay row inside #opts;
-     on short viewports the row plus the .cv-wrap floor above pushed content
-     past the fold. This selector's higher specificity (id+class+class) beats
-     both the base 260px and the short-portrait 170px .cv-wrap rules above
-     regardless of viewport, so the canvas floor always yields exactly enough
-     to make room for the extra row while a listen question is live
-     (main.js toggles #s-battle.listen-fmt per-question in renderQuestion). */
-  #s-battle.listen-fmt .cv-wrap{min-height:116px;}
+  /* F9 (rev 2026-07-20 audit): the listen format prepends a full-width replay
+     row inside #opts. Only short viewports need the canvas floor to yield for
+     that row — the previous unconditional 116px floor crushed the stage on
+     tall phones (the word plate covered both mascots). Mirror cloze's gated
+     pattern: ≤700px portrait gets a 170px floor (specificity id+class+class
+     beats the base 260px and the 621–700px 240px rules); taller viewports
+     keep the normal floors — flex absorbs the extra row there. */
+  @media (max-height: 700px) and (orientation: portrait){
+    #s-battle.listen-fmt .cv-wrap{min-height:170px;}
+  }
   #cv{width:100%; height:auto; flex:1 1 0; min-height:0; border-radius:14px;
     background-image:linear-gradient(var(--lc-day-hi),var(--lc-day-mid) 60%,var(--lc-day-ground));
     background-size:cover; background-position:bottom; background-repeat:no-repeat;
