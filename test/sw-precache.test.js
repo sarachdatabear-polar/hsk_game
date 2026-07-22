@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,6 +13,38 @@ const arr = swSrc.match(/const PRECACHE = \[([\s\S]*?)\];/);
 const PRECACHE = [...arr[1].matchAll(/"([^"]+)"/g)].map(m => m[1]);
 const precacheSet = new Set(PRECACHE);
 const precacheBytes = PRECACHE.reduce((sum, entry) => sum + readFileSync(join(GAME, entry)).byteLength, 0);
+
+function serviceWorkerFetchHarness({ cachedResponse = null, networkResponse, putImpl, openImpl } = {}) {
+  const handlers = {};
+  const put = vi.fn(putImpl || (() => Promise.resolve()));
+  const cache = {
+    match: vi.fn(() => Promise.resolve(cachedResponse)),
+    put,
+    keys: vi.fn(() => Promise.resolve([])),
+    delete: vi.fn(() => Promise.resolve(true)),
+  };
+  const caches = {
+    open: vi.fn(openImpl || (() => Promise.resolve(cache))),
+    match: vi.fn(() => Promise.resolve(null)),
+    keys: vi.fn(() => Promise.resolve([])),
+    delete: vi.fn(() => Promise.resolve(true)),
+  };
+  const fetch = vi.fn(() => Promise.resolve(networkResponse));
+  const self = {
+    location: { origin: "https://example.test" },
+    clients: { claim: vi.fn(() => Promise.resolve()) },
+    skipWaiting: vi.fn(() => Promise.resolve()),
+    addEventListener(type, handler) { handlers[type] = handler; },
+  };
+  Function("self", "caches", "fetch", "URL", swSrc)(self, caches, fetch, URL);
+
+  async function dispatch(request) {
+    let responsePromise;
+    handlers.fetch({ request, respondWith(value) { responsePromise = Promise.resolve(value); } });
+    return responsePromise;
+  }
+  return { dispatch, fetch, cache, put };
+}
 
 describe("sw.js precache list", () => {
   it("parses a non-trivial PRECACHE array", () => {
@@ -52,7 +84,7 @@ describe("sw.js precache list", () => {
       "assets/cat-astronaut-walk.png", "assets/bg-island-sunset.png",
       "assets/deco-noodle-stall.png", "assets/tile-arcade.png",
     ]) expect(precacheSet.has(entry), entry).toBe(false);
-    expect(swSrc).toContain('const CACHE_VERSION = "v96"');
+    expect(swSrc).toContain('const CACHE_VERSION = "v97"');
     expect(swSrc).toContain("const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`");
     expect(swSrc).toContain("cacheAfterFetch(RUNTIME, request)");
   });
@@ -67,5 +99,68 @@ describe("sw.js precache list", () => {
   it("fails an incomplete core install instead of swallowing missing files", () => {
     expect(swSrc).toContain("cache.addAll(PRECACHE)");
     expect(swSrc).not.toContain("c.add(u).catch");
+  });
+});
+
+describe("sw.js MP3 range handling", () => {
+  it("returns a network 206 response without passing it to Cache.put", async () => {
+    const networkResponse = new Response("partial", {
+      status: 206,
+      headers: { "Content-Range": "bytes 0-6/20" },
+    });
+    const h = serviceWorkerFetchHarness({ networkResponse });
+    const request = new Request("https://example.test/audio/test.mp3", {
+      headers: { Range: "bytes=0-6" },
+    });
+
+    const response = await h.dispatch(request);
+
+    expect(response).toBe(networkResponse);
+    expect(response.status).toBe(206);
+    expect(h.put).not.toHaveBeenCalled();
+  });
+
+  it("returns a valid network 200 response even when Cache.put fails", async () => {
+    const networkResponse = new Response("complete", { status: 200 });
+    const h = serviceWorkerFetchHarness({
+      networkResponse,
+      putImpl: () => Promise.reject(new Error("quota exceeded")),
+    });
+    const request = new Request("https://example.test/audio/test.mp3");
+
+    const response = await h.dispatch(request);
+
+    expect(response).toBe(networkResponse);
+    expect(response.status).toBe(200);
+    expect(h.put).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns a valid network response when Cache Storage cannot open", async () => {
+    const networkResponse = new Response("complete", { status: 200 });
+    const h = serviceWorkerFetchHarness({
+      networkResponse,
+      openImpl: () => Promise.reject(new Error("storage unavailable")),
+    });
+    const request = new Request("https://example.test/audio/test.mp3");
+
+    const response = await h.dispatch(request);
+
+    expect(response).toBe(networkResponse);
+    expect(h.fetch).toHaveBeenCalledTimes(1);
+    expect(h.put).not.toHaveBeenCalled();
+  });
+
+  it("serves a cached full response for a Range request without using network", async () => {
+    const cachedResponse = new Response("complete", { status: 200 });
+    const h = serviceWorkerFetchHarness({ cachedResponse });
+    const request = new Request("https://example.test/audio/test.mp3", {
+      headers: { Range: "bytes=0-6" },
+    });
+
+    const response = await h.dispatch(request);
+
+    expect(response).toBe(cachedResponse);
+    expect(h.fetch).not.toHaveBeenCalled();
+    expect(h.put).not.toHaveBeenCalled();
   });
 });

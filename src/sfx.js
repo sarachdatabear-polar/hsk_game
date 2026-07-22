@@ -1,5 +1,7 @@
 let ctx = null;
+let resumeTask = null;
 function ac() {
+  if (ctx && ctx.state === "closed") ctx = null;
   if (ctx) return ctx;
   const AC = window.AudioContext || window.webkitAudioContext;
   return AC ? (ctx = new AC()) : null;
@@ -24,29 +26,57 @@ export function setSfxVolume(v) { master = clampVol(v); }
 // it starts running. Idempotent and best-effort.
 export function unlockSfx() {
   const a = ac();
-  if (!a || a.state !== "suspended") return Promise.resolve(true);
+  if (!a || !a.state || a.state === "running") return Promise.resolve(true);
   if (!a.resume) return Promise.resolve(false);
-  return Promise.resolve(a.resume())
-    .then(() => a.state !== "suspended")
-    .catch(() => false);
+  if (resumeTask) return resumeTask;
+  // WebKit uses the non-standard "interrupted" state after some iOS app/audio
+  // switches. A suspend→resume cycle is more reliable there than resume alone.
+  let action;
+  try {
+    action = a.state === "interrupted" && a.suspend
+      ? Promise.resolve(a.suspend()).catch(() => {}).then(() => a.resume())
+      : Promise.resolve(a.resume());
+  } catch (e) {
+    return Promise.resolve(false);
+  }
+  resumeTask = action
+    .then(() => !a.state || a.state === "running")
+    .catch(() => false)
+    .finally(() => { resumeTask = null; });
+  return resumeTask;
 }
+
+// Deliberately suspend while the PWA is hidden. Besides saving power, this
+// gives iOS a clean suspended→running transition to recover on the next user
+// gesture instead of leaving a graph stuck in WebKit's interrupted state.
+export function suspendSfx() {
+  const a = ctx;
+  if (!a || !a.suspend || a.state === "closed" || a.state === "suspended") return Promise.resolve(true);
+  const wait = resumeTask || Promise.resolve();
+  return wait.then(() => a.suspend()).then(() => true).catch(() => false);
+}
+
 function tone(freq, dur, type = "square", vol = 0.15, when = 0) {
   const a = ac(); if (!a || !sfx.enabled) return;
-  // WebKit can hand back a suspended context when first constructed outside a
-  // user gesture (e.g. first SFX = a word timing out in the rAF loop). resume()
-  // is async — this tone may still be lost, but the session unmutes.
-  if (a.state === "suspended" && a.resume) a.resume().catch(() => {});
-  const level = vol * master;
-  // Fully muted: nothing to schedule. Also sidesteps WebAudio's
-  // exponential-ramp-from-zero edge case (ramping FROM 0 is undefined/
-  // throws in some engines) rather than relying on it degrading cleanly.
-  if (level <= 0) return;
-  const o = a.createOscillator(), g = a.createGain();
-  o.type = type; o.frequency.value = freq;
-  g.gain.setValueAtTime(level, a.currentTime + when);
-  g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + when + dur);
-  o.connect(g).connect(a.destination);
-  o.start(a.currentTime + when); o.stop(a.currentTime + when + dur);
+  const schedule = () => {
+    if (a !== ctx || !sfx.enabled || a.state === "closed") return;
+    const level = vol * master;
+    // Fully muted: nothing to schedule. Also sidesteps WebAudio's
+    // exponential-ramp-from-zero edge case (ramping FROM 0 is undefined/
+    // throws in some engines) rather than relying on it degrading cleanly.
+    if (level <= 0) return;
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(level, a.currentTime + when);
+    g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + when + dur);
+    o.connect(g).connect(a.destination);
+    o.start(a.currentTime + when); o.stop(a.currentTime + when + dur);
+  };
+  if (a.state === "suspended" || a.state === "interrupted") {
+    unlockSfx().then(ok => { if (ok) schedule(); });
+  } else {
+    schedule();
+  }
 }
 
 // Data-driven sound packs — plain data so packs are unit-testable without an

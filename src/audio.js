@@ -11,6 +11,8 @@ let zhVoice = null;
 // down the TTS path even when its mp3 exists.
 let indexReadyResolve;
 export const audioIndexReady = new Promise(res => { indexReadyResolve = res; });
+let remoteIndexReadyResolve;
+export const remoteAudioIndexReady = new Promise(res => { remoteIndexReadyResolve = res; });
 // One reused <audio> element for word playback. Mobile browsers unlock media
 // per-element on the first gesture-initiated play(); reusing a single element
 // (rather than `new Audio()` per word) keeps that unlock alive for the session
@@ -32,11 +34,17 @@ const SILENT_WAV = "data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAI
 
 let unlocked = false;
 let unlocking = null;
+let unlockSerial = 0;
+// Every requested pronunciation owns a serial. Async work (play() rejections,
+// Web Speech errors, boot readiness and unlock retries) must still own the
+// current serial before it can make sound. Without this, an old word can be
+// replayed after the player has already advanced to the next question.
+let requestSerial = 0;
 // A rejected play() before the session is unlocked usually means the iOS
 // gesture unlock hasn't landed yet. Remember the word; unlockAudio() replays
 // it on success — so a session's FIRST question is heard on the first tap
 // instead of silently downgrading to a TTS voice iOS also tends to drop.
-let pendingRetry = null; // { hanzi, at }
+let pendingRetry = null; // { hanzi, at, requestId }
 const RETRY_WINDOW_MS = 8000;
 // Mobile browsers gate audio until the first real user gesture: the Web Audio
 // context starts suspended, HTMLAudioElement.play() is rejected, and
@@ -47,6 +55,7 @@ export function unlockAudio() {
   if (unlocked) return Promise.resolve(true);
   if (unlocking) return unlocking;
   if (typeof window === "undefined") return Promise.resolve(false);
+  const attempt = ++unlockSerial;
   // Prime web speech — iOS requires the first utterance inside a gesture.
   const synth = window.speechSynthesis;
   if (synth) { try { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; synth.speak(u); } catch (e) {} }
@@ -56,7 +65,10 @@ export function unlockAudio() {
   // No HTML media implementation exists (for example a native-only test
   // shell). Web/native speech was already primed above, so there is nothing
   // retryable to wait for.
-  if (!el) { unlocked = true; return Promise.resolve(true); }
+  if (!el) {
+    if (attempt === unlockSerial) unlocked = true;
+    return Promise.resolve(attempt === unlockSerial);
+  }
   try {
     el.muted = true;
     el.src = SILENT_WAV;
@@ -70,18 +82,20 @@ export function unlockAudio() {
     unlocking = Promise.resolve(p).then(() => {
       // A gesture's bubble handler can start a real word before the silent
       // play promise settles. Never pause/reset that newer source.
+      if (attempt !== unlockSerial) return false;
       if (el.src === unlockSrc) { el.pause(); el.currentTime = 0; }
       el.muted = false;
       unlocked = true;
-      if (pendingRetry && Date.now() - pendingRetry.at < RETRY_WINDOW_MS) {
-        const h = pendingRetry.hanzi; pendingRetry = null;
-        speak(h);
+      if (pendingRetry && pendingRetry.requestId === requestSerial
+          && Date.now() - pendingRetry.at < RETRY_WINDOW_MS) {
+        const retry = pendingRetry; pendingRetry = null;
+        playRequest(retry.hanzi, retry.requestId);
       }
       return true;
     }).catch(() => {
-      el.muted = false;
+      if (attempt === unlockSerial) el.muted = false;
       return false;
-    }).finally(() => { unlocking = null; });
+    }).finally(() => { if (attempt === unlockSerial) unlocking = null; });
     return unlocking;
   } catch (e) {
     el.muted = false;
@@ -100,6 +114,7 @@ let remoteBase = null;
 export function initRemoteAudio(indexArray, baseUrl) {
   fullSet = new Set(indexArray || []);
   remoteBase = baseUrl || null;
+  if (remoteIndexReadyResolve) { remoteIndexReadyResolve(); remoteIndexReadyResolve = null; }
 }
 
 export function initAudio(indexArray, baseUrl = "audio/") {
@@ -130,7 +145,17 @@ export function audioAvailable(hanzi) {
 
 export function speak(hanzi) {
   if (!hanzi) return;
+  const requestId = ++requestSerial;
   pendingRetry = null;   // a newer word supersedes any queued retry
+  playRequest(hanzi, requestId);
+}
+
+function requestIsCurrent(requestId) {
+  return requestId === requestSerial;
+}
+
+function playRequest(hanzi, requestId) {
+  if (!hanzi || !requestIsCurrent(requestId)) return;
   const el = wordAudio();
   if (el && !el.paused) { el.pause(); }
   // Chrome's cancel-then-speak race: calling speechSynthesis.cancel() while
@@ -151,14 +176,32 @@ export function speak(hanzi) {
     el.src = (local ? base : remoteBase) + encodeURIComponent(hanzi) + ".mp3";
     el.volume = voiceVol;
     try { el.currentTime = 0; } catch (e) {}
-    el.play().catch(() => {
+    let playResult;
+    try { playResult = el.play(); }
+    catch (error) { handleMp3Failure(hanzi, requestId, synth, deferred, error); return; }
+    if (!playResult || typeof playResult.catch !== "function") return;
+    playResult.catch(error => {
+      if (!requestIsCurrent(requestId)) return;
       console.warn("[audio] mp3 play rejected", hanzi);
-      if (!unlocked) { pendingRetry = { hanzi, at: Date.now() }; return; }
-      ttsFallback(hanzi, synth, deferred);
+      handleMp3Failure(hanzi, requestId, synth, deferred, error);
     });
     return;
   }
-  ttsFallback(hanzi, synth, deferred);
+  ttsFallback(hanzi, synth, deferred, requestId);
+}
+
+function handleMp3Failure(hanzi, requestId, synth, deferred, error) {
+  if (!requestIsCurrent(requestId)) return;
+  // A policy rejection means the page lost its usable media activation. Keep
+  // the current word for the next real gesture instead of falling through to
+  // Web Speech, which iOS commonly interrupts at the same time.
+  if (!unlocked || (error && error.name === "NotAllowedError")) {
+    unlocked = false;
+    pendingRetry = { hanzi, at: Date.now(), requestId };
+    try { window.dispatchEvent(new Event("nbhsk:audio-lock")); } catch (e) {}
+    return;
+  }
+  ttsFallback(hanzi, synth, deferred, requestId);
 }
 
 // Speaks one web-speech utterance on the given synth. `isRetry` guards
@@ -166,25 +209,36 @@ export function speak(hanzi) {
 // that re-speaks once. `synth` is captured at speak()-time rather than
 // re-read off `window` later, so a deferred speak always lands on the
 // synthesizer instance it was scheduled against.
-function speakUtterance(hanzi, synth, isRetry) {
+function speakUtterance(hanzi, synth, isRetry, requestId) {
+  if (!synth || !requestIsCurrent(requestId)) return;
   const u = new SpeechSynthesisUtterance(hanzi);
   u.lang = "zh-CN"; u.rate = 0.85; u.volume = voiceVol;
   if (zhVoice) u.voice = zhVoice;
-  if (!isRetry) u.onerror = () => speakUtterance(hanzi, synth, true);
+  if (!isRetry) u.onerror = event => {
+    if (!requestIsCurrent(requestId)) return;
+    // cancel() is how a newer word intentionally supersedes this one. Retrying
+    // canceled/interrupted speech would put the stale word back in the queue.
+    if (event && (event.error === "canceled" || event.error === "interrupted")) return;
+    speakUtterance(hanzi, synth, true, requestId);
+  };
   synth.speak(u);
 }
 
 // Auto-speak entry for words the game speaks on its own (question spawn,
 // tone-trainer prompt) — NOT for tap-driven replay buttons, which must stay
 // synchronous inside their gesture. Waits (briefly) for the bundled-mp3
-// index and any in-flight unlock so a session's first auto-spoken word takes
-// the mp3 path instead of losing the boot race.
+// local/full indexes and any in-flight unlock so a session's first auto-spoken
+// word takes the mp3 path instead of losing either boot race.
 export function speakWhenReady(hanzi, timeoutMs = 1500) {
   if (!hanzi) return;
-  const timeout = new Promise(res => setTimeout(res, timeoutMs));
-  Promise.race([audioIndexReady, timeout])
+  const requestId = ++requestSerial;
+  pendingRetry = null;
+  let timer = 0;
+  const timeout = new Promise(res => { timer = setTimeout(res, timeoutMs); });
+  return Promise.race([Promise.all([audioIndexReady, remoteAudioIndexReady]), timeout])
     .then(() => unlocking || null)
-    .then(() => speak(hanzi));
+    .then(() => { if (requestIsCurrent(requestId)) playRequest(hanzi, requestId); })
+    .finally(() => clearTimeout(timer));
 }
 
 // Fire-and-forget warm-up of mp3s the session is about to use, called inside
@@ -200,12 +254,54 @@ export function prefetchAudio(hanziList, limit = 16) {
     });
 }
 
-function ttsFallback(hanzi, synth, deferred = false) {
+function ttsFallback(hanzi, synth, deferred = false, requestId = requestSerial) {
+  if (!requestIsCurrent(requestId)) return;
   const mode = chooseTts();
   if (mode === "native") {
-    window.Capacitor.Plugins.TextToSpeech.speak({ text: hanzi, lang: "zh-CN", rate: 1.0, volume: voiceVol }).catch(() => {});
+    window.Capacitor.Plugins.TextToSpeech.speak({
+      text: hanzi, lang: "zh-CN", rate: 1.0, volume: voiceVol,
+      category: "ambient", queueStrategy: 0,
+    }).catch(() => {});
   } else if (mode === "web") {
-    if (deferred) setTimeout(() => speakUtterance(hanzi, synth, false), 0);
-    else speakUtterance(hanzi, synth, false);
+    if (deferred) setTimeout(() => speakUtterance(hanzi, synth, false, requestId), 0);
+    else speakUtterance(hanzi, synth, false, requestId);
   }
+}
+
+// Stop every pronunciation path and invalidate all delayed callbacks. This is
+// used for navigation, pause and app-background transitions.
+export function stopAudio() {
+  requestSerial++;
+  pendingRetry = null;
+  const el = wordEl;
+  if (el) {
+    try { el.pause(); } catch (e) {}
+    try { el.currentTime = 0; } catch (e) {}
+  }
+  if (typeof window !== "undefined" && window.speechSynthesis) {
+    try { window.speechSynthesis.cancel(); } catch (e) {}
+  }
+  if (isNative() && window.Capacitor.Plugins && window.Capacitor.Plugins.TextToSpeech) {
+    try { window.Capacitor.Plugins.TextToSpeech.stop?.().catch(() => {}); } catch (e) {}
+  }
+}
+
+// iOS can revoke a page's usable audio activation after an app switch or audio
+// interruption. Make the next gesture perform the silent unlock again.
+export function resetAudioUnlock() {
+  stopAudio();
+  unlocked = false;
+  unlockSerial++;
+  unlocking = null;
+}
+
+// Safari exposes a subset of the Audio Session API. Ambient is the appropriate
+// policy for short game prompts/SFX: it lets the user's music or podcast mix
+// with the game while the PWA is in the foreground.
+export function preferAmbientAudioSession() {
+  if (typeof navigator === "undefined" || !navigator.audioSession) return false;
+  try {
+    navigator.audioSession.type = "ambient";
+    return navigator.audioSession.type === "ambient";
+  } catch (e) { return false; }
 }

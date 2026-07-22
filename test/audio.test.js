@@ -13,6 +13,12 @@ function makeSynth({ speaking = false, pending = false } = {}) {
   return { speaking, pending, cancel: vi.fn(), speak: vi.fn(), getVoices: () => [] };
 }
 
+function deferred() {
+  let resolve, reject;
+  const promise = new Promise((res, rej) => { resolve = res; reject = rej; });
+  return { promise, resolve, reject };
+}
+
 beforeEach(() => {
   delete globalThis.window;
   delete globalThis.SpeechSynthesisUtterance;
@@ -111,6 +117,96 @@ describe("speak() utterance error retry", () => {
     if (second.onerror) second.onerror(new Event("error"));
     expect(synth.speak).toHaveBeenCalledTimes(2);
   });
+
+  it.each(["canceled", "interrupted"])("does not retry a Web Speech '%s' interruption", (error) => {
+    const synth = makeSynth();
+    globalThis.window = { speechSynthesis: synth };
+    globalThis.SpeechSynthesisUtterance = FakeUtterance;
+    initAudio([]);
+
+    speak("你好");
+    expect(synth.speak).toHaveBeenCalledTimes(1);
+    synth.speak.mock.calls[0][0].onerror({ error });
+    expect(synth.speak).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("speak() request invalidation", () => {
+  it("does not invoke stale TTS when an older unlocked MP3 play rejects", async () => {
+    vi.resetModules();
+    const synth = makeSynth();
+    const attempts = [];
+    globalThis.window = { speechSynthesis: synth };
+    globalThis.SpeechSynthesisUtterance = FakeUtterance;
+    globalThis.Audio = class {
+      constructor() { this.src = ""; this.muted = false; this.currentTime = 0; this.paused = true; }
+      play() {
+        if (this.muted) return Promise.resolve();
+        this.paused = false;
+        const d = deferred();
+        attempts.push({ src: this.src, ...d });
+        return d.promise;
+      }
+      pause() { this.paused = true; }
+    };
+
+    try {
+      const mod = await import("../src/audio.js");
+      mod.initAudio(["旧", "新"]);
+      await mod.unlockAudio();
+      synth.speak.mockClear(); // ignore the silent Web Speech gesture primer
+
+      mod.speak("旧");
+      mod.speak("新");
+      expect(attempts).toHaveLength(2);
+
+      attempts[1].resolve();
+      attempts[0].reject(new Error("old request rejected late"));
+      await Promise.resolve(); await Promise.resolve();
+
+      expect(synth.speak).not.toHaveBeenCalled();
+      expect(attempts.map(a => a.src)).toEqual([
+        expect.stringContaining(encodeURIComponent("旧")),
+        expect.stringContaining(encodeURIComponent("新")),
+      ]);
+    } finally {
+      delete globalThis.Audio;
+    }
+  });
+
+  it("does not queue a stale MP3 retry when an older locked play rejects", async () => {
+    vi.resetModules();
+    const oldPlay = deferred();
+    const played = [];
+    globalThis.window = {};
+    globalThis.Audio = class {
+      constructor() { this.src = ""; this.muted = false; this.currentTime = 0; this.paused = true; }
+      play() {
+        if (this.muted) return Promise.resolve();
+        this.paused = false;
+        played.push(this.src);
+        return this.src.includes(encodeURIComponent("旧")) ? oldPlay.promise : Promise.resolve();
+      }
+      pause() { this.paused = true; }
+    };
+
+    try {
+      const mod = await import("../src/audio.js");
+      mod.initAudio(["旧", "新"]);
+      mod.speak("旧");
+      mod.speak("新");
+      oldPlay.reject(new Error("old request rejected late"));
+      await Promise.resolve(); await Promise.resolve();
+
+      await mod.unlockAudio();
+      await Promise.resolve(); await Promise.resolve();
+      expect(played).toHaveLength(2);
+      expect(played[0]).toContain(encodeURIComponent("旧"));
+      expect(played[1]).toContain(encodeURIComponent("新"));
+    } finally {
+      delete globalThis.Audio;
+    }
+  });
 });
 
 describe("unlockAudio() mobile gesture retry", () => {
@@ -133,6 +229,30 @@ describe("unlockAudio() mobile gesture retry", () => {
     expect(plays).toBe(2);
 
     delete globalThis.Audio;
+  });
+
+  it("resetAudioUnlock makes the next gesture prime the media element again", async () => {
+    vi.resetModules();
+    let plays = 0;
+    globalThis.window = {};
+    globalThis.Audio = class {
+      constructor() { this.src = ""; this.muted = false; this.currentTime = 0; }
+      play() { plays++; return Promise.resolve(); }
+      pause() {}
+    };
+
+    try {
+      const fresh = await import("../src/audio.js");
+      expect(await fresh.unlockAudio()).toBe(true);
+      expect(await fresh.unlockAudio()).toBe(true);
+      expect(plays).toBe(1);
+
+      fresh.resetAudioUnlock();
+      expect(await fresh.unlockAudio()).toBe(true);
+      expect(plays).toBe(2);
+    } finally {
+      delete globalThis.Audio;
+    }
   });
 });
 
@@ -165,10 +285,24 @@ describe("audioIndexReady", () => {
     await Promise.resolve(); await Promise.resolve();
     expect(settled).toBe(true);
   });
+
+  it("resolves remoteAudioIndexReady only when initRemoteAudio runs", async () => {
+    vi.resetModules();
+    const mod = await import("../src/audio.js");
+    let settled = false;
+    mod.remoteAudioIndexReady.then(() => { settled = true; });
+    mod.initAudio([]);
+    await Promise.resolve(); await Promise.resolve();
+    expect(settled).toBe(false);
+
+    mod.initRemoteAudio([], "https://host/audio/");
+    await Promise.resolve(); await Promise.resolve();
+    expect(settled).toBe(true);
+  });
 });
 
 describe("speakWhenReady", () => {
-  it("waits for the index, then speaks via the mp3 path", async () => {
+  it("waits for the indexes, then speaks via the mp3 path", async () => {
     vi.resetModules();
     vi.useFakeTimers();
     const played = [];
@@ -179,6 +313,7 @@ describe("speakWhenReady", () => {
     await vi.advanceTimersByTimeAsync(0);
     expect(played).toEqual([]);            // index not ready yet — no premature TTS/mp3
     mod.initAudio(["你"]);
+    mod.initRemoteAudio([], "https://host/audio/");
     await vi.advanceTimersByTimeAsync(0);
     expect(played.length).toBe(1);
     expect(played[0]).toContain(encodeURIComponent("你"));
@@ -198,6 +333,124 @@ describe("speakWhenReady", () => {
     // silent no-op, but speak() must have been reached: play never called.
     expect(played).toEqual([]);
     vi.useRealTimers(); delete globalThis.Audio;
+  });
+
+  it("waits for both core and remote indexes before choosing the playback path", async () => {
+    vi.resetModules();
+    vi.useFakeTimers();
+    const played = [];
+    globalThis.window = {};
+    globalThis.Audio = class { constructor(){ this.paused = true; }
+      play(){ played.push(this.src); return Promise.resolve(); } pause(){} };
+
+    try {
+      const mod = await import("../src/audio.js");
+      mod.speakWhenReady("龘", 1500);
+      mod.initAudio([]);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(played).toEqual([]);
+
+      mod.initRemoteAudio(["龘"], "https://host/audio/");
+      await vi.advanceTimersByTimeAsync(0);
+      expect(played).toEqual([
+        expect.stringContaining(`https://host/audio/${encodeURIComponent("龘")}.mp3`),
+      ]);
+    } finally {
+      vi.useRealTimers();
+      delete globalThis.Audio;
+    }
+  });
+});
+
+describe("stopAudio", () => {
+  it("invalidates a delayed speakWhenReady request", async () => {
+    vi.resetModules();
+    vi.useFakeTimers();
+    const played = [];
+    globalThis.window = {};
+    globalThis.Audio = class { constructor(){ this.paused = true; this.currentTime = 0; }
+      play(){ played.push(this.src); return Promise.resolve(); } pause(){ this.paused = true; } };
+
+    try {
+      const mod = await import("../src/audio.js");
+      mod.speakWhenReady("你", 1500);
+      mod.stopAudio();
+      mod.initAudio(["你"]);
+      mod.initRemoteAudio(["你"], "https://host/audio/");
+      await vi.advanceTimersByTimeAsync(0);
+      await vi.advanceTimersByTimeAsync(1600);
+      expect(played).toEqual([]);
+    } finally {
+      vi.useRealTimers();
+      delete globalThis.Audio;
+    }
+  });
+
+  it("stops MP3, Web Speech, and native TTS playback when present", async () => {
+    vi.resetModules();
+    const synth = makeSynth();
+    const nativeStop = vi.fn(() => Promise.resolve());
+    let created;
+    globalThis.window = {
+      speechSynthesis: synth,
+      Capacitor: {
+        isNativePlatform: () => true,
+        Plugins: { TextToSpeech: { stop: nativeStop } },
+      },
+    };
+    globalThis.SpeechSynthesisUtterance = FakeUtterance;
+    globalThis.Audio = class {
+      constructor() {
+        created = this;
+        this.paused = true;
+        this.currentTime = 0;
+        this.pause = vi.fn(() => { this.paused = true; });
+      }
+      play() { this.paused = false; return Promise.resolve(); }
+    };
+
+    try {
+      const mod = await import("../src/audio.js");
+      mod.initAudio(["你"]);
+      mod.speak("你");
+      created.currentTime = 12;
+      synth.cancel.mockClear();
+
+      mod.stopAudio();
+      await Promise.resolve();
+      expect(created.pause).toHaveBeenCalledTimes(1);
+      expect(created.currentTime).toBe(0);
+      expect(synth.cancel).toHaveBeenCalledTimes(1);
+      expect(nativeStop).toHaveBeenCalledTimes(1);
+    } finally {
+      delete globalThis.Audio;
+    }
+  });
+});
+
+describe("preferAmbientAudioSession", () => {
+  it("sets navigator.audioSession.type to ambient when the API is available", async () => {
+    vi.resetModules();
+    const audioSession = { type: "auto" };
+    vi.stubGlobal("navigator", { audioSession });
+    try {
+      const mod = await import("../src/audio.js");
+      mod.preferAmbientAudioSession();
+      expect(audioSession.type).toBe("ambient");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("is a no-op when navigator.audioSession is unavailable", async () => {
+    vi.resetModules();
+    vi.stubGlobal("navigator", {});
+    try {
+      const mod = await import("../src/audio.js");
+      expect(() => mod.preferAmbientAudioSession()).not.toThrow();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 

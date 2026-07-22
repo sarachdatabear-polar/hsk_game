@@ -6,7 +6,7 @@
 // One release version owns every cache. Keeping runtime/audio on older names
 // lets cache-first optional art and regenerated MP3s survive a shell release
 // indefinitely, so all three advance together.
-const CACHE_VERSION = "v96";
+const CACHE_VERSION = "v97";
 const SHELL = `nbhsk-shell-${CACHE_VERSION}`;
 const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`;
 const AUDIO = `nbhsk-audio-${CACHE_VERSION}`;
@@ -68,12 +68,21 @@ self.addEventListener("activate", event => {
   );
 });
 
-async function cacheAfterFetch(cacheName, request) {
-  const response = await fetch(request);
-  if (response.ok) {
+// Cache API rejects partial (206) responses. Keep cache persistence strictly
+// best-effort: a storage/quota failure must never turn a valid network response
+// into a failed asset request.
+async function cacheFullResponse(cacheName, request, response) {
+  if (response.status !== 200) return false;
+  try {
     const cache = await caches.open(cacheName);
     await cache.put(request, response.clone());
-  }
+    return true;
+  } catch (e) { return false; }
+}
+
+async function cacheAfterFetch(cacheName, request) {
+  const response = await fetch(request);
+  await cacheFullResponse(cacheName, request, response);
   return response;
 }
 
@@ -93,13 +102,25 @@ self.addEventListener("fetch", event => {
   const url = new URL(request.url);
 
   if (url.pathname.endsWith(".mp3")) {
-    event.respondWith(caches.open(AUDIO).then(async cache => {
-      const hit = await cache.match(request);
+    event.respondWith((async () => {
+      // A full cached 200 response is valid even when Safari asks with Range;
+      // ignoring Vary on the fallback keeps that complete file usable offline.
+      let hit = null;
+      try {
+        const cache = await caches.open(AUDIO);
+        hit = await cache.match(request);
+        if (!hit && request.headers.has("range")) {
+          hit = await cache.match(request.url, { ignoreVary: true });
+        }
+      } catch (e) { /* Cache Storage failure must not block network audio. */ }
       if (hit) return hit;
-      const res = await cacheAfterFetch(AUDIO, request);
-      trimAudioCache();   // fire-and-forget bound
+      const res = await fetch(request);
+      // Safari commonly returns 206 for media ranges. Never pass that partial
+      // body to Cache.put; only complete 200 responses enter the audio cache.
+      const cached = await cacheFullResponse(AUDIO, request, res);
+      if (cached) trimAudioCache();   // fire-and-forget bound
       return res;
-    }));
+    })());
     return;
   }
 
