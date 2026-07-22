@@ -1,14 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { SYNC_KEYS, defaultSyncMeta, slotsOf, mergeXp, mergeWallet, mergeFreezes,
          mergeBest, mergeStickers, mergeShop, mergeMastery, mergeQuests,
-         mergeMonthly, mergeAll } from "../src/merge.js";
+         mergeMonthly, mergeAll, streetLayoutOf, shopPreferencesOf } from "../src/merge.js";
 import { defaultShop } from "../src/shop.js";
 
 describe("merge: scalars", () => {
   it("SYNC_KEYS lists the 10 synced keys", () =>
     expect(SYNC_KEYS).toEqual(["mastery","xp","daily","quests","monthly","wallet","freezes","shop","stickers","best"]));
   it("defaultSyncMeta shape", () =>
-    expect(defaultSyncMeta()).toEqual({ dirty: {}, lastSyncAt: 0, lastLedgerAt: "", shopSlots: null }));
+    expect(defaultSyncMeta()).toEqual({ dirty: {}, lastSyncAt: 0, lastLedgerAt: "", shopSlots: null, shopPreferences: null }));
   it("xp/wallet take max; nullish sides are 0", () => {
     expect(mergeXp(120, 80)).toBe(120);
     expect(mergeXp(undefined, 80)).toBe(80);
@@ -54,8 +54,9 @@ describe("mergeStickers", () => {
 });
 
 describe("mergeShop", () => {
-  const local = { owned: ["skin-a", "deco-1"], skin: "skin-a", backdrop: "", effect: "", soundpack: "", tiers: { "deco-1": 2 } };
-  const cloud = { owned: ["skin-b", "deco-1"], skin: "skin-b", backdrop: "bd-1", effect: "", soundpack: "", tiers: { "deco-1": 3 } };
+  const emptyLayout = { v: 2, placements: {}, welcomeOwned: false, coachDone: false };
+  const local = { owned: ["skin-a", "deco-1"], skin: "skin-a", backdrop: "", effect: "", soundpack: "", tiers: { "deco-1": 2 }, streetLayout: emptyLayout };
+  const cloud = { owned: ["skin-b", "deco-1"], skin: "skin-b", backdrop: "bd-1", effect: "", soundpack: "", tiers: { "deco-1": 3 }, streetLayout: emptyLayout };
   it("owned unions, tiers per-id max", () => {
     const m = mergeShop(local, cloud, false);
     expect(m.owned.sort()).toEqual(["deco-1", "skin-a", "skin-b"]);
@@ -75,6 +76,47 @@ describe("mergeShop", () => {
     expect(m).toEqual(local);
     expect(m.owned).not.toBe(local.owned);
     expect(m.tiers).not.toBe(local.tiers);
+    expect(m.streetLayout).not.toBe(local.streetLayout);
+  });
+
+  it("layout preference independently follows its own dirty flag", () => {
+    const a = { ...local, owned: ["red-lantern"], streetLayout: {
+      ...emptyLayout, placements: { "plot-small-02": "red-lantern" }, coachDone: true,
+    } };
+    const b = { ...cloud, owned: ["red-lantern"], streetLayout: {
+      ...emptyLayout, placements: { "plot-small-03": "red-lantern" },
+    } };
+    expect(mergeShop(a, b, { slotsDirty: false, layoutDirty: true }).streetLayout.placements)
+      .toEqual({ "plot-small-02": "red-lantern" });
+    expect(mergeShop(a, b, { slotsDirty: true, layoutDirty: false }).streetLayout.placements)
+      .toEqual({ "plot-small-03": "red-lantern" });
+  });
+
+  it("legacy cloud without a layout cannot erase a local arrangement", () => {
+    const a = { ...local, owned: ["red-lantern"], streetLayout: {
+      ...emptyLayout, placements: { "plot-small-02": "red-lantern" },
+    } };
+    const legacyCloud = { owned: [], skin: "", backdrop: "", effect: "", soundpack: "", tiers: {} };
+    expect(mergeShop(a, legacyCloud, false).streetLayout.placements)
+      .toEqual({ "plot-small-02": "red-lantern" });
+  });
+
+  it("normalizes layout after additive ownership merge; new items stay inventory", () => {
+    const a = { ...local, owned: ["red-lantern"], streetLayout: {
+      ...emptyLayout, placements: { "plot-small-02": "red-lantern" },
+    } };
+    const b = { ...cloud, owned: ["tea-sign"], streetLayout: emptyLayout };
+    const m = mergeShop(a, b, { layoutDirty: true });
+    expect(m.owned.sort()).toEqual(["red-lantern", "tea-sign"]);
+    expect(m.streetLayout.placements).toEqual({ "plot-small-02": "red-lantern" });
+  });
+
+  it("exposes canonical layout-only and combined preference baselines", () => {
+    const s = { ...local, owned: ["red-lantern"], streetLayout: {
+      ...emptyLayout, placements: { "plot-small-02": "red-lantern", unknown: "x" },
+    } };
+    expect(streetLayoutOf(s).placements).toEqual({ "plot-small-02": "red-lantern" });
+    expect(shopPreferencesOf(s)).toEqual({ slots: slotsOf(s), streetLayout: streetLayoutOf(s) });
   });
 });
 

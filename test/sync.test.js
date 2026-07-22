@@ -222,6 +222,46 @@ describe("reconcile", () => {
       await reconcile(store, "sign-in");
       expect(store.get("sync", {}).shopSlots)
         .toEqual({ skin: "skin-base", backdrop: "temple", effect: "", soundpack: "" });
+      expect(store.get("sync", {}).shopPreferences?.slots)
+        .toEqual({ skin: "skin-base", backdrop: "temple", effect: "", soundpack: "" });
+    });
+
+    it("an unrelated shop write adopts the newer cloud street layout", async () => {
+      const localLayout = { v: 2, placements: { "plot-small-02": "red-lantern" }, welcomeOwned: false, coachDone: true };
+      const cloudLayout = { v: 2, placements: { "plot-small-03": "red-lantern" }, welcomeOwned: false, coachDone: true };
+      const local = { ...LOCAL_SHOP, owned: ["skin-base", "deco-noodle", "red-lantern"], streetLayout: localLayout };
+      const cloud = { ...CLOUD_SHOP, owned: ["skin-base", "red-lantern"], streetLayout: cloudLayout };
+      const { client } = fakeClient({ ...cloudRows(), progressRow: { ...cloudRows().progressRow, cosmetics: cloud } });
+      __setClientForTests(client);
+      const store = memStore({ shop: local,
+        sync: { dirty: { shop: true }, lastSyncAt: 0, lastLedgerAt: "",
+          shopPreferences: {
+            slots: { skin: "skin-base", backdrop: "market", effect: "", soundpack: "" },
+            streetLayout: localLayout,
+          } } });
+      await reconcile(store, "sign-in");
+      expect(store.get("shop", null).streetLayout.placements)
+        .toEqual({ "plot-small-03": "red-lantern" });
+    });
+
+    it("a real unsynced local arrangement wins only the layout fold", async () => {
+      const baselineLayout = { v: 2, placements: { "plot-small-02": "red-lantern" }, welcomeOwned: false, coachDone: true };
+      const localLayout = { ...baselineLayout, placements: { "plot-small-05": "red-lantern" } };
+      const cloudLayout = { ...baselineLayout, placements: { "plot-small-03": "red-lantern" } };
+      const local = { ...LOCAL_SHOP, owned: ["skin-base", "red-lantern"], streetLayout: localLayout };
+      const cloud = { ...CLOUD_SHOP, owned: ["skin-base", "red-lantern"], streetLayout: cloudLayout };
+      const { client } = fakeClient({ ...cloudRows(), progressRow: { ...cloudRows().progressRow, cosmetics: cloud } });
+      __setClientForTests(client);
+      const store = memStore({ shop: local,
+        sync: { dirty: { shop: true }, lastSyncAt: 0, lastLedgerAt: "",
+          shopPreferences: {
+            slots: { skin: "skin-base", backdrop: "market", effect: "", soundpack: "" },
+            streetLayout: baselineLayout,
+          } } });
+      await reconcile(store, "sign-in");
+      const merged = store.get("shop", null);
+      expect(merged.backdrop).toBe("temple"); // unchanged local equip adopts cloud
+      expect(merged.streetLayout.placements).toEqual({ "plot-small-05": "red-lantern" });
     });
   });
 });

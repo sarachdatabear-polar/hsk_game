@@ -27,8 +27,14 @@ import { initAudio, speak, speakWhenReady, audioAvailable, hasMp3, setVoiceVolum
          unlockAudio, prefetchAudio, initRemoteAudio, stopAudio, resetAudioUnlock,
          preferAmbientAudioSession } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, syncReengageReminder, requestNotifPermission, isNative } from "./native.js";
-import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
-import { BUILDINGS, streetPieces, streetProgress, streetMetrics, DECO_SPRITE_SCALE } from "./street.js";
+import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, isAvailable, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
+import {
+  WELCOME_ID, STREET_PLOTS, streetPieces, streetProgress,
+  streetWorldMetrics, DECO_SPRITE_SCALE, defaultStreetLayout,
+  normalizeStreetLayout, compatibleStreetPlots, unplacedStreetItems,
+  placeStreetItem, storeStreetItem, autoArrangeStreet, migrateLegacyStreet,
+  streetMeta, streetClass,
+} from "./street.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
@@ -209,7 +215,19 @@ function provider(){
 // provider exists). The dev flag itself only changes via localStorage edit +
 // reload, so no live re-evaluation is needed beyond the one at boot.
 let iapOn = false;
-let shopState = Object.assign(defaultShop(), store.get("shop", {}));
+const storedShopState = store.get("shop", {});
+let shopState = Object.assign(defaultShop(), storedShopState);
+// Migrate before cloud reconciliation gets a chance to normalize the missing
+// field into an empty layout. Existing owned decorations therefore retain an
+// authored home instead of all appearing in storage after the upgrade.
+if(!Object.prototype.hasOwnProperty.call(storedShopState, "streetLayout")){
+  shopState.streetLayout=migrateLegacyStreet(shopState.owned,{welcomeOwned:Object.keys(masteryStore||{}).length>0});
+  store.set("shop",shopState);
+}
+let streetEdit = null;       // draft-only editor state; committed on Done
+let streetPreview = null;    // temporary shop preview projected into the scene
+let streetShopMode = false;  // focused decoration catalog opened from Street
+let streetReaction = null;   // lightweight tap reaction, never persisted
 function updateWalletChip(){ setPill($("#home-wallet"), "secondary-coin", wallet.toLocaleString()); }
 // Re-arm window (ms): a deco buy synchronously re-renders its row as an
 // "Upgrade" button at the same coordinates, so a double-tap's second tap
@@ -1091,6 +1109,7 @@ function applyStaticI18n(root = document){
     el.title = v; el.setAttribute("aria-label", v);
   });
   root.querySelectorAll("[data-i18n-ph]").forEach(el => { el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph"))); });
+  root.querySelectorAll("[data-i18n-aria]").forEach(el => { el.setAttribute("aria-label", t(el.getAttribute("data-i18n-aria"))); });
   document.documentElement.lang = getLocale();
 }
 // Localized display name for a shop/street id (t("item."+id) / t("building."+id)),
@@ -1127,6 +1146,7 @@ function updateNav(name){
   });
 }
 function show(name){
+  const previousScreen=currentScreen;
   if(activeDialog && !activeDialog.dialog.closest("#s-"+name)){
     closeDialog(activeDialog.dialog, false);
   }
@@ -1151,7 +1171,7 @@ function show(name){
   // screen never leaks its position into the next one.
   window.scrollTo(0, 0);
   if(name==="home"){ renderHome(); }
-  if(name==="street"){ renderStreet(); renderQuests(); }
+  if(name==="street"){ enterStreet(previousScreen); renderQuests(); }
 }
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()=>{
   const tab = b.dataset.go;
@@ -1165,6 +1185,7 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
     // follow a purchase/equip while already on the shop screen.
     analytics.track("store_open");
     shopViewedProducts.clear();   // fresh "shown once per open" window for product_view
+    streetShopMode = false;
     const fromProfile = currentScreen === "progress";
     const back = $("#shop-back");
     back.dataset.go = fromProfile ? "progress" : "home";
@@ -1356,6 +1377,7 @@ function startLearn(returnTo = "home"){
 }
 function endLearn(){
   if(fc.persist) store.set("flashcards", null);
+  if(fc.done>0) earnStreetWelcome();
   if(introPhase === "learn"){
     // A4: warm-up done — straight into a short battle over the same 6 words
     // (normal rules, standard distractors; no fake difficulty).
@@ -3072,6 +3094,7 @@ function endBattle(quit){
     show("home"); return;
   }
   const results = questResultsSummary(B.quest.view(), { score:B.score });
+  if(B.resolved>0) earnStreetWelcome();
   noteDaily(results.learned);
   const isPerfect = B.mode==="round" && B.resolved>0 && B.misses.length===0 && (!B.customDeck || B.smartRound);
   if(isPerfect) questEvent("perfect");
@@ -3242,9 +3265,24 @@ function renderShop(){
   sfx.pack = shopState.soundpack || "default";  // keep sfx in sync with the equipped slot
   $("#shop-wallet").innerHTML = t("shop.wallet", { coins: wallet.toLocaleString() });
   const today = todayStr();
+  const shopScreen = $("#s-shop");
+  shopScreen.classList.toggle("street-focus", streetShopMode);
+  $("#shop-street-focus").hidden = !streetShopMode;
+  $("#shop-street-sect").textContent = t(streetShopMode ? "shop.streetAvailable" : "shop.street");
   const dailyBox = $("#shop-daily"), seasonBox = $("#shop-season");
   const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), supBox = $("#shop-supplies"), decoBox = $("#shop-street");
   for(const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, supBox, decoBox]) b.innerHTML = "";
+
+  // Street Shop is an intent-focused shelf: show only decorations the player
+  // can buy today (plus everything already owned for tier previews). The
+  // actual spend still happens from the in-scene preview below.
+  if(streetShopMode){
+    for(const item of CATALOG.filter(i => i.type === "deco" && (shopState.owned.includes(i.id) || isAvailable(i, today)))){
+      decoBox.appendChild(makeShopRow(item, today));
+    }
+    startShopPreviewLoop();
+    return;
+  }
 
   // Today's Stock — the 3 featured pool items; once owned they live in their type section
   const stock = unownedDailyStock(today, shopState);
@@ -3306,7 +3344,7 @@ function makeShopRow(item, today){
   copy.className = "shop-copy";
   const stars = item.type === "deco" && owned ? " " + "★".repeat(tier) : "";
   const ownedCount = item.type === "consumable" ? `<small>${t("shop.owned-count", { n: consumableCount(item), cap: item.cap })}</small>` : "";
-  const desc = item.type === "consumable" ? tOr("item." + item.id + ".desc", "") : "";
+  const desc = item.type === "consumable" || item.type === "deco" ? tOr("item." + item.id + ".desc", "") : "";
   const descHtml = desc ? `<small class="item-desc">${desc}</small>` : "";
   copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}${stars}</b>${descHtml}<small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
   left.replaceChildren(preview, copy);
@@ -3353,34 +3391,14 @@ function makeShopRow(item, today){
       }
     }
   }else if(item.type === "deco"){
-    // Owning a deco displays it on the street; re-buys upgrade its tier (v7 F4).
-    if(!owned){
-      btn.className = "chip buy-chip";
-      btn.textContent = t("shop.buy");
-      btn.disabled = !canAfford(wallet, item.id);
-      btn.onclick = doBuy;
-    }else if(item.maxTier && tier < item.maxTier){
-      const up = upgradePrice(item, tier);
-      btn.className = "chip buy-chip";
-      btn.textContent = t("shop.upgrade", { stars: "★".repeat(tier + 1), coins: up.toLocaleString() });
-      btn.disabled = wallet < up;
-      btn.onclick = doBuy;
-    }else{
-      btn.className = "chip on";
-      btn.textContent = t("shop.maxed");
-      btn.disabled = true;
-    }
-    // this row's buy button was just replaced (Buy -> Upgrade, same spot) by
-    // the purchase that owns this item — briefly re-disable it so a fast
-    // second tap of a double-tap doesn't also charge the upgrade.
-    if(justBought && justBought.id === item.id){
-      const elapsed = performance.now() - justBought.at;
-      if(elapsed < SHOP_REARM_MS){
-        const wasDisabled = btn.disabled;
-        btn.disabled = true;
-        setTimeout(()=>{ btn.disabled = wasDisabled; }, SHOP_REARM_MS - elapsed);
-      }
-    }
+    btn.className = "chip buy-chip";
+    btn.textContent = t("shop.preview");
+    btn.onclick = () => openStreetPreview(item.id);
+    left.setAttribute("role", "button");
+    left.tabIndex = 0;
+    left.setAttribute("aria-label", t("shop.previewItem", { name: tOr("item." + item.id, item.name) }));
+    left.onclick = btn.onclick;
+    left.onkeydown = e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); btn.onclick(); } };
   }else{
     btn.className = "chip" + (equipped ? " on" : "");
     if(equipped){
@@ -3743,89 +3761,430 @@ function drawRevealDust(sc, x, py, du){
   }
   sc.restore();
 }
-// Pure-derived from levelForXp(xp) + shopState.owned — no new storage. Redrawn
-// on boot, show("home"), level-up (see addXp), and any deco purchase.
-function renderStreet(){
-  const scv = $("#street-cv");
-  if(!scv) return;
-  const w = scv.clientWidth, h = scv.clientHeight;
-  if(!w || !h) return;   // hidden (display:none) — next show("street") redraws
-  const dpr = window.devicePixelRatio||1;
-  scv.width = Math.round(w*dpr); scv.height = Math.round(h*dpr);
-  const sc = scv.getContext("2d");
-  sc.setTransform(dpr,0,0,dpr,0,0);
-  sc.clearRect(0,0,w,h);
-  const bg = sprite("bg-street");
-  if(bg) drawCoverImage(sc, bg, 0, 0, w, h);
-  else paintStreetBase(sc, w, h);
-  const gy = h - 10;
-
-  const level = levelForXp(xp);
-  const pieces = streetPieces(level, shopState.owned, shopState.tiers || {});
-  const m = streetMetrics(w, h);
-  drawStreetPads(sc, w, gy, h, pieces, m);
-  // streetPieces is pre-sorted by ground line (deco back lane → buildings →
-  // mid → front), so one loop paints the scene back-to-front; slight overlap
-  // between lanes is intended depth, not a layout bug.
-  // Stamp the reveal start before the piece loop so the very first frame
-  // already draws the new piece popping in (not full-size for one frame).
-  if(streetReveal && !streetReveal.start && shopState.owned.includes(streetReveal.id)) streetReveal.start = performance.now();
-  for(const p of pieces){
-    const x = p.slot * w;
-    const py = gy - h * (1 - (p.laneY ?? 1));
-    if(p.kind === "building"){
-      const basis = m.unit * m.backScale;
-      drawContactShadow(sc, x, py, basis);
-      drawStreetBuilding(sc, p.id, x, py, basis);
-    }else{
-      const pop = revealPopScale(p.id);
-      const du = m.unit * (p.scale || 1) * pop;
-      drawContactShadow(sc, x, py, du);
-      drawTieredDeco(sc, p, x, py, du);
-      if(streetReveal && streetReveal.id === p.id && streetReveal.start) drawRevealDust(sc, x, py, du);
-    }
+function hasStreetLearningProgress(){ return !!store.get("streetWelcomeEarned",false) || !!shopState.streetLayout?.welcomeOwned; }
+function earnStreetWelcome(){
+  if(store.get("streetWelcomeEarned",false)) return;
+  store.set("streetWelcomeEarned",true);
+  const layout=normalizeStreetLayout({...ensureStreetLayout(),welcomeOwned:true},shopState.owned);
+  shopState={...shopState,streetLayout:layout}; store.set("shop",shopState);
+}
+function sameStreetLayout(a, b){ return JSON.stringify(a || null) === JSON.stringify(b || null); }
+function ensureStreetLayout(){
+  const prior = shopState.streetLayout;
+  const welcomeOwned = !!prior?.welcomeOwned || hasStreetLearningProgress();
+  let next = prior?.v === 2
+    ? normalizeStreetLayout({ ...prior, welcomeOwned }, shopState.owned)
+    : migrateLegacyStreet(shopState.owned, { welcomeOwned });
+  if(!sameStreetLayout(prior, next)){
+    shopState = { ...shopState, streetLayout: next };
+    store.set("shop", shopState);
   }
-
-  // mascot - maneki sprite or vector fallback, always far left on the ground.
-  // 2026-07-11 audit F2: "cat too small" — bump the draw scale ~40% (mascot-
-  // bump precedent, 263e3f6/4ec9fcf); both branches stay grounded (gy-anchored).
-  const mImg = sprite("maneki");
-  const mp = Math.min(h*0.62, 67);
-  if(mImg){
-    sc.drawImage(mImg, 4, gy-mp+4, mp, mp);
-  }else{
-    sc.textAlign = "left";
-    sc.font = `${Math.round(h*0.42)}px serif`;
-    drawCat(sc, 22, gy + 8, 0, "happy", null, .81, [], false);
-  }
-
-  const cap = $("#street-caption");
-  if(!cap) return;
-  const prog = streetProgress(level);
-  // streetProgress() (street.js, pure/untouched) returns next.name in English
-  // only; look the id back up by level to get a localized building.* label.
-  const nextB = prog.next ? BUILDINGS.find(b => b.lv === prog.next.lv) : null;
-  const nextTxt = prog.next
-    ? t("street.next", { lv: prog.next.lv, name: nextB ? tOr("building."+nextB.id, prog.next.name) : prog.next.name })
-    : t("street.allUnlocked");
-  cap.textContent = pieces.length===0
-    ? t("street.captionEmpty", { next: nextTxt })
-    : t("street.captionProgress", { unlocked: prog.unlocked, total: prog.total, next: nextTxt });
-
-  if(streetReveal && shopState.owned.includes(streetReveal.id)){
-    cap.textContent = t("street.captionNew", { name: tOr("item." + streetReveal.id, streetReveal.id) });
-    if(performance.now() - streetReveal.start > 900){
-      streetReveal = null;
-      // one final frame so the caption reverts and the piece draws settled —
-      // without this the "New!" caption lingers until an unrelated redraw
-      requestAnimationFrame(() => { if(currentScreen === "street") renderStreet(); });
-    }
-    else requestAnimationFrame(() => {
-      if(currentScreen === "street") renderStreet();
-      else streetReveal = null;
+  return next;
+}
+function liveStreetLayout(){
+  return normalizeStreetLayout(streetEdit?.layout || shopState.streetLayout || defaultStreetLayout(), shopState.owned);
+}
+function announceStreet(key, vars){
+  const message = t(key, vars);
+  $("#street-sr-status").textContent = "";
+  requestAnimationFrame(() => { $("#street-sr-status").textContent = message; });
+}
+function streetCountBucket(n){ return n===0?"0":n<4?"1-3":n<10?"4-9":"10+"; }
+function enterStreet(previousScreen=""){
+  const layout = ensureStreetLayout();
+  const owned=shopState.owned.length+(layout.welcomeOwned?1:0),placed=Object.keys(layout.placements).length;
+  analytics.track("street_open",{
+    source:streetPreview?"shop_preview":previousScreen==="shop"?"shop":"navigation",
+    owned_bucket:streetCountBucket(owned), placed_bucket:streetCountBucket(placed),
+  });
+  renderStreet();
+  // The earn-only lantern waits in storage until the player chooses its first
+  // home. Opening the coach on the next frame keeps the route transition fast.
+  if(!streetPreview && !streetEdit && layout.welcomeOwned && !layout.coachDone
+      && unplacedStreetItems(shopState.owned, layout).includes(WELCOME_ID)){
+    requestAnimationFrame(() => {
+      if(currentScreen === "street" && !streetPreview && !streetEdit) openStreetEditor(WELCOME_ID, true);
     });
   }
 }
+function previewScene(){
+  if(!streetPreview) return null;
+  const owned = shopState.owned.includes(streetPreview.itemId)
+    ? [...shopState.owned] : [...shopState.owned, streetPreview.itemId];
+  const base = normalizeStreetLayout(shopState.streetLayout, owned);
+  const placements = { ...base.placements };
+  for(const [plotId, id] of Object.entries(placements)) if(id === streetPreview.itemId) delete placements[plotId];
+  // Previewing over an occupied plot is non-destructive: the displaced item
+  // simply returns when preview closes. Normally an empty compatible plot is
+  // selected because the grid has two spare homes.
+  if(streetPreview.plotId){
+    delete placements[streetPreview.plotId];
+    placements[streetPreview.plotId] = streetPreview.itemId;
+  }
+  const layout = normalizeStreetLayout({ ...base, placements }, owned);
+  const tiers = { ...(shopState.tiers || {}), [streetPreview.itemId]: streetPreview.tier || 1 };
+  return { owned, layout, tiers };
+}
+function plotGroundY(plot, h, gy){
+  const laneY = plot.lane === "back" ? .82 : plot.lane === "mid" ? .91 : 1;
+  return gy - h * (1 - laneY);
+}
+function validStreetPlotIds(selected, layout, preview=false){
+  if(!selected) return new Set();
+  return new Set(compatibleStreetPlots(selected,layout).filter(plot => preview
+    || !sameStreetLayout(placeStreetItem(layout,shopState.owned,selected,plot.id),layout)).map(plot=>plot.id));
+}
+function drawStreetPlotGrid(c, w, h, gy, m, layout){
+  const selected = streetEdit?.selected || streetPreview?.itemId || null;
+  const valid = validStreetPlotIds(selected,layout,!!streetPreview);
+  for(const plot of STREET_PLOTS){
+    const x = plot.x * w, y = plotGroundY(plot, h, gy);
+    const compatible = valid.has(plot.id);
+    c.save();
+    c.fillStyle = compatible ? "rgba(255,214,95,.26)" : "rgba(251,245,232,.16)";
+    c.strokeStyle = compatible ? "rgba(46,102,86,.72)" : "rgba(132,96,67,.32)";
+    c.lineWidth = compatible ? 2 : 1;
+    c.setLineDash([5,4]);
+    c.beginPath(); c.ellipse(x, y + 2, m.unit*.44, m.unit*.12, 0, 0, Math.PI*2); c.fill(); c.stroke();
+    c.restore();
+  }
+}
+function drawStreetBehavior(c, p, x, py, du){
+  const active = streetReaction?.id === p.id && streetReaction.until > performance.now();
+  const boost = active ? 1.8 : 1;
+  c.save(); c.globalAlpha = .42 * boost; c.lineWidth = Math.max(1, du*.025);
+  if(p.behavior === "light"){
+    const glow = c.createRadialGradient(x, py-du*.72, 1, x, py-du*.72, du*.48*boost);
+    glow.addColorStop(0,"rgba(255,224,120,.68)"); glow.addColorStop(1,"rgba(255,224,120,0)");
+    c.fillStyle = glow; c.beginPath(); c.arc(x, py-du*.72, du*.48*boost, 0, Math.PI*2); c.fill();
+  }else if(p.behavior === "water"){
+    c.strokeStyle = "#7fd7ff";
+    for(const k of [.28,.46]){ c.beginPath(); c.ellipse(x,py-du*.08,du*k*boost,du*.07*boost,0,0,Math.PI*2); c.stroke(); }
+  }else if(p.behavior === "flutter"){
+    c.strokeStyle = "#FBF5E8";
+    for(const dx of [-.35,.35]){ c.beginPath(); c.moveTo(x+du*dx,py-du*.9); c.quadraticCurveTo(x+du*(dx+.12),py-du*1.05,x+du*(dx+.25),py-du*.96); c.stroke(); }
+  }else if(p.behavior === "food"){
+    c.strokeStyle = "#FBF5E8";
+    for(const dx of [-.14,.1]){ c.beginPath(); c.moveTo(x+du*dx,py-du*.75); c.quadraticCurveTo(x+du*(dx-.12),py-du, x+du*(dx+.05),py-du*1.18); c.stroke(); }
+  }else if(p.behavior === "celebrate"){
+    c.fillStyle = "#F2BC57";
+    for(const [dx,dy] of [[-.38,-.9],[.35,-1.05],[0,-1.22]]) drawStarMark(c,x+du*dx,py+du*dy,du*.055*boost);
+  }
+  c.restore();
+}
+function drawWelcomeRibbon(c, x, py, du){
+  c.save(); c.translate(x, py-du*1.1); c.fillStyle = "#F2BC57"; c.strokeStyle = "#846043"; c.lineWidth = 1;
+  roundRectOn(c,-du*.37,-du*.12,du*.74,du*.24,du*.06); c.fill(); c.stroke();
+  c.fillStyle = "#2E2A24"; c.textAlign = "center"; c.textBaseline = "middle";
+  c.font = `800 ${Math.max(8,Math.round(du*.13))}px ${LATIN_STACK}`; c.fillText(t("street.welcomeRibbon"),0,0);
+  c.restore();
+}
+function streetItemLabel(id){
+  if(id === WELCOME_ID) return t("street.welcomeLantern");
+  const item = CATALOG.find(i => i.id === id);
+  return tOr("item." + id, item?.name || id);
+}
+function streetMetaLabel(id){
+  const meta = streetMeta(id);
+  return meta ? t("street.meta", { size: t("street.size."+streetClass(id)), set: t("street.set."+meta.set), behavior: t("street.behavior."+meta.behavior) }) : "";
+}
+function showStreetItemInfo(id){
+  const info = $("#street-info");
+  const desc = tOr("item."+id+".desc", id === WELCOME_ID ? t("street.welcomeDesc") : "");
+  info.replaceChildren();
+  const name = document.createElement("b"); name.textContent = streetItemLabel(id);
+  info.append(name, document.createTextNode(desc ? " — " + desc : ""));
+  const meta = document.createElement("div");
+  meta.textContent = "★".repeat((shopState.tiers||{})[id]||1) + " · " + streetMetaLabel(id);
+  info.appendChild(meta);
+  info.hidden = false;
+  streetReaction = { id, until: performance.now() + (REDUCED_MOTION ? 250 : 700) };
+  analytics.track("street_item_interact", { behavior:streetMeta(id)?.behavior||"none", tier:(shopState.tiers||{})[id]||1 });
+  renderStreet();
+  setTimeout(() => { if(currentScreen === "street" && streetReaction?.id === id){ streetReaction = null; renderStreet(); } }, REDUCED_MOTION ? 260 : 710);
+}
+function renderStreetHitLayer(pieces, layout, w, h, gy, m){
+  const layer = $("#street-hit-layer");
+  layer.replaceChildren();
+  const selected = streetEdit?.selected || streetPreview?.itemId || null;
+  if(streetEdit || streetPreview){
+    const compatible = validStreetPlotIds(selected,layout,!!streetPreview);
+    for(const plot of STREET_PLOTS){
+      const btn = document.createElement("button");
+      btn.className = "street-hit plot-hit " + (selected ? (compatible.has(plot.id) ? "compatible" : "incompatible") : "");
+      btn.style.left = (plot.x*w) + "px"; btn.style.top = plotGroundY(plot,h,gy) + "px";
+      btn.style.width = Math.max(44,m.unit*.9) + "px"; btn.style.height = Math.max(44,m.unit*.42) + "px";
+      const occupant = layout.placements[plot.id];
+      btn.setAttribute("aria-label", t("street.plotLabel", { size:t("street.size."+plot.size), item:occupant ? streetItemLabel(occupant) : t("street.emptyPlot") }));
+      btn.disabled = !selected || !compatible.has(plot.id);
+      btn.onclick = () => streetPreview ? selectStreetPreviewPlot(plot.id) : placeSelectedStreetItem(plot.id);
+      layer.appendChild(btn);
+    }
+    return;
+  }
+  for(const p of pieces.filter(p => p.kind === "deco")){
+    const btn = document.createElement("button");
+    btn.className = "street-hit item-hit";
+    const x = p.slot*w, py = gy-h*(1-(p.laneY ?? 1)), du=m.unit*(p.scale||1);
+    btn.style.left=x+"px"; btn.style.top=(py-du*.58)+"px";
+    btn.style.width=Math.max(44,du*.9)+"px"; btn.style.height=Math.max(44,du*1.05)+"px";
+    btn.setAttribute("aria-label", t("street.itemLabel", { name:streetItemLabel(p.id), stars:"★".repeat(p.tier||1) }));
+    btn.onclick=()=>showStreetItemInfo(p.id);
+    layer.appendChild(btn);
+  }
+}
+function updateStreetPager(){
+  const scroll = $("#street-scroll"), max = Math.max(0, scroll.scrollWidth-scroll.clientWidth);
+  const right = max ? scroll.scrollLeft/max : 0;
+  $("#street-prev").disabled = right < .08;
+  $("#street-next").disabled = right > .92 || !max;
+  $("#street-pager").innerHTML = max ? `<i class="${right<.5?"on":""}"></i><i class="${right>=.5?"on":""}"></i>` : `<i class="on"></i>`;
+}
+function renderStreet(){
+  const scv = $("#street-cv"), world = $("#street-world"), scroll = $("#street-scroll");
+  if(!scv || !world || !scroll || !world.clientHeight || !scroll.clientWidth) return;
+  const h = world.clientHeight, m = streetWorldMetrics(scroll.clientWidth, h), w = m.worldW;
+  world.style.width = w + "px";
+  const dpr = Math.min(2, window.devicePixelRatio||1);
+  scv.width = Math.round(w*dpr); scv.height = Math.round(h*dpr);
+  scv.style.width=w+"px"; scv.style.height=h+"px";
+  const sc = scv.getContext("2d");
+  sc.setTransform(dpr,0,0,dpr,0,0); sc.clearRect(0,0,w,h);
+  const bg = sprite("bg-street");
+  if(bg) sc.drawImage(bg,0,0,w,h); else paintStreetBase(sc,w,h);
+  const gy=h-10, preview=previewScene();
+  const owned=preview?.owned || shopState.owned;
+  const layout=preview?.layout || liveStreetLayout();
+  const tiers=preview?.tiers || shopState.tiers || {};
+  const pieces=streetPieces(levelForXp(xp),owned,tiers,layout);
+  if(streetEdit || streetPreview) drawStreetPlotGrid(sc,w,h,gy,m,layout);
+  if(streetReveal && !streetReveal.start && owned.includes(streetReveal.id)) streetReveal.start=performance.now();
+  for(const p of pieces){
+    const x=p.slot*w, py=gy-h*(1-(p.laneY??1));
+    if(p.kind==="building"){
+      const basis=m.unit*m.backScale; drawContactShadow(sc,x,py,basis); drawStreetBuilding(sc,p.id,x,py,basis);
+    }else{
+      const pop=revealPopScale(p.id), du=m.unit*(p.scale||1)*pop;
+      drawStreetBehavior(sc,p,x,py,du); drawContactShadow(sc,x,py,du); drawTieredDeco(sc,p,x,py,du);
+      if(p.id===WELCOME_ID) drawWelcomeRibbon(sc,x,py,du);
+      if(streetReveal?.id===p.id && streetReveal.start) drawRevealDust(sc,x,py,du);
+    }
+  }
+  const mImg=sprite("maneki"), mp=Math.min(h*.62,67);
+  if(mImg) sc.drawImage(mImg,4,gy-mp+4,mp,mp);
+  else drawCat(sc,22,gy+8,0,"happy",null,.81,[],false);
+  renderStreetHitLayer(pieces,layout,w,h,gy,m);
+  renderStreetEditor(); renderStreetPreviewPanel();
+  $("#street-wallet").textContent=t("shop.coins",{coins:wallet.toLocaleString()});
+  const prog=streetProgress(levelForXp(xp));
+  const placed=Object.keys(layout.placements).length;
+  const stored=unplacedStreetItems(shopState.owned,layout).length;
+  $("#street-caption").textContent=streetPreview ? t("street.previewCaption")
+    : streetEdit ? t("street.editCaption",{placed,stored})
+    : t("street.captionSummary",{placed,stored,buildings:prog.unlocked});
+  if(streetReveal && owned.includes(streetReveal.id)){
+    $("#street-caption").textContent=t("street.captionNew",{name:streetItemLabel(streetReveal.id)});
+    if(performance.now()-streetReveal.start>900) streetReveal=null;
+    else requestAnimationFrame(()=>{ if(currentScreen==="street") renderStreet(); else streetReveal=null; });
+  }
+  requestAnimationFrame(updateStreetPager);
+}
+function streetDraftApply(next, messageKey, vars){
+  if(!streetEdit || sameStreetLayout(next, streetEdit.layout)){
+    if(messageKey) announceStreet("street.noMove");
+    return false;
+  }
+  streetEdit.history.push(streetEdit.layout);
+  if(streetEdit.history.length>10) streetEdit.history.shift();
+  streetEdit.layout=next; streetEdit.actions++;
+  if(messageKey) announceStreet(messageKey,vars);
+  renderStreet();
+  return true;
+}
+function openStreetEditor(selected="", coaching=false, initialPlot=null){
+  const base=ensureStreetLayout();
+  streetPreview=null;
+  streetEdit={
+    before:base, layout:base, history:[], selected:selected||null,
+    filter:"all", coaching:!!coaching, actions:0, usedAuto:false,
+  };
+  if(initialPlot && selected){
+    const placed=placeStreetItem(base,shopState.owned,selected,initialPlot);
+    if(!sameStreetLayout(placed,base)) streetEdit.layout=placed;
+  }
+  analytics.track("street_decorate_start", {
+    owned_bucket:streetCountBucket(shopState.owned.length+(base.welcomeOwned?1:0)),
+    placed_bucket:streetCountBucket(Object.keys(base.placements).length),
+  });
+  renderStreet();
+  if(selected){
+    const plotId=Object.keys(streetEdit.layout.placements).find(id=>streetEdit.layout.placements[id]===selected);
+    if(plotId) scrollStreetToPlot(plotId);
+  }
+}
+function placeSelectedStreetItem(plotId){
+  if(!streetEdit?.selected) return;
+  const next=placeStreetItem(streetEdit.layout,shopState.owned,streetEdit.selected,plotId);
+  streetDraftApply(next,"street.placedAnnouncement",{name:streetItemLabel(streetEdit.selected)});
+}
+function storeSelectedStreetItem(){
+  if(!streetEdit?.selected) return;
+  const next=storeStreetItem(streetEdit.layout,shopState.owned,streetEdit.selected);
+  streetDraftApply(next,"street.storedAnnouncement",{name:streetItemLabel(streetEdit.selected)});
+}
+function undoStreetEdit(){
+  if(!streetEdit?.history.length) return;
+  streetEdit.layout=streetEdit.history.pop(); streetEdit.actions++;
+  announceStreet("street.undoAnnouncement"); renderStreet();
+}
+function autoArrangeStreetEdit(){
+  if(!streetEdit) return;
+  streetEdit.usedAuto=true;
+  streetDraftApply(autoArrangeStreet(shopState.owned,streetEdit.layout),"street.autoAnnouncement");
+}
+function finishStreetEdit(){
+  if(!streetEdit) return;
+  const unplaced=unplacedStreetItems(shopState.owned,streetEdit.layout);
+  if(streetEdit.coaching && unplaced.includes(WELCOME_ID)) return;
+  const actions=streetEdit.actions;
+  const layout=normalizeStreetLayout({ ...streetEdit.layout, coachDone:streetEdit.layout.coachDone || streetEdit.coaching },shopState.owned);
+  shopState={...shopState,streetLayout:layout}; store.set("shop",shopState); pushEdge("hide");
+  analytics.track("street_decorate_complete",{ actions_bucket:actions===0?"0":actions<4?"1-3":"4+", used_auto_arrange:streetEdit.usedAuto });
+  streetEdit=null; announceStreet("street.savedAnnouncement"); renderStreet();
+}
+function cancelStreetEdit(){
+  if(!streetEdit) return;
+  if(streetEdit.coaching){
+    // Skip gives the gift a sensible home and permanently dismisses the coach.
+    const arranged=autoArrangeStreet(shopState.owned,streetEdit.layout);
+    shopState={...shopState,streetLayout:normalizeStreetLayout({...arranged,coachDone:true},shopState.owned)};
+    store.set("shop",shopState); pushEdge("hide");
+  }
+  streetEdit=null; renderStreet();
+}
+function renderStreetEditor(){
+  const editor=$("#street-editor"), actions=$("#street-actions"), info=$("#street-info");
+  editor.hidden=!streetEdit; actions.hidden=!!streetEdit||!!streetPreview;
+  if(streetEdit||streetPreview) info.hidden=true;
+  if(!streetEdit) return;
+  const coach=$("#street-coach"); coach.hidden=!streetEdit.coaching;
+  if(streetEdit.coaching) coach.textContent=streetEdit.selected
+    ? t("street.coachPlace",{name:streetItemLabel(streetEdit.selected)}) : t("street.coachSelect");
+  $("#street-undo").disabled=!streetEdit.history.length;
+  const selectedPlot=streetEdit.selected && Object.keys(streetEdit.layout.placements).find(id=>streetEdit.layout.placements[id]===streetEdit.selected);
+  $("#street-store").disabled=!selectedPlot;
+  $("#street-cancel").textContent=t(streetEdit.coaching?"street.skip":"common.cancel");
+  $("#street-done").disabled=streetEdit.coaching && unplacedStreetItems(shopState.owned,streetEdit.layout).includes(WELCOME_ID);
+  document.querySelectorAll("[data-street-filter]").forEach(btn=>{
+    const on=btn.dataset.streetFilter===streetEdit.filter; btn.classList.toggle("on",on); btn.setAttribute("aria-pressed",String(on));
+  });
+  const box=$("#street-inventory"); box.replaceChildren();
+  const all=[...shopState.owned]; if(streetEdit.layout.welcomeOwned) all.push(WELCOME_ID);
+  const placed=new Set(Object.values(streetEdit.layout.placements));
+  const visible=all.filter(id=>streetEdit.filter==="all"||(streetEdit.filter==="placed")===placed.has(id));
+  if(!visible.length){
+    const empty=document.createElement("div"); empty.className="street-inventory-empty"; empty.textContent=t("street.inventoryEmpty"); box.appendChild(empty);
+  }
+  for(const id of visible){
+    const btn=document.createElement("button"); btn.className="street-inventory-item"+(streetEdit.selected===id?" on":"");
+    btn.setAttribute("role","listitem"); btn.setAttribute("aria-pressed",String(streetEdit.selected===id));
+    const img=document.createElement("img"); img.src="assets/deco-"+(streetMeta(id)?.spriteId||id)+".png"; img.alt="";
+    const label=document.createElement("span"); label.textContent=streetItemLabel(id);
+    const status=document.createElement("small"); status.textContent=t(placed.has(id)?"street.placed":"street.stored");
+    btn.append(img,label,status); btn.onclick=()=>{
+      streetEdit.selected=id;
+      const count=validStreetPlotIds(id,streetEdit.layout,false).size;
+      announceStreet("street.selectedAnnouncement",{name:streetItemLabel(id),count}); renderStreet();
+    };
+    box.appendChild(btn);
+  }
+}
+function firstPreviewPlot(itemId, layout){
+  const existing=Object.keys(layout.placements).find(plotId=>layout.placements[plotId]===itemId);
+  if(existing) return existing;
+  const candidates=compatibleStreetPlots(itemId,layout);
+  return candidates.find(p=>!layout.placements[p.id]&&p.size===streetClass(itemId))?.id
+    || candidates.find(p=>!layout.placements[p.id])?.id || candidates[0]?.id || null;
+}
+function openStreetPreview(itemId){
+  const item=CATALOG.find(i=>i.id===itemId&&i.type==="deco"); if(!item) return;
+  const layout=ensureStreetLayout();
+  streetEdit=null;
+  streetPreview={ itemId, plotId:firstPreviewPlot(itemId,layout), tier:(shopState.tiers||{})[itemId]||1 };
+  analytics.track("street_preview",{item_id:itemId,source:"street_shop"});
+  show("street");
+  if(streetPreview.plotId) scrollStreetToPlot(streetPreview.plotId);
+}
+function selectStreetPreviewPlot(plotId){
+  if(!streetPreview||!compatibleStreetPlots(streetPreview.itemId,liveStreetLayout()).some(p=>p.id===plotId)) return;
+  streetPreview.plotId=plotId; renderStreet(); scrollStreetToPlot(plotId);
+}
+function closeStreetPreview(){
+  streetPreview=null; streetShopMode=true; renderShop(); show("shop");
+}
+function buyStreetPreview(){
+  if(!streetPreview) return;
+  const item=CATALOG.find(i=>i.id===streetPreview.itemId); if(!item) return;
+  const wasOwned=shopState.owned.includes(item.id);
+  const r=buy(wallet,shopState,item.id,todayStr());
+  if(!r.ok){ announceStreet("street.notEnough"); return; }
+  wallet=r.wallet; shopState=r.shop; store.set("wallet",wallet); store.set("shop",shopState); pushEdge("purchase"); updateWalletChip();
+  analytics.track("street_purchase",{item_id:item.id,source:"street_preview",placed_immediately:!wasOwned});
+  streetReveal={id:item.id,start:0};
+  if(!wasOwned){
+    const plotId=streetPreview.plotId; streetPreview=null; ensureStreetLayout(); openStreetEditor(item.id,false,plotId);
+    announceStreet("street.purchaseAnnouncement",{name:streetItemLabel(item.id)});
+  }else{
+    streetPreview.tier=(shopState.tiers||{})[item.id]||1; renderStreet();
+    announceStreet("street.upgradeAnnouncement",{name:streetItemLabel(item.id),stars:"★".repeat(streetPreview.tier)});
+  }
+}
+function renderStreetPreviewPanel(){
+  const panel=$("#street-preview-panel"); panel.hidden=!streetPreview;
+  if(!streetPreview) return;
+  const item=CATALOG.find(i=>i.id===streetPreview.itemId); if(!item) return;
+  $("#street-preview-name").textContent=streetItemLabel(item.id);
+  $("#street-preview-desc").textContent=tOr("item."+item.id+".desc","");
+  $("#street-preview-meta").textContent=streetMetaLabel(item.id);
+  document.querySelectorAll("[data-preview-tier]").forEach(btn=>{
+    const n=+btn.dataset.previewTier,on=n===streetPreview.tier; btn.classList.toggle("on",on); btn.setAttribute("aria-pressed",String(on));
+    btn.onclick=()=>{streetPreview.tier=n;renderStreet();};
+  });
+  const owned=shopState.owned.includes(item.id), tier=(shopState.tiers||{})[item.id]||1, buyBtn=$("#street-preview-buy");
+  if(!owned){ buyBtn.textContent=t("street.buyAndPlace",{coins:item.price.toLocaleString()}); buyBtn.disabled=wallet<item.price; buyBtn.onclick=buyStreetPreview; }
+  else if(tier<item.maxTier){
+    const price=upgradePrice(item,tier); buyBtn.textContent=t("shop.upgrade",{stars:"★".repeat(tier+1),coins:price.toLocaleString()}); buyBtn.disabled=wallet<price; buyBtn.onclick=buyStreetPreview;
+  }else{
+    buyBtn.textContent=t("street.placeIt"); buyBtn.disabled=false; buyBtn.onclick=()=>{const id=streetPreview.itemId,plot=streetPreview.plotId;streetPreview=null;openStreetEditor(id,false,plot);};
+  }
+}
+function scrollStreetToPlot(plotId){
+  const plot=STREET_PLOTS.find(p=>p.id===plotId); if(!plot) return;
+  requestAnimationFrame(()=>{
+    const scroll=$("#street-scroll"), world=$("#street-world");
+    const left=Math.max(0,Math.min(scroll.scrollWidth-scroll.clientWidth,plot.x*world.clientWidth-scroll.clientWidth/2));
+    scroll.scrollTo({left,behavior:REDUCED_MOTION?"auto":"smooth"});
+  });
+}
+$("#street-decorate-btn").onclick=()=>openStreetEditor();
+$("#street-shop-btn").onclick=()=>{
+  streetShopMode=true; analytics.track("store_open"); shopViewedProducts.clear();
+  const back=$("#shop-back"); back.dataset.go="street"; back.textContent=t("common.backStreet");
+  renderShop(); show("shop");
+};
+$("#shop-view-street").onclick=()=>{streetPreview=null;show("street");};
+$("#street-undo").onclick=undoStreetEdit;
+$("#street-store").onclick=storeSelectedStreetItem;
+$("#street-auto").onclick=autoArrangeStreetEdit;
+$("#street-cancel").onclick=cancelStreetEdit;
+$("#street-done").onclick=finishStreetEdit;
+$("#street-filters").onclick=e=>{const btn=e.target.closest("[data-street-filter]");if(btn&&streetEdit){streetEdit.filter=btn.dataset.streetFilter;renderStreet();}};
+$("#street-preview-close").onclick=closeStreetPreview;
+$("#street-preview-back").onclick=closeStreetPreview;
+$("#street-prev").onclick=()=>$("#street-scroll").scrollTo({left:0,behavior:REDUCED_MOTION?"auto":"smooth"});
+$("#street-next").onclick=()=>$("#street-scroll").scrollTo({left:$("#street-scroll").scrollWidth,behavior:REDUCED_MOTION?"auto":"smooth"});
+$("#street-scroll").addEventListener("scroll",updateStreetPager,{passive:true});
+window.addEventListener("resize",()=>{if(currentScreen==="street")requestAnimationFrame(renderStreet);});
 function paintStreetBase(c, w, h){
   // Warm-daylight village street: cream/sky gradient, soft green hills, sun
   // upper-left, sand road along the bottom fifth. Deterministic (fixed
@@ -3870,25 +4229,6 @@ function drawContactShadow(c, x, y, basis){
   c.fillStyle = "rgba(46,42,36,.12)";
   c.beginPath(); c.ellipse(x, y + basis*.05, basis*.5, basis*.12, 0, 0, Math.PI*2); c.fill();
   c.restore();
-}
-function drawStreetPads(c, w, gy, h, pieces, m){
-  const occupied = new Set(pieces.map(p => p.slot.toFixed(2)));
-  const backGy = gy - h * (1 - m.backY);
-  const drawPad = (x, y, basis) => {
-    const pw = basis*.9, ph = basis*.16;
-    c.fillStyle = "rgba(255,214,95,.08)";
-    c.beginPath(); c.ellipse(x, y+1, pw, ph, 0, 0, Math.PI*2); c.fill();
-    c.strokeStyle = "rgba(245,197,24,.16)"; c.lineWidth = 1;
-    c.beginPath(); c.ellipse(x, y+1, pw, ph, 0, 0, Math.PI*2); c.stroke();
-  };
-  // Ghost "empty plot" pads only for not-yet-unlocked BUILDINGS (a "reach Lv X"
-  // hint). Decos are auto-arranged at dynamic slots now, so fixed deco ghost
-  // pads would sit at the wrong places / under real decos — dropped.
-  const buildingSlots = [.18,.34,.5,.66,.82];
-  for(const slot of buildingSlots){
-    if(occupied.has(slot.toFixed(2))) continue;
-    drawPad(slot*w, backGy, m.unit * m.backScale);
-  }
 }
 function drawStreetBuilding(c, id, x, gy, h){
   const bw = h*0.54, bh = h*0.62;
@@ -3945,19 +4285,17 @@ function drawStarMark(c, x, y, r){
 }
 function drawTieredDeco(c, p, x, gy, h){
   const tier = p.tier || 1;
+  const spriteId = p.spriteId || p.id;
   if(tier >= 2){
     c.save();
     c.shadowColor = "rgba(255,214,95,.55)"; c.shadowBlur = 12;
     c.translate(x, gy); c.scale(1.15, 1.15); c.translate(-x, -gy);
-    drawStreetDeco(c, p.id, x, gy, h);
+    drawStreetDeco(c, spriteId, x, gy, h);
     c.restore();
   }else{
-    drawStreetDeco(c, p.id, x, gy, h);
+    drawStreetDeco(c, spriteId, x, gy, h);
   }
-  // Crown accent is calibrated to the vector geometry (DECO_TOPS); on a PNG
-  // sprite it would land mid-art, so tier-3 PNG decos show via the enlarge+glow
-  // only. Reposition-for-sprite is a later polish.
-  if(tier >= 3 && !sprite("deco-" + p.id)) drawCrownAccent(c, p.id, x, gy, h);
+  if(tier >= 3) drawCrownAccent(c, spriteId, x, gy, h, !!sprite("deco-" + spriteId));
 }
 // Top of each deco shape in units of s (= basis*.32), from drawStreetDeco
 // geometry; used to plant the tier-3 crown at the piece's actual top.
@@ -3971,10 +4309,10 @@ const DECO_TOPS = {
 // Tier-3 crown: a small gold pennant on a wood pole planted above the piece's
 // top-left, plus three tiny star sparkles arced above. Deterministic (no
 // randomness) so it renders identically every frame.
-function drawCrownAccent(c, id, x, gy, basis){
+function drawCrownAccent(c, id, x, gy, basis, hasSprite=false){
   c.save(); c.translate(x, gy);
   // piece top: shape top in s-units, scaled by the tier-2 1.15x enlargement
-  const top = -(DECO_TOPS[id] || 1) * basis * .32 * 1.15;
+  const top = hasSprite ? -basis*DECO_SPRITE_SCALE*1.15 : -(DECO_TOPS[id] || 1) * basis * .32 * 1.15;
   const poleX = -basis * .3;
   const poleBase = top - basis * .12;
   const poleTip = poleBase - basis * .36;

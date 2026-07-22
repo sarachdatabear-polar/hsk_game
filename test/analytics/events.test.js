@@ -48,6 +48,15 @@ describe("makeEvent", () => {
   it("every declared name maps through makeEvent", () => {
     for (const n of EVENT_NAMES) expect(makeEvent(n, { ...base }).name).toBe(n);
   });
+
+  it("keeps only the PII-free Street funnel dimensions", () => {
+    expect(makeEvent("street_preview", { ...base, props: { item_id: "koi-pond", source: "street_shop", email: "nope@example.com" } }).props)
+      .toEqual({ item_id: "koi-pond", source: "street_shop" });
+    expect(makeEvent("street_decorate_complete", { ...base, props: { actions_bucket: "4+", used_auto_arrange: true, exact_actions: 17 } }).props)
+      .toEqual({ actions_bucket: "4+", used_auto_arrange: true });
+    expect(makeEvent("street_purchase", { ...base, props: { item_id: "koi-pond", source: "street_preview", placed_immediately: false, coins: 6000 } }).props)
+      .toEqual({ item_id: "koi-pond", source: "street_preview", placed_immediately: false });
+  });
 });
 
 describe("durationBucket", () => {

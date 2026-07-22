@@ -4,7 +4,7 @@
 // notices. Pure data flow: cloud rows -> mergeAll -> store -> cloud rows.
 // `store` is injected ({get,set}) so node probes/tests can shim localStorage.
 import { getSession, fetchSyncRows, pushSyncRows, fetchLedgerSince, fetchLedgerOrder } from "./cloud.js";
-import { mergeAll, defaultSyncMeta, slotsOf } from "./merge.js";
+import { mergeAll, defaultSyncMeta, slotsOf, streetLayoutOf, shopPreferencesOf } from "./merge.js";
 
 export const MIN_SYNC_GAP_MS = 30000;
 
@@ -95,7 +95,10 @@ function settleDirty(store, expected, lastSyncAt) {
   // Baseline for the slot-level shop dirtiness below: after a successful
   // push the cloud row holds exactly `expected.shop`, so its slots become
   // the reference a future reconcile diffs against.
-  if ("shop" in expected) meta.shopSlots = slotsOf(expected.shop);
+  if ("shop" in expected) {
+    meta.shopSlots = slotsOf(expected.shop); // retained for legacy readers
+    meta.shopPreferences = shopPreferencesOf(expected.shop);
+  }
   if (lastSyncAt) meta.lastSyncAt = lastSyncAt;
   store.set("sync", meta);
 }
@@ -186,9 +189,12 @@ export async function reconcile(store, reason, now = Date.now(), expectedOrderId
     // missing baseline (legacy meta / never synced) keeps the old plain
     // dirty-bit behavior, which also preserves "an unsynced re-dress isn't
     // undone by an old cloud row" for fresh installs.
-    const slotsBaseline = meta.shopSlots || null;
+    const slotsBaseline = meta.shopPreferences?.slots || meta.shopSlots || null;
+    const layoutBaseline = meta.shopPreferences?.streetLayout || null;
     const shopDirty = !!(meta.dirty && meta.dirty.shop) &&
       (!slotsBaseline || !eq(slotsOf(local.shop), slotsBaseline));
+    const shopLayoutDirty = !!(meta.dirty && meta.dirty.shop) &&
+      (!layoutBaseline || !eq(streetLayoutOf(local.shop), layoutBaseline));
     const today = localDateStr(now);
     // Both calls get `today` (not just the cloud-merged one): mergeAll's
     // stale-monthly settle is symmetric in local/cloud, so the baseline must
@@ -212,8 +218,8 @@ export async function reconcile(store, reason, now = Date.now(), expectedOrderId
       : freshCursor ? (expectedCredit ? expectedCredit.delta : 0)
       : unseen;
     const merged = mergeAll(local, localFromRows(rows.progress, rows.wallet),
-      { shopDirty, today, unseenPurchased: foldUnseen });
-    const baseline = mergeAll(local, null, { shopDirty, today });
+      { shopDirty, shopLayoutDirty, today, unseenPurchased: foldUnseen });
+    const baseline = mergeAll(local, null, { shopDirty, shopLayoutDirty, today });
     const changed = !eq(merged, baseline);
     // CURSOR ORDERING (THE FOLD): advance + persist meta.lastLedgerAt BEFORE
     // writing the merged keys to the store below. This file already has a
