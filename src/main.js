@@ -7,7 +7,7 @@ import { exampleFor } from "./examples.js";
 import { tonePool, toneQuestion, gradeTone } from "./tone_gym.js";
 import { killPoints } from "./scoring.js";
 import { coinBurst, comboFloater, fireworkRing, feedbackEffect, perfectBonus, impactBurst as lanternSparkBurst } from "./fx.js";
-import { sfx, setSfxVolume, clampVol, unlockSfx } from "./sfx.js";
+import { sfx, setSfxVolume, clampVol, unlockSfx, suspendSfx } from "./sfx.js";
 import { drawCat } from "./cat.js";
 import { drawRaccoon } from "./raccoon.js";
 import { CONTENT_H } from "./sprite-draw.js";
@@ -23,7 +23,9 @@ import { REMINDER_HOUR, reminderPlan, reengagePlan } from "./notify.js";
 import { defaultQuestState, noteQuestEvent, questStatus,
          defaultMonthly, noteMonthlyProgress, monthlyStatus, claimMonthly, settleMonthly } from "./quests.js";
 import { reviewChallengePoints, reviewChallengeSpeedFactor } from "./boss.js";
-import { initAudio, speak, speakWhenReady, audioAvailable, hasMp3, setVoiceVolume, unlockAudio, prefetchAudio, initRemoteAudio } from "./audio.js";
+import { initAudio, speak, speakWhenReady, audioAvailable, hasMp3, setVoiceVolume,
+         unlockAudio, prefetchAudio, initRemoteAudio, stopAudio, resetAudioUnlock,
+         preferAmbientAudioSession } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, syncReengageReminder, requestNotifPermission, isNative } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import { BUILDINGS, streetPieces, streetProgress, streetMetrics, DECO_SPRITE_SCALE } from "./street.js";
@@ -994,6 +996,9 @@ $("#welcome-start").onclick = ()=>{
 };
 
 /* ============================== audio (pre-recorded mp3 first, Web Speech fallback) ============================== */
+// Short game prompts should mix with music/podcasts already playing on iOS.
+// Feature-detected: browsers without Audio Session support keep their default.
+preferAmbientAudioSession();
 // index.json lists which words have a bundled mp3; fetch fails silently on file://
 // (keeping TTS-only), which is fine per the file:// constraint.
 fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>initAudio([]))
@@ -1009,29 +1014,59 @@ fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>in
 const REMOTE_AUDIO_BASE = isNative()
   ? "https://sarachdatabear-polar.github.io/hsk_game/audio/" : "audio/";
 fetch("audio/index-full.json").then(r=>r.json())
-  .then(ix=>initRemoteAudio(ix, REMOTE_AUDIO_BASE)).catch(()=>{});
+  .then(ix=>initRemoteAudio(ix, REMOTE_AUDIO_BASE)).catch(()=>initRemoteAudio([], null));
 
 // Mobile browsers block all audio (Web Audio, <audio>.play, speech synthesis)
 // until the first real user gesture. Prime every path once on the first
 // interaction so the word audio the game speaks on its own — and SFX fired
 // from the rAF loop — actually play. Passive so it never delays the tap.
-let audioUnlockInFlight = false;
+let audioUnlockTask = null;
+let audioUnlockArmed = false;
+function armAudioUnlock(){
+  if(audioUnlockArmed) return;
+  audioUnlockArmed = true;
+  window.addEventListener("pointerdown", unlockAllAudio, true);
+  window.addEventListener("touchend", unlockAllAudio, true);
+  window.addEventListener("click", unlockAllAudio, true);
+}
+function disarmAudioUnlock(){
+  if(!audioUnlockArmed) return;
+  audioUnlockArmed = false;
+  window.removeEventListener("pointerdown", unlockAllAudio, true);
+  window.removeEventListener("touchend", unlockAllAudio, true);
+  window.removeEventListener("click", unlockAllAudio, true);
+}
 function unlockAllAudio(){
-  if(audioUnlockInFlight) return;
-  audioUnlockInFlight = true;
+  if(audioUnlockTask) return audioUnlockTask;
   // Keep the gesture listeners until BOTH paths confirm success. Mobile
   // policies can reject the first attempt; the next real tap must retry
   // instead of leaving word audio/SFX silent for the rest of the session.
-  Promise.all([unlockSfx(), unlockAudio()]).then(([sfxReady, wordReady])=>{
-    if(!sfxReady || !wordReady) return;
-    window.removeEventListener("pointerdown", unlockAllAudio, true);
-    window.removeEventListener("touchend", unlockAllAudio, true);
-    window.removeEventListener("click", unlockAllAudio, true);
-  }).finally(()=>{ audioUnlockInFlight = false; });
+  audioUnlockTask = Promise.all([unlockSfx(), unlockAudio()]).then(([sfxReady, wordReady])=>{
+    if(!sfxReady || !wordReady) return false;
+    disarmAudioUnlock();
+    resumeToneAfterAudioUnlock();
+    return true;
+  }).finally(()=>{ audioUnlockTask = null; });
+  return audioUnlockTask;
 }
-window.addEventListener("pointerdown", unlockAllAudio, true);
-window.addEventListener("touchend", unlockAllAudio, true);
-window.addEventListener("click", unlockAllAudio, true);
+armAudioUnlock();
+window.addEventListener("nbhsk:audio-lock", armAudioUnlock);
+
+// AudioSession interruptions are distinct from document visibility on recent
+// Safari. Re-arm here too so a call/Siri/another audio app cannot leave the
+// page believing its one-time unlock is still valid.
+navigator.audioSession?.addEventListener?.("statechange", ()=>{
+  if(navigator.audioSession.state !== "interrupted") return;
+  if(B.on && !B.paused) pauseBattle();
+  pauseToneForHidden();
+  resetAudioUnlock();
+  suspendSfx();
+  armAudioUnlock();
+});
+window.addEventListener("pageshow", event=>{
+  if(event.persisted) resetAudioUnlock();
+  armAudioUnlock();
+});
 
 /* ============================== UI-frame preload ============================== */
 // Canvas sprites are lazy: sprite(name) starts the first load and renders the
@@ -1100,6 +1135,7 @@ function show(name){
   // never hijack a later session, never re-show welcome. endBattle's own
   // intro completion runs before its show() calls, so this is a no-op there.
   if(name === "home" && introPhase){ introPhase = null; store.set("introDone", true); }
+  if(currentScreen !== name) stopAudio();
   currentScreen = name;
   // F4-iOS: battle is the only screen that ever needs a definite #app height
   // (see index.html's body.battle-on rule) — it never scrolls the document,
@@ -1137,7 +1173,7 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
     renderShop(); show("shop");
   }
   else if(tab==="album"){ renderAlbum(); show("album"); }
-  else if(tab==="tones"){ startToneRound(); show("tones"); }
+  else if(tab==="tones"){ show("tones"); startToneRound(); }
   else if(tab==="account"){ accountUI.confirmingDelete = false; renderAccount(); show("account"); refreshAccountSession(); }
   else {
     if(tab==="home"){
@@ -1382,13 +1418,18 @@ $("#fc-again").onclick = ()=>nextCard(true);
 // ladder rung (visual pinyin recall). Light rewards only — counts toward
 // daily activity + a little XP/coin, but never touches mastery/SRS (tone
 // accuracy != meaning recall), mirroring `B` (battle state) but far simpler.
-const TG = {pool:[], q:null, i:0, len:10, score:0, streak:0, bestStreak:0, locked:false, advanceTimer:null, ended:false};
+const TG = {
+  pool:[], q:null, i:0, len:10, score:0, streak:0, bestStreak:0,
+  locked:false, advanceTimer:null, advanceDue:0, advanceRemaining:null,
+  hiddenPaused:false, ended:false,
+};
 function startToneRound(){
   // Kill any auto-advance timer still pending from a previous round (the player
   // can tap Home mid-reveal, then re-enter — without this, the orphan timer's
   // currentScreen guard would pass against the NEW round, skipping a question
   // or double-firing endToneRound. See the guarded setTimeout in answerTone.
   clearTimeout(TG.advanceTimer); TG.advanceTimer = null;
+  TG.advanceDue = 0; TG.advanceRemaining = null; TG.hiddenPaused = false;
   TG.pool = tonePool(pool, hasMp3);
   // Seed from the all-time best (audit v55 F1a) rather than 0, so the
   // persistent line and the reveal line both read as "best streak ever",
@@ -1453,7 +1494,9 @@ function renderToneQuestion(){
   }
 }
 function answerTone(picked, btn){
-  if(TG.locked || !TG.q) return;
+  // The first tap after returning from another app is reserved for restoring
+  // audio and replaying the prompt; it must not accidentally submit an answer.
+  if(TG.hiddenPaused || TG.locked || !TG.q) return;
   TG.locked = true;
   const q = TG.q;
   const ok = gradeTone(q, picked);
@@ -1467,9 +1510,8 @@ function answerTone(picked, btn){
   renderTonesBest();
   const reveal = $("#tones-reveal");
   if(reveal) reveal.innerHTML = `<div class="boss-prompt"><span class="hz">${q.word.h}</span><span class="py">${q.word.p}</span></div>`;
-  // Guard the deferred advance only (not nextToneQuestion itself, which the
-  // very first call needs to run while currentScreen is still "home" — see
-  // the [data-go] "tones" route): without this, tapping Home during the
+  // Guard the deferred advance only (not nextToneQuestion itself, which starts
+  // each new round directly): without this, tapping Home during the
   // reveal window lets the timer fire nextToneQuestion() on the hidden
   // screen, playing audio over Home (and crediting rewards early on the
   // last question). But if the answer just graded WAS the last question
@@ -1477,11 +1519,39 @@ function answerTone(picked, btn){
   // Home must still credit the round's coins/XP — endToneRound only touches
   // the hidden #tones-* DOM and is idempotent (TG.ended), so it's safe to
   // run off-screen; startToneRound resets that DOM on re-entry.
+  scheduleToneAdvance(fxDuration(900));
+}
+function scheduleToneAdvance(delay){
+  clearTimeout(TG.advanceTimer);
+  TG.advanceRemaining = null;
+  TG.advanceDue = Date.now() + Math.max(0, delay);
   TG.advanceTimer = setTimeout(()=>{
     TG.advanceTimer = null;
+    TG.advanceDue = 0;
     if(currentScreen === "tones") nextToneQuestion();
     else if(TG.i >= TG.len) endToneRound();
-  }, fxDuration(900));
+  }, Math.max(0, delay));
+}
+function pauseToneForHidden(){
+  if(currentScreen !== "tones" || TG.ended) return;
+  TG.hiddenPaused = true;
+  if(TG.advanceTimer){
+    TG.advanceRemaining = Math.max(0, TG.advanceDue - Date.now());
+    clearTimeout(TG.advanceTimer); TG.advanceTimer = null; TG.advanceDue = 0;
+  }
+}
+function resumeToneAfterAudioUnlock(){
+  if(currentScreen !== "tones" || !TG.hiddenPaused || TG.ended) return;
+  TG.hiddenPaused = false;
+  if(TG.advanceRemaining != null){
+    const remaining = TG.advanceRemaining;
+    TG.advanceRemaining = null;
+    scheduleToneAdvance(remaining);
+  }else if(!TG.locked && TG.q){
+    // The prompt may have been cut off by the interruption. Replay only after
+    // the return gesture has successfully restored both audio paths.
+    speak(TG.q.word.h);
+  }
 }
 // Light rewards (design spec §3): +1 coin and +1 XP per correct answer,
 // counted toward the daily streak — deliberately NOT recordAnswer/mastery.
@@ -1489,6 +1559,7 @@ function endToneRound(){
   if(TG.ended) return;   // idempotent — rewards must credit exactly once per round
   TG.ended = true;
   clearTimeout(TG.advanceTimer); TG.advanceTimer = null;
+  TG.advanceDue = 0; TG.advanceRemaining = null; TG.hiddenPaused = false;
   // Persist the all-time best streak (audit v55 F1a) — TG.bestStreak is
   // already the live max (seeded from store + Math.max'd in answerTone), so
   // this Math.max is just a safety floor against a concurrent write.
@@ -1535,7 +1606,10 @@ function endToneRound(){
   again.onclick = ()=>startToneRound();
   reveal.appendChild(again);
 }
-$("#tones-replay").onclick = ()=>{ if(TG.q) speak(TG.q.word.h); };   // never locked — replay is always allowed
+$("#tones-replay").onclick = ()=>{
+  if(TG.hiddenPaused) return;   // capture-phase unlock will replay once ready
+  if(TG.q) speak(TG.q.word.h);
+};   // never locked — replay is always allowed
 
 /* ============================== battle ============================== */
 /* Lucky-cat pattern: a friendly review guide approaches from the right.
@@ -1726,7 +1800,7 @@ function stopBattle(){
   B.on = false; keepAwake(false);
   closeDialog($("#pause-overlay"), false);
   closeDialog($("#format-intro"), false);
-  if(window.speechSynthesis) speechSynthesis.cancel();
+  stopAudio();
 }
 /* More-screen sound toggle mirrors the old hud-sfx (dims when muted); both stay
    in sync via the same nbhsk.sfx store key. The old home-screen sound icon was
@@ -1876,10 +1950,14 @@ function pauseBattle(){
   if(!B.on || B.paused) return;
   B.paused = true;
   B.pausedAt = performance.now();
+  stopAudio();
   keepAwake(false);   // nothing moves while paused — let the screen sleep
   renderPauseToggles();
   syncPauseSliders();
-  openDialog($("#pause-overlay"), $("#pause-resume"), resumeBattle);
+  openDialog($("#pause-overlay"), $("#pause-resume"), resumeBattleWithAudio);
+}
+function resumeBattleWithAudio(){
+  unlockAllAudio().then(ready=>{ if(ready) resumeBattle(); });
 }
 function resumeBattle(){
   if(!B.on || !B.paused) return;
@@ -1897,11 +1975,23 @@ function resumeBattle(){
   B.paused = false;
   keepAwake(true);
   closeDialog($("#pause-overlay"));
+  const z = B.zombie;
+  if(z && z.state === "walk" && !z.frozen){
+    const policy = FORMATS[z.format || "meaning"].audio;
+    if(policy === "always" || (policy === "setting" && settings.autoSpeak)){
+      speakWhenReady(z.w.h);
+    }
+  }
 }
 // Auto-pause (never auto-resume) when the tab/app is backgrounded, so a word's
 // timer can't silently expire while the player isn't looking.
 document.addEventListener("visibilitychange", ()=>{
-  if(document.hidden && B.on && !B.paused) pauseBattle();
+  if(document.hidden){
+    if(B.on && !B.paused) pauseBattle();
+    pauseToneForHidden();
+    resetAudioUnlock();
+    suspendSfx();
+  }
   // retention pack: leaving the app re-syncs the Android streak-saver
   // reminder so it reflects today's freshest streak/goal state.
   if(document.hidden){
@@ -1918,11 +2008,14 @@ document.addEventListener("visibilitychange", ()=>{
     pushEdge("hide");
     analytics.track("session_complete", { duration_bucket: durationBucket(Date.now() - analyticsSessionStart) });
   }
-  if(!document.hidden) syncEdge("foreground");
+  if(!document.hidden){
+    armAudioUnlock();
+    syncEdge("foreground");
+  }
 });
 window.addEventListener("online", ()=>{ analytics.flush(); syncEdge("online"); });
 $("#hud-pause").onclick = ()=> pauseBattle();
-$("#pause-resume").onclick = ()=> resumeBattle();
+$("#pause-resume").onclick = ()=> resumeBattleWithAudio();
 $("#pause-quit").onclick = ()=>{ closeDialog($("#pause-overlay"), false); endBattle(true); };
 function syncQuestOutcome(correct, timedOut=false){
   const result = B.quest.resolve({ correct, timedOut });

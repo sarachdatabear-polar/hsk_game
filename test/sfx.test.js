@@ -209,4 +209,54 @@ describe("tone() resumes a suspended AudioContext (iOS PWA silent-session bug)",
     expect(await fresh.unlockSfx()).toBe(true);
     expect(attempts).toBe(2);
   });
+
+  it("waits for resume before scheduling the first tones", async () => {
+    vi.resetModules();
+    let finishResume;
+    let oscillators = 0;
+    const fakeCtx = {
+      state: "suspended",
+      resume: () => new Promise(resolve => { finishResume = () => { fakeCtx.state = "running"; resolve(); }; }),
+      currentTime: 0,
+      destination: {},
+      createOscillator: () => {
+        oscillators++;
+        return { type: "", frequency: { value: 0 }, connect: o => o, start() {}, stop() {} };
+      },
+      createGain: () => ({ gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect: o => o }),
+    };
+    globalThis.window = { AudioContext: function () { return fakeCtx; } };
+
+    const fresh = await import("../src/sfx.js");
+    fresh.sfx.enabled = true;
+    fresh.sfx.kill();
+    expect(oscillators).toBe(0);
+
+    finishResume();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(oscillators).toBe(2);
+  });
+
+  it("recovers WebKit's interrupted state with suspend then resume", async () => {
+    vi.resetModules();
+    const order = [];
+    const fakeCtx = {
+      state: "interrupted",
+      suspend: () => { order.push("suspend"); fakeCtx.state = "suspended"; return Promise.resolve(); },
+      resume: () => { order.push("resume"); fakeCtx.state = "running"; return Promise.resolve(); },
+      currentTime: 0,
+      destination: {},
+      createOscillator: () => ({ type: "", frequency: { value: 0 }, connect: o => o, start() {}, stop() {} }),
+      createGain: () => ({ gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect: o => o }),
+    };
+    globalThis.window = { AudioContext: function () { return fakeCtx; } };
+
+    const fresh = await import("../src/sfx.js");
+    expect(await fresh.unlockSfx()).toBe(true);
+    expect(order).toEqual(["suspend", "resume"]);
+    expect(fakeCtx.state).toBe("running");
+
+    expect(await fresh.suspendSfx()).toBe(true);
+    expect(fakeCtx.state).toBe("suspended");
+  });
 });
