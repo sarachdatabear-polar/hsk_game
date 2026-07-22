@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { BUILDINGS, DECO_IDS, DECO_SPRITE_SCALE, UNIT_FRAC, streetPieces, streetProgress, streetMetrics,
-         assignDecoAnchors, DECO_CLASS, CLASS_SIZE, DECO_ANCHORS, LANES } from "../src/street.js";
+         assignDecoAnchors, DECO_CLASS, CLASS_SIZE, DECO_ANCHORS, LANES,
+         WELCOME_ID, DECO_META, STREET_PLOTS, defaultStreetLayout,
+         normalizeStreetLayout, itemFitsPlot, streetOwnedIds, compatibleStreetPlots,
+         unplacedStreetItems, placeStreetItem, storeStreetItem, autoArrangeStreet,
+         migrateLegacyStreet, streetWorldMetrics } from "../src/street.js";
 import { MILESTONES } from "../src/growth.js";
 
 describe("street", () => {
@@ -225,5 +229,150 @@ describe("scene composer", () => {
       const prev = pieces[i - 1], cur = pieces[i];
       expect(prev.laneY < cur.laneY || (prev.laneY === cur.laneY && prev.slot <= cur.slot)).toBe(true);
     }
+  });
+});
+
+describe("street v2 panoramic layout", () => {
+  const ALL = DECO_IDS.slice();
+
+  it("every catalog deco and the Welcome Lantern have complete value metadata", () => {
+    for (const id of [...DECO_IDS, WELCOME_ID]) {
+      expect(DECO_META[id], id).toBeTruthy();
+      expect(["gateway", "large", "medium", "small"]).toContain(DECO_META[id].cls);
+      expect(["market", "garden", "festival", "welcome"]).toContain(DECO_META[id].set);
+      expect(["light", "food", "water", "flutter", "celebrate"]).toContain(DECO_META[id].behavior);
+    }
+  });
+
+  it("has 18 unique, in-bounds authored plots across every lane and size", () => {
+    expect(STREET_PLOTS).toHaveLength(18);
+    expect(new Set(STREET_PLOTS.map(p => p.id)).size).toBe(18);
+    for (const p of STREET_PLOTS) {
+      expect(p.x).toBeGreaterThan(0);
+      expect(p.x).toBeLessThan(1);
+      expect(["back", "mid", "front"]).toContain(p.lane);
+      expect(["gateway", "large", "medium", "small"]).toContain(p.size);
+    }
+  });
+
+  it("enforces typed plot compatibility with smaller items allowed upward", () => {
+    const bySize = size => STREET_PLOTS.find(p => p.size === size);
+    expect(itemFitsPlot("golden-arch", bySize("gateway"))).toBe(true);
+    expect(itemFitsPlot("golden-arch", bySize("large"))).toBe(false);
+    expect(itemFitsPlot("noodle-stall", bySize("large"))).toBe(true);
+    expect(itemFitsPlot("noodle-stall", bySize("medium"))).toBe(false);
+    expect(itemFitsPlot("tea-sign", bySize("large"))).toBe(true);
+    expect(itemFitsPlot("tea-sign", bySize("medium"))).toBe(true);
+    expect(itemFitsPlot("red-lantern", bySize("small"))).toBe(true);
+    expect(itemFitsPlot("red-lantern", bySize("medium"))).toBe(true);
+    expect(itemFitsPlot("red-lantern", bySize("gateway"))).toBe(false);
+  });
+
+  it("normalizes corrupt layouts idempotently without mutating the input", () => {
+    const input = {
+      v: 99, welcomeOwned: true, coachDone: true,
+      placements: {
+        "plot-small-01": "red-lantern",
+        "plot-small-02": "red-lantern",       // duplicate
+        "plot-small-03": "golden-arch",       // incompatible
+        "plot-medium-01": "not-owned",
+        "unknown-plot": "tea-sign",
+      },
+    };
+    const before = structuredClone(input);
+    const n = normalizeStreetLayout(input, ["red-lantern", "golden-arch", "tea-sign"]);
+    expect(input).toEqual(before);
+    expect(n).toEqual({
+      v: 2, welcomeOwned: true, coachDone: true,
+      placements: { "plot-small-01": "red-lantern" },
+    });
+    expect(normalizeStreetLayout(n, ["red-lantern", "golden-arch", "tea-sign"])).toEqual(n);
+  });
+
+  it("Welcome Lantern is additive only when its earned flag is set", () => {
+    expect(streetOwnedIds(["red-lantern"], defaultStreetLayout())).toEqual(["red-lantern"]);
+    expect(streetOwnedIds(["red-lantern"], { ...defaultStreetLayout(), welcomeOwned: true }))
+      .toEqual(["red-lantern", WELCOME_ID]);
+  });
+
+  it("place, move, store and swap are immutable", () => {
+    const owned = ["red-lantern", "paper-umbrella", "tea-sign"];
+    const start = defaultStreetLayout();
+    const a = placeStreetItem(start, owned, "red-lantern", "plot-small-02");
+    expect(start.placements).toEqual({});
+    expect(a.placements["plot-small-02"]).toBe("red-lantern");
+    const b = placeStreetItem(a, owned, "paper-umbrella", "plot-small-03");
+    const swapped = placeStreetItem(b, owned, "red-lantern", "plot-small-03");
+    expect(swapped.placements["plot-small-03"]).toBe("red-lantern");
+    expect(swapped.placements["plot-small-02"]).toBe("paper-umbrella");
+    const moved = placeStreetItem(swapped, owned, "tea-sign", "plot-medium-01");
+    const stored = storeStreetItem(moved, owned, "tea-sign");
+    expect(Object.values(stored.placements)).not.toContain("tea-sign");
+    expect(unplacedStreetItems(owned, stored)).toContain("tea-sign");
+  });
+
+  it("rejects an occupied target when the displaced item cannot fit the source", () => {
+    const owned = ["red-lantern", "tea-sign"];
+    let l = placeStreetItem(defaultStreetLayout(), owned, "red-lantern", "plot-small-02");
+    l = placeStreetItem(l, owned, "tea-sign", "plot-medium-01");
+    const rejected = placeStreetItem(l, owned, "red-lantern", "plot-medium-01");
+    expect(rejected).toEqual(l); // medium tea sign cannot move into the small source plot
+  });
+
+  it("reports compatible empty plots independently of occupied compatible plots", () => {
+    const owned = ["red-lantern"];
+    const l = placeStreetItem(defaultStreetLayout(), owned, "red-lantern", "plot-small-02");
+    expect(compatibleStreetPlots("red-lantern", l).some(p => p.id === "plot-small-02")).toBe(true);
+    expect(compatibleStreetPlots("red-lantern", l, { includeOccupied: false })
+      .some(p => p.id === "plot-small-02")).toBe(false);
+  });
+
+  it("auto-arranges all 15 catalog items plus Welcome exactly once with room left", () => {
+    const l = autoArrangeStreet(ALL, { ...defaultStreetLayout(), welcomeOwned: true });
+    const ids = Object.values(l.placements);
+    expect(ids).toHaveLength(16);
+    expect(new Set(ids).size).toBe(16);
+    expect(ids.sort()).toEqual([...ALL, WELCOME_ID].sort());
+    expect(STREET_PLOTS.length - ids.length).toBe(2);
+    for (const [plotId, id] of Object.entries(l.placements)) expect(itemFitsPlot(id, plotId)).toBe(true);
+  });
+
+  it("auto-arrange preserves every valid existing placement", () => {
+    let l = placeStreetItem(defaultStreetLayout(), ALL, "red-lantern", "plot-small-05");
+    l = placeStreetItem(l, ALL, "golden-arch", "plot-gateway-02");
+    const a = autoArrangeStreet(ALL, l);
+    expect(a.placements["plot-small-05"]).toBe("red-lantern");
+    expect(a.placements["plot-gateway-02"]).toBe("golden-arch");
+  });
+
+  it("legacy migration keeps all owned catalog items and leaves Welcome unplaced", () => {
+    const l = migrateLegacyStreet(ALL, { welcomeOwned: true });
+    const ids = Object.values(l.placements);
+    expect(ids).toHaveLength(15);
+    expect(new Set(ids)).toEqual(new Set(ALL));
+    expect(l.welcomeOwned).toBe(true);
+    expect(ids).not.toContain(WELCOME_ID);
+    expect(unplacedStreetItems(ALL, l)).toEqual([WELCOME_ID]);
+  });
+
+  it("v2 streetPieces uses plot positions, metadata, tiers and the welcome sprite alias", () => {
+    let l = { ...defaultStreetLayout(), welcomeOwned: true };
+    l = placeStreetItem(l, ["koi-pond"], "koi-pond", "plot-medium-01");
+    l = placeStreetItem(l, ["koi-pond"], WELCOME_ID, "plot-small-02");
+    const pieces = streetPieces(1, ["koi-pond"], { "koi-pond": 3 }, l);
+    const koi = pieces.find(p => p.id === "koi-pond");
+    const welcome = pieces.find(p => p.id === WELCOME_ID);
+    expect(koi).toMatchObject({ plotId: "plot-medium-01", behavior: "water", tier: 3 });
+    expect(welcome).toMatchObject({ plotId: "plot-small-02", behavior: "light", spriteId: "red-lantern" });
+  });
+
+  it("panoramic metrics make portrait scrollable and landscape naturally whole", () => {
+    const portrait = streetWorldMetrics(390, 400);
+    expect(portrait).toMatchObject({ worldW: 800, sections: 2 });
+    expect(portrait.unit).toBeGreaterThan(0);
+    const landscape = streetWorldMetrics(844, 390);
+    expect(landscape.worldW).toBe(844);
+    expect(landscape.sections).toBe(1);
+    expect(streetWorldMetrics(390, 400)).toEqual(portrait);
   });
 });

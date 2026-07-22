@@ -2,6 +2,7 @@
 // Lucky Shop — pure module, no DOM/localStorage. Caller owns persistence.
 
 import { addDays } from "./daily.js";
+import { defaultStreetLayout } from "./street.js";
 
 export const CATALOG = [
   { id: "market",   name: "Night Market", price: 1000, type: "backdrop" },
@@ -140,7 +141,8 @@ export function seasonStatus(dateStr) {
 function byId(id) { return CATALOG.find(it => it.id === id); }
 
 export function defaultShop() {
-  return { owned: [], skin: "", backdrop: "", effect: "", soundpack: "", tiers: {} };
+  return { owned: [], skin: "", backdrop: "", effect: "", soundpack: "", tiers: {},
+           streetLayout: defaultStreetLayout() };
 }
 
 export function canAfford(wallet, id) {

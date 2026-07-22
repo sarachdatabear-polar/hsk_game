@@ -21,7 +21,7 @@ const srcText = Object.fromEntries(
 );
 
 describe("index.html data-i18n* keys exist in both locales", () => {
-  const attrs = ["data-i18n", "data-i18n-title", "data-i18n-ph"];
+  const attrs = ["data-i18n", "data-i18n-title", "data-i18n-ph", "data-i18n-aria"];
   const keys = new Set();
   for (const attr of attrs) {
     const re = new RegExp(`${attr}="([^"]+)"`, "g");
@@ -104,6 +104,13 @@ describe("shop/street display-name key coverage", () => {
     expect("item.streak-freeze.desc" in STRINGS.en, "item.streak-freeze.desc missing from STRINGS.en").toBe(true);
     expect("item.streak-freeze.desc" in STRINGS.th, "item.streak-freeze.desc missing from STRINGS.th").toBe(true);
   });
+
+  for (const item of CATALOG.filter(item => item.type === "deco")) {
+    it(`item.${item.id}.desc exists in EN and TH`, () => {
+      expect(`item.${item.id}.desc` in STRINGS.en, `item.${item.id}.desc missing from STRINGS.en`).toBe(true);
+      expect(`item.${item.id}.desc` in STRINGS.th, `item.${item.id}.desc missing from STRINGS.th`).toBe(true);
+    });
+  }
 });
 
 describe("IAP products have display-name keys in both locales", () => {

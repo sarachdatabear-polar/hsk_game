@@ -309,18 +309,93 @@
   #journey-list .j-play{
     display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2;
     overflow:hidden; overflow-wrap:anywhere;}
-  /* Lucky Cat Street — own screen (M2); DPR-crisp buffer sized by main.js.
-     2026-07-11 audit F2: quests moved back out into a popup (below), so the
-     scene reclaims that height — grow the cap so decorators see the street
-     as big as the screen reasonably allows (checked against all 10
-     responsive-sweep viewports incl. the two landscape tiers). */
-  #street-cv{width:100%; height:min(52vh,400px); display:block; border-radius:12px;
-    border:2px solid var(--lc-brown);
-    box-shadow:0 3px 10px rgba(46,42,36,.22);}
-  #street-caption{color:var(--lc-brown); font-size:12px; text-align:center; margin:4px 0 0;}
-  /* compact — must not steal meaningful height from the scene above it */
-  #s-street{position:relative;}
-  .street-quests-btn{align-self:center; width:auto; min-width:140px; margin-top:8px; padding:8px 22px; min-height:44px;}
+  /* Lucky Cat Street v2 — a panoramic, player-authored world. Canvas paints
+     the scene; the absolutely-positioned DOM layer supplies accessible item
+     and plot controls. Narrow phones see two horizontally snapped sections;
+     landscape naturally fits the whole 2:1 world. */
+  #s-street{position:relative; justify-content:flex-start;}
+  .street-title-row{width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .street-title-row h2{margin:0;}
+  .street-wallet{display:inline-flex; align-items:center; justify-content:center; min-height:36px; padding:6px 11px;
+    border:1px solid var(--panel-border); border-radius:999px; background:var(--panel-wash); color:var(--lc-green-deep);
+    font-size:13px; font-weight:800; white-space:nowrap;}
+  .street-stage{position:relative; width:100%; margin-top:8px;}
+  .street-scroll{width:100%; overflow-x:auto; overflow-y:hidden; border:2px solid var(--lc-brown); border-radius:14px;
+    box-shadow:0 3px 10px rgba(46,42,36,.22); scroll-snap-type:x mandatory; scrollbar-width:none;
+    overscroll-behavior-x:contain; background:var(--lc-cream);}
+  .street-scroll::-webkit-scrollbar{display:none;}
+  .street-world{position:relative; height:min(52vh,400px); min-height:180px; scroll-snap-align:start;}
+  #street-cv{display:block; width:100%; height:100%;}
+  #street-hit-layer{position:absolute; inset:0; pointer-events:none;}
+  .street-hit{position:absolute; z-index:2; min-width:44px; min-height:44px; padding:0; border-radius:50%;
+    transform:translate(-50%,-50%); pointer-events:auto; color:transparent; background:transparent; border:2px solid transparent;}
+  .street-hit:focus-visible{outline:3px solid var(--lc-sky); outline-offset:2px; background:rgba(255,255,255,.22);}
+  .street-hit.plot-hit{border:2px dashed rgba(46,102,86,.52); background:rgba(251,245,232,.26); color:var(--lc-ink);}
+  .street-hit.plot-hit.compatible{border-color:var(--lc-green); background:rgba(255,214,95,.30); animation:street-plot-pulse 1.1s ease-in-out infinite;}
+  .street-hit.plot-hit.incompatible{border-color:rgba(132,96,67,.32); background:rgba(46,42,36,.08);}
+  .street-hit.item-hit.selected{border-color:var(--lc-green); background:rgba(255,214,95,.22);}
+  @keyframes street-plot-pulse{50%{box-shadow:0 0 0 7px rgba(255,214,95,.16);}}
+  .street-page-btn{position:absolute; z-index:4; top:50%; transform:translateY(-50%); width:44px; height:52px; min-width:44px;
+    display:flex; align-items:center; justify-content:center; padding:0; border:1px solid rgba(132,96,67,.45);
+    border-radius:999px; background:rgba(251,245,232,.88); color:var(--lc-green-deep); font-size:24px; font-weight:900;
+    box-shadow:0 2px 7px rgba(46,42,36,.18); backdrop-filter:blur(3px);}
+  #street-prev{left:5px;} #street-next{right:5px;}
+  .street-page-btn:disabled{display:none;}
+  .street-pager{display:flex; justify-content:center; gap:7px; min-height:14px; margin-top:5px;}
+  .street-pager i{width:7px; height:7px; border-radius:50%; background:rgba(132,96,67,.28);}
+  .street-pager i.on{background:var(--lc-green);}
+  #street-caption{color:var(--lc-brown); font-size:12px; text-align:center; margin:2px 0 0; min-height:18px;}
+  .street-actions{width:100%; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin-top:6px;}
+  .street-actions[hidden]{display:none;}
+  .street-actions .sec-btn{min-height:44px; margin:0; padding:7px 6px; font-size:13px;}
+  .street-info{width:100%; margin-top:7px; padding:9px 12px; border:1px solid var(--panel-border); border-radius:12px;
+    background:var(--panel-wash); color:var(--ink); font-size:13px; line-height:1.35;}
+  .street-info b{color:var(--lc-green-deep);}
+  .street-editor{width:100%; margin-top:8px; padding:9px; border:1px solid var(--panel-border); border-radius:14px;
+    background:var(--panel-wash); box-shadow:0 2px 8px rgba(46,42,36,.10);}
+  .street-coach{margin:0 0 7px; padding:8px 10px; border-radius:10px; background:rgba(255,214,95,.25);
+    color:var(--lc-brown); font-size:13px; font-weight:700;}
+  .street-editor-tools{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px;}
+  .street-editor-tools .chip{padding:7px 5px; font-size:12px; min-height:44px;}
+  .street-inventory-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:9px;}
+  .street-inventory-head .sect{margin:0;}
+  .street-filters{display:flex; gap:4px;}
+  .street-filters .chip{min-height:36px; min-width:36px; padding:5px 8px; font-size:11px;}
+  .street-inventory{display:flex; gap:7px; overflow-x:auto; padding:7px 1px 3px; scroll-snap-type:x proximity;}
+  .street-inventory-item{position:relative; flex:0 0 92px; min-height:92px; padding:5px; border:2px solid transparent;
+    border-radius:12px; background:var(--lc-cream); color:var(--ink); scroll-snap-align:start;}
+  .street-inventory-item img{display:block; width:58px; height:58px; object-fit:contain; margin:0 auto;}
+  .street-inventory-item span{display:block; font-size:10px; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .street-inventory-item small{display:block; color:var(--muted); font-size:9px;}
+  .street-inventory-item.on{border-color:var(--lc-green); background:rgba(255,214,95,.20);}
+  .street-inventory-empty{padding:14px 6px; color:var(--muted); font-size:12px;}
+  .street-preview-panel{width:100%; margin-top:8px; padding:10px 12px; border:2px solid var(--lc-green); border-radius:14px;
+    background:var(--panel-wash); box-shadow:0 3px 10px rgba(46,42,36,.14);}
+  .street-preview-top{display:flex; align-items:flex-start; justify-content:space-between; gap:8px;}
+  .street-preview-copy{min-width:0;}
+  .street-preview-copy b{display:block; color:var(--lc-green-deep); font-size:16px;}
+  .street-preview-copy span{display:block; color:var(--muted); font-size:12px; line-height:1.35;}
+  .street-preview-close{width:44px; height:44px; min-width:44px; padding:0; border-radius:50%;}
+  .street-preview-tiers{display:flex; gap:6px; margin-top:8px;}
+  .street-preview-tiers .chip{flex:1; padding:6px; min-height:40px; font-size:12px;}
+  .street-preview-actions{display:grid; grid-template-columns:1fr 1.35fr; gap:7px; margin-top:8px;}
+  .street-preview-actions button{min-height:44px;}
+  .shop-street-focus{display:grid; gap:5px; margin:10px 0 4px; padding:10px 12px; border:2px solid var(--lc-green);
+    border-radius:14px; background:var(--panel-wash); color:var(--lc-green-deep);}
+  .shop-street-focus[hidden]{display:none;}
+  .shop-street-focus span{color:var(--muted); font-size:12px; line-height:1.35;}
+  .shop-street-focus .chip{justify-self:start; margin-top:3px;}
+  #s-shop.street-focus [data-shop-general]{display:none!important;}
+  @media (orientation:landscape) and (max-height:520px){
+    .street-world{height:min(66vh,330px); min-height:180px;}
+    .street-editor,.street-preview-panel{margin-top:6px;}
+  }
+  .visually-hidden{position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important;
+    overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important;}
+  @media (prefers-reduced-motion:reduce){
+    .street-scroll{scroll-behavior:auto;}
+    .street-hit.plot-hit.compatible{animation:none; box-shadow:0 0 0 4px rgba(255,214,95,.15);}
+  }
   /* Quest popup reuses .pause-overlay/.pause-panel (see #s-battle) — scoped to
      #s-street (position:relative above) so it doesn't cover the bottom nav. */
   .quest-popup-head{display:flex; align-items:center; justify-content:space-between; gap:10px;}
@@ -1371,10 +1446,65 @@
        0b1ee1e merge): the scene owns the reclaimed height, quests live behind
        a popup opened from the compact button below the caption. -->
   <div class="screen festive" id="s-street">
-    <h2 data-i18n="street.title">Lucky Cat Street</h2>
-    <canvas id="street-cv"></canvas>
-    <div id="street-caption"></div>
-    <button class="sec-btn street-quests-btn" id="street-quests-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span data-i18n="street.questsBtn">Quests</span></span></button>
+    <div class="street-title-row">
+      <h2 data-i18n="street.title">Lucky Cat Street</h2>
+      <span class="street-wallet" id="street-wallet">0 coins</span>
+    </div>
+    <div class="street-stage" id="street-stage">
+      <button class="street-page-btn" id="street-prev" data-i18n-title="street.previous" aria-label="Previous street section">‹</button>
+      <div class="street-scroll" id="street-scroll" tabindex="0" data-i18n-aria="street.sceneLabel" aria-label="Your Lucky Cat Street">
+        <div class="street-world" id="street-world">
+          <canvas id="street-cv"></canvas>
+          <div id="street-hit-layer"></div>
+        </div>
+      </div>
+      <button class="street-page-btn" id="street-next" data-i18n-title="street.nextSection" aria-label="Next street section">›</button>
+    </div>
+    <div class="street-pager" id="street-pager" aria-hidden="true"><i class="on"></i><i></i></div>
+    <div id="street-caption" aria-live="polite"></div>
+    <div class="street-info" id="street-info" hidden></div>
+    <div class="street-actions" id="street-actions">
+      <button class="sec-btn" id="street-decorate-btn" data-i18n="street.decorate">Decorate</button>
+      <button class="sec-btn" id="street-shop-btn" data-i18n="street.shop">Street Shop</button>
+      <button class="sec-btn" id="street-quests-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span data-i18n="street.questsBtn">Quests</span></span></button>
+    </div>
+
+    <div class="street-editor" id="street-editor" hidden>
+      <p class="street-coach" id="street-coach" hidden></p>
+      <div class="street-editor-tools">
+        <button class="chip" id="street-undo" data-i18n="street.undo">Undo</button>
+        <button class="chip" id="street-store" data-i18n="street.storeItem">Store</button>
+        <button class="chip" id="street-auto" data-i18n="street.autoArrange">Auto</button>
+        <button class="chip" id="street-cancel" data-i18n="common.cancel">Cancel</button>
+        <button class="chip buy-chip" id="street-done" data-i18n="common.done">Done</button>
+      </div>
+      <div class="street-inventory-head">
+        <div class="sect" data-i18n="street.inventory">Inventory</div>
+        <div class="street-filters" id="street-filters">
+          <button class="chip on" data-street-filter="all" data-i18n="street.filterAll">All</button>
+          <button class="chip" data-street-filter="unplaced" data-i18n="street.filterStored">Stored</button>
+          <button class="chip" data-street-filter="placed" data-i18n="street.filterPlaced">Placed</button>
+        </div>
+      </div>
+      <div class="street-inventory" id="street-inventory" role="list"></div>
+    </div>
+
+    <div class="street-preview-panel" id="street-preview-panel" hidden>
+      <div class="street-preview-top">
+        <div class="street-preview-copy"><b id="street-preview-name"></b><span id="street-preview-desc"></span><span id="street-preview-meta"></span></div>
+        <button class="chip street-preview-close" id="street-preview-close" data-i18n-title="common.close" aria-label="Close">×</button>
+      </div>
+      <div class="street-preview-tiers" id="street-preview-tiers" aria-label="Preview tier">
+        <button class="chip on" data-preview-tier="1">★</button>
+        <button class="chip" data-preview-tier="2">★★</button>
+        <button class="chip" data-preview-tier="3">★★★</button>
+      </div>
+      <div class="street-preview-actions">
+        <button class="chip" id="street-preview-back" data-i18n="street.backToShop">Back to shop</button>
+        <button class="chip buy-chip" id="street-preview-buy"></button>
+      </div>
+    </div>
+    <div class="visually-hidden" id="street-sr-status" aria-live="polite"></div>
 
     <!-- Quest popup: reuses the pause-overlay/pause-panel convention
          (#pause-overlay in #s-battle) — #quest-panel is the SAME element
@@ -1687,29 +1817,34 @@
     <button class="back" id="shop-back" data-go="home" data-i18n="common.back">← Home</button>
     <h2 data-i18n="shop.title">Collection</h2>
     <div class="readout" id="shop-wallet"></div>
+    <div class="shop-street-focus" id="shop-street-focus" hidden>
+      <b data-i18n="shop.streetFocusTitle">Build your street</b>
+      <span data-i18n="shop.streetFocusNote">Preview every decoration in your own street before spending coins.</span>
+      <button class="chip" id="shop-view-street" data-i18n="shop.viewStreet">View my street</button>
+    </div>
     <!-- IAP (mock-provider v1): ships dark — unhidden by renderIapSections()
          only when the nbhsk.dev.iap flag is set. -->
-    <div class="sect" id="shop-coins-sect" data-i18n="shop.getCoins" hidden>Get Coins</div>
-    <div class="scorelist" id="shop-coins" hidden></div>
-    <div class="sect" id="shop-supporter-sect" data-i18n="shop.supporterTitle" hidden>Supporter</div>
-    <div class="scorelist" id="shop-supporter" hidden></div>
-    <div class="sect" data-i18n="shop.daily">Today's Stock</div>
-    <div class="scorelist" id="shop-daily"></div>
-    <p class="shop-note" id="shop-daily-note" data-i18n="shop.dailyNote">New stock at midnight</p>
-    <div class="sect" data-i18n="shop.season">Season Corner</div>
-    <div class="scorelist" id="shop-season"></div>
-    <p class="shop-note" id="shop-season-note"></p>
-    <div class="sect" data-i18n="shop.skins">Cat skins</div>
-    <div class="scorelist" id="shop-skins"></div>
-    <div class="sect" data-i18n="shop.backdrops">Quest backdrops</div>
-    <div class="scorelist" id="shop-backdrops"></div>
-    <div class="sect" data-i18n="shop.effects">Effects</div>
-    <div class="scorelist" id="shop-effects"></div>
-    <div class="sect" data-i18n="shop.sounds">Sounds</div>
-    <div class="scorelist" id="shop-sounds"></div>
-    <div class="sect" data-i18n="shop.supplies">Supplies</div>
-    <div class="scorelist" id="shop-supplies"></div>
-    <div class="sect" data-i18n="shop.street">Street decorations</div>
+    <div class="sect" id="shop-coins-sect" data-shop-general data-i18n="shop.getCoins" hidden>Get Coins</div>
+    <div class="scorelist" id="shop-coins" data-shop-general hidden></div>
+    <div class="sect" id="shop-supporter-sect" data-shop-general data-i18n="shop.supporterTitle" hidden>Supporter</div>
+    <div class="scorelist" id="shop-supporter" data-shop-general hidden></div>
+    <div class="sect" data-shop-general data-i18n="shop.daily">Today's Stock</div>
+    <div class="scorelist" id="shop-daily" data-shop-general></div>
+    <p class="shop-note" id="shop-daily-note" data-shop-general data-i18n="shop.dailyNote">New stock at midnight</p>
+    <div class="sect" data-shop-general data-i18n="shop.season">Season Corner</div>
+    <div class="scorelist" id="shop-season" data-shop-general></div>
+    <p class="shop-note" id="shop-season-note" data-shop-general></p>
+    <div class="sect" data-shop-general data-i18n="shop.skins">Cat skins</div>
+    <div class="scorelist" id="shop-skins" data-shop-general></div>
+    <div class="sect" data-shop-general data-i18n="shop.backdrops">Quest backdrops</div>
+    <div class="scorelist" id="shop-backdrops" data-shop-general></div>
+    <div class="sect" data-shop-general data-i18n="shop.effects">Effects</div>
+    <div class="scorelist" id="shop-effects" data-shop-general></div>
+    <div class="sect" data-shop-general data-i18n="shop.sounds">Sounds</div>
+    <div class="scorelist" id="shop-sounds" data-shop-general></div>
+    <div class="sect" data-shop-general data-i18n="shop.supplies">Supplies</div>
+    <div class="scorelist" id="shop-supplies" data-shop-general></div>
+    <div class="sect" id="shop-street-sect" data-i18n="shop.street">Street decorations</div>
     <div class="scorelist" id="shop-street"></div>
   </div>
 

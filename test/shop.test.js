@@ -20,7 +20,8 @@ describe("unownedDailyStock", () => {
 
 describe("shop", () => {
   it("defaultShop shape", () => {
-    expect(defaultShop()).toEqual({ owned: [], skin: "", backdrop: "", effect: "", soundpack: "", tiers: {} });
+    expect(defaultShop()).toEqual({ owned: [], skin: "", backdrop: "", effect: "", soundpack: "", tiers: {},
+      streetLayout: { v: 2, placements: {}, welcomeOwned: false, coachDone: false } });
   });
 
   it("canAfford true/false by wallet", () => {

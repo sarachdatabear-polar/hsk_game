@@ -8,6 +8,7 @@ Finished and superseded docs move to [`archive/`](archive/README.md) (run
 `superpowers/` and intentionally keep their original in-text paths.
 
 ## 📋 `prd/` — Product requirements (what to build)
+- [PRD-street-v2.md](prd/PRD-street-v2.md) — proposed player-authored panoramic Street redesign; plot editor, in-context shop preview, safe inventory, item reactions, migration/sync, and phased rollout
 - [PRD-v5-visual-retention.md](prd/PRD-v5-visual-retention.md) — shipped 2026-07-07 (phases 1–5); stays live because §8 is the standing v-next roadmap (question types, HSK 3.0, social)
 - [PRD-monetization-and-production.md](prd/PRD-monetization-and-production.md) — store launch + monetization roadmap; local dark foundations/provider are ready, live operations pending
 
