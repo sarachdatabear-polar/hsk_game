@@ -6,8 +6,8 @@
   "status_values": ["planned", "concept", "review", "approved", "integrated", "rejected"],
   "types": ["sprite-sheet", "character", "background", "ui-surface", "icon-sprite", "effect", "decor"],
   "assets": [
-    { "id": "cat-walk", "file": "cat-walk.png", "type": "sprite-sheet", "status": "integrated", "priority": "P0", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat" },
-    { "id": "cat-happy", "file": "cat-happy.png", "type": "sprite-sheet", "status": "integrated", "priority": "P0", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat" },
+    { "id": "cat-walk", "file": "cat-walk.png", "type": "sprite-sheet", "status": "integrated", "priority": "P0", "w": 1536, "h": 256, "frames": 6, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat", "note": "scarf-free default mascot; no red garment overlay baked into frames" },
+    { "id": "cat-happy", "file": "cat-happy.png", "type": "sprite-sheet", "status": "integrated", "priority": "P0", "w": 1024, "h": 256, "frames": 4, "frameWidth": 256, "frameHeight": 256, "anchor": "bottom-center", "fallback": "canvas:drawCat", "note": "scarf-free default mascot; no red garment overlay baked into frames" },
     { "id": "cat-study", "file": "cat-study.png", "type": "character", "status": "integrated", "priority": "P0", "w": 512, "h": 512, "anchor": "center", "fallback": "canvas:drawCat" },
     { "id": "cat-guide", "file": "cat-guide.png", "type": "character", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "center", "fallback": "canvas:drawCat" },
     { "id": "cat-celebrate", "file": "cat-celebrate.png", "type": "character", "status": "integrated", "priority": "P1", "w": 512, "h": 512, "anchor": "center", "fallback": "canvas:drawCat" },
