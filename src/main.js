@@ -3838,7 +3838,7 @@ function previewScene(){
   return { owned, layout, tiers };
 }
 function plotGroundY(plot, h, gy){
-  const laneY = plot.lane === "back" ? .82 : plot.lane === "mid" ? .91 : 1;
+  const laneY = plot.lane === "back" ? .66 : plot.lane === "mid" ? .83 : 1;
   return gy - h * (1 - laneY);
 }
 function validStreetPlotIds(selected, layout, preview=false){
@@ -3980,21 +3980,13 @@ function renderStreetHitLayer(pieces, layout, w, h, gy, m){
     layer.appendChild(btn);
   }
 }
-function updateStreetPager(){
-  const scroll = $("#street-scroll"), max = Math.max(0, scroll.scrollWidth-scroll.clientWidth);
-  const right = max ? scroll.scrollLeft/max : 0;
-  $("#street-prev").disabled = right < .08;
-  $("#street-next").disabled = right > .92 || !max;
-  $("#street-pager").innerHTML = max ? `<i class="${right<.5?"on":""}"></i><i class="${right>=.5?"on":""}"></i>` : `<i class="on"></i>`;
-}
 function drawStreetSceneBackground(c,w,h){
   const selected=shopState.backdrop ? sprite("bg-"+shopState.backdrop) : null;
   const img=selected||sprite("bg-street");
   if(img){
-    // Bottom-align a gentle zoom: the road and owned objects gain visual
-    // priority while some of the unused upper sky is cropped away.
-    const zoom=selected?1.06:1.12;
-    drawCoverImage(c,img,-w*(zoom-1)/2,-h*(zoom-1),w*zoom,h*zoom);
+    // A single diorama window naturally crops the wide theme around its road
+    // center; no additional zoom is needed and no off-screen half exists.
+    drawCoverImage(c,img,0,0,w,h);
   }else{
     paintStreetBase(c,w,h);
   }
@@ -4015,44 +4007,65 @@ function residentActivityTargets(pieces){
 }
 function drawStreetResidentActivity(c,activity,x,gy,s,now,facing){
   if(!activity) return;
-  const bob=Math.sin(now/260)*2;
+  const sway=Math.sin(now/320);
+  const floor=gy-2;
+  const r=Math.max(3,s*.11);
   c.save();
   c.lineCap="round"; c.lineJoin="round";
   if(activity==="water"){
-    c.globalAlpha=.7; c.strokeStyle="#5DAADD"; c.lineWidth=2;
-    for(const k of [.25,.42]){
-      c.beginPath(); c.ellipse(x+facing*s*.28,gy-2,s*k,s*.08,0,0,Math.PI*2); c.stroke();
+    c.globalAlpha=.72; c.strokeStyle="#5DAADD"; c.lineWidth=1.6;
+    for(const k of [.18,.31]){
+      c.beginPath(); c.ellipse(x,floor,s*k,s*.045,0,0,Math.PI*2); c.stroke();
     }
     c.restore(); return;
   }
-  const bx=x+facing*s*.43, by=gy-s*.9+bob, r=s*.2;
-  c.globalAlpha=.94; c.fillStyle="rgba(251,245,232,.9)"; c.strokeStyle="rgba(132,96,67,.62)"; c.lineWidth=1.5;
-  c.beginPath(); c.arc(bx,by,r,0,Math.PI*2); c.fill(); c.stroke();
-  c.globalAlpha=1;
   if(activity==="build"){
+    // A tiny real prop at the blueprint's feet replaces the old face-level
+    // thought bubble. The slow rocking reads as playful helping.
+    c.save(); c.translate(x,floor-s*.08); c.rotate(facing*(-.62+sway*.08));
     c.strokeStyle="#846043"; c.lineWidth=Math.max(2,s*.045);
-    c.beginPath(); c.moveTo(bx-r*.42,by+r*.42); c.lineTo(bx+r*.32,by-r*.32); c.stroke();
-    c.fillStyle="#F2BC57"; roundRectOn(c,bx+r*.12,by-r*.58,r*.65,r*.32,r*.08); c.fill();
+    c.beginPath(); c.moveTo(0,0); c.lineTo(0,-s*.28); c.stroke();
+    c.fillStyle="#F2BC57";
+    roundRectOn(c,-s*.12,-s*.36,s*.24,s*.12,s*.035); c.fill();
+    c.restore();
+    c.globalAlpha=.45; c.fillStyle="#FBF5E8";
+    for(const dx of [-.18,.17]){
+      c.beginPath(); c.arc(x+s*dx,floor,s*.055,0,Math.PI*2); c.fill();
+    }
   }else if(activity==="food"){
-    c.fillStyle="#E69777"; c.beginPath(); c.arc(bx,by+r*.12,r*.56,0,Math.PI); c.fill();
-    c.strokeStyle="#846043"; c.lineWidth=1.4;
-    for(const dx of [-.24,.16]){ c.beginPath(); c.moveTo(bx+r*dx,by-r*.05); c.quadraticCurveTo(bx+r*(dx-.2),by-r*.45,bx+r*(dx+.04),by-r*.66); c.stroke(); }
+    c.fillStyle="#E69777";
+    c.beginPath(); c.ellipse(x,floor-s*.04,s*.18,s*.065,0,0,Math.PI*2); c.fill();
+    c.strokeStyle="#846043"; c.lineWidth=1.2;
+    c.beginPath(); c.moveTo(x-s*.18,floor-s*.05); c.quadraticCurveTo(x,floor+s*.11,x+s*.18,floor-s*.05); c.stroke();
+    c.globalAlpha=.55;
+    for(const dx of [-.07,.07]){
+      c.beginPath(); c.moveTo(x+s*dx,floor-s*.14);
+      c.quadraticCurveTo(x+s*(dx-.05),floor-s*(.26+sway*.015),x+s*dx,floor-s*.34); c.stroke();
+    }
   }else if(activity==="rest"){
-    c.fillStyle="#2E6656"; c.font=`900 ${Math.max(10,Math.round(r*.95))}px ${LATIN_STACK}`;
-    c.textAlign="center"; c.textBaseline="middle"; c.fillText("Z",bx,by);
+    // A small flower at home keeps the pause expressive without floating text.
+    c.strokeStyle="#2E6656"; c.lineWidth=1.5;
+    c.beginPath(); c.moveTo(x,floor); c.quadraticCurveTo(x+s*.03,floor-s*.16,x+s*.01,floor-s*.27); c.stroke();
+    c.fillStyle="#F2BC57";
+    for(let i=0;i<5;i++){
+      const a=i*Math.PI*2/5;
+      c.beginPath(); c.arc(x+Math.cos(a)*r*.7,floor-s*.29+Math.sin(a)*r*.7,r*.46,0,Math.PI*2); c.fill();
+    }
+    c.fillStyle="#846043"; c.beginPath(); c.arc(x,floor-s*.29,r*.35,0,Math.PI*2); c.fill();
   }else if(activity==="flutter"){
     c.fillStyle="#E69777";
-    c.beginPath(); c.ellipse(bx-r*.2,by,r*.28,r*.14,-.5,0,Math.PI*2); c.fill();
-    c.beginPath(); c.ellipse(bx+r*.22,by-r*.15,r*.28,r*.14,.45,0,Math.PI*2); c.fill();
+    c.beginPath(); c.ellipse(x-s*.09,floor-s*(.18+sway*.025),r*.72,r*.34,-.55,0,Math.PI*2); c.fill();
+    c.beginPath(); c.ellipse(x+s*.10,floor-s*(.29-sway*.025),r*.68,r*.32,.5,0,Math.PI*2); c.fill();
   }else if(activity==="light"){
-    const glow=c.createRadialGradient(bx,by,1,bx,by,r*.9);
+    const glow=c.createRadialGradient(x,floor,1,x,floor,s*.28);
     glow.addColorStop(0,"rgba(255,214,95,.96)"); glow.addColorStop(1,"rgba(255,214,95,0)");
-    c.fillStyle=glow; c.beginPath(); c.arc(bx,by,r*.9,0,Math.PI*2); c.fill();
-    c.fillStyle="#F2BC57"; drawStarMark(c,bx,by,r*.42);
+    c.fillStyle=glow; c.beginPath(); c.ellipse(x,floor,s*.28,s*.08,0,0,Math.PI*2); c.fill();
+    c.fillStyle="#F2BC57";
+    drawStarMark(c,x+s*.12,floor-s*(.22+sway*.02),r*.55);
   }else{
     c.fillStyle=activity==="celebrate"?"#F2BC57":"#E69777";
-    for(const [dx,dy,k] of [[0,-.2,.42],[-.45,.25,.24],[.45,.2,.26]])
-      drawStarMark(c,bx+r*dx,by+r*dy,r*k);
+    for(const [dx,dy,k] of [[0,-.25,.58],[-.16,-.12,.38],[.17,-.1,.4]])
+      drawStarMark(c,x+s*dx,floor+s*dy,r*k);
   }
   c.restore();
 }
@@ -4065,21 +4078,25 @@ function drawStreetResidentFrame(now,reducedMotion=false){
   const pose=streetResidentPose(now,route,reducedMotion);
   const x=pose.x*w, groundY=gy+4;
   const scale=Math.max(.86,Math.min(1.08,m.unit/50));
+  // The Street resident uses the same authored sheets as Battle, but plays
+  // them more slowly so the walk reads as a small toddle rather than a run.
+  const catTime=now*.68;
+  const activityX=Number.isFinite(pose.activityX)?pose.activityX*w:x;
+  drawStreetResidentActivity(c,pose.activity,activityX,groundY,CONTENT_H*scale,now,pose.facing);
   drawContactShadow(c,x,groundY,CONTENT_H*scale*.82);
   const allAccessories=accessoriesFor(levelForXp(xp));
   const accessories=allAccessories.filter(id=>id!=="kitten");
   c.save();
   if(pose.facing<0){ c.translate(x,0); c.scale(-1,1); c.translate(-x,0); }
-  drawCat(c,x,groundY,now,pose.state,SKIN_PALETTES[shopState.skin],scale,accessories,false);
+  drawCat(c,x,groundY,catTime,pose.state,SKIN_PALETTES[shopState.skin],scale,accessories,false);
   c.restore();
   if(allAccessories.includes("kitten")){
     const kittenX=x-pose.facing*CONTENT_H*scale*.64;
     c.save();
     if(pose.facing<0){ c.translate(kittenX,0); c.scale(-1,1); c.translate(-kittenX,0); }
-    drawCat(c,kittenX,groundY+1,now+180,pose.state,SKIN_PALETTES[shopState.skin],scale*.48,[],false);
+    drawCat(c,kittenX,groundY+1,catTime+180,pose.state,SKIN_PALETTES[shopState.skin],scale*.48,[],false);
     c.restore();
   }
-  drawStreetResidentActivity(c,pose.activity,x,groundY,CONTENT_H*scale,now,pose.facing);
 }
 function streetResidentLoop(now){
   streetResidentRaf=0;
@@ -4119,7 +4136,9 @@ function renderStreet(){
   const sc = scv.getContext("2d");
   sc.setTransform(dpr,0,0,dpr,0,0); sc.clearRect(0,0,w,h);
   drawStreetSceneBackground(sc,w,h);
-  const gy=h-10, preview=previewScene();
+  // Keep the authored front ground comfortably inside the diorama so feet,
+  // props, shadows, and the editor's 44px plot targets are never clipped.
+  const gy=h-24, preview=previewScene();
   const owned=preview?.owned || shopState.owned;
   const layout=preview?.layout || liveStreetLayout();
   const tiers=preview?.tiers || shopState.tiers || {};
@@ -4161,7 +4180,6 @@ function renderStreet(){
     if(performance.now()-streetReveal.start>900) streetReveal=null;
     else requestAnimationFrame(()=>{ if(currentScreen==="street") renderStreet(); else streetReveal=null; });
   }
-  requestAnimationFrame(updateStreetPager);
 }
 function streetDraftApply(next, messageKey, vars){
   if(!streetEdit || sameStreetLayout(next, streetEdit.layout)){
@@ -4461,9 +4479,9 @@ function renderStreetPreviewPanel(){
 function scrollStreetToPlot(plotId){
   const plot=STREET_PLOTS.find(p=>p.id===plotId); if(!plot) return;
   requestAnimationFrame(()=>{
-    const scroll=$("#street-scroll"), world=$("#street-world");
-    const left=Math.max(0,Math.min(scroll.scrollWidth-scroll.clientWidth,plot.x*world.clientWidth-scroll.clientWidth/2));
-    scroll.scrollTo({left,behavior:REDUCED_MOTION?"auto":"smooth"});
+    $("#street-stage")?.scrollIntoView({
+      block:"nearest", behavior:REDUCED_MOTION?"auto":"smooth",
+    });
   });
 }
 function openStreetShop(){
@@ -4484,9 +4502,6 @@ $("#street-filters").onclick=e=>{const btn=e.target.closest("[data-street-filter
 $("#street-preview-close").onclick=closeStreetPreview;
 $("#street-preview-back").onclick=closeStreetPreview;
 $("#street-preview-project").onclick=selectStreetProjectFromPreview;
-$("#street-prev").onclick=()=>$("#street-scroll").scrollTo({left:0,behavior:REDUCED_MOTION?"auto":"smooth"});
-$("#street-next").onclick=()=>$("#street-scroll").scrollTo({left:$("#street-scroll").scrollWidth,behavior:REDUCED_MOTION?"auto":"smooth"});
-$("#street-scroll").addEventListener("scroll",updateStreetPager,{passive:true});
 window.addEventListener("resize",()=>{if(currentScreen==="street")requestAnimationFrame(renderStreet);});
 function paintStreetBase(c, w, h){
   // Warm-daylight village street: cream/sky gradient, soft green hills, sun

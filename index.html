@@ -309,10 +309,8 @@
   #journey-list .j-play{
     display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2;
     overflow:hidden; overflow-wrap:anywhere;}
-  /* Lucky Cat Street v2 — a panoramic, player-authored world. Canvas paints
-     the scene; the absolutely-positioned DOM layer supplies accessible item
-     and plot controls. Narrow phones see two horizontally snapped sections;
-     landscape naturally fits the whole 2:1 world. */
+  /* Lucky Cat Street v2 — a compact player-authored diorama. Canvas paints
+     one complete scene; the DOM layer supplies accessible item/plot controls. */
   #s-street{position:relative; justify-content:flex-start;}
   .street-title-row{width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px;}
   .street-title-row h2{margin:0;}
@@ -320,11 +318,9 @@
     border:1px solid var(--panel-border); border-radius:999px; background:var(--panel-wash); color:var(--lc-green-deep);
     font-size:13px; font-weight:800; white-space:nowrap;}
   .street-stage{position:relative; width:100%; margin-top:8px;}
-  .street-scroll{width:100%; overflow-x:auto; overflow-y:hidden; border:2px solid var(--lc-brown); border-radius:14px;
-    box-shadow:0 3px 10px rgba(46,42,36,.22); scroll-snap-type:x mandatory; scrollbar-width:none;
-    overscroll-behavior-x:contain; background:var(--lc-cream);}
-  .street-scroll::-webkit-scrollbar{display:none;}
-  .street-world{position:relative; height:min(52vh,400px); min-height:180px; scroll-snap-align:start;}
+  .street-scroll{width:100%; overflow:hidden; border:2px solid var(--lc-brown); border-radius:14px;
+    box-shadow:0 3px 10px rgba(46,42,36,.22); background:var(--lc-cream);}
+  .street-world{position:relative; height:clamp(230px,42vh,340px);}
   #street-cv{display:block; width:100%; height:100%;}
   #street-resident-cv{position:absolute; z-index:1; inset:0; display:block; width:100%; height:100%; pointer-events:none;}
   #street-hit-layer{position:absolute; inset:0; pointer-events:none;}
@@ -336,16 +332,7 @@
   .street-hit.plot-hit.incompatible{border-color:rgba(132,96,67,.32); background:rgba(46,42,36,.08);}
   .street-hit.item-hit.selected{border-color:var(--lc-green); background:rgba(255,214,95,.22);}
   @keyframes street-plot-pulse{50%{box-shadow:0 0 0 7px rgba(255,214,95,.16);}}
-  .street-page-btn{position:absolute; z-index:4; top:50%; transform:translateY(-50%); width:44px; height:52px; min-width:44px;
-    display:flex; align-items:center; justify-content:center; padding:0; border:1px solid rgba(132,96,67,.45);
-    border-radius:999px; background:rgba(251,245,232,.88); color:var(--lc-green-deep); font-size:24px; font-weight:900;
-    box-shadow:0 2px 7px rgba(46,42,36,.18); backdrop-filter:blur(3px);}
-  #street-prev{left:5px;} #street-next{right:5px;}
-  .street-page-btn:disabled{display:none;}
-  .street-pager{display:flex; justify-content:center; gap:7px; min-height:14px; margin-top:5px;}
-  .street-pager i{width:7px; height:7px; border-radius:50%; background:rgba(132,96,67,.28);}
-  .street-pager i.on{background:var(--lc-green);}
-  #street-caption{color:var(--lc-brown); font-size:12px; text-align:center; margin:2px 0 0; min-height:18px;}
+  #street-caption{color:var(--lc-brown); font-size:12px; text-align:center; margin:5px 0 0; min-height:18px;}
   .street-actions{width:100%; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin-top:6px;}
   .street-actions[hidden]{display:none;}
   .street-actions .sec-btn{min-height:44px; margin:0; padding:7px 6px; font-size:13px;}
@@ -407,13 +394,12 @@
   .shop-street-focus .chip{justify-self:start; margin-top:3px;}
   #s-shop.street-focus [data-shop-general]{display:none!important;}
   @media (orientation:landscape) and (max-height:520px){
-    .street-world{height:min(66vh,330px); min-height:180px;}
+    .street-world{height:clamp(190px,58vh,260px);}
     .street-editor,.street-preview-panel{margin-top:6px;}
   }
   .visually-hidden{position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important;
     overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important;}
   @media (prefers-reduced-motion:reduce){
-    .street-scroll{scroll-behavior:auto;}
     .street-hit.plot-hit.compatible{animation:none; box-shadow:0 0 0 4px rgba(255,214,95,.15);}
   }
   /* Quest popup reuses .pause-overlay/.pause-panel (see #s-battle) — scoped to
@@ -1502,7 +1488,6 @@
       <button class="sec-btn" id="street-quests-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span data-i18n="street.questsBtn">Quests</span></span></button>
     </div>
     <div class="street-stage" id="street-stage">
-      <button class="street-page-btn" id="street-prev" data-i18n-title="street.previous" aria-label="Previous street section">‹</button>
       <div class="street-scroll" id="street-scroll" tabindex="0" data-i18n-aria="street.sceneLabel" aria-label="Your Lucky Cat Street">
         <div class="street-world" id="street-world">
           <canvas id="street-cv"></canvas>
@@ -1510,9 +1495,7 @@
           <div id="street-hit-layer"></div>
         </div>
       </div>
-      <button class="street-page-btn" id="street-next" data-i18n-title="street.nextSection" aria-label="Next street section">›</button>
     </div>
-    <div class="street-pager" id="street-pager" aria-hidden="true"><i class="on"></i><i></i></div>
     <div id="street-caption" aria-live="polite"></div>
     <div class="street-info" id="street-info" hidden></div>
     <section class="street-project" id="street-project" aria-labelledby="street-project-name" hidden>

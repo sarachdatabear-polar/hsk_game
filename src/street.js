@@ -76,39 +76,39 @@ export const DECO_SPRITE_SCALE = 1.5;
 export const UNIT_FRAC = 0.105;
 // laneY = the piece's ground line as a fraction of street height (1.0 is the
 // front ground line main.js draws on); laneScale shrinks pieces with
-// distance. Buildings keep their historical 0.86 row between back and mid.
+// distance. The wider lane gaps keep the compact one-screen editor tappable.
 export const LANES = {
-  back:  { laneY: 0.82, laneScale: 0.72 },
-  mid:   { laneY: 0.91, laneScale: 0.86 },
+  back:  { laneY: 0.66, laneScale: 0.68 },
+  mid:   { laneY: 0.83, laneScale: 0.84 },
   front: { laneY: 1.0,  laneScale: 1.0  },
 };
 
-// Street v2 panoramic plot grid. Plot positions are normalized to the entire
-// logical 2:1 world, not the visible phone viewport. Exact-size plots leave a
-// little intentional breathing room: the 15 catalog items + Welcome Lantern
-// occupy 16 of 18 homes when auto-arranged.
+// Street v2 plot ids remain stable for saved layouts, but their coordinates
+// form a compact three-depth diorama that fits one viewport. Exact-size plots
+// leave a little breathing room: the 15 catalog items + Welcome Lantern occupy
+// 16 of 18 homes when auto-arranged.
 export const STREET_PLOTS = [
-  // back lane: gates and the largest silhouettes sit behind the landmarks
-  { id: "plot-large-01",   x: 0.07, lane: "back", size: "large" },
-  { id: "plot-gateway-01", x: 0.24, lane: "back", size: "gateway" },
-  { id: "plot-large-02",   x: 0.47, lane: "back", size: "large" },
-  { id: "plot-small-01",   x: 0.60, lane: "back", size: "small" },
-  { id: "plot-gateway-02", x: 0.76, lane: "back", size: "gateway" },
-  { id: "plot-large-03",   x: 0.93, lane: "back", size: "large" },
+  // Back lane: large silhouettes and gateways frame the distant road.
+  { id: "plot-large-01",   x: 0.08, lane: "back", size: "large" },
+  { id: "plot-gateway-01", x: 0.25, lane: "back", size: "gateway" },
+  { id: "plot-large-02",   x: 0.42, lane: "back", size: "large" },
+  { id: "plot-small-01",   x: 0.58, lane: "back", size: "small" },
+  { id: "plot-gateway-02", x: 0.75, lane: "back", size: "gateway" },
+  { id: "plot-large-03",   x: 0.92, lane: "back", size: "large" },
   // middle lane
-  { id: "plot-large-04",   x: 0.08, lane: "mid", size: "large" },
-  { id: "plot-medium-01",  x: 0.25, lane: "mid", size: "medium" },
-  { id: "plot-medium-02",  x: 0.42, lane: "mid", size: "medium" },
-  { id: "plot-medium-03",  x: 0.60, lane: "mid", size: "medium" },
-  { id: "plot-medium-04",  x: 0.76, lane: "mid", size: "medium" },
+  { id: "plot-large-04",   x: 0.07, lane: "mid", size: "large" },
+  { id: "plot-medium-01",  x: 0.23, lane: "mid", size: "medium" },
+  { id: "plot-medium-02",  x: 0.39, lane: "mid", size: "medium" },
+  { id: "plot-medium-03",  x: 0.56, lane: "mid", size: "medium" },
+  { id: "plot-medium-04",  x: 0.73, lane: "mid", size: "medium" },
   { id: "plot-large-05",   x: 0.92, lane: "mid", size: "large" },
-  // front lane begins clear of the pinned mascot at far left
-  { id: "plot-medium-05",  x: 0.18, lane: "front", size: "medium" },
-  { id: "plot-medium-06",  x: 0.39, lane: "front", size: "medium" },
-  { id: "plot-small-02",   x: 0.52, lane: "front", size: "small" },
-  { id: "plot-small-03",   x: 0.64, lane: "front", size: "small" },
-  { id: "plot-small-04",   x: 0.78, lane: "front", size: "small" },
-  { id: "plot-small-05",   x: 0.92, lane: "front", size: "small" },
+  // Front lane is staggered so its touch targets remain distinct from mid.
+  { id: "plot-medium-05",  x: 0.12, lane: "front", size: "medium" },
+  { id: "plot-medium-06",  x: 0.29, lane: "front", size: "medium" },
+  { id: "plot-small-02",   x: 0.45, lane: "front", size: "small" },
+  { id: "plot-small-03",   x: 0.59, lane: "front", size: "small" },
+  { id: "plot-small-04",   x: 0.75, lane: "front", size: "small" },
+  { id: "plot-small-05",   x: 0.91, lane: "front", size: "small" },
 ];
 
 export const STREET_LAYOUT_VERSION = 2;
@@ -276,7 +276,9 @@ export function streetPieces(level, owned, tiers = {}, layout = null) {
   const pieces = [];
   const buildingSlots = layout ? [.10, .30, .50, .70, .90] : BUILDING_SLOTS;
   BUILDINGS.forEach((b, i) => {
-    if (level >= b.lv) pieces.push({ id: b.id, kind: "building", slot: buildingSlots[i], laneY: 0.86 });
+    if (level >= b.lv) pieces.push({
+      id: b.id, kind: "building", slot: buildingSlots[i], laneY: layout ? 0.74 : 0.86,
+    });
   });
   if (layout) {
     const l = normalizeStreetLayout(layout, owned);
@@ -321,19 +323,18 @@ export function streetMetrics(w, h) {
   return { unit, backY, frontY, backScale };
 }
 
-// Logical panoramic world. Portrait phones see roughly half at once; landscape
-// and desktop naturally show more. Keeping the height as the scale source makes
-// object size stable while the available horizontal composition grows.
+// Compact one-screen world. Width always matches the viewport, while the
+// smaller width-derived unit keeps all authored homes readable without
+// horizontal navigation.
 export function streetWorldMetrics(viewportW, h) {
   const vw = Math.max(1, Number(viewportW) || 1);
   const vh = Math.max(1, Number(h) || 1);
-  const worldW = Math.max(vw, Math.min(1024, vh * 2));
   return {
-    worldW,
-    unit: Math.min(vh * 0.28, worldW * 0.065),
-    sections: worldW > vw + 1 ? 2 : 1,
-    backY: 0.86,
+    worldW: vw,
+    unit: Math.min(vh * 0.22, vw * 0.085),
+    sections: 1,
+    backY: 0.74,
     frontY: 1,
-    backScale: 0.78,
+    backScale: 0.70,
   };
 }
