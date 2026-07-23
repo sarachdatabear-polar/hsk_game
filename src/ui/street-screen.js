@@ -154,6 +154,19 @@ export function createStreetScreen({
   function liveStreetLayout(){
     return normalizeStreetLayout(streetEdit?.layout || getShopState().streetLayout || defaultStreetLayout(), getShopState().owned);
   }
+  // Task 10: persists through the same store-save + dirty path placements
+  // and grantCompletedSets use (setShopState -> store.set("shop",...) ->
+  // pushEdge). normalizeStreetLayout enforces the trim + 24-char cap
+  // (street.js normName) — this does not re-implement that.
+  function setStreetName(raw){
+    const layout = ensureStreetLayout();
+    const next = normalizeStreetLayout({ ...layout, name: raw }, getShopState().owned);
+    if(sameStreetLayout(layout, next)) return;
+    setShopState({ ...getShopState(), streetLayout: next });
+    store.set("shop", getShopState());
+    pushEdge("hide");
+    renderStreet();
+  }
   function announceStreet(key, vars){
     const message = t(key, vars);
     $("#street-sr-status").textContent = "";
@@ -547,6 +560,7 @@ export function createStreetScreen({
     const stored=unplacedStreetItems(getShopState().owned,layout).length;
     $("#street-caption").textContent=streetPreview ? t("street.previewCaption")
       : streetEdit ? t("street.editCaption",{placed,stored})
+      : layout.name ? t("street.namedCaption",{name:layout.name})
       : placed===0 ? t("street.captionReady",{buildings:prog.unlocked})
       : t("street.captionSummary",{placed,stored,buildings:prog.unlocked});
     if(streetReveal && owned.includes(streetReveal.id)){
@@ -762,6 +776,10 @@ export function createStreetScreen({
         ? t("results.projectProgress",{earned,remaining:progress.remaining.toLocaleString()})
         : t("results.projectNoGain",{remaining:progress.remaining.toLocaleString()});
     }
+    const streetName=liveStreetLayout().name;
+    $("#r-project-title").textContent=streetName
+      ? t("street.namedCaption",{name:streetName})+" · "+t("results.projectTitle")
+      : t("results.projectTitle");
     $("#r-project-name").textContent=streetItemLabel(target.item.id);
     $("#r-project-status").textContent=status;
     const icon=$("#r-project-icon");
@@ -971,6 +989,24 @@ export function createStreetScreen({
   $("#street-preview-close").onclick=closeStreetPreview;
   $("#street-preview-back").onclick=closeStreetPreview;
   $("#street-preview-project").onclick=selectStreetProjectFromPreview;
+  // Task 10: name-your-street inline edit, mirroring main.js's #profile-name
+  // row/form toggle (progress screen) — the existing text-edit pattern in
+  // this codebase. No modal dialog; openDialog/closeDialog are for the
+  // overlay-style dialogs (collection, pause), not this inline form.
+  const streetNameRow=$("#street-caption-row"), streetNameForm=$("#street-name-form");
+  const streetNameInput=$("#street-name-input");
+  streetNameRow.hidden=false; streetNameForm.hidden=true;
+  $("#street-name-edit").onclick=()=>{
+    streetNameInput.value=liveStreetLayout().name;
+    streetNameRow.hidden=true; streetNameForm.hidden=false;
+    streetNameInput.focus(); streetNameInput.select();
+  };
+  $("#street-name-cancel").onclick=()=>{ streetNameForm.hidden=true; streetNameRow.hidden=false; };
+  streetNameForm.onsubmit=e=>{
+    e.preventDefault();
+    setStreetName(streetNameInput.value);
+    streetNameForm.hidden=true; streetNameRow.hidden=false;
+  };
   window.addEventListener("resize",()=>{if(getCurrentScreen()==="street")requestAnimationFrame(renderStreet);});
   function paintStreetBase(c, w, h){
     // Warm-daylight village street: cream/sky gradient, soft green hills, sun

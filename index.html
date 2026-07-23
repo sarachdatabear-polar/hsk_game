@@ -335,9 +335,14 @@
   .street-hit.plot-hit.incompatible{border-color:rgba(132,96,67,.32); background:rgba(46,42,36,.08);}
   .street-hit.item-hit.selected{border-color:var(--lc-green); background:rgba(255,214,95,.22);}
   @keyframes street-plot-pulse{50%{box-shadow:0 0 0 7px rgba(255,214,95,.16);}}
-  #street-caption{width:100%; max-width:430px; min-height:36px; margin:7px auto 0; padding:7px 10px;
+  .street-caption-row{width:100%; max-width:430px; display:flex; align-items:stretch; gap:6px; margin:7px auto 0;}
+  #street-caption{flex:1 1 auto; width:auto; min-height:36px; margin:0; padding:7px 10px;
     border:1px solid var(--panel-border); border-radius:11px; background:var(--panel-wash);
     color:var(--lc-brown); font-size:12px; line-height:1.35; text-align:center;}
+  .street-name-edit-btn{flex:0 0 auto; min-width:36px; min-height:36px; padding:6px; border-radius:10px;
+    border:1px solid var(--panel-border); background:var(--panel-wash); color:var(--lc-green);
+    display:inline-flex; align-items:center; justify-content:center; cursor:pointer;}
+  .street-caption-row + .profile-name-form{max-width:430px; margin:6px auto 0;}
   .street-actions{width:100%; display:grid; grid-template-columns:1.2fr 1fr 1fr 1fr; gap:7px; margin-top:6px;}
   .street-actions[hidden]{display:none;}
   .street-actions .sec-btn{min-height:44px; margin:0; padding:7px 4px; font-size:12px;}
@@ -1434,8 +1439,9 @@
     #s-street .street-actions{margin-top:4px;}
     #s-street .street-stage{max-width:340px; margin-top:5px;}
     #s-street .street-world{min-height:0; aspect-ratio:2/1;}
-    #s-street #street-caption{max-width:340px; min-height:26px; margin-top:4px; padding:4px 8px;
-      font-size:10.5px; line-height:1.2;}
+    #s-street .street-caption-row{max-width:340px; margin-top:4px;}
+    #s-street .street-caption-row + .profile-name-form{max-width:340px;}
+    #s-street #street-caption{min-height:26px; padding:4px 8px; font-size:10.5px; line-height:1.2;}
   }
 </style>
 </head>
@@ -1547,7 +1553,15 @@
         </div>
       </div>
     </div>
-    <div id="street-caption" aria-live="polite"></div>
+    <div class="street-caption-row" id="street-caption-row">
+      <div id="street-caption" aria-live="polite"></div>
+      <button class="street-name-edit-btn" id="street-name-edit" type="button" data-i18n-aria="street.nameEdit" data-i18n-title="street.nameEdit" aria-label="Name your street"><svg class="asset-icon"><use href="assets/ui-icons.svg#pencil"></use></svg></button>
+    </div>
+    <form class="profile-name-form" id="street-name-form" hidden>
+      <input class="account-input" id="street-name-input" data-i18n-ph="street.namePlaceholder" data-i18n-title="street.namePlaceholder" aria-label="Street name" placeholder="e.g. Sunny Lane">
+      <button class="big" type="submit" data-i18n="profile.saveName">Save</button>
+      <button class="big" id="street-name-cancel" type="button" data-i18n="profile.cancelName">Cancel</button>
+    </form>
     <div class="street-info" id="street-info" hidden></div>
     <section class="street-project" id="street-project" aria-labelledby="street-project-name" hidden>
       <div class="street-project-copy">
@@ -1815,7 +1829,7 @@
     <section class="results-project" id="r-project" aria-labelledby="r-project-name" hidden>
       <img class="results-project-icon" id="r-project-icon" alt="">
       <div class="results-project-copy">
-        <small data-i18n="results.projectTitle">Next street build</small>
+        <small id="r-project-title" data-i18n="results.projectTitle">Next street build</small>
         <b id="r-project-name"></b>
         <span id="r-project-status"></span>
       </div>
