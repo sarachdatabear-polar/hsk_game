@@ -133,7 +133,7 @@ export const STRINGS = {
     "street.size.medium": "Medium",
     "street.size.large": "Large",
     "street.size.gateway": "Gateway",
-    "street.set.market": "Market",
+    "street.set.market": "Night Market",
     "street.set.garden": "Garden",
     "street.set.festival": "Festival",
     "street.set.welcome": "Welcome",
@@ -179,6 +179,7 @@ export const STRINGS = {
     "street.buildNow": "Build now",
     "street.projectSelectedAnnouncement": "{name} is now your next Street build.",
     "street.projectBlueprintLabel": "{name} project blueprint, {pct}% of price reached",
+    "street.setComplete": "{set} complete ✨",
     "quests.title": "Daily Quests",
     // scope
     "scope.title": "Choose your words",
@@ -674,7 +675,7 @@ export const STRINGS = {
     "street.size.medium": "กลาง",
     "street.size.large": "ใหญ่",
     "street.size.gateway": "ซุ้มประตู",
-    "street.set.market": "ตลาด",
+    "street.set.market": "ตลาดกลางคืน",
     "street.set.garden": "สวน",
     "street.set.festival": "เทศกาล",
     "street.set.welcome": "ต้อนรับ",
@@ -720,6 +721,7 @@ export const STRINGS = {
     "street.buildNow": "สร้างเลย",
     "street.projectSelectedAnnouncement": "ตั้ง{name}เป็นสิ่งที่จะสร้างบนถนนต่อไปแล้ว",
     "street.projectBlueprintLabel": "พิมพ์เขียวโปรเจกต์{name} ถึง {pct}% ของราคา",
+    "street.setComplete": "{set} ครบชุดแล้ว ✨",
     "quests.title": "เควสต์ประจำวัน",
     // scope
     "scope.title": "เลือกคำศัพท์",

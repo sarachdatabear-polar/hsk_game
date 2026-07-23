@@ -31,8 +31,10 @@ import {
   normalizeStreetLayout, compatibleStreetPlots, firstFreeStreetPlot,
   unplacedStreetItems,
   placeStreetItem, storeStreetItem, autoArrangeStreet, migrateLegacyStreet,
-  streetMeta, streetClass,
+  streetMeta, streetClass, STREET_LAYOUT_VERSION,
 } from "../street.js";
+import { newlyCompletedSets, completedSets } from "../street-collection.js";
+import { makeKeepsake, addKeepsake } from "../street-keepsakes.js";
 
 export function createStreetScreen({
   $, store, analytics, show, renderShop, pushEdge, updateWalletChip, todayStr, tOr,
@@ -44,6 +46,51 @@ export function createStreetScreen({
   let streetPreview = null;    // temporary shop preview projected into the scene
   let streetShopMode = false;  // focused decoration catalog opened from Street
   let streetReaction = null;   // lightweight tap reaction, never persisted
+  let streetBannerTimer = 0;   // one-shot "set complete" banner, never persisted
+  // Mirrors main.js's own #toast-pop element/CSS (index.html .toast-pop) —
+  // reused rather than duplicated so main.js stays untouched (its seam here
+  // is the deps object, and a banner isn't part of it). Two independent
+  // timers targeting the same element is fine: main.js's toast() and this
+  // one behave the same way it already documents — a later call just
+  // replaces whatever is showing.
+  function streetToast(msg){
+    clearTimeout(streetBannerTimer);
+    let el = document.getElementById("toast-pop");
+    if(!el){
+      el = document.createElement("div");
+      el.id = "toast-pop";
+      el.className = "toast-pop";
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    requestAnimationFrame(() => el.classList.add("show"));
+    streetBannerTimer = setTimeout(() => { el.classList.remove("show"); }, 2600);
+  }
+  // Grants exactly one "set" keepsake per newly-completed collectible set,
+  // persisted through the same store-save path placements use (setShopState
+  // -> store.set("shop",...) -> pushEdge, which marks the "shop" sync key
+  // dirty). Called after a successful deco purchase, with the post-purchase
+  // owned list. The keepsake's optional `word` is intentionally omitted:
+  // deps exposes no mastered-word accessor, and the brief forbids plumbing
+  // new learning/SRS coupling into this cosmetic-only module just to get one.
+  function grantCompletedSets(ownedAfterPurchase){
+    const layout = ensureStreetLayout();
+    const fresh = newlyCompletedSets(ownedAfterPurchase, layout.setsCompleted);
+    if(!fresh.length) return;
+    let keepsakes = layout.keepsakes, setsCompleted = layout.setsCompleted;
+    for(const setId of fresh){
+      keepsakes = addKeepsake(keepsakes, makeKeepsake("set", todayStr(), { set: setId }));
+      setsCompleted = [...setsCompleted, setId];
+    }
+    const granted = normalizeStreetLayout({ ...layout, keepsakes, setsCompleted }, ownedAfterPurchase);
+    setShopState({ ...getShopState(), streetLayout: granted });
+    store.set("shop", getShopState());
+    pushEdge("purchase");
+    // An item belongs to exactly one collectible set (street.js DECO_META),
+    // so a single purchase can complete at most one set: fresh.length is
+    // always <= 1 here, hence no banner queue is needed.
+    streetToast(t("street.setComplete", { set: t("street.set." + fresh[0]) }));
+  }
 
   /* ============================== Lucky Cat Street (home) ============================== */
   // Construction moment (scene composer): the most recent deco purchase/upgrade
@@ -87,7 +134,15 @@ export function createStreetScreen({
   function ensureStreetLayout(){
     const prior = getShopState().streetLayout;
     const welcomeOwned = !!prior?.welcomeOwned || hasStreetLearningProgress();
-    let next = prior?.v === 2
+    // Bug fix (found while wiring Task 8's persistence check): this compared
+    // prior.v against a literal 2, stale since the v3 streetLayout bump
+    // (keepsakes/setsCompleted/name/savedLayouts/lastVisitDay). Every already-
+    // v3 layout (i.e. essentially every real session) tripped the `else`
+    // and ran migrateLegacyStreet — which rebuilds placements from scratch
+    // and drops keepsakes/setsCompleted/name/savedLayouts back to defaults —
+    // on every call. Comparing against the live constant (as merge.js and
+    // migrations.js already do) fixes it for this and any future bump.
+    let next = prior?.v === STREET_LAYOUT_VERSION
       ? normalizeStreetLayout({ ...prior, welcomeOwned }, getShopState().owned)
       : migrateLegacyStreet(getShopState().owned, { welcomeOwned });
     if(!sameStreetLayout(prior, next)){
@@ -453,6 +508,7 @@ export function createStreetScreen({
     const layout=preview?.layout || liveStreetLayout();
     const tiers=preview?.tiers || getShopState().tiers || {};
     const pieces=streetPieces(levelForXp(getXp()),owned,tiers,layout);
+    const completeSetIds=new Set(completedSets(owned));
     const project=!streetEdit&&!streetPreview ? activeStreetProject(getWallet(),layout) : null;
     if(streetEdit || streetPreview) drawStreetPlotGrid(sc,w,h,gy,m,layout);
     if(streetReveal && !streetReveal.start && owned.includes(streetReveal.id)) streetReveal.start=performance.now();
@@ -463,7 +519,13 @@ export function createStreetScreen({
         drawStreetLandmark(sc,p.id,x,py,du);
       }else{
         const pop=revealPopScale(p.id), du=m.unit*(p.scale||1)*pop;
-        drawStreetBehavior(sc,p,x,py,du); drawContactShadow(sc,x,py,du); drawTieredDeco(sc,p,x,py,du);
+        drawStreetBehavior(sc,p,x,py,du);
+        // Completed-set glow: layer the existing celebrate FX on top of a
+        // piece's own behavior (never replace it — a lantern still glows
+        // "light", it just also sparkles) when its set is fully owned. Reuses
+        // drawStreetBehavior's own celebrate branch; no new draw code.
+        if(streetMeta(p.id) && completeSetIds.has(streetMeta(p.id).set)) drawStreetBehavior(sc,{...p,behavior:"celebrate"},x,py,du);
+        drawContactShadow(sc,x,py,du); drawTieredDeco(sc,p,x,py,du);
         if(p.id===WELCOME_ID) drawWelcomeAccent(sc,x,py,du);
         if(streetReveal?.id===p.id && streetReveal.start) drawRevealDust(sc,x,py,du);
       }
@@ -763,6 +825,7 @@ export function createStreetScreen({
     if(wasProject&&!wasOwned) analytics.track("street_project_complete",{item_id:item.id,source});
     streetReveal={id:item.id,start:0};
     if(!wasOwned){
+      grantCompletedSets(getShopState().owned);
       streetPreview=null; openStreetEditor(item.id,false,plotId);
       announceStreet("street.purchaseAnnouncement",{name:streetItemLabel(item.id)});
     }else{
