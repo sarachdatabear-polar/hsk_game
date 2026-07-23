@@ -4,6 +4,7 @@ import { BUILDINGS, DECO_IDS, DECO_SPRITE_SCALE, UNIT_FRAC, streetPieces, street
          LANDMARK_SCALE,
          WELCOME_ID, DECO_META, STREET_PLOTS, defaultStreetLayout,
          normalizeStreetLayout, itemFitsPlot, streetOwnedIds, compatibleStreetPlots,
+         firstFreeStreetPlot,
          unplacedStreetItems, placeStreetItem, storeStreetItem, autoArrangeStreet,
          migrateLegacyStreet, streetWorldMetrics } from "../src/street.js";
 import { MILESTONES } from "../src/growth.js";
@@ -335,6 +336,34 @@ describe("street v2 authored layout", () => {
     expect(compatibleStreetPlots("red-lantern", l).some(p => p.id === "plot-small-02")).toBe(true);
     expect(compatibleStreetPlots("red-lantern", l, { includeOccupied: false })
       .some(p => p.id === "plot-small-02")).toBe(false);
+  });
+
+  it("firstFreeStreetPlot returns a free compatible plot when one is open", () => {
+    const l = defaultStreetLayout();
+    const plotId = firstFreeStreetPlot("red-lantern", l);
+    expect(plotId).not.toBeNull();
+    expect(itemFitsPlot("red-lantern", plotId)).toBe(true);
+    expect(l.placements[plotId]).toBeUndefined();
+  });
+
+  it("firstFreeStreetPlot returns null once every compatible plot is occupied", () => {
+    // "large" items only fit the 5 "large" plots (gateway/large/medium/small
+    // plots all outrank them except gateway, which large items can't use) —
+    // far fewer plots to fill than a "small" item, which fits everywhere
+    // non-gateway. Fillers just need to fit a large plot (rank <= large).
+    const largePlots = STREET_PLOTS.filter(p => p.size === "large").map(p => p.id);
+    const fillers = ["red-lantern", "paper-umbrella", "goldfish-banner", "foo-dog", "koi-pond"];
+    expect(fillers).toHaveLength(largePlots.length);
+    let l = defaultStreetLayout();
+    largePlots.forEach((plotId, i) => {
+      l = placeStreetItem(l, fillers, fillers[i], plotId);
+    });
+    expect(largePlots.every(id => Object.keys(l.placements).includes(id))).toBe(true);
+    expect(firstFreeStreetPlot("drum-tower", l)).toBeNull();
+  });
+
+  it("firstFreeStreetPlot returns null for an item that fits no plot", () => {
+    expect(firstFreeStreetPlot("no-such-item", defaultStreetLayout())).toBeNull();
   });
 
   it("auto-arranges all 15 catalog items plus Welcome exactly once with room left", () => {

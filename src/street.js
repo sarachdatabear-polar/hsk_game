@@ -174,6 +174,16 @@ export function compatibleStreetPlots(itemId, layout, { includeOccupied = true }
   return STREET_PLOTS.filter(p => itemFitsPlot(itemId, p) && (includeOccupied || !occupied[p.id]));
 }
 
+// First FREE compatible plot for itemId, or null when every compatible plot
+// is occupied (or the item fits no plot at all). Exact-size plots are
+// preferred over merely-compatible larger ones, mirroring autoArrangeStreet's
+// placement preference. Callers use this to decide Buy & Place vs. Buy to
+// Inventory: null means the item can only land in inventory right now.
+export function firstFreeStreetPlot(itemId, layout) {
+  const free = compatibleStreetPlots(itemId, layout, { includeOccupied: false });
+  return free.find(p => p.size === streetClass(itemId))?.id || free[0]?.id || null;
+}
+
 export function unplacedStreetItems(ownedIds, layout) {
   const l = normalizeStreetLayout(layout, ownedIds);
   const placed = new Set(Object.values(l.placements));

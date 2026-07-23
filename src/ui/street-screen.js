@@ -28,7 +28,8 @@ import {
 import {
   WELCOME_ID, STREET_PLOTS, streetPieces, streetProgress,
   streetWorldMetrics, DECO_SPRITE_SCALE, defaultStreetLayout,
-  normalizeStreetLayout, compatibleStreetPlots, unplacedStreetItems,
+  normalizeStreetLayout, compatibleStreetPlots, firstFreeStreetPlot,
+  unplacedStreetItems,
   placeStreetItem, storeStreetItem, autoArrangeStreet, migrateLegacyStreet,
   streetMeta, streetClass,
 } from "../street.js";
@@ -745,14 +746,24 @@ export function createStreetScreen({
     const wasOwned=getShopState().owned.includes(item.id);
     const wasProject=getShopState().streetProject?.itemId===item.id;
     const source=streetPreview.source||"street_preview";
+    // Purchase is atomic (wallet + ownership together, below); placement is a
+    // separate, best-effort follow-up. Honor the plot the player highlighted
+    // in preview when it's actually free; otherwise fall back to the first
+    // free compatible plot; otherwise place nothing (Buy to Inventory). Never
+    // target an occupied plot.
+    const layoutForPurchase=ensureStreetLayout();
+    const chosenPlot=streetPreview.plotId;
+    const freeCompatible=wasOwned ? [] : compatibleStreetPlots(item.id,layoutForPurchase,{includeOccupied:false});
+    const plotId=wasOwned ? null
+      : (chosenPlot && freeCompatible.some(p=>p.id===chosenPlot) ? chosenPlot : firstFreeStreetPlot(item.id,layoutForPurchase));
     const r=buy(getWallet(),getShopState(),item.id,todayStr());
     if(!r.ok){ announceStreet("street.notEnough"); return; }
     setWallet(r.wallet); setShopState(r.shop); store.set("wallet",getWallet()); store.set("shop",getShopState()); pushEdge("purchase"); updateWalletChip();
-    analytics.track("street_purchase",{item_id:item.id,source,placed_immediately:!wasOwned});
+    analytics.track("street_purchase",{item_id:item.id,source,placed_immediately:!wasOwned&&!!plotId});
     if(wasProject&&!wasOwned) analytics.track("street_project_complete",{item_id:item.id,source});
     streetReveal={id:item.id,start:0};
     if(!wasOwned){
-      const plotId=streetPreview.plotId; streetPreview=null; ensureStreetLayout(); openStreetEditor(item.id,false,plotId);
+      streetPreview=null; openStreetEditor(item.id,false,plotId);
       announceStreet("street.purchaseAnnouncement",{name:streetItemLabel(item.id)});
     }else{
       streetPreview.tier=(getShopState().tiers||{})[item.id]||1; renderStreet();
@@ -780,8 +791,19 @@ export function createStreetScreen({
     projectBtn.disabled=isProject;
     projectBtn.textContent=t(isProject?"street.currentProject":"street.makeProject");
     projectBtn.onclick=selectStreetProjectFromPreview;
-    if(!owned){ buyBtn.textContent=t("street.buyAndPlace",{coins:item.price.toLocaleString()}); buyBtn.disabled=getWallet()<item.price; buyBtn.onclick=buyStreetPreview; }
-    else if(tier<item.maxTier){
+    const hint=$("#street-preview-hint");
+    hint.hidden=true;
+    if(!owned){
+      // Buy & Place vs. Buy to Inventory hinges on whether a compatible plot
+      // is actually free right now — never the occupied fallback used for
+      // preview positioning (that one just visualizes a swap-in-place).
+      const hasFreePlot=!!firstFreeStreetPlot(item.id,liveStreetLayout());
+      buyBtn.textContent=hasFreePlot
+        ? t("street.buyAndPlace",{coins:item.price.toLocaleString()})
+        : t("street.buyToInventory",{coins:item.price.toLocaleString()});
+      buyBtn.disabled=getWallet()<item.price; buyBtn.onclick=buyStreetPreview;
+      if(!hasFreePlot){ hint.hidden=false; hint.textContent=t("street.buyToInventoryHint"); }
+    }else if(tier<item.maxTier){
       const price=upgradePrice(item,tier); buyBtn.textContent=t("shop.upgrade",{stars:"★".repeat(tier+1),coins:price.toLocaleString()}); buyBtn.disabled=getWallet()<price; buyBtn.onclick=buyStreetPreview;
     }else{
       buyBtn.textContent=t("street.placeIt"); buyBtn.disabled=false; buyBtn.onclick=()=>{const id=streetPreview.itemId,plot=streetPreview.plotId;streetPreview=null;openStreetEditor(id,false,plot);};
