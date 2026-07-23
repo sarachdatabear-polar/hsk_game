@@ -6,6 +6,13 @@ export const STREET_RESIDENT_CYCLE_MS = 32000;
 
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, Number(n) || 0));
 
+// Street uses the Battle sprite sheets, but the resident is the focal
+// character of a much shorter 2:1 diorama. Give its painted content a stable
+// 67–82px height instead of inheriting Battle's smaller garnish-like scale.
+export function streetResidentScale(unit) {
+  return clamp((Number(unit) || 0) / 38, 1.05, 1.28);
+}
+
 function normalizedTarget(target, fallbackActivity) {
   if (!target || !Number.isFinite(Number(target.x))) return null;
   const rawX = clamp(target.x, .04, .96);

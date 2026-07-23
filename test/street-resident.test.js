@@ -1,7 +1,17 @@
 import { describe, it, expect } from "vitest";
 import {
   STREET_RESIDENT_CYCLE_MS, streetResidentPose, streetResidentRoute,
+  streetResidentScale,
 } from "../src/street-resident.js";
+
+describe("streetResidentScale", () => {
+  it("keeps the resident prominent across narrow and wide dioramas", () => {
+    expect(streetResidentScale(30)).toBe(1.05);
+    expect(streetResidentScale(38)).toBe(1.05);
+    expect(streetResidentScale(45)).toBeCloseTo(45 / 38, 5);
+    expect(streetResidentScale(100)).toBe(1.28);
+  });
+});
 
 describe("streetResidentRoute", () => {
   it("walks beside the active project first and a distant decoration second", () => {

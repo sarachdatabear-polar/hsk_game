@@ -32,7 +32,9 @@ import {
   makeStreetProject, normalizeStreetProject, remainingBucket,
   streetProjectProgress,
 } from "./street-project.js";
-import { streetResidentPose, streetResidentRoute } from "./street-resident.js";
+import {
+  streetResidentPose, streetResidentRoute, streetResidentScale,
+} from "./street-resident.js";
 import {
   WELCOME_ID, STREET_PLOTS, streetPieces, streetProgress,
   streetWorldMetrics, DECO_SPRITE_SCALE, defaultStreetLayout,
@@ -3919,11 +3921,18 @@ function drawStreetBehavior(c, p, x, py, du){
   }
   c.restore();
 }
-function drawWelcomeRibbon(c, x, py, du){
-  c.save(); c.translate(x, py-du*1.1); c.fillStyle = "#F2BC57"; c.strokeStyle = "#846043"; c.lineWidth = 1;
-  roundRectOn(c,-du*.37,-du*.12,du*.74,du*.24,du*.06); c.fill(); c.stroke();
-  c.fillStyle = "#2E2A24"; c.textAlign = "center"; c.textBaseline = "middle";
-  c.font = `800 ${Math.max(8,Math.round(du*.13))}px ${LATIN_STACK}`; c.fillText(t("street.welcomeRibbon"),0,0);
+function drawWelcomeAccent(c, x, py, du){
+  // Keep the earn-only lantern distinct without a face-level text rectangle
+  // that can visually merge with the resident as the cat walks past it.
+  c.save();
+  const glow=c.createRadialGradient(x,py-du*.82,1,x,py-du*.82,du*.46);
+  glow.addColorStop(0,"rgba(255,229,155,.68)");
+  glow.addColorStop(1,"rgba(255,229,155,0)");
+  c.fillStyle=glow;
+  c.beginPath(); c.arc(x,py-du*.82,du*.46,0,Math.PI*2); c.fill();
+  c.fillStyle="#F2BC57";
+  for(const [dx,dy,size] of [[0,-1.2,.085],[-.27,-.98,.045],[.27,-.96,.05]])
+    drawStarMark(c,x+du*dx,py+du*dy,du*size);
   c.restore();
 }
 function streetItemLabel(id){
@@ -4077,7 +4086,7 @@ function drawStreetResidentFrame(now,reducedMotion=false){
   c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,w,h);
   const pose=streetResidentPose(now,route,reducedMotion);
   const x=pose.x*w, groundY=gy+4;
-  const scale=Math.max(.86,Math.min(1.08,m.unit/50));
+  const scale=streetResidentScale(m.unit);
   // The Street resident uses the same authored sheets as Battle, but plays
   // them more slowly so the walk reads as a small toddle rather than a run.
   const catTime=now*.68;
@@ -4153,7 +4162,7 @@ function renderStreet(){
     }else{
       const pop=revealPopScale(p.id), du=m.unit*(p.scale||1)*pop;
       drawStreetBehavior(sc,p,x,py,du); drawContactShadow(sc,x,py,du); drawTieredDeco(sc,p,x,py,du);
-      if(p.id===WELCOME_ID) drawWelcomeRibbon(sc,x,py,du);
+      if(p.id===WELCOME_ID) drawWelcomeAccent(sc,x,py,du);
       if(streetReveal?.id===p.id && streetReveal.start) drawRevealDust(sc,x,py,du);
     }
   }
