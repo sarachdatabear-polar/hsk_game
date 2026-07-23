@@ -232,7 +232,7 @@ describe("scene composer", () => {
   });
 });
 
-describe("street v2 panoramic layout", () => {
+describe("street v2 authored layout", () => {
   const ALL = DECO_IDS.slice();
 
   it("every catalog deco and the Welcome Lantern have complete value metadata", () => {
@@ -366,9 +366,9 @@ describe("street v2 panoramic layout", () => {
     expect(welcome).toMatchObject({ plotId: "plot-small-02", behavior: "light", spriteId: "red-lantern" });
   });
 
-  it("panoramic metrics make portrait scrollable and landscape naturally whole", () => {
+  it("one-screen metrics fit portrait and landscape without horizontal sections", () => {
     const portrait = streetWorldMetrics(390, 400);
-    expect(portrait).toMatchObject({ worldW: 800, sections: 2 });
+    expect(portrait).toMatchObject({ worldW: 390, sections: 1 });
     expect(portrait.unit).toBeGreaterThan(0);
     const landscape = streetWorldMetrics(844, 390);
     expect(landscape.worldW).toBe(844);

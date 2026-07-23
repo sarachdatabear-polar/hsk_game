@@ -594,11 +594,17 @@ async function runStreetProjectProbe(browser) {
     .catch(() => {});
   const resident = await page.evaluate(() => {
     const canvas=document.querySelector("#street-resident-cv");
+    const scroll=document.querySelector("#street-scroll");
+    const world=document.querySelector("#street-world");
     return {
       canvasSized:!!canvas?.width && !!canvas?.height,
       themeDrawn:window.__resp.drawnAssets.includes("bg-market.png"),
       catDrawn:window.__resp.drawnAssets.some(name=>
         name==="cat-panda-walk.png" || name==="cat-panda-happy.png"),
+      oneScreen:!!scroll && !!world &&
+        scroll.scrollWidth<=scroll.clientWidth+1 &&
+        world.clientWidth<=scroll.clientWidth+1,
+      pagerRemoved:!document.querySelector("#street-prev, #street-next, #street-pager"),
     };
   });
   await page.locator("#street-shop-btn").click();
@@ -661,7 +667,8 @@ async function runStreetProjectProbe(browser) {
   });
 
   const failures = [];
-  if(!resident.canvasSized || !resident.themeDrawn || !resident.catDrawn)
+  if(!resident.canvasSized || !resident.themeDrawn || !resident.catDrawn ||
+      !resident.oneScreen || !resident.pagerRemoved)
     failures.push(`Street resident/theme unavailable=${JSON.stringify(resident)}`);
   if(!preview.active || !preview.visible || !preview.projectButton)
     failures.push(`project preview unavailable=${JSON.stringify(preview)}`);
