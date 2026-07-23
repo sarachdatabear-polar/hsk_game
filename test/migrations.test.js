@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { readVersion, runMigrations, assertSortedLadder, MIGRATIONS } from "../src/migrations.js";
+import { readVersion, runMigrations, assertSortedLadder, MIGRATIONS, CURRENT_SCHEMA_VERSION } from "../src/migrations.js";
 import { fakeStorage } from "./fixtures.js";
 
 describe("readVersion", () => {
@@ -87,5 +87,131 @@ describe("runMigrations", () => {
     const s = fakeStorage({ "nbhsk.schemaVersion": "1", "nbhsk.xp": "9" });
     expect(runMigrations(s, [], 2)).toBe(2);
     expect(s.dump()["nbhsk.schemaVersion"]).toBe("2");
+  });
+});
+
+describe("v1->v2 migration (street layout / streetProject)", () => {
+  it("legacy shop with no streetLayout + non-empty mastery migrates to a v2 layout with welcomeOwned: true", () => {
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "1",
+      "nbhsk.shop": JSON.stringify({ owned: ["red-lantern"] }),
+      "nbhsk.mastery": JSON.stringify({ "妈妈|1": 3 }),
+    });
+    const end = runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    expect(end).toBe(2);
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe("2");
+    const shop = JSON.parse(s.dump()["nbhsk.shop"]);
+    expect(shop.streetLayout.v).toBe(2);
+    expect(shop.streetLayout.welcomeOwned).toBe(true);
+    expect(typeof shop.streetLayout.placements).toBe("object");
+    expect(shop.streetProject).toEqual({ v: 1, itemId: "", plotId: "" });
+  });
+
+  it("empty mastery migrates to welcomeOwned: false", () => {
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "1",
+      "nbhsk.shop": JSON.stringify({ owned: [] }),
+      "nbhsk.mastery": JSON.stringify({}),
+    });
+    runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    const shop = JSON.parse(s.dump()["nbhsk.shop"]);
+    expect(shop.streetLayout.welcomeOwned).toBe(false);
+  });
+
+  it("missing mastery key also migrates to welcomeOwned: false", () => {
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "1",
+      "nbhsk.shop": JSON.stringify({ owned: [] }),
+    });
+    runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    const shop = JSON.parse(s.dump()["nbhsk.shop"]);
+    expect(shop.streetLayout.welcomeOwned).toBe(false);
+  });
+
+  it("corrupt nbhsk.shop JSON does not throw and still stamps version 2", () => {
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "1",
+      "nbhsk.shop": "{not valid json",
+      "nbhsk.mastery": JSON.stringify({ "妈妈|1": 3 }),
+    });
+    expect(() => runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION)).not.toThrow();
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe("2");
+    // corrupt shop payload is left untouched, not rewritten
+    expect(s.dump()["nbhsk.shop"]).toBe("{not valid json");
+  });
+
+  it("missing nbhsk.shop key does nothing but still stamps version 2", () => {
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "1",
+      "nbhsk.mastery": JSON.stringify({ "妈妈|1": 3 }),
+    });
+    expect(() => runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION)).not.toThrow();
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe("2");
+    expect(s.dump()["nbhsk.shop"]).toBeUndefined();
+  });
+
+  it("an existing v2 layout's placements survive untouched", () => {
+    const existingLayout = {
+      v: 2,
+      placements: { "plot-small-01": "red-lantern" },
+      welcomeOwned: false,
+      coachDone: true,
+    };
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "1",
+      "nbhsk.shop": JSON.stringify({ owned: ["red-lantern"], streetLayout: existingLayout }),
+      "nbhsk.mastery": JSON.stringify({}),
+    });
+    runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    const shop = JSON.parse(s.dump()["nbhsk.shop"]);
+    expect(shop.streetLayout.placements).toEqual({ "plot-small-01": "red-lantern" });
+    expect(shop.streetLayout.coachDone).toBe(true);
+  });
+
+  it("an existing v2 layout's welcomeOwned:true survives even with empty mastery", () => {
+    const existingLayout = { v: 2, placements: {}, welcomeOwned: true, coachDone: false };
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "1",
+      "nbhsk.shop": JSON.stringify({ owned: [], streetLayout: existingLayout }),
+      "nbhsk.mastery": JSON.stringify({}),
+    });
+    runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    const shop = JSON.parse(s.dump()["nbhsk.shop"]);
+    expect(shop.streetLayout.welcomeOwned).toBe(true);
+  });
+
+  it("existing streetProject is not clobbered", () => {
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "1",
+      "nbhsk.shop": JSON.stringify({
+        owned: [],
+        streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01" },
+      }),
+    });
+    runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    const shop = JSON.parse(s.dump()["nbhsk.shop"]);
+    expect(shop.streetProject).toEqual({ v: 1, itemId: "koi-pond", plotId: "plot-medium-01" });
+  });
+
+  it("genuine v0 legacy install (no schemaVersion stamp) runs the to:2 entry end-to-end", () => {
+    const s = fakeStorage({
+      "nbhsk.xp": "500",
+      "nbhsk.mastery": JSON.stringify({ "妈妈|1": 3 }),
+      "nbhsk.shop": JSON.stringify({ owned: ["red-lantern"] }),
+    });
+    expect(readVersion(s)).toBe(0);
+    const end = runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    expect(end).toBe(2);
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe("2");
+    const shop = JSON.parse(s.dump()["nbhsk.shop"]);
+    expect(shop.streetLayout.v).toBe(2);
+    expect(shop.streetLayout.welcomeOwned).toBe(true);
+  });
+
+  it("fresh install (no legacy sentinels) is a pure stamp; migration body never runs", () => {
+    const s = fakeStorage();
+    runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe("2");
+    expect(s.dump()["nbhsk.shop"]).toBeUndefined();
   });
 });
