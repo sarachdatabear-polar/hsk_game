@@ -351,6 +351,24 @@
   .street-info{width:100%; margin-top:7px; padding:9px 12px; border:1px solid var(--panel-border); border-radius:12px;
     background:var(--panel-wash); color:var(--ink); font-size:13px; line-height:1.35;}
   .street-info b{color:var(--lc-green-deep);}
+  .street-project{width:100%; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px 12px; align-items:center;
+    margin-top:7px; padding:10px 12px; border:2px solid var(--lc-teal); border-radius:14px;
+    background:linear-gradient(135deg,rgba(168,216,209,.36),rgba(251,245,232,.94));
+    box-shadow:0 3px 10px rgba(46,42,36,.12);}
+  .street-project[hidden]{display:none;}
+  .street-project-copy{min-width:0;}
+  .street-project-eyebrow{display:block; margin-bottom:1px; color:var(--lc-brown); font-size:10px; font-weight:900;
+    letter-spacing:.07em; text-transform:uppercase;}
+  .street-project-name{display:block; overflow:hidden; color:var(--lc-green-deep); font-size:16px; line-height:1.25;
+    text-overflow:ellipsis; white-space:nowrap;}
+  .street-project-status{display:block; margin-top:2px; color:var(--muted); font-size:12px; line-height:1.3;}
+  .street-project-actions{display:flex; gap:6px; align-items:center;}
+  .street-project-actions .chip{min-height:44px; padding:7px 10px;}
+  .project-meter{position:relative; grid-column:1/-1; width:100%; height:9px; overflow:hidden;
+    border:1px solid rgba(46,102,86,.34); border-radius:999px; background:rgba(46,42,36,.10);}
+  .project-meter > i{display:block; width:0; height:100%; border-radius:inherit;
+    background:linear-gradient(90deg,var(--lc-teal),var(--lc-green)); transition:width .45s ease-out;}
+  .project-meter.ready > i{background:linear-gradient(90deg,var(--lc-sun),#f2bc57);}
   .street-editor{width:100%; margin-top:8px; padding:9px; border:1px solid var(--panel-border); border-radius:14px;
     background:var(--panel-wash); box-shadow:0 2px 8px rgba(46,42,36,.10);}
   .street-coach{margin:0 0 7px; padding:8px 10px; border-radius:10px; background:rgba(255,214,95,.25);
@@ -380,6 +398,7 @@
   .street-preview-tiers .chip{flex:1; padding:6px; min-height:40px; font-size:12px;}
   .street-preview-actions{display:grid; grid-template-columns:1fr 1.35fr; gap:7px; margin-top:8px;}
   .street-preview-actions button{min-height:44px;}
+  #street-preview-project{grid-column:1/-1;}
   .shop-street-focus{display:grid; gap:5px; margin:10px 0 4px; padding:10px 12px; border:2px solid var(--lc-green);
     border-radius:14px; background:var(--panel-wash); color:var(--lc-green-deep);}
   .shop-street-focus[hidden]{display:none;}
@@ -862,9 +881,34 @@
     border-radius:14px; box-shadow:0 3px 8px rgba(46,42,36,.16);}
   .results-reward .bignum{font-size:34px; margin:0; color:var(--lc-brown);}
   .results-reward #r-wallet{width:100%; margin:-4px 0 0; font-size:12.5px;}
+  .results-project{display:grid; grid-template-columns:52px minmax(0,1fr) auto; grid-template-areas:
+    "icon copy action" "meter meter meter"; align-items:center; gap:8px 10px; margin:0 0 10px; padding:10px 12px;
+    border:2px solid var(--lc-teal); border-radius:14px;
+    background:linear-gradient(135deg,rgba(168,216,209,.42),rgba(251,245,232,.96));
+    box-shadow:0 3px 9px rgba(46,42,36,.12);}
+  .results-project[hidden]{display:none;}
+  .results-project-icon{grid-area:icon; width:52px; height:52px; object-fit:contain;
+    filter:drop-shadow(0 3px 4px rgba(46,42,36,.18));}
+  .results-project-copy{grid-area:copy; min-width:0;}
+  .results-project-copy small{display:block; color:var(--lc-brown); font-size:10px; font-weight:900;
+    letter-spacing:.06em; text-transform:uppercase;}
+  .results-project-copy b{display:block; overflow:hidden; color:var(--lc-green-deep); font-size:15px;
+    text-overflow:ellipsis; white-space:nowrap;}
+  .results-project-copy span{display:block; color:var(--muted); font-size:12px; line-height:1.3;}
+  .results-project .chip{grid-area:action; min-height:44px; padding:7px 10px;}
+  .results-project .project-meter{grid-area:meter;}
   .results-next-review{margin:10px 0 0; padding:9px 12px; text-align:center; color:var(--lc-green-deep);
     background:rgba(168,216,209,.42); border:1px solid var(--lc-teal); border-radius:12px; font-weight:800;}
   .sub{text-align:center; color:var(--muted); margin:0 0 14px;}
+  @media (max-width:390px){
+    .street-project{grid-template-columns:1fr;}
+    .street-project-actions{justify-content:stretch;}
+    .street-project-actions .chip{flex:1;}
+    .results-project{grid-template-columns:44px minmax(0,1fr); grid-template-areas:
+      "icon copy" "meter meter" "action action";}
+    .results-project-icon{width:44px; height:44px;}
+    .results-project .chip{width:100%;}
+  }
   .misslist{flex:1; overflow-y:auto; background-color:var(--panel-wash); border-radius:12px;
     border:1px solid var(--panel-border); padding:6px 12px; margin:10px 0; max-height:38vh;}
   .missrow{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid rgba(132,96,67,.22);}
@@ -1443,12 +1487,18 @@
   </div>
 
   <!-- STREET — quests reverted back out (2026-07-11 audit F2/F3, supersedes the
-       0b1ee1e merge): the scene owns the reclaimed height, quests live behind
-       a popup opened from the compact button below the caption. -->
+       0b1ee1e merge): quests live behind a popup. Keep the primary action row
+       above the scene so it remains tappable before scrolling on short
+       landscape phones instead of sitting beneath the sticky bottom nav. -->
   <div class="screen festive" id="s-street">
     <div class="street-title-row">
       <h2 data-i18n="street.title">Lucky Cat Street</h2>
       <span class="street-wallet" id="street-wallet">0 coins</span>
+    </div>
+    <div class="street-actions" id="street-actions">
+      <button class="sec-btn" id="street-decorate-btn" data-i18n="street.decorate">Decorate</button>
+      <button class="sec-btn" id="street-shop-btn" data-i18n="street.shop">Street Shop</button>
+      <button class="sec-btn" id="street-quests-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span data-i18n="street.questsBtn">Quests</span></span></button>
     </div>
     <div class="street-stage" id="street-stage">
       <button class="street-page-btn" id="street-prev" data-i18n-title="street.previous" aria-label="Previous street section">‹</button>
@@ -1463,11 +1513,18 @@
     <div class="street-pager" id="street-pager" aria-hidden="true"><i class="on"></i><i></i></div>
     <div id="street-caption" aria-live="polite"></div>
     <div class="street-info" id="street-info" hidden></div>
-    <div class="street-actions" id="street-actions">
-      <button class="sec-btn" id="street-decorate-btn" data-i18n="street.decorate">Decorate</button>
-      <button class="sec-btn" id="street-shop-btn" data-i18n="street.shop">Street Shop</button>
-      <button class="sec-btn" id="street-quests-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span data-i18n="street.questsBtn">Quests</span></span></button>
-    </div>
+    <section class="street-project" id="street-project" aria-labelledby="street-project-name" hidden>
+      <div class="street-project-copy">
+        <small class="street-project-eyebrow" data-i18n="street.projectEyebrow">Your next build</small>
+        <b class="street-project-name" id="street-project-name"></b>
+        <span class="street-project-status" id="street-project-status"></span>
+      </div>
+      <div class="street-project-actions">
+        <button class="chip" id="street-project-change" data-i18n="street.changeProject">Change</button>
+        <button class="chip buy-chip" id="street-project-build" data-i18n="street.buildNow">Build now</button>
+      </div>
+      <div class="project-meter" id="street-project-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i></i></div>
+    </section>
 
     <div class="street-editor" id="street-editor" hidden>
       <p class="street-coach" id="street-coach" hidden></p>
@@ -1500,6 +1557,7 @@
         <button class="chip" data-preview-tier="3">★★★</button>
       </div>
       <div class="street-preview-actions">
+        <button class="chip" id="street-preview-project" data-i18n="street.makeProject">Make this my project</button>
         <button class="chip" id="street-preview-back" data-i18n="street.backToShop">Back to shop</button>
         <button class="chip buy-chip" id="street-preview-buy"></button>
       </div>
@@ -1704,6 +1762,16 @@
       <div class="bignum" id="r-score"></div>
       <p class="sub" id="r-wallet" style="color:var(--lc-brown)"></p>
     </div>
+    <section class="results-project" id="r-project" aria-labelledby="r-project-name" hidden>
+      <img class="results-project-icon" id="r-project-icon" alt="">
+      <div class="results-project-copy">
+        <small data-i18n="results.projectTitle">Street Project</small>
+        <b id="r-project-name"></b>
+        <span id="r-project-status"></span>
+      </div>
+      <button class="chip buy-chip" id="r-project-action"></button>
+      <div class="project-meter" id="r-project-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i></i></div>
+    </section>
     <!-- A4/B2 slots: intro streak pointer (filled by endBattle on the intro
          round) and the sticker toast slot (activates in Phase 4 with stickers.js) -->
     <p class="sub" id="r-intro-hint" style="display:none"></p>

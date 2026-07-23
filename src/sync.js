@@ -4,7 +4,10 @@
 // notices. Pure data flow: cloud rows -> mergeAll -> store -> cloud rows.
 // `store` is injected ({get,set}) so node probes/tests can shim localStorage.
 import { getSession, fetchSyncRows, pushSyncRows, fetchLedgerSince, fetchLedgerOrder } from "./cloud.js";
-import { mergeAll, defaultSyncMeta, slotsOf, streetLayoutOf, shopPreferencesOf } from "./merge.js";
+import {
+  mergeAll, defaultSyncMeta, slotsOf, streetLayoutOf, streetProjectOf,
+  shopPreferencesOf,
+} from "./merge.js";
 
 export const MIN_SYNC_GAP_MS = 30000;
 
@@ -191,10 +194,17 @@ export async function reconcile(store, reason, now = Date.now(), expectedOrderId
     // undone by an old cloud row" for fresh installs.
     const slotsBaseline = meta.shopPreferences?.slots || meta.shopSlots || null;
     const layoutBaseline = meta.shopPreferences?.streetLayout || null;
+    const projectBaseline = meta.shopPreferences?.streetProject || null;
     const shopDirty = !!(meta.dirty && meta.dirty.shop) &&
       (!slotsBaseline || !eq(slotsOf(local.shop), slotsBaseline));
     const shopLayoutDirty = !!(meta.dirty && meta.dirty.shop) &&
       (!layoutBaseline || !eq(streetLayoutOf(local.shop), layoutBaseline));
+    // A missing project baseline is legacy metadata. Preserve a newly chosen
+    // active local goal, but do not make an empty default masquerade as a
+    // preference change and override a newer cloud choice.
+    const localProject = streetProjectOf(local.shop);
+    const shopProjectDirty = !!(meta.dirty && meta.dirty.shop) &&
+      (projectBaseline ? !eq(localProject, projectBaseline) : !!localProject.itemId);
     const today = localDateStr(now);
     // Both calls get `today` (not just the cloud-merged one): mergeAll's
     // stale-monthly settle is symmetric in local/cloud, so the baseline must
@@ -218,8 +228,8 @@ export async function reconcile(store, reason, now = Date.now(), expectedOrderId
       : freshCursor ? (expectedCredit ? expectedCredit.delta : 0)
       : unseen;
     const merged = mergeAll(local, localFromRows(rows.progress, rows.wallet),
-      { shopDirty, shopLayoutDirty, today, unseenPurchased: foldUnseen });
-    const baseline = mergeAll(local, null, { shopDirty, shopLayoutDirty, today });
+      { shopDirty, shopLayoutDirty, shopProjectDirty, today, unseenPurchased: foldUnseen });
+    const baseline = mergeAll(local, null, { shopDirty, shopLayoutDirty, shopProjectDirty, today });
     const changed = !eq(merged, baseline);
     // CURSOR ORDERING (THE FOLD): advance + persist meta.lastLedgerAt BEFORE
     // writing the merged keys to the store below. This file already has a

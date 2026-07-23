@@ -10,6 +10,7 @@
 //   node scripts/responsive-sweep.mjs           # full 10-viewport multi-screen sweep (EN)
 //   node scripts/responsive-sweep.mjs --locale=th    # same permanent gate in Thai
 //   node scripts/responsive-sweep.mjs --battle 390x844   # single-shot battle probe
+//   node scripts/responsive-sweep.mjs --street-project   # focused project loop probe
 //
 // Requires: npm i --no-save playwright-core, and Microsoft Edge installed
 // (uses channel:"msedge" so it doesn't need a separate browser download).
@@ -168,21 +169,30 @@ function probeNavReachable(tol) {
     : `out(top=${Math.round(r.top)},bottom=${Math.round(r.bottom)},ih=${window.innerHeight})`;
 }
 
-// street-quests-popup: 2026-07-11 audit F2/F3 reverted the Daily Quests merge
-// — the street screen now shows scene + caption + a compact "Quests" button,
-// and the daily-quest + monthly rows live behind a popup overlay
-// (#quest-overlay) that button opens. This snapshots the pre-click state
-// (button present, popup not already open) — the click/open/close sequence
-// itself is driven from runFullSweep since it needs real click events, not
-// just a DOM snapshot.
+// Street action reachability: snapshot all three primary controls, including
+// their center-point hit target and 44px floor. runFullSweep then drives real
+// pointer clicks through Decorate, focused Street Shop, and the Quests popup.
 function probeStreetScene() {
   const screen = document.querySelector("#s-street");
   const cv = document.querySelector("#street-cv");
   const r = cv?.getBoundingClientRect();
+  const actions = ["street-decorate-btn", "street-shop-btn", "street-quests-btn"]
+    .map(id => document.getElementById(id))
+    .map(button => {
+      if (!button) return { present: false, hit: false, width: 0, height: 0 };
+      const rect = button.getBoundingClientRect();
+      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return {
+        present: true,
+        hit: hit === button || button.contains(hit),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+      };
+    });
   return {
     active: screen?.classList.contains("on") ?? false,
     cvHeight: r ? Math.round(r.height) : 0,
-    btnPresent: !!document.querySelector("#street-quests-btn"),
+    actions,
     overlayOpenBeforeClick: document.querySelector("#quest-overlay")?.classList.contains("on") ?? false,
     paintedBgReady: window.__resp.spriteReady.includes("bg-street"),
     paintedBgDraws: window.__resp.streetBgDraws,
@@ -482,6 +492,9 @@ async function runResultsProbe(browser, width, height) {
     localStorage.setItem("nbhsk.scope", JSON.stringify({
       levels:[3], core:false, newOnly:false, topN:0, lang:"both", sessionLen:5,
     }));
+    localStorage.setItem("nbhsk.shop", JSON.stringify({
+      streetProject:{ v:1, itemId:"koi-pond", plotId:"plot-medium-01" },
+    }));
   });
   await page.reload({ waitUntil:"load" });
   await page.waitForTimeout(300);
@@ -528,6 +541,10 @@ async function runResultsProbe(browser, width, height) {
       learned:document.querySelector("#r-learned")?.textContent || "",
       nextVisible:document.querySelector("#r-next-review")?.offsetParent !== null,
       missedRows:document.querySelectorAll("#r-miss .missrow").length,
+      projectVisible:document.querySelector("#r-project")?.offsetParent !== null,
+      projectName:(document.querySelector("#r-project-name")?.textContent || "").trim(),
+      projectProgress:Number(document.querySelector("#r-project-meter")?.getAttribute("aria-valuenow") || 0),
+      projectAction:(document.querySelector("#r-project-action")?.textContent || "").trim(),
       small,
     };
   }, [TOL, MIN_TAP]);
@@ -539,6 +556,10 @@ async function runResultsProbe(browser, width, height) {
   if(!/5\s*\/\s*5/.test(info.learned)) failures.push(`results learned=${info.learned}`);
   if(!info.nextVisible) failures.push("results next-review hidden");
   if(info.missedRows < 1) failures.push("results missed-word recap absent");
+  if(!info.projectVisible) failures.push("results Street Project hidden");
+  if(!info.projectName) failures.push("results Street Project name empty");
+  if(info.projectProgress < 83) failures.push(`results Street Project progress=${info.projectProgress}`);
+  if(!info.projectAction) failures.push("results Street Project action empty");
   if(info.small.length) failures.push(`results small-taps:[${info.small}]`);
   if(errs.length) failures.push(`JSERR:${errs[0]}`);
 
@@ -547,6 +568,93 @@ async function runResultsProbe(browser, width, height) {
     ` misses=${info.missedRows}` + (failures.length ? ` | FAILURES: ${failures.join("; ")}` : "");
   await page.close();
   return { line, failed:failures.length > 0 };
+}
+
+// Street Project retention loop: use real pointer clicks from focused shop
+// preview -> choose goal -> see progress card -> change goal.
+async function runStreetProjectProbe(browser) {
+  const { page, errs } = await preparePage(browser, 390, 844);
+  await goToStreet(page);
+  await page.locator("#street-shop-btn").click();
+  await page.waitForTimeout(100);
+  await page.locator('.shoprow[data-item-id="koi-pond"] button').click();
+  await page.waitForTimeout(180);
+  const preview = await page.evaluate(() => ({
+    active:document.querySelector("#s-street")?.classList.contains("on") ?? false,
+    visible:document.querySelector("#street-preview-panel")?.offsetParent !== null,
+    projectButton:document.querySelector("#street-preview-project")?.offsetParent !== null,
+  }));
+  await page.locator("#street-preview-project").click();
+  await page.waitForTimeout(180);
+  const selected = await page.evaluate(() => {
+    const project=JSON.parse(localStorage.getItem("nbhsk.shop") || "{}").streetProject;
+    return {
+      project,
+      cardVisible:document.querySelector("#street-project")?.offsetParent !== null,
+      previewHidden:document.querySelector("#street-preview-panel")?.hidden ?? false,
+      name:(document.querySelector("#street-project-name")?.textContent || "").trim(),
+      pct:Number(document.querySelector("#street-project-meter")?.getAttribute("aria-valuenow") || 0),
+      buildDisabled:document.querySelector("#street-project-build")?.disabled ?? false,
+    };
+  });
+  await page.locator("#street-project-change").click();
+  await page.waitForTimeout(120);
+  const changeOpenedShop = await page.evaluate(() =>
+    document.querySelector("#s-shop")?.classList.contains("on") &&
+    document.querySelector("#s-shop")?.classList.contains("street-focus"));
+  // Exact-price ready path: replace the goal, enter Build Now, verify Back
+  // stays on Street, then complete the real Buy & Place flow.
+  await page.locator('.shoprow[data-item-id="golden-arch"] button').click();
+  await page.waitForTimeout(120);
+  await page.locator("#street-preview-project").click();
+  await page.waitForTimeout(120);
+  const ready = await page.evaluate(() => ({
+    pct:Number(document.querySelector("#street-project-meter")?.getAttribute("aria-valuenow") || 0),
+    buildDisabled:document.querySelector("#street-project-build")?.disabled ?? true,
+  }));
+  await page.locator("#street-project-build").click();
+  await page.waitForTimeout(120);
+  await page.locator("#street-preview-back").click();
+  await page.waitForTimeout(120);
+  const backStayedOnStreet = await page.evaluate(() =>
+    document.querySelector("#s-street")?.classList.contains("on") &&
+    document.querySelector("#street-project")?.offsetParent !== null &&
+    document.querySelector("#street-preview-panel")?.hidden);
+  await page.locator("#street-project-build").click();
+  await page.waitForTimeout(120);
+  await page.locator("#street-preview-buy").click();
+  await page.waitForTimeout(180);
+  const completed = await page.evaluate(() => {
+    const shop=JSON.parse(localStorage.getItem("nbhsk.shop") || "{}");
+    return {
+      owned:shop.owned?.includes("golden-arch") ?? false,
+      projectCleared:!shop.streetProject?.itemId,
+      editorVisible:document.querySelector("#street-editor")?.offsetParent !== null,
+      wallet:Number(localStorage.getItem("nbhsk.wallet") || -1),
+    };
+  });
+
+  const failures = [];
+  if(!preview.active || !preview.visible || !preview.projectButton)
+    failures.push(`project preview unavailable=${JSON.stringify(preview)}`);
+  if(selected.project?.itemId !== "koi-pond" || !selected.project?.plotId)
+    failures.push(`project not persisted=${JSON.stringify(selected.project)}`);
+  if(!selected.cardVisible || !selected.previewHidden)
+    failures.push(`project card state=${JSON.stringify(selected)}`);
+  if(!selected.name || selected.pct !== 83 || !selected.buildDisabled)
+    failures.push(`project progress state=${JSON.stringify(selected)}`);
+  if(!changeOpenedShop) failures.push("project Change did not open focused shop");
+  if(ready.pct !== 100 || ready.buildDisabled)
+    failures.push(`ready project state=${JSON.stringify(ready)}`);
+  if(!backStayedOnStreet) failures.push("project preview Back did not stay on Street");
+  if(!completed.owned || !completed.projectCleared || !completed.editorVisible || completed.wallet !== 0)
+    failures.push(`project completion state=${JSON.stringify(completed)}`);
+  if(errs.length) failures.push(`JSERR:${errs[0]}`);
+  const line=`[${failures.length?"FAIL":"PASS"}] Street Project 390x844: `+
+    `item=${selected.project?.itemId||"missing"} progress=${selected.pct}% complete=${completed.owned}`+
+    (failures.length?` | FAILURES: ${failures.join("; ")}`:"");
+  await page.close();
+  return {line,failed:failures.length>0};
 }
 
 async function runCardsResumeProbe(browser) {
@@ -759,17 +867,32 @@ async function runFullSweep() {
       () => getComputedStyle(document.documentElement).overscrollBehaviorY
     );
 
-    // street-quests-popup: street tab shows scene + button; clicking the
-    // button must open the popup with the quest rows, and the X must close
-    // it again — with the bottom nav still reachable throughout (mirrors the
-    // shop nav-reachable probe below).
+    // Street's three primary actions are exercised with Playwright pointer
+    // clicks (not HTMLElement.click()), so an overlay or stale bundle that
+    // leaves the controls visible-but-dead fails the release sweep.
     await goToStreet(page);
     const streetScene = await page.evaluate(probeStreetScene);
-    await page.evaluate(() => document.querySelector("#street-quests-btn")?.click());
+    await page.locator("#street-decorate-btn").click();
+    await page.waitForTimeout(100);
+    const streetDecorate = await page.evaluate(() => ({
+      editorVisible: !document.querySelector("#street-editor")?.hidden,
+      actionsHidden: !!document.querySelector("#street-actions")?.hidden,
+    }));
+    await page.locator("#street-cancel").click();
+    await page.waitForTimeout(100);
+    await page.locator("#street-shop-btn").click();
+    await page.waitForTimeout(100);
+    const streetShop = await page.evaluate(() => ({
+      active: document.querySelector("#s-shop")?.classList.contains("on") ?? false,
+      focused: document.querySelector("#s-shop")?.classList.contains("street-focus") ?? false,
+    }));
+    await page.locator("#shop-back").click();
+    await page.waitForTimeout(100);
+    await page.locator("#street-quests-btn").click();
     await page.waitForTimeout(150);
     const questPopup = await page.evaluate(probeQuestPopup);
     const streetNav = await page.evaluate(probeNavReachable, TOL);
-    await page.evaluate(() => document.querySelector("#quest-popup-close")?.click());
+    await page.locator("#quest-popup-close").click();
     await page.waitForTimeout(150);
     const questPopupClosed = await page.evaluate(
       () => !(document.querySelector("#quest-overlay")?.classList.contains("on") ?? false)
@@ -927,7 +1050,16 @@ async function runFullSweep() {
     // (land-640, 640x360) sits at 187px under the new min(52vh,400px) cap;
     // this just catches an actual regression (e.g. cv collapsing to 0).
     if (streetScene.cvHeight < 150) failures.push(`street: cv height=${streetScene.cvHeight}<150`);
-    if (!streetScene.btnPresent) failures.push("street-quests: #street-quests-btn missing");
+    if (streetScene.actions.some(action => !action.present))
+      failures.push(`street-actions: missing=${JSON.stringify(streetScene.actions)}`);
+    if (streetScene.actions.some(action => !action.hit))
+      failures.push(`street-actions: blocked-hit=${JSON.stringify(streetScene.actions)}`);
+    if (streetScene.actions.some(action => action.width < MIN_TAP || action.height < MIN_TAP))
+      failures.push(`street-actions: small-hit=${JSON.stringify(streetScene.actions)}`);
+    if (!streetDecorate.editorVisible || !streetDecorate.actionsHidden)
+      failures.push(`street-decorate: did not open editor=${JSON.stringify(streetDecorate)}`);
+    if (!streetShop.active || !streetShop.focused)
+      failures.push(`street-shop: did not open focused shop=${JSON.stringify(streetShop)}`);
     if (!streetScene.paintedBgReady || streetScene.paintedBgDraws < 1)
       failures.push(`street: lazy painted background did not redraw (ready=${streetScene.paintedBgReady}, draws=${streetScene.paintedBgDraws})`);
     if (streetScene.overlayOpenBeforeClick) failures.push("street-quests: popup open before click");
@@ -1025,6 +1157,10 @@ async function runFullSweep() {
   await browser.close();
   browser = await chromium.launch(launchOpts());
 
+  const streetProject = await runStreetProjectProbe(browser);
+  console.log("\n" + streetProject.line);
+  if(streetProject.failed) anyFail = true;
+
   const resultsTiers = [[360,640], [390,844], [640,360]];
   const resultsLines = [];
   for(const [w,h] of resultsTiers){
@@ -1117,10 +1253,21 @@ async function runBattleSingleShot(spec) {
   process.exit(failures.length ? 1 : 0);
 }
 
+async function runStreetProjectSingleShot() {
+  await assertServerReachable();
+  const browser = await chromium.launch(launchOpts());
+  const result = await runStreetProjectProbe(browser);
+  console.log(result.line);
+  await browser.close();
+  process.exit(result.failed ? 1 : 0);
+}
+
 // ---------------------------------------------------------------------------
 const battleArgIdx = process.argv.indexOf("--battle");
 if (battleArgIdx !== -1) {
   await runBattleSingleShot(process.argv[battleArgIdx + 1]);
+} else if (process.argv.includes("--street-project")) {
+  await runStreetProjectSingleShot();
 } else {
   await runFullSweep();
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { SYNC_KEYS, defaultSyncMeta, slotsOf, mergeXp, mergeWallet, mergeFreezes,
          mergeBest, mergeStickers, mergeShop, mergeMastery, mergeQuests,
-         mergeMonthly, mergeAll, streetLayoutOf, shopPreferencesOf } from "../src/merge.js";
+         mergeMonthly, mergeAll, streetLayoutOf, streetProjectOf, shopPreferencesOf } from "../src/merge.js";
 import { defaultShop } from "../src/shop.js";
 
 describe("merge: scalars", () => {
@@ -55,8 +55,9 @@ describe("mergeStickers", () => {
 
 describe("mergeShop", () => {
   const emptyLayout = { v: 2, placements: {}, welcomeOwned: false, coachDone: false };
-  const local = { owned: ["skin-a", "deco-1"], skin: "skin-a", backdrop: "", effect: "", soundpack: "", tiers: { "deco-1": 2 }, streetLayout: emptyLayout };
-  const cloud = { owned: ["skin-b", "deco-1"], skin: "skin-b", backdrop: "bd-1", effect: "", soundpack: "", tiers: { "deco-1": 3 }, streetLayout: emptyLayout };
+  const emptyProject = { v: 1, itemId: "", plotId: "" };
+  const local = { owned: ["skin-a", "deco-1"], skin: "skin-a", backdrop: "", effect: "", soundpack: "", tiers: { "deco-1": 2 }, streetLayout: emptyLayout, streetProject: emptyProject };
+  const cloud = { owned: ["skin-b", "deco-1"], skin: "skin-b", backdrop: "bd-1", effect: "", soundpack: "", tiers: { "deco-1": 3 }, streetLayout: emptyLayout, streetProject: emptyProject };
   it("owned unions, tiers per-id max", () => {
     const m = mergeShop(local, cloud, false);
     expect(m.owned.sort()).toEqual(["deco-1", "skin-a", "skin-b"]);
@@ -116,7 +117,31 @@ describe("mergeShop", () => {
       ...emptyLayout, placements: { "plot-small-02": "red-lantern", unknown: "x" },
     } };
     expect(streetLayoutOf(s).placements).toEqual({ "plot-small-02": "red-lantern" });
-    expect(shopPreferencesOf(s)).toEqual({ slots: slotsOf(s), streetLayout: streetLayoutOf(s) });
+    expect(shopPreferencesOf(s)).toEqual({
+      slots: slotsOf(s),
+      streetLayout: streetLayoutOf(s),
+      streetProject: streetProjectOf(s),
+    });
+  });
+
+  it("project preference follows its own dirty flag independently", () => {
+    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01" } };
+    const b = { ...cloud, streetProject: { v: 1, itemId: "tea-sign", plotId: "plot-medium-02" } };
+    expect(mergeShop(a, b, { projectDirty: true }).streetProject).toEqual(a.streetProject);
+    expect(mergeShop(a, b, { layoutDirty: true, projectDirty: false }).streetProject).toEqual(b.streetProject);
+  });
+
+  it("a merged purchase clears the active project on every device", () => {
+    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01" } };
+    const b = { ...cloud, owned: [...cloud.owned, "koi-pond"] };
+    expect(mergeShop(a, b, { projectDirty: true }).streetProject).toEqual(emptyProject);
+  });
+
+  it("legacy cloud without a project cannot erase an active local goal", () => {
+    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01" } };
+    const legacyCloud = { ...cloud };
+    delete legacyCloud.streetProject;
+    expect(mergeShop(a, legacyCloud).streetProject).toEqual(a.streetProject);
   });
 });
 

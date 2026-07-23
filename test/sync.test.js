@@ -263,6 +263,51 @@ describe("reconcile", () => {
       expect(merged.backdrop).toBe("temple"); // unchanged local equip adopts cloud
       expect(merged.streetLayout.placements).toEqual({ "plot-small-05": "red-lantern" });
     });
+
+    it("an unrelated shop write adopts the newer cloud Street Project", async () => {
+      const emptyProject = { v: 1, itemId: "", plotId: "" };
+      const cloudProject = { v: 1, itemId: "koi-pond", plotId: "plot-medium-01" };
+      const local = { ...LOCAL_SHOP, streetProject: emptyProject };
+      const cloud = { ...CLOUD_SHOP, streetProject: cloudProject };
+      const { client } = fakeClient({
+        ...cloudRows(),
+        progressRow: { ...cloudRows().progressRow, cosmetics: cloud },
+      });
+      __setClientForTests(client);
+      const store = memStore({ shop: local,
+        sync: { dirty: { shop: true }, lastSyncAt: 0, lastLedgerAt: "",
+          shopPreferences: {
+            slots: { skin: "skin-base", backdrop: "market", effect: "", soundpack: "" },
+            streetLayout: { v: 2, placements: {}, welcomeOwned: false, coachDone: false },
+            streetProject: emptyProject,
+          } } });
+      await reconcile(store, "sign-in");
+      expect(store.get("shop", null).streetProject).toEqual(cloudProject);
+    });
+
+    it("a real unsynced local Street Project wins only the project fold", async () => {
+      const emptyProject = { v: 1, itemId: "", plotId: "" };
+      const localProject = { v: 1, itemId: "koi-pond", plotId: "plot-medium-01" };
+      const cloudProject = { v: 1, itemId: "tea-sign", plotId: "plot-medium-02" };
+      const local = { ...LOCAL_SHOP, streetProject: localProject };
+      const cloud = { ...CLOUD_SHOP, streetProject: cloudProject };
+      const { client } = fakeClient({
+        ...cloudRows(),
+        progressRow: { ...cloudRows().progressRow, cosmetics: cloud },
+      });
+      __setClientForTests(client);
+      const store = memStore({ shop: local,
+        sync: { dirty: { shop: true }, lastSyncAt: 0, lastLedgerAt: "",
+          shopPreferences: {
+            slots: { skin: "skin-base", backdrop: "market", effect: "", soundpack: "" },
+            streetLayout: { v: 2, placements: {}, welcomeOwned: false, coachDone: false },
+            streetProject: emptyProject,
+          } } });
+      await reconcile(store, "sign-in");
+      const merged = store.get("shop", null);
+      expect(merged.streetProject).toEqual(localProject);
+      expect(merged.backdrop).toBe("temple");
+    });
   });
 });
 
