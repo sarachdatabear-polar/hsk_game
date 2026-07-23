@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { SYNC_KEYS, defaultSyncMeta, slotsOf, mergeXp, mergeWallet, mergeFreezes,
          mergeBest, mergeStickers, mergeShop, mergeMastery, mergeQuests,
-         mergeMonthly, mergeAll, streetLayoutOf, streetProjectOf, shopPreferencesOf } from "../src/merge.js";
+         mergeMonthly, mergeAll, streetLayoutOf, streetLayoutPrefsOf, streetProjectOf, shopPreferencesOf } from "../src/merge.js";
 import { defaultShop } from "../src/shop.js";
 
 describe("merge: scalars", () => {
@@ -117,11 +117,47 @@ describe("mergeShop", () => {
       ...emptyLayout, placements: { "plot-small-02": "red-lantern", unknown: "x" },
     } };
     expect(streetLayoutOf(s).placements).toEqual({ "plot-small-02": "red-lantern" });
+    // The preference baseline uses the LWW projection (not the full layout), so
+    // additive daily/keepsake writes can't flip shopLayoutDirty (Finding 1).
     expect(shopPreferencesOf(s)).toEqual({
       slots: slotsOf(s),
-      streetLayout: streetLayoutOf(s),
+      streetLayout: streetLayoutPrefsOf(s),
       streetProject: streetProjectOf(s),
     });
+  });
+
+  it("streetLayoutPrefsOf projects to LWW fields only (excludes additive keepsakes/setsCompleted/lastVisitDay)", () => {
+    const s = { ...local, owned: ["red-lantern"], streetLayout: {
+      ...emptyLayout,
+      placements: { "plot-small-02": "red-lantern", unknown: "x" },
+      name: "My Street", savedLayouts: [{ name: "L", placements: {} }],
+      welcomeOwned: true, coachDone: true,
+      keepsakes: [{ id: "k1", kind: "welcome", day: "2026-07-20" }],
+      setsCompleted: ["market"], lastVisitDay: "2026-07-23",
+    } };
+    const prefs = streetLayoutPrefsOf(s);
+    // LWW fields kept (placements canonicalized like streetLayoutOf)
+    expect(prefs.placements).toEqual({ "plot-small-02": "red-lantern" });
+    expect(prefs.name).toBe("My Street");
+    expect(prefs.savedLayouts).toEqual([{ name: "L", placements: {} }]);
+    expect(prefs.welcomeOwned).toBe(true);
+    expect(prefs.coachDone).toBe(true);
+    expect(prefs.v).toBe(3);
+    // additive fields excluded entirely
+    expect(prefs).not.toHaveProperty("keepsakes");
+    expect(prefs).not.toHaveProperty("setsCompleted");
+    expect(prefs).not.toHaveProperty("lastVisitDay");
+    expect(Object.keys(prefs).sort())
+      .toEqual(["coachDone", "name", "placements", "savedLayouts", "v", "welcomeOwned"]);
+  });
+
+  it("shopPreferencesOf.streetLayout uses the LWW projection (additive fields don't enter the baseline)", () => {
+    const s = { ...local, owned: ["red-lantern"], streetLayout: {
+      ...emptyLayout, name: "N", lastVisitDay: "2026-07-23",
+      keepsakes: [{ id: "k1", kind: "welcome" }], setsCompleted: ["market"],
+    } };
+    expect(shopPreferencesOf(s).streetLayout).toEqual(streetLayoutPrefsOf(s));
+    expect(shopPreferencesOf(s).streetLayout).not.toHaveProperty("lastVisitDay");
   });
 
   it("project preference follows its own dirty flag independently", () => {

@@ -1,5 +1,5 @@
 "use strict";
-import { STREET_LAYOUT_VERSION, migrateLegacyStreet, normalizeStreetLayout } from "./street.js";
+import { migrateLegacyStreet, normalizeStreetLayout } from "./street.js";
 import { defaultStreetProject } from "./street-project.js";
 // Save-data schema versioning. main.js calls runMigrations(localStorage) once
 // at boot, BEFORE constructing the store — migrations must see raw
@@ -45,7 +45,14 @@ export const MIGRATIONS = [
         || !!shop.streetLayout?.welcomeOwned;
       const owned = Array.isArray(shop.owned) ? shop.owned : [];
       try {
-        shop.streetLayout = shop.streetLayout && shop.streetLayout.v === STREET_LAYOUT_VERSION
+        // A historical migration entry must NOT branch on the live current-
+        // version constant, or every future bump silently re-breaks it: since
+        // STREET_LAYOUT_VERSION moved 2->3, `=== STREET_LAYOUT_VERSION` would
+        // mis-route a dormant v2 install into migrateLegacyStreet (rebuilding
+        // placements, resetting coachDone). Pin the historical shape: any
+        // already-structured layout (v>=2) is normalized, not rebuilt. Use
+        // `>= 2`, not `=== 2` — a v3 layout reaching here must keep its fields.
+        shop.streetLayout = shop.streetLayout && shop.streetLayout.v >= 2
           ? normalizeStreetLayout({ ...shop.streetLayout, welcomeOwned }, owned)
           : migrateLegacyStreet(owned, { welcomeOwned });
       } catch (e) { return; }

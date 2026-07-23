@@ -186,6 +186,24 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
     expect(shop.streetLayout.welcomeOwned).toBe(true);
   });
 
+  it("a dormant v2 layout is NORMALIZED (not rebuilt) — coachDone + placements survive the to:2 entry", () => {
+    // Regression (Finding 2): the to:2 entry must not branch on the live
+    // current-version constant. With STREET_LAYOUT_VERSION now 3, a `=== 3`
+    // check would mis-route this v2 install into migrateLegacyStreet, rebuilding
+    // placements and resetting coachDone. `v >= 2` keeps it on the normalize path.
+    const existingLayout = { v: 2, placements: { "plot-small-01": "red-lantern" }, welcomeOwned: false, coachDone: true };
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "1",
+      "nbhsk.shop": JSON.stringify({ owned: ["red-lantern"], streetLayout: existingLayout }),
+      "nbhsk.mastery": JSON.stringify({}),
+    });
+    runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    const shop = JSON.parse(s.dump()["nbhsk.shop"]);
+    expect(shop.streetLayout.v).toBe(3);
+    expect(shop.streetLayout.coachDone).toBe(true);                       // NOT reset
+    expect(shop.streetLayout.placements).toEqual({ "plot-small-01": "red-lantern" }); // NOT rebuilt
+  });
+
   it("existing streetProject is not clobbered", () => {
     const s = fakeStorage({
       "nbhsk.schemaVersion": "1",

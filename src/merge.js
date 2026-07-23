@@ -62,6 +62,21 @@ export function streetLayoutOf(shop) {
   return normalizeStreetLayout(s.streetLayout, s.owned || []);
 }
 
+// Last-write-wins-relevant projection of the layout: the fields mergeShop
+// resolves by the layoutDirty bit (chosenLayout). Excludes the ADDITIVELY
+// folded fields (keepsakes/setsCompleted/lastVisitDay) so ordinary daily/set
+// activity — which mutates those — can't falsely flip shopLayoutDirty and
+// clobber a newer cloud name/savedLayouts. Computed via normalizeStreetLayout
+// then picked, so it stays consistent with the canonical shape.
+export function streetLayoutPrefsOf(shop) {
+  const s = Object.assign(defaultShop(), shop || {});
+  const l = normalizeStreetLayout(s.streetLayout, s.owned || []);
+  return {
+    v: l.v, placements: l.placements, welcomeOwned: l.welcomeOwned,
+    coachDone: l.coachDone, name: l.name, savedLayouts: l.savedLayouts,
+  };
+}
+
 export function streetProjectOf(shop) {
   const s = Object.assign(defaultShop(), shop || {});
   return normalizeStreetProject(s.streetProject, s.owned || []);
@@ -73,7 +88,7 @@ export function streetProjectOf(shop) {
 export function shopPreferencesOf(shop) {
   return {
     slots: slotsOf(shop),
-    streetLayout: streetLayoutOf(shop),
+    streetLayout: streetLayoutPrefsOf(shop),
     streetProject: streetProjectOf(shop),
   };
 }

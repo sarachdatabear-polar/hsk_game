@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { MIN_SYNC_GAP_MS, rowsFromLocal, localFromRows,
          reconcile, pushDirty, __resetForTests, __setSessionReconciledForTests } from "../src/sync.js";
 import { __setClientForTests, LEDGER_EPOCH } from "../src/cloud.js";
-import { SYNC_KEYS } from "../src/merge.js";
+import { SYNC_KEYS, streetLayoutPrefsOf } from "../src/merge.js";
 
 // _setOrder (I3): records the ordered sequence of set(key) calls so tests can
 // pin the crash-safety invariant (cursor-advance meta write lands before the
@@ -237,7 +237,7 @@ describe("reconcile", () => {
         sync: { dirty: { shop: true }, lastSyncAt: 0, lastLedgerAt: "",
           shopPreferences: {
             slots: { skin: "skin-base", backdrop: "market", effect: "", soundpack: "" },
-            streetLayout: localLayout,
+            streetLayout: streetLayoutPrefsOf(local),
           } } });
       await reconcile(store, "sign-in");
       expect(store.get("shop", null).streetLayout.placements)
@@ -256,12 +256,65 @@ describe("reconcile", () => {
         sync: { dirty: { shop: true }, lastSyncAt: 0, lastLedgerAt: "",
           shopPreferences: {
             slots: { skin: "skin-base", backdrop: "market", effect: "", soundpack: "" },
-            streetLayout: baselineLayout,
+            streetLayout: streetLayoutPrefsOf({ ...local, streetLayout: baselineLayout }),
           } } });
       await reconcile(store, "sign-in");
       const merged = store.get("shop", null);
       expect(merged.backdrop).toBe("temple"); // unchanged local equip adopts cloud
       expect(merged.streetLayout.placements).toEqual({ "plot-small-05": "red-lantern" });
+    });
+
+    it("a daily-gift-only write (lastVisitDay) with a STALE local name does NOT override a NEWER cloud name", async () => {
+      // The stale device merely opened the Street on a new day: only
+      // lastVisitDay changed (a keepsake too), plus dirty.shop set. Its LWW
+      // fields (name/placements/…) are unchanged since last sync, so
+      // shopLayoutDirty must be FALSE and the cloud's newer name must win.
+      const localLayout = { v: 3, placements: {}, welcomeOwned: false, coachDone: true,
+        name: "OldName", savedLayouts: [],
+        keepsakes: [{ id: "k-local", kind: "welcome", day: "2026-07-23" }],
+        setsCompleted: [], lastVisitDay: "2026-07-23" };
+      const cloudLayout = { v: 3, placements: {}, welcomeOwned: false, coachDone: true,
+        name: "NewName", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: "2026-07-20" };
+      const local = { ...LOCAL_SHOP, owned: ["skin-base", "deco-noodle"], streetLayout: localLayout };
+      const cloud = { ...CLOUD_SHOP, owned: ["skin-base"], streetLayout: cloudLayout };
+      const { client } = fakeClient({ ...cloudRows(), progressRow: { ...cloudRows().progressRow, cosmetics: cloud } });
+      __setClientForTests(client);
+      // Baseline == the local LWW projection: nothing LWW-relevant changed.
+      const store = memStore({ shop: local,
+        sync: { dirty: { shop: true }, lastSyncAt: 0, lastLedgerAt: "",
+          shopPreferences: {
+            slots: { skin: "skin-base", backdrop: "market", effect: "", soundpack: "" },
+            streetLayout: streetLayoutPrefsOf(local),
+          } } });
+      const r = await reconcile(store, "sign-in");
+      expect(r.ok).toBe(true);
+      const merged = store.get("shop", null);
+      expect(merged.streetLayout.name).toBe("NewName");                 // cloud name wins
+      expect(merged.streetLayout.lastVisitDay).toBe("2026-07-23");      // additive max still local's
+      expect(merged.streetLayout.keepsakes.map(k => k.id)).toContain("k-local"); // additive union kept
+    });
+
+    it("a genuine local rename STILL wins the layout fold (shopLayoutDirty true)", async () => {
+      const baselineName = "OldName";
+      const localLayout = { v: 3, placements: {}, welcomeOwned: false, coachDone: true,
+        name: "MyRename", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: "2026-07-23" };
+      const cloudLayout = { v: 3, placements: {}, welcomeOwned: false, coachDone: true,
+        name: "CloudName", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: "2026-07-20" };
+      const local = { ...LOCAL_SHOP, owned: ["skin-base"], streetLayout: localLayout };
+      const cloud = { ...CLOUD_SHOP, owned: ["skin-base"], streetLayout: cloudLayout };
+      const { client } = fakeClient({ ...cloudRows(), progressRow: { ...cloudRows().progressRow, cosmetics: cloud } });
+      __setClientForTests(client);
+      // Baseline holds the OLD name, so the local rename reads as dirty.
+      const baseline = { ...streetLayoutPrefsOf(local), name: baselineName };
+      const store = memStore({ shop: local,
+        sync: { dirty: { shop: true }, lastSyncAt: 0, lastLedgerAt: "",
+          shopPreferences: {
+            slots: { skin: "skin-base", backdrop: "market", effect: "", soundpack: "" },
+            streetLayout: baseline,
+          } } });
+      const r = await reconcile(store, "sign-in");
+      expect(r.ok).toBe(true);
+      expect(store.get("shop", null).streetLayout.name).toBe("MyRename"); // local rename wins
     });
 
     it("an unrelated shop write adopts the newer cloud Street Project", async () => {
