@@ -6,7 +6,7 @@
 // One release version owns every cache. Keeping runtime/audio on older names
 // lets cache-first optional art and regenerated MP3s survive a shell release
 // indefinitely, so all three advance together.
-const CACHE_VERSION = "v100";
+const CACHE_VERSION = "v101";
 const SHELL = `nbhsk-shell-${CACHE_VERSION}`;
 const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`;
 const AUDIO = `nbhsk-audio-${CACHE_VERSION}`;

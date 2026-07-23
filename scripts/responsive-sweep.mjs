@@ -60,6 +60,7 @@ function installPageHelpers() {
   window.__resp = {
     spriteReady: [],
     streetBgDraws: 0,
+    drawnAssets: [],
     // Intersect an element's own rect with the clipping rect of every
     // ancestor whose computed overflow actually clips (hidden/clip/scroll/
     // auto). This is the fix for the false-positive where a naive
@@ -108,8 +109,12 @@ function installPageHelpers() {
   });
   const drawImage = CanvasRenderingContext2D.prototype.drawImage;
   CanvasRenderingContext2D.prototype.drawImage = function(image, ...args) {
-    if ((image?.currentSrc || image?.src || "").includes("/assets/bg-street.png"))
+    const src = image?.currentSrc || image?.src || "";
+    if (src.includes("/assets/bg-street.png"))
       window.__resp.streetBgDraws++;
+    const asset = src.split("/").pop() || "";
+    if (asset && !window.__resp.drawnAssets.includes(asset))
+      window.__resp.drawnAssets.push(asset);
     return drawImage.call(this, image, ...args);
   };
 }
@@ -574,7 +579,28 @@ async function runResultsProbe(browser, width, height) {
 // preview -> choose goal -> see progress card -> change goal.
 async function runStreetProjectProbe(browser) {
   const { page, errs } = await preparePage(browser, 390, 844);
+  await page.evaluate(() => {
+    localStorage.setItem("nbhsk.shop", JSON.stringify({
+      owned:["panda","market"], skin:"panda", backdrop:"market",
+    }));
+  });
+  await page.reload({ waitUntil:"load" });
+  await page.waitForTimeout(350);
   await goToStreet(page);
+  await page.waitForFunction(() =>
+    window.__resp.spriteReady.includes("bg-market") &&
+    (window.__resp.spriteReady.includes("cat-panda-walk") ||
+      window.__resp.spriteReady.includes("cat-panda-happy")), null, { timeout:3000 })
+    .catch(() => {});
+  const resident = await page.evaluate(() => {
+    const canvas=document.querySelector("#street-resident-cv");
+    return {
+      canvasSized:!!canvas?.width && !!canvas?.height,
+      themeDrawn:window.__resp.drawnAssets.includes("bg-market.png"),
+      catDrawn:window.__resp.drawnAssets.some(name=>
+        name==="cat-panda-walk.png" || name==="cat-panda-happy.png"),
+    };
+  });
   await page.locator("#street-shop-btn").click();
   await page.waitForTimeout(100);
   await page.locator('.shoprow[data-item-id="koi-pond"] button').click();
@@ -635,6 +661,8 @@ async function runStreetProjectProbe(browser) {
   });
 
   const failures = [];
+  if(!resident.canvasSized || !resident.themeDrawn || !resident.catDrawn)
+    failures.push(`Street resident/theme unavailable=${JSON.stringify(resident)}`);
   if(!preview.active || !preview.visible || !preview.projectButton)
     failures.push(`project preview unavailable=${JSON.stringify(preview)}`);
   if(selected.project?.itemId !== "koi-pond" || !selected.project?.plotId)
