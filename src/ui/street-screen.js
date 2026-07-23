@@ -20,7 +20,7 @@ import { sprite } from "../sprites.js";
 import { CONTENT_H } from "../sprite-draw.js";
 import {
   makeStreetProject, normalizeStreetProject, remainingBucket,
-  streetProjectProgress,
+  streetProjectProgress, reservedAmount,
 } from "../street-project.js";
 import {
   streetResidentPose, streetResidentRoute, streetResidentScale,
@@ -865,6 +865,29 @@ export function createStreetScreen({
       progress:streetProjectProgress(project,item,walletValue),
     };
   }
+  // Task 14: coins the OTHER Street Shop items can actually spend, once the
+  // active project's escrow toggle is on. Always the full wallet unless a
+  // reserved project is active and excludeItemId isn't its own target — the
+  // project's own item is never blocked by its own reserve.
+  function streetSpendableWallet(excludeItemId){
+    const walletValue=getWallet();
+    const project=normalizeStreetProject(getShopState().streetProject,getShopState().owned);
+    if(!project.reserve||!project.itemId||project.itemId===excludeItemId) return walletValue;
+    const projectItem=CATALOG.find(i=>i.id===project.itemId&&i.type==="deco");
+    if(!projectItem) return walletValue;
+    return walletValue-reservedAmount(project,projectItem,walletValue);
+  }
+  // Same project-save path as selectStreetProjectFromPreview (setShopState ->
+  // store.set("shop",...) -> pushEdge, which marks the "shop" sync key dirty)
+  // so the toggle persists and syncs identically to every other project edit.
+  function toggleStreetProjectReserve(on){
+    const current=normalizeStreetProject(getShopState().streetProject,getShopState().owned);
+    if(!current.itemId||current.reserve===!!on) return;
+    setShopState({...getShopState(),streetProject:{...current,reserve:!!on}});
+    store.set("shop",getShopState());
+    pushEdge("hide");
+    renderStreet();
+  }
   function streetProjectPiece(target, layout){
     if(!target) return null;
     const owned=[...getShopState().owned,target.item.id];
@@ -903,6 +926,9 @@ export function createStreetScreen({
     const build=$("#street-project-build");
     build.disabled=!progress.ready;
     build.onclick=()=>openStreetPreview(target.item.id,"street_project",target.plotId);
+    const reserveBox=$("#street-project-reserve");
+    reserveBox.checked=!!target.project.reserve;
+    reserveBox.onchange=()=>toggleStreetProjectReserve(reserveBox.checked);
   }
   function selectStreetProjectFromPreview(){
     if(!streetPreview) return;
@@ -999,6 +1025,14 @@ export function createStreetScreen({
     const freeCompatible=wasOwned ? [] : compatibleStreetPlots(item.id,layoutForPurchase,{includeOccupied:false});
     const plotId=wasOwned ? null
       : (chosenPlot && freeCompatible.some(p=>p.id===chosenPlot) ? chosenPlot : firstFreeStreetPlot(item.id,layoutForPurchase));
+    // Task 14: the reserve is purely a Street Shop affordability layer, never
+    // touching buy()/shop.js — check spendable (wallet minus whatever the
+    // active project has escrowed) before attempting the real purchase, and
+    // only for a NON-project item (the project's own target is excluded by
+    // streetSpendableWallet, so buying it is never blocked by its own reserve).
+    const price=wasOwned ? upgradePrice(item,(getShopState().tiers||{})[item.id]||1) : item.price;
+    const spendable=streetSpendableWallet(item.id);
+    if(getWallet()>=price && spendable<price){ announceStreet("street.reserveBlocked"); return; }
     const r=buy(getWallet(),getShopState(),item.id,todayStr());
     if(!r.ok){ announceStreet("street.notEnough"); return; }
     setWallet(r.wallet); setShopState(r.shop); store.set("wallet",getWallet()); store.set("shop",getShopState()); pushEdge("purchase"); updateWalletChip();
@@ -1045,10 +1079,20 @@ export function createStreetScreen({
       buyBtn.textContent=hasFreePlot
         ? t("street.buyAndPlace",{coins:item.price.toLocaleString()})
         : t("street.buyToInventory",{coins:item.price.toLocaleString()});
-      buyBtn.disabled=getWallet()<item.price; buyBtn.onclick=buyStreetPreview;
-      if(!hasFreePlot){ hint.hidden=false; hint.textContent=t("street.buyToInventoryHint"); }
+      // Task 14: gate on spendable (wallet minus the active project's escrow),
+      // never on this item's own reserve — streetSpendableWallet(item.id)
+      // returns the full wallet when item.id is the project's own target.
+      const spendable=streetSpendableWallet(item.id);
+      const reserveBlocked=spendable<item.price&&getWallet()>=item.price;
+      buyBtn.disabled=spendable<item.price; buyBtn.onclick=buyStreetPreview;
+      if(reserveBlocked){ hint.hidden=false; hint.textContent=t("street.reserveBlocked"); }
+      else if(!hasFreePlot){ hint.hidden=false; hint.textContent=t("street.buyToInventoryHint"); }
     }else if(tier<item.maxTier){
-      const price=upgradePrice(item,tier); buyBtn.textContent=t("shop.upgrade",{stars:"★".repeat(tier+1),coins:price.toLocaleString()}); buyBtn.disabled=getWallet()<price; buyBtn.onclick=buyStreetPreview;
+      const price=upgradePrice(item,tier);
+      const spendable=streetSpendableWallet(item.id);
+      const reserveBlocked=spendable<price&&getWallet()>=price;
+      buyBtn.textContent=t("shop.upgrade",{stars:"★".repeat(tier+1),coins:price.toLocaleString()}); buyBtn.disabled=spendable<price; buyBtn.onclick=buyStreetPreview;
+      if(reserveBlocked){ hint.hidden=false; hint.textContent=t("street.reserveBlocked"); }
     }else{
       buyBtn.textContent=t("street.placeIt"); buyBtn.disabled=false; buyBtn.onclick=()=>{const id=streetPreview.itemId,plot=streetPreview.plotId;streetPreview=null;openStreetEditor(id,false,plot);};
     }
