@@ -127,8 +127,16 @@ export function createStreetScreen({
     // local-only by design — a redundant echo of the synced shop.streetLayout.welcomeOwned,
     // deliberately NOT in SYNC_KEYS (merge.js).
     store.set("streetWelcomeEarned",true);
-    const layout=normalizeStreetLayout({...ensureStreetLayout(),welcomeOwned:true},getShopState().owned);
+    const base=ensureStreetLayout();
+    // Same grant pattern as grantCompletedSets: one keepsake ("welcome",
+    // wordless — deps exposes no mastery accessor), folded into the single
+    // persist below so welcomeOwned + the keepsake save together.
+    // addKeepsake dedups by id ("welcome:<day>"), so this stays idempotent
+    // even though the guard above already makes this branch run once.
+    const keepsakes=addKeepsake(base.keepsakes,makeKeepsake("welcome",todayStr()));
+    const layout=normalizeStreetLayout({...base,welcomeOwned:true,keepsakes},getShopState().owned);
     setShopState({...getShopState(),streetLayout:layout}); store.set("shop",getShopState());
+    pushEdge("purchase");
   }
   function sameStreetLayout(a, b){ return JSON.stringify(a || null) === JSON.stringify(b || null); }
   function ensureStreetLayout(){
