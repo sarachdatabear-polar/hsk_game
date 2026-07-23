@@ -336,6 +336,7 @@
   .street-hit.item-hit.selected{border-color:var(--lc-green); background:rgba(255,214,95,.22);}
   @keyframes street-plot-pulse{50%{box-shadow:0 0 0 7px rgba(255,214,95,.16);}}
   .street-caption-row{width:100%; max-width:430px; display:flex; align-items:stretch; gap:6px; margin:7px auto 0;}
+  .street-caption-row[hidden]{display:none;}
   #street-caption{flex:1 1 auto; width:auto; min-height:36px; margin:0; padding:7px 10px;
     border:1px solid var(--panel-border); border-radius:11px; background:var(--panel-wash);
     color:var(--lc-brown); font-size:12px; line-height:1.35; text-align:center;}
@@ -1829,7 +1830,7 @@
     <section class="results-project" id="r-project" aria-labelledby="r-project-name" hidden>
       <img class="results-project-icon" id="r-project-icon" alt="">
       <div class="results-project-copy">
-        <small id="r-project-title" data-i18n="results.projectTitle">Next street build</small>
+        <small id="r-project-title">Next street build</small>
         <b id="r-project-name"></b>
         <span id="r-project-status"></span>
       </div>
