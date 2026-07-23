@@ -32,6 +32,7 @@ import {
   makeStreetProject, normalizeStreetProject, remainingBucket,
   streetProjectProgress,
 } from "./street-project.js";
+import { streetResidentPose, streetResidentRoute } from "./street-resident.js";
 import {
   WELCOME_ID, STREET_PLOTS, streetPieces, streetProgress,
   streetWorldMetrics, DECO_SPRITE_SCALE, defaultStreetLayout,
@@ -3748,6 +3749,8 @@ function renderShopPreview(canvas, item, now=0){
 // pops in with a bounce + dust the next time the street is actually seen.
 // In-memory only — losing it on refresh just skips one animation.
 let streetReveal = null; // { id, start } — start stamps on first visible frame
+let streetResidentRaf = 0;
+let streetResidentScene = null;
 function revealPopScale(id){
   if(REDUCED_MOTION) return 1;
   if(!streetReveal || streetReveal.id !== id || !streetReveal.start) return 1;
@@ -3984,6 +3987,127 @@ function updateStreetPager(){
   $("#street-next").disabled = right > .92 || !max;
   $("#street-pager").innerHTML = max ? `<i class="${right<.5?"on":""}"></i><i class="${right>=.5?"on":""}"></i>` : `<i class="on"></i>`;
 }
+function drawStreetSceneBackground(c,w,h){
+  const selected=shopState.backdrop ? sprite("bg-"+shopState.backdrop) : null;
+  const img=selected||sprite("bg-street");
+  if(img){
+    // Bottom-align a gentle zoom: the road and owned objects gain visual
+    // priority while some of the unused upper sky is cropped away.
+    const zoom=selected?1.06:1.12;
+    drawCoverImage(c,img,-w*(zoom-1)/2,-h*(zoom-1),w*zoom,h*zoom);
+  }else{
+    paintStreetBase(c,w,h);
+  }
+  const groundWash=c.createLinearGradient(0,h*.64,0,h);
+  groundWash.addColorStop(0,"rgba(251,245,232,0)");
+  groundWash.addColorStop(1,"rgba(251,245,232,.14)");
+  c.fillStyle=groundWash; c.fillRect(0,h*.64,w,h*.36);
+}
+function residentActivityTargets(pieces){
+  return pieces.filter(p=>p.kind==="deco").map(p=>({
+    x:p.slot,
+    activity:p.behavior==="food"?"food"
+      :p.behavior==="water"?"water"
+      :p.behavior==="light"?"light"
+      :p.behavior==="flutter"?"flutter"
+      :p.behavior==="celebrate"?"celebrate":"admire",
+  }));
+}
+function drawStreetResidentActivity(c,activity,x,gy,s,now,facing){
+  if(!activity) return;
+  const bob=Math.sin(now/260)*2;
+  c.save();
+  c.lineCap="round"; c.lineJoin="round";
+  if(activity==="water"){
+    c.globalAlpha=.7; c.strokeStyle="#5DAADD"; c.lineWidth=2;
+    for(const k of [.25,.42]){
+      c.beginPath(); c.ellipse(x+facing*s*.28,gy-2,s*k,s*.08,0,0,Math.PI*2); c.stroke();
+    }
+    c.restore(); return;
+  }
+  const bx=x+facing*s*.43, by=gy-s*.9+bob, r=s*.2;
+  c.globalAlpha=.94; c.fillStyle="rgba(251,245,232,.9)"; c.strokeStyle="rgba(132,96,67,.62)"; c.lineWidth=1.5;
+  c.beginPath(); c.arc(bx,by,r,0,Math.PI*2); c.fill(); c.stroke();
+  c.globalAlpha=1;
+  if(activity==="build"){
+    c.strokeStyle="#846043"; c.lineWidth=Math.max(2,s*.045);
+    c.beginPath(); c.moveTo(bx-r*.42,by+r*.42); c.lineTo(bx+r*.32,by-r*.32); c.stroke();
+    c.fillStyle="#F2BC57"; roundRectOn(c,bx+r*.12,by-r*.58,r*.65,r*.32,r*.08); c.fill();
+  }else if(activity==="food"){
+    c.fillStyle="#E69777"; c.beginPath(); c.arc(bx,by+r*.12,r*.56,0,Math.PI); c.fill();
+    c.strokeStyle="#846043"; c.lineWidth=1.4;
+    for(const dx of [-.24,.16]){ c.beginPath(); c.moveTo(bx+r*dx,by-r*.05); c.quadraticCurveTo(bx+r*(dx-.2),by-r*.45,bx+r*(dx+.04),by-r*.66); c.stroke(); }
+  }else if(activity==="rest"){
+    c.fillStyle="#2E6656"; c.font=`900 ${Math.max(10,Math.round(r*.95))}px ${LATIN_STACK}`;
+    c.textAlign="center"; c.textBaseline="middle"; c.fillText("Z",bx,by);
+  }else if(activity==="flutter"){
+    c.fillStyle="#E69777";
+    c.beginPath(); c.ellipse(bx-r*.2,by,r*.28,r*.14,-.5,0,Math.PI*2); c.fill();
+    c.beginPath(); c.ellipse(bx+r*.22,by-r*.15,r*.28,r*.14,.45,0,Math.PI*2); c.fill();
+  }else if(activity==="light"){
+    const glow=c.createRadialGradient(bx,by,1,bx,by,r*.9);
+    glow.addColorStop(0,"rgba(255,214,95,.96)"); glow.addColorStop(1,"rgba(255,214,95,0)");
+    c.fillStyle=glow; c.beginPath(); c.arc(bx,by,r*.9,0,Math.PI*2); c.fill();
+    c.fillStyle="#F2BC57"; drawStarMark(c,bx,by,r*.42);
+  }else{
+    c.fillStyle=activity==="celebrate"?"#F2BC57":"#E69777";
+    for(const [dx,dy,k] of [[0,-.2,.42],[-.45,.25,.24],[.45,.2,.26]])
+      drawStarMark(c,bx+r*dx,by+r*dy,r*k);
+  }
+  c.restore();
+}
+function drawStreetResidentFrame(now,reducedMotion=false){
+  const scene=streetResidentScene;
+  if(!scene) return;
+  const {canvas,w,h,dpr,gy,m,route}=scene;
+  const c=canvas.getContext("2d");
+  c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,w,h);
+  const pose=streetResidentPose(now,route,reducedMotion);
+  const x=pose.x*w, groundY=gy+4;
+  const scale=Math.max(.86,Math.min(1.08,m.unit/50));
+  drawContactShadow(c,x,groundY,CONTENT_H*scale*.82);
+  const allAccessories=accessoriesFor(levelForXp(xp));
+  const accessories=allAccessories.filter(id=>id!=="kitten");
+  c.save();
+  if(pose.facing<0){ c.translate(x,0); c.scale(-1,1); c.translate(-x,0); }
+  drawCat(c,x,groundY,now,pose.state,SKIN_PALETTES[shopState.skin],scale,accessories,false);
+  c.restore();
+  if(allAccessories.includes("kitten")){
+    const kittenX=x-pose.facing*CONTENT_H*scale*.64;
+    c.save();
+    if(pose.facing<0){ c.translate(kittenX,0); c.scale(-1,1); c.translate(-kittenX,0); }
+    drawCat(c,kittenX,groundY+1,now+180,pose.state,SKIN_PALETTES[shopState.skin],scale*.48,[],false);
+    c.restore();
+  }
+  drawStreetResidentActivity(c,pose.activity,x,groundY,CONTENT_H*scale,now,pose.facing);
+}
+function streetResidentLoop(now){
+  streetResidentRaf=0;
+  if(currentScreen!=="street"||!streetResidentScene||REDUCED_MOTION||streetEdit||streetPreview) return;
+  drawStreetResidentFrame(now,false);
+  streetResidentRaf=requestAnimationFrame(streetResidentLoop);
+}
+function renderStreetResidentLayer(w,h,gy,m,dpr,project,pieces){
+  const canvas=$("#street-resident-cv");
+  if(!canvas) return;
+  canvas.width=Math.round(w*dpr); canvas.height=Math.round(h*dpr);
+  canvas.style.width=w+"px"; canvas.style.height=h+"px";
+  const projectPlot=project&&STREET_PLOTS.find(p=>p.id===project.plotId);
+  streetResidentScene={
+    canvas,w,h,dpr,gy,m,
+    route:streetResidentRoute({
+      project:projectPlot?{x:projectPlot.x,activity:"build"}:null,
+      decorations:residentActivityTargets(pieces),
+    }),
+  };
+  if(REDUCED_MOTION||streetEdit||streetPreview){
+    if(streetResidentRaf){ cancelAnimationFrame(streetResidentRaf); streetResidentRaf=0; }
+    drawStreetResidentFrame(0,true);
+  }else{
+    drawStreetResidentFrame(performance.now(),false);
+    if(!streetResidentRaf) streetResidentRaf=requestAnimationFrame(streetResidentLoop);
+  }
+}
 function renderStreet(){
   const scv = $("#street-cv"), world = $("#street-world"), scroll = $("#street-scroll");
   if(!scv || !world || !scroll || !world.clientHeight || !scroll.clientWidth) return;
@@ -3994,8 +4118,7 @@ function renderStreet(){
   scv.style.width=w+"px"; scv.style.height=h+"px";
   const sc = scv.getContext("2d");
   sc.setTransform(dpr,0,0,dpr,0,0); sc.clearRect(0,0,w,h);
-  const bg = sprite("bg-street");
-  if(bg) sc.drawImage(bg,0,0,w,h); else paintStreetBase(sc,w,h);
+  drawStreetSceneBackground(sc,w,h);
   const gy=h-10, preview=previewScene();
   const owned=preview?.owned || shopState.owned;
   const layout=preview?.layout || liveStreetLayout();
@@ -4022,9 +4145,7 @@ function renderStreet(){
       drawStreetProjectBlueprint(sc,project,p,x,py,du);
     }
   }
-  const mImg=sprite("maneki"), mp=Math.min(h*.62,67);
-  if(mImg) sc.drawImage(mImg,4,gy-mp+4,mp,mp);
-  else drawCat(sc,22,gy+8,0,"happy",null,.81,[],false);
+  renderStreetResidentLayer(w,h,gy,m,dpr,project,pieces);
   renderStreetHitLayer(pieces,layout,w,h,gy,m);
   renderStreetEditor(); renderStreetPreviewPanel();
   renderStreetProjectCard(project);
