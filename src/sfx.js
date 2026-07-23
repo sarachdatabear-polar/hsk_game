@@ -1,5 +1,7 @@
 let ctx = null;
 let resumeTask = null;
+// How long one unlock/resume attempt may block retries (see unlockSfx).
+const RESUME_TIMEOUT_MS = 2500;
 function ac() {
   if (ctx && ctx.state === "closed") ctx = null;
   if (ctx) return ctx;
@@ -39,11 +41,19 @@ export function unlockSfx() {
   } catch (e) {
     return Promise.resolve(false);
   }
-  resumeTask = action
+  // WebKit can also leave resume() pending forever after an interruption.
+  // One attempt may only own the retry slot briefly: past the deadline it
+  // reports failure and frees the slot, so the next real gesture performs a
+  // fresh resume instead of being handed the same stuck promise all session.
+  // The identity guard keeps a late-settling loser from clearing a newer task.
+  const attempt = action
     .then(() => !a.state || a.state === "running")
-    .catch(() => false)
-    .finally(() => { resumeTask = null; });
-  return resumeTask;
+    .catch(() => false);
+  const deadline = new Promise(res => setTimeout(() => res(false), RESUME_TIMEOUT_MS));
+  const task = Promise.race([attempt, deadline])
+    .finally(() => { if (resumeTask === task) resumeTask = null; });
+  resumeTask = task;
+  return task;
 }
 
 // Deliberately suspend while the PWA is hidden. Besides saving power, this

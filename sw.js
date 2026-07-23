@@ -3,13 +3,18 @@
 // street decorations enter RUNTIME only after the player actually requests
 // them. This keeps first install substantially smaller without losing offline
 // access to previously viewed cosmetics.
-// One release version owns every cache. Keeping runtime/audio on older names
-// lets cache-first optional art and regenerated MP3s survive a shell release
-// indefinitely, so all three advance together.
-const CACHE_VERSION = "v105";
+// Shell + runtime advance together each release: both are cache-first, so a
+// release must invalidate them for updated bundles/art to reach installed
+// PWAs. The word-mp3 cache is deliberately NOT tied to releases — the
+// activate handler deletes every non-current cache name, and advancing the
+// audio name each release (v80..v105) wiped every cached mp3 on every
+// update, leaving installed PWAs silent offline until words re-fetched.
+// Bump AUDIO_VERSION only when build_audio.py regenerates the mp3 set.
+const CACHE_VERSION = "v106";
+const AUDIO_VERSION = "v1";
 const SHELL = `nbhsk-shell-${CACHE_VERSION}`;
 const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`;
-const AUDIO = `nbhsk-audio-${CACHE_VERSION}`;
+const AUDIO = `nbhsk-audio-${AUDIO_VERSION}`;
 
 // data/examples.js (flashcard-back "in a sentence" enrichment) is deliberately
 // NOT precached: it is not part of the core playable loop, and after the tail

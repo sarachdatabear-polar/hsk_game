@@ -1,4 +1,6 @@
 "use strict";
+import { STREET_LAYOUT_VERSION, migrateLegacyStreet, normalizeStreetLayout } from "./street.js";
+import { defaultStreetProject } from "./street-project.js";
 // Save-data schema versioning. main.js calls runMigrations(localStorage) once
 // at boot, BEFORE constructing the store — migrations must see raw
 // pre-migration values, so this module reads/writes storage directly.
@@ -13,10 +15,44 @@ const VERSION_KEY = "nbhsk.schemaVersion";
 // (run the ladder from 0) from a fresh one (just stamp and go).
 const LEGACY_SENTINELS = ["nbhsk.xp", "nbhsk.mastery", "nbhsk.daily", "nbhsk.settings", "nbhsk.scope"];
 
-export const CURRENT_SCHEMA_VERSION = 1;
+export const CURRENT_SCHEMA_VERSION = 2;
 
 export const MIGRATIONS = [
-  // { to: 2, up(storage) { ...rewrite keys in place... } },
+  // v1→v2: street.js's shop-state layout gained a `streetLayout` scene
+  // (v2 shape: { v:2, placements, welcomeOwned, coachDone } — see
+  // migrateLegacyStreet/normalizeStreetLayout in src/street.js) plus a
+  // `streetProject` field (src/street-project.js). This shipped without a
+  // ladder entry; main.js still upgrades lazily at read time (defense in
+  // depth), but this makes the upgrade durable on disk instead of relying on
+  // that forever. Reads/writes raw JSON since it runs before the store exists;
+  // every step is guarded so corrupt/missing data is a no-op, never a throw.
+  {
+    to: 2,
+    up(storage) {
+      let shop;
+      try {
+        const raw = storage.getItem("nbhsk.shop");
+        if (raw === null) return;
+        shop = JSON.parse(raw);
+      } catch (e) { return; }
+      if (!shop || typeof shop !== "object") return;
+      let mastery = null;
+      try {
+        const raw = storage.getItem("nbhsk.mastery");
+        if (raw !== null) mastery = JSON.parse(raw);
+      } catch (e) {}
+      const welcomeOwned = (mastery && typeof mastery === "object" && Object.keys(mastery).length > 0)
+        || !!shop.streetLayout?.welcomeOwned;
+      const owned = Array.isArray(shop.owned) ? shop.owned : [];
+      try {
+        shop.streetLayout = shop.streetLayout && shop.streetLayout.v === STREET_LAYOUT_VERSION
+          ? normalizeStreetLayout({ ...shop.streetLayout, welcomeOwned }, owned)
+          : migrateLegacyStreet(owned, { welcomeOwned });
+      } catch (e) { return; }
+      if (shop.streetProject == null) shop.streetProject = defaultStreetProject();
+      try { storage.setItem("nbhsk.shop", JSON.stringify(shop)); } catch (e) {}
+    },
+  },
 ];
 
 // Dev-time invariant: runMigrations skips any entry with `to <= v`, so an

@@ -15,9 +15,15 @@ import { PRODUCTS } from "../src/monetization/products.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const html = readFileSync(join(ROOT, "index.html"), "utf8");
-const srcFiles = readdirSync(join(ROOT, "src")).filter(f => f.endsWith(".js"));
+// Recursive: feature wiring lives in subdirectories too (src/ui/,
+// src/monetization/, src/analytics/) — a flat readdir silently dropped their
+// t() keys from this guard when street wiring moved to src/ui/street-screen.js.
+const walkJs = dir => readdirSync(join(ROOT, dir), { withFileTypes: true })
+  .flatMap(e => e.isDirectory() ? walkJs(`${dir}/${e.name}`)
+    : e.name.endsWith(".js") ? [`${dir}/${e.name}`] : []);
+const srcFiles = walkJs("src");
 const srcText = Object.fromEntries(
-  srcFiles.map(f => [f, readFileSync(join(ROOT, "src", f), "utf8")])
+  srcFiles.map(f => [f, readFileSync(join(ROOT, f), "utf8")])
 );
 
 describe("index.html data-i18n* keys exist in both locales", () => {
