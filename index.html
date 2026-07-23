@@ -344,7 +344,7 @@
     border:1px solid var(--panel-border); background:var(--panel-wash); color:var(--lc-green);
     display:inline-flex; align-items:center; justify-content:center; cursor:pointer;}
   .street-caption-row + .profile-name-form{max-width:430px; margin:6px auto 0;}
-  .street-actions{width:100%; display:grid; grid-template-columns:1.2fr 1fr 1fr 1fr; gap:7px; margin-top:6px;}
+  .street-actions{width:100%; display:grid; grid-template-columns:1.1fr 1fr 1fr 1fr 1fr; gap:7px; margin-top:6px;}
   .street-actions[hidden]{display:none;}
   .street-actions .sec-btn{min-height:44px; margin:0; padding:7px 4px; font-size:12px;}
   /* Collection book (Task 9): reuses the .pause-overlay/.pause-panel dialog
@@ -366,6 +366,15 @@
   /* Locked = the SAME owned sprite, just faded — no new art per the brief. */
   .street-collection-item.locked img{opacity:.4;}
   .street-collection-item.locked{cursor:pointer;}
+  /* Keepsake shelf (Task 12): same .pause-overlay/.pause-panel dialog
+     convention as #street-collection above — read-only, append-only list,
+     newest-first. `word` (when present) is plain display text, never
+     interactive — no click handlers are ever attached to a keepsake row. */
+  .street-keepsakes-panel{max-height:60vh; overflow-y:auto; padding-right:2px; display:flex; flex-direction:column; gap:8px;}
+  .street-keepsake-item{display:flex; align-items:center; gap:9px; padding:8px 10px;
+    border-radius:12px; background:var(--lc-cream); color:var(--ink);}
+  .street-keepsake-item .asset-icon{width:20px; height:20px; color:var(--lc-green); flex:0 0 auto;}
+  .street-keepsake-item span{font-size:12px; line-height:1.3;}
   #street-decorate-btn{background-color:var(--lc-sun);
     background-image:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun) 55%,var(--lc-sun-deep));
     color:var(--lc-teal); border:2px solid var(--lc-sun-deep); font-weight:900;
@@ -1556,6 +1565,7 @@
       <button class="sec-btn" id="street-shop-btn" data-i18n="street.shop">Street Shop</button>
       <button class="sec-btn" id="street-quests-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span data-i18n="street.questsBtn">Quests</span></span></button>
       <button class="sec-btn" id="street-collection-btn" data-i18n="street.collection">Collection</button>
+      <button class="sec-btn" id="street-keepsakes-btn" data-i18n="street.keepsakes">Keepsakes</button>
     </div>
     <div class="street-stage" id="street-stage">
       <div class="street-scroll" id="street-scroll" tabindex="0" data-i18n-aria="street.sceneLabel" aria-label="Your Lucky Cat Street">
@@ -1675,6 +1685,21 @@
           <button class="overlay-close" id="street-collection-close" data-i18n-title="common.close" aria-label="Close">×</button>
         </div>
         <div class="street-collection-panel" id="street-collection-panel"></div>
+      </div>
+    </div>
+
+    <!-- Keepsake shelf (Task 12): same .pause-overlay/.pause-panel dialog
+         convention as #street-collection above — read-only, append-only view
+         of streetLayout.keepsakes (Task 1), rendered newest-first. A
+         keepsake's optional `word` is a frozen display string only: it is
+         never wired to a click/review/SRS interaction here. -->
+    <div class="pause-overlay" id="street-keepsakes" role="dialog" aria-modal="true" aria-labelledby="street-keepsakes-title">
+      <div class="pause-panel">
+        <div class="quest-popup-head">
+          <h3 class="pause-title" id="street-keepsakes-title" data-i18n="street.keepsakes">Keepsakes</h3>
+          <button class="overlay-close" id="street-keepsakes-close" data-i18n-title="common.close" aria-label="Close">×</button>
+        </div>
+        <div class="street-keepsakes-panel" id="street-keepsakes-panel"></div>
       </div>
     </div>
 

@@ -196,6 +196,12 @@ export const STRINGS = {
     "street.layoutOverwriteYes": "Replace",
     "street.layoutSavedAnnouncement": "Saved to Slot {n}.",
     "street.layoutLoadedAnnouncement": "Loaded Slot {n}.",
+    "street.keepsakes": "Keepsakes",
+    "street.keepsakeWelcome": "Your first lantern",
+    "street.keepsakeSet": "{set} set completed",
+    "street.keepsakeDaily": "A neighbour dropped by",
+    "street.keepsakeWord": "— you'd learned {word}",
+    "street.keepsakesEmpty": "Keepsakes you earn will rest here.",
     "quests.title": "Daily Quests",
     // scope
     "scope.title": "Choose your words",
@@ -754,6 +760,12 @@ export const STRINGS = {
     "street.layoutOverwriteYes": "แทนที่", // TH-REVIEW
     "street.layoutSavedAnnouncement": "บันทึกลงช่อง {n} แล้ว", // TH-REVIEW
     "street.layoutLoadedAnnouncement": "โหลดช่อง {n} แล้ว", // TH-REVIEW
+    "street.keepsakes": "ของที่ระลึก",
+    "street.keepsakeWelcome": "โคมไฟดวงแรกของคุณ",
+    "street.keepsakeSet": "สะสมชุด {set} ครบแล้ว",
+    "street.keepsakeDaily": "เพื่อนบ้านแวะมา",
+    "street.keepsakeWord": "— คุณเรียน {word} แล้ว",
+    "street.keepsakesEmpty": "ของที่ระลึกที่ได้จะอยู่ที่นี่",
     "quests.title": "เควสต์ประจำวัน",
     // scope
     "scope.title": "เลือกคำศัพท์",

@@ -1057,11 +1057,71 @@ export function createStreetScreen({
     const back=$("#shop-back"); back.dataset.go="street"; back.textContent=t("common.backStreet");
     renderShop(); show("shop");
   }
+  // Keepsake shelf (Task 12): read-only view over streetLayout.keepsakes —
+  // append-only (Tasks 8/13 + the welcome moment append to it; never
+  // mutated/deleted here), rendered newest-first (last-appended first,
+  // since same-day entries can tie on `day` alone). A keepsake's optional
+  // `word` is a frozen display string (see makeKeepsake, street-keepsakes.js)
+  // — shown as plain text only; no click/review/SRS wiring is attached to it
+  // or to any keepsake row, per the cosmetic-only guardrail.
+  function closeStreetKeepsakes(){ closeDialog($("#street-keepsakes")); }
+  function keepsakeSetId(k){
+    // `kind:"set"` ids are `set:<setId>:<day>` (makeKeepsake, opts.set) — the
+    // object itself carries no separate `set` field, so derive it from the id.
+    const parts = String(k.id).split(":");
+    return parts.length > 2 ? parts[1] : "";
+  }
+  function keepsakeCopy(k){
+    if(k.kind === "set") return t("street.keepsakeSet", { set: t("street.set." + keepsakeSetId(k)) });
+    if(k.kind === "daily") return t("street.keepsakeDaily", { day: k.day });
+    return t("street.keepsakeWelcome");
+  }
+  function keepsakeIcon(k){
+    if(k.kind === "set") return "trophy";
+    if(k.kind === "daily") return "calendar";
+    return "star";
+  }
+  function keepsakeItemEl(k){
+    const el = document.createElement("div");
+    el.className = "street-keepsake-item";
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.setAttribute("class", "asset-icon");
+    icon.setAttribute("aria-hidden", "true");
+    const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+    use.setAttribute("href", "assets/ui-icons.svg#" + keepsakeIcon(k));
+    icon.appendChild(use);
+    const text = document.createElement("span");
+    text.textContent = keepsakeCopy(k)
+      + (typeof k.word === "string" && k.word ? " " + t("street.keepsakeWord", { word: k.word }) : "");
+    el.append(icon, text);
+    return el;
+  }
+  function renderStreetKeepsakes(){
+    const panel = $("#street-keepsakes-panel");
+    panel.replaceChildren();
+    const layout = ensureStreetLayout();
+    const keepsakes = Array.isArray(layout.keepsakes) ? layout.keepsakes : [];
+    if(!keepsakes.length){
+      const empty = document.createElement("div");
+      empty.className = "street-inventory-empty";
+      empty.textContent = t("street.keepsakesEmpty");
+      panel.appendChild(empty);
+      return;
+    }
+    for(const k of [...keepsakes].reverse()) panel.appendChild(keepsakeItemEl(k));
+  }
+  function openStreetKeepsakes(){
+    renderStreetKeepsakes();
+    openDialog($("#street-keepsakes"), $("#street-keepsakes-close"), closeStreetKeepsakes);
+  }
   $("#street-decorate-btn").onclick=()=>openStreetEditor();
   $("#street-shop-btn").onclick=openStreetShop;
   $("#street-collection-btn").onclick=openStreetCollection;
   $("#street-collection-close").onclick=closeStreetCollection;
   $("#street-collection").addEventListener("click", e=>{ if(e.target.id === "street-collection") closeStreetCollection(); });
+  $("#street-keepsakes-btn").onclick=openStreetKeepsakes;
+  $("#street-keepsakes-close").onclick=closeStreetKeepsakes;
+  $("#street-keepsakes").addEventListener("click", e=>{ if(e.target.id === "street-keepsakes") closeStreetKeepsakes(); });
   $("#street-project-change").onclick=openStreetShop;
   $("#shop-view-street").onclick=()=>{streetPreview=null;show("street");};
   $("#street-undo").onclick=undoStreetEdit;
