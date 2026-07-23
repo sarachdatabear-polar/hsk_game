@@ -210,6 +210,37 @@ describe("tone() resumes a suspended AudioContext (iOS PWA silent-session bug)",
     expect(attempts).toBe(2);
   });
 
+  it("a resume() that never settles frees the retry slot after the timeout (iOS wedge)", async () => {
+    // WebKit can leave AudioContext.resume() pending forever after an audio
+    // interruption. The cached resumeTask must not hand that stuck promise to
+    // every later gesture — after the timeout the slot must be free so the
+    // next real tap performs a fresh resume attempt.
+    vi.resetModules();
+    vi.useFakeTimers();
+    try {
+      let attempts = 0;
+      const fakeCtx = {
+        state: "suspended",
+        resume: () => {
+          attempts++;
+          if (attempts === 1) return new Promise(() => {}); // never settles
+          fakeCtx.state = "running";
+          return Promise.resolve();
+        },
+      };
+      globalThis.window = { AudioContext: function () { return fakeCtx; } };
+
+      const fresh = await import("../src/sfx.js");
+      const stuck = fresh.unlockSfx();
+      await vi.advanceTimersByTimeAsync(3000);
+      expect(await stuck).toBe(false);
+      expect(await fresh.unlockSfx()).toBe(true);
+      expect(attempts).toBe(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("waits for resume before scheduling the first tones", async () => {
     vi.resetModules();
     let finishResume;

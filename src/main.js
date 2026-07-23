@@ -1065,13 +1065,23 @@ function unlockAllAudio(){
   // Keep the gesture listeners until BOTH paths confirm success. Mobile
   // policies can reject the first attempt; the next real tap must retry
   // instead of leaving word audio/SFX silent for the rest of the session.
-  audioUnlockTask = Promise.all([unlockSfx(), unlockAudio()]).then(([sfxReady, wordReady])=>{
+  const attempt = Promise.all([unlockSfx(), unlockAudio()]).then(([sfxReady, wordReady])=>{
     if(!sfxReady || !wordReady) return false;
     disarmAudioUnlock();
     resumeToneAfterAudioUnlock();
     return true;
-  }).finally(()=>{ audioUnlockTask = null; });
-  return audioUnlockTask;
+  });
+  // iOS/WebView can leave AudioContext.resume() pending forever after an
+  // interruption, and Promise.all inherits that hang. Never let one stuck
+  // attempt own this cache slot for the session — past the deadline it
+  // reports failure and frees the slot so the next real tap retries from
+  // scratch. A late success still disarms/resumes tone via `attempt` above.
+  // The identity guard keeps a late-settling loser from clearing a newer task.
+  const deadline = new Promise(res=>setTimeout(()=>res(false), 2500));
+  const task = Promise.race([attempt, deadline])
+    .finally(()=>{ if(audioUnlockTask === task) audioUnlockTask = null; });
+  audioUnlockTask = task;
+  return task;
 }
 armAudioUnlock();
 window.addEventListener("nbhsk:audio-lock", armAudioUnlock);
