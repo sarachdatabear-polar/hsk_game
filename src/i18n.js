@@ -180,6 +180,11 @@ export const STRINGS = {
     "street.projectSelectedAnnouncement": "{name} is now your next Street build.",
     "street.projectBlueprintLabel": "{name} project blueprint, {pct}% of price reached",
     "street.setComplete": "{set} complete ✨",
+    "street.collection": "Collection",
+    "street.collectionSetHeader": "{name} — {owned}/{total}",
+    "street.collectionComplete": "Complete ✓",
+    "street.collectionLocked": "Not yet owned",
+    "street.collectionEmpty": "No decorations to show yet.",
     "quests.title": "Daily Quests",
     // scope
     "scope.title": "Choose your words",
@@ -722,6 +727,11 @@ export const STRINGS = {
     "street.projectSelectedAnnouncement": "ตั้ง{name}เป็นสิ่งที่จะสร้างบนถนนต่อไปแล้ว",
     "street.projectBlueprintLabel": "พิมพ์เขียวโปรเจกต์{name} ถึง {pct}% ของราคา",
     "street.setComplete": "{set} ครบชุดแล้ว ✨",
+    "street.collection": "คอลเลกชัน",
+    "street.collectionSetHeader": "{name} — {owned}/{total}",
+    "street.collectionComplete": "ครบแล้ว ✓",
+    "street.collectionLocked": "ยังไม่มี",
+    "street.collectionEmpty": "ยังไม่มีของตกแต่งให้แสดง",
     "quests.title": "เควสต์ประจำวัน",
     // scope
     "scope.title": "เลือกคำศัพท์",

@@ -33,12 +33,12 @@ import {
   placeStreetItem, storeStreetItem, autoArrangeStreet, migrateLegacyStreet,
   streetMeta, streetClass, STREET_LAYOUT_VERSION,
 } from "../street.js";
-import { newlyCompletedSets, completedSets } from "../street-collection.js";
+import { newlyCompletedSets, completedSets, collectionView } from "../street-collection.js";
 import { makeKeepsake, addKeepsake } from "../street-keepsakes.js";
 
 export function createStreetScreen({
   $, store, analytics, show, renderShop, pushEdge, updateWalletChip, todayStr, tOr,
-  shopViewedProducts, REDUCED_MOTION,
+  shopViewedProducts, REDUCED_MOTION, openDialog, closeDialog,
   getWallet, setWallet, getXp, getCurrentScreen, getShopState, setShopState,
   roundRectOn, drawCoverImage, drawStarMark,
 }) {
@@ -880,6 +880,76 @@ export function createStreetScreen({
       });
     });
   }
+  // Collection book (Task 9): a read-only view over collectionView() (pure,
+  // src/street-collection.js). No purchases happen here — tapping an unowned
+  // item closes the book and routes into the existing Street Shop preview
+  // (openStreetPreview), the same buy/upgrade flow every other entry point
+  // (project card, inventory, catalog) already uses.
+  function closeStreetCollection(){ closeDialog($("#street-collection")); }
+  function collectionItemEl(item){
+    const spriteId = streetMeta(item.id)?.spriteId || item.id;
+    const el = document.createElement(item.owned ? "div" : "button");
+    el.className = "street-collection-item" + (item.owned ? "" : " locked");
+    if(!item.owned){
+      el.type = "button";
+      el.setAttribute("aria-label", streetItemLabel(item.id) + " — " + t("street.collectionLocked"));
+      el.onclick = () => { closeStreetCollection(); openStreetPreview(item.id, "street_collection"); };
+    }
+    const img = document.createElement("img");
+    img.src = "assets/deco-" + spriteId + ".png"; img.alt = "";
+    const name = document.createElement("span"); name.textContent = streetItemLabel(item.id);
+    const status = document.createElement("small");
+    status.textContent = item.owned ? "★".repeat(item.tier) : t("shop.coins", { coins: item.price.toLocaleString() });
+    el.append(img, name, status);
+    return el;
+  }
+  function renderStreetCollection(){
+    const panel = $("#street-collection-panel");
+    panel.replaceChildren();
+    const sections = collectionView(getShopState().owned, getShopState().tiers || {});
+    if(!sections.length || sections.every(s => !s.items.length)){
+      const empty = document.createElement("div");
+      empty.className = "street-inventory-empty";
+      empty.textContent = t("street.collectionEmpty");
+      panel.appendChild(empty);
+      return;
+    }
+    for(const section of sections){
+      const wrap = document.createElement("section");
+      wrap.className = "street-collection-set";
+      const head = document.createElement("div");
+      head.className = "street-collection-head";
+      const title = document.createElement("b");
+      title.textContent = t("street.collectionSetHeader", {
+        name: t("street.set." + section.set),
+        owned: section.items.filter(i => i.owned).length,
+        total: section.items.length,
+      });
+      head.appendChild(title);
+      if(section.complete){
+        const badge = document.createElement("span");
+        badge.className = "street-collection-complete";
+        badge.textContent = t("street.collectionComplete");
+        head.appendChild(badge);
+      }
+      wrap.appendChild(head);
+      const grid = document.createElement("div");
+      grid.className = "street-collection-grid";
+      if(!section.items.length){
+        const empty = document.createElement("div");
+        empty.className = "street-inventory-empty";
+        empty.textContent = t("street.collectionEmpty");
+        grid.appendChild(empty);
+      }
+      for(const item of section.items) grid.appendChild(collectionItemEl(item));
+      wrap.appendChild(grid);
+      panel.appendChild(wrap);
+    }
+  }
+  function openStreetCollection(){
+    renderStreetCollection();
+    openDialog($("#street-collection"), $("#street-collection-close"), closeStreetCollection);
+  }
   function openStreetShop(){
     streetShopMode=true; analytics.track("store_open"); shopViewedProducts.clear();
     const back=$("#shop-back"); back.dataset.go="street"; back.textContent=t("common.backStreet");
@@ -887,6 +957,9 @@ export function createStreetScreen({
   }
   $("#street-decorate-btn").onclick=()=>openStreetEditor();
   $("#street-shop-btn").onclick=openStreetShop;
+  $("#street-collection-btn").onclick=openStreetCollection;
+  $("#street-collection-close").onclick=closeStreetCollection;
+  $("#street-collection").addEventListener("click", e=>{ if(e.target.id === "street-collection") closeStreetCollection(); });
   $("#street-project-change").onclick=openStreetShop;
   $("#shop-view-street").onclick=()=>{streetPreview=null;show("street");};
   $("#street-undo").onclick=undoStreetEdit;

@@ -338,9 +338,28 @@
   #street-caption{width:100%; max-width:430px; min-height:36px; margin:7px auto 0; padding:7px 10px;
     border:1px solid var(--panel-border); border-radius:11px; background:var(--panel-wash);
     color:var(--lc-brown); font-size:12px; line-height:1.35; text-align:center;}
-  .street-actions{width:100%; display:grid; grid-template-columns:1.35fr 1fr 1fr; gap:7px; margin-top:6px;}
+  .street-actions{width:100%; display:grid; grid-template-columns:1.2fr 1fr 1fr 1fr; gap:7px; margin-top:6px;}
   .street-actions[hidden]{display:none;}
-  .street-actions .sec-btn{min-height:44px; margin:0; padding:7px 6px; font-size:13px;}
+  .street-actions .sec-btn{min-height:44px; margin:0; padding:7px 4px; font-size:12px;}
+  /* Collection book (Task 9): reuses the .pause-overlay/.pause-panel dialog
+     convention (see #quest-overlay just below) — read-only, so its own panel
+     just needs a scroll cap since it can list up to 3 full sets at once. */
+  .street-collection-panel{max-height:60vh; overflow-y:auto; padding-right:2px;}
+  .street-collection-set{margin-top:10px;}
+  .street-collection-set:first-child{margin-top:0;}
+  .street-collection-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;}
+  .street-collection-head b{color:var(--lc-green-deep); font-size:14px;}
+  .street-collection-complete{color:var(--lc-green-deep); font-weight:800; font-size:12px; white-space:nowrap;}
+  .street-collection-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(76px,1fr)); gap:7px;}
+  .street-collection-item{display:flex; flex-direction:column; align-items:center; gap:2px; padding:5px;
+    border:2px solid transparent; border-radius:12px; background:var(--lc-cream); color:var(--ink); text-align:center;}
+  .street-collection-item img{display:block; width:44px; height:44px; object-fit:contain;}
+  .street-collection-item span{display:block; max-width:100%; font-size:10px; line-height:1.15;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .street-collection-item small{display:block; color:var(--muted); font-size:9px;}
+  /* Locked = the SAME owned sprite, just faded — no new art per the brief. */
+  .street-collection-item.locked img{opacity:.4;}
+  .street-collection-item.locked{cursor:pointer;}
   #street-decorate-btn{background-color:var(--lc-sun);
     background-image:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun) 55%,var(--lc-sun-deep));
     color:var(--lc-teal); border:2px solid var(--lc-sun-deep); font-weight:900;
@@ -1517,6 +1536,7 @@
       <button class="sec-btn" id="street-decorate-btn" data-i18n="street.decorate">Decorate</button>
       <button class="sec-btn" id="street-shop-btn" data-i18n="street.shop">Street Shop</button>
       <button class="sec-btn" id="street-quests-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span data-i18n="street.questsBtn">Quests</span></span></button>
+      <button class="sec-btn" id="street-collection-btn" data-i18n="street.collection">Collection</button>
     </div>
     <div class="street-stage" id="street-stage">
       <div class="street-scroll" id="street-scroll" tabindex="0" data-i18n-aria="street.sceneLabel" aria-label="Your Lucky Cat Street">
@@ -1591,6 +1611,20 @@
           <button class="overlay-close" id="quest-popup-close" data-i18n-title="common.close" aria-label="Close">×</button>
         </div>
         <div id="quest-panel"></div>
+      </div>
+    </div>
+
+    <!-- Collection book (Task 9): same pause-overlay/pause-panel convention as
+         #quest-overlay above — read-only view of collectionView() (Task 4);
+         tapping an unowned item routes to the existing #street-preview-panel
+         flow via openStreetPreview(), never buys directly from here. -->
+    <div class="pause-overlay" id="street-collection" role="dialog" aria-modal="true" aria-labelledby="street-collection-title">
+      <div class="pause-panel">
+        <div class="quest-popup-head">
+          <h3 class="pause-title" id="street-collection-title" data-i18n="street.collection">Collection</h3>
+          <button class="overlay-close" id="street-collection-close" data-i18n-title="common.close" aria-label="Close">×</button>
+        </div>
+        <div class="street-collection-panel" id="street-collection-panel"></div>
       </div>
     </div>
   </div>

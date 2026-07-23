@@ -3761,7 +3761,7 @@ function drawStarMark(c, x, y, r){
 // relative order as the original inline street wiring did.
 const streetScreen = createStreetScreen({
   $, store, analytics, show, renderShop, pushEdge, updateWalletChip, todayStr, tOr,
-  shopViewedProducts, REDUCED_MOTION,
+  shopViewedProducts, REDUCED_MOTION, openDialog, closeDialog,
   getWallet: () => wallet, setWallet: v => { wallet = v; },
   getXp: () => xp,
   getCurrentScreen: () => currentScreen,
