@@ -21,7 +21,7 @@ describe("unownedDailyStock", () => {
 describe("shop", () => {
   it("defaultShop shape", () => {
     expect(defaultShop()).toEqual({ owned: [], skin: "", backdrop: "", effect: "", soundpack: "", tiers: {},
-      streetLayout: { v: 2, placements: {}, welcomeOwned: false, coachDone: false },
+      streetLayout: { v: 3, placements: {}, welcomeOwned: false, coachDone: false, name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null },
       streetProject: { v: 1, itemId: "", plotId: "" } });
   });
 

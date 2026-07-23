@@ -7,7 +7,7 @@ import { defaultShop } from "./shop.js";
 import { defaultStickers } from "./stickers.js";
 import { defaultQuestState, defaultMonthly, MONTHLY_TARGET, settleMonthly } from "./quests.js";
 import { defaultDaily } from "./daily.js";
-import { normalizeStreetLayout } from "./street.js";
+import { normalizeStreetLayout, STREET_LAYOUT_VERSION } from "./street.js";
 import { normalizeStreetProject } from "./street-project.js";
 
 export const SYNC_KEYS = ["mastery", "xp", "daily", "quests", "monthly",
@@ -108,7 +108,7 @@ export function mergeShop(a, b, localPreferenceDirty = false) {
   // A legacy cloud row has no layout preference to adopt. Welcome ownership
   // and coach completion are additive even when the other side's arrangement
   // wins; the chosen placements are normalized against merged ownership.
-  const bHasLayout = !!(b && b.streetLayout && b.streetLayout.v === 2);
+  const bHasLayout = !!(b && b.streetLayout && b.streetLayout.v === STREET_LAYOUT_VERSION);
   const chosenLayout = flags.layoutDirty || !bHasLayout ? A.streetLayout : B.streetLayout;
   const streetLayout = normalizeStreetLayout({
     ...(chosenLayout || {}),

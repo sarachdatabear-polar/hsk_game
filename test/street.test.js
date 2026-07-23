@@ -6,7 +6,7 @@ import { BUILDINGS, DECO_IDS, DECO_SPRITE_SCALE, UNIT_FRAC, streetPieces, street
          normalizeStreetLayout, itemFitsPlot, streetOwnedIds, compatibleStreetPlots,
          firstFreeStreetPlot,
          unplacedStreetItems, placeStreetItem, storeStreetItem, autoArrangeStreet,
-         migrateLegacyStreet, streetWorldMetrics } from "../src/street.js";
+         migrateLegacyStreet, streetWorldMetrics, STREET_LAYOUT_VERSION } from "../src/street.js";
 import { MILESTONES } from "../src/growth.js";
 
 describe("street", () => {
@@ -294,8 +294,9 @@ describe("street v2 authored layout", () => {
     const n = normalizeStreetLayout(input, ["red-lantern", "golden-arch", "tea-sign"]);
     expect(input).toEqual(before);
     expect(n).toEqual({
-      v: 2, welcomeOwned: true, coachDone: true,
+      v: 3, welcomeOwned: true, coachDone: true,
       placements: { "plot-small-01": "red-lantern" },
+      name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null,
     });
     expect(normalizeStreetLayout(n, ["red-lantern", "golden-arch", "tea-sign"])).toEqual(n);
   });
@@ -413,5 +414,38 @@ describe("street v2 authored layout", () => {
     expect(landscape.worldW).toBe(844);
     expect(landscape.sections).toBe(1);
     expect(streetWorldMetrics(390, 400)).toEqual(portrait);
+  });
+});
+
+describe("streetLayout v3 ownership fields", () => {
+  it("defaults the five new fields", () => {
+    expect(defaultStreetLayout()).toEqual({
+      v: 3, placements: {}, welcomeOwned: false, coachDone: false,
+      name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null,
+    });
+    expect(STREET_LAYOUT_VERSION).toBe(3);
+  });
+
+  it("normalizes and defends the new fields", () => {
+    const out = normalizeStreetLayout({
+      v: 2, placements: {}, name: "  My Street  ",
+      savedLayouts: [{ name: "A", placements: {} }, "junk", { name: "B", placements: {} },
+                     { name: "C", placements: {} }, { name: "D", placements: {} }],
+      keepsakes: [{ id: "k1", kind: "welcome", day: "2026-07-23" }, null],
+      setsCompleted: ["market", "market", 7, "garden"],
+      lastVisitDay: "2026-07-23",
+    }, []);
+    expect(out.v).toBe(3);
+    expect(out.name).toBe("My Street");            // trimmed, capped at 24
+    expect(out.savedLayouts).toHaveLength(3);      // capped at 3, junk dropped
+    expect(out.keepsakes).toEqual([{ id: "k1", kind: "welcome", day: "2026-07-23" }]); // nulls dropped
+    expect(out.setsCompleted).toEqual(["market", "garden"]); // deduped, non-strings dropped
+    expect(out.lastVisitDay).toBe("2026-07-23");
+  });
+
+  it("coerces a missing/garbage lastVisitDay to null and name to ''", () => {
+    const out = normalizeStreetLayout({ name: 7, lastVisitDay: 123 }, []);
+    expect(out.name).toBe("");
+    expect(out.lastVisitDay).toBeNull();
   });
 });

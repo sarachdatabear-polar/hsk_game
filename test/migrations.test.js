@@ -101,7 +101,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
     expect(end).toBe(2);
     expect(s.dump()["nbhsk.schemaVersion"]).toBe("2");
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
-    expect(shop.streetLayout.v).toBe(2);
+    expect(shop.streetLayout.v).toBe(3);
     expect(shop.streetLayout.welcomeOwned).toBe(true);
     expect(typeof shop.streetLayout.placements).toBe("object");
     expect(shop.streetProject).toEqual({ v: 1, itemId: "", plotId: "" });
@@ -152,10 +152,11 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
 
   it("an existing v2 layout's placements survive untouched", () => {
     const existingLayout = {
-      v: 2,
+      v: 3,
       placements: { "plot-small-01": "red-lantern" },
       welcomeOwned: false,
       coachDone: true,
+      name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null,
     };
     const s = fakeStorage({
       "nbhsk.schemaVersion": "1",
@@ -165,6 +166,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
     runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
     expect(shop.streetLayout.placements).toEqual({ "plot-small-01": "red-lantern" });
+    expect(shop.streetLayout.v).toBe(3);
     expect(shop.streetLayout.coachDone).toBe(true);
   });
 
@@ -204,7 +206,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
     expect(end).toBe(2);
     expect(s.dump()["nbhsk.schemaVersion"]).toBe("2");
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
-    expect(shop.streetLayout.v).toBe(2);
+    expect(shop.streetLayout.v).toBe(3);
     expect(shop.streetLayout.welcomeOwned).toBe(true);
   });
 

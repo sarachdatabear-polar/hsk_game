@@ -54,7 +54,7 @@ describe("mergeStickers", () => {
 });
 
 describe("mergeShop", () => {
-  const emptyLayout = { v: 2, placements: {}, welcomeOwned: false, coachDone: false };
+  const emptyLayout = { v: 3, placements: {}, welcomeOwned: false, coachDone: false, name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null };
   const emptyProject = { v: 1, itemId: "", plotId: "" };
   const local = { owned: ["skin-a", "deco-1"], skin: "skin-a", backdrop: "", effect: "", soundpack: "", tiers: { "deco-1": 2 }, streetLayout: emptyLayout, streetProject: emptyProject };
   const cloud = { owned: ["skin-b", "deco-1"], skin: "skin-b", backdrop: "bd-1", effect: "", soundpack: "", tiers: { "deco-1": 3 }, streetLayout: emptyLayout, streetProject: emptyProject };

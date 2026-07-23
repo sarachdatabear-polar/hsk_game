@@ -122,11 +122,33 @@ export const STREET_PLOTS = [
   { id: "plot-small-05",   x: 0.91, lane: "front", size: "small" },
 ];
 
-export const STREET_LAYOUT_VERSION = 2;
+export const STREET_LAYOUT_VERSION = 3;
+
+const STREET_NAME_MAX = 24;
+const SAVED_LAYOUTS_MAX = 3;
 
 export function defaultStreetLayout() {
-  return { v: STREET_LAYOUT_VERSION, placements: {}, welcomeOwned: false, coachDone: false };
+  return {
+    v: STREET_LAYOUT_VERSION, placements: {}, welcomeOwned: false, coachDone: false,
+    name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null,
+  };
 }
+
+function normName(v) { return typeof v === "string" ? v.trim().slice(0, STREET_NAME_MAX) : ""; }
+function normSavedLayouts(v) {
+  return (Array.isArray(v) ? v : [])
+    .filter(s => s && typeof s === "object" && typeof s.name === "string" && s.placements && typeof s.placements === "object")
+    .slice(0, SAVED_LAYOUTS_MAX)
+    .map(s => ({ name: s.name.slice(0, STREET_NAME_MAX), placements: { ...s.placements } }));
+}
+function normKeepsakes(v) {
+  return (Array.isArray(v) ? v : [])
+    .filter(k => k && typeof k === "object" && typeof k.id === "string" && typeof k.kind === "string");
+}
+function normSetsCompleted(v) {
+  return [...new Set((Array.isArray(v) ? v : []).filter(s => typeof s === "string"))];
+}
+function normLastVisitDay(v) { return typeof v === "string" && v ? v : null; }
 
 const SIZE_RANK = { small: 0, medium: 1, large: 2, gateway: 3 };
 const LANE_RANK = { back: 0, mid: 1, front: 2 };
@@ -156,6 +178,11 @@ export function normalizeStreetLayout(layout, ownedIds = []) {
     placements: {},
     welcomeOwned: !!raw.welcomeOwned,
     coachDone: !!raw.coachDone,
+    name: normName(raw.name),
+    savedLayouts: normSavedLayouts(raw.savedLayouts),
+    keepsakes: normKeepsakes(raw.keepsakes),
+    setsCompleted: normSetsCompleted(raw.setsCompleted),
+    lastVisitDay: normLastVisitDay(raw.lastVisitDay),
   };
   const allowed = new Set(streetOwnedIds(ownedIds, out));
   const used = new Set();
