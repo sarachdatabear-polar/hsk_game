@@ -92,11 +92,19 @@ describe("sw.js precache list", () => {
     expect(swSrc).toContain("cacheAfterFetch(RUNTIME, request)");
   });
 
-  it("versions shell, runtime, and audio caches from the same release value", () => {
+  it("versions shell and runtime caches from the release value", () => {
     expect(swSrc).toContain("const SHELL = `nbhsk-shell-${CACHE_VERSION}`");
     expect(swSrc).toContain("const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`");
-    expect(swSrc).toContain("const AUDIO = `nbhsk-audio-${CACHE_VERSION}`");
     expect(swSrc).not.toMatch(/nbhsk-(?:shell|runtime|audio)-v\d+/);
+  });
+
+  it("keeps the mp3 cache on its own version so shell releases don't wipe it", () => {
+    // Coupling AUDIO to CACHE_VERSION (v80..v105) made the activate handler
+    // delete every cached word mp3 on each release, leaving installed PWAs
+    // silent offline after every update until words were re-fetched. AUDIO
+    // advances only when build_audio.py regenerates the mp3 set.
+    expect(swSrc).toContain("const AUDIO = `nbhsk-audio-${AUDIO_VERSION}`");
+    expect(swSrc).not.toContain("nbhsk-audio-${CACHE_VERSION}");
   });
 
   it("fails an incomplete core install instead of swallowing missing files", () => {
