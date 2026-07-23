@@ -52,11 +52,13 @@ describe("sw.js precache list", () => {
   });
 
   it("keeps the atomic offline shell within the install budget", () => {
-    expect(PRECACHE.length).toBeLessThanOrEqual(72);
+    expect(PRECACHE.length).toBeLessThanOrEqual(74);
     // Bumped from 10MB: raccoon-wrong.png (dedicated retreat-hop sheet,
     // ~208KB) joins raccoon-walk/raccoon-happy in the default battle-loop
     // precache set (Jordan art drop, 2026-07-21).
-    expect(precacheBytes).toBeLessThanOrEqual(10.25 * 1024 * 1024);
+    // The portrait-safe Street background is now part of the default shell;
+    // landmark cutouts remain lazy/runtime-cached like catalog decorations.
+    expect(precacheBytes).toBeLessThanOrEqual(10.5 * 1024 * 1024);
   });
 
   for (const entry of PRECACHE) {
@@ -76,15 +78,16 @@ describe("sw.js precache list", () => {
     for (const entry of [
       "data/words.js", "assets/cat-walk.png", "assets/raccoon-walk.png",
       "assets/bg-battle.png", "assets/ui-word-plaque.svg", "assets/bg-home.webp",
+      "assets/bg-street-portrait.png",
     ]) expect(precacheSet.has(entry), entry).toBe(true);
   });
 
   it("keeps optional cosmetics out of install and caches them on first use", () => {
     for (const entry of [
       "assets/cat-astronaut-walk.png", "assets/bg-island-sunset.png",
-      "assets/deco-noodle-stall.png", "assets/tile-arcade.png",
+      "assets/deco-noodle-stall.png", "assets/landmark-tailor.png", "assets/tile-arcade.png",
     ]) expect(precacheSet.has(entry), entry).toBe(false);
-    expect(swSrc).toContain('const CACHE_VERSION = "v103"');
+    expect(swSrc).toContain('const CACHE_VERSION = "v104"');
     expect(swSrc).toContain("const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`");
     expect(swSrc).toContain("cacheAfterFetch(RUNTIME, request)");
   });

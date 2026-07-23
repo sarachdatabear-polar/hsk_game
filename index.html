@@ -317,14 +317,13 @@
   .street-wallet{display:inline-flex; align-items:center; justify-content:center; min-height:36px; padding:6px 11px;
     border:1px solid var(--panel-border); border-radius:999px; background:var(--panel-wash); color:var(--lc-green-deep);
     font-size:13px; font-weight:800; white-space:nowrap;}
-  .street-stage{position:relative; width:100%; margin-top:8px;}
+  .street-stage{position:relative; width:100%; max-width:430px; margin:8px auto 0;}
   .street-scroll{width:100%; overflow:hidden; border:2px solid var(--lc-brown); border-radius:14px;
     box-shadow:0 3px 10px rgba(46,42,36,.22); background:var(--lc-cream);}
-  /* Every Street backdrop is authored at 1024×512. Keep the stage on that
-     native 2:1 composition so drawCoverImage does not discard almost half of
-     the scene on portrait phones. The 150px floor only affects the narrowest
-     supported viewport, where it preserves usable 44px plot targets. */
-  .street-world{position:relative; height:auto; min-height:150px; aspect-ratio:2/1;}
+  /* Street's default scene is authored for a true portrait 3:4 window. It
+     gives the mascot and landmarks enough room to read as a composed place
+     instead of a thin strip floating over an empty screen. */
+  .street-world{position:relative; height:auto; min-height:0; aspect-ratio:3/4;}
   #street-cv{display:block; width:100%; height:100%;}
   #street-resident-cv{position:absolute; z-index:1; inset:0; display:block; width:100%; height:100%; pointer-events:none;}
   #street-hit-layer{position:absolute; inset:0; pointer-events:none;}
@@ -336,10 +335,27 @@
   .street-hit.plot-hit.incompatible{border-color:rgba(132,96,67,.32); background:rgba(46,42,36,.08);}
   .street-hit.item-hit.selected{border-color:var(--lc-green); background:rgba(255,214,95,.22);}
   @keyframes street-plot-pulse{50%{box-shadow:0 0 0 7px rgba(255,214,95,.16);}}
-  #street-caption{color:var(--lc-brown); font-size:12px; text-align:center; margin:5px 0 0; min-height:18px;}
-  .street-actions{width:100%; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin-top:6px;}
+  #street-caption{width:100%; max-width:430px; min-height:36px; margin:7px auto 0; padding:7px 10px;
+    border:1px solid var(--panel-border); border-radius:11px; background:var(--panel-wash);
+    color:var(--lc-brown); font-size:12px; line-height:1.35; text-align:center;}
+  .street-actions{width:100%; display:grid; grid-template-columns:1.35fr 1fr 1fr; gap:7px; margin-top:6px;}
   .street-actions[hidden]{display:none;}
   .street-actions .sec-btn{min-height:44px; margin:0; padding:7px 6px; font-size:13px;}
+  #street-decorate-btn{background-color:var(--lc-sun);
+    background-image:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun) 55%,var(--lc-sun-deep));
+    color:var(--lc-teal); border:2px solid var(--lc-sun-deep); font-weight:900;
+    box-shadow:0 3px 0 var(--lc-sun-deep),0 5px 10px rgba(46,42,36,.16);}
+  /* Short portrait phones keep a square crop so all controls and the sticky
+     nav remain in-fold; standard/tall phones use the native 3:4 artwork. */
+  @media (max-height:700px) and (orientation:portrait){
+    #s-street .street-world{aspect-ratio:1/1;}
+  }
+  /* Desktop and roomy landscape screens use a compact 4:3 scene so translated
+     status copy cannot meet the sticky nav. Short landscape gets its tighter
+     2:1 rule in the final media block below. */
+  @media (orientation:landscape) and (min-height:501px){
+    #s-street .street-world{aspect-ratio:4/3;}
+  }
   .street-info{width:100%; margin-top:7px; padding:9px 12px; border:1px solid var(--panel-border); border-radius:12px;
     background:var(--panel-wash); color:var(--ink); font-size:13px; line-height:1.35;}
   .street-info b{color:var(--lc-green-deep);}
@@ -1389,6 +1405,18 @@
     .welcome-controls .chips{gap:6px;}
     .welcome-hint{font-size:10px; line-height:1.25; margin:4px 0 0; max-width:none;}
     .welcome-start{margin-top:6px;}
+
+    /* ---- Lucky Cat Street ----
+       Keep the scene above the sticky nav on short landscape phones while
+       retaining a deliberate 2:1 cinematic crop for the limited height. */
+    #s-street{padding:4px 12px 3px;}
+    #s-street .street-title-row h2{padding:2px 8px; font-size:18px;}
+    #s-street .street-wallet{min-height:32px; padding:4px 9px; font-size:11px;}
+    #s-street .street-actions{margin-top:4px;}
+    #s-street .street-stage{max-width:340px; margin-top:5px;}
+    #s-street .street-world{min-height:0; aspect-ratio:2/1;}
+    #s-street #street-caption{max-width:340px; min-height:26px; margin-top:4px; padding:4px 8px;
+      font-size:10.5px; line-height:1.2;}
   }
 </style>
 </head>

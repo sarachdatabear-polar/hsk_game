@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { BUILDINGS, DECO_IDS, DECO_SPRITE_SCALE, UNIT_FRAC, streetPieces, streetProgress, streetMetrics,
          assignDecoAnchors, DECO_CLASS, CLASS_SIZE, DECO_ANCHORS, LANES,
+         LANDMARK_SCALE,
          WELCOME_ID, DECO_META, STREET_PLOTS, defaultStreetLayout,
          normalizeStreetLayout, itemFitsPlot, streetOwnedIds, compatibleStreetPlots,
          unplacedStreetItems, placeStreetItem, storeStreetItem, autoArrangeStreet,
@@ -23,6 +24,15 @@ describe("street", () => {
     expect(pieces.every(p => p.kind === "building")).toBe(true);
     expect(pieces.map(p => p.id)).toEqual(["lantern-post", "coin-bank"]);
     expect(pieces[0].slot).toBeLessThan(pieces[1].slot);
+  });
+
+  it("every milestone building uses an authored landmark draw scale", () => {
+    const landmarks = streetPieces(50, []);
+    expect(landmarks).toHaveLength(BUILDINGS.length);
+    for (const piece of landmarks) {
+      expect(piece.scale).toBe(LANDMARK_SCALE[piece.id]);
+      expect(piece.scale).toBeGreaterThan(2.5);
+    }
   });
 
   it("decos appear only when owned; assignment is independent of the owned array's order", () => {

@@ -41,4 +41,11 @@ describe("sprite registry", () => {
       expect(SPRITE_NAMES).toContain(name);
     }
   });
+
+  it("registers the portrait Street scene and authored milestone landmarks", () => {
+    for (const name of [
+      "bg-street-portrait", "landmark-lantern-post", "landmark-coin-bank",
+      "landmark-tailor", "landmark-kitten-cafe", "landmark-emperor-gate",
+    ]) expect(SPRITE_NAMES).toContain(name);
+  });
 });

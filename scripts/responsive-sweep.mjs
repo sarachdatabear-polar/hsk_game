@@ -110,7 +110,7 @@ function installPageHelpers() {
   const drawImage = CanvasRenderingContext2D.prototype.drawImage;
   CanvasRenderingContext2D.prototype.drawImage = function(image, ...args) {
     const src = image?.currentSrc || image?.src || "";
-    if (src.includes("/assets/bg-street.png"))
+    if (src.includes("/assets/bg-street.png") || src.includes("/assets/bg-street-portrait.png"))
       window.__resp.streetBgDraws++;
     const asset = src.split("/").pop() || "";
     if (asset && !window.__resp.drawnAssets.includes(asset))
@@ -181,6 +181,12 @@ function probeStreetScene() {
   const screen = document.querySelector("#s-street");
   const cv = document.querySelector("#street-cv");
   const r = cv?.getBoundingClientRect();
+  const captionRect = document.querySelector("#street-caption")?.getBoundingClientRect();
+  const navRect = document.querySelector("#bottom-nav")?.getBoundingClientRect();
+  const landmarkAssets = [
+    "landmark-lantern-post.png", "landmark-coin-bank.png", "landmark-tailor.png",
+    "landmark-kitten-cafe.png", "landmark-emperor-gate.png",
+  ];
   const actions = ["street-decorate-btn", "street-shop-btn", "street-quests-btn"]
     .map(id => document.getElementById(id))
     .map(button => {
@@ -196,11 +202,15 @@ function probeStreetScene() {
     });
   return {
     active: screen?.classList.contains("on") ?? false,
+    cvWidth: r ? Math.round(r.width) : 0,
     cvHeight: r ? Math.round(r.height) : 0,
     actions,
     overlayOpenBeforeClick: document.querySelector("#quest-overlay")?.classList.contains("on") ?? false,
-    paintedBgReady: window.__resp.spriteReady.includes("bg-street"),
+    paintedBgReady: window.__resp.spriteReady.includes("bg-street") ||
+      window.__resp.spriteReady.includes("bg-street-portrait"),
     paintedBgDraws: window.__resp.streetBgDraws,
+    landmarksDrawn: landmarkAssets.filter(asset => window.__resp.drawnAssets.includes(asset)),
+    navOverlap: captionRect && navRect ? Math.max(0, Math.round(captionRect.bottom-navRect.top)) : null,
   };
 }
 // Scoped to #quest-overlay specifically (not a bare #quest-panel lookup):
@@ -326,6 +336,9 @@ async function preparePage(browser, width, height) {
     localStorage.setItem("nbhsk.introDone", "true");
     localStorage.setItem("nbhsk.locale", JSON.stringify(locale));
     localStorage.setItem("nbhsk.wallet", "5000");
+    // Lv50 makes the permanent sweep exercise every milestone landmark and
+    // the kitten path while verifying that no legacy costume overlay returns.
+    localStorage.setItem("nbhsk.xp", "30625");
   }, LOCALE);
   await page.goto(`${BASE_URL}/index.html`, { waitUntil: "load" });
   await page.waitForTimeout(700);
@@ -340,7 +353,12 @@ async function goToShop(page) {
 async function goToStreet(page) {
   await page.evaluate(() => document.querySelector('[data-go="street"]')?.click());
   await page.waitForTimeout(250);
-  await page.waitForFunction(() => window.__resp.spriteReady.includes("bg-street"), null, { timeout:3000 })
+  await page.waitForFunction(() =>
+    (window.__resp.spriteReady.includes("bg-street") ||
+      window.__resp.spriteReady.includes("bg-street-portrait")) &&
+    ["landmark-lantern-post", "landmark-coin-bank", "landmark-tailor",
+      "landmark-kitten-cafe", "landmark-emperor-gate"]
+      .every(name => window.__resp.spriteReady.includes(name)), null, { timeout:3000 })
     .catch(() => {});
   await page.waitForTimeout(50);
 }
@@ -1085,6 +1103,9 @@ async function runFullSweep() {
     // (land-640, 640x360) sits at 187px under the new min(52vh,400px) cap;
     // this just catches an actual regression (e.g. cv collapsing to 0).
     if (streetScene.cvHeight < 150) failures.push(`street: cv height=${streetScene.cvHeight}<150`);
+    if (streetScene.navOverlap > 0) failures.push(`street: nav overlap=${streetScene.navOverlap}px`);
+    if (streetScene.landmarksDrawn.length !== 5)
+      failures.push(`street: landmarks drawn=${JSON.stringify(streetScene.landmarksDrawn)}`);
     if (streetScene.actions.some(action => !action.present))
       failures.push(`street-actions: missing=${JSON.stringify(streetScene.actions)}`);
     if (streetScene.actions.some(action => !action.hit))

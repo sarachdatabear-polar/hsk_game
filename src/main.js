@@ -268,7 +268,6 @@ function addXp(n){
   if(after > before && B.on){
     B.levelUps = (B.levelUps||[]).concat({from:before, to:after});
     const acc = accessoriesFor(after);
-    B.acc = acc.filter(id=>id!=="kitten");
     B.hasKitten = acc.includes("kitten");
   }
   if(after > before) renderStreet();
@@ -1812,7 +1811,6 @@ function startBattle(mode){
   questToasts = [];
   B.levelUps = [];
   const acc0 = accessoriesFor(levelForXp(xp));
-  B.acc = acc0.filter(id=>id!=="kitten");
   B.hasKitten = acc0.includes("kitten");
   // higher scopes walk faster (difficulty by level), and speed ramps per word;
   // speedBase is px/s at the 380-wide reference, sizeCanvas() derives the
@@ -1989,7 +1987,11 @@ function pauseBattle(){
   openDialog($("#pause-overlay"), $("#pause-resume"), resumeBattleWithAudio);
 }
 function resumeBattleWithAudio(){
-  unlockAllAudio().then(ready=>{ if(ready) resumeBattle(); });
+  // Resume and close the modal synchronously from the user's activation.
+  // Audio unlock may finish a moment later (especially in headless/WebView
+  // engines); it must not leave the game trapped behind the pause dialog.
+  unlockAllAudio();
+  resumeBattle();
 }
 function resumeBattle(){
   if(!B.on || !B.paused) return;
@@ -2621,7 +2623,7 @@ function draw(now){
   // Lantern trail (path + nodes) intentionally not drawn — the scene is static
   // now (owner 2026-07-17). The cat and raccoon still render below.
   ctx.textAlign = "center";
-  // player cat (left side, was the maneki) — shop skin + growth accessories +
+  // player cat (left side, was the maneki) — the selected authored skin and
   // kitten companion now live here instead of on the walker (M5 role swap).
   // "happy" during the post-kill victory hop, otherwise a walk-in-place idle
   // (drawCat has no dedicated idle state; "walk" just bobs/steps in place
@@ -2630,7 +2632,7 @@ function draw(now){
   const playerState = hopping ? "happy" : "walk";
   const catScale = CHAR_BASE*B.L.mascotS;
   const catX = renderedTrailCatX(now), catY = gy + 6*B.S;
-  drawCat(ctx, catX, catY, now, playerState, SKIN_PALETTES[shopState.skin], catScale, B.acc, false);
+  drawCat(ctx, catX, catY, now, playerState, SKIN_PALETTES[shopState.skin], catScale, [], false);
   // Companion follows the cat between lantern nodes and stays on-canvas.
   const kittenX = Math.max(16*B.L.mascotS + 2, catX - B.L.catHalf);
   if(B.hasKitten) drawCat(ctx, kittenX, gy + 6*B.S, now + 250, playerState, SKIN_PALETTES[shopState.skin], 0.5*B.L.mascotS, [], false);
@@ -3991,10 +3993,11 @@ function renderStreetHitLayer(pieces, layout, w, h, gy, m){
 }
 function drawStreetSceneBackground(c,w,h){
   const selected=shopState.backdrop ? sprite("bg-"+shopState.backdrop) : null;
-  const img=selected||sprite("bg-street");
+  const defaultName=h/w>=.95 ? "bg-street-portrait" : "bg-street";
+  const img=selected||sprite(defaultName);
   if(img){
-    // A single diorama window naturally crops the wide theme around its road
-    // center; no additional zoom is needed and no off-screen half exists.
+    // Default Street art has a portrait-safe 4:3 composition. Purchased
+    // themes remain wide and are center-cropped into the same diorama window.
     drawCoverImage(c,img,0,0,w,h);
   }else{
     paintStreetBase(c,w,h);
@@ -4093,13 +4096,12 @@ function drawStreetResidentFrame(now,reducedMotion=false){
   const activityX=Number.isFinite(pose.activityX)?pose.activityX*w:x;
   drawStreetResidentActivity(c,pose.activity,activityX,groundY,CONTENT_H*scale,now,pose.facing);
   drawContactShadow(c,x,groundY,CONTENT_H*scale*.82);
-  const allAccessories=accessoriesFor(levelForXp(xp));
-  const accessories=allAccessories.filter(id=>id!=="kitten");
+  const hasKitten=accessoriesFor(levelForXp(xp)).includes("kitten");
   c.save();
   if(pose.facing<0){ c.translate(x,0); c.scale(-1,1); c.translate(-x,0); }
-  drawCat(c,x,groundY,catTime,pose.state,SKIN_PALETTES[shopState.skin],scale,accessories,false);
+  drawCat(c,x,groundY,catTime,pose.state,SKIN_PALETTES[shopState.skin],scale,[],false);
   c.restore();
-  if(allAccessories.includes("kitten")){
+  if(hasKitten){
     const kittenX=x-pose.facing*CONTENT_H*scale*.64;
     c.save();
     if(pose.facing<0){ c.translate(kittenX,0); c.scale(-1,1); c.translate(-kittenX,0); }
@@ -4158,7 +4160,8 @@ function renderStreet(){
   for(const p of pieces){
     const x=p.slot*w, py=gy-h*(1-(p.laneY??1));
     if(p.kind==="building"){
-      const basis=m.unit*m.backScale; drawContactShadow(sc,x,py,basis); drawStreetBuilding(sc,p.id,x,py,basis);
+      const du=m.unit*(p.scale||3);
+      drawStreetLandmark(sc,p.id,x,py,du);
     }else{
       const pop=revealPopScale(p.id), du=m.unit*(p.scale||1)*pop;
       drawStreetBehavior(sc,p,x,py,du); drawContactShadow(sc,x,py,du); drawTieredDeco(sc,p,x,py,du);
@@ -4183,6 +4186,7 @@ function renderStreet(){
   const stored=unplacedStreetItems(shopState.owned,layout).length;
   $("#street-caption").textContent=streetPreview ? t("street.previewCaption")
     : streetEdit ? t("street.editCaption",{placed,stored})
+    : placed===0 ? t("street.captionReady",{buildings:prog.unlocked})
     : t("street.captionSummary",{placed,stored,buildings:prog.unlocked});
   if(streetReveal && owned.includes(streetReveal.id)){
     $("#street-caption").textContent=t("street.captionNew",{name:streetItemLabel(streetReveal.id)});
@@ -4557,51 +4561,15 @@ function drawContactShadow(c, x, y, basis){
   c.beginPath(); c.ellipse(x, y + basis*.05, basis*.5, basis*.12, 0, 0, Math.PI*2); c.fill();
   c.restore();
 }
-function drawStreetBuilding(c, id, x, gy, h){
-  const bw = h*0.54, bh = h*0.62;
-  c.save(); c.translate(x, gy);
-  c.shadowColor = "rgba(245,197,24,.32)";
-  c.shadowBlur = 6;
-  switch(id){
-    case "lantern-post":
-      c.fillStyle = "#846043"; roundRectOn(c,-3,-bh,6,bh,2); c.fill();
-      c.strokeStyle = "#F2BC57"; c.lineWidth = 1.6;
-      c.beginPath(); c.moveTo(0,-bh); c.quadraticCurveTo(bw*.26,-bh*1.06,bw*.42,-bh*.86); c.stroke();
-      c.fillStyle = "#c1272d"; c.beginPath(); c.ellipse(bw*.43,-bh*.74,bw*.18,bw*.23,0,0,Math.PI*2); c.fill();
-      c.fillStyle = "#F2BC57"; c.fillRect(bw*.34,-bh*.98,bw*.18,3); c.fillRect(bw*.36,-bh*.52,bw*.14,3);
-      break;
-    case "coin-bank":
-      c.fillStyle = "#846043"; roundRectOn(c,-bw/2,-bh,bw,bh,4); c.fill();
-      c.fillStyle = "#E69777"; c.fillRect(-bw*.55,-bh,bw*1.1,bh*.16);
-      c.fillStyle = "#F2BC57"; c.beginPath(); c.arc(0, -bh*.58, bw*.2, 0, Math.PI*2); c.fill();
-      c.fillStyle = "#2E2A24"; c.font = `700 ${Math.round(bw*.22)}px serif`; c.textAlign = "center";
-      c.fillText("$", 0, -bh*.5);
-      c.fillStyle = "rgba(251,245,232,.72)"; c.fillRect(-bw*.34,-bh*.28,bw*.68,bh*.05);
-      break;
-    case "tailor":
-      c.fillStyle = "#846043"; roundRectOn(c,-bw/2, -bh*.85, bw, bh*.85, 4); c.fill();
-      c.fillStyle = "#c1272d"; c.fillRect(-bw/2-5, -bh*.85-9, bw+10, 9);
-      c.fillStyle = "rgba(251,245,232,.18)"; c.fillRect(-bw*.42,-bh*.79,bw*.84,bh*.13);
-      c.fillStyle = "#F2BC57";
-      c.fillRect(-bw*.18, -bh*.55, bw*.14, bh*.14); c.fillRect(bw*.04, -bh*.55, bw*.14, bh*.14);
-      break;
-    case "kitten-cafe":
-      c.fillStyle = "#846043"; roundRectOn(c,-bw/2, -bh*.75, bw, bh*.75, 4); c.fill();
-      c.fillStyle = "#E69777";
-      c.beginPath(); c.moveTo(-bw/2-6,-bh*.75); c.lineTo(0,-bh); c.lineTo(bw/2+6,-bh*.75); c.closePath(); c.fill();
-      c.fillStyle = "#F2BC57"; c.beginPath(); c.arc(0,-bh*.4,bw*.16,0,Math.PI*2); c.fill();
-      c.fillStyle = "#2E2A24"; c.beginPath(); c.arc(-bw*.05,-bh*.43,bw*.03,0,Math.PI*2); c.fill(); c.beginPath(); c.arc(bw*.05,-bh*.43,bw*.03,0,Math.PI*2); c.fill();
-      break;
-    case "emperor-gate":
-      c.fillStyle = "#c1272d";
-      c.fillRect(-bw*.7, -bh*1.15, bw*.16, bh*1.15);
-      c.fillRect(bw*.54, -bh*1.15, bw*.16, bh*1.15);
-      c.fillRect(-bw*.7, -bh*1.15, bw*1.4, bh*.14);
-      c.fillStyle = "#E69777"; c.fillRect(-bw*.82,-bh*1.28,bw*1.64,bh*.13);
-      c.fillStyle = "#F2BC57"; c.beginPath(); c.arc(0,-bh*1.08,bw*.12,0,Math.PI*2); c.fill();
-      break;
-  }
-  c.restore();
+function drawStreetLandmark(c, id, x, groundY, size){
+  const img=sprite("landmark-"+id);
+  if(!img) return false;
+  // The transparent source files leave roughly 7% below their painted
+  // silhouette. Lowering the image by that amount puts every object on the
+  // shared lane instead of making it float.
+  drawContactShadow(c,x,groundY,size*.76);
+  c.drawImage(img,x-size/2,groundY-size+size*.07,size,size);
+  return true;
 }
 // Small 4-point star (shop previews + star-shower particles).
 function drawStarMark(c, x, y, r){

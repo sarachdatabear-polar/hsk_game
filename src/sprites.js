@@ -16,10 +16,13 @@ export const SPRITE_NAMES = [
   "cat-boss-walk", "cat-boss-happy",
   "raccoon-walk", "raccoon-happy", "raccoon-wrong",
   "maneki", "coin", "lantern",
-  "bg-quest", "bg-battle", "bg-market", "bg-street",
+  "bg-quest", "bg-battle", "bg-market", "bg-street", "bg-street-portrait",
   "bg-temple", "bg-bamboo",
   "bg-harbor-night", "bg-snow-festival", "bg-island-sunset",
   "bg-lantern-festival", "bg-dragon-gate",
+  // milestone landmarks — authored transparent cutouts, never canvas boxes
+  "landmark-lantern-post", "landmark-coin-bank", "landmark-tailor",
+  "landmark-kitten-cafe", "landmark-emperor-gate",
   // street decos — PNG art with a canvas (drawStreetDeco) vector fallback
   "deco-red-lantern", "deco-noodle-stall", "deco-tea-sign",
   "deco-foo-dog", "deco-golden-arch",

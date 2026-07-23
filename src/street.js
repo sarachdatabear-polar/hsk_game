@@ -11,6 +11,17 @@ export const BUILDINGS = [
   { lv: 50, id: "emperor-gate", name: "Emperor's Gate" },
 ];
 
+// Draw-box scale for the five authored milestone landmark cutouts. The source
+// PNGs include a little transparent breathing room, so these values keep the
+// visible silhouettes readable without colliding across the five fixed slots.
+export const LANDMARK_SCALE = {
+  "lantern-post": 3.0,
+  "coin-bank": 2.85,
+  "tailor": 3.15,
+  "kitten-cafe": 3.15,
+  "emperor-gate": 3.35,
+};
+
 // Display order for owned decorations; ids owned but absent here are ignored.
 // v7 adds the permanent prestige decos, the daily-pool decos, and the three
 // seasonal decos (order fixes each one's street slot below).
@@ -277,7 +288,8 @@ export function streetPieces(level, owned, tiers = {}, layout = null) {
   const buildingSlots = layout ? [.10, .30, .50, .70, .90] : BUILDING_SLOTS;
   BUILDINGS.forEach((b, i) => {
     if (level >= b.lv) pieces.push({
-      id: b.id, kind: "building", slot: buildingSlots[i], laneY: layout ? 0.74 : 0.86,
+      id: b.id, kind: "building", slot: buildingSlots[i],
+      laneY: layout ? 0.70 : 0.82, scale: LANDMARK_SCALE[b.id],
     });
   });
   if (layout) {
