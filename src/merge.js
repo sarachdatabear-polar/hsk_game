@@ -8,6 +8,7 @@ import { defaultStickers } from "./stickers.js";
 import { defaultQuestState, defaultMonthly, MONTHLY_TARGET, settleMonthly } from "./quests.js";
 import { defaultDaily } from "./daily.js";
 import { normalizeStreetLayout } from "./street.js";
+import { normalizeStreetProject } from "./street-project.js";
 
 export const SYNC_KEYS = ["mastery", "xp", "daily", "quests", "monthly",
   "wallet", "freezes", "shop", "stickers", "best"];
@@ -61,10 +62,20 @@ export function streetLayoutOf(shop) {
   return normalizeStreetLayout(s.streetLayout, s.owned || []);
 }
 
+export function streetProjectOf(shop) {
+  const s = Object.assign(defaultShop(), shop || {});
+  return normalizeStreetProject(s.streetProject, s.owned || []);
+}
+
 // Sync preference baseline. Ownership/tier changes must not masquerade as a
-// re-dress/rearrange, so only equipped slots + canonical layout participate.
+// re-dress/rearrange/goal change, so only equipped slots + canonical Street
+// preferences participate.
 export function shopPreferencesOf(shop) {
-  return { slots: slotsOf(shop), streetLayout: streetLayoutOf(shop) };
+  return {
+    slots: slotsOf(shop),
+    streetLayout: streetLayoutOf(shop),
+    streetProject: streetProjectOf(shop),
+  };
 }
 
 // Equipped slots resolve by dirty-bit LWW: local wins iff the equip slots
@@ -75,12 +86,17 @@ export function shopPreferencesOf(shop) {
 export function mergeShop(a, b, localPreferenceDirty = false) {
   const A = Object.assign(defaultShop(), a || {});
   const flags = typeof localPreferenceDirty === "object"
-    ? { slotsDirty: !!localPreferenceDirty.slotsDirty, layoutDirty: !!localPreferenceDirty.layoutDirty }
-    : { slotsDirty: !!localPreferenceDirty, layoutDirty: false };
+    ? {
+        slotsDirty: !!localPreferenceDirty.slotsDirty,
+        layoutDirty: !!localPreferenceDirty.layoutDirty,
+        projectDirty: !!localPreferenceDirty.projectDirty,
+      }
+    : { slotsDirty: !!localPreferenceDirty, layoutDirty: false, projectDirty: false };
   if (!b) {
     return { owned: [...(A.owned || [])], skin: A.skin, backdrop: A.backdrop,
              effect: A.effect, soundpack: A.soundpack, tiers: { ...(A.tiers || {}) },
-             streetLayout: normalizeStreetLayout(A.streetLayout, A.owned || []) };
+             streetLayout: normalizeStreetLayout(A.streetLayout, A.owned || []),
+             streetProject: normalizeStreetProject(A.streetProject, A.owned || []) };
   }
   const B = Object.assign(defaultShop(), b);
   const owned = [...new Set([...(A.owned || []), ...(B.owned || [])])];
@@ -99,8 +115,14 @@ export function mergeShop(a, b, localPreferenceDirty = false) {
     welcomeOwned: !!(A.streetLayout?.welcomeOwned || B.streetLayout?.welcomeOwned),
     coachDone: !!(A.streetLayout?.coachDone || B.streetLayout?.coachDone),
   }, owned);
+  // A legacy cloud row has no project preference to adopt. Project choice is
+  // LWW independently from layout/equip changes, then cleared automatically
+  // if either device already bought the target.
+  const bHasProject = !!(b && b.streetProject && typeof b.streetProject === "object");
+  const chosenProject = flags.projectDirty || !bHasProject ? A.streetProject : B.streetProject;
+  const streetProject = normalizeStreetProject(chosenProject, owned);
   return { owned, skin: slots.skin, backdrop: slots.backdrop,
-           effect: slots.effect, soundpack: slots.soundpack, tiers, streetLayout };
+           effect: slots.effect, soundpack: slots.soundpack, tiers, streetLayout, streetProject };
 }
 
 // s/k are cumulative counters: max is the safe fold (sum would double-count
@@ -220,7 +242,10 @@ export function mergeDaily(a, b) {
 //
 // unseenPurchased defaults to 0, at which point this is a 0-subtract/0-add
 // no-op: byte-identical to the pre-fold formula (test-asserted in merge.test.js).
-export function mergeAll(local, cloud, { shopDirty = false, shopLayoutDirty = false, today = null, unseenPurchased = 0 } = {}) {
+export function mergeAll(local, cloud, {
+  shopDirty = false, shopLayoutDirty = false, shopProjectDirty = false,
+  today = null, unseenPurchased = 0,
+} = {}) {
   const l = local || {}, c = cloud || {};
   const lm = today ? settleMonthly(Object.assign(defaultMonthly(), l.monthly || {}), today) : { state: l.monthly, earned: 0 };
   const cm = today ? settleMonthly(Object.assign(defaultMonthly(), c.monthly || {}), today) : { state: c.monthly, earned: 0 };
@@ -233,7 +258,11 @@ export function mergeAll(local, cloud, { shopDirty = false, shopLayoutDirty = fa
     monthly: mergeMonthly(lm.state, cm.state),
     wallet: mergeWallet(num(l.wallet) + lm.earned, num(c.wallet) + cm.earned - unseen) + unseen,
     freezes: mergeFreezes(l.freezes, c.freezes),
-    shop: mergeShop(l.shop, c.shop, { slotsDirty: shopDirty, layoutDirty: shopLayoutDirty }),
+    shop: mergeShop(l.shop, c.shop, {
+      slotsDirty: shopDirty,
+      layoutDirty: shopLayoutDirty,
+      projectDirty: shopProjectDirty,
+    }),
     stickers: mergeStickers(l.stickers, c.stickers),
     best: mergeBest(l.best, c.best),
   };

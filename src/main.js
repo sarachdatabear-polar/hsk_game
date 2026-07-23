@@ -29,6 +29,10 @@ import { initAudio, speak, speakWhenReady, audioAvailable, hasMp3, setVoiceVolum
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, syncReengageReminder, requestNotifPermission, isNative } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, isAvailable, seasonStatus, upgradePrice, unownedDailyStock } from "./shop.js";
 import {
+  makeStreetProject, normalizeStreetProject, remainingBucket,
+  streetProjectProgress,
+} from "./street-project.js";
+import {
   WELCOME_ID, STREET_PLOTS, streetPieces, streetProgress,
   streetWorldMetrics, DECO_SPRITE_SCALE, defaultStreetLayout,
   normalizeStreetLayout, compatibleStreetPlots, unplacedStreetItems,
@@ -1767,6 +1771,9 @@ function startBattle(mode){
   if(B.on) return;   // re-entrancy guard: a double-tapped start button must not schedule a second rAF loop
   lastMode = mode;
   B.on = true; B.mode = mode;
+  // Street Projects use the wallet delta shown on the results screen. Coins
+  // remain fully spendable; this is a snapshot, never an escrow balance.
+  B.walletAtStart = wallet;
   // A custom review deck can be as small as 2; distractors fall back to the
   // full pool for small decks, so 2 is safe.
   B.deck = (battleDeckOverride && battleDeckOverride.length >= 2) ? battleDeckOverride : pool;
@@ -3103,6 +3110,7 @@ function endBattle(quit){
   if(bonus) wallet += bonus;
   store.set("wallet", wallet);
   updateWalletChip();
+  renderStreetProjectResults(B.walletAtStart, wallet);
   $("#r-learned").textContent = t("results.learnedTarget", { learned:results.learned, target:results.target });
   $("#r-attempts").textContent = results.attempts;
   $("#r-accuracy").textContent = results.accuracy + "%";
@@ -3334,6 +3342,7 @@ function makeShopRow(item, today){
   const tier = (shopState.tiers && shopState.tiers[item.id]) || 1;
   const row = document.createElement("div");
   row.className = "scorerow shoprow";
+  row.dataset.itemId = item.id;
   const left = document.createElement("span");
   left.className = "shop-left";
   const preview = document.createElement("canvas");
@@ -3849,6 +3858,41 @@ function drawStreetPlotGrid(c, w, h, gy, m, layout){
     c.restore();
   }
 }
+function drawStreetProjectBlueprint(c, target, p, x, py, du){
+  const stage=target.progress.stage;
+  const alpha=[.20,.34,.52,.72][stage]||.20;
+  c.save();
+  // The object becomes more tangible as the wallet crosses each third of its
+  // price. It stays visibly blueprint-like until purchase/placement.
+  c.globalAlpha=alpha;
+  c.filter=stage>=3?"sepia(.2) saturate(1.25)":"grayscale(1) sepia(.75) hue-rotate(110deg) saturate(1.4)";
+  if(stage>=2){
+    c.shadowColor=stage>=3?"rgba(242,188,87,.82)":"rgba(76,160,154,.66)";
+    c.shadowBlur=stage>=3?18:10;
+  }
+  drawStreetDeco(c,p.spriteId||p.id,x,py,du);
+  c.restore();
+
+  c.save();
+  c.strokeStyle=stage>=3?"rgba(132,96,67,.86)":"rgba(46,102,86,.78)";
+  c.fillStyle=stage>=3?"rgba(255,214,95,.22)":"rgba(168,216,209,.18)";
+  c.lineWidth=Math.max(1.5,du*.025);
+  c.setLineDash(stage>=3?[]:[6,4]);
+  const bw=du*(stage>=1?1.12:.96), top=py-du*(stage>=2?1.42:1.18);
+  c.fillRect(x-bw/2,top,bw,py-top);
+  c.strokeRect(x-bw/2,top,bw,py-top);
+  if(stage>=1){
+    c.setLineDash([]);
+    for(const dx of [-.58,.58]){
+      c.beginPath(); c.moveTo(x+du*dx,py); c.lineTo(x+du*dx,top-du*.12); c.stroke();
+    }
+    c.beginPath(); c.moveTo(x-du*.66,top+du*.12); c.lineTo(x+du*.66,top+du*.12); c.stroke();
+  }
+  if(stage>=2){
+    c.beginPath(); c.moveTo(x-du*.52,py-du*.22); c.lineTo(x+du*.52,top+du*.2); c.stroke();
+  }
+  c.restore();
+}
 function drawStreetBehavior(c, p, x, py, du){
   const active = streetReaction?.id === p.id && streetReaction.until > performance.now();
   const boost = active ? 1.8 : 1;
@@ -3957,6 +4001,7 @@ function renderStreet(){
   const layout=preview?.layout || liveStreetLayout();
   const tiers=preview?.tiers || shopState.tiers || {};
   const pieces=streetPieces(levelForXp(xp),owned,tiers,layout);
+  const project=!streetEdit&&!streetPreview ? activeStreetProject(wallet,layout) : null;
   if(streetEdit || streetPreview) drawStreetPlotGrid(sc,w,h,gy,m,layout);
   if(streetReveal && !streetReveal.start && owned.includes(streetReveal.id)) streetReveal.start=performance.now();
   for(const p of pieces){
@@ -3970,11 +4015,19 @@ function renderStreet(){
       if(streetReveal?.id===p.id && streetReveal.start) drawRevealDust(sc,x,py,du);
     }
   }
+  if(project){
+    const p=streetProjectPiece(project,layout);
+    if(p){
+      const x=p.slot*w, py=gy-h*(1-(p.laneY??1)), du=m.unit*(p.scale||1);
+      drawStreetProjectBlueprint(sc,project,p,x,py,du);
+    }
+  }
   const mImg=sprite("maneki"), mp=Math.min(h*.62,67);
   if(mImg) sc.drawImage(mImg,4,gy-mp+4,mp,mp);
   else drawCat(sc,22,gy+8,0,"happy",null,.81,[],false);
   renderStreetHitLayer(pieces,layout,w,h,gy,m);
   renderStreetEditor(); renderStreetPreviewPanel();
+  renderStreetProjectCard(project);
   $("#street-wallet").textContent=t("shop.coins",{coins:wallet.toLocaleString()});
   const prog=streetProgress(levelForXp(xp));
   const placed=Object.keys(layout.placements).length;
@@ -4106,12 +4159,123 @@ function firstPreviewPlot(itemId, layout){
   return candidates.find(p=>!layout.placements[p.id]&&p.size===streetClass(itemId))?.id
     || candidates.find(p=>!layout.placements[p.id])?.id || candidates[0]?.id || null;
 }
-function openStreetPreview(itemId){
+function activeStreetProject(walletValue=wallet, layout=shopState.streetLayout){
+  const project=normalizeStreetProject(shopState.streetProject,shopState.owned);
+  const item=CATALOG.find(i=>i.id===project.itemId&&i.type==="deco");
+  if(!item) return null;
+  const base=normalizeStreetLayout(layout,shopState.owned);
+  const candidates=compatibleStreetPlots(item.id,base);
+  const plotId=candidates.some(p=>p.id===project.plotId)
+    ? project.plotId : firstPreviewPlot(item.id,base);
+  if(!plotId) return null;
+  return {
+    project:{...project,plotId},
+    item,
+    plotId,
+    progress:streetProjectProgress(project,item,walletValue),
+  };
+}
+function streetProjectPiece(target, layout){
+  if(!target) return null;
+  const owned=[...shopState.owned,target.item.id];
+  const base=normalizeStreetLayout(layout,owned);
+  const placements={...base.placements};
+  for(const [plotId,id] of Object.entries(placements)) if(id===target.item.id) delete placements[plotId];
+  delete placements[target.plotId];
+  placements[target.plotId]=target.item.id;
+  const projectLayout=normalizeStreetLayout({...base,placements},owned);
+  return streetPieces(levelForXp(xp),owned,{...(shopState.tiers||{}),[target.item.id]:1},projectLayout)
+    .find(p=>p.kind==="deco"&&p.id===target.item.id)||null;
+}
+function setProjectMeter(el, progress, label){
+  if(!el) return;
+  el.classList.toggle("ready",progress.ready);
+  el.setAttribute("aria-valuenow",String(progress.pct));
+  el.setAttribute("aria-valuetext",label);
+  const fill=el.querySelector("i");
+  if(fill) fill.style.width=progress.pct+"%";
+}
+function renderStreetProjectCard(target){
+  const card=$("#street-project");
+  card.hidden=!target;
+  if(!target) return;
+  const progress=target.progress;
+  const primary=progress.ready
+    ? t("street.projectReady")
+    : t("street.projectProgress",{pct:progress.pct,coins:progress.remaining.toLocaleString()});
+  const status=primary+" · "+t("street.projectReserved");
+  $("#street-project-name").textContent=streetItemLabel(target.item.id);
+  $("#street-project-status").textContent=status;
+  const meter=$("#street-project-meter");
+  setProjectMeter(meter,progress,t("street.projectBlueprintLabel",{
+    name:streetItemLabel(target.item.id),pct:progress.pct,
+  }));
+  const build=$("#street-project-build");
+  build.disabled=!progress.ready;
+  build.onclick=()=>openStreetPreview(target.item.id,"street_project",target.plotId);
+}
+function selectStreetProjectFromPreview(){
+  if(!streetPreview) return;
+  const item=CATALOG.find(i=>i.id===streetPreview.itemId&&i.type==="deco");
+  if(!item||shopState.owned.includes(item.id)) return;
+  const project=makeStreetProject(item.id,streetPreview.plotId||"");
+  shopState={...shopState,streetProject:project};
+  store.set("shop",shopState);
+  pushEdge("hide");
+  analytics.track("street_project_select",{
+    item_id:item.id,source:streetPreview.source||"street_preview",
+    reserved:!!(item.pool||item.season),
+  });
+  const plotId=project.plotId;
+  streetPreview=null;
+  announceStreet("street.projectSelectedAnnouncement",{name:streetItemLabel(item.id)});
+  renderStreet();
+  if(plotId) scrollStreetToPlot(plotId);
+}
+function renderStreetProjectResults(beforeWallet,afterWallet){
+  const target=activeStreetProject(afterWallet,shopState.streetLayout);
+  const card=$("#r-project");
+  card.hidden=!target;
+  if(!target) return;
+  const progress=streetProjectProgress(target.project,target.item,beforeWallet,afterWallet);
+  const earned=progress.gained.toLocaleString();
+  let status;
+  if(progress.ready){
+    status=progress.gained
+      ? t("results.projectReadyEarned",{earned})
+      : t("results.projectReady");
+  }else{
+    status=progress.gained
+      ? t("results.projectProgress",{earned,remaining:progress.remaining.toLocaleString()})
+      : t("results.projectNoGain",{remaining:progress.remaining.toLocaleString()});
+  }
+  $("#r-project-name").textContent=streetItemLabel(target.item.id);
+  $("#r-project-status").textContent=status;
+  const icon=$("#r-project-icon");
+  icon.src="assets/deco-"+(streetMeta(target.item.id)?.spriteId||target.item.id)+".png";
+  const meter=$("#r-project-meter");
+  setProjectMeter(meter,progress,t("street.projectBlueprintLabel",{
+    name:streetItemLabel(target.item.id),pct:progress.pct,
+  }));
+  const action=$("#r-project-action");
+  action.textContent=t(progress.ready?"results.buildNow":"results.viewProject");
+  action.onclick=()=>{
+    if(progress.ready) openStreetPreview(target.item.id,"results_project",target.plotId);
+    else { show("street"); scrollStreetToPlot(target.plotId); }
+  };
+  analytics.track("street_project_progress",{
+    remaining_bucket:remainingBucket(progress.remaining),
+    ready:progress.ready,
+  });
+}
+function openStreetPreview(itemId,source="street_shop",initialPlot=null){
   const item=CATALOG.find(i=>i.id===itemId&&i.type==="deco"); if(!item) return;
   const layout=ensureStreetLayout();
+  const requested=initialPlot&&compatibleStreetPlots(itemId,layout).some(p=>p.id===initialPlot)
+    ? initialPlot : null;
   streetEdit=null;
-  streetPreview={ itemId, plotId:firstPreviewPlot(itemId,layout), tier:(shopState.tiers||{})[itemId]||1 };
-  analytics.track("street_preview",{item_id:itemId,source:"street_shop"});
+  streetPreview={ itemId, plotId:requested||firstPreviewPlot(itemId,layout), tier:(shopState.tiers||{})[itemId]||1, source };
+  analytics.track("street_preview",{item_id:itemId,source});
   show("street");
   if(streetPreview.plotId) scrollStreetToPlot(streetPreview.plotId);
 }
@@ -4120,16 +4284,22 @@ function selectStreetPreviewPlot(plotId){
   streetPreview.plotId=plotId; renderStreet(); scrollStreetToPlot(plotId);
 }
 function closeStreetPreview(){
-  streetPreview=null; streetShopMode=true; renderShop(); show("shop");
+  const stayOnStreet=streetPreview?.source==="street_project"||streetPreview?.source==="results_project";
+  streetPreview=null;
+  if(stayOnStreet){ renderStreet(); return; }
+  streetShopMode=true; renderShop(); show("shop");
 }
 function buyStreetPreview(){
   if(!streetPreview) return;
   const item=CATALOG.find(i=>i.id===streetPreview.itemId); if(!item) return;
   const wasOwned=shopState.owned.includes(item.id);
+  const wasProject=shopState.streetProject?.itemId===item.id;
+  const source=streetPreview.source||"street_preview";
   const r=buy(wallet,shopState,item.id,todayStr());
   if(!r.ok){ announceStreet("street.notEnough"); return; }
   wallet=r.wallet; shopState=r.shop; store.set("wallet",wallet); store.set("shop",shopState); pushEdge("purchase"); updateWalletChip();
-  analytics.track("street_purchase",{item_id:item.id,source:"street_preview",placed_immediately:!wasOwned});
+  analytics.track("street_purchase",{item_id:item.id,source,placed_immediately:!wasOwned});
+  if(wasProject&&!wasOwned) analytics.track("street_project_complete",{item_id:item.id,source});
   streetReveal={id:item.id,start:0};
   if(!wasOwned){
     const plotId=streetPreview.plotId; streetPreview=null; ensureStreetLayout(); openStreetEditor(item.id,false,plotId);
@@ -4146,11 +4316,20 @@ function renderStreetPreviewPanel(){
   $("#street-preview-name").textContent=streetItemLabel(item.id);
   $("#street-preview-desc").textContent=tOr("item."+item.id+".desc","");
   $("#street-preview-meta").textContent=streetMetaLabel(item.id);
+  const back=$("#street-preview-back");
+  back.textContent=t(streetPreview.source==="street_project"||streetPreview.source==="results_project"
+    ?"common.backStreet":"street.backToShop");
   document.querySelectorAll("[data-preview-tier]").forEach(btn=>{
     const n=+btn.dataset.previewTier,on=n===streetPreview.tier; btn.classList.toggle("on",on); btn.setAttribute("aria-pressed",String(on));
     btn.onclick=()=>{streetPreview.tier=n;renderStreet();};
   });
   const owned=shopState.owned.includes(item.id), tier=(shopState.tiers||{})[item.id]||1, buyBtn=$("#street-preview-buy");
+  const projectBtn=$("#street-preview-project");
+  const isProject=shopState.streetProject?.itemId===item.id;
+  projectBtn.hidden=owned;
+  projectBtn.disabled=isProject;
+  projectBtn.textContent=t(isProject?"street.currentProject":"street.makeProject");
+  projectBtn.onclick=selectStreetProjectFromPreview;
   if(!owned){ buyBtn.textContent=t("street.buyAndPlace",{coins:item.price.toLocaleString()}); buyBtn.disabled=wallet<item.price; buyBtn.onclick=buyStreetPreview; }
   else if(tier<item.maxTier){
     const price=upgradePrice(item,tier); buyBtn.textContent=t("shop.upgrade",{stars:"★".repeat(tier+1),coins:price.toLocaleString()}); buyBtn.disabled=wallet<price; buyBtn.onclick=buyStreetPreview;
@@ -4166,12 +4345,14 @@ function scrollStreetToPlot(plotId){
     scroll.scrollTo({left,behavior:REDUCED_MOTION?"auto":"smooth"});
   });
 }
-$("#street-decorate-btn").onclick=()=>openStreetEditor();
-$("#street-shop-btn").onclick=()=>{
+function openStreetShop(){
   streetShopMode=true; analytics.track("store_open"); shopViewedProducts.clear();
   const back=$("#shop-back"); back.dataset.go="street"; back.textContent=t("common.backStreet");
   renderShop(); show("shop");
-};
+}
+$("#street-decorate-btn").onclick=()=>openStreetEditor();
+$("#street-shop-btn").onclick=openStreetShop;
+$("#street-project-change").onclick=openStreetShop;
 $("#shop-view-street").onclick=()=>{streetPreview=null;show("street");};
 $("#street-undo").onclick=undoStreetEdit;
 $("#street-store").onclick=storeSelectedStreetItem;
@@ -4181,6 +4362,7 @@ $("#street-done").onclick=finishStreetEdit;
 $("#street-filters").onclick=e=>{const btn=e.target.closest("[data-street-filter]");if(btn&&streetEdit){streetEdit.filter=btn.dataset.streetFilter;renderStreet();}};
 $("#street-preview-close").onclick=closeStreetPreview;
 $("#street-preview-back").onclick=closeStreetPreview;
+$("#street-preview-project").onclick=selectStreetProjectFromPreview;
 $("#street-prev").onclick=()=>$("#street-scroll").scrollTo({left:0,behavior:REDUCED_MOTION?"auto":"smooth"});
 $("#street-next").onclick=()=>$("#street-scroll").scrollTo({left:$("#street-scroll").scrollWidth,behavior:REDUCED_MOTION?"auto":"smooth"});
 $("#street-scroll").addEventListener("scroll",updateStreetPager,{passive:true});

@@ -56,6 +56,12 @@ describe("makeEvent", () => {
       .toEqual({ actions_bucket: "4+", used_auto_arrange: true });
     expect(makeEvent("street_purchase", { ...base, props: { item_id: "koi-pond", source: "street_preview", placed_immediately: false, coins: 6000 } }).props)
       .toEqual({ item_id: "koi-pond", source: "street_preview", placed_immediately: false });
+    expect(makeEvent("street_project_select", { ...base, props: { item_id: "koi-pond", source: "street_preview", reserved: true, wallet: 1200 } }).props)
+      .toEqual({ item_id: "koi-pond", source: "street_preview", reserved: true });
+    expect(makeEvent("street_project_progress", { ...base, props: { remaining_bucket: "500-1999", ready: false, exact_remaining: 1200 } }).props)
+      .toEqual({ remaining_bucket: "500-1999", ready: false });
+    expect(makeEvent("street_project_complete", { ...base, props: { item_id: "koi-pond", source: "street_project", email: "nope@example.com" } }).props)
+      .toEqual({ item_id: "koi-pond", source: "street_project" });
   });
 });
 

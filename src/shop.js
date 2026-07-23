@@ -3,6 +3,7 @@
 
 import { addDays } from "./daily.js";
 import { defaultStreetLayout } from "./street.js";
+import { defaultStreetProject } from "./street-project.js";
 
 export const CATALOG = [
   { id: "market",   name: "Night Market", price: 1000, type: "backdrop" },
@@ -142,7 +143,7 @@ function byId(id) { return CATALOG.find(it => it.id === id); }
 
 export function defaultShop() {
   return { owned: [], skin: "", backdrop: "", effect: "", soundpack: "", tiers: {},
-           streetLayout: defaultStreetLayout() };
+           streetLayout: defaultStreetLayout(), streetProject: defaultStreetProject() };
 }
 
 export function canAfford(wallet, id) {
@@ -173,12 +174,19 @@ export function buy(wallet, shop, id, dateStr) {
       shop: { ...shop, tiers: { ...(shop.tiers || {}), [id]: cur + 1 } },
     };
   }
-  if (!isAvailable(item, dateStr)) return { ok: false, wallet, shop };
+  // One active Street Project acts as a kind reservation: a daily/seasonal
+  // deco selected while available remains achievable after its shelf rotates.
+  const reserved = item.type === "deco" && shop.streetProject?.itemId === id;
+  if (!reserved && !isAvailable(item, dateStr)) return { ok: false, wallet, shop };
   if (wallet < item.price) return { ok: false, wallet, shop };
   return {
     ok: true,
     wallet: wallet - item.price,
-    shop: { ...shop, owned: [...shop.owned, id] },
+    shop: {
+      ...shop,
+      owned: [...shop.owned, id],
+      streetProject: reserved ? defaultStreetProject() : shop.streetProject,
+    },
   };
 }
 
