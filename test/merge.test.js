@@ -335,6 +335,31 @@ describe("merge: ledger-cursor purchase fold (THE FOLD, coin-purchase go-live)",
   });
 });
 
+describe("mergeShop folds v3 ownership fields", () => {
+  const base = () => ({ owned: [], tiers: {},
+    streetLayout: { v: 3, placements: {}, welcomeOwned: false, coachDone: false,
+      name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null } });
+
+  it("unions keepsakes by id and setsCompleted, and takes the max lastVisitDay", () => {
+    const a = base(); a.streetLayout.keepsakes = [{ id: "k1", kind: "welcome", day: "2026-07-20" }];
+    a.streetLayout.setsCompleted = ["market"]; a.streetLayout.lastVisitDay = "2026-07-20";
+    const b = base(); b.streetLayout.keepsakes = [{ id: "k1", kind: "welcome", day: "2026-07-20" },
+      { id: "k2", kind: "set", day: "2026-07-22" }];
+    b.streetLayout.setsCompleted = ["garden"]; b.streetLayout.lastVisitDay = "2026-07-22";
+    const out = mergeShop(a, b, { slotsDirty: false, layoutDirty: false, projectDirty: false });
+    expect(out.streetLayout.keepsakes.map(k => k.id).sort()).toEqual(["k1", "k2"]);
+    expect(out.streetLayout.setsCompleted.sort()).toEqual(["garden", "market"]);
+    expect(out.streetLayout.lastVisitDay).toBe("2026-07-22");
+  });
+
+  it("name/savedLayouts follow the layoutDirty bit (local wins when dirty)", () => {
+    const a = base(); a.streetLayout.name = "Local"; a.streetLayout.savedLayouts = [{ name: "L", placements: {} }];
+    const b = base(); b.streetLayout.name = "Cloud"; b.streetLayout.savedLayouts = [];
+    expect(mergeShop(a, b, { layoutDirty: true }).streetLayout.name).toBe("Local");
+    expect(mergeShop(a, b, { layoutDirty: false }).streetLayout.name).toBe("Cloud");
+  });
+});
+
 describe("slotsOf", () => {
   it("extracts exactly the four equip slots", () => {
     const s = slotsOf({ owned: ["a"], skin: "skin-red", backdrop: "market",

@@ -110,10 +110,20 @@ export function mergeShop(a, b, localPreferenceDirty = false) {
   // wins; the chosen placements are normalized against merged ownership.
   const bHasLayout = !!(b && b.streetLayout && b.streetLayout.v === STREET_LAYOUT_VERSION);
   const chosenLayout = flags.layoutDirty || !bHasLayout ? A.streetLayout : B.streetLayout;
+  const la = A.streetLayout || {}, lb = B.streetLayout || {};
+  const keepsakesById = new Map();
+  for (const k of [...(la.keepsakes || []), ...(lb.keepsakes || [])]) {
+    if (k && typeof k.id === "string" && !keepsakesById.has(k.id)) keepsakesById.set(k.id, k);
+  }
+  const maxDay = (x, y) => (String(x || "") > String(y || "") ? (x || null) : (y || null));
   const streetLayout = normalizeStreetLayout({
     ...(chosenLayout || {}),
-    welcomeOwned: !!(A.streetLayout?.welcomeOwned || B.streetLayout?.welcomeOwned),
-    coachDone: !!(A.streetLayout?.coachDone || B.streetLayout?.coachDone),
+    welcomeOwned: !!(la.welcomeOwned || lb.welcomeOwned),
+    coachDone: !!(la.coachDone || lb.coachDone),
+    keepsakes: [...keepsakesById.values()],
+    setsCompleted: [...new Set([...(la.setsCompleted || []), ...(lb.setsCompleted || [])])],
+    lastVisitDay: maxDay(la.lastVisitDay, lb.lastVisitDay),
+    // name + savedLayouts ride `chosenLayout` (the layoutDirty-selected side).
   }, owned);
   // A legacy cloud row has no project preference to adopt. Project choice is
   // LWW independently from layout/equip changes, then cleared automatically
