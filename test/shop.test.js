@@ -22,7 +22,7 @@ describe("shop", () => {
   it("defaultShop shape", () => {
     expect(defaultShop()).toEqual({ owned: [], skin: "", backdrop: "", effect: "", soundpack: "", tiers: {},
       streetLayout: { v: 3, placements: {}, welcomeOwned: false, coachDone: false, name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null },
-      streetProject: { v: 1, itemId: "", plotId: "" } });
+      streetProject: { v: 1, itemId: "", plotId: "", reserve: false } });
   });
 
   it("canAfford true/false by wallet", () => {
@@ -192,11 +192,11 @@ describe("shop", () => {
     const later = ["2026-07-09", "2026-07-10", "2026-07-11"]
       .find(date => !dailyStock(date).includes(featured));
     const target = CATALOG.find(i => i.id === featured);
-    const shop = { ...defaultShop(), streetProject: { v: 1, itemId: featured, plotId: "plot-medium-01" } };
+    const shop = { ...defaultShop(), streetProject: { v: 1, itemId: featured, plotId: "plot-medium-01", reserve: false } };
     const r = buy(target.price, shop, featured, later);
     expect(r.ok).toBe(true);
     expect(r.shop.owned).toContain(featured);
-    expect(r.shop.streetProject).toEqual({ v: 1, itemId: "", plotId: "" });
+    expect(r.shop.streetProject).toEqual({ v: 1, itemId: "", plotId: "", reserve: false });
   });
 
   it("equipItem is a no-op for decos even when owned — no real slot to fill", () => {

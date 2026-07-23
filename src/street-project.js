@@ -5,15 +5,16 @@
 export const STREET_PROJECT_VERSION = 1;
 
 export function defaultStreetProject() {
-  return { v: STREET_PROJECT_VERSION, itemId: "", plotId: "" };
+  return { v: STREET_PROJECT_VERSION, itemId: "", plotId: "", reserve: false };
 }
 
 export function normalizeStreetProject(project, ownedIds = []) {
   const raw = project && typeof project === "object" ? project : {};
   const itemId = typeof raw.itemId === "string" ? raw.itemId : "";
   const plotId = typeof raw.plotId === "string" ? raw.plotId : "";
+  const reserve = !!raw.reserve;
   if (!itemId || (ownedIds || []).includes(itemId)) return defaultStreetProject();
-  return { v: STREET_PROJECT_VERSION, itemId, plotId };
+  return { v: STREET_PROJECT_VERSION, itemId, plotId, reserve };
 }
 
 export function makeStreetProject(itemId, plotId = "") {
@@ -21,6 +22,13 @@ export function makeStreetProject(itemId, plotId = "") {
 }
 
 const coins = value => Math.max(0, Number(value) || 0);
+
+// Coins spoken-for by an active reserved project. A commitment device, not a
+// hard lock: the Street Shop checks OTHER purchases against wallet - this.
+export function reservedAmount(project, item, wallet) {
+  if (!project?.reserve || !item || item.type !== "deco" || project.itemId !== item.id) return 0;
+  return Math.min(coins(wallet), coins(item.price));
+}
 
 export function projectStage(wallet, price) {
   const total = coins(price);

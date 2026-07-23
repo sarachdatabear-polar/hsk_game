@@ -55,7 +55,7 @@ describe("mergeStickers", () => {
 
 describe("mergeShop", () => {
   const emptyLayout = { v: 3, placements: {}, welcomeOwned: false, coachDone: false, name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null };
-  const emptyProject = { v: 1, itemId: "", plotId: "" };
+  const emptyProject = { v: 1, itemId: "", plotId: "", reserve: false };
   const local = { owned: ["skin-a", "deco-1"], skin: "skin-a", backdrop: "", effect: "", soundpack: "", tiers: { "deco-1": 2 }, streetLayout: emptyLayout, streetProject: emptyProject };
   const cloud = { owned: ["skin-b", "deco-1"], skin: "skin-b", backdrop: "bd-1", effect: "", soundpack: "", tiers: { "deco-1": 3 }, streetLayout: emptyLayout, streetProject: emptyProject };
   it("owned unions, tiers per-id max", () => {
@@ -125,20 +125,20 @@ describe("mergeShop", () => {
   });
 
   it("project preference follows its own dirty flag independently", () => {
-    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01" } };
-    const b = { ...cloud, streetProject: { v: 1, itemId: "tea-sign", plotId: "plot-medium-02" } };
+    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01", reserve: false } };
+    const b = { ...cloud, streetProject: { v: 1, itemId: "tea-sign", plotId: "plot-medium-02", reserve: false } };
     expect(mergeShop(a, b, { projectDirty: true }).streetProject).toEqual(a.streetProject);
     expect(mergeShop(a, b, { layoutDirty: true, projectDirty: false }).streetProject).toEqual(b.streetProject);
   });
 
   it("a merged purchase clears the active project on every device", () => {
-    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01" } };
+    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01", reserve: false } };
     const b = { ...cloud, owned: [...cloud.owned, "koi-pond"] };
     expect(mergeShop(a, b, { projectDirty: true }).streetProject).toEqual(emptyProject);
   });
 
   it("legacy cloud without a project cannot erase an active local goal", () => {
-    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01" } };
+    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01", reserve: false } };
     const legacyCloud = { ...cloud };
     delete legacyCloud.streetProject;
     expect(mergeShop(a, legacyCloud).streetProject).toEqual(a.streetProject);

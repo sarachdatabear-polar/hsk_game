@@ -265,8 +265,8 @@ describe("reconcile", () => {
     });
 
     it("an unrelated shop write adopts the newer cloud Street Project", async () => {
-      const emptyProject = { v: 1, itemId: "", plotId: "" };
-      const cloudProject = { v: 1, itemId: "koi-pond", plotId: "plot-medium-01" };
+      const emptyProject = { v: 1, itemId: "", plotId: "", reserve: false };
+      const cloudProject = { v: 1, itemId: "koi-pond", plotId: "plot-medium-01", reserve: false };
       const local = { ...LOCAL_SHOP, streetProject: emptyProject };
       const cloud = { ...CLOUD_SHOP, streetProject: cloudProject };
       const { client } = fakeClient({
@@ -286,9 +286,9 @@ describe("reconcile", () => {
     });
 
     it("a real unsynced local Street Project wins only the project fold", async () => {
-      const emptyProject = { v: 1, itemId: "", plotId: "" };
-      const localProject = { v: 1, itemId: "koi-pond", plotId: "plot-medium-01" };
-      const cloudProject = { v: 1, itemId: "tea-sign", plotId: "plot-medium-02" };
+      const emptyProject = { v: 1, itemId: "", plotId: "", reserve: false };
+      const localProject = { v: 1, itemId: "koi-pond", plotId: "plot-medium-01", reserve: false };
+      const cloudProject = { v: 1, itemId: "tea-sign", plotId: "plot-medium-02", reserve: false };
       const local = { ...LOCAL_SHOP, streetProject: localProject };
       const cloud = { ...CLOUD_SHOP, streetProject: cloudProject };
       const { client } = fakeClient({
