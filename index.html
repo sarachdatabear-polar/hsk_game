@@ -406,8 +406,20 @@
     background:var(--panel-wash); box-shadow:0 2px 8px rgba(46,42,36,.10);}
   .street-coach{margin:0 0 7px; padding:8px 10px; border-radius:10px; background:rgba(255,214,95,.25);
     color:var(--lc-brown); font-size:13px; font-weight:700;}
-  .street-editor-tools{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px;}
+  .street-editor-tools{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px;}
   .street-editor-tools .chip{padding:7px 5px; font-size:12px; min-height:44px;}
+  /* Task 11: saved layouts (x3) — compact inline slot list inside the edit
+     toolbar, toggled by #street-layouts-btn. Needs an explicit [hidden]
+     override: .street-layouts-panel itself declares display:flex, and per
+     Task 10's lesson an author display rule beats the `hidden` attribute
+     unless overridden here. */
+  .street-layouts-panel{width:100%; display:flex; flex-direction:column; gap:6px; margin-top:8px;
+    padding:8px 9px; border:1px solid var(--panel-border); border-radius:12px; background:var(--lc-cream);}
+  .street-layouts-panel[hidden]{display:none;}
+  .street-layout-slot{display:flex; align-items:center; gap:6px;}
+  .street-layout-slot-label{flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis;
+    white-space:nowrap; font-size:12px; color:var(--ink);}
+  .street-layout-slot button{flex:0 0 auto; min-height:40px; padding:6px 10px; font-size:11px;}
   .street-inventory-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:9px;}
   .street-inventory-head .sect{margin:0;}
   .street-filters{display:flex; gap:4px;}
@@ -1583,8 +1595,31 @@
         <button class="chip" id="street-undo" data-i18n="street.undo">Undo</button>
         <button class="chip" id="street-store" data-i18n="street.storeItem">Store</button>
         <button class="chip" id="street-auto" data-i18n="street.autoArrange">Auto</button>
+        <button class="chip" id="street-layouts-btn" aria-expanded="false" aria-controls="street-layouts-panel" data-i18n="street.layouts">Layouts</button>
         <button class="chip" id="street-cancel" data-i18n="common.cancel">Cancel</button>
         <button class="chip buy-chip" id="street-done" data-i18n="common.done">Done</button>
+      </div>
+      <!-- Task 11: saved layouts (x3). Slots are just the first N entries of
+           streetLayout.savedLayouts (street.js caps/compacts at 3 in
+           normalizeStreetLayout) — no separate slot-identity field, so the
+           row markup is static and street-screen.js only fills in the label
+           text + enabled state per render. -->
+      <div class="street-layouts-panel" id="street-layouts-panel" hidden>
+        <div class="street-layout-slot" data-layout-slot="0">
+          <span class="street-layout-slot-label"></span>
+          <button class="chip" data-layout-save="0" data-i18n="street.layoutSave">Save here</button>
+          <button class="chip" data-layout-load="0" data-i18n="street.layoutLoad">Load</button>
+        </div>
+        <div class="street-layout-slot" data-layout-slot="1">
+          <span class="street-layout-slot-label"></span>
+          <button class="chip" data-layout-save="1" data-i18n="street.layoutSave">Save here</button>
+          <button class="chip" data-layout-load="1" data-i18n="street.layoutLoad">Load</button>
+        </div>
+        <div class="street-layout-slot" data-layout-slot="2">
+          <span class="street-layout-slot-label"></span>
+          <button class="chip" data-layout-save="2" data-i18n="street.layoutSave">Save here</button>
+          <button class="chip" data-layout-load="2" data-i18n="street.layoutLoad">Load</button>
+        </div>
       </div>
       <div class="street-inventory-head">
         <div class="sect" data-i18n="street.inventory">Inventory</div>
@@ -1640,6 +1675,17 @@
           <button class="overlay-close" id="street-collection-close" data-i18n-title="common.close" aria-label="Close">×</button>
         </div>
         <div class="street-collection-panel" id="street-collection-panel"></div>
+      </div>
+    </div>
+
+    <!-- Task 11: overwrite confirm for saved layouts — same .pause-overlay/
+         .pause-panel convention as #quest-overlay/#street-collection above,
+         opened/closed via the shared openDialog/closeDialog (deps). -->
+    <div class="pause-overlay" id="street-layout-confirm" role="dialog" aria-modal="true" aria-labelledby="street-layout-confirm-title">
+      <div class="pause-panel">
+        <h3 class="pause-title" id="street-layout-confirm-title" data-i18n="street.layoutOverwrite">Replace this saved layout?</h3>
+        <button class="pause-resume" id="street-layout-confirm-yes" data-i18n="street.layoutOverwriteYes">Replace</button>
+        <button class="pause-quit" id="street-layout-confirm-cancel" data-i18n="common.cancel">Cancel</button>
       </div>
     </div>
   </div>

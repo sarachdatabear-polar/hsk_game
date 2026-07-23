@@ -586,7 +586,7 @@ export function createStreetScreen({
     streetPreview=null;
     streetEdit={
       before:base, layout:base, history:[], selected:selected||null,
-      filter:"all", coaching:!!coaching, actions:0, usedAuto:false,
+      filter:"all", coaching:!!coaching, actions:0, usedAuto:false, layoutsOpen:false,
     };
     if(initialPlot && selected){
       const placed=placeStreetItem(base,getShopState().owned,selected,initialPlot);
@@ -642,6 +642,89 @@ export function createStreetScreen({
     }
     streetEdit=null; renderStreet();
   }
+  // Task 11: saved layouts (x3). Slots are simply the first N entries of
+  // streetLayout.savedLayouts — normalizeStreetLayout compacts/caps that
+  // array at 3 and drops anything malformed (street.js normSavedLayouts), so
+  // there is no independent "slot identity" beyond array position. Save only
+  // ever targets an existing index (overwrite, confirmed first) or the very
+  // next free index (append) — it never writes past the first empty slot,
+  // which would leave a hole that normalize would silently compact away and
+  // relabel every slot after it on the next render.
+  let pendingLayoutSave = null; // slot index awaiting the overwrite confirm, or null
+  function closeStreetLayoutConfirm(){
+    pendingLayoutSave = null;
+    closeDialog($("#street-layout-confirm"));
+  }
+  // Both Save and Load persist immediately through the same store-save +
+  // dirty path placements/name/grant use (setShopState -> store.set("shop",
+  // ...) -> pushEdge), per the brief — unlike ordinary placement edits they
+  // are NOT deferred to Done/Cancel. streetEdit.layout is also updated so the
+  // live scene (liveStreetLayout() prefers streetEdit.layout while editing)
+  // reflects the change without waiting for Done.
+  function commitStreetLayoutSave(i){
+    if(!streetEdit) return;
+    const layout=streetEdit.layout;
+    const name=layout.name || t("street.layoutSlot",{n:i+1});
+    const savedLayouts=[...layout.savedLayouts];
+    savedLayouts[i]={name,placements:{...layout.placements}};
+    const next=normalizeStreetLayout({...layout,savedLayouts},getShopState().owned);
+    streetEdit.layout=next;
+    setShopState({...getShopState(),streetLayout:next});
+    store.set("shop",getShopState());
+    pushEdge("hide");
+    announceStreet("street.layoutSavedAnnouncement",{n:i+1});
+    renderStreet();
+  }
+  function saveStreetLayoutSlot(i){
+    if(!streetEdit) return;
+    if(i < streetEdit.layout.savedLayouts.length){
+      pendingLayoutSave=i;
+      openDialog($("#street-layout-confirm"),$("#street-layout-confirm-cancel"),closeStreetLayoutConfirm);
+      return;
+    }
+    commitStreetLayoutSave(i);
+  }
+  function loadStreetLayoutSlot(i){
+    if(!streetEdit) return;
+    const slot=streetEdit.layout.savedLayouts[i];
+    if(!slot) return;
+    // Re-run the SAME normalize the module already uses on save/commit — any
+    // slot placement referencing an absent/unowned/incompatible id (sold,
+    // never owned on this device, or its class no longer fits the plot)
+    // drops silently rather than crashing.
+    const next=normalizeStreetLayout({...streetEdit.layout,placements:{...slot.placements}},getShopState().owned);
+    streetEdit.layout=next;
+    setShopState({...getShopState(),streetLayout:next});
+    store.set("shop",getShopState());
+    pushEdge("hide");
+    announceStreet("street.layoutLoadedAnnouncement",{n:i+1});
+    renderStreet();
+  }
+  function toggleStreetLayoutsPanel(){
+    if(!streetEdit) return;
+    streetEdit.layoutsOpen=!streetEdit.layoutsOpen;
+    renderStreet();
+  }
+  function renderStreetLayoutsPanel(){
+    const panel=$("#street-layouts-panel"), btn=$("#street-layouts-btn");
+    const open=!!streetEdit.layoutsOpen;
+    panel.hidden=!open;
+    btn.classList.toggle("on",open);
+    btn.setAttribute("aria-expanded",String(open));
+    if(!open) return;
+    const saved=streetEdit.layout.savedLayouts;
+    document.querySelectorAll("[data-layout-slot]").forEach(row=>{
+      const i=+row.dataset.layoutSlot, slot=saved[i], base=t("street.layoutSlot",{n:i+1});
+      // Only append the saved name when it says something the generic "Slot
+      // N" label doesn't — commitStreetLayoutSave falls back to that exact
+      // string when the street has no custom name, and echoing it back as
+      // "Slot 1 — Slot 1" would be noise, not information.
+      row.querySelector(".street-layout-slot-label").textContent=(slot && slot.name && slot.name!==base)
+        ? base+" — "+slot.name : base;
+      row.querySelector("[data-layout-save]").disabled=i>saved.length;
+      row.querySelector("[data-layout-load]").disabled=!slot;
+    });
+  }
   function renderStreetEditor(){
     const editor=$("#street-editor"), actions=$("#street-actions"), info=$("#street-info");
     editor.hidden=!streetEdit; actions.hidden=!!streetEdit||!!streetPreview;
@@ -650,6 +733,7 @@ export function createStreetScreen({
     const coach=$("#street-coach"); coach.hidden=!streetEdit.coaching;
     if(streetEdit.coaching) coach.textContent=streetEdit.selected
       ? t("street.coachPlace",{name:streetItemLabel(streetEdit.selected)}) : t("street.coachSelect");
+    renderStreetLayoutsPanel();
     $("#street-undo").disabled=!streetEdit.history.length;
     const selectedPlot=streetEdit.selected && Object.keys(streetEdit.layout.placements).find(id=>streetEdit.layout.placements[id]===streetEdit.selected);
     $("#street-store").disabled=!selectedPlot;
@@ -985,6 +1069,20 @@ export function createStreetScreen({
   $("#street-auto").onclick=autoArrangeStreetEdit;
   $("#street-cancel").onclick=cancelStreetEdit;
   $("#street-done").onclick=finishStreetEdit;
+  $("#street-layouts-btn").onclick=toggleStreetLayoutsPanel;
+  $("#street-layouts-panel").addEventListener("click", e=>{
+    const saveBtn=e.target.closest("[data-layout-save]");
+    const loadBtn=e.target.closest("[data-layout-load]");
+    if(saveBtn) saveStreetLayoutSlot(+saveBtn.dataset.layoutSave);
+    else if(loadBtn) loadStreetLayoutSlot(+loadBtn.dataset.layoutLoad);
+  });
+  $("#street-layout-confirm-yes").onclick=()=>{
+    const i=pendingLayoutSave;
+    closeStreetLayoutConfirm();
+    if(i!==null) commitStreetLayoutSave(i);
+  };
+  $("#street-layout-confirm-cancel").onclick=closeStreetLayoutConfirm;
+  $("#street-layout-confirm").addEventListener("click", e=>{ if(e.target.id === "street-layout-confirm") closeStreetLayoutConfirm(); });
   $("#street-filters").onclick=e=>{const btn=e.target.closest("[data-street-filter]");if(btn&&streetEdit){streetEdit.filter=btn.dataset.streetFilter;renderStreet();}};
   $("#street-preview-close").onclick=closeStreetPreview;
   $("#street-preview-back").onclick=closeStreetPreview;

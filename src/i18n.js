@@ -188,6 +188,14 @@ export const STRINGS = {
     "street.collectionComplete": "Complete ✓",
     "street.collectionLocked": "Not yet owned",
     "street.collectionEmpty": "No decorations to show yet.",
+    "street.layouts": "Layouts",
+    "street.layoutSave": "Save here",
+    "street.layoutLoad": "Load",
+    "street.layoutSlot": "Slot {n}",
+    "street.layoutOverwrite": "Replace this saved layout?",
+    "street.layoutOverwriteYes": "Replace",
+    "street.layoutSavedAnnouncement": "Saved to Slot {n}.",
+    "street.layoutLoadedAnnouncement": "Loaded Slot {n}.",
     "quests.title": "Daily Quests",
     // scope
     "scope.title": "Choose your words",
@@ -738,6 +746,14 @@ export const STRINGS = {
     "street.collectionComplete": "ครบแล้ว ✓",
     "street.collectionLocked": "ยังไม่มี",
     "street.collectionEmpty": "ยังไม่มีของตกแต่งให้แสดง",
+    "street.layouts": "เลย์เอาต์",
+    "street.layoutSave": "บันทึกที่นี่",
+    "street.layoutLoad": "โหลด",
+    "street.layoutSlot": "ช่อง {n}",
+    "street.layoutOverwrite": "แทนที่เลย์เอาต์ที่บันทึกไว้?",
+    "street.layoutOverwriteYes": "แทนที่", // TH-REVIEW
+    "street.layoutSavedAnnouncement": "บันทึกลงช่อง {n} แล้ว", // TH-REVIEW
+    "street.layoutLoadedAnnouncement": "โหลดช่อง {n} แล้ว", // TH-REVIEW
     "quests.title": "เควสต์ประจำวัน",
     // scope
     "scope.title": "เลือกคำศัพท์",
