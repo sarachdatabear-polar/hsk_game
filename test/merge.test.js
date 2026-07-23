@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { SYNC_KEYS, defaultSyncMeta, slotsOf, mergeXp, mergeWallet, mergeFreezes,
          mergeBest, mergeStickers, mergeShop, mergeMastery, mergeQuests,
-         mergeMonthly, mergeAll, streetLayoutOf, streetProjectOf, shopPreferencesOf } from "../src/merge.js";
+         mergeMonthly, mergeAll, streetLayoutOf, streetLayoutPrefsOf, streetProjectOf, shopPreferencesOf } from "../src/merge.js";
 import { defaultShop } from "../src/shop.js";
 
 describe("merge: scalars", () => {
@@ -54,8 +54,8 @@ describe("mergeStickers", () => {
 });
 
 describe("mergeShop", () => {
-  const emptyLayout = { v: 2, placements: {}, welcomeOwned: false, coachDone: false };
-  const emptyProject = { v: 1, itemId: "", plotId: "" };
+  const emptyLayout = { v: 3, placements: {}, welcomeOwned: false, coachDone: false, name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null };
+  const emptyProject = { v: 1, itemId: "", plotId: "", reserve: false };
   const local = { owned: ["skin-a", "deco-1"], skin: "skin-a", backdrop: "", effect: "", soundpack: "", tiers: { "deco-1": 2 }, streetLayout: emptyLayout, streetProject: emptyProject };
   const cloud = { owned: ["skin-b", "deco-1"], skin: "skin-b", backdrop: "bd-1", effect: "", soundpack: "", tiers: { "deco-1": 3 }, streetLayout: emptyLayout, streetProject: emptyProject };
   it("owned unions, tiers per-id max", () => {
@@ -117,28 +117,64 @@ describe("mergeShop", () => {
       ...emptyLayout, placements: { "plot-small-02": "red-lantern", unknown: "x" },
     } };
     expect(streetLayoutOf(s).placements).toEqual({ "plot-small-02": "red-lantern" });
+    // The preference baseline uses the LWW projection (not the full layout), so
+    // additive daily/keepsake writes can't flip shopLayoutDirty (Finding 1).
     expect(shopPreferencesOf(s)).toEqual({
       slots: slotsOf(s),
-      streetLayout: streetLayoutOf(s),
+      streetLayout: streetLayoutPrefsOf(s),
       streetProject: streetProjectOf(s),
     });
   });
 
+  it("streetLayoutPrefsOf projects to LWW fields only (excludes additive keepsakes/setsCompleted/lastVisitDay)", () => {
+    const s = { ...local, owned: ["red-lantern"], streetLayout: {
+      ...emptyLayout,
+      placements: { "plot-small-02": "red-lantern", unknown: "x" },
+      name: "My Street", savedLayouts: [{ name: "L", placements: {} }],
+      welcomeOwned: true, coachDone: true,
+      keepsakes: [{ id: "k1", kind: "welcome", day: "2026-07-20" }],
+      setsCompleted: ["market"], lastVisitDay: "2026-07-23",
+    } };
+    const prefs = streetLayoutPrefsOf(s);
+    // LWW fields kept (placements canonicalized like streetLayoutOf)
+    expect(prefs.placements).toEqual({ "plot-small-02": "red-lantern" });
+    expect(prefs.name).toBe("My Street");
+    expect(prefs.savedLayouts).toEqual([{ name: "L", placements: {} }]);
+    expect(prefs.welcomeOwned).toBe(true);
+    expect(prefs.coachDone).toBe(true);
+    expect(prefs.v).toBe(3);
+    // additive fields excluded entirely
+    expect(prefs).not.toHaveProperty("keepsakes");
+    expect(prefs).not.toHaveProperty("setsCompleted");
+    expect(prefs).not.toHaveProperty("lastVisitDay");
+    expect(Object.keys(prefs).sort())
+      .toEqual(["coachDone", "name", "placements", "savedLayouts", "v", "welcomeOwned"]);
+  });
+
+  it("shopPreferencesOf.streetLayout uses the LWW projection (additive fields don't enter the baseline)", () => {
+    const s = { ...local, owned: ["red-lantern"], streetLayout: {
+      ...emptyLayout, name: "N", lastVisitDay: "2026-07-23",
+      keepsakes: [{ id: "k1", kind: "welcome" }], setsCompleted: ["market"],
+    } };
+    expect(shopPreferencesOf(s).streetLayout).toEqual(streetLayoutPrefsOf(s));
+    expect(shopPreferencesOf(s).streetLayout).not.toHaveProperty("lastVisitDay");
+  });
+
   it("project preference follows its own dirty flag independently", () => {
-    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01" } };
-    const b = { ...cloud, streetProject: { v: 1, itemId: "tea-sign", plotId: "plot-medium-02" } };
+    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01", reserve: false } };
+    const b = { ...cloud, streetProject: { v: 1, itemId: "tea-sign", plotId: "plot-medium-02", reserve: false } };
     expect(mergeShop(a, b, { projectDirty: true }).streetProject).toEqual(a.streetProject);
     expect(mergeShop(a, b, { layoutDirty: true, projectDirty: false }).streetProject).toEqual(b.streetProject);
   });
 
   it("a merged purchase clears the active project on every device", () => {
-    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01" } };
+    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01", reserve: false } };
     const b = { ...cloud, owned: [...cloud.owned, "koi-pond"] };
     expect(mergeShop(a, b, { projectDirty: true }).streetProject).toEqual(emptyProject);
   });
 
   it("legacy cloud without a project cannot erase an active local goal", () => {
-    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01" } };
+    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01", reserve: false } };
     const legacyCloud = { ...cloud };
     delete legacyCloud.streetProject;
     expect(mergeShop(a, legacyCloud).streetProject).toEqual(a.streetProject);
@@ -332,6 +368,31 @@ describe("merge: ledger-cursor purchase fold (THE FOLD, coin-purchase go-live)",
     const local = { wallet: 5000 };
     const cloud = { wallet: 300 };   // cloud contribution pre-clamp: 300 - 1000 = -700
     expect(mergeAll(local, cloud, { unseenPurchased: 1000 }).wallet).toBe(6000);
+  });
+});
+
+describe("mergeShop folds v3 ownership fields", () => {
+  const base = () => ({ owned: [], tiers: {},
+    streetLayout: { v: 3, placements: {}, welcomeOwned: false, coachDone: false,
+      name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null } });
+
+  it("unions keepsakes by id and setsCompleted, and takes the max lastVisitDay", () => {
+    const a = base(); a.streetLayout.keepsakes = [{ id: "k1", kind: "welcome", day: "2026-07-20" }];
+    a.streetLayout.setsCompleted = ["market"]; a.streetLayout.lastVisitDay = "2026-07-20";
+    const b = base(); b.streetLayout.keepsakes = [{ id: "k1", kind: "welcome", day: "2026-07-20" },
+      { id: "k2", kind: "set", day: "2026-07-22" }];
+    b.streetLayout.setsCompleted = ["garden"]; b.streetLayout.lastVisitDay = "2026-07-22";
+    const out = mergeShop(a, b, { slotsDirty: false, layoutDirty: false, projectDirty: false });
+    expect(out.streetLayout.keepsakes.map(k => k.id).sort()).toEqual(["k1", "k2"]);
+    expect(out.streetLayout.setsCompleted.sort()).toEqual(["garden", "market"]);
+    expect(out.streetLayout.lastVisitDay).toBe("2026-07-22");
+  });
+
+  it("name/savedLayouts follow the layoutDirty bit (local wins when dirty)", () => {
+    const a = base(); a.streetLayout.name = "Local"; a.streetLayout.savedLayouts = [{ name: "L", placements: {} }];
+    const b = base(); b.streetLayout.name = "Cloud"; b.streetLayout.savedLayouts = [];
+    expect(mergeShop(a, b, { layoutDirty: true }).streetLayout.name).toBe("Local");
+    expect(mergeShop(a, b, { layoutDirty: false }).streetLayout.name).toBe("Cloud");
   });
 });
 

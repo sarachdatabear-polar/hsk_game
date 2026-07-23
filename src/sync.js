@@ -5,7 +5,7 @@
 // `store` is injected ({get,set}) so node probes/tests can shim localStorage.
 import { getSession, fetchSyncRows, pushSyncRows, fetchLedgerSince, fetchLedgerOrder } from "./cloud.js";
 import {
-  mergeAll, defaultSyncMeta, slotsOf, streetLayoutOf, streetProjectOf,
+  mergeAll, defaultSyncMeta, slotsOf, streetLayoutPrefsOf, streetProjectOf,
   shopPreferencesOf,
 } from "./merge.js";
 
@@ -197,8 +197,15 @@ export async function reconcile(store, reason, now = Date.now(), expectedOrderId
     const projectBaseline = meta.shopPreferences?.streetProject || null;
     const shopDirty = !!(meta.dirty && meta.dirty.shop) &&
       (!slotsBaseline || !eq(slotsOf(local.shop), slotsBaseline));
+    // Diff ONLY the LWW-relevant layout fields (name/savedLayouts/placements/
+    // equip flags) against the baseline. The additively folded fields
+    // (keepsakes/setsCompleted/lastVisitDay) change on ordinary daily/set
+    // activity; diffing the full layout here would falsely flip layoutDirty
+    // and, via mergeShop's chosenLayout, clobber a newer cloud name/layout.
+    // This narrows shopLayoutDirty only — shopDirty (below/above) is untouched,
+    // so keepsake/lastVisitDay/coin writes still propagate via meta.dirty.shop.
     const shopLayoutDirty = !!(meta.dirty && meta.dirty.shop) &&
-      (!layoutBaseline || !eq(streetLayoutOf(local.shop), layoutBaseline));
+      (!layoutBaseline || !eq(streetLayoutPrefsOf(local.shop), layoutBaseline));
     // A missing project baseline is legacy metadata. Preserve a newly chosen
     // active local goal, but do not make an empty default masquerade as a
     // preference change and override a newer cloud choice.

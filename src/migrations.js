@@ -1,5 +1,5 @@
 "use strict";
-import { STREET_LAYOUT_VERSION, migrateLegacyStreet, normalizeStreetLayout } from "./street.js";
+import { migrateLegacyStreet, normalizeStreetLayout } from "./street.js";
 import { defaultStreetProject } from "./street-project.js";
 // Save-data schema versioning. main.js calls runMigrations(localStorage) once
 // at boot, BEFORE constructing the store — migrations must see raw
@@ -15,7 +15,7 @@ const VERSION_KEY = "nbhsk.schemaVersion";
 // (run the ladder from 0) from a fresh one (just stamp and go).
 const LEGACY_SENTINELS = ["nbhsk.xp", "nbhsk.mastery", "nbhsk.daily", "nbhsk.settings", "nbhsk.scope"];
 
-export const CURRENT_SCHEMA_VERSION = 2;
+export const CURRENT_SCHEMA_VERSION = 3;
 
 export const MIGRATIONS = [
   // v1→v2: street.js's shop-state layout gained a `streetLayout` scene
@@ -45,11 +45,43 @@ export const MIGRATIONS = [
         || !!shop.streetLayout?.welcomeOwned;
       const owned = Array.isArray(shop.owned) ? shop.owned : [];
       try {
-        shop.streetLayout = shop.streetLayout && shop.streetLayout.v === STREET_LAYOUT_VERSION
+        // A historical migration entry must NOT branch on the live current-
+        // version constant, or every future bump silently re-breaks it: since
+        // STREET_LAYOUT_VERSION moved 2->3, `=== STREET_LAYOUT_VERSION` would
+        // mis-route a dormant v2 install into migrateLegacyStreet (rebuilding
+        // placements, resetting coachDone). Pin the historical shape: any
+        // already-structured layout (v>=2) is normalized, not rebuilt. Use
+        // `>= 2`, not `=== 2` — a v3 layout reaching here must keep its fields.
+        shop.streetLayout = shop.streetLayout && shop.streetLayout.v >= 2
           ? normalizeStreetLayout({ ...shop.streetLayout, welcomeOwned }, owned)
           : migrateLegacyStreet(owned, { welcomeOwned });
       } catch (e) { return; }
       if (shop.streetProject == null) shop.streetProject = defaultStreetProject();
+      try { storage.setItem("nbhsk.shop", JSON.stringify(shop)); } catch (e) {}
+    },
+  },
+  {
+    to: 3,
+    up(storage) {
+      // v2→v3: streetLayout gains ownership fields (name, savedLayouts,
+      // keepsakes, setsCompleted, lastVisitDay) and streetProject gains an
+      // opt-in `reserve` flag. normalizeStreetLayout fills the new fields
+      // defensively; every step is guarded so corrupt data is a no-op.
+      let shop;
+      try {
+        const raw = storage.getItem("nbhsk.shop");
+        if (raw === null) return;
+        shop = JSON.parse(raw);
+      } catch (e) { return; }
+      if (!shop || typeof shop !== "object") return;
+      const owned = Array.isArray(shop.owned) ? shop.owned : [];
+      try {
+        shop.streetLayout = normalizeStreetLayout(shop.streetLayout, owned);
+      } catch (e) { return; }
+      if (shop.streetProject && typeof shop.streetProject === "object"
+          && typeof shop.streetProject.reserve !== "boolean") {
+        shop.streetProject.reserve = false;
+      }
       try { storage.setItem("nbhsk.shop", JSON.stringify(shop)); } catch (e) {}
     },
   },

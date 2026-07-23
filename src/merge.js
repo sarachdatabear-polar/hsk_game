@@ -7,7 +7,7 @@ import { defaultShop } from "./shop.js";
 import { defaultStickers } from "./stickers.js";
 import { defaultQuestState, defaultMonthly, MONTHLY_TARGET, settleMonthly } from "./quests.js";
 import { defaultDaily } from "./daily.js";
-import { normalizeStreetLayout } from "./street.js";
+import { normalizeStreetLayout, STREET_LAYOUT_VERSION } from "./street.js";
 import { normalizeStreetProject } from "./street-project.js";
 
 export const SYNC_KEYS = ["mastery", "xp", "daily", "quests", "monthly",
@@ -62,6 +62,21 @@ export function streetLayoutOf(shop) {
   return normalizeStreetLayout(s.streetLayout, s.owned || []);
 }
 
+// Last-write-wins-relevant projection of the layout: the fields mergeShop
+// resolves by the layoutDirty bit (chosenLayout). Excludes the ADDITIVELY
+// folded fields (keepsakes/setsCompleted/lastVisitDay) so ordinary daily/set
+// activity — which mutates those — can't falsely flip shopLayoutDirty and
+// clobber a newer cloud name/savedLayouts. Computed via normalizeStreetLayout
+// then picked, so it stays consistent with the canonical shape.
+export function streetLayoutPrefsOf(shop) {
+  const s = Object.assign(defaultShop(), shop || {});
+  const l = normalizeStreetLayout(s.streetLayout, s.owned || []);
+  return {
+    v: l.v, placements: l.placements, welcomeOwned: l.welcomeOwned,
+    coachDone: l.coachDone, name: l.name, savedLayouts: l.savedLayouts,
+  };
+}
+
 export function streetProjectOf(shop) {
   const s = Object.assign(defaultShop(), shop || {});
   return normalizeStreetProject(s.streetProject, s.owned || []);
@@ -73,7 +88,7 @@ export function streetProjectOf(shop) {
 export function shopPreferencesOf(shop) {
   return {
     slots: slotsOf(shop),
-    streetLayout: streetLayoutOf(shop),
+    streetLayout: streetLayoutPrefsOf(shop),
     streetProject: streetProjectOf(shop),
   };
 }
@@ -108,12 +123,22 @@ export function mergeShop(a, b, localPreferenceDirty = false) {
   // A legacy cloud row has no layout preference to adopt. Welcome ownership
   // and coach completion are additive even when the other side's arrangement
   // wins; the chosen placements are normalized against merged ownership.
-  const bHasLayout = !!(b && b.streetLayout && b.streetLayout.v === 2);
+  const bHasLayout = !!(b && b.streetLayout && b.streetLayout.v === STREET_LAYOUT_VERSION);
   const chosenLayout = flags.layoutDirty || !bHasLayout ? A.streetLayout : B.streetLayout;
+  const la = A.streetLayout || {}, lb = B.streetLayout || {};
+  const keepsakesById = new Map();
+  for (const k of [...(la.keepsakes || []), ...(lb.keepsakes || [])]) {
+    if (k && typeof k.id === "string" && !keepsakesById.has(k.id)) keepsakesById.set(k.id, k);
+  }
+  const maxDay = (x, y) => (String(x || "") > String(y || "") ? (x || null) : (y || null));
   const streetLayout = normalizeStreetLayout({
     ...(chosenLayout || {}),
-    welcomeOwned: !!(A.streetLayout?.welcomeOwned || B.streetLayout?.welcomeOwned),
-    coachDone: !!(A.streetLayout?.coachDone || B.streetLayout?.coachDone),
+    welcomeOwned: !!(la.welcomeOwned || lb.welcomeOwned),
+    coachDone: !!(la.coachDone || lb.coachDone),
+    keepsakes: [...keepsakesById.values()],
+    setsCompleted: [...new Set([...(la.setsCompleted || []), ...(lb.setsCompleted || [])])],
+    lastVisitDay: maxDay(la.lastVisitDay, lb.lastVisitDay),
+    // name + savedLayouts ride `chosenLayout` (the layoutDirty-selected side).
   }, owned);
   // A legacy cloud row has no project preference to adopt. Project choice is
   // LWW independently from layout/equip changes, then cleared automatically

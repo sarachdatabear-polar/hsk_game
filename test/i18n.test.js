@@ -68,6 +68,7 @@ describe("i18n engine", () => {
       "home.levelChip", "account.emailPh", "scope.customPh", "journey.nodeTop",
       "sticker.scopeName", "sticker.msName", "shop.maxed", "tones.progress",
       "tones.tone1", "tones.tone2", "tones.tone3", "tones.tone4",
+      "street.collectionSetHeader", "street.namedCaption",
     ]);
     const missingThai = Object.entries(STRINGS.th)
       .filter(([key, value]) => !languageNeutral.has(key) && !/[\u0E00-\u0E7F]/.test(value))

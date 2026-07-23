@@ -20,7 +20,7 @@ import { sprite } from "../sprites.js";
 import { CONTENT_H } from "../sprite-draw.js";
 import {
   makeStreetProject, normalizeStreetProject, remainingBucket,
-  streetProjectProgress,
+  streetProjectProgress, reservedAmount,
 } from "../street-project.js";
 import {
   streetResidentPose, streetResidentRoute, streetResidentScale,
@@ -31,12 +31,15 @@ import {
   normalizeStreetLayout, compatibleStreetPlots, firstFreeStreetPlot,
   unplacedStreetItems,
   placeStreetItem, storeStreetItem, autoArrangeStreet, migrateLegacyStreet,
-  streetMeta, streetClass,
+  streetMeta, streetClass, STREET_LAYOUT_VERSION,
 } from "../street.js";
+import { newlyCompletedSets, completedSets, collectionView } from "../street-collection.js";
+import { makeKeepsake, addKeepsake } from "../street-keepsakes.js";
+import { isNewDay, dailyGift } from "../street-daily.js";
 
 export function createStreetScreen({
   $, store, analytics, show, renderShop, pushEdge, updateWalletChip, todayStr, tOr,
-  shopViewedProducts, REDUCED_MOTION,
+  shopViewedProducts, REDUCED_MOTION, openDialog, closeDialog,
   getWallet, setWallet, getXp, getCurrentScreen, getShopState, setShopState,
   roundRectOn, drawCoverImage, drawStarMark,
 }) {
@@ -44,6 +47,51 @@ export function createStreetScreen({
   let streetPreview = null;    // temporary shop preview projected into the scene
   let streetShopMode = false;  // focused decoration catalog opened from Street
   let streetReaction = null;   // lightweight tap reaction, never persisted
+  let streetBannerTimer = 0;   // one-shot "set complete" banner, never persisted
+  // Mirrors main.js's own #toast-pop element/CSS (index.html .toast-pop) —
+  // reused rather than duplicated so main.js stays untouched (its seam here
+  // is the deps object, and a banner isn't part of it). Two independent
+  // timers targeting the same element is fine: main.js's toast() and this
+  // one behave the same way it already documents — a later call just
+  // replaces whatever is showing.
+  function streetToast(msg){
+    clearTimeout(streetBannerTimer);
+    let el = document.getElementById("toast-pop");
+    if(!el){
+      el = document.createElement("div");
+      el.id = "toast-pop";
+      el.className = "toast-pop";
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    requestAnimationFrame(() => el.classList.add("show"));
+    streetBannerTimer = setTimeout(() => { el.classList.remove("show"); }, 2600);
+  }
+  // Grants exactly one "set" keepsake per newly-completed collectible set,
+  // persisted through the same store-save path placements use (setShopState
+  // -> store.set("shop",...) -> pushEdge, which marks the "shop" sync key
+  // dirty). Called after a successful deco purchase, with the post-purchase
+  // owned list. The keepsake's optional `word` is intentionally omitted:
+  // deps exposes no mastered-word accessor, and the brief forbids plumbing
+  // new learning/SRS coupling into this cosmetic-only module just to get one.
+  function grantCompletedSets(ownedAfterPurchase){
+    const layout = ensureStreetLayout();
+    const fresh = newlyCompletedSets(ownedAfterPurchase, layout.setsCompleted);
+    if(!fresh.length) return;
+    let keepsakes = layout.keepsakes, setsCompleted = layout.setsCompleted;
+    for(const setId of fresh){
+      keepsakes = addKeepsake(keepsakes, makeKeepsake("set", todayStr(), { set: setId }));
+      setsCompleted = [...setsCompleted, setId];
+    }
+    const granted = normalizeStreetLayout({ ...layout, keepsakes, setsCompleted }, ownedAfterPurchase);
+    setShopState({ ...getShopState(), streetLayout: granted });
+    store.set("shop", getShopState());
+    pushEdge("purchase");
+    // An item belongs to exactly one collectible set (street.js DECO_META),
+    // so a single purchase can complete at most one set: fresh.length is
+    // always <= 1 here, hence no banner queue is needed.
+    streetToast(t("street.setComplete", { set: t("street.set." + fresh[0]) }));
+  }
 
   /* ============================== Lucky Cat Street (home) ============================== */
   // Construction moment (scene composer): the most recent deco purchase/upgrade
@@ -52,6 +100,12 @@ export function createStreetScreen({
   let streetReveal = null; // { id, start } — start stamps on first visible frame
   let streetResidentRaf = 0;
   let streetResidentScene = null;
+  // Task 13: the daily-surprise neighbour cameo. In-memory only, exactly like
+  // streetReveal above — losing it on refresh just skips one animation, never
+  // the gift itself (that's already persisted by the time this is set).
+  // { neighbour: SKIN_PALETTES key, start } — start stamps on first drawn frame.
+  let streetDailyReveal = null;
+  const DAILY_NEIGHBOUR_MS = 2600; // matches streetToast's own on-screen window
   function revealPopScale(id){
     if(REDUCED_MOTION) return 1;
     if(!streetReveal || streetReveal.id !== id || !streetReveal.start) return 1;
@@ -80,14 +134,30 @@ export function createStreetScreen({
     // local-only by design — a redundant echo of the synced shop.streetLayout.welcomeOwned,
     // deliberately NOT in SYNC_KEYS (merge.js).
     store.set("streetWelcomeEarned",true);
-    const layout=normalizeStreetLayout({...ensureStreetLayout(),welcomeOwned:true},getShopState().owned);
+    const base=ensureStreetLayout();
+    // Same grant pattern as grantCompletedSets: one keepsake ("welcome",
+    // wordless — deps exposes no mastery accessor), folded into the single
+    // persist below so welcomeOwned + the keepsake save together.
+    // addKeepsake dedups by id ("welcome:<day>"), so this stays idempotent
+    // even though the guard above already makes this branch run once.
+    const keepsakes=addKeepsake(base.keepsakes,makeKeepsake("welcome",todayStr()));
+    const layout=normalizeStreetLayout({...base,welcomeOwned:true,keepsakes},getShopState().owned);
     setShopState({...getShopState(),streetLayout:layout}); store.set("shop",getShopState());
+    pushEdge("purchase");
   }
   function sameStreetLayout(a, b){ return JSON.stringify(a || null) === JSON.stringify(b || null); }
   function ensureStreetLayout(){
     const prior = getShopState().streetLayout;
     const welcomeOwned = !!prior?.welcomeOwned || hasStreetLearningProgress();
-    let next = prior?.v === 2
+    // Bug fix (found while wiring Task 8's persistence check): this compared
+    // prior.v against a literal 2, stale since the v3 streetLayout bump
+    // (keepsakes/setsCompleted/name/savedLayouts/lastVisitDay). Every already-
+    // v3 layout (i.e. essentially every real session) tripped the `else`
+    // and ran migrateLegacyStreet — which rebuilds placements from scratch
+    // and drops keepsakes/setsCompleted/name/savedLayouts back to defaults —
+    // on every call. Comparing against the live constant (as merge.js and
+    // migrations.js already do) fixes it for this and any future bump.
+    let next = prior?.v === STREET_LAYOUT_VERSION
       ? normalizeStreetLayout({ ...prior, welcomeOwned }, getShopState().owned)
       : migrateLegacyStreet(getShopState().owned, { welcomeOwned });
     if(!sameStreetLayout(prior, next)){
@@ -99,14 +169,57 @@ export function createStreetScreen({
   function liveStreetLayout(){
     return normalizeStreetLayout(streetEdit?.layout || getShopState().streetLayout || defaultStreetLayout(), getShopState().owned);
   }
+  // Task 10: persists through the same store-save + dirty path placements
+  // and grantCompletedSets use (setShopState -> store.set("shop",...) ->
+  // pushEdge). normalizeStreetLayout enforces the trim + 24-char cap
+  // (street.js normName) — this does not re-implement that.
+  function setStreetName(raw){
+    const layout = ensureStreetLayout();
+    const next = normalizeStreetLayout({ ...layout, name: raw }, getShopState().owned);
+    if(sameStreetLayout(layout, next)) return;
+    setShopState({ ...getShopState(), streetLayout: next });
+    store.set("shop", getShopState());
+    pushEdge("hide");
+    renderStreet();
+  }
   function announceStreet(key, vars){
     const message = t(key, vars);
     $("#street-sr-status").textContent = "";
     requestAnimationFrame(() => { $("#street-sr-status").textContent = message; });
   }
   function streetCountBucket(n){ return n===0?"0":n<4?"1-3":n<10?"4-9":"10+"; }
+  // Task 13: positive-only daily surprise. Fires at most once per calendar
+  // day, gated on the PERSISTED layout.lastVisitDay (never an in-memory flag),
+  // so reopening Street later the same day is a no-op — no re-credit, no
+  // re-fire, and critically no message of any kind (a skipped day is simply
+  // invisible; see AGENTS.md/task brief guardrail: no streak/day-count/
+  // "missed"/"come back" copy anywhere in this path).
+  function grantDailySurprise(layout){
+    const today = todayStr();
+    if(!isNewDay(layout.lastVisitDay, today)) return layout;
+    const gift = dailyGift(today);
+    // Coins IN only, via the same wallet path this module already uses for
+    // purchases (buyStreetPreview: setWallet + store.set("wallet",...) +
+    // updateWalletChip) — deps exposes no separate "credit" function because
+    // this pair already IS the credit path.
+    setWallet(getWallet() + gift.coins);
+    store.set("wallet", getWallet());
+    updateWalletChip();
+    // Wordless by design: deps exposes no mastery accessor here (same
+    // constraint documented on grantCompletedSets/earnStreetWelcome above).
+    const keepsakes = gift.keepsake
+      ? addKeepsake(layout.keepsakes, makeKeepsake("daily", today))
+      : layout.keepsakes;
+    const next = normalizeStreetLayout({ ...layout, lastVisitDay: today, keepsakes }, getShopState().owned);
+    setShopState({ ...getShopState(), streetLayout: next });
+    store.set("shop", getShopState());
+    pushEdge("purchase");
+    streetDailyReveal = { neighbour: gift.neighbour, start: 0 };
+    streetToast(t("street.dailyGreeting") + " " + t("street.dailyGift", { coins: gift.coins }));
+    return next;
+  }
   function enterStreet(previousScreen=""){
-    const layout = ensureStreetLayout();
+    const layout = grantDailySurprise(ensureStreetLayout());
     const owned=getShopState().owned.length+(layout.welcomeOwned?1:0),placed=Object.keys(layout.placements).length;
     analytics.track("street_open",{
       source:streetPreview?"shop_preview":previousScreen==="shop"?"shop":"navigation",
@@ -290,6 +403,22 @@ export function createStreetScreen({
       layer.appendChild(btn);
     }
   }
+  // Task 13: cosmetic time-of-day tint. Purely a rendering concern — the
+  // hour is read straight from the real clock on every draw (never stored,
+  // never date-keyed; only the daily GIFT above is). Reduced-motion is
+  // unaffected because the tint is a flat fillRect, not an animation.
+  const STREET_TOD_TINT = {
+    morning: "rgba(255,206,140,.12)",
+    day: null,                        // full daylight art already reads bright; no overlay
+    dusk: "rgba(255,132,98,.16)",
+    night: "rgba(35,42,102,.24)",
+  };
+  function streetTimeOfDay(hour){
+    if(hour>=5 && hour<11) return "morning";
+    if(hour>=11 && hour<17) return "day";
+    if(hour>=17 && hour<20) return "dusk";
+    return "night";
+  }
   function drawStreetSceneBackground(c,w,h){
     const selected=getShopState().backdrop ? sprite("bg-"+getShopState().backdrop) : null;
     const defaultName=h/w>=.95 ? "bg-street-portrait" : "bg-street";
@@ -305,6 +434,8 @@ export function createStreetScreen({
     groundWash.addColorStop(0,"rgba(251,245,232,0)");
     groundWash.addColorStop(1,"rgba(251,245,232,.14)");
     c.fillStyle=groundWash; c.fillRect(0,h*.64,w,h*.36);
+    const tint=STREET_TOD_TINT[streetTimeOfDay(new Date().getHours())];
+    if(tint){ c.save(); c.fillStyle=tint; c.fillRect(0,0,w,h); c.restore(); }
   }
   function residentActivityTargets(pieces){
     return pieces.filter(p=>p.kind==="deco").map(p=>({
@@ -380,6 +511,21 @@ export function createStreetScreen({
     }
     c.restore();
   }
+  // Task 13: the passing neighbour cameo — recolours the existing cat art via
+  // SKIN_PALETTES[gift.neighbour] (same drawCat used by the resident/kitten
+  // just below) and walks it once across the scene. Skipped entirely under
+  // reduced motion, same as the resident's own walk cycle; the toast already
+  // fired in grantDailySurprise so the gift is never motion-gated.
+  function drawStreetDailyNeighbour(c,w,groundY,scale,now){
+    if(!streetDailyReveal || REDUCED_MOTION) return;
+    if(!streetDailyReveal.start) streetDailyReveal.start=now;
+    const progress=(now-streetDailyReveal.start)/DAILY_NEIGHBOUR_MS;
+    if(progress>=1){ streetDailyReveal=null; return; }
+    const x=w*(-0.14+1.28*progress);
+    c.save();
+    drawCat(c,x,groundY,now,"walk",SKIN_PALETTES[streetDailyReveal.neighbour],scale*0.86,[],false);
+    c.restore();
+  }
   function drawStreetResidentFrame(now,reducedMotion=false){
     const scene=streetResidentScene;
     if(!scene) return;
@@ -407,6 +553,7 @@ export function createStreetScreen({
       drawCat(c,kittenX,groundY+1,catTime+180,pose.state,SKIN_PALETTES[getShopState().skin],scale*.48,[],false);
       c.restore();
     }
+    drawStreetDailyNeighbour(c,w,groundY,scale,now);
   }
   function streetResidentLoop(now){
     streetResidentRaf=0;
@@ -453,6 +600,7 @@ export function createStreetScreen({
     const layout=preview?.layout || liveStreetLayout();
     const tiers=preview?.tiers || getShopState().tiers || {};
     const pieces=streetPieces(levelForXp(getXp()),owned,tiers,layout);
+    const completeSetIds=new Set(completedSets(owned));
     const project=!streetEdit&&!streetPreview ? activeStreetProject(getWallet(),layout) : null;
     if(streetEdit || streetPreview) drawStreetPlotGrid(sc,w,h,gy,m,layout);
     if(streetReveal && !streetReveal.start && owned.includes(streetReveal.id)) streetReveal.start=performance.now();
@@ -463,7 +611,13 @@ export function createStreetScreen({
         drawStreetLandmark(sc,p.id,x,py,du);
       }else{
         const pop=revealPopScale(p.id), du=m.unit*(p.scale||1)*pop;
-        drawStreetBehavior(sc,p,x,py,du); drawContactShadow(sc,x,py,du); drawTieredDeco(sc,p,x,py,du);
+        drawStreetBehavior(sc,p,x,py,du);
+        // Completed-set glow: layer the existing celebrate FX on top of a
+        // piece's own behavior (never replace it — a lantern still glows
+        // "light", it just also sparkles) when its set is fully owned. Reuses
+        // drawStreetBehavior's own celebrate branch; no new draw code.
+        if(streetMeta(p.id) && completeSetIds.has(streetMeta(p.id).set)) drawStreetBehavior(sc,{...p,behavior:"celebrate"},x,py,du);
+        drawContactShadow(sc,x,py,du); drawTieredDeco(sc,p,x,py,du);
         if(p.id===WELCOME_ID) drawWelcomeAccent(sc,x,py,du);
         if(streetReveal?.id===p.id && streetReveal.start) drawRevealDust(sc,x,py,du);
       }
@@ -485,6 +639,7 @@ export function createStreetScreen({
     const stored=unplacedStreetItems(getShopState().owned,layout).length;
     $("#street-caption").textContent=streetPreview ? t("street.previewCaption")
       : streetEdit ? t("street.editCaption",{placed,stored})
+      : layout.name ? t("street.namedCaption",{name:layout.name})
       : placed===0 ? t("street.captionReady",{buildings:prog.unlocked})
       : t("street.captionSummary",{placed,stored,buildings:prog.unlocked});
     if(streetReveal && owned.includes(streetReveal.id)){
@@ -510,7 +665,7 @@ export function createStreetScreen({
     streetPreview=null;
     streetEdit={
       before:base, layout:base, history:[], selected:selected||null,
-      filter:"all", coaching:!!coaching, actions:0, usedAuto:false,
+      filter:"all", coaching:!!coaching, actions:0, usedAuto:false, layoutsOpen:false,
     };
     if(initialPlot && selected){
       const placed=placeStreetItem(base,getShopState().owned,selected,initialPlot);
@@ -566,6 +721,89 @@ export function createStreetScreen({
     }
     streetEdit=null; renderStreet();
   }
+  // Task 11: saved layouts (x3). Slots are simply the first N entries of
+  // streetLayout.savedLayouts — normalizeStreetLayout compacts/caps that
+  // array at 3 and drops anything malformed (street.js normSavedLayouts), so
+  // there is no independent "slot identity" beyond array position. Save only
+  // ever targets an existing index (overwrite, confirmed first) or the very
+  // next free index (append) — it never writes past the first empty slot,
+  // which would leave a hole that normalize would silently compact away and
+  // relabel every slot after it on the next render.
+  let pendingLayoutSave = null; // slot index awaiting the overwrite confirm, or null
+  function closeStreetLayoutConfirm(){
+    pendingLayoutSave = null;
+    closeDialog($("#street-layout-confirm"));
+  }
+  // Both Save and Load persist immediately through the same store-save +
+  // dirty path placements/name/grant use (setShopState -> store.set("shop",
+  // ...) -> pushEdge), per the brief — unlike ordinary placement edits they
+  // are NOT deferred to Done/Cancel. streetEdit.layout is also updated so the
+  // live scene (liveStreetLayout() prefers streetEdit.layout while editing)
+  // reflects the change without waiting for Done.
+  function commitStreetLayoutSave(i){
+    if(!streetEdit) return;
+    const layout=streetEdit.layout;
+    const name=layout.name || t("street.layoutSlot",{n:i+1});
+    const savedLayouts=[...layout.savedLayouts];
+    savedLayouts[i]={name,placements:{...layout.placements}};
+    const next=normalizeStreetLayout({...layout,savedLayouts},getShopState().owned);
+    streetEdit.layout=next;
+    setShopState({...getShopState(),streetLayout:next});
+    store.set("shop",getShopState());
+    pushEdge("hide");
+    announceStreet("street.layoutSavedAnnouncement",{n:i+1});
+    renderStreet();
+  }
+  function saveStreetLayoutSlot(i){
+    if(!streetEdit) return;
+    if(i < streetEdit.layout.savedLayouts.length){
+      pendingLayoutSave=i;
+      openDialog($("#street-layout-confirm"),$("#street-layout-confirm-cancel"),closeStreetLayoutConfirm);
+      return;
+    }
+    commitStreetLayoutSave(i);
+  }
+  function loadStreetLayoutSlot(i){
+    if(!streetEdit) return;
+    const slot=streetEdit.layout.savedLayouts[i];
+    if(!slot) return;
+    // Re-run the SAME normalize the module already uses on save/commit — any
+    // slot placement referencing an absent/unowned/incompatible id (sold,
+    // never owned on this device, or its class no longer fits the plot)
+    // drops silently rather than crashing.
+    const next=normalizeStreetLayout({...streetEdit.layout,placements:{...slot.placements}},getShopState().owned);
+    streetEdit.layout=next;
+    setShopState({...getShopState(),streetLayout:next});
+    store.set("shop",getShopState());
+    pushEdge("hide");
+    announceStreet("street.layoutLoadedAnnouncement",{n:i+1});
+    renderStreet();
+  }
+  function toggleStreetLayoutsPanel(){
+    if(!streetEdit) return;
+    streetEdit.layoutsOpen=!streetEdit.layoutsOpen;
+    renderStreet();
+  }
+  function renderStreetLayoutsPanel(){
+    const panel=$("#street-layouts-panel"), btn=$("#street-layouts-btn");
+    const open=!!streetEdit.layoutsOpen;
+    panel.hidden=!open;
+    btn.classList.toggle("on",open);
+    btn.setAttribute("aria-expanded",String(open));
+    if(!open) return;
+    const saved=streetEdit.layout.savedLayouts;
+    document.querySelectorAll("[data-layout-slot]").forEach(row=>{
+      const i=+row.dataset.layoutSlot, slot=saved[i], base=t("street.layoutSlot",{n:i+1});
+      // Only append the saved name when it says something the generic "Slot
+      // N" label doesn't — commitStreetLayoutSave falls back to that exact
+      // string when the street has no custom name, and echoing it back as
+      // "Slot 1 — Slot 1" would be noise, not information.
+      row.querySelector(".street-layout-slot-label").textContent=(slot && slot.name && slot.name!==base)
+        ? base+" — "+slot.name : base;
+      row.querySelector("[data-layout-save]").disabled=i>saved.length;
+      row.querySelector("[data-layout-load]").disabled=!slot;
+    });
+  }
   function renderStreetEditor(){
     const editor=$("#street-editor"), actions=$("#street-actions"), info=$("#street-info");
     editor.hidden=!streetEdit; actions.hidden=!!streetEdit||!!streetPreview;
@@ -574,6 +812,7 @@ export function createStreetScreen({
     const coach=$("#street-coach"); coach.hidden=!streetEdit.coaching;
     if(streetEdit.coaching) coach.textContent=streetEdit.selected
       ? t("street.coachPlace",{name:streetItemLabel(streetEdit.selected)}) : t("street.coachSelect");
+    renderStreetLayoutsPanel();
     $("#street-undo").disabled=!streetEdit.history.length;
     const selectedPlot=streetEdit.selected && Object.keys(streetEdit.layout.placements).find(id=>streetEdit.layout.placements[id]===streetEdit.selected);
     $("#street-store").disabled=!selectedPlot;
@@ -626,6 +865,29 @@ export function createStreetScreen({
       progress:streetProjectProgress(project,item,walletValue),
     };
   }
+  // Task 14: coins the OTHER Street Shop items can actually spend, once the
+  // active project's escrow toggle is on. Always the full wallet unless a
+  // reserved project is active and excludeItemId isn't its own target — the
+  // project's own item is never blocked by its own reserve.
+  function streetSpendableWallet(excludeItemId){
+    const walletValue=getWallet();
+    const project=normalizeStreetProject(getShopState().streetProject,getShopState().owned);
+    if(!project.reserve||!project.itemId||project.itemId===excludeItemId) return walletValue;
+    const projectItem=CATALOG.find(i=>i.id===project.itemId&&i.type==="deco");
+    if(!projectItem) return walletValue;
+    return walletValue-reservedAmount(project,projectItem,walletValue);
+  }
+  // Same project-save path as selectStreetProjectFromPreview (setShopState ->
+  // store.set("shop",...) -> pushEdge, which marks the "shop" sync key dirty)
+  // so the toggle persists and syncs identically to every other project edit.
+  function toggleStreetProjectReserve(on){
+    const current=normalizeStreetProject(getShopState().streetProject,getShopState().owned);
+    if(!current.itemId||current.reserve===!!on) return;
+    setShopState({...getShopState(),streetProject:{...current,reserve:!!on}});
+    store.set("shop",getShopState());
+    pushEdge("hide");
+    renderStreet();
+  }
   function streetProjectPiece(target, layout){
     if(!target) return null;
     const owned=[...getShopState().owned,target.item.id];
@@ -664,6 +926,9 @@ export function createStreetScreen({
     const build=$("#street-project-build");
     build.disabled=!progress.ready;
     build.onclick=()=>openStreetPreview(target.item.id,"street_project",target.plotId);
+    const reserveBox=$("#street-project-reserve");
+    reserveBox.checked=!!target.project.reserve;
+    reserveBox.onchange=()=>toggleStreetProjectReserve(reserveBox.checked);
   }
   function selectStreetProjectFromPreview(){
     if(!streetPreview) return;
@@ -700,6 +965,10 @@ export function createStreetScreen({
         ? t("results.projectProgress",{earned,remaining:progress.remaining.toLocaleString()})
         : t("results.projectNoGain",{remaining:progress.remaining.toLocaleString()});
     }
+    const streetName=liveStreetLayout().name;
+    $("#r-project-title").textContent=streetName
+      ? t("street.namedCaption",{name:streetName})+" · "+t("results.projectTitle")
+      : t("results.projectTitle");
     $("#r-project-name").textContent=streetItemLabel(target.item.id);
     $("#r-project-status").textContent=status;
     const icon=$("#r-project-icon");
@@ -756,6 +1025,14 @@ export function createStreetScreen({
     const freeCompatible=wasOwned ? [] : compatibleStreetPlots(item.id,layoutForPurchase,{includeOccupied:false});
     const plotId=wasOwned ? null
       : (chosenPlot && freeCompatible.some(p=>p.id===chosenPlot) ? chosenPlot : firstFreeStreetPlot(item.id,layoutForPurchase));
+    // Task 14: the reserve is purely a Street Shop affordability layer, never
+    // touching buy()/shop.js — check spendable (wallet minus whatever the
+    // active project has escrowed) before attempting the real purchase, and
+    // only for a NON-project item (the project's own target is excluded by
+    // streetSpendableWallet, so buying it is never blocked by its own reserve).
+    const price=wasOwned ? upgradePrice(item,(getShopState().tiers||{})[item.id]||1) : item.price;
+    const spendable=streetSpendableWallet(item.id);
+    if(getWallet()>=price && spendable<price){ announceStreet("street.reserveBlocked"); return; }
     const r=buy(getWallet(),getShopState(),item.id,todayStr());
     if(!r.ok){ announceStreet("street.notEnough"); return; }
     setWallet(r.wallet); setShopState(r.shop); store.set("wallet",getWallet()); store.set("shop",getShopState()); pushEdge("purchase"); updateWalletChip();
@@ -763,6 +1040,7 @@ export function createStreetScreen({
     if(wasProject&&!wasOwned) analytics.track("street_project_complete",{item_id:item.id,source});
     streetReveal={id:item.id,start:0};
     if(!wasOwned){
+      grantCompletedSets(getShopState().owned);
       streetPreview=null; openStreetEditor(item.id,false,plotId);
       announceStreet("street.purchaseAnnouncement",{name:streetItemLabel(item.id)});
     }else{
@@ -801,10 +1079,20 @@ export function createStreetScreen({
       buyBtn.textContent=hasFreePlot
         ? t("street.buyAndPlace",{coins:item.price.toLocaleString()})
         : t("street.buyToInventory",{coins:item.price.toLocaleString()});
-      buyBtn.disabled=getWallet()<item.price; buyBtn.onclick=buyStreetPreview;
-      if(!hasFreePlot){ hint.hidden=false; hint.textContent=t("street.buyToInventoryHint"); }
+      // Task 14: gate on spendable (wallet minus the active project's escrow),
+      // never on this item's own reserve — streetSpendableWallet(item.id)
+      // returns the full wallet when item.id is the project's own target.
+      const spendable=streetSpendableWallet(item.id);
+      const reserveBlocked=spendable<item.price&&getWallet()>=item.price;
+      buyBtn.disabled=spendable<item.price; buyBtn.onclick=buyStreetPreview;
+      if(reserveBlocked){ hint.hidden=false; hint.textContent=t("street.reserveBlocked"); }
+      else if(!hasFreePlot){ hint.hidden=false; hint.textContent=t("street.buyToInventoryHint"); }
     }else if(tier<item.maxTier){
-      const price=upgradePrice(item,tier); buyBtn.textContent=t("shop.upgrade",{stars:"★".repeat(tier+1),coins:price.toLocaleString()}); buyBtn.disabled=getWallet()<price; buyBtn.onclick=buyStreetPreview;
+      const price=upgradePrice(item,tier);
+      const spendable=streetSpendableWallet(item.id);
+      const reserveBlocked=spendable<price&&getWallet()>=price;
+      buyBtn.textContent=t("shop.upgrade",{stars:"★".repeat(tier+1),coins:price.toLocaleString()}); buyBtn.disabled=spendable<price; buyBtn.onclick=buyStreetPreview;
+      if(reserveBlocked){ hint.hidden=false; hint.textContent=t("street.reserveBlocked"); }
     }else{
       buyBtn.textContent=t("street.placeIt"); buyBtn.disabled=false; buyBtn.onclick=()=>{const id=streetPreview.itemId,plot=streetPreview.plotId;streetPreview=null;openStreetEditor(id,false,plot);};
     }
@@ -817,13 +1105,146 @@ export function createStreetScreen({
       });
     });
   }
+  // Collection book (Task 9): a read-only view over collectionView() (pure,
+  // src/street-collection.js). No purchases happen here — tapping an unowned
+  // item closes the book and routes into the existing Street Shop preview
+  // (openStreetPreview), the same buy/upgrade flow every other entry point
+  // (project card, inventory, catalog) already uses.
+  function closeStreetCollection(){ closeDialog($("#street-collection")); }
+  function collectionItemEl(item){
+    const spriteId = streetMeta(item.id)?.spriteId || item.id;
+    const el = document.createElement(item.owned ? "div" : "button");
+    el.className = "street-collection-item" + (item.owned ? "" : " locked");
+    if(!item.owned){
+      el.type = "button";
+      el.setAttribute("aria-label", streetItemLabel(item.id) + " — " + t("street.collectionLocked"));
+      el.onclick = () => { closeStreetCollection(); openStreetPreview(item.id, "street_collection"); };
+    }
+    const img = document.createElement("img");
+    img.src = "assets/deco-" + spriteId + ".png"; img.alt = "";
+    const name = document.createElement("span"); name.textContent = streetItemLabel(item.id);
+    const status = document.createElement("small");
+    status.textContent = item.owned ? "★".repeat(item.tier) : t("shop.coins", { coins: item.price.toLocaleString() });
+    el.append(img, name, status);
+    return el;
+  }
+  function renderStreetCollection(){
+    const panel = $("#street-collection-panel");
+    panel.replaceChildren();
+    const sections = collectionView(getShopState().owned, getShopState().tiers || {});
+    if(!sections.length || sections.every(s => !s.items.length)){
+      const empty = document.createElement("div");
+      empty.className = "street-inventory-empty";
+      empty.textContent = t("street.collectionEmpty");
+      panel.appendChild(empty);
+      return;
+    }
+    for(const section of sections){
+      const wrap = document.createElement("section");
+      wrap.className = "street-collection-set";
+      const head = document.createElement("div");
+      head.className = "street-collection-head";
+      const title = document.createElement("b");
+      title.textContent = t("street.collectionSetHeader", {
+        name: t("street.set." + section.set),
+        owned: section.items.filter(i => i.owned).length,
+        total: section.items.length,
+      });
+      head.appendChild(title);
+      if(section.complete){
+        const badge = document.createElement("span");
+        badge.className = "street-collection-complete";
+        badge.textContent = t("street.collectionComplete");
+        head.appendChild(badge);
+      }
+      wrap.appendChild(head);
+      const grid = document.createElement("div");
+      grid.className = "street-collection-grid";
+      if(!section.items.length){
+        const empty = document.createElement("div");
+        empty.className = "street-inventory-empty";
+        empty.textContent = t("street.collectionEmpty");
+        grid.appendChild(empty);
+      }
+      for(const item of section.items) grid.appendChild(collectionItemEl(item));
+      wrap.appendChild(grid);
+      panel.appendChild(wrap);
+    }
+  }
+  function openStreetCollection(){
+    renderStreetCollection();
+    openDialog($("#street-collection"), $("#street-collection-close"), closeStreetCollection);
+  }
   function openStreetShop(){
     streetShopMode=true; analytics.track("store_open"); shopViewedProducts.clear();
     const back=$("#shop-back"); back.dataset.go="street"; back.textContent=t("common.backStreet");
     renderShop(); show("shop");
   }
+  // Keepsake shelf (Task 12): read-only view over streetLayout.keepsakes —
+  // append-only (Tasks 8/13 + the welcome moment append to it; never
+  // mutated/deleted here), rendered newest-first (last-appended first,
+  // since same-day entries can tie on `day` alone). A keepsake's optional
+  // `word` is a frozen display string (see makeKeepsake, street-keepsakes.js)
+  // — shown as plain text only; no click/review/SRS wiring is attached to it
+  // or to any keepsake row, per the cosmetic-only guardrail.
+  function closeStreetKeepsakes(){ closeDialog($("#street-keepsakes")); }
+  function keepsakeSetId(k){
+    // `kind:"set"` ids are `set:<setId>:<day>` (makeKeepsake, opts.set) — the
+    // object itself carries no separate `set` field, so derive it from the id.
+    const parts = String(k.id).split(":");
+    return parts.length > 2 ? parts[1] : "";
+  }
+  function keepsakeCopy(k){
+    if(k.kind === "set") return t("street.keepsakeSet", { set: t("street.set." + keepsakeSetId(k)) });
+    if(k.kind === "daily") return t("street.keepsakeDaily", { day: k.day });
+    return t("street.keepsakeWelcome");
+  }
+  function keepsakeIcon(k){
+    if(k.kind === "set") return "trophy";
+    if(k.kind === "daily") return "calendar";
+    return "star";
+  }
+  function keepsakeItemEl(k){
+    const el = document.createElement("div");
+    el.className = "street-keepsake-item";
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.setAttribute("class", "asset-icon");
+    icon.setAttribute("aria-hidden", "true");
+    const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+    use.setAttribute("href", "assets/ui-icons.svg#" + keepsakeIcon(k));
+    icon.appendChild(use);
+    const text = document.createElement("span");
+    text.textContent = keepsakeCopy(k)
+      + (typeof k.word === "string" && k.word ? " " + t("street.keepsakeWord", { word: k.word }) : "");
+    el.append(icon, text);
+    return el;
+  }
+  function renderStreetKeepsakes(){
+    const panel = $("#street-keepsakes-panel");
+    panel.replaceChildren();
+    const layout = ensureStreetLayout();
+    const keepsakes = Array.isArray(layout.keepsakes) ? layout.keepsakes : [];
+    if(!keepsakes.length){
+      const empty = document.createElement("div");
+      empty.className = "street-inventory-empty";
+      empty.textContent = t("street.keepsakesEmpty");
+      panel.appendChild(empty);
+      return;
+    }
+    for(const k of [...keepsakes].reverse()) panel.appendChild(keepsakeItemEl(k));
+  }
+  function openStreetKeepsakes(){
+    renderStreetKeepsakes();
+    openDialog($("#street-keepsakes"), $("#street-keepsakes-close"), closeStreetKeepsakes);
+  }
   $("#street-decorate-btn").onclick=()=>openStreetEditor();
   $("#street-shop-btn").onclick=openStreetShop;
+  $("#street-collection-btn").onclick=openStreetCollection;
+  $("#street-collection-close").onclick=closeStreetCollection;
+  $("#street-collection").addEventListener("click", e=>{ if(e.target.id === "street-collection") closeStreetCollection(); });
+  $("#street-keepsakes-btn").onclick=openStreetKeepsakes;
+  $("#street-keepsakes-close").onclick=closeStreetKeepsakes;
+  $("#street-keepsakes").addEventListener("click", e=>{ if(e.target.id === "street-keepsakes") closeStreetKeepsakes(); });
   $("#street-project-change").onclick=openStreetShop;
   $("#shop-view-street").onclick=()=>{streetPreview=null;show("street");};
   $("#street-undo").onclick=undoStreetEdit;
@@ -831,10 +1252,42 @@ export function createStreetScreen({
   $("#street-auto").onclick=autoArrangeStreetEdit;
   $("#street-cancel").onclick=cancelStreetEdit;
   $("#street-done").onclick=finishStreetEdit;
+  $("#street-layouts-btn").onclick=toggleStreetLayoutsPanel;
+  $("#street-layouts-panel").addEventListener("click", e=>{
+    const saveBtn=e.target.closest("[data-layout-save]");
+    const loadBtn=e.target.closest("[data-layout-load]");
+    if(saveBtn) saveStreetLayoutSlot(+saveBtn.dataset.layoutSave);
+    else if(loadBtn) loadStreetLayoutSlot(+loadBtn.dataset.layoutLoad);
+  });
+  $("#street-layout-confirm-yes").onclick=()=>{
+    const i=pendingLayoutSave;
+    closeStreetLayoutConfirm();
+    if(i!==null) commitStreetLayoutSave(i);
+  };
+  $("#street-layout-confirm-cancel").onclick=closeStreetLayoutConfirm;
+  $("#street-layout-confirm").addEventListener("click", e=>{ if(e.target.id === "street-layout-confirm") closeStreetLayoutConfirm(); });
   $("#street-filters").onclick=e=>{const btn=e.target.closest("[data-street-filter]");if(btn&&streetEdit){streetEdit.filter=btn.dataset.streetFilter;renderStreet();}};
   $("#street-preview-close").onclick=closeStreetPreview;
   $("#street-preview-back").onclick=closeStreetPreview;
   $("#street-preview-project").onclick=selectStreetProjectFromPreview;
+  // Task 10: name-your-street inline edit, mirroring main.js's #profile-name
+  // row/form toggle (progress screen) — the existing text-edit pattern in
+  // this codebase. No modal dialog; openDialog/closeDialog are for the
+  // overlay-style dialogs (collection, pause), not this inline form.
+  const streetNameRow=$("#street-caption-row"), streetNameForm=$("#street-name-form");
+  const streetNameInput=$("#street-name-input");
+  streetNameRow.hidden=false; streetNameForm.hidden=true;
+  $("#street-name-edit").onclick=()=>{
+    streetNameInput.value=liveStreetLayout().name;
+    streetNameRow.hidden=true; streetNameForm.hidden=false;
+    streetNameInput.focus(); streetNameInput.select();
+  };
+  $("#street-name-cancel").onclick=()=>{ streetNameForm.hidden=true; streetNameRow.hidden=false; };
+  streetNameForm.onsubmit=e=>{
+    e.preventDefault();
+    setStreetName(streetNameInput.value);
+    streetNameForm.hidden=true; streetNameRow.hidden=false;
+  };
   window.addEventListener("resize",()=>{if(getCurrentScreen()==="street")requestAnimationFrame(renderStreet);});
   function paintStreetBase(c, w, h){
     // Warm-daylight village street: cream/sky gradient, soft green hills, sun

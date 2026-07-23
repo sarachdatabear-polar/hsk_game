@@ -335,12 +335,46 @@
   .street-hit.plot-hit.incompatible{border-color:rgba(132,96,67,.32); background:rgba(46,42,36,.08);}
   .street-hit.item-hit.selected{border-color:var(--lc-green); background:rgba(255,214,95,.22);}
   @keyframes street-plot-pulse{50%{box-shadow:0 0 0 7px rgba(255,214,95,.16);}}
-  #street-caption{width:100%; max-width:430px; min-height:36px; margin:7px auto 0; padding:7px 10px;
+  .street-caption-row{width:100%; max-width:430px; display:flex; align-items:stretch; gap:6px; margin:7px auto 0;}
+  .street-caption-row[hidden]{display:none;}
+  #street-caption{flex:1 1 auto; width:auto; min-height:36px; margin:0; padding:7px 10px;
     border:1px solid var(--panel-border); border-radius:11px; background:var(--panel-wash);
     color:var(--lc-brown); font-size:12px; line-height:1.35; text-align:center;}
-  .street-actions{width:100%; display:grid; grid-template-columns:1.35fr 1fr 1fr; gap:7px; margin-top:6px;}
+  .street-name-edit-btn{flex:0 0 auto; min-width:36px; min-height:36px; padding:6px; border-radius:10px;
+    border:1px solid var(--panel-border); background:var(--panel-wash); color:var(--lc-green);
+    display:inline-flex; align-items:center; justify-content:center; cursor:pointer;}
+  .street-caption-row + .profile-name-form{max-width:430px; margin:6px auto 0;}
+  .street-actions{width:100%; display:grid; grid-template-columns:1.1fr 1fr 1fr 1fr 1fr; gap:7px; margin-top:6px;}
   .street-actions[hidden]{display:none;}
-  .street-actions .sec-btn{min-height:44px; margin:0; padding:7px 6px; font-size:13px;}
+  .street-actions .sec-btn{min-height:44px; margin:0; padding:7px 4px; font-size:12px;}
+  /* Collection book (Task 9): reuses the .pause-overlay/.pause-panel dialog
+     convention (see #quest-overlay just below) — read-only, so its own panel
+     just needs a scroll cap since it can list up to 3 full sets at once. */
+  .street-collection-panel{max-height:60vh; overflow-y:auto; padding-right:2px;}
+  .street-collection-set{margin-top:10px;}
+  .street-collection-set:first-child{margin-top:0;}
+  .street-collection-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;}
+  .street-collection-head b{color:var(--lc-green-deep); font-size:14px;}
+  .street-collection-complete{color:var(--lc-green-deep); font-weight:800; font-size:12px; white-space:nowrap;}
+  .street-collection-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(76px,1fr)); gap:7px;}
+  .street-collection-item{display:flex; flex-direction:column; align-items:center; gap:2px; padding:5px;
+    border:2px solid transparent; border-radius:12px; background:var(--lc-cream); color:var(--ink); text-align:center;}
+  .street-collection-item img{display:block; width:44px; height:44px; object-fit:contain;}
+  .street-collection-item span{display:block; max-width:100%; font-size:10px; line-height:1.15;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .street-collection-item small{display:block; color:var(--muted); font-size:9px;}
+  /* Locked = the SAME owned sprite, just faded — no new art per the brief. */
+  .street-collection-item.locked img{opacity:.4;}
+  .street-collection-item.locked{cursor:pointer;}
+  /* Keepsake shelf (Task 12): same .pause-overlay/.pause-panel dialog
+     convention as #street-collection above — read-only, append-only list,
+     newest-first. `word` (when present) is plain display text, never
+     interactive — no click handlers are ever attached to a keepsake row. */
+  .street-keepsakes-panel{max-height:60vh; overflow-y:auto; padding-right:2px; display:flex; flex-direction:column; gap:8px;}
+  .street-keepsake-item{display:flex; align-items:center; gap:9px; padding:8px 10px;
+    border-radius:12px; background:var(--lc-cream); color:var(--ink);}
+  .street-keepsake-item .asset-icon{width:20px; height:20px; color:var(--lc-green); flex:0 0 auto;}
+  .street-keepsake-item span{font-size:12px; line-height:1.3;}
   #street-decorate-btn{background-color:var(--lc-sun);
     background-image:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun) 55%,var(--lc-sun-deep));
     color:var(--lc-teal); border:2px solid var(--lc-sun-deep); font-weight:900;
@@ -377,12 +411,31 @@
   .project-meter > i{display:block; width:0; height:100%; border-radius:inherit;
     background:linear-gradient(90deg,var(--lc-teal),var(--lc-green)); transition:width .45s ease-out;}
   .project-meter.ready > i{background:linear-gradient(90deg,var(--lc-sun),#f2bc57);}
+  /* Task 14: opt-in escrow toggle — reuses the .settings-row-label checkbox
+     convention (see analytics-consent), spanning the project card's grid. */
+  .street-project-reserve{grid-column:1/-1; display:flex; align-items:center; gap:8px; cursor:pointer;
+    font-size:12px; font-weight:800; color:var(--lc-brown);}
+  .street-project-reserve input[type=checkbox]{width:18px; height:18px; min-width:18px; flex:0 0 auto;
+    accent-color:var(--lc-teal); cursor:pointer;}
+  .street-project-reserve-hint{grid-column:1/-1; margin:0; font-size:11px; color:var(--muted); line-height:1.3;}
   .street-editor{width:100%; margin-top:8px; padding:9px; border:1px solid var(--panel-border); border-radius:14px;
     background:var(--panel-wash); box-shadow:0 2px 8px rgba(46,42,36,.10);}
   .street-coach{margin:0 0 7px; padding:8px 10px; border-radius:10px; background:rgba(255,214,95,.25);
     color:var(--lc-brown); font-size:13px; font-weight:700;}
-  .street-editor-tools{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px;}
+  .street-editor-tools{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px;}
   .street-editor-tools .chip{padding:7px 5px; font-size:12px; min-height:44px;}
+  /* Task 11: saved layouts (x3) — compact inline slot list inside the edit
+     toolbar, toggled by #street-layouts-btn. Needs an explicit [hidden]
+     override: .street-layouts-panel itself declares display:flex, and per
+     Task 10's lesson an author display rule beats the `hidden` attribute
+     unless overridden here. */
+  .street-layouts-panel{width:100%; display:flex; flex-direction:column; gap:6px; margin-top:8px;
+    padding:8px 9px; border:1px solid var(--panel-border); border-radius:12px; background:var(--lc-cream);}
+  .street-layouts-panel[hidden]{display:none;}
+  .street-layout-slot{display:flex; align-items:center; gap:6px;}
+  .street-layout-slot-label{flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis;
+    white-space:nowrap; font-size:12px; color:var(--ink);}
+  .street-layout-slot button{flex:0 0 auto; min-height:40px; padding:6px 10px; font-size:11px;}
   .street-inventory-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:9px;}
   .street-inventory-head .sect{margin:0;}
   .street-filters{display:flex; gap:4px;}
@@ -1415,8 +1468,9 @@
     #s-street .street-actions{margin-top:4px;}
     #s-street .street-stage{max-width:340px; margin-top:5px;}
     #s-street .street-world{min-height:0; aspect-ratio:2/1;}
-    #s-street #street-caption{max-width:340px; min-height:26px; margin-top:4px; padding:4px 8px;
-      font-size:10.5px; line-height:1.2;}
+    #s-street .street-caption-row{max-width:340px; margin-top:4px;}
+    #s-street .street-caption-row + .profile-name-form{max-width:340px;}
+    #s-street #street-caption{min-height:26px; padding:4px 8px; font-size:10.5px; line-height:1.2;}
   }
 </style>
 </head>
@@ -1517,6 +1571,8 @@
       <button class="sec-btn" id="street-decorate-btn" data-i18n="street.decorate">Decorate</button>
       <button class="sec-btn" id="street-shop-btn" data-i18n="street.shop">Street Shop</button>
       <button class="sec-btn" id="street-quests-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span data-i18n="street.questsBtn">Quests</span></span></button>
+      <button class="sec-btn" id="street-collection-btn" data-i18n="street.collection">Collection</button>
+      <button class="sec-btn" id="street-keepsakes-btn" data-i18n="street.keepsakes">Keepsakes</button>
     </div>
     <div class="street-stage" id="street-stage">
       <div class="street-scroll" id="street-scroll" tabindex="0" data-i18n-aria="street.sceneLabel" aria-label="Your Lucky Cat Street">
@@ -1527,7 +1583,15 @@
         </div>
       </div>
     </div>
-    <div id="street-caption" aria-live="polite"></div>
+    <div class="street-caption-row" id="street-caption-row">
+      <div id="street-caption" aria-live="polite"></div>
+      <button class="street-name-edit-btn" id="street-name-edit" type="button" data-i18n-aria="street.nameEdit" data-i18n-title="street.nameEdit" aria-label="Name your street"><svg class="asset-icon"><use href="assets/ui-icons.svg#pencil"></use></svg></button>
+    </div>
+    <form class="profile-name-form" id="street-name-form" hidden>
+      <input class="account-input" id="street-name-input" data-i18n-ph="street.namePlaceholder" data-i18n-title="street.namePlaceholder" aria-label="Street name" placeholder="e.g. Sunny Lane">
+      <button class="big" type="submit" data-i18n="profile.saveName">Save</button>
+      <button class="big" id="street-name-cancel" type="button" data-i18n="profile.cancelName">Cancel</button>
+    </form>
     <div class="street-info" id="street-info" hidden></div>
     <section class="street-project" id="street-project" aria-labelledby="street-project-name" hidden>
       <div class="street-project-copy">
@@ -1540,6 +1604,11 @@
         <button class="chip buy-chip" id="street-project-build" data-i18n="street.buildNow">Build now</button>
       </div>
       <div class="project-meter" id="street-project-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i></i></div>
+      <label class="street-project-reserve" for="street-project-reserve">
+        <input type="checkbox" id="street-project-reserve">
+        <span data-i18n="street.reserveToggle">Reserve coins for this build</span>
+      </label>
+      <p class="street-project-reserve-hint" data-i18n="street.reserveHint">Reserved coins stay set aside for your next build.</p>
     </section>
 
     <div class="street-editor" id="street-editor" hidden>
@@ -1548,8 +1617,31 @@
         <button class="chip" id="street-undo" data-i18n="street.undo">Undo</button>
         <button class="chip" id="street-store" data-i18n="street.storeItem">Store</button>
         <button class="chip" id="street-auto" data-i18n="street.autoArrange">Auto</button>
+        <button class="chip" id="street-layouts-btn" aria-expanded="false" aria-controls="street-layouts-panel" data-i18n="street.layouts">Layouts</button>
         <button class="chip" id="street-cancel" data-i18n="common.cancel">Cancel</button>
         <button class="chip buy-chip" id="street-done" data-i18n="common.done">Done</button>
+      </div>
+      <!-- Task 11: saved layouts (x3). Slots are just the first N entries of
+           streetLayout.savedLayouts (street.js caps/compacts at 3 in
+           normalizeStreetLayout) — no separate slot-identity field, so the
+           row markup is static and street-screen.js only fills in the label
+           text + enabled state per render. -->
+      <div class="street-layouts-panel" id="street-layouts-panel" hidden>
+        <div class="street-layout-slot" data-layout-slot="0">
+          <span class="street-layout-slot-label"></span>
+          <button class="chip" data-layout-save="0" data-i18n="street.layoutSave">Save here</button>
+          <button class="chip" data-layout-load="0" data-i18n="street.layoutLoad">Load</button>
+        </div>
+        <div class="street-layout-slot" data-layout-slot="1">
+          <span class="street-layout-slot-label"></span>
+          <button class="chip" data-layout-save="1" data-i18n="street.layoutSave">Save here</button>
+          <button class="chip" data-layout-load="1" data-i18n="street.layoutLoad">Load</button>
+        </div>
+        <div class="street-layout-slot" data-layout-slot="2">
+          <span class="street-layout-slot-label"></span>
+          <button class="chip" data-layout-save="2" data-i18n="street.layoutSave">Save here</button>
+          <button class="chip" data-layout-load="2" data-i18n="street.layoutLoad">Load</button>
+        </div>
       </div>
       <div class="street-inventory-head">
         <div class="sect" data-i18n="street.inventory">Inventory</div>
@@ -1591,6 +1683,46 @@
           <button class="overlay-close" id="quest-popup-close" data-i18n-title="common.close" aria-label="Close">×</button>
         </div>
         <div id="quest-panel"></div>
+      </div>
+    </div>
+
+    <!-- Collection book (Task 9): same pause-overlay/pause-panel convention as
+         #quest-overlay above — read-only view of collectionView() (Task 4);
+         tapping an unowned item routes to the existing #street-preview-panel
+         flow via openStreetPreview(), never buys directly from here. -->
+    <div class="pause-overlay" id="street-collection" role="dialog" aria-modal="true" aria-labelledby="street-collection-title">
+      <div class="pause-panel">
+        <div class="quest-popup-head">
+          <h3 class="pause-title" id="street-collection-title" data-i18n="street.collection">Collection</h3>
+          <button class="overlay-close" id="street-collection-close" data-i18n-title="common.close" aria-label="Close">×</button>
+        </div>
+        <div class="street-collection-panel" id="street-collection-panel"></div>
+      </div>
+    </div>
+
+    <!-- Keepsake shelf (Task 12): same .pause-overlay/.pause-panel dialog
+         convention as #street-collection above — read-only, append-only view
+         of streetLayout.keepsakes (Task 1), rendered newest-first. A
+         keepsake's optional `word` is a frozen display string only: it is
+         never wired to a click/review/SRS interaction here. -->
+    <div class="pause-overlay" id="street-keepsakes" role="dialog" aria-modal="true" aria-labelledby="street-keepsakes-title">
+      <div class="pause-panel">
+        <div class="quest-popup-head">
+          <h3 class="pause-title" id="street-keepsakes-title" data-i18n="street.keepsakes">Keepsakes</h3>
+          <button class="overlay-close" id="street-keepsakes-close" data-i18n-title="common.close" aria-label="Close">×</button>
+        </div>
+        <div class="street-keepsakes-panel" id="street-keepsakes-panel"></div>
+      </div>
+    </div>
+
+    <!-- Task 11: overwrite confirm for saved layouts — same .pause-overlay/
+         .pause-panel convention as #quest-overlay/#street-collection above,
+         opened/closed via the shared openDialog/closeDialog (deps). -->
+    <div class="pause-overlay" id="street-layout-confirm" role="dialog" aria-modal="true" aria-labelledby="street-layout-confirm-title">
+      <div class="pause-panel">
+        <h3 class="pause-title" id="street-layout-confirm-title" data-i18n="street.layoutOverwrite">Replace this saved layout?</h3>
+        <button class="pause-resume" id="street-layout-confirm-yes" data-i18n="street.layoutOverwriteYes">Replace</button>
+        <button class="pause-quit" id="street-layout-confirm-cancel" data-i18n="common.cancel">Cancel</button>
       </div>
     </div>
   </div>
@@ -1781,7 +1913,7 @@
     <section class="results-project" id="r-project" aria-labelledby="r-project-name" hidden>
       <img class="results-project-icon" id="r-project-icon" alt="">
       <div class="results-project-copy">
-        <small data-i18n="results.projectTitle">Next street build</small>
+        <small id="r-project-title">Next street build</small>
         <b id="r-project-name"></b>
         <span id="r-project-status"></span>
       </div>
