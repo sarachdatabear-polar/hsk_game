@@ -202,6 +202,11 @@ export const STRINGS = {
     "street.keepsakeDaily": "A neighbour dropped by",
     "street.keepsakeWord": "— you'd learned {word}",
     "street.keepsakesEmpty": "Keepsakes you earn will rest here.",
+    // Task 13: positive-only daily surprise. Guardrail-reviewed — no streak,
+    // day-count, "in danger", or missed-day copy anywhere near these. If a
+    // day is skipped, nothing here ever fires or says anything about it.
+    "street.dailyGreeting": "A neighbour stopped by!",
+    "street.dailyGift": "They left you {coins} coins.",
     "quests.title": "Daily Quests",
     // scope
     "scope.title": "Choose your words",
@@ -766,6 +771,8 @@ export const STRINGS = {
     "street.keepsakeDaily": "เพื่อนบ้านแวะมา",
     "street.keepsakeWord": "— คุณเรียน {word} แล้ว",
     "street.keepsakesEmpty": "ของที่ระลึกที่ได้จะอยู่ที่นี่",
+    "street.dailyGreeting": "เพื่อนบ้านแวะมา!",
+    "street.dailyGift": "ฝากเหรียญไว้ให้ {coins} เหรียญ",
     "quests.title": "เควสต์ประจำวัน",
     // scope
     "scope.title": "เลือกคำศัพท์",

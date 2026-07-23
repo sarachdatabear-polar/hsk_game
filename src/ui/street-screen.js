@@ -35,6 +35,7 @@ import {
 } from "../street.js";
 import { newlyCompletedSets, completedSets, collectionView } from "../street-collection.js";
 import { makeKeepsake, addKeepsake } from "../street-keepsakes.js";
+import { isNewDay, dailyGift } from "../street-daily.js";
 
 export function createStreetScreen({
   $, store, analytics, show, renderShop, pushEdge, updateWalletChip, todayStr, tOr,
@@ -99,6 +100,12 @@ export function createStreetScreen({
   let streetReveal = null; // { id, start } — start stamps on first visible frame
   let streetResidentRaf = 0;
   let streetResidentScene = null;
+  // Task 13: the daily-surprise neighbour cameo. In-memory only, exactly like
+  // streetReveal above — losing it on refresh just skips one animation, never
+  // the gift itself (that's already persisted by the time this is set).
+  // { neighbour: SKIN_PALETTES key, start } — start stamps on first drawn frame.
+  let streetDailyReveal = null;
+  const DAILY_NEIGHBOUR_MS = 2600; // matches streetToast's own on-screen window
   function revealPopScale(id){
     if(REDUCED_MOTION) return 1;
     if(!streetReveal || streetReveal.id !== id || !streetReveal.start) return 1;
@@ -181,8 +188,38 @@ export function createStreetScreen({
     requestAnimationFrame(() => { $("#street-sr-status").textContent = message; });
   }
   function streetCountBucket(n){ return n===0?"0":n<4?"1-3":n<10?"4-9":"10+"; }
+  // Task 13: positive-only daily surprise. Fires at most once per calendar
+  // day, gated on the PERSISTED layout.lastVisitDay (never an in-memory flag),
+  // so reopening Street later the same day is a no-op — no re-credit, no
+  // re-fire, and critically no message of any kind (a skipped day is simply
+  // invisible; see AGENTS.md/task brief guardrail: no streak/day-count/
+  // "missed"/"come back" copy anywhere in this path).
+  function grantDailySurprise(layout){
+    const today = todayStr();
+    if(!isNewDay(layout.lastVisitDay, today)) return layout;
+    const gift = dailyGift(today);
+    // Coins IN only, via the same wallet path this module already uses for
+    // purchases (buyStreetPreview: setWallet + store.set("wallet",...) +
+    // updateWalletChip) — deps exposes no separate "credit" function because
+    // this pair already IS the credit path.
+    setWallet(getWallet() + gift.coins);
+    store.set("wallet", getWallet());
+    updateWalletChip();
+    // Wordless by design: deps exposes no mastery accessor here (same
+    // constraint documented on grantCompletedSets/earnStreetWelcome above).
+    const keepsakes = gift.keepsake
+      ? addKeepsake(layout.keepsakes, makeKeepsake("daily", today))
+      : layout.keepsakes;
+    const next = normalizeStreetLayout({ ...layout, lastVisitDay: today, keepsakes }, getShopState().owned);
+    setShopState({ ...getShopState(), streetLayout: next });
+    store.set("shop", getShopState());
+    pushEdge("purchase");
+    streetDailyReveal = { neighbour: gift.neighbour, start: 0 };
+    streetToast(t("street.dailyGreeting") + " " + t("street.dailyGift", { coins: gift.coins }));
+    return next;
+  }
   function enterStreet(previousScreen=""){
-    const layout = ensureStreetLayout();
+    const layout = grantDailySurprise(ensureStreetLayout());
     const owned=getShopState().owned.length+(layout.welcomeOwned?1:0),placed=Object.keys(layout.placements).length;
     analytics.track("street_open",{
       source:streetPreview?"shop_preview":previousScreen==="shop"?"shop":"navigation",
@@ -366,6 +403,22 @@ export function createStreetScreen({
       layer.appendChild(btn);
     }
   }
+  // Task 13: cosmetic time-of-day tint. Purely a rendering concern — the
+  // hour is read straight from the real clock on every draw (never stored,
+  // never date-keyed; only the daily GIFT above is). Reduced-motion is
+  // unaffected because the tint is a flat fillRect, not an animation.
+  const STREET_TOD_TINT = {
+    morning: "rgba(255,206,140,.12)",
+    day: null,                        // full daylight art already reads bright; no overlay
+    dusk: "rgba(255,132,98,.16)",
+    night: "rgba(35,42,102,.24)",
+  };
+  function streetTimeOfDay(hour){
+    if(hour>=5 && hour<11) return "morning";
+    if(hour>=11 && hour<17) return "day";
+    if(hour>=17 && hour<20) return "dusk";
+    return "night";
+  }
   function drawStreetSceneBackground(c,w,h){
     const selected=getShopState().backdrop ? sprite("bg-"+getShopState().backdrop) : null;
     const defaultName=h/w>=.95 ? "bg-street-portrait" : "bg-street";
@@ -381,6 +434,8 @@ export function createStreetScreen({
     groundWash.addColorStop(0,"rgba(251,245,232,0)");
     groundWash.addColorStop(1,"rgba(251,245,232,.14)");
     c.fillStyle=groundWash; c.fillRect(0,h*.64,w,h*.36);
+    const tint=STREET_TOD_TINT[streetTimeOfDay(new Date().getHours())];
+    if(tint){ c.save(); c.fillStyle=tint; c.fillRect(0,0,w,h); c.restore(); }
   }
   function residentActivityTargets(pieces){
     return pieces.filter(p=>p.kind==="deco").map(p=>({
@@ -456,6 +511,21 @@ export function createStreetScreen({
     }
     c.restore();
   }
+  // Task 13: the passing neighbour cameo — recolours the existing cat art via
+  // SKIN_PALETTES[gift.neighbour] (same drawCat used by the resident/kitten
+  // just below) and walks it once across the scene. Skipped entirely under
+  // reduced motion, same as the resident's own walk cycle; the toast already
+  // fired in grantDailySurprise so the gift is never motion-gated.
+  function drawStreetDailyNeighbour(c,w,groundY,scale,now){
+    if(!streetDailyReveal || REDUCED_MOTION) return;
+    if(!streetDailyReveal.start) streetDailyReveal.start=now;
+    const progress=(now-streetDailyReveal.start)/DAILY_NEIGHBOUR_MS;
+    if(progress>=1){ streetDailyReveal=null; return; }
+    const x=w*(-0.14+1.28*progress);
+    c.save();
+    drawCat(c,x,groundY,now,"walk",SKIN_PALETTES[streetDailyReveal.neighbour],scale*0.86,[],false);
+    c.restore();
+  }
   function drawStreetResidentFrame(now,reducedMotion=false){
     const scene=streetResidentScene;
     if(!scene) return;
@@ -483,6 +553,7 @@ export function createStreetScreen({
       drawCat(c,kittenX,groundY+1,catTime+180,pose.state,SKIN_PALETTES[getShopState().skin],scale*.48,[],false);
       c.restore();
     }
+    drawStreetDailyNeighbour(c,w,groundY,scale,now);
   }
   function streetResidentLoop(now){
     streetResidentRaf=0;
