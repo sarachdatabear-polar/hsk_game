@@ -1,0 +1,1229 @@
+orig_row,hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
+3,人家,rén jiā,household; dwelling,ครัวเรือน; คนอื่น,5,5,ครัวเรือน; คนอื่น,EN-GLOSS-BUG: 人家's most common sense 'other people / one (colloquial pronoun)' is missing from EN 'household; dwelling'; kept คนอื่น to reflect real usage
+7,伙伴,huǒ bàn,companion; pal,"พันธมิตร, สหายสนิท",5,5,"เพื่อน, คู่หู",พันธมิตร (ally) is wrong register for companion/pal
+19,偶然,ǒu rán,incidentally; occasional,"บังเอิญ, เป็นครั้งคราว",5,5,บังเอิญ; เป็นครั้งคราว,
+25,农作物,nóng zuò wù,farm crops,พืชการเกษตร,5,6,พืชผลทางการเกษตร,
+31,分别,fēn bié,to part; to leave each other,"แตกต่าง, ลาจาก",5,5,"ลาจาก, จากลา",EN-GLOSS-BUG: EN 'to part' omits 分别's common senses 'separately/respectively' and 'to distinguish'
+33,制定,zhì dìng,to draw up; to formulate,"กำหนด, ร่าง (แผน/กฎ)",5,5,"กำหนด, ร่าง (แผน/กฎ)",
+35,功效,gōng xiào,efficacy,"ประสิทธิ์, ผลประโยชน์",5,6,"สรรพคุณ, ประสิทธิผล",thai_current ประสิทธิ์ is not a complete Thai word; 功效 = efficacy (esp. of medicine) = สรรพคุณ
+42,原,yuán,original; former,"เดิม, ดั้งเดิม",5,4,"เดิม, ดั้งเดิม",
+60,困境,kùn jìng,predicament; plight,"สถานการณ์ลำบาก, ภาวะคับขัน",5,4,"สถานการณ์ลำบาก, ภาวะคับขัน",
+63,增,zēng,to increase,"เพิ่มขึ้น, ขยาย",5,6,"เพิ่มขึ้น, ขยาย",
+66,外出,wài chū,to go out; to go away,"ออกนอก, เดินทาง",5,6,"ออกไปข้างนอก, เดินทางออกไป",
+74,大米,dà mǐ,husked rice,ข้าว,5,2,ข้าวสาร,
+88,威胁,wēi xié,to threaten; to menace,"คุกคาม, ข่มขู่",5,5,"คุกคาม, ข่มขู่",
+114,强烈,qiáng liè,strong; intense,"รุนแรง, แรง",5,5,"รุนแรง, แรง",
+117,形象,xíng xiàng,image; form,"ภาพลักษณ์, รูปแบบ",5,5,"ภาพลักษณ์, รูปลักษณ์",
+121,思想,sī xiǎng,thought; thinking,"ความคิด, แนวคิด",5,5,"ความคิด, แนวคิด",
+122,恐惧,kǒng jù,to be frightened; fear,"กลัว, สยอง",5,6,"กลัว, หวาดกลัว",
+132,打发,dǎ fā,to send away; to dismiss,"ส่งตัว, บังคับออก",5,6,"ไล่ไป, ส่งให้ไปทำธุระ",EN-GLOSS-BUG: EN omits very common 打发时间 = 'to pass/kill time' (ฆ่าเวลา); thai_current ส่งตัว/บังคับออก mis-rendered the sense
+136,抑制,yì zhì,to inhibit; to keep down,"กดดัน, ยับยั้ง",5,6,"ยับยั้ง, ระงับ",กดดัน (to pressure) is the wrong sense for inhibit/suppress
+149,故,gù,happening; instance,"เหตุการณ์, ความ",5,5,"สาเหตุ, เหตุ",EN-GLOSS-BUG: EN 'happening; instance' does not match 故 (reason/cause 缘故; therefore; former/old; deliberately)
+151,教训,jiào xùn,to provide guidance; a talking-to,"บทเรียน, ข้อเตือน",5,5,บทเรียน; ดุด่าสั่งสอน,EN-GLOSS-BUG: 教训 is usually negative (to teach a harsh lesson / scold); EN 'to provide guidance' softens it
+153,文明,wén míng,civilized; civilization,"วัฒนธรรม, อารยะ",5,5,"อารยธรรม, มีอารยะ",วัฒนธรรม = culture; 文明 = civilization/civilized
+161,最初,zuì chū,first; primary,"เริ่มแรก, ตอนแรก",5,6,"เริ่มแรก, ตอนแรก",
+164,有意思,yǒu yì si,interesting; meaningful,น่าสนใจ,5,2,น่าสนใจ,
+168,期间,qī jiān,period of time; time,"ช่วงเวลา, ระหว่าง",5,5,"ช่วงเวลา, ระหว่าง",
+171,杯,bēi,cup; trophy cup,ลักษณนาม(แก้ว/ถ้วย),5,2,แก้ว; ถ้วยรางวัล,thai_current gave only the classifier; EN 'cup; trophy cup' are the noun senses
+180,水源,shuǐ yuán,water source; water supply,"แหล่งน้ำ, น้ำบาดาล",5,5,"แหล่งน้ำ, ต้นน้ำ","น้ำบาดาล = groundwater, too specific"
+185,没什么,méi shén me,it doesn't matter; think nothing of it,"ไม่มีอะไร, ไม่เป็นไร",5,3,"ไม่มีอะไร, ไม่เป็นไร",
+187,洞,dòng,cave; hole,"ถ้ำ, หลุม",5,5,ถ้ำ; รู,
+188,派,pài,group; to send,"สถาบัน, นิกาย",5,5,ฝ่าย(กลุ่ม); ส่งไป,thai_current สถาบัน/นิกาย missed the 'to send/dispatch' sense (ส่ง)
+190,海底,hǎi dǐ,seabed; seafloor,ก้นทะเล,5,4,ก้นทะเล,
+191,深处,shēn chù,abyss; depths,"ที่ลึก, สระลึก",5,5,"ส่วนลึก, ที่ลึก",thai_current สระลึก is not correct Thai
+199,牙,yá,tooth; ivory,ฟัน,5,3,ฟัน; งาช้าง,EN 'ivory' sense (象牙) was missing
+205,由此,yóu cǐ,hereby; from this,"จากนี้, ดังนั้น",5,5,จากนี้; ดังนั้น,
+210,真理,zhēn lǐ,truth,ความจริง,5,5,ความจริง,
+217,空中,kōng zhōng,in the sky; in the air,"ท้องฟ้า, อากาศ",5,6,"กลางอากาศ, บนท้องฟ้า",
+220,窄,zhǎi,narrow; narrow-minded,แคบ,5,4,แคบ; ใจแคบ,
+234,若,ruò,if; like,"ถ้าหาก, ดุจ",5,5,ถ้าหาก; ดุจ,
+235,草原,cǎo yuán,grassland; prairie,"ทุ่งหญ้า, ทุ่งนา",5,5,ทุ่งหญ้า,"fixed: current ทุ่งนา means paddy/farmland, wrong for grassland"
+246,诱饵,yòu ěr,bait,อาหารหลอก,5,6,เหยื่อ,current อาหารหลอก is unnatural; เหยื่อ is the real Thai for bait
+249,负担,fù dān,to bear; burden,ภาระ,5,5,ภาระ; แบกรับ,
+252,赏,shǎng,to reward; to appreciate,"มอบให้, ประทับใจ",5,6,ให้รางวัล; ชื่นชม,current ประทับใจ (impressed) is off for 赏 appreciate/reward
+256,轨道,guǐ dào,track; orbit,รางเพื่อเดินทาง,5,6,ราง; วงโคจร,current รางเพื่อเดินทาง is awkward and omits the orbit sense
+257,转,zhuǎn,to turn; to change direction,"หมุน, เปลี่ยน, เลี้ยว",5,5,หมุน; เลี้ยว,trimmed 3-item list to lead + one distinct sense
+258,软,ruǎn,soft; flexible,"นุ่ม; อ่อน, ยืดหยุ่น",5,4,นุ่ม; ยืดหยุ่น,cleaned mixed separators / 3 items
+260,过敏,guò mǐn,medicine allergic; hypersensitive,"แพ้, ภูมิแพ้",5,5,"แพ้, ภูมิแพ้",EN-GLOSS-BUG: 'medicine allergic' is malformed; sense is 'allergic; hypersensitive'
+269,铅笔,qiān bǐ,lead pencil,ดินสอ,5,2,ดินสอ,
+274,随时,suí shí,at any time; at all times,"ทุกเมื่อ, ได้ตลอดเวลา",5,5,"ทุกเมื่อ, ได้ตลอดเวลา",
+276,靠近,kào jìn,to be close to; to approach,"เข้าใกล้, ใกล้",5,5,"เข้าใกล้, ใกล้",
+277,预报,yù bào,forecast,"พยากรณ์, ประกาศ",5,6,พยากรณ์,dropped ประกาศ (announce); 预报 = forecast
+278,领域,lǐng yù,domain; sphere,"แวดวง, สาขา, ขอบเขต",5,5,"แวดวง, สาขา",trimmed 3-item list
+283,一时,yī shí,a period of time; a while,"ช่วงหนึ่ง, อยู่ครู่นึง",4,4,"ช่วงหนึ่ง, ครู่หนึ่ง",fixed colloquial spelling อยู่ครู่นึง
+284,一致,yí zhì,consistent; unanimous,"เป็นเอกฉันท์, สอดคล้องกัน",4,5,สอดคล้องกัน; เป็นเอกฉันท์,distinct senses -> semicolon
+287,下山,xià shān,to go down a hill; of the sun or moon to set,พระอาทิตย์ตกดิน,4,3,ลงเขา; พระอาทิตย์ตกดิน,primary sense 'go down mountain' was missing
+295,不要紧,bú yào jǐn,unimportant; not serious,ไม่สำคัญ,4,5,ไม่เป็นไร; ไม่สำคัญ,不要紧 idiomatically = ไม่เป็นไร
+299,严谨,yán jǐn,rigorous; strict,เข้มงวด,4,6,รัดกุม; เข้มงวด,add รัดกุม (rigorous); เข้มงวด alone only covers 'strict'
+308,从此,cóng cǐ,from now on; since then,"นับแต่นั้น, ตั้งแต่นั้นมา",4,5,"นับแต่นั้น, ตั้งแต่นั้นมา",
+309,代价,dài jià,price; cost,ค่าใช้จ่าย,4,6,ราคาที่ต้องจ่าย,代价 = price one pays (often figurative); ค่าใช้จ่าย=expenses misleads
+316,体会,tǐ huì,to realize through experience,ความสัมผัส,4,5,เข้าใจจากประสบการณ์; ซาบซึ้ง,current ความสัมผัส (the sense of touch) is wrong
+323,停止,tíng zhǐ,to stop; to halt,"หยุด, ยับยั้ง",4,4,หยุด; ยุติ,ยับยั้ง = restrain (制止); 停止 = cease -> ยุติ
+326,充实,chōng shí,rich; full,อุดมไปด้วย,4,6,เต็มอิ่ม; สมบูรณ์,current อุดมไปด้วย is an incomplete phrase needing an object
+332,具备,jù bèi,to possess; to have,มี,4,5,มี,
+336,出任,chū rèn,to take up a post; to start in a new job,บรรจุแต่งตั้ง,4,5,เข้ารับตำแหน่ง,current บรรจุแต่งตั้ง is passive appointing; 出任 = subject takes up post
+348,剩,shèng,to remain; to be left,เหลือ,4,4,เหลือ,
+349,加以,jiā yǐ,formal to apply; literary moreover,นอกจากนี้,4,5,นำมา (ดำเนินการกับ),"EN-GLOSS-BUG: 加以 is a formal dummy-verb marker (加以+V = carry out V on sth), not 'moreover'; no clean 1-word Thai gloss -- second opinion"
+352,包裹,bāo guǒ,to wrap up; to bind up,"พัสดุ, ห่อ",4,5,พัสดุ; ห่อ,EN-GLOSS-BUG: english lists only verb senses but 包裹's dominant sense is the noun 'parcel/package' (พัสดุ)
+355,半天,bàn tiān,half of the day; a long time,ครึ่งวัน,4,3,ครึ่งวัน; ตั้งนาน,added the colloquial 'a long while' sense
+360,原本,yuán běn,originally; the original,ดั้งเดิม,4,5,แต่เดิม; ต้นฉบับ,current ดั้งเดิม misses adverb 'originally' and 'the original'
+364,发达,fā dá,well-developed; flourishing,พัฒนา,4,5,เจริญ; พัฒนาแล้ว,发达 is adjective 'developed'; พัฒนา alone reads as verb 'to develop'
+366,口袋,kǒu dài,pocket; bag,กระเป๋า,4,5,กระเป๋าเสื้อ; ถุง,current กระเป๋า is ambiguous; disambiguate pocket vs bag
+369,后者,hòu zhě,the latter,ผู้หลัง,4,5,อย่างหลัง,current ผู้หลัง reads as a person only; 后者 is general
+371,启发,qǐ fā,to enlighten; to explain,"จุดประกาย, อธิบาย",4,5,จุดประกาย; ให้แรงบันดาลใจ,dropped อธิบาย (explain); 启发 = inspire/enlighten
+372,启示,qǐ shì,to reveal; to enlighten,เปิดเผย,4,6,ให้ข้อคิด; จุดประกาย,current เปิดเผย = disclose (揭示); 启示 = revelation/insight
+374,咬,yǎo,to bite; to nip,กัด,4,5,กัด,
+384,在乎,zài hū,to care about; to mind,สนใจ,4,5,แคร์; ใส่ใจ,สนใจ = interested (感兴趣); 在乎 = to care/mind
+385,在意,zài yì,to care about; to mind,ใจใส่,4,6,ใส่ใจ; ถือสา,current ใจใส่ is reversed; correct is ใส่ใจ
+390,坚定,jiān dìng,firm; steady,แข็งแกร่ง,4,6,แน่วแน่; มั่นคง,"坚定 = resolute of will, not physical strength (แข็งแกร่ง)"
+393,壶,hú,pot; classifier for bottled liquid,หม้อ,4,5,กาน้ำ; เหยือก,current หม้อ = cooking pot (锅); 壶 = kettle/pot with spout
+410,审美,shěn měi,esthetics; appreciating the arts,ศิลปบัญชา,4,6,สุนทรียภาพ,Thai fix: 'ศิลปบัญชา' is not a standard word; 审美=aesthetics=สุนทรียภาพ
+413,寂寞,jì mò,lonely; lonesome,โดดเดี่ยว,4,5,"เหงา, โดดเดี่ยว",เหงา is the natural lead for lonely
+417,寺庙,sì miào,temple; monastery,วัด,4,6,วัด,
+423,尾巴,wěi ba,tail; colloquial pr.,หาง,4,5,หาง,EN-GLOSS-BUG: stray 'colloquial pr.' dictionary artifact in the English gloss
+434,开幕式,kāi mù shì,opening ceremony,พิธีเปิด,4,5,พิธีเปิด,
+435,引导,yǐn dǎo,to guide; to lead,คำแนะนำ,4,6,"ชี้นำ, นำทาง",current คำแนะนำ is a noun; 引导 is a verb (to guide/lead)
+441,必定,bì dìng,to be bound to; to be sure to,ต้อง,4,6,แน่นอน,current ต้อง reads as 'must'; 必定 is adverbial 'certainly/bound to'
+446,悬崖,xuán yá,precipice; overhanging cliff,หน้าผาสูง,4,6,หน้าผาสูง,
+447,悲伤,bēi shāng,sad; sorrowful,สเศร้า,4,5,"เศร้า, เศร้าโศก",typo fix: สเศร้า -> เศร้า
+451,愿,yuàn,to wish; willing,"ปรารถนา, เต็มใจ",4,5,ปรารถนา; เต็มใจ,distinct senses (wish; willing) take ';'
+458,扛,káng,to carry; to take on,ยกขึ้น,4,6,แบก,"扛 = carry on the shoulder = แบก, not ยกขึ้น (lift)"
+461,把握,bǎ wò,to grasp; to seize,ทำความเข้าใจ,4,5,"คว้าไว้, ฉวย",current ทำความเข้าใจ (understand) is the wrong sense; 把握=grasp/seize
+463,抱,bào,to hold; to carry,"โอบกอด, เอา",4,4,"กอด, อุ้ม",current 'เอา' is wrong; 抱 = embrace/carry in arms
+468,拨,bō,to push aside; to dial,ผลัก,4,6,ปัด; กดหมายเลข,adds the 'dial' sense; ผลัก alone missed it
+469,拼命,pīn mìng,to do one's utmost,ทำให้ได้ดีที่สุด,4,5,"สุดชีวิต, สุดกำลัง",more natural for 'do one's utmost'
+470,指令,zhǐ lìng,to order; to command,คำสั่ง,4,6,คำสั่ง,
+471,挣,zhēng,to earn (money); to struggle,พยายามหา,4,5,หาเงิน; ดิ้น,two distinct senses: earn money; struggle free
+499,景象,jǐng xiàng,scene; sight,ทัศนียวิทยา,4,5,"ภาพ, ทัศนียภาพ",Thai fix: ทัศนียวิทยา is not a standard word
+504,枚,méi,(classifier for small objects),ตัวนับเหรียญ,4,5,ลักษณนามของชิ้นเล็ก (เช่น เหรียญ),classifier/measure word; no direct Thai equivalent
+507,树林,shù lín,woods; forest; grove,ซู่หลิน (เขตในนิวไทเป),4,4,"ป่าไม้, ป่า","current is a transliterated place name (Shulin, New Taipei); 树林=woods/forest"
+516,池子,chí zi,pond; bathhouse pool,บ่อเก็บน้ำ,4,5,"สระน้ำ, บ่อ",บ่อเก็บน้ำ (reservoir) too narrow; 池子=pool/pond
+519,洽谈,qià tán,to discuss,อภิปราย,4,6,"เจรจา, พูดคุย",current อภิปราย=debate; 洽谈=negotiate/talk (business)
+526,演,yǎn,to perform; to stage,"พัฒนา, วิวัฒน์",4,4,แสดง,current พัฒนา/วิวัฒน์=evolve (wrong sense); gloss is 'to perform/stage'
+529,灯光,dēng guāng,stage lighting; light,แสงสว่าง,4,5,แสงไฟ,灯光=lamplight/lighting; แสงสว่าง=brightness
+541,环保,huán bǎo,environmental protection,การปกป้องสิ่งแวดล้อม,4,4,การปกป้องสิ่งแวดล้อม,
+550,男子,nán zi,a man; a male,ชายชน,4,6,"ผู้ชาย, ชาย",current ชายชน is not a word
+556,皮,pí,skin; leather; peel,หนังสัตว์,4,4,หนัง; เปลือก,covers both skin/leather and peel
+559,看上去,kàn shàng qù,it would appear; it seems,ดูเหมือนว่า,4,3,ดูเหมือนว่า,
+565,碰,pèng,to touch; to meet with,ชน,4,6,"ชน, แตะ; เจอ",adds the 'meet with / run into' sense
+570,立即,lì jí,immediately,ทันที,4,5,ทันที,
+571,笑容,xiào róng,smile; smiling expression,ยิ้ม,4,5,รอยยิ้ม,"noun: smile = รอยยิ้ม, not the verb ยิ้ม"
+574,笔记本,bǐ jì běn,notebook; computing laptop,สมุดจด,4,3,สมุดจด; โน้ตบุ๊ก,adds the distinct 'laptop' sense
+577,等到,děng dào,to wait until; by the time when,"รอจนกระทั่ง, พอถึงตอนที่",4,3,"รอจนกระทั่ง, พอถึงตอนที่",
+578,答应,dā yìng,to answer; to respond,ตอบสนอง,4,5,ตอบรับ; รับปาก,EN-GLOSS-BUG: gloss 'to answer; to respond' omits the primary sense 'to agree/consent/promise' (รับปาก/ตกลง)
+581,精英,jīng yīng,cream; elite,บุคลากรชั้นแนว,4,6,"หัวกะทิ, ชนชั้นนำ",current บุคลากรชั้นแนว is truncated/odd
+584,紧,jǐn,tight; urgent,แน่น,4,5,แน่น; เร่งด่วน,adds the distinct 'urgent' sense
+585,纬度,wěi dù,latitude,เส้นรุ้ง,4,6,เส้นรุ้ง,
+587,细,xì,thin; fine,เล็ก,4,4,เล็ก; ละเอียด,adds the 'fine/detailed' sense
+589,细菌,xì jūn,bacterium; germ,เชื้อโรค,4,6,เชื้อโรค,
+594,综合,zōng hé,comprehensive; composite,รวมเอา,4,6,"ครอบคลุม, โดยรวม",gloss is adjectival 'comprehensive/composite'; รวมเอา is a verb
+598,缆车,lǎn chē,cable car,รถไฟเคเบิล,4,6,กระเช้าไฟฟ้า,cable car = กระเช้าไฟฟ้า; รถไฟเคเบิล = funicular
+600,美食,měi shí,culinary delicacy; fine food,"อาหารอร่อย, ของดี",4,4,"อาหารอร่อย, อาหารรสเลิศ",'ของดี' is vague; รสเลิศ clearer for 'delicacy'
+605,背,bèi,back (of body); to memorize,"หลัง, ท่องจำ",4,5,หลัง; ท่องจำ,
+606,背景,bèi jǐng,background; backdrop,"ภูมิหลัง, ฉากหลัง",4,5,ภูมิหลัง; ฉากหลัง,
+619,观赏,guān shǎng,to view for pleasure; ornamental,ชมดู,4,6,"ชม, ชื่นชม",
+621,规则,guī zé,rule; regulation,กฎเกณฑ์,4,5,กฎเกณฑ์,
+625,记号,jì hào,mark; symbol,สัญลักษณ์,4,5,"เครื่องหมาย, สัญลักษณ์",
+630,请帖,qǐng tiě,invitation card; written invitation,บัตรเชิญ,4,5,บัตรเชิญ,
+632,谈话,tán huà,to talk; to have a conversation,สนทนา,4,5,พูดคุย,
+644,辣椒,là jiāo,hot pepper; chili,พริกขี้หนู,4,5,พริก,
+649,造纸术,zào zhǐ shù,papermaking process,ศิลปะทำกระดาษ,4,6,กรรมวิธีทำกระดาษ,
+654,鉴定,jiàn dìng,to appraise; to authenticate,ตัดสิน,4,6,ตรวจพิสูจน์,
+660,闻,wén,to smell; to hear; news,ได้ยิน; ข่าว,4,3,"ดม, ได้กลิ่น; ได้ยิน",3 EN senses (smell/hear/news); led with smell + hear per max-two; 'news' bound in 新闻.
+671,隐患,yǐn huàn,hidden danger; hazard,อันตรายแอบซ่อน,4,6,ภัยแฝง,
+676,领导,lǐng dǎo,lead; leading,นำหนา,4,5,ผู้นำ; นำ,EN-GLOSS-BUG: primary sense is the noun 'leader/leadership'; 'lead; leading' understates it.
+679,食欲,shí yù,appetite,ความอยากกิน,4,6,ความอยากอาหาร,
+682,骗人,piàn rén,to cheat someone; a scam,"ลวง, การหลอก",4,4,"ลวง, การหลอก",
+684,高明,gāo míng,brilliant; superior,ฉลาด,4,6,ฉลาด,
+692,一口气,yì kǒu qì,one breath; in one breath,ครั้งเดียวจบ,3,5,รวดเดียว,
+693,一味,yī wèi,persistently; stubbornly,"ดื้อดึง, ยืนกราน",3,6,"ดื้อดึง, ยืนกราน",
+699,一连串,yī lián chuàn,a succession of; a series of,ลำดับต่อเนื่อง,3,6,ลำดับต่อเนื่อง,
+708,不易,bù yì,not easy to do something; difficult,ยาก,3,4,ยาก,
+709,不景气,bù jǐng qì,slack; in a slump,ตก,3,6,ซบเซา,
+711,不耐烦,bù nài fán,impatient; to lose patience,อีดอี้,3,5,"หงุดหงิด, ใจร้อน",thai_current 'อีดอี้' is not standard Thai.
+718,丢掉,diū diào,to lose; to throw away,สูญหาย,3,4,ทิ้ง; ทำหาย,
+724,主观,zhǔ guān,subjective,ส่วนตัว,3,6,อัตวิสัย,
+726,之下,zhī xià,under; beneath,ล่าง,3,5,ภายใต้,
+727,乐趣,lè qù,delight; pleasure,ความสุข,3,5,ความเพลิดเพลิน,
+730,乡,xiāng,country or countryside; native place,ชนบท,3,6,ชนบท; บ้านเกิด,
+735,事实,shì shí,fact,ความจริง,3,5,ข้อเท็จจริง,
+738,交往,jiāo wǎng,to associate; to have contact,มีสัมพันธ์,3,5,คบหา,
+742,人口,rén kǒu,population; people,ประชากร,3,5,ประชากร,
+745,人造,rén zào,man-made; artificial,ประดิษฐ์,3,6,เทียม,
+748,从未,cóng wèi,never,ไม่เคยมี,3,5,ไม่เคย,
+751,以免,yǐ miǎn,in order to avoid; so as not to,เพื่อหลีกเลี่ยง,3,6,เพื่อหลีกเลี่ยง,
+756,会计,kuài jì,accountant; accountancy,บัญชี,3,5,นักบัญชี; การบัญชี,
+758,传达,chuán dá,to pass on; to convey,ส่งสารถึง,3,6,"ถ่ายทอด, สื่อสาร",
+763,便于,biàn yú,easy to; convenient for,สะดวก,3,6,"สะดวกต่อ, เอื้อต่อ",
+768,俱乐部,jù lè bù,loanword club,สโมสร,3,5,"สโมสร, คลับ",EN-GLOSS-BUG: gloss 'loanword club' contains a lexical annotation; sense is just 'club'.
+783,冰雪,bīng xuě,ice and snow,น้ำแข็งและหิมะ,3,6,น้ำแข็งและหิมะ,
+785,决赛,jué sài,finals,ชิงชนะเลิศ,3,5,ชิงชนะเลิศ,
+790,凡是,fán shì,each and every; every,ทุกคน,3,5,ทุกสิ่งที่,grammatical scope word (every/any X that…); hard to gloss standalone — second opinion?
+792,出版社,chū bǎn shè,publishing house,บ้านพิมพ์,3,5,สำนักพิมพ์,
+794,分散,fēn sàn,to scatter; to disperse,กระจาย,3,6,กระจาย,
+796,分歧,fēn qí,divergent; difference,เห็นต่างกัน,3,6,ความเห็นต่าง,
+803,刻,kè,quarter; moment,นาที,3,5,ชั่วขณะ,刻 = a moment / quarter-hour (15 min); current นาที (minute) was imprecise
+804,前台,qián tái,front desk; reception,แผนกต้อนรับ; เคาน์เตอร์ต้อนรับ,3,5,"เคาน์เตอร์ต้อนรับ, แผนกต้อนรับ",
+807,加工,jiā gōng,to process; processing,โปรเซส,3,6,แปรรูป,current โปรเซส is an English loan; แปรรูป is the natural Thai for processing materials
+811,勇于,yǒng yú,to dare to; to be brave enough to,กล้าหาญ,3,5,กล้าที่จะ,
+813,北,běi,north,เหนือ,3,3,ทิศเหนือ,matched 南=ทิศใต้ for direction consistency
+817,升高,shēng gāo,to raise; to ascend,ยกสูง,3,5,สูงขึ้น,升高 is intransitive (rise); current ยกสูง = lift up (transitive)
+821,即将,jí jiāng,about to; on the point of,กำลัง,3,5,กำลังจะ; ใกล้จะ,current กำลัง = progressive 'currently'; 即将 = about to (imminent)
+823,原始,yuán shǐ,first; original,เดิม,3,6,ดั้งเดิม; แรกเริ่ม,EN-GLOSS-BUG: 原始 means primitive/original/raw; 'first' alone is misleading
+824,去掉,qù diào,to get rid of; to exclude,ลบออก,3,5,เอาออก; กำจัด,
+828,反正,fǎn zhèng,anyway; in any case,อย่างไรก็ตาม,3,5,ยังไงก็ตาม; ยังไงเสีย,spoken register; current อย่างไรก็ตาม is a formal connective
+829,发射,fā shè,to shoot; to fire,ยิงปล่อย,3,6,ยิง; ปล่อย,current ยิงปล่อย is an awkward compound
+830,发源地,fā yuán dì,place of origin; birthplace,สถานที่เกิด,3,6,แหล่งกำเนิด; ต้นกำเนิด,current สถานที่เกิด = a person's birthplace
+834,变为,biàn wèi,to change into,เปลี่ยนเป็น,3,5,เปลี่ยนเป็น,
+837,另一方面,lìng yì fāng miàn,on the other hand; another aspect,ในด้านอื่น,3,4,อีกด้านหนึ่ง; ในอีกแง่หนึ่ง,current ในด้านอื่น = 'in other aspects'
+838,只不过,zhǐ bù guò,only; merely,แค่เพียง,3,4,แค่เพียง,
+842,各地,gè dì,in all parts of; various regions,ต่างแห่ง,3,6,ทุกพื้นที่; ทั่วทุกแห่ง,current ต่างแห่ง is unnatural
+844,同一,tóng yī,identical; the same,เหมือนกัน,3,5,เดียวกัน,同一 = one and the same; current เหมือนกัน = merely similar
+847,后果,hòu guǒ,consequences; aftermath,ผลกระทบ,3,5,ผลที่ตามมา,后果 = (usually negative) consequence; current ผลกระทบ = impact
+849,听取,tīng qǔ,to hear; to listen to,ฟัง,3,5,รับฟัง,听取 = listen to attentively (opinions/reports)
+850,吵架,chǎo jià,to quarrel; to have a row,ทะเลาะกัน,3,5,ทะเลาะกัน,
+853,命,mìng,life; fate,"ชีวิต, โชคชะตา",3,5,ชีวิต; โชคชะตา,"separator fix: life and fate are distinct senses (';' not ',')"
+855,品德,pǐn dé,moral character,จริยธรรม,3,6,คุณธรรม,品德 = moral character; current จริยธรรม = ethics (abstract)
+859,善,shàn,good; benevolent,ดี,3,6,ใจดี; ดีงาม,current ดี is too generic for benevolent/kind
+860,嗅觉,xiù jué,sense of smell,การดมกลิ่น,3,6,ประสาทรับกลิ่น,嗅觉 = the sense of smell; current การดมกลิ่น = the act of sniffing
+861,噪声,zào shēng,noise,เสียงรบกวน,3,6,เสียงรบกวน,
+868,固定,gù dìng,to fix; to fasten,ติดตั้ง,3,5,ยึดให้แน่น; คงที่,current ติดตั้ง = install
+869,固然,gù rán,admittedly,จริงอยู่,3,6,จริงอยู่,
+871,圆,yuán,circle; round,วงกลม,3,4,วงกลม; กลม,
+875,场,chǎng,site; (classifier for an event),พื้นที่,3,4,สถานที่,current พื้นที่ = area; 场 = venue/site
+877,坚硬,jiān yìng,hard; solid,แข็งแรง,3,6,แข็ง,current แข็งแรง = strong/healthy; 坚硬 = physically hard
+878,坟墓,fén mù,grave; tomb,สุสาน,3,6,หลุมศพ; หลุมฝังศพ,current สุสาน = cemetery (墓地)
+879,坦然,tǎn rán,calm; undisturbed,สงบ,3,6,สบายใจ; ไม่วิตกกังวล,
+880,埋怨,mán yuàn,to complain; to grumble,บ่นเบื่อ,3,5,บ่น; ต่อว่า,current บ่นเบื่อ = complain from boredom; 埋怨 = grumble/blame
+882,基本上,jī běn shàng,basically; on the whole,พื้นฐาน,3,5,โดยพื้นฐานแล้ว; โดยหลักแล้ว,adverb; current พื้นฐาน = noun 'foundation'
+884,填,tián,to fill or stuff; of a form etc to fill in,ยัด,3,4,เติม; กรอก,added the 'fill in a form' sense (กรอก)
+886,壮观,zhuàng guān,spectacular; magnificent sight,ยิ่งใหญ่,3,6,ตระการตา; อลังการ,current ยิ่งใหญ่ = great; 壮观 = spectacular sight
+889,外婆,wài pó,mother's mother; maternal grandmother,ยายทางแม่,3,6,ยาย,ยาย already = maternal grandmother; current ยายทางแม่ is redundant
+892,大海,dà hǎi,sea; ocean,ทะเล,3,5,ทะเล,
+894,天地,tiān dì,heaven and earth; world,ท้องฟ้าและแผ่นดิน,3,6,ฟ้าดิน; โลกกว้าง,ฟ้าดิน is the idiomatic Thai for heaven-and-earth
+895,太太,tài tài,married woman; Mrs.,ผู้หญิงแต่งงาน,3,5,คุณนาย; ภรรยา,current ผู้หญิงแต่งงาน is descriptive/awkward
+897,夸奖,kuā jiǎng,to praise; to applaud,ยกย่อง,3,5,ชมเชย; ชม,current ยกย่อง = extol/honor; 夸奖 = praise/compliment
+899,奋斗,fèn dòu,to strive; to struggle,พยายาม,3,5,ต่อสู้; ดิ้นรน,current พยายาม = try; 奋斗 = strive/struggle
+904,好心人,hǎo xīn rén,kindhearted person; good Samaritan,คนหนใจดี,3,6,คนใจดี; คนใจบุญ,fixed typo in current (คนหนใจดี -> คนใจดี)
+906,如同,rú tóng,like; as,เช่น,3,5,เหมือนกับ; ราวกับ,"current เช่น = 'for example', wrong sense"
+910,学历,xué lì,educational background,ระดับการศึกษา,3,5,วุฒิการศึกษา,学历 = academic qualification; current ระดับการศึกษา is close but less precise
+911,学术,xué shù,learning; science,การศึกษา,3,5,วิชาการ,current การศึกษา = education; 学术 = academic/scholarly
+912,学问,xué wèn,learning; knowledge,ความรู้,3,5,ความรู้,
+913,宁可,nìng kě,preferably; one would prefer to...,"ยอมที่จะ, ขอเลือก",3,5,ยอม...ดีกว่า; ยอมที่จะ,宁可 = would rather ... (than)
+916,实事求是,shí shì qiú shì,to seek truth from facts,สืบค้นความจริง,3,6,ยึดความจริงตามข้อเท็จจริง,chengyu; rendered by meaning (seek truth from facts)
+917,实力,shí lì,strength,กำลัง,3,6,ศักยภาพ; ความสามารถ,current กำลัง is ambiguous (also 'currently'); 实力 = real strength/capability
+918,实施,shí shī,to implement; to carry out,ปฏิบัติ,3,5,นำไปปฏิบัติ; ดำเนินการ,current ปฏิบัติ = practise; 实施 = implement/enforce
+920,宣布,xuān bù,to declare; to announce,ประกาศ,3,5,ประกาศ,
+922,害,hài,to do harm to; to cause trouble to,เสียหาย,3,5,ทำร้าย; ทำให้เดือดร้อน,current เสียหาย = 'damaged' (result); 害 verb = to harm
+923,宴会,yàn huì,banquet; feast,งานเลี้ยง,3,5,งานเลี้ยง,
+925,家务,jiā wù,household duties; housework,งานบ้าน,3,5,งานบ้าน,
+926,家长,jiā zhǎng,head of a household; family head,เจ้าบ้าน,3,5,ผู้ปกครอง; หัวหน้าครอบครัว,current เจ้าบ้าน = host; 家长 = guardian/parent
+928,宽阔,kuān kuò,expansive; wide,กว้างมาก,3,6,กว้างขวาง,current กว้างมาก = 'very wide'
+931,富含,fù hán,to contain in great quantities; rich in,มีอย่างมากมาย,3,6,อุดมไปด้วย,current มีอย่างมากมาย is generic; 富含 = rich in
+935,小伙子,xiǎo huǒ zi,young man; young fellow,หนุ่ม,3,4,หนุ่ม,
+938,尝,cháng,to taste; to try,ลิ้มรส,3,4,ชิม; ลิ้มลอง,ชิม is the everyday word for tasting food
+939,尴尬,gān gà,awkward; embarrassed,อึดอัด,3,5,กระอักกระอ่วน; เขินอาย,current อึดอัด = physically stifled; 尴尬 = socially awkward
+940,尽可能,jǐn kě néng,as far as possible,เต็มที่,3,6,เท่าที่จะทำได้; ให้มากที่สุด,current เต็มที่ = 'fully'
+943,屋顶,wū dǐng,roof,หลังคา,3,5,หลังคา,
+946,崇尚,chóng shàng,to hold up; to hold in esteem,ยกย่อง,3,6,เชิดชู; นิยม,current ยกย่อง ok; 崇尚 = advocate/esteem a value
+949,巧妙,qiǎo miào,ingenious; clever,ฉลาด,3,5,แยบยล; ชาญฉลาด,current ฉลาด = smart (person); 巧妙 = ingenious (method)
+958,平稳,píng wěn,smooth; steady,ราบเรียบ,3,6,ราบรื่น; มั่นคง,current ราบเรียบ = flat; 平稳 = smooth and stable
+959,年前,nián qián,... years ago,ปีที่แล้ว,3,4,เมื่อ...ปีก่อน,current ปีที่แล้ว = last year (去年); 年前 = X years ago
+960,年底,nián dǐ,the end of the year; year-end,ท้ายปี,3,4,ปลายปี; สิ้นปี,current ท้ายปี is unnatural
+962,应付,yìng fù,to deal with; to cope,จัดการ,3,5,รับมือ; จัดการ,รับมือ better captures 'cope with'
+964,延伸,yán shēn,to extend,ขยายออก,3,6,ทอดยาว; ต่อขยาย,current ขยายออก = expand out; 延伸 = extend/stretch
+965,开花,kāi huā,to bloom; to blossom,บานดอก,3,5,ออกดอก; ผลิบาน,current บานดอก is reversed word order
+972,弹,dàn,bullet; bomb,กระสุน,3,4,กระสุน; ลูกระเบิด,added the 'bomb' sense
+973,强制,qiáng zhì,to force; to compel,บังคับใช้,3,5,บังคับ,current บังคับใช้ = enforce (a law); 强制 = force/compel
+975,当初,dāng chū,at that time; originally,ตอนแรก,3,5,แต่แรก; ตอนนั้น,current ตอนแรก = 'at first'; 当初 = back then/originally
+980,忽然,hū rán,suddenly; all of a sudden,อย่างกะทันหัน,3,5,อย่างกะทันหัน,
+983,总算,zǒng suàn,at long last; finally,ก็สำเร็จแล้วที่สุด,3,5,ในที่สุดก็; ในที่สุด,current ก็สำเร็จแล้วที่สุด was garbled Thai
+987,惭愧,cán kuì,ashamed,อาย,3,5,ละอายใจ; รู้สึกผิด,current อาย = shy; 惭愧 = ashamed/guilty
+989,感恩,gǎn ēn,to be grateful,ขอบคุณ,3,5,สำนึกในบุญคุณ; ซาบซึ้งใจ,current ขอบคุณ = merely 'thank'; 感恩 = deep gratitude
+992,愣,lèng,to look distracted; to stare blankly,งง,3,5,ตะลึง; อึ้ง,current งง = confused; 愣 = stunned/dazed/blank
+993,成千上万,chéng qiān shàng wàn,thousands upon thousands; countless,"นับไม่ถ้วน, มากมายนัก",3,4,เป็นพันเป็นหมื่น; นับไม่ถ้วน,เป็นพันเป็นหมื่น mirrors the idiom
+995,成果,chéng guǒ,result; achievement,ผลลัพธ์,3,5,ผลสำเร็จ; ผลงาน,current ผลลัพธ์ = neutral 'result'; 成果 = achievement
+998,扇,shàn,to fan; to slap someone on the face,พัด,3,6,พัด; ตบ,added the 'slap' sense (扇耳光)
+1000,才华,cái huá,talent,พรสวรรค์,3,6,พรสวรรค์; ความสามารถ,
+1005,拟,nǐ,to draft; to plan,คร่าวๆ,3,6,ร่าง; วางแผน,
+1008,指标,zhǐ biāo,production target; quota,"เป้าหมาย, โควตา",3,6,เป้าหมาย; โควตา,
+1012,挑剔,tiāo tī,picky; fussy,เคร่งครัด,3,6,จู้จี้; ชอบจับผิด,
+1013,损失,sǔn shī,loss; damage,ขาดทุน,3,5,ความสูญเสีย; ความเสียหาย,
+1024,携带,xié dài,to carry; to support,ถือ,3,5,พกพา; นำติดตัว,EN-GLOSS-BUG: 携带 means to carry/bring along; 'to support' is not a real sense.
+1029,收集,shōu jí,to gather; to collect,รวบรวม,3,5,รวบรวม,
+1034,敏捷,mǐn jié,nimble; quick,ว่องไว,3,6,ว่องไว,
+1043,斤,jīn,catty (500 g),ชั่ง (500 กรัม),3,2,ชั่ง (500 กรัม),"斤 (jin) = 500g; Thai ชั่ง is ~600g, so unit is approximate — kept for lack of an exact equivalent."
+1044,方,fāng,direction; side; method; (medicinal prescription),"ทิศทาง, วิธี",3,5,ทิศทาง; วิธี,
+1048,早已,zǎo yǐ,for a long time; long since,นานมาแล้ว,3,5,นานมาแล้ว,
+1056,暗示,àn shì,to hint; to suggest,บ่งชี้,3,6,บอกใบ้; บ่งบอกเป็นนัย,
+1061,有利,yǒu lì,advantageous; favorable,มีประโยชน์,3,6,เป็นผลดี; ได้เปรียบ,
+1067,束缚,shù fù,to bind; to tie up,จำกัด,3,6,ผูกมัด; พันธนาการ,
+1069,杰出,jié chū,outstanding; distinguished,เด่นเทพ,3,6,โดดเด่น; ดีเด่น,
+1071,果然,guǒ rán,really; sure enough,แน่นอน,3,4,เป็นอย่างที่คาดไว้จริงๆ,
+1077,核心,hé xīn,core; nucleus,ศูนย์กลาง,3,5,แก่น; ศูนย์กลาง,
+1080,桶,tǒng,bucket; trash can,ถัง,3,5,ถัง,
+1082,楼下,lóu xià,downstairs,ชั้นล่าง,3,3,ชั้นล่าง,
+1091,毕竟,bì jìng,after all; all in all,ท้ายที่สุด,3,5,ยังไงเสีย; ก็,Function-word 'after all'; ยังไงเสีย captures it but is register-loose — second opinion welcome.
+1093,毛笔,máo bǐ,writing brush,แปรงเขียน,3,5,พู่กันจีน,
+1098,沾,zhān,to moisten; to be infected by,"ระเสือ, ติดเชื้อ",3,6,ทำให้เปียก; ติดเชื้อ,Current 'ระเสือ' was garbled/non-Thai; replaced with sense-accurate Thai.
+1102,注,zhù,to pour; to focus (attention),เท,3,4,เท; จดจ่อ,
+1112,淘气,táo qì,naughty; mischievous,"ซน, ซุกซน",3,5,"ซน, ซุกซน",
+1114,深入,shēn rù,to penetrate deeply; thorough,ลึกซึ้ง,3,6,เจาะลึก; ลงลึก,
+1119,渴望,kě wàng,to thirst for; to long for,อยากได้,3,5,โหยหา; ปรารถนา,
+1120,湖,hú,lake,ทะเลสาบ,3,5,ทะเลสาบ,
+1122,演讲,yǎn jiǎng,to give a lecture; to make a speech,บรรยาย,3,5,กล่าวสุนทรพจน์,
+1123,潜在,qián zài,hidden; potential,ซ่อนเร้น,3,5,แฝงอยู่; ซ่อนเร้น,
+1124,潜能,qián néng,potential; hidden capability,ความสามารถซ่อนเร้น,3,5,ศักยภาพ,
+1133,热烈,rè liè,enthusiastic; ardent,กระตือรือร้น,3,5,กระตือรือร้น,
+1138,爱人,ài rén,spouse; lover,"คนรัก, สามี",3,4,คู่สมรส; คนรัก,
+1154,由此可见,yóu cǐ kě jiàn,"from this, it can be seen that...",เห็นได้จาก,3,6,จากนี้จะเห็นได้ว่า,
+1159,画面,huà miàn,scene; tableau,ฉาก,3,4,ภาพ; ฉาก,
+1160,画龙点睛,huà lóng diǎn jīng,the crucial finishing touch,วาดมังกรลงตา,3,5,จุดเติมเต็มที่ทำให้สมบูรณ์แบบ,"Idiom rendered by meaning (crucial finishing touch), not literal 'draw dragon, dot the eye'."
+1165,盆,pén,basin; flower pot,หม้อดอกไม้,3,5,อ่าง; กระถาง,
+1166,盒子,hé zi,box; case,กล่อง,3,4,กล่อง,
+1179,眼光,yǎn guāng,gaze; insight,สายตา,3,6,สายตา; วิสัยทัศน์,
+1185,石油,shí yóu,oil; petroleum,น้ำมันดิบ,3,6,ปิโตรเลียม; น้ำมัน,
+1193,空虚,kōng xū,hollow; emptiness,ว่างเปล่า,3,6,ว่างเปล่า,
+1206,组,zǔ,group; to organize,หมู่,3,6,กลุ่ม; จัดกลุ่ม,
+1211,结,jié,to tie; to conclude,"ผูก, สิ้นสุด",3,4,ผูก; สิ้นสุด,
+1227,背着,bēi zhe,carrying on one's back,หว่างบ่า,3,5,แบกไว้บนหลัง,
+1234,至于,zhì yú,as for; as to,เกี่ยวกับ,3,5,ส่วน (เกริ่นเรื่องใหม่),
+1241,茶叶,chá yè,tea; tea leaves,ชา,3,4,ใบชา,
+1242,营业,yíng yè,to do business; to trade,ประกอบการค้า,3,5,เปิดทำการ,
+1243,落,luò,to fall or drop; of the sun to set,สูญหาย,3,4,ตก,
+1246,血管,xuè guǎn,vein; artery,เส้นเลือด,3,6,เส้นเลือด,
+1247,行人,xíng rén,pedestrian; traveler on foot,คนเดิน,3,5,คนเดินถนน,
+1248,行走,xíng zǒu,to walk,เดิน,3,4,เดิน,
+1249,补充,bǔ chōng,to replenish; to supplement,เติมเต็ม,3,5,"เพิ่มเติม, เสริม",
+1258,讲课,jiǎng kè,to give a lecture; to teach a class,บรรยายชั้น,3,5,สอนหนังสือ,
+1260,设备,shè bèi,equipment; facilities,เครื่องมือ,3,5,อุปกรณ์,
+1265,诗人,shī rén,bard; poet,กวี,3,5,กวี,
+1269,谅解,liàng jiě,to understand; to make allowances for,เข้าใจ,3,6,เข้าอกเข้าใจ,
+1272,货币,huò bì,currency; monetary,เงินตรา,3,5,เงินตรา,
+1274,费,fèi,fee; to waste,ค่าใช้จ่าย,3,5,ค่าใช้จ่าย; สิ้นเปลือง,
+1280,足,zú,foot; enough,มาก,3,5,เท้า; เพียงพอ,
+1286,身材,shēn cái,stature; build,สัดส่วนตัว,3,5,รูปร่าง,
+1287,躲,duǒ,to hide; to dodge,ซ่อน,3,5,หลบ; ซ่อนตัว,
+1296,连忙,lián máng,promptly; at once,เร็วๆนี้,3,5,รีบ,
+1297,迷人,mí rén,fascinating; enchanting,เสน่ห์,3,5,น่าหลงใหล,
+1304,造型,zào xíng,to model; to shape,รูปแบบ,3,6,"รูปทรง, รูปลักษณ์",
+1306,遗址,yí zhǐ,ruins; historic relics,สถานที่โบราณ,3,6,โบราณสถาน,
+1307,遗忘,yí wàng,to forget; to cease to think about anymore,ลืมเสียไป,3,5,ลืมเลือน,
+1309,那时,nà shí,then; at that time,ตอนนั้น,3,3,ตอนนั้น,
+1316,重量级,zhòng liàng jí,sports heavyweight class; major; influential,"รุ่นเฮฟวี่เวท, ระดับหนัก (เปรียบเทียบ)",3,5,รุ่นเฮฟวี่เวท; ระดับบิ๊ก (เชิงเปรียบเทียบ),
+1318,销量,xiāo liàng,sales volume,ปริมาณขาย,3,5,ยอดขาย,
+1322,阵,zhèn,burst; wave,แถว,3,5,ระลอก,
+1330,面部,miàn bù,face,หน้า,3,6,ใบหน้า,
+1342,饼,bǐng,flatbread; cake,ขนมปัง,3,6,แป้งแผ่นกลม,饼 = round flat cake/bread; hard to gloss precisely — second opinion
+1354,鲜,xiān,fresh; bright,"สดใจ, สดชื่น",3,4,สด; สดใส,
+1355,鲜明,xiān míng,of colors bright; fresh and clear,สว่าง,3,6,สดใส,
+1358,一个劲儿,yí gè jìn ér,"continuously, persistently",ต่อเนื่อง,2,6,ต่อเนื่อง,
+1359,一代,yí dài,an era; an age,รุ่น,2,5,รุ่น,"EN-GLOSS-BUG: 一代 = 'a generation' (รุ่น), not 'an era/age'; Thai keeps the real sense"
+1360,一大早,yī dà zǎo,at dawn; at first light,ตั้งแต่เช้า,2,6,แต่เช้าตรู่,
+1361,一头,yī tóu,one head; a head full of something,ศีรษะเต็ม,2,4,เต็มหัวไปหมด,一头 'a head full of'; rendering approximate — second opinion
+1367,一旁,yī páng,aside; to the side of,ข้างเคียง,2,5,ข้างๆ,
+1368,一番,yī fān,a round of; quite some,"ครั้งหนึ่ง, พอสมควร",2,5,ครั้งหนึ่ง; พอสมควร,
+1372,一面,yí miàn,one side; one aspect,ด้านหนึ่ง,2,4,ด้านหนึ่ง,
+1374,万分,wàn fēn,very much; extremely,มากมายนัก,2,6,อย่างยิ่ง,
+1376,上台,shàng tái,to rise to power; to go on stage,ขึ้นเวที,2,4,ขึ้นเวที; ขึ้นสู่อำนาจ,
+1383,不光,bù guāng,not the only one; not only,ไม่ใช่แค่,2,4,ไม่ใช่แค่,
+1389,不怎么样,bù zěn me yàng,not up to much; very indifferent,ไม่ค่อย,2,4,"งั้นๆ, ไม่เท่าไหร่",
+1391,不止,bù zhǐ,incessantly; without end,ไม่หยุด,2,6,ไม่หยุด,EN-GLOSS-BUG: 不止 more commonly = 'more than / not only' (ไม่เพียงแค่); gloss only gives the 'incessant' sense
+1398,世故,shì gù,the ways of the world,รู้เรื่องหลายๆ ด้าน,2,6,"เจนโลก, รู้ประสีประสา",世故 worldly-wise; noun/adj nuance — second opinion
+1406,中华民族,zhōng huá mín zú,the Chinese nation; the Chinese people,ชาวจีน,2,5,ชนชาติจีน,
+1411,丰收,fēng shōu,to reap a bumper harvest,เก็บเกี่ยวดี,2,5,เก็บเกี่ยวได้ผลดี,
+1412,主人公,zhǔ rén gōng,hero; main protagonist,ตัวประกอบสำคัญ,2,6,ตัวเอก,"current ตัวประกอบสำคัญ = supporting character/extra, wrong"
+1413,主张,zhǔ zhāng,to advocate; to stand for,เห็นชอบ,2,5,สนับสนุน,"current เห็นชอบ = approve, off; 主张 = advocate"
+1414,举世闻名,jǔ shì wén míng,world-famous,มีชื่อเสียงท่ั่วโลก,2,6,มีชื่อเสียงไปทั่วโลก,current had typo ท่ั่วโลก
+1418,乘,chéng,to ride; to take (a vehicle),"ขี่, โดยสาร",2,5,"โดยสาร, นั่ง","current ขี่ = ride astride, off for boarding a vehicle"
+1419,乘车,chéng chē,to ride; to drive,โดยสารรถ,2,6,โดยสารรถ,EN-GLOSS-BUG: 'to drive' should be 'to ride/take a vehicle'
+1420,乡村,xiāng cūn,rustic; village,หมู่บ้าน,2,5,ชนบท; หมู่บ้าน,
+1423,争,zhēng,to strive for; to vie for,ชิงชัง,2,5,แย่งชิง,"current ชิงชัง = to loathe, wrong; 争 = strive/vie"
+1432,产地,chǎn dì,source; place of origin,ต้นทาง,2,5,แหล่งผลิต; แหล่งกำเนิด,"current ต้นทาง = route origin, off"
+1436,亲眼,qīn yǎn,with one's own eyes; personally,ด้วยตาของเอง,2,6,ด้วยตาตัวเอง,current had typo ตาของเอง
+1443,从中,cóng zhōng,from among them; from it,จากตรงนี้,2,6,จากในนั้น,"current จากตรงนี้ = from here, off"
+1445,付,fù,to pay; to hand over,"จ่าย, มอบให้",2,5,จ่าย; มอบให้,distinct senses -> semicolon
+1447,代,dài,to be a substitute for; generation,แทน,2,4,แทน; รุ่น,added distinct 'generation' sense
+1450,任,rèn,to appoint; to assign (a post),มอบหมาย,2,6,แต่งตั้ง; มอบหมาย,
+1461,住院,zhù yuàn,to stay in hospital; to be hospitalized,อยู่ในโรงพยาบาล,2,4,นอนโรงพยาบาล,more natural than อยู่ในโรงพยาบาล
+1463,体贴,tǐ tiē,considerate,ใจดี,2,6,"เอาใจใส่, เข้าอกเข้าใจ","current ใจดี = kind, not considerate"
+1465,何况,hé kuàng,let alone; to say nothing of,นอกจากนี้,2,5,ยิ่งไม่ต้องพูดถึง,"current นอกจากนี้ = besides, off"
+1469,便利,biàn lì,convenient; easy,สะดวก,2,5,สะดวก,
+1476,信箱,xìn xiāng,mailbox; post office box,กล่องจดหมาย,2,4,กล่องจดหมาย,
+1480,借鉴,jiè jiàn,to draw on; to learn from,อ้างอิง,2,6,นำมาเป็นแบบอย่าง,second opinion: draw-lessons-from vs cite
+1481,倾诉,qīng sù,to say everything,บอกทั้งหมด,2,5,ระบายความในใจ,EN-GLOSS-BUG: 'to say everything' weak; real sense = pour out one's feelings/confide
+1483,假装,jiǎ zhuāng,to feign; to pretend,แกล้ง,2,5,"แกล้งทำเป็น, เสแสร้ง",bare แกล้ง can read as tease/bully
+1485,偏僻,piān pì,remote; desolate,ห่างไกล,2,6,ห่างไกล,
+1487,做饭,zuò fàn,to prepare a meal; to cook,ทำข้าว,2,3,"ทำกับข้าว, ทำอาหาร",ทำข้าว is casual/regional
+1490,停顿,tíng dùn,to halt; to break off,หยุด,2,6,หยุดชะงัก,captures pause nuance vs plain หยุด
+1494,储蓄,chǔ xù,to save money; savings,เก็บสะสม,2,6,เก็บออม; เงินออม,"current เก็บสะสม = accumulate, off from save/savings"
+1500,光芒,guāng máng,rays of light; brilliant rays,แสงส่องพรั่ง,2,6,ลำแสง; รัศมี,current แสงส่องพรั่ง unnatural
+1502,免疫,miǎn yì,immunity,ภูมิคุ้มกัน,2,6,ภูมิคุ้มกัน,
+1503,全身,quán shēn,the whole body; typography em,ร่างกายทั้งหมด,2,5,"ทั้งตัว, ทั่วร่างกาย",EN-GLOSS-BUG: 'typography em' is a bogus sense
+1513,兴高采烈,xìng gāo cǎi liè,happy and excited; in high spirits,มีความสุขสูง,2,6,"ดีอกดีใจ, ร่าเริงยินดี",current มีความสุขสูง unnatural
+1515,典型,diǎn xíng,model; typical case,ตัวแบบ,2,6,แบบฉบับ,current ตัวแบบ off; 典型 = typical/classic example
+1518,再说,zài shuō,besides; to deal with it later,พูดใหม่,2,3,อีกอย่าง; เอาไว้ค่อยว่ากัน,"current พูดใหม่ = say again, wrong"
+1519,冒,mào,to emit; to risk,ปล่อยออกมา,2,6,พ่นออกมา; เสี่ยง,two distinct senses emit/risk
+1528,出版,chū bǎn,to publish,พิมพ์,2,5,ตีพิมพ์,current พิมพ์ = print/type; 出版 = publish
+1534,分类,fēn lèi,to classify,การจำแนก,2,5,จำแนกประเภท,English lead is a verb; de-nominalize การจำแนก
+1536,划,huà,to plan; to delimit,"วางแผน, กำหนดขอบเขต",2,5,"วางแผน, กำหนดขอบเขต",
+1538,创建,chuàng jiàn,to found; to establish,ก่อตั้ง,2,6,ก่อตั้ง,
+1540,初衷,chū zhōng,original intention,จุดมุ่งหมายแรก,2,6,ความตั้งใจแรกเริ่ม,current จุดมุ่งหมายแรก off
+1542,利益,lì yì,benefit; in someone's interest,ผลประโยชน์,2,6,ผลประโยชน์,
+1545,前后,qián hòu,around; from beginning to end,"ประมาณ, จากต้นจนจบ",2,5,ประมาณ; ตั้งแต่ต้นจนจบ,distinct senses -> semicolon
+1546,前往,qián wǎng,to leave for; to proceed towards,เดินทางไป,2,6,เดินทางไป,
+1547,前提,qián tí,premise; precondition,เงื่อนไขเบื้องต้น,2,6,เงื่อนไขเบื้องต้น,
+1548,前景,qián jǐng,prospects; outlook,มุมมองล่วงหน้า,2,6,แนวโน้มในอนาคต,current มุมมองล่วงหน้า unnatural
+1549,前期,qián qī,preceding period; early stage,ระยะแรก,2,5,ระยะแรก,
+1550,前来,qián lái,to come; before,มาก่อน,2,3,เดินทางมา,"current มาก่อน = come first, wrong"
+1553,剧,jù,theatrical work; dramatic,บทละคร,2,6,ละคร; บทละคร,
+1556,办事,bàn shì,to handle; to work,ทำการ,2,5,จัดการธุระ,current ทำการ is banned/incomplete pattern
+1557,办理,bàn lǐ,to handle; to transact,บริหารการ,2,5,ดำเนินการ,current บริหารการ incomplete/odd
+1558,功,gōng,meritorious deed or service; achievement,"ความดีความชอบ, ความสำเร็จ",2,4,ความดีความชอบ; ความสำเร็จ,distinct senses -> semicolon
+1561,加重,jiā zhòng,to make heavier; to emphasize,ทำให้หนักขึ้น,2,5,ทำให้หนักขึ้น,
+1562,动听,dòng tīng,pleasant to listen to,ฟังพอใจ,2,6,"ไพเราะ, น่าฟัง",current ฟังพอใจ unnatural
+1563,劳动,láo dòng,work; toil,การงาน,2,5,แรงงาน,current การงาน = occupation; 劳动 leans labor
+1564,勉强,miǎn qiǎng,reluctantly; to force,บังคับ,2,6,ฝืนใจ,current บังคับ = force; 勉强 = do reluctantly/barely
+1573,午睡,wǔ shuì,to take a nap in the afternoon,นอนเที่ยงวัน,2,6,นอนกลางวัน,more natural than นอนเที่ยงวัน
+1577,卓越,zhuó yuè,outstanding; surpassing,เลิศเด่น,2,6,"ยอดเยี่ยม, เป็นเลิศ",current เลิศเด่น uncommon compound
+1578,单位,dān wèi,unit; work unit,หน่วย,2,5,หน่วย; หน่วยงาน,added work-unit sense
+1580,单调,dān diào,monotonous,น่าเบื่อ,2,5,ซ้ำซากจำเจ,current น่าเบื่อ = boring; 单调 = monotonous
+1582,占用,zhàn yòng,to occupy,ยึดครอบ,2,5,ใช้ (พื้นที่/เวลา),current typo ยึดครอบ; 占用 = take up (time/space)
+1584,印,yìn,to print; seal,พิมพ์,2,4,พิมพ์; ตราประทับ,added distinct seal sense
+1586,即便,jí biàn,even if; even though,แม้ว่า,2,5,แม้ว่า,
+1587,卷,juǎn,to roll up; to sweep up,ม้วน,2,5,ม้วน,
+1588,历程,lì chéng,course; process,ขั้นตอน,2,6,เส้นทาง; กระบวนการ,"current ขั้นตอน = steps, off"
+1591,厕所,cè suǒ,toilet; lavatory,ห้องน้ำ,2,5,ห้องน้ำ,
+1594,原地,yuán dì,in place; on the spot,สถานที่เดิม,2,5,อยู่กับที่,"current สถานที่เดิม = former place, off"
+1595,双,shuāng,pair; both,คู่,2,3,คู่,
+1596,双向,shuāng xiàng,bidirectional; two-way,สองทาง,2,6,สองทาง,
+1597,双重,shuāng chóng,double,"สองชั้น, ทวิภาค",2,6,สองชั้น; ซ้อนสอง,second opinion: current ทวิภาค odd for 'double/dual'
+1599,反思,fǎn sī,to think back over something; to review,พิจารณาย้อนกลับ,2,6,ทบทวนตัวเอง,current พิจารณาย้อนกลับ literal; 反思 = self-reflect
+1600,反感,fǎn gǎn,to be disgusted with; to dislike,ไม่ชอบ,2,6,รังเกียจ,current ไม่ชอบ mild; 反感 stronger aversion
+1603,发扬,fā yáng,to develop; to make full use of,เผยแพร่,2,6,ส่งเสริม,
+1605,发觉,fā jué,to become aware; to detect,ค้นพบ,2,6,สังเกตเห็น; รู้ตัว,
+1610,口哨,kǒu shào,whistle,หวี่,2,6,ผิวปาก,
+1612,古,gǔ,ancient; old,เก่า,2,6,โบราณ; เก่าแก่,
+1613,古人,gǔ rén,people of ancient times; the ancients,บรรพบุรุษ,2,6,คนโบราณ; คนสมัยก่อน,
+1619,台球,tái qiú,billiards,บิลเลียร์ด,2,6,บิลเลียด,
+1620,台阶,tái jiē,steps; flight of steps,บันได,2,5,ขั้นบันได; บันได,
+1621,吃力,chī lì,to entail strenuous effort; to toil at a task,เหนื่อย,2,6,ต้องออกแรงมาก; ลำบาก,
+1625,后天,hòu tiān,the day after tomorrow; life after birth,มะรืนนี้,2,2,มะรืนนี้; ภายหลังกำเนิด,
+1627,向上,xiàng shàng,upward; up,ขึ้นไป,2,2,ขึ้นไป,
+1628,吓,xià,to frighten; to scare,"กลัว, หลอก",2,5,ทำให้ตกใจ; ขู่,current กลัว is intransitive 'be afraid'; 吓 is transitive 'to scare'
+1630,吸,xī,to breathe; to suck in,ดูดเข้า,2,5,สูด; ดูด,
+1631,呈现,chéng xiàn,to appear; to emerge,แสดงให้เห็น,2,6,ปรากฏ; แสดงให้เห็น,
+1636,和睦,hé mù,peaceful relations; harmonious,อย่างเป็นมิตร,2,6,กลมเกลียว; ปรองดอง,
+1647,嘲笑,cháo xiào,to jeer at; to deride,เยาะหยัง,2,5,หัวเราะเยาะ; เยาะเย้ย,
+1649,器械,qì xiè,apparatus; instrument,เครื่องมือ,2,6,อุปกรณ์; เครื่องมือ,
+1651,四面八方,sì miàn bā fāng,idiom all directions; all around,ทั่วทุกทิศ,2,6,ทั่วทุกทิศ,
+1655,图纸,tú zhǐ,blueprint; drawing,ภาพวาด,2,5,พิมพ์เขียว; แบบแปลน,
+1665,坏事,huài shì,bad thing; misdeed,เรื่องชั่ว,2,4,เรื่องร้าย; เรื่องไม่ดี,
+1677,堕落,duò luò,to degrade; to degenerate,เสื่อมสลาย,2,5,เสื่อมทราม; ตกต่ำ,
+1678,堵,dǔ,to block up; to stop up,อุดตัน,2,4,อุดตัน,
+1682,墙,qiáng,wall,ผนัง,2,5,กำแพง; ผนัง,
+1687,外地,wài dì,parts of the country other than where one is,สถานที่อื่น,2,4,ต่างถิ่น; ที่อื่นในประเทศ,
+1688,外表,wài biǎo,external; outside,หน้าตา,2,5,รูปลักษณ์ภายนอก; ภายนอก,
+1692,多元,duō yuán,poly-; multi-,หลายมิติ,2,6,หลากหลาย; หลายองค์ประกอบ,
+1693,多样,duō yàng,diverse; diversity,หลายชนิด,2,4,หลากหลาย,
+1699,大多,dà duō,for the most part; many,สำหรับส่วนใหญ่,2,4,ส่วนใหญ่; ส่วนมาก,
+1700,大胆,dà dǎn,brazen; audacious,กล้า,2,6,กล้า; ใจกล้า,
+1706,失落,shī luò,to lose; to drop,สูญหาย,2,5,รู้สึกใจหาย (ผิดหวัง); สูญเสีย,EN-GLOSS-BUG: gloss 'to lose; to drop' omits dominant sense 'feel a sense of loss / dejected'; led with the real sense
+1707,头顶,tóu dǐng,top of the head,ยอดศรีษะ,2,5,กลางกระหม่อม; บนศีรษะ,
+1711,奖品,jiǎng pǐn,award; prize,รางวัล,2,5,รางวัล,
+1713,奠定,diàn dìng,to establish; to fix,สร้างฐานมูลนิธิ,2,6,วางรากฐาน; วางพื้นฐาน,current used มูลนิธิ (charity org); 奠定 = lay a foundation/basis
+1714,奢侈,shē chǐ,luxurious; extravagant,หรูหรา,2,6,ฟุ่มเฟือย; หรูหรา,
+1716,好心,hǎo xīn,kindness; good intentions,ใจดี,2,4,หวังดี; ใจดี,
+1717,好感,hǎo gǎn,good opinion; favorable impression,ประทับใจ,2,5,ความประทับใจ; ความรู้สึกชอบ,
+1723,姿态,zī tài,attitude; posture,ท่าทาง,2,6,ท่าทาง; ท่าที,
+1727,字迹,zì jì,handwriting,ลายเขียนมือ,2,6,ลายมือ,
+1728,存,cún,to exist; to deposit,"มีอยู่, เก็บ",2,4,มีอยู่; ฝาก,
+1730,孤立,gū lì,to isolate; isolated,แยกออกจากกัน,2,6,โดดเดี่ยว; แยกให้อยู่ลำพัง,
+1737,实用,shí yòng,to apply in practice; practical,เป็นประโยชน์,2,6,ใช้ได้จริง; ใช้งานได้จริง,
+1738,宠,chǒng,to love; to pamper,ชื่นชมเห่ย,2,6,เอ็นดู; ตามใจ,
+1747,小吃,xiǎo chī,street food; snack,ขนมเบา ๆ,2,4,ของกินเล่น; อาหารริมทาง,
+1748,小品,xiǎo pǐn,comic sketch; short essay,วรรณกรรมเล็กน้อย,2,6,ละครสั้นตลก; บทความสั้น,
+1752,尤为,yóu wèi,especially,โดยเฉพาะ,2,6,โดยเฉพาะ,
+1753,尺,chǐ,Chinese foot (unit),หน่วยวัด,2,6,ฉื่อ (มาตราวัดความยาวจีน),uncertain: unit transliterated as ฉื่อ; alt หน่วยวัดความยาวจีน
+1756,屋子,wū zi,house; room,บ้าน,2,5,ห้อง; บ้าน,
+1759,山区,shān qū,mountain area,"เขตเขา, พื้นที่เขาภูเขา",2,4,เขตภูเขา; พื้นที่ภูเขา,
+1760,山峰,shān fēng,mountain peak,"ยอดเขา, ยอดภูเขา",2,5,ยอดเขา,
+1762,峡谷,xiá gǔ,canyon; gill,"ห้วยลึก, ร่องลึกระหว่างภูเขา",2,6,หุบเขาลึก; หุบผา,
+1763,巅峰,diān fēng,summit; apex,"ยอดสูงสุด, จุดสูงสุด",2,5,"ยอดสูงสุด, จุดสูงสุด",
+1766,巩固,gǒng gù,to consolidate; to strengthen,ยึดแน่น,2,5,ทำให้มั่นคง; เสริมให้แข็งแกร่ง,
+1773,干扰,gān rǎo,to disturb; to interfere,"รบกวน, ขัดขวาง, ทำให้รบกวน",2,5,รบกวน; แทรกแซง,
+1782,庆祝,qìng zhù,to celebrate,"เฉลิมฉลอง, ฉลองแล้ว",2,5,เฉลิมฉลอง; ฉลอง,
+1784,应对,yìng duì,to answer; to reply,"ตอบสนอง, รับมือ",2,5,"ตอบสนอง, รับมือ",
+1787,庙,miào,temple; ancestral shrine,"วัด, ศาลเจ้า, มูลนิธิศาสนา",2,6,ศาลเจ้า; วัด,
+1788,庙会,miào huì,temple fair,สวนเทพ,2,6,งานวัด,current สวนเทพ is wrong; 庙会 = temple fair
+1789,延缓,yán huǎn,to defer; to postpone,"ยืดเยื้อ, ชะลอ, ถ่วงเวลา",2,6,ชะลอ; เลื่อนออกไป,
+1790,延长,yán cháng,to prolong; to extend,"ยืดยาว, ขยายเวลา",2,5,ยืดออกไป; ขยายเวลา,
+1791,建筑师,jiàn zhù shī,architect,"สถาปนิก, ผู้ออกแบบสถาปัตยกรรม",2,5,สถาปนิก,
+1792,建筑物,jiàn zhù wù,building; structure,"อาคาร, โครงสร้าง, สิ่งปลูกสร้าง",2,5,อาคาร; สิ่งปลูกสร้าง,
+1795,开拓,kāi tuò,to break new ground; to open up,"เปิดใหม่, ขยายใหม่, เปิดดินแดน",2,6,บุกเบิก; ขยาย,
+1796,开朗,kāi lǎng,spacious and well-lit; open and clear,"สว่าง, กว้างขว้าง, ใจกว้าง",2,5,ร่าเริงแจ่มใส; โปร่งโล่งสว่าง,EN-GLOSS-BUG: gloss gives only spatial 'spacious/well-lit'; 开朗 usually = cheerful/optimistic (personality); led with the real sense
+1798,开通,kāi tōng,to open,เปิด,2,5,เปิดใช้งาน; เปิดให้บริการ,
+1803,强化,qiáng huà,to strengthen; to intensify,"เสริมแรง, เข้มแข็งขึ้น, ทำให้แข็งแรง",2,6,เสริมความแข็งแกร่ง; ทำให้เข้มข้นขึ้น,
+1806,得知,dé zhī,to find out; to learn of,"ทราบ, รู้ได้, เรียนรู้",2,5,"ทราบ, ได้รู้",
+1807,循序渐进,xún xù jiàn jìn,"in sequence, step by step","ทีละขั้น, ก้าวต่อก้าว, ค่อย ๆ ก้าวหน้า",2,6,"ทีละขั้นตอน, ค่อยเป็นค่อยไป",
+1810,心胸,xīn xiōng,heart; mind,ใจ,2,6,"จิตใจ, ใจคอ",
+1811,必不可少,bì bù kě shǎo,absolutely necessary; indispensable,"ขาดไม่ได้, ต้องมี, จำเป็นอย่างยิ่ง",2,4,"ขาดไม่ได้, จำเป็นอย่างยิ่ง",
+1815,忙碌,máng lù,busy; bustling,"ยุ่งอย่างมาก, ไม่มีเวลาว่าง, ติดงาน",2,6,"ยุ่ง, วุ่นอยู่กับงาน",
+1816,忠实,zhōng shí,faithful,"จริงใจ, ซื่อสัตย์, เที่ยงธรรม",2,6,"ซื่อสัตย์, ภักดี",
+1817,忧虑,yōu lǜ,to worry; anxiety,"วิตกกังวล, เป็นห่วง, กังวลใจ",2,6,"วิตกกังวล, กังวลใจ",
+1821,性命,xìng mìng,life,"ชีวิต, เนื้อชีวิต, ลมหายใจ",2,6,ชีวิต,
+1822,怪,guài,odd; strange,แปลกประหลาด,2,4,"แปลก, ประหลาด",
+1826,恐龙,kǒng lóng,dinosaur; old ugly person,"ไดโนเสาร์, สัตว์ยุคก่อน",2,6,ไดโนเสาร์,"EN-GLOSS-BUG: 'old ugly person' is internet slang, unsuitable as a learner gloss; core sense is dinosaur"
+1827,恶劣,è liè,vile; nasty,"ชั่ว, ร้ายแรง",2,5,"เลวร้าย, ย่ำแย่",
+1828,悠闲,yōu xián,leisurely,ใจเยื้อ,2,5,"สบายๆ, ผ่อนคลาย",thai_current 'ใจเยื้อ' is not a Thai word
+1829,悲哀,bēi āi,grieved; sorrowful,"เศร้า, อาลัย",2,5,"เศร้าโศก, เศร้าใจ",
+1830,悲痛,bēi tòng,grieved; sorrowful,เศร้าโศก,2,5,เศร้าโศก,
+1831,情不自禁,qíng bù zì jīn,idiom cannot refrain from,ไม่สามารถอดใจได้,2,6,อดใจไม่ได้; อดไม่อยู่,
+1832,情愿,qíng yuàn,willingness; would rather,"ยินดี, อยากหรือต้องการ, เต็มใจ",2,5,เต็มใจ; ยอมที่จะ,
+1835,感人,gǎn rén,touching; moving,ยิ่งใจ,2,4,"ซึ้งใจ, กินใจ",thai_current 'ยิ่งใจ' is not a Thai word
+1836,感叹,gǎn tàn,to sigh; to lament,"ถอนหายใจ, ไว้อาลัย, เพ่นพ่อน",2,6,อุทานด้วยความรู้สึก; ถอนหายใจ,thai_current contained 'เพ่นพ่อน' (not a valid word)
+1837,感性,gǎn xìng,perception; perceptual,"การรับรู้, ความรู้สึก, ความเข้าใจ",2,6,เชิงอารมณ์ความรู้สึก; การรับรู้,
+1839,感触,gǎn chù,feelings; emotional response,"ความรู้สึก, ความเข้าใจ, การกระทบใจ",2,6,ความรู้สึกสะเทือนใจ,
+1841,或许,huò xǔ,perhaps; maybe,"บางที, อาจจะ, หรือ",2,6,"บางที, อาจจะ",
+1843,战场,zhàn chǎng,battlefield,สนามรบ,2,6,สนามรบ,
+1848,手续,shǒu xù,procedure; formalities,ขั้นตอน,2,5,"ขั้นตอน, ระเบียบการ",
+1849,扎,zhā,to prick; to run or stick into,แทง,2,5,"ทิ่ม, แทง",
+1851,扑,pū,to throw oneself at; to pounce on,"ขึ้นไป, พุ่งเข้า, กระโดดเข้า",2,5,"พุ่งเข้าใส่, กระโจนใส่",
+1852,打击,dǎ jī,to hit; to strike,"ตบ, ทำลาย, การโจมตี",2,6,"โจมตี, ทุบตี",
+1853,打动,dǎ dòng,to move; arousing,"กระทบใจ, ทำให้เสียใจ, สัมผัสใจ",2,5,"ทำให้ประทับใจ, สัมผัสใจ",thai_current 'ทำให้เสียใจ' inverts the sense (打动 is to move positively)
+1856,打球,dǎ qiú,to play ball; to play with a ball,เล่นลูกบอล,2,4,เล่นบอล,
+1857,执行,zhí xíng,to implement; to carry out,ปฏิบัติ,2,5,"ปฏิบัติ, ดำเนินการ",
+1858,扶,fú,to support with the hand; to help someone up,ช่วยพยุง,2,5,"พยุง, ประคอง",
+1861,投入,tóu rù,to throw into; to put into,หลั่งเข้าไป,2,5,ทุ่มเทให้; ใส่ลงไป,
+1863,折叠,zhé dié,to fold; collapsible,"พับ, พับเก็บ, พับซ้อน",2,6,"พับ, พับเก็บได้",
+1865,抢,qiǎng,to grab; to snatch,"ชิง, รีบเร่ง",2,5,"แย่ง, ชิง",
+1866,抢救,qiǎng jiù,to rescue,"ช่วยชีวิต, ปกป้อง, ช่วยเหลือด่วน",2,6,ช่วยชีวิตฉุกเฉิน; กู้ชีพ,
+1867,报废,bào fèi,to scrap; to dispose of,บอกว่าใช้ไม่ได้,2,6,ทิ้งเป็นของเสีย; ปลดระวาง,thai_current 'บอกว่าใช้ไม่ได้' misreads 报废 (to scrap/write off)
+1868,报社,bào shè,newspaper,สำนักพิมพ์,2,5,สำนักงานหนังสือพิมพ์,"EN-GLOSS-BUG: 报社 is the newspaper office/publisher, not the paper itself (报纸)"
+1869,抬头,tái tóu,to raise one's head; to look up,ยกหัวขึ้น,2,4,"เงยหน้าขึ้น, ยกศีรษะ",
+1870,抱负,bào fù,aspiration; ambition,"ความมีเป้าหมาย, ความปรารถนา, ความเสียสละ",2,6,ความใฝ่ฝันทะเยอทะยาน; ปณิธาน,thai_current 'ความเสียสละ' (sacrifice) is unrelated
+1873,拆,chāi,to tear open; to tear down,ปลดปล่อย,2,5,แกะออก; รื้อถอน,thai_current 'ปลดปล่อย' (release) is wrong; 拆 is to tear open/down
+1874,拐杖,guǎi zhàng,crutches; crutch,ไม้ที่อ้อม,2,6,"ไม้เท้า, ไม้ค้ำยัน",thai_current 'ไม้ที่อ้อม' is not a valid word
+1875,拓展,tuò zhǎn,to expand; to extend,"ขยาย, ขยายออกไป, ทำให้กว้าง",2,6,"ขยาย, ขยายขอบเขต",
+1876,招待,zhāo dài,to hold a reception,ต้อนรับ,2,5,"ต้อนรับ, เลี้ยงรับรอง",
+1879,持,chí,to hold; to grasp,"ถือ, ยึด, รักษา",2,4,"ถือ, ยึดถือ",
+1881,指挥,zhǐ huī,to conduct; to command,นำการ,2,5,บัญชาการ; กำกับวง(ดนตรี),thai_current 'นำการ' is not idiomatic
+1882,挑选,tiāo xuǎn,to choose; to select,เลือก,2,5,"เลือก, คัดเลือก",
+1883,挖掘,wā jué,to excavate; to unearth,"ขุด, ขุดเก็บ",2,6,"ขุด, ขุดค้น",
+1886,捏,niē,to pinch; to knead,"ม้วน, ปัญจา, บีบ",2,6,"บีบ, ปั้น",thai_current contained 'ปัญจา' (not a valid word)
+1887,据悉,jù xī,according to reports; it is reported,"ตามรายงาน, ฉันได้ยิน, อ้างว่า",2,6,ตามรายงาน; เท่าที่ทราบ,
+1888,排,pái,to arrange in order; to line up,แถว,2,4,จัดเรียง; เข้าแถว,
+1889,接待,jiē dài,to receive; to entertain,ต้อนรับ,2,5,"ต้อนรับ, รับรอง",
+1892,推辞,tuī cí,to decline,ปฏิเสธสุภาพ,2,5,"บอกปัด, ปฏิเสธ",
+1893,掩盖,yǎn gài,to conceal; to hide behind,ปิดบังซ่อน,2,6,"ปกปิด, กลบเกลื่อน",
+1894,描述,miáo shù,to describe; description,"บรรยาย, อธิบาย, บอกถึง",2,6,"บรรยาย, พรรณนา",
+1895,插,chā,to insert; stick in,แทรก,2,5,"เสียบ, แทรก",
+1899,摇头,yáo tóu,to shake one's head,โยกหัว,2,5,"ส่ายหัว, ส่ายหน้า",thai_current 'โยกหัว' (sway) misses the negation sense of 摇头
+1901,支,zhī,to support; to prop up,"ค้ำ, ค้ำสนับสนุน, ช่วย",2,5,"ค้ำ, ค้ำจุน",
+1903,改造,gǎi zào,to transform; to reform,"เปลี่ยนแปลง, ปรับปรุง, ปฏิรูป",2,5,"ดัดแปลง, ปรับเปลี่ยน",
+1904,改革,gǎi gé,reform; to reform,"ปฏิรูป, ปรับปรุง, เปลี่ยนแปลง",2,5,ปฏิรูป,
+1907,效益,xiào yì,benefit; effectiveness,"ประโยชน์, ประสิทธิภาพ, ผลประโยชน์",2,5,ผลประโยชน์; ประสิทธิผล,
+1908,敬,jìng,respectful; to respect,"เคารพ, ให้ความสำคัญ, เทิดทูน",2,6,"เคารพ, นับถือ",
+1909,敬业,jìng yè,dedicated to one's work,"หมั่นหมาย, ทำงานให้ถูกต้อง, หมั่นชำนาญ",2,6,ทุ่มเทให้งาน; มีใจรักในอาชีพ,thai_current glosses were not idiomatic
+1911,敬酒,jìng jiǔ,to toast; to propose a toast,เชิญชวนการดื่ม,2,6,ยกแก้วอวยพร; เชิญดื่ม,
+1913,整齐,zhěng qí,orderly; neat,"เรียบร้อย, ตัดตรง, เรียงเรียบ",2,4,"เป็นระเบียบ, เรียบร้อย",
+1918,新陈代谢,xīn chén dài xiè,metabolism; the new replaces the old,"การออกและเข้า, แลกเปลี่ยนแนว, หรือการเปลี่ยนแปลง",2,6,การเผาผลาญ(เมแทบอลิซึม); ของใหม่แทนที่ของเก่า,
+1919,无不,wú bù,none lacking; none missing,ไม่มีใครขาด,2,5,ล้วนแต่; ทุกคนต่างก็,EN-GLOSS-BUG: 'none lacking; none missing' reads 无不 as 无缺; it actually means 'invariably / all without exception'
+1922,无所谓,wú suǒ wèi,to be indifferent; not to matter,ไม่สนใจ,2,5,อะไรก็ได้; ไม่สำคัญหรอก,
+1924,无能为力,wú néng wéi lì,idiom powerless to do anything about it,"ไม่มีประสิทธิภาพ, ไม่มีอำนาจ, ขาดความสามารถ",2,6,จนปัญญา; ทำอะไรไม่ได้,
+1929,早年,zǎo nián,many years ago; in the past,"ปีแรก, ตอนเด็ก, เมื่อวัยเยาว์",2,6,สมัยก่อน; ในวัยเยาว์,
+1934,时常,shí cháng,often; frequently,"บ่อยครั้ง, บ่อย ๆ, เป็นประจำ",2,5,"บ่อยๆ, เป็นประจำ",
+1938,明亮,míng liàng,bright; shining,"สว่าง, ส่องแสง, ส่องสว่าง",2,6,"สว่าง, สว่างไสว",
+1942,显著,xiǎn zhù,outstanding; notable,"โดดเด่น, ประเด็น, สำคัญ",2,6,"เด่นชัด, โดดเด่น",thai_current 'ประเด็น' (an issue) is unrelated
+1945,晚点,wǎn diǎn,of trains etc late; delayed,ล่าช้า,2,4,ล่าช้ากว่ากำหนด,
+1947,替换,tì huàn,to exchange,แทนที่,2,5,"สับเปลี่ยน, แทนที่",
+1948,有力,yǒu lì,powerful; forceful,มีความแข็งแรง,2,6,"ทรงพลัง, หนักแน่น",thai_current 'มีความแข็งแรง' is the banned มีความ+adj pattern
+1950,服从,fú cóng,to obey; to comply,"เชื่อฟัง, เชื่อฟังคำสั่ง, ปฏิบัติตามคำสั่ง",2,5,"เชื่อฟัง, ปฏิบัติตาม",
+1951,朝气蓬勃,zhāo qì péng bó,full of youthful energy; vigorous,"เต็มไปด้วยความสดชื่น, มีพลังชีวิต, เต็มเรี่ยวแรง",2,6,เต็มไปด้วยพลังหนุ่มสาว; กระปรี้กระเปร่า,
+1955,朴素,pǔ sù,plain and simple; unadorned,ธรรมชาติ,2,5,"เรียบง่าย, สมถะ",thai_current 'ธรรมชาติ' (nature) misses the sense
+1956,朵,duǒ,flower; earlobe,ดอก,2,4,ดอก (ลักษณนามของดอกไม้),EN-GLOSS-BUG: 朵 is a measure word for flowers/clouds; 'flower; earlobe' mislabels it
+1958,来临,lái lín,to approach; to come closer,"มาถึง, เข้ามา, เข้ามายังตรงนี้",2,6,"มาถึง, ใกล้เข้ามา",
+1959,来往,lái wǎng,to come and go; to have dealings with,มาไปมา,2,5,ไปๆ มาๆ; ไปมาหาสู่กัน,
+1960,松,sōng,pine tree; relaxed,ต้นสน,2,6,ต้นสน; หลวม,
+1962,枪,qiāng,gun; spear,ปืน,2,5,ปืน; หอก,
+1964,标志,biāo zhì,sign; mark,"เครื่องหมาย, สัญลักษณ์, มีหมายเลขกำกับ",2,6,"เครื่องหมาย, สัญลักษณ์",
+1965,校园,xiào yuán,campus,ลานวิทยาลัย,2,4,บริเวณสถานศึกษา; รั้วโรงเรียน,
+1966,格局,gé jú,structure; pattern,"โครงสร้าง, ลักษณะ, การจัดแบ่ง",2,6,โครงสร้าง; รูปแบบการจัดวาง,
+1967,格式,gé shì,form; specification,"รูปแบบ, ลักษณะ, แบบฟอร์ม",2,6,รูปแบบ; แบบฟอร์ม,
+1969,梦想,mèng xiǎng,dream,"ฝันถึง, ความฝัน, ปรารถนา",2,5,"ความฝัน, ความใฝ่ฝัน",
+1971,棉花,mián huā,cotton,สำไหร,2,5,"ฝ้าย, สำลี",thai_current 'สำไหร' is not a valid word (cotton = ฝ้าย)
+1973,楼,lóu,building; floor (story),"อาคาร, ตึกสูง, บ้านสูงชั้น",2,5,อาคาร; ชั้น(ของตึก),
+1979,歌舞,gē wǔ,singing and dancing,เพลงและการเต้น,2,3,ร้องรำทำเพลง; การขับร้องและเต้นรำ,
+1983,步骤,bù zhòu,procedure; step,"ขั้นตอน, การขั้นตอน, ก้าว",2,5,ขั้นตอน,
+1985,歪,wāi,askew; at a crooked angle,"อ้วก, เบี่ยง, เบี่ยงไปข้างหนึ่ง",2,5,"เอียง, เบี้ยว",thai_current 'อ้วก' means vomit; 歪 is crooked/askew
+1986,死亡,sǐ wáng,to die; death,"ตาย, ความตาย, เสียชีวิต",2,6,"ตาย, เสียชีวิต",
+1989,毫不犹豫,háo bù yóu yù,without the slightest hesitation,"ไม่มีการลังเล, ตัดสินใจแน่นอน, ไม่ย้อนไม่ลังเล",2,5,ไม่ลังเลแม้แต่น้อย,
+1992,民歌,mín gē,folk song,เพลงชาวบ้าน,2,5,เพลงพื้นบ้าน,
+1993,气体,qì tǐ,gas,"แก๊ส, อากาศ, สารเป็นไอ",2,6,"แก๊ส, ก๊าซ",
+1994,气象,qì xiàng,meteorological condition; weather,"ปรากฏการณ์อากาศ, สภาพอากาศ, ลักษณ์อากาศ",2,6,สภาพอากาศ; อุตุนิยมวิทยา,
+1998,求,qiú,to seek; to look for,"ขอ, หา",2,5,แสวงหา; ขอร้อง,
+1999,求助,qiú zhù,to request help; to appeal,"ขอความช่วยเหลือ, ขอปรึกษา, ขอความสงวนนอก",2,6,ขอความช่วยเหลือ,thai_current contained 'ขอความสงวนนอก' (not meaningful)
+2004,沉重,chén zhòng,heavy; hard,"หนัก, น้ำหนักมาก",2,5,หนัก,
+2007,治,zhì,to rule; to govern,"ปกครอง, ปืนปกครอง, ปกครองดูแล",2,5,ปกครอง,
+2008,治愈,zhì yù,to cure; to restore to health,"รักษาให้หาย, หายจากการรักษา, ทำให้หาย",2,6,รักษาให้หาย,
+2009,注视,zhù shì,to look attentively at,"จ้องมอง, มองอย่างมั่นคง, จ้องมองเขาว่า",2,6,จ้องมอง,
+2011,流血,liú xiě,to bleed; to shed blood,"ออกเลือด, เลือดไหลออก, ตกเลือด",2,5,เลือดออก,
+2014,浮力,fú lì,buoyancy,"แรงลอยตัว, พลังยกตัว, กำลังลอยตัว",2,6,แรงลอยตัว,
+2015,海绵,hǎi mián,zoology sea sponge; esp. dried sea sponge,"ฟองน้ำ, ฟองน้ำสีม่วง, สิ่งที่ซึมซับ",2,6,ฟองน้ำ,
+2016,海面,hǎi miàn,the surface of the sea; ocean surface,"ผิวน้ำทะเล, พื้นผิวทะเล, ผิวทะเล",2,6,ผิวน้ำทะเล,
+2017,涉及,shè jí,to involve,"เกี่ยวข้อง, ศึกษา, เป็นส่วนหนึ่ง",2,6,เกี่ยวข้อง,
+2019,淘汰,táo tài,to wash out,"ล้างออก, คัดออก, ตัดออก",2,5,"คัดออก, ตกรอบ",EN-GLOSS-BUG: 'to wash out' is misleading; real sense is to eliminate/weed out (in competition or selection)
+2022,混淆,hùn xiáo,to obscure; to confuse,สับสนหรือทำให้วุ่นวายกัน,2,6,"ทำให้สับสน, ปะปนกัน",
+2023,清理,qīng lǐ,to clear up; to tidy up,ทำความสะอาด,2,5,เก็บกวาด; สะสาง,
+2025,温和,wēn hé,mild; gentle,"อ่อนโยน, อ่อน, ท่าทีอ่อน",2,5,"อ่อนโยน, นุ่มนวล",
+2026,温柔,wēn róu,gentle and soft; tender,อ่อนโยนและนุ่มนวล,2,6,"อ่อนโยน, นุ่มนวล",
+2031,湿度,shī dù,humidity level,"ความชื้น, ระดับความชื้น, ปริมาณความชื้น",2,6,ความชื้น,
+2032,溶解,róng jiě,to dissolve,"ละลาย, ทำให้ละลาย, ละลายหายไป",2,6,ละลาย,
+2034,滑冰,huá bīng,to skate; skating,สเก็ต,2,5,เล่นสเก็ตน้ำแข็ง,
+2035,漏,lòu,to leak; to divulge,"รั่ว, รั่วไหล, ออกไป",2,5,รั่ว; เผยความลับ,
+2038,潮,cháo,tide; damp,น้ำขึ้น,2,5,น้ำขึ้นน้ำลง; ชื้น,
+2039,潮流,cháo liú,tide; current,"กระแสน้ำขึ้นลง, แนวโน้ม, จังหวะเวลา",2,6,กระแสน้ำ; กระแสนิยม,EN-GLOSS-BUG: gloss omits the dominant figurative sense 'trend/fashion'
+2041,灭,miè,to extinguish or put out; to go out,"ดับ, ดับไป, ปิดไฟ",2,6,ดับ,
+2042,灭亡,miè wáng,to be destroyed; to destroy,"ล่มสลาย, เสื่อมเทพ, ถูกทำลาย",2,6,"ล่มสลาย, ถูกทำลาย",
+2044,炎热,yán rè,blistering hot; sizzling hot,ร้อนแรง,2,5,ร้อนจัด,
+2047,热门,rè mén,popular; hot,"เป็นที่นิยม, นิยม, ประเด็นร้อน",2,6,เป็นที่นิยม,
+2050,照明,zhào míng,lighting; illumination,การให้แสง,2,6,แสงสว่าง,
+2054,爱心,ài xīn,compassion; kindness,"เมตตา, ความเห็นใจ",2,5,"ความเมตตา, น้ำใจ",
+2056,片面,piàn miàn,unilateral; one-sided,ด้านเดียว,2,5,ด้านเดียว,
+2059,牧场,mù chǎng,pasture; grazing land,"ทุ่งหญ้าเลี้ยงสัตว์, สนามเลี้ยงสัตว์",2,6,ทุ่งหญ้าเลี้ยงสัตว์,
+2070,理性,lǐ xìng,reason; rationality,"เหตุผล, สติปัญญา",2,6,"เหตุผล, ความมีเหตุผล",
+2072,生动,shēng dòng,"of descriptions, writing etc vivid; lively","ชีวชีวะ, มีชีวิตชีวา",2,5,มีชีวิตชีวา,
+2073,用心,yòng xīn,diligent; attentive; with concentration,ตั้งใจ; เอาใจใส่,2,4,ตั้งใจ; เอาใจใส่,
+2081,疲惫,pí bèi,beaten; exhausted,"เหนื่อยล้า, อ่อนเพลีย",2,6,"เหนื่อยล้า, อ่อนเพลีย",
+2082,痕迹,hén jì,vestige; mark,"ร่องรอย, เครื่องหมาย",2,5,ร่องรอย,
+2086,皆,jiē,all; each and every,"ทั้งหมด, ทุกคน",2,6,"ทั้งหมด, ล้วน",
+2089,盛,shèng,flourishing; abundant; grand,"เจริญรุ่งเรือง, อุดมสมบูรณ์",2,5,เจริญรุ่งเรือง; อุดมสมบูรณ์,
+2091,直至,zhí zhì,lasting until; up till,"จนกระทั่ง, ถึง",2,6,จนกระทั่ง,
+2094,相当,xiāng dāng,equivalent to; appropriate,เทียบเท่า,2,5,เทียบเท่า; ค่อนข้าง,EN-GLOSS-BUG: gloss omits the dominant adverbial sense 'quite/fairly/considerably'
+2106,示意,shì yì,to hint; to indicate,เบาะแส,2,5,"ส่งสัญญาณ, บอกใบ้",
+2107,礼,lǐ,gift; courtesy,ของขวัญ,2,4,ของขวัญ; มารยาท,
+2109,祝福,zhù fú,blessings; to wish someone well,ความเป็นสิริมงคล,2,5,"อวยพร, คำอวยพร",
+2115,秩序,zhì xù,order; orderliness,"ระเบียบ, ลำดับ",2,5,ระเบียบ,
+2117,积蓄,jī xù,to save; to put aside,"เก็บสะสม, ออม",2,6,เก็บออม,
+2118,稀少,xī shǎo,sparse; rare,หาได้ยาก,2,5,"เบาบาง, หายาก",
+2120,空隙,kòng xì,crack; gap between two objects,ช่องว่างระหว่างวัตถุ,2,6,ช่องว่าง,
+2121,穿过,chuān guò,to pass through,ผ่านไป,2,5,ผ่านทะลุ,
+2122,窝,wō,nest; hollow,รัง,2,5,รัง; โพรง,
+2124,站立,zhàn lì,to stand; standing,ยืนตัวตั้ง,2,5,ยืน,
+2131,简洁,jiǎn jié,concise; succinct,"สั้นกระชับ, กระชับ",2,6,"กระชับ, รัดกุม",
+2134,粒,lì,grain; granule,"เม็ด, ละเม็ด",2,6,เม็ด,
+2135,精,jīng,essence; extract,"สาระสำคัญ, สกัด",2,6,สาระสำคัญ; หัวเชื้อ,
+2137,素材,sù cái,source material,"วัสดุดิบ, ข้อมูลต้นฉบับ",2,6,วัตถุดิบ; แหล่งข้อมูล,
+2139,紧急,jǐn jí,urgent; emergency,เร่งด่วน,2,5,"เร่งด่วน, ฉุกเฉิน",
+2146,纯,chún,pure; simple,"บริสุทธิ์, เรียบง่าย",2,6,บริสุทธิ์,
+2147,纯洁,chún jié,pure; clean and honest,"บริสุทธิ์, สะอาด",2,6,บริสุทธิ์,
+2148,组合,zǔ hé,to assemble; to combine,"รวมเข้าด้วยกัน, การรวมกัน",2,6,ประกอบเข้าด้วยกัน,
+2149,细微,xì wēi,tiny; minute,ละเอียดอ่อน,2,6,"เล็กน้อย, ละเอียดอ่อน",
+2156,绝,jué,to cut short; extinct,"ขาด, สูญหาย",2,6,ขาดสิ้น; สูญสิ้น,
+2157,统计,tǒng jì,statistics; to count,"สถิติ, นับหลาย",2,5,สถิติ; นับรวม,
+2158,继,jì,to continue; to follow after,"ทำต่อ, ติดตามหลัง",2,6,"สืบต่อ, ต่อจาก",
+2163,缩短,suō duǎn,to shorten; to reduce,ลดให้สั้นลง,2,6,ลดให้สั้นลง,
+2164,罚款,fá kuǎn,to fine; penalty,"ปรับเงิน, โทษเงิน",2,6,ปรับเงิน; ค่าปรับ,
+2165,美容,měi róng,beauty treatment,สมุนไพรความสวย,2,5,เสริมความงาม,
+2166,美满,měi mǎn,happy; blissful,"สุขสม, พอใจ",2,6,"อิ่มเอมเป็นสุข, สมบูรณ์พร้อม",
+2176,肉,ròu,meat; flesh,เนื้อสัตว์,2,2,เนื้อสัตว์,
+2177,胃口,wèi kǒu,appetite; liking,"ความอยากอาหาร, รสนิยม",2,5,ความอยากอาหาร; ความชอบ,
+2178,胆子,dǎn zi,courage; nerve,"ความกล้า, ใจกล้า",2,5,ความกล้า,
+2182,脱身,tuō shēn,to get away; to escape,หนีออก,2,6,"ปลีกตัว, หลุดพ้น",
+2184,膜,mó,membrane; film,เยื่อบาง,2,5,เยื่อ; แผ่นฟิล์ม,
+2189,致富,zhì fù,to become rich,ให้รวยมั่งคั่ง,2,5,ทำให้ร่ำรวย,
+2194,色,sè,color; look,"สี, รูปลักษณ์",2,3,สี; สีหน้า,
+2200,苗条,miáo tiáo,of a woman slim; slender,สูงผอม,2,5,เพรียวบาง,
+2207,虚伪,xū wěi,false; hypocritical,"ปลอมแปลง, หลอกลวง",2,6,"เสแสร้ง, ไม่จริงใจ",
+2208,虚幻,xū huàn,imaginary; illusory,เกิดจากจินตนาการ,2,6,"ลวงตา, ไม่จริง",
+2211,行程,xíng chéng,journey; travel route,เส้นทาง,2,5,"การเดินทาง, เส้นทาง",
+2214,衰老,shuāi lǎo,to age; to deteriorate with age,"สูงอายุ, เสื่อมสภาพ",2,6,"แก่ชรา, เสื่อมโทรมตามวัย",
+2217,西方,xī fāng,the West; the Occident,ตะวันตก,2,4,ตะวันตก,
+2223,观看,guān kàn,to watch; to view,ชมดู,2,4,"รับชม, ดู",
+2224,视力,shì lì,eyesight; visual acuity,ความสามารถในการมองเห็น,2,6,"สายตา, การมองเห็น",
+2225,视野,shì yě,field of view,"สนามสายตา, ขอบเขตการมอง",2,6,ขอบเขตการมองเห็น; วิสัยทัศน์,
+2230,计,jì,to calculate; to plan,"คำนวณ, ทำการนับ",2,5,"คำนวณ, วางแผน",ต้นฉบับ 'ทำการนับ' ใช้รูป ทำการ+กริยา ที่ต้องเลี่ยง
+2237,评,píng,to discuss; to comment,พูดคุยและแสดงความเห็น,2,6,"วิจารณ์, แสดงความเห็น",
+2238,评委,píng wěi,evaluation committee; judging panel,คณะลูกขุน,2,5,"คณะกรรมการตัดสิน, กรรมการ",ต้นฉบับ 'คณะลูกขุน' = jury (คดีความ) ไม่ใช่กรรมการตัดสินการประกวด
+2241,语气,yǔ qì,tone; manner of speaking,บรรยากาศการพูด,2,5,น้ำเสียง,
+2243,诱人,yòu rén,attractive; alluring,"น่าดึงดูด, น่าอกหัก",2,6,"น่าดึงดูด, น่าหลงใหล",ต้นฉบับ 'น่าอกหัก' = heartbreaking ผิดความหมาย
+2254,贯彻,guàn chè,to implement; to put into practice,"นำมาปฏิบัติ, ดำเนินการจนสิ้นสุด",2,6,"นำมาปฏิบัติ, ดำเนินการจนสิ้นสุด",
+2256,贵宾,guì bīn,honored guest; distinguished guest,แขกรูปใหญ่,2,6,"แขกผู้มีเกียรติ, แขกคนสำคัญ",
+2257,赋予,fù yǔ,to assign; to entrust,"มอบหมาย, ให้กำลัง",2,6,"มอบให้, มอบหมาย",
+2258,赛场,sài chǎng,racetrack; field,สนามแข่งขัน,2,5,สนามแข่งขัน,
+2261,赞叹,zàn tàn,to exclaim in admiration,"ชื่นชม, อุทิศความชื่นชม",2,6,"ชื่นชม, ยกย่อง",
+2263,赞扬,zàn yáng,to praise; to approve of,"สรรเสริญ, ชื่นชม",2,6,"สรรเสริญ, ชื่นชม",
+2271,身影,shēn yǐng,silhouette; figure,"เงาตัว, รูปร่าง",2,6,"เงาร่าง, รูปร่าง",
+2272,车站,chē zhàn,rail station; bus stop,สถานีรถ,2,3,สถานีรถไฟ; ป้ายรถเมล์,
+2275,转变,zhuǎn biàn,to change; to transform,เปลี่ยนแปลง,2,5,เปลี่ยนแปลง,
+2278,辞,cí,to resign; to dismiss,"ลาออก, ปลดออก",2,5,ลาออก; ปลดออก,
+2280,辨认,biàn rèn,to recognize; to identify,"รู้จำ, ระบุตัวตน",2,6,"จำได้, ระบุตัว",
+2287,运行,yùn xíng,to operate; to run,ดำเนินการ,2,5,"ทำงาน, เดินเครื่อง",
+2298,退役,tuì yì,of military personnel or athletes to retire,"เกษียณ, ออกจากงาน",2,6,ปลดประจำการ; เลิกเล่นอาชีพ,"สองความหมาย: ทหาร=ปลดประจำการ, นักกีฬา=เลิกเล่น"
+2304,通风,tōng fēng,airy; ventilation,การปล่อยอากาศ,2,5,"การระบายอากาศ, อากาศถ่ายเท",
+2306,逻辑,luó jí,loanword logic,ตรรกศาสตร์,2,5,ตรรกะ,
+2312,遵照,zūn zhào,in accordance with; to follow,"ตามสัญญา, ตามข้อกำหนด",2,6,"ปฏิบัติตาม, ทำตาม",
+2316,醒,xǐng,to wake up; to be awake,ตื่น,2,4,ตื่น,
+2328,闪,shǎn,to dodge; to flash (light),หลบเลี่ยง,2,6,หลบ; แวบ (แสง),เพิ่มความหมาย flash ที่ต้นฉบับตกไป
+2329,闪烁,shǎn shuò,to glisten; to be evasive,"กระพริบ, เงาระยิบ",2,6,วิบวับ; พูดเลี่ยงๆ,ความหมายที่สอง evasive = พูดเลี่ยง
+2330,闭幕,bì mù,the curtain falls; lower the curtain,"ลดจอ, ปิดหมาก",2,6,"ปิดม่าน, พิธีปิด","ต้นฉบับ 'ลดจอ, ปิดหมาก' ไม่มีความหมาย"
+2336,阻挡,zǔ dǎng,to stop; to resist,"ขวาง, ต้านทาน",2,6,"ขวาง, ต้านทาน",
+2338,院子,yuàn zi,courtyard; garden,บ้านสน,2,4,ลานบ้าน,
+2342,陪伴,péi bàn,to accompany,มาพร้อมกับ,2,5,อยู่เป็นเพื่อน,
+2343,隆重,lóng zhòng,grand; prosperous,"อย่างอาวุโส, สำคัญ",2,6,"ยิ่งใหญ่, เอิกเกริก",EN-GLOSS-BUG: 隆重 = grand/ceremonious/solemn ไม่ใช่ 'prosperous' (สับสนกับ 兴隆); แปลตามความหมายจริง
+2351,零钱,líng qián,change; small change,เหรียญสด,2,3,"เศษเงิน, เงินทอน",ต้นฉบับ 'เหรียญสด' ไม่มีความหมาย
+2354,露,lù,"dew; to reveal, expose",เปิดเผย,2,5,น้ำค้าง; เปิดเผย,เพิ่มความหมาย dew ที่ต้นฉบับตกไป
+2358,青春期,qīng chūn qī,puberty; adolescence,วัยรุ่นและเยาวชน,2,6,วัยแรกรุ่น,
+2360,革新,gé xīn,to innovate; innovation,ทำให้ทันสมัยและปรับปรุง,2,6,"สร้างสรรค์สิ่งใหม่, ปฏิรูป",
+2364,顺着,shùn zhe,to follow; following,ตามลำดับ,2,5,"ไปตาม, ตามแนว",
+2370,风浪,fēng làng,wind and waves; rough waters,คลื่นลม,2,5,คลื่นลม,
+2373,饱,bǎo,to eat till full; satisfied,อิ่มอยากกว่า,2,3,"อิ่ม, อิ่มท้อง",ต้นฉบับ 'อิ่มอยากกว่า' ไม่มีความหมาย
+2378,骏马,jùn mǎ,fine horse; steed,ม้าแข่งดี,2,6,"ม้าฝีเท้าดี, ม้าพันธุ์ดี",
+2380,高层,gāo céng,high-rise; high level,ระดับสูง,2,5,อาคารสูง; ระดับสูง,
+2385,鹰,yīng,eagle; hawk,นกอินทรีย์,2,5,นกอินทรี; เหยี่ยว,ต้นฉบับสะกด 'นกอินทรีย์' ผิด (อินทรีย์=organic)
+2386,麻,má,hemp,กัญชา,2,5,"ป่าน, ปอ",ต้นฉบับ 'กัญชา' = cannabis (大麻) ผิด; 麻 = hemp/flax
+2394,一动不动,yī dòng bù dòng,motionless,นิ่งเฉยไม่ขยับ,1,5,นิ่งเฉยไม่ขยับ,
+2396,一向,yí xiàng,always; all along; consistently,"เสมอ, เป็นปกติ",1,6,"เสมอ, เป็นปกติ",
+2405,一目了然,yī mù liǎo rán,obvious at a glance,เห็นได้ชัดเจน,1,6,เห็นแวบเดียวก็เข้าใจ,
+2408,一辈子,yī bèi zi,for a lifetime,ตลอดชีวิต,1,5,ตลอดชีวิต,
+2412,上下,shàng xià,"up and down; about, or so",ขึ้นลง,1,3,ขึ้นลง; ประมาณ,
+2416,上当,shàng dàng,taken in; to be fooled,ตกหลุมพราง,1,5,โดนหลอก,
+2418,上楼,shàng lóu,to go upstairs,ขึ้นไปบน,1,3,ขึ้นชั้นบน,
+2425,下游,xià yóu,lower reaches; lower level,ตอนล่าง,1,6,ปลายน้ำ; ระดับล่าง,
+2428,不一会儿,bù yī huì er,in a little while,ไม่นาน,1,5,ไม่นาน,
+2430,不假思索,bù jiǎ sī suǒ,idiom to act without taking time to think,ไม่คิดไตร่ตรองก่อน,1,5,ไม่ต้องคิดเลย,EN-GLOSS-BUG: 'idiom' meta-label leaked into gloss; sense = without hesitation
+2432,不在乎,bù zài hū,not to care,ไม่ใส่ใจ,1,6,ไม่แคร์,
+2433,不已,bù yǐ,used after a verb endlessly; incessantly,อย่างไม่หยุด,1,5,อย่างไม่หยุดหย่อน,EN-GLOSS-BUG: gloss embeds a grammar note ('used after a verb'); sense = endlessly/incessantly
+2435,不怎么,bù zěn me,not very; not particularly,"ไม่มาก, ไม่เป็นพิเศษ",1,6,ไม่ค่อย,
+2437,不懈,bù xiè,untiring; unremitting,อย่างไม่ยอมแพ้,1,5,ไม่ย่อท้อ,
+2440,不服气,bù fú qì,unwilling to concede; defiant,ไม่ยอมรับ,1,6,ไม่ยอมง่ายๆ,
+2441,不用说,bú yòng shuō,needless to say; it goes without saying,"ไม่ต้องพูด, เห็นได้ชัด",1,6,ไม่ต้องพูดก็รู้,
+2445,不至于,bù zhì yú,unlikely to go so far as to; not as bad as,"ไม่น่าจะ, ไม่ถึง",1,6,ไม่ถึงขนาดนั้น,
+2446,不起眼,bù qǐ yǎn,unremarkable; nothing out of the ordinary,ไม่น่าสนใจ,1,5,ไม่สะดุดตา,
+2447,不顾,bù gù,in spite of; regardless of,"ไม่สนใจ, ละเลิง",1,6,ไม่คำนึงถึง,
+2448,与众不同,yǔ zhòng bù tóng,idiom to stand out from the crowd,แตกต่างจากคนอื่น,1,6,ไม่เหมือนใคร,EN-GLOSS-BUG: 'idiom' meta-label leaked into gloss; sense = unique/unlike others
+2450,丑,chǒu,ugly,หน้าตาไม่ดี,1,6,น่าเกลียด,
+2452,专人,zhuān rén,specially assigned person,"ผู้เชี่ยวชาญ, บุคลากรพิเศษ",1,6,คนที่ได้รับมอบหมายเฉพาะ,
+2454,世界杯,shì jiè bēi,World Cup,สนามโลก,1,4,ฟุตบอลโลก,
+2457,丛林,cóng lín,jungle; thicket,"ป่า, ป่าไม้หนาแน่น",1,6,ป่าทึบ,
+2460,丝毫,sī háo,the slightest amount or degree; a bit,สักเล็กน้อย,1,5,แม้แต่นิดเดียว,
+2474,串,chuàn,to string together; to skewer,โยงถ้อยความเข้าด้วยกัน,1,5,ร้อยเข้าด้วยกัน; เสียบไม้,
+2475,临,lín,to face; to overlook,"หันไป, มองเห็น",1,6,หันหน้าเข้าหา,second opinion: EN restricts to face/overlook; 临 also = approach a time/place
+2477,为期,wéi qī,to be done by; lasting,ใช้เวลาไป,1,5,เป็นเวลา,
+2479,为难,wéi nán,awkward; to put in a bind,อึดอัดใจหรือสร้างปัญหา,1,5,ลำบากใจ; ทำให้ลำบากใจ,
+2480,主导,zhǔ dǎo,leading; dominant,"นำ, เป็นอันดับแรก",1,6,"นำ, เป็นหลัก",
+2481,主流,zhǔ liú,main stream,"กระแสหลัก, ทางมาตรฐาน",1,6,กระแสหลัก,
+2483,主管,zhǔ guǎn,in charge; responsible for,หัวหน้า,1,4,ดูแลรับผิดชอบ,
+2488,之类,zhī lèi,and so on; and such,และสิ่งอื่นๆ,1,6,อะไรทำนองนั้น,
+2491,乖,guāi,obedient; well-behaved,เชื่องหรือฉลาด,1,5,"เชื่อฟัง, ว่านอนสอนง่าย",
+2493,书桌,shū zhuō,desk,โต๊ะเรียน,1,5,โต๊ะเขียนหนังสือ,
+2495,争先恐后,zhēng xiān kǒng hòu,idiom to compete to be first,แข่งขันและกระตุ้นใจ,1,5,แย่งกันเป็นที่หนึ่ง,EN-GLOSS-BUG: 'idiom' meta-label leaked into gloss; sense = scramble to be first
+2496,争分夺秒,zhēng fēn duó miǎo,lit; making every second count,"แข่งกับเวลา, ฉวยทุกวินาที",1,5,"แข่งกับเวลา, ฉวยทุกวินาที",EN-GLOSS-BUG: 'lit;' meta-label leaked into gloss; sense = race against time
+2500,事后,shì hòu,after the event; in hindsight,หลังเรื่องจบ,1,3,หลังเกิดเหตุ,
+2502,互信,hù xìn,mutual trust,ความเชื่อถือซึ่งกันและกัน,1,6,ความไว้ใจซึ่งกันและกัน,
+2505,五花八门,wǔ huā bā mén,myriad; all kinds of,"หลากหลายชนิด, มีหลายชนิด",1,6,สารพัด,
+2506,五颜六色,wǔ yán liù sè,multicolored; every color under the sun,เรียงสี,1,3,หลากสีสัน,
+2507,交界,jiāo jiè,common boundary; common border,ชายแดน,1,5,รอยต่อ,
+2510,亲,qīn,parent; one's own,"ผู้ปกครอง, ตัวเองในที่นี้",1,4,สายเลือดเดียวกัน,second opinion: 亲 standalone glossed 'parent' is weak; usually blood relation / dear
+2512,亲近,qīn jìn,of people or relationships close; intimate,"ใกล้ชิด, เข้าใจเป็นอย่างดี",1,6,"สนิทสนม, ใกล้ชิด",
+2514,人性,rén xìng,human nature; humanity,"ลักษณะนิสัยมนุษย์, มนุษยธรรม",1,6,ธรรมชาติของมนุษย์; มนุษยธรรม,
+2516,人选,rén xuǎn,choice of person; candidate,ผู้ที่ได้รับการเลือก,1,5,ตัวเลือกที่เหมาะสม,
+2517,仍旧,réng jiù,still; to remain,ยังคงเป็นเช่นเดิม,1,5,"ยังคง, เหมือนเดิม",
+2522,以致,yǐ zhì,to such an extent as to; down to,ถึงจุดที่,1,5,จนทำให้,
+2524,休想,xiū xiǎng,don't think; don't imagine,อย่าคิดสักนิดหน่อย,1,6,อย่าหวังเลย,
+2525,休眠,xiū mián,biology dormant; of a volcano dormant,"สงบนิ่ง (ภูเขาไฟ), จำศีล (สิ่งมีชีวิต)",1,5,จำศีล (สิ่งมีชีวิต); สงบนิ่ง (ภูเขาไฟ),
+2526,优质,yōu zhì,excellent quality,คุณภาพดี,1,5,คุณภาพเยี่ยม,
+2533,伪装,wěi zhuāng,to pretend to be; to disguise oneself as,"แอบปกปิด, ตัวตนเท็จ",1,6,"ปลอมตัว, อำพราง",
+2541,住宅,zhù zhái,residence; dwelling,ที่อยู่อาศัย,1,5,ที่อยู่อาศัย,
+2544,体能,tǐ néng,physical capability; stamina,ความสามารถทางกายภาพ,1,6,สมรรถภาพร่างกาย,
+2549,作风,zuò fēng,style; style of work,ลักษณะการปฏิบัติ,1,6,แนวทางการทำงาน,
+2550,佳节,jiā jié,festive day; holiday,วันพิเศษที่สำคัญ,1,6,เทศกาลรื่นเริง,
+2551,使劲,shǐ jìn,to exert all one's strength,ใช้กำลังทั้งหมด,1,6,ออกแรงเต็มที่,
+2553,例外,lì wài,exception; to be an exception,ยกเว้น,1,6,ข้อยกเว้น,
+2557,依依不舍,yī yī bù shě,reluctant to part,"ไม่อยากจากไป, หัวใจตรึงเตือน",1,6,อาลัยอาวรณ์,
+2559,依据,yī jù,according to; basis,"ตามที่, พื้นฐาน",1,6,ตามที่; หลักฐานอ้างอิง,
+2560,依旧,yī jiù,as before; still,"เช่นเดิม, ยังคง",1,6,"เช่นเดิม, ยังคง",
+2562,侧面,cè miàn,lateral side; side,"ด้านข้าง, มุมมองอื่น",1,6,ด้านข้าง; แง่มุมหนึ่ง,
+2567,俗话,sú huà,common saying; proverb,"สำนวนสมัยนิยม, คำพูดทั่วไป",1,6,คำพังเพย; สุภาษิต,
+2568,俗话说,sú huà shuō,as the proverb says; as they say...,อย่างที่กล่าวกันทั่วไป,1,6,อย่างที่เขาว่ากันว่า,
+2569,俗语,sú yǔ,common saying; proverb,"สำนวนธรรมชาติ, คำพูดทั่วไป",1,6,สำนวน; คำพังเพย,
+2570,保守,bǎo shǒu,conservative; to guard,"อนุรักษ์นิยม, เก็บไว้",1,6,อนุรักษ์นิยม; รักษา(ความลับ),
+2578,倒下,dǎo xià,to collapse; to topple over,"หล่นล้ม, ล้มสลาย",1,6,ล้มลง,
+2579,候选人,hòu xuǎn rén,candidate,ผู้สมัครหรือตัวเลือก,1,5,ผู้สมัครรับเลือก,
+2582,值班,zhí bān,to work a shift; on duty,"ยึดหลัง, ระหว่างเวรยาม",1,6,"เข้าเวร, อยู่เวร",
+2587,假设,jiǎ shè,to suppose; to presume,สมมติ,1,5,สมมติ,
+2588,偏偏,piān piān,contrary to expectations; just,โดยไม่ตั้งใจ,1,5,ดันจะ,second opinion: 偏偏 = contrary to one's wishes/expectations; hard to gloss in one word
+2594,偶像,ǒu xiàng,idol,"รูปปั้น, ดาวคนดัง",1,6,ไอดอล; รูปเคารพ,
+2595,偷偷,tōu tōu,stealthily; secretly,ลับๆ,1,5,แอบๆ,
+2596,储存,chǔ cún,stockpile; to store,สะสมเก็บ,1,5,เก็บสะสม,
+2598,催促,cuī cù,to urge,ผลักดัน,1,5,เร่งรัด,
+2612,入侵,rù qīn,to invade,บุกรุก,1,5,"รุกราน, บุกรุก",
+2613,入门,rù mén,entrance door; to enter a door,"เข้าประตู, เริ่มต้น",1,6,เริ่มต้นเรียนรู้; พื้นฐานเบื้องต้น,"EN-GLOSS-BUG: ""entrance door/to enter a door"" mis-parses 入门; real sense = get started / learn the basics of a subject"
+2618,全心全意,quán xīn quán yì,idiom heart and soul; wholeheartedly,เต็มใจเต็มหัวใจ,1,5,"อย่างสุดหัวใจ, เต็มอกเต็มใจ",
+2619,全程,quán chéng,the whole distance; from beginning to end,"ตลอดระยะทาง, จากต้นจนจบ",1,6,"ตลอดระยะทาง, จากต้นจนจบ",
+2629,共有,gòng yǒu,in total there are ...; to own jointly,มีทั้งสิ้น,1,3,มีทั้งสิ้น; เป็นเจ้าของร่วมกัน,
+2637,兴致,xìng zhì,mood; spirits,สภาวะจิตใจ,1,5,"อารมณ์, ความสนใจ",
+2644,内外,nèi wài,inside and outside; domestic and foreign,"ข้างใน และข้างนอก, ในและนอก",1,6,ในและนอก; ในและต่างประเทศ,
+2646,再也,zài yě,not ever again; any longer,ไม่เคยอีก,1,5,"ไม่อีกต่อไป, ไม่อีกเลย","bound adverb, always paired with a negation"
+2649,军人,jūn rén,serviceman; soldier,"ทหาร, นักรบ",1,6,ทหาร,
+2653,决策,jué cè,strategic decision; decision-making,การตัดสินใจที่กำหนดนโยบาย,1,6,การตัดสินใจเชิงนโยบาย,
+2654,况且,kuàng qiě,moreover; besides,"นอกจากนั้น, ยิ่งไปกว่านั้น",1,6,"นอกจากนั้น, ยิ่งไปกว่านั้น",
+2659,冷酷,lěng kù,unfeeling; callous,"หนาว, ไร้เมตตา",1,6,"ไร้เมตตา, เยือกเย็น",
+2663,减压,jiǎn yā,to reduce pressure; to relax,ลดแรงดัน,1,5,ลดแรงดัน; คลายเครียด,
+2667,凶,xiōng,terrible; fearful,น่ากลัว,1,5,น่ากลัว,
+2668,凶手,xiōng shǒu,murderer; assassin,"อาชญากร, ผู้ร้ายฆาตกรรม",1,6,"ฆาตกร, มือสังหาร",
+2671,出入,chū rù,to go out and come in; entrance and exit,"เข้าและออก, ทางเข้าออก",1,6,"เข้าและออก, ทางเข้าออก",
+2691,列入,liè rù,to include on a list,เพิ่มเข้าในรายการ,1,6,เพิ่มเข้าในรายการ,
+2692,创伤,chuāng shāng,wound; injury,"บาดแผล, อาการเจ็บปวด",1,6,บาดแผล; ความบอบช้ำทางใจ,
+2698,别致,bié zhì,unusual; unique,"แปลกใจ, พิเศษ",1,6,"แปลกตา, มีเอกลักษณ์",
+2705,剂,jì,dose; preparation (medicine),"ค่ายา, หน่วยการแบ่ง",1,6,"ขนาดยา (โดส), ตัวยา",
+2714,劝阻,quàn zǔ,to advise against; to dissuade,ห้าม,1,5,"ห้ามปราม, ทัดทาน",
+2720,动感,dòng gǎn,sense of movement; dynamic,การเคลื่อนไหว,1,5,"ความรู้สึกเคลื่อนไหว, ความมีชีวิตชีวา",
+2722,动荡,dòng dàng,unrest; turmoil,"ความวุ่นวาย, การปั่นป่วน",1,6,"ความวุ่นวาย, การปั่นป่วน",
+2729,化解,huà jiě,to dissolve; to resolve,"ละลาย, ยุติข้อพิพาท",1,6,"คลี่คลาย, ขจัด(ความขัดแย้ง)",
+2730,化身,huà shēn,incarnation; reincarnation,"ตัวตน, ปรากฏรูป",1,6,"อวตาร, ร่างจำแลง",
+2742,单薄,dān bó,weak; frail,"อ่อนแอ, ปราศจาก",1,6,"อ่อนแอ, บอบบาง",
+2748,即可,jí kě,equivalent to; can then,ก็ได้,1,4,"ก็พอ, ก็ใช้ได้","EN-GLOSS-BUG: ""equivalent to"" is wrong for 即可; means ""...and that will do / then it is fine"""
+2749,卵,luǎn,egg; ovum,"ไข่, ไข่เซลล์",1,6,"ไข่, เซลล์ไข่",
+2758,原材料,yuán cái liào,raw and semifinished materials,"วัตถุดิบ, วัสดุสด",1,6,"วัตถุดิบ, วัสดุตั้งต้น",
+2761,去除,qù chú,to remove; to dislodge,ลบออก,1,5,"กำจัด, ขจัดออก",
+2762,参赛,cān sài,to compete; to take part in a competition,เข้าร่วมการแข่งขัน,1,4,เข้าร่วมการแข่งขัน,
+2765,及其,jí qí,conjunction linking two nouns and its,และสิ่งต่างๆ,1,6,และ...ของมัน; ตลอดจน,grammar connective 及(and)+其(its); no clean standalone gloss
+2766,及早,jí zǎo,at the earliest possible time,เร็วๆ,1,5,"แต่เนิ่นๆ, โดยเร็ว",
+2770,反倒,fǎn dào,but on the contrary; but instead,แต่กลับ,1,6,แต่กลับ,
+2771,反差,fǎn chà,contrast; discrepancy,"ความแตกต่าง, ความเหลื่อม",1,6,"ความแตกต่าง, ความตัดกัน",
+2785,发财,fā cái,to get rich,"รวย, ค้าขาย",1,6,"ร่ำรวย, รวย",
+2790,取胜,qǔ shèng,to win; to prevail,ชนะสิ้นสุด,1,5,"เอาชนะ, คว้าชัยชนะ",
+2795,口号,kǒu hào,slogan; catchphrase,"คำขวัญ, สโลแกน",1,6,"คำขวัญ, สโลแกน",
+2796,口感,kǒu gǎn,mouthfeel; texture,"สัมผัสในปาก, เนื้อสัมผัส",1,6,"สัมผัสในปาก, เนื้อสัมผัส",
+2800,古朴,gǔ piáo,simple and unadorned,เรียบง่ายและไม่หรูหรา,1,6,เรียบง่ายและไม่หรูหรา,"pinyin bug: 朴 reads pǔ here (gǔ pǔ), not piáo"
+2805,可观,kě guān,worth seeing; considerable,"น่าสนใจ, มีมูลค่า",1,6,น่าชม; มากพอสมควร,
+2808,号称,hào chēng,to be known as; to be nicknamed,เรียกว่า,1,5,ได้ชื่อว่า,
+2809,叼,diāo,to hold with one's mouth,"กัด, ชก",1,6,คาบ,
+2811,合情合理,hé qíng hé lǐ,idiom reasonable; fair,สมควรและสมเหตุสมผล,1,6,สมควรและสมเหตุสมผล,
+2816,名单,míng dān,list of names,รายชื่อ,1,3,รายชื่อ,
+2821,后遗症,hòu yí zhèng,medicine sequelae; residual effects,อาการคงค้าง,1,5,"อาการที่หลงเหลือ, ผลข้างเคียงที่ตามมา",
+2822,吐,tǔ,to spit; to send out,"คาย, บ่งบอก",1,6,คายออก; ถ่ม,
+2831,启动,qǐ dòng,to start,"เริ่มต้น, สั่งการ",1,6,"เริ่มเดินเครื่อง, เริ่มต้น",
+2836,吼,hǒu,to roar; to howl,"คำราม, ผ่านโต้",1,6,"คำราม, แผดเสียง",
+2845,咱,zán,I or me; we,ผม/เรา,1,4,เรา,
+2846,咳,ké,cough,"เสียงไอ, ห้อม",1,6,ไอ,
+2848,品行,pǐn xíng,behavior; moral conduct,"พฤติกรรม, นิสัย",1,6,"ความประพฤติ, นิสัย",
+2854,唯独,wéi dú,only; just,เพียงเท่านั้น,1,5,เพียงเท่านั้น,
+2855,商讨,shāng tǎo,to discuss; to deliberate,พูดคุยปรึกษา,1,6,ปรึกษาหารือ,
+2856,啦,la,(exclamatory particle),คำลงท้ายประโยคแสดงอารมณ์,1,6,ล่ะ (คำลงท้ายแสดงอารมณ์),
+2859,喜庆,xǐ qìng,jubilation; festive,สนุกสนาน,1,5,"รื่นเริง, เป็นมงคล",
+2861,嘉宾,jiā bīn,esteemed guest; honored guest,แขกสำคัญ,1,5,แขกผู้มีเกียรติ,
+2863,嚷,rǎng,to shout; to bellow,ตะโกน,1,5,ตะโกน,
+2869,回馈,huí kuì,to repay a favor; to give back,"ตอบแทน, ให้ของขวัญ",1,6,"ตอบแทน, คืนกลับ",
+2871,团圆,tuán yuán,to have a reunion,ชุมนุมครอบครัว,1,5,อยู่พร้อมหน้ากัน,
+2873,困扰,kùn rǎo,to perplex; to disturb,อุปสรรค,1,5,"รบกวนจิตใจ, กวนใจ",
+2877,国土,guó tǔ,country's territory; national land,"อาณาเขต, พื้นดิน",1,6,"ดินแดน, อาณาเขต",
+2882,圆满,yuán mǎn,satisfactory; consummate,"น่าพอใจ, บรรเลง",1,6,"ราบรื่นสมบูรณ์, น่าพอใจ",
+2883,圈,quān,circle; ring,"ล้อม, ปิด",1,6,"วง, วงกลม",
+2889,地道,dì dào,tunnel; causeway,"อุโมงค์, ทางสาย",1,6,อุโมงค์,EN-GLOSS-BUG: '地道' rarely means causeway; dominant sense 'authentic/genuine' (dìdao) missing
+2895,坚决,jiān jué,firm; resolute,"หาญหาญ, เด็ดขาด",1,6,"เด็ดเดี่ยว, แน่วแน่",
+2900,型号,xíng hào,model; type,รุ่นชนิด,1,5,"รุ่น, แบบ",
+2901,垫,diàn,pad; cushion,"นวม, หมอน",1,6,"เบาะ, แผ่นรอง",
+2904,基地,jī dì,base; home base,ฐานทัพ,1,5,"ฐาน, ฐานที่มั่น",
+2912,壁画,bì huà,mural; fresco,ภาพจิตรกรรม,1,6,ภาพจิตรกรรมฝาผนัง,
+2918,外交,wài jiāo,diplomacy; diplomatic,"นโยบายต่างประเทศ, สัมพันธ์",1,6,"การทูต, การต่างประเทศ",
+2926,多功能,duō gōng néng,multifunctional; multifunction,"หลายหน้าที่, เอนกประสงค์",1,6,อเนกประสงค์,
+2930,大吃一惊,dà chī yī jīng,idiom astounded,ตกใจ,1,4,ตกใจมาก,
+2934,大方,dà fāng,generous; poised; tasteful,ผู้ชำนาญ,1,5,ใจกว้าง; มีรสนิยม,
+2936,大片,dà piàn,wide expanse; large area,พื้นที่กว้างใหญ่,1,5,พื้นที่กว้างใหญ่,EN-GLOSS-BUG: dominant modern sense 'blockbuster (film)' missing
+2937,大致,dà zhì,more or less; roughly,ประมาณนั้น,1,5,"โดยประมาณ, คร่าวๆ",
+2941,大门,dà mén,gate; front door; entrance,เดอะดอร์ส (วงร็อกอเมริกัน),1,4,"ประตูใหญ่, ประตูรั้ว",thai_current was garbage ('The Doors' band); English gloss fine
+2942,天性,tiān xìng,nature; innate tendency,ธรรมชาติ,1,6,"นิสัยแต่กำเนิด, ธรรมชาติของคน",
+2943,天文,tiān wén,astronomy,ศาสตร์ดาราศาสตร์,1,6,ดาราศาสตร์,
+2944,天桥,tiān qiáo,overpass; pedestrian bridge,สะพานฟ้า,1,4,สะพานลอย,
+2955,夸,kuā,to praise; to boast; to exaggerate,พูดเกินจริง,1,6,ชม; พูดเกินจริง,
+2956,夸大,kuā dà,to exaggerate,ขยายโตได้,1,5,"พูดเกินจริง, ทำให้เกินจริง",
+2959,奋力,fèn lì,to do everything one can; to spare no effort,พยายามอย่างแรง,1,6,"สุดกำลัง, ทุ่มเทเต็มที่",
+2960,奏效,zòu xiào,to show results; to be effective,มีผล,1,6,"ได้ผล, เห็นผล",
+2961,奔,bēn,to hurry; to rush,วิ่ง,1,6,"วิ่ง, รีบไป",
+2962,奖项,jiǎng xiàng,award; prize,รางวัล,1,6,รางวัล,
+2963,好人,hǎo rén,good person; healthy person,คนดี,1,5,คนดี,kept lead 'good person'; rare 'healthy person' sense dropped
+2965,好坏,hǎo huài,good or bad; good and bad,ดี-เลว,1,6,ดีหรือเลว,
+2966,好意,hǎo yì,good intention; kindness,ความใจดี,1,5,"ความหวังดี, น้ำใจดี",
+2971,妨碍,fáng ài,to hinder; to obstruct,เป็นอุปสรรค,1,5,"ขัดขวาง, เป็นอุปสรรคต่อ",
+2975,嫩,nèn,young and tender; of food tender,อ่อนนุ่ม,1,5,อ่อนนุ่ม,
+2977,字体,zì tǐ,calligraphic style; typeface,ลักษณ์ตัวอักษร,1,6,"แบบอักษร, ฟอนต์",
+2978,存款,cún kuǎn,to deposit money; bank savings,เงินสะสม,1,5,เงินฝาก; ฝากเงิน,
+2979,季,jì,season,ฤดู,1,3,ฤดู,
+2981,学艺,xué yì,to learn a skill or art,เรียนศิลป์,1,5,"ฝึกวิชา, เรียนศิลปวิทยา",
+2985,守,shǒu,to guard; to defend,พิทักษ์,1,6,"เฝ้า, ปกป้อง",
+2991,宗教,zōng jiào,religion,ศาสนา,1,5,ศาสนา,
+2997,定金,dìng jīn,down payment; advance payment,เงินมัดจำ,1,5,เงินมัดจำ,
+3000,宝藏,bǎo zàng,precious mineral deposits; hidden treasure,สมบัติที่ซ่อนอยู่,1,6,"ขุมทรัพย์, สมบัติล้ำค่า",
+3002,实地,shí dì,on-site,ณ สถานที่จริง,1,6,ณ สถานที่จริง,
+3004,实物,shí wù,material object; concrete object,วัตถุจริง,1,6,ของจริง,
+3006,实验室,shí yàn shì,laboratory,ห้องปฏิบัติการ,1,5,ห้องปฏิบัติการ,
+3008,宣泄,xuān xiè,to drain; to unburden oneself,ระบาย,1,5,ระบาย,
+3012,宽厚,kuān hòu,tolerant; generous,ใจกว้างเมตตา,1,4,โอบอ้อมอารี,
+3014,寂静,jì jìng,quiet,นิ่งเสียง,1,6,เงียบสงบ,
+3015,寄托,jì tuō,to entrust; to place in,มอบให้,1,6,ฝากความหวังไว้,
+3016,密,mì,dense; secret,ลับ,1,5,หนาแน่น; ลับ,
+3021,对外,duì wài,external; foreign,ต่างประเทศ,1,5,ภายนอก; ต่างประเทศ,
+3023,对白,duì bái,dialogue,บทสนทนา,1,6,บทสนทนา,
+3027,导师,dǎo shī,tutor; teacher,ครูสอน,1,5,อาจารย์ที่ปรึกษา,
+3028,封闭,fēng bì,to close; to seal off,ปิด,1,6,ปิดตาย,
+3030,将要,jiāng yào,will; shall,จะ,1,4,จะ,
+3037,小看,xiǎo kàn,to look down on; to underestimate,ดูหมิ่น,1,4,ดูถูก,
+3038,小贩,xiǎo fàn,peddler; hawker,พ่อค้าเร่ร้าน,1,6,พ่อค้าเร่,
+3042,少见,shǎo jiàn,rare; seldom seen,หายากเห็น,1,3,พบเห็นได้ยาก,
+3048,就是说,jiù shì shuō,in other words; that is,กล่าวอีกนัยว่า,1,6,ก็คือ,
+3056,展开,zhǎn kāi,to unfold; to spread out,คลี่คลาย,1,5,กางออก,
+3062,岁月,suì yuè,years; time,เวลา,1,6,กาลเวลา,
+3066,岸,àn,bank; shore,ชายฝั่ง,1,5,ชายฝั่ง,
+3068,崛起,jué qǐ,to rise abruptly; to tower over,ลุกขึ้น,1,6,ผงาดขึ้น,
+3070,川流不息,chuān liú bù xī,the stream flows without stopping,ไหลอย่างไม่หยุด,1,6,ไหลไม่ขาดสาย,
+3074,工整,gōng zhěng,fine work; carefully and neatly done,งานเรียบร้อย,1,6,เรียบร้อยประณีต,
+3083,常识,cháng shí,common sense; general knowledge,"สามัญสำนึก, ความรู้ทั่วไป",1,5,ความรู้ทั่วไป; สามัญสำนึก,
+3084,幢,chuáng,banner; pennant,"ธง, ธงชัย",1,6,"ธง, ธงชัย","Second opinion: glossed as chuang=banner, but 幢 (zhuang) is far more common as a measure word for buildings; verify intended sense."
+3087,平常心,píng cháng xīn,levelheadedness; calmness,จิตใจปกติ,1,6,ใจที่สงบเป็นปกติ,
+3088,平方米,píng fāng mǐ,square meter,ตารางเมตร,1,5,ตารางเมตร,
+3094,幸好,xìng hǎo,fortunately,โชคดี,1,5,โชคดีที่,
+3095,幼稚,yòu zhì,young; childish,เด็กเก็กและช่างช้อม,1,6,ไร้เดียงสา; ทำตัวเป็นเด็ก,
+3098,序,xù,order; sequence,ลำดับ,1,6,ลำดับ,
+3100,应邀,yìng yāo,at someone's invitation; on invitation,ได้รับการเชิญชวน,1,6,ตามคำเชิญ,
+3105,废物,fèi wù,rubbish; waste material,ขยะเสีย,1,6,ของเสีย,
+3107,庸俗,yōng sú,vulgar; tacky,"หยาบคาย, ไม่มีรสนิยม",1,6,ไร้รสนิยม,
+3110,开创,kāi chuàng,to initiate; to start,เริ่มก่อตั้ง,1,6,บุกเบิก,
+3112,开学,kāi xué,(school) term begins,เปิดปีการศึกษา,1,4,เปิดเทอม,
+3121,引领,yǐn lǐng,to crane one's neck; to await eagerly,นำทาง,1,6,นำทาง,"EN-GLOSS-BUG: English lists only the archaic ""crane one's neck; await eagerly"" sense; the common modern meaning is ""to lead/guide"". Translated to the real sense (นำทาง)."
+3122,弥漫,mí màn,to pervade; to fill the air,แพร่กระจาย,1,6,แพร่กระจาย,
+3132,当场,dāng chǎng,at the scene; on the spot,ณ ที่เหตุการณ์เกิด,1,5,ตรงนั้นทันที,
+3136,录,lù,to record,บันทึก,1,6,บันทึก,
+3141,彩票,cǎi piào,lottery ticket,ตั๋วสลากกินแบ่ง,1,6,สลากกินแบ่ง,
+3142,彩色,cǎi sè,color; multicolored,สีสัน,1,5,สี,
+3143,影星,yǐng xīng,film star,ดาราซิเนมา,1,6,ดาราภาพยนตร์,
+3148,征求,zhēng qiú,to solicit; to seek,ขออนุมัติ,1,5,ขอความคิดเห็น,
+3150,很难说,hěn nán shuō,hard to say,เป็นการยากที่จะบอก,1,4,พูดยาก,
+3154,微不足道,wēi bù zú dào,idiom negligible; insignificant,เล็กน้อย,1,6,เล็กน้อยจนไม่ควรเอ่ยถึง,
+3155,微妙,wēi miào,subtle,บดบาง,1,6,ละเอียดอ่อน,
+3156,心事,xīn shì,a load on one's mind; worry,ความวิตกกังวล,1,5,เรื่องหนักใจ,
+3157,心声,xīn shēng,heartfelt wish; inner voice,ความคิดเห็น,1,6,เสียงจากใจ,
+3161,心疼,xīn téng,to love dearly; to feel sorry for someone,เห็นใจ,1,5,รักจนเป็นห่วง; สงสาร,
+3167,忧郁,yōu yù,sullen; depressed,เศร้า,1,6,หม่นหมอง,
+3169,快餐,kuài cān,fast food; snack,อาหารสำเร็จรูป,1,6,อาหารจานด่วน,
+3170,念念不忘,niàn niàn bù wàng,to keep in mind constantly,ไม่ลืมเลย,1,5,คิดถึงไม่เคยลืม,
+3172,怀抱,huái bào,to hug; to cherish,กอด,1,6,โอบกอด; ทะนุถนอมไว้ในใจ,
+3173,怀着,huái zhe,harboring (a feeling),ด้วย,1,6,ด้วย(ความรู้สึก),"Second opinion: bound form meaning 'harboring (a feeling)', hard to gloss standalone; rendered ด้วย(ความรู้สึก)."
+3182,性质,xìng zhì,nature; characteristic,"ลักษณะ, คุณสมบัติ",1,5,"ลักษณะ, คุณสมบัติ",
+3185,恍然大悟,huǎng rán dà wù,idiom to suddenly realize,เข้าใจโดยกะทันหัน,1,5,ถึงบางอ้อ,
+3186,恐怖,kǒng bù,terrible; frightful,ร้ายแรง,1,5,น่ากลัว,
+3188,恭维,gōng wéi,to compliment; to praise,ชื่นชม,1,6,ยกยอ,"Nuance is flattery / complimenting (often insincere), hence ยกยอ rather than plain ชื่นชม."
+3189,息息相关,xī xī xiāng guān,closely bound up; intimately related,เกี่ยวพันกันอย่างใกล้ชิด,1,5,เกี่ยวพันกันอย่างใกล้ชิด,
+3195,悲剧,bēi jù,tragedy,เรื่องเศร้า,1,6,โศกนาฏกรรม,
+3206,想念,xiǎng niàn,to miss; to remember with longing,ขาดคน,1,5,คิดถึง,
+3224,户,hù,a household; door,"ครัวเรือน, ประตู",1,5,ครัวเรือน; ประตู,
+3225,房价,fáng jià,house price; cost of housing,ราคาบ้าน,1,5,ราคาบ้าน,
+3228,扇子,shàn zi,fan,พัดลม,1,5,พัด,
+3230,手臂,shǒu bì,arm; assistant,แขน,1,5,แขน,"EN-GLOSS-BUG: ""assistant"" is a questionable gloss for 手臂; the word means arm (only แขน translated)"
+3231,打交道,dǎ jiāo dào,to come into contact with; to have dealings,ติดต่อ,1,5,ติดต่อ,
+3239,打造,dǎ zào,to forge,สร้างสรรค์,1,5,สร้าง,
+3256,投,tóu,to throw; to cast,ส่ง,1,5,โยน; ขว้าง,
+3258,投票,tóu piào,to vote; to cast a vote,ลงคะแนน,1,6,ลงคะแนน,
+3264,抹,mǒ,to smear; to wipe,เช็ด,1,5,ทา; เช็ด,
+3265,押,yā,to mortgage; to pawn,นำวามตั้ง,1,6,จำนอง; จำนำ,
+3266,押金,yā jīn,deposit; down payment,เงินประกัน,1,5,เงินมัดจำ; เงินประกัน,
+3268,拄,zhǔ,to lean on; to prop on,พิงพิงข้อม,1,6,ยัน (ด้วยไม้เท้า),
+3269,担保,dān bǎo,to guarantee; to vouch for,รับประกัน,1,6,ค้ำประกัน; รับรอง,
+3282,拨通,bō tōng,to get through to someone on the phone,โทรออก,1,6,โทรติด,
+3287,拿走,ná zǒu,to take away,พากว่นไป,1,5,เอาไป; หยิบไป,
+3292,指责,zhǐ zé,to criticize; to find fault with,ตำหนิ,1,6,ตำหนิ,
+3298,捂,wǔ,to enclose; to cover with the hand,ปิดความ,1,6,ปิดด้วยมือ; อุด,
+3300,捉,zhuō,to clutch; to grab,จับได,1,6,จับ,
+3302,损,sǔn,to diminish; to damage,เสีย,1,6,เสียหาย,
+3305,捧,pěng,to hold up; to flatter,"ประคอง (ถือด้วยสองมือ), ยกยอ",1,5,ประคอง (ถือด้วยสองมือ); ยกยอ,
+3308,掌管,zhǎng guǎn,in charge of; to control,บริหาร,1,5,บริหาร,
+3309,掐,qiā,to pick; to pinch,บีบ,1,6,หยิก; บีบ,
+3311,探,tàn,to explore; to search out,หาหาดู,1,6,สำรวจ; ค้นหา,
+3312,探望,tàn wàng,to visit; to call on someone,เยี่ยมเยือน,1,6,เยี่ยมเยือน,
+3316,推开,tuī kāi,to push open; to push away,ผลักเปิด,1,4,ผลักออก; ผลักเปิด,
+3319,推进,tuī jìn,to impel; to carry forward,ส่งต่อ,1,6,ผลักดัน; ขับเคลื่อน,
+3322,掰,bāi,to break off (with hands),หักออก,1,5,หักออก,
+3328,提示,tí shì,to point out; to remind,บอกเตือน,1,5,เตือน; บอกใบ้,
+3330,插嘴,chā zuǐ,to interrupt; to butt in,แทรกความ,1,6,พูดแทรก; แทรกบทสนทนา,
+3333,揣摩,chuǎi mó,to analyze; to try to figure out,พิจารณา,1,6,ตรึกตรอง; คาดเดา,
+3334,揭露,jiē lù,to expose; to unmask,เปิดเผย,1,6,เปิดโปง; แฉ,
+3337,搞鬼,gǎo guǐ,to make mischief; to play tricks,ลวงลวน,1,6,เล่นตุกติก; มีเล่ห์เหลี่ยม,
+3349,摸索,mō suǒ,to feel about; to grope about,สำรวจด้วยการสัมผัส,1,6,คลำหา; งมหา,
+3350,撒,sā,to let go; to cast,ปล่อย,1,5,ปล่อย; โปรย,
+3353,操纵,cāo zòng,to operate; to control,จัดการ,1,6,ควบคุม; บงการ,
+3357,收回,shōu huí,to regain; to retake,นำกลับ,1,6,เรียกคืน; นำกลับ,
+3361,改动,gǎi dòng,to alter; to modify,เปลี่ยนแปลง,1,6,เปลี่ยนแปลง,
+3363,攻,gōng,to attack; to accuse,โจมตี,1,6,โจมตี,
+3367,政策,zhèng cè,policy,นโยบาย,1,5,นโยบาย,
+3369,救援,jiù yuán,to save; to support,ช่วยเหลือ,1,5,กู้ภัย; ช่วยเหลือ,
+3370,教养,jiào yǎng,to educate; to bring up,"อบรมเลี้ยงดู, การมีมารยาทดี",1,5,อบรมเลี้ยงดู; การมีมารยาทดี,
+3380,文献,wén xiàn,reference material,เอกสารอ้างอิง,1,5,เอกสารอ้างอิง,
+3385,新房,xīn fáng,brand new house; bridal chamber,บ้านใหม่,1,6,บ้านใหม่; ห้องหอ,
+3387,新生,xīn shēng,new; newborn,นักเรียนใหม่,1,4,แรกเกิด; นักเรียนใหม่,"EN-GLOSS-BUG: 新生 also means new student/freshman, omitted from English gloss; kept both senses"
+3395,无关紧要,wú guān jǐn yào,indifferent; insignificant,ไม่สำคัญ,1,5,ไม่สำคัญ,
+3396,无形,wú xíng,incorporeal; virtual,ไร้ตัวตน,1,5,จับต้องไม่ได้; ไร้รูปร่าง,
+3402,无私,wú sī,selfless; unselfish,เสียสละ,1,5,ไม่เห็นแก่ตัว,
+3403,无穷,wú qióng,endless; boundless,ไร้สิ้นสุด,1,6,ไม่มีที่สิ้นสุด,
+3408,日夜,rì yè,day and night; around the clock,วันและคืน,1,6,ทั้งวันทั้งคืน,
+3426,晕倒,yūn dǎo,to faint; to swoon,ลมหายใจ,1,5,"เป็นลม, หมดสติ",
+3432,晶莹,jīng yíng,sparkling and translucent,ส่องสว่างและใส,1,6,แวววาวใส,
+3439,曲折,qū zhé,winding,บิดเบี้ยว,1,6,คดเคี้ยว,
+3454,本人,běn rén,I; me,ตัวตนเองของฉัน,1,6,"ตัวฉันเอง, เจ้าตัว",
+3455,朴实,pǔ shí,plain; simple,ธรรมชาติง่าย,1,6,เรียบง่าย,
+3456,机灵,jī líng,clever; quick-witted,"ฉลาด, ไหวพริบดี",1,6,"ฉลาด, ไหวพริบดี",
+3460,杆,gān,pole,ไม้เท้า,1,6,"เสา, ไม้ยาว",
+3470,构思,gòu sī,to design; to plot,วางแผน,1,6,คิดวางโครงเรื่อง,conceive/plot ideas; วางแนวคิด also possible
+3480,核对,hé duì,to check; to verify,ตรวจสอบ,1,5,ตรวจสอบ,
+3482,栽培,zāi péi,to grow; to cultivate,ปลูกฝัง,1,5,เพาะปลูก,
+3483,桩,zhuāng,stump; stake,เสา,1,6,"หลัก, เสาเข็ม",
+3497,欠,qiàn,to owe; to lack,ขาด,1,5,ติดหนี้; ขาด,
+3498,欢乐,huān lè,gaiety; gladness,ความสุข,1,5,ความสุข,
+3500,欣欣向荣,xīn xīn xiàng róng,idiom flourishing; thriving,เจริญรุ่งเรือง,1,6,เจริญรุ่งเรือง,EN-GLOSS-BUG: stray 'idiom' label leaked into english gloss
+3501,款式,kuǎn shì,pattern; style,แบบลาย,1,6,แบบ,
+3508,止步,zhǐ bù,to halt; to stop,หยุดเท้า,1,5,หยุดเดิน,
+3509,正宗,zhèng zōng,orthodox school,แท้ๆ,1,5,"แท้, ต้นตำรับ",
+3510,正当,zhèng dāng,timely; just,เหมาะสม,1,6,"ในขณะที่, พอดีตอนที่",EN 'timely; just' = zhengdang 'right when'; temporal sense
+3511,正规,zhèng guī,regular; according to standards,ตามหลักเกณฑ์,1,6,"เป็นทางการ, ตามมาตรฐาน",
+3512,正视,zhèng shì,to face squarely,หันหน้าเข้าหา,1,6,เผชิญหน้ากับความจริง,
+3515,此后,cǐ hòu,after this; afterwards,หลังจากนั้น,1,5,หลังจากนั้น,
+3520,歼灭,jiān miè,to wipe out; to crush,ทำให้สิ้นซากลง,1,5,"กวาดล้าง, ทำลายล้าง",
+3521,殷勤,yīn qín,politely; solicitously,"สุภาพ, เอาใจใส่",1,6,"สุภาพ, เอาใจใส่",
+3522,毅力,yì lì,perseverance; willpower,ความอดทน,1,6,"ความมุ่งมั่น, ความเพียร",
+3523,毅然,yì rán,firmly; resolutely,อย่างกำหนด,1,6,อย่างเด็ดเดี่ยว,
+3526,比不上,bǐ bù shàng,can't compare with,ไม่เทียบได้,1,6,"เทียบไม่ได้, สู้ไม่ได้",
+3533,毫不,háo bù,hardly; not in the least,ไม่มีเลย,1,6,ไม่แม้แต่น้อย,
+3539,永久,yǒng jiǔ,everlasting; perpetual,ชั่วนิรันดร,1,6,"ถาวร, ชั่วนิรันดร์",
+3550,沟,gōu,ditch; gutter,ท่อน้ำ,1,6,"ร่องน้ำ, คู",
+3551,没意思,méi yì si,boring; of no interest,เบื่อ,1,4,"น่าเบื่อ, ไม่น่าสนใจ",
+3552,没收,mò shōu,to confiscate; to seize,ยึดเพื่อชาติ,1,5,"ริบ, ยึด",
+3559,法院,fǎ yuàn,court of law; court,ศาลกฎหมาย,1,5,ศาล,
+3561,泡沫,pào mò,foam; soap bubble,ฟองน้ำ,1,6,ฟอง,
+3563,泥,ní,mud; clay,โคลน,1,6,โคลน; ดินเหนียว,
+3565,注定,zhù dìng,to foreordain; to be bound to,"ถูกกำหนดไว้แล้ว, ลิขิต",1,6,"ถูกกำหนดไว้แล้ว, ลิขิต",
+3573,流域,liú yù,river basin; valley,"อ่างน้ำ,หุบเขา",1,6,ลุ่มน้ำ,
+3575,流水,liú shuǐ,running water; business turnover,"น้ำไหล,การหมุนเวียน",1,6,น้ำไหล; ยอดขายหมุนเวียน,
+3577,流程,liú chéng,course; stream,กระบวนการ,1,6,กระบวนการ,EN-GLOSS-BUG: 'course; stream' wrong for process/workflow; Thai follows real sense
+3579,测试,cè shì,to test; a test,ทดสอบ,1,6,ทดสอบ,
+3586,海浪,hǎi làng,sea wave,คลื่นทะเล,1,6,คลื่นทะเล,
+3590,涌,yǒng,to bubble up; to rush forth,พ่วง,1,6,"ทะลัก, พุ่งขึ้น",
+3592,深入人心,shēn rù rén xīn,to win people's hearts,ลึกลงในใจ,1,6,หยั่งลึกในใจผู้คน,idiom: idea rooted in people's minds; 'win hearts' is one reading
+3594,深夜,shēn yè,very late at night,ดึกมึง,1,6,"ดึกดื่น, ดึกมาก",fixed typo: original thai_current had rude token
+3599,清明,qīng míng,Pure Brightness Festival or Tomb Sweeping Day,ชิงหมิงเทศกาล,1,5,"เทศกาลเช็งเม้ง, เทศกาลชิงหมิง",
+3601,清洁,qīng jié,clean; to clean,สะอาด,1,6,สะอาด; ทำความสะอาด,
+3604,渠道,qú dào,channel; avenue,"ช่องทาง,ท่อน้ำ",1,6,ช่องทาง,
+3610,滚,gǔn,to boil; to roll,กลิ้ง,1,5,กลิ้ง; เดือด,
+3612,满怀,mǎn huái,to be filled with (emotion),หัวใจเต็มไปด้วย,1,5,เต็มเปี่ยมไปด้วย,
+3616,演绎,yǎn yì,of a story etc to unfold; to play out,"บรรยาย,แสดง",1,6,ถ่ายทอด; แสดง,
+3618,潇洒,xiāo sǎ,confident and at ease; free and easy,"ร่วมรื่น,สบาย",1,6,สบายๆ ไม่เคร่งเครียด,
+3620,激起,jī qǐ,to arouse; to evoke,"กระตุ้น,ยุแหล",1,6,"กระตุ้น, ปลุกเร้า",
+3622,灌溉,guàn gài,to irrigate,ชลประทาน,1,6,ชลประทาน,
+3626,火辣辣,huǒ là là,scorching hot; stinging,ร้อนทำให้เจ็บ,1,6,ร้อนแสบ,
+3627,灭绝,miè jué,to become extinct; to die out,สูญพันธุ์,1,6,สูญพันธุ์,
+3631,灾害,zāi hài,calamity; disaster,ความเสียหาย,1,5,ภัยพิบัติ,
+3634,点火,diǎn huǒ,to ignite; to light a fire,จุดไฟ,1,5,จุดไฟ,
+3636,炼,liàn,to refine; to smelt,ชำระ,1,5,ถลุง; หลอม,
+3637,烂,làn,soft; mushy,"อ่อน,ละลาย",1,6,"เละ, เปื่อย",
+3641,烦躁,fán zào,jittery; twitchy,อึดอัด,1,5,กระวนกระวาย; หงุดหงิด,
+3644,热水,rè shuǐ,hot water,น้ำอุ่น,1,3,น้ำร้อน,
+3650,熊,xióng,bear,หมี,1,6,หมี,
+3651,熏陶,xūn táo,to seep in; to influence,เป็นอิทธิพล,1,6,หล่อหลอม; ซึมซับ,
+3653,爆,bào,to explode; to burst,"ระเบิด,ผัดไว",1,6,ระเบิด; ปะทุ,
+3654,爆发,bào fā,to break out,ระเบิด,1,5,ปะทุ,
+3659,父女,fù nǚ,father and daughter,บิดาและบุตรสาว,1,4,พ่อกับลูกสาว,
+3661,牌子,pái zi,sign; trademark,เครื่องหมาย,1,5,ป้าย; ยี่ห้อ,
+3663,牢,láo,firm; secure,"แข็ง,มั่นคง",1,6,"มั่นคง, แน่นหนา",
+3664,牢固,láo gù,firm; secure,"มั่นคง,ทึ่ง",1,6,"มั่นคง, แน่นหนา",
+3666,特产,tè chǎn,special local product; regional specialty,พื้นเมืองเฉพาะ,1,6,ของขึ้นชื่อประจำถิ่น,
+3669,特长,tè cháng,special skill; strong point,จุดเด่น,1,6,ความถนัดพิเศษ; จุดเด่น,
+3672,状元,zhuàng yuán,top scorer (in an exam),ผู้ที่ทดสอบแรก,1,6,ผู้สอบได้ที่หนึ่ง,
+3687,现状,xiàn zhuàng,current situation,สถานการณ์ปัจจุบัน,1,5,สถานการณ์ปัจจุบัน,
+3689,班长,bān zhǎng,class monitor; squad leader,หัวหน้าชั้นเรียน,1,4,หัวหน้าห้อง; หัวหน้าหมู่,
+3691,球迷,qiú mí,fan,แฟนเบสบอล,1,5,แฟนบอล; แฟนกีฬา,
+3697,甜蜜,tián mì,sweet; happy,"หวาน,มีความสุข",1,6,หวานชื่น; มีความสุข,
+3700,生成,shēng chéng,to generate; to be born with,สร้าง,1,5,สร้าง,
+3703,生育,shēng yù,to give birth to; to bear,เลี้ยงลูก,1,6,ให้กำเนิด; มีลูก,
+3706,用得着,yòng dé zhe,to be useful; to need,ใช้ได้,1,5,ต้องใช้; มีประโยชน์,
+3707,用意,yòng yì,intention; purpose,จุดประสงค์,1,6,เจตนา; จุดประสงค์,
+3710,甩,shuǎi,to throw; to fling,โยน,1,5,เหวี่ยง; สะบัด,
+3712,电视台,diàn shì tái,television station,สถานีโทรทัศน์,1,5,สถานีโทรทัศน์,
+3714,界限,jiè xiàn,boundary,แนวเขต,1,6,ขอบเขต; เส้นแบ่ง,
+3718,番,fān,foreign; a turn (classifier),ชาติต่างประเทศ,1,6,ครั้ง (ลักษณนาม); ต่างชาติ,"番 here is chiefly a classifier (一番 = a round/bout); led with that, kept 'foreign' as secondary"
+3723,疲惫不堪,pí bèi bù kān,exhausted; fatigued to the extreme,เหนื่อยหนัก,1,5,เหนื่อยล้าหมดแรง,
+3725,痒,yǎng,itchy; to itch,คัน,1,5,คัน,
+3748,相通,xiāng tōng,interlinked; connected,"เชื่อมต่อ,บ่งบอก",1,6,เชื่อมถึงกัน,
+3750,省事,shěng shì,to simplify matters; to save trouble,"ประหยัดความยุ่งยาก, สะดวก",1,5,"สะดวก, ไม่ยุ่งยาก",
+3751,眉开眼笑,méi kāi yǎn xiào,beaming with joy; all smiles,ยิ้มแย้มแต่งตัว,1,5,ยิ้มแย้มแจ่มใส,
+3755,看好,kàn hǎo,to keep an eye on,มองดี,1,4,มองในแง่ดี; จับตาดู,EN-GLOSS-BUG: pinyin kan hao (4th-tone 看) = 'be optimistic/bullish about'; 'to keep an eye on' is the kan hao (1st-tone) reading. Led with the optimistic sense per pinyin.
+3760,真诚,zhēn chéng,sincere; genuine,"สัตย์จริง, จริงใจ",1,5,จริงใจ,
+3762,眼神,yǎn shén,expression in one's eyes,การมองตาสัญญา,1,6,แววตา,
+3763,眼色,yǎn sè,meaningful glance; a look,ท่าทางตา,1,6,การส่งสายตา,
+3766,着眼,zhuó yǎn,to focus on; to keep in mind,มองการณ์,1,6,มุ่งเน้น; คำนึงถึง,
+3771,瞪,dèng,to stare; to glare,จ้องมอง,1,6,จ้องเขม็ง; ถลึงตา,
+3772,知觉,zhī jué,perception; consciousness,"การรับรู้, สติ",1,6,การรับรู้; สติสัมปชัญญะ,
+3777,码头,mǎ tóu,wharf; dock,ท่าเรือ,1,6,ท่าเรือ,
+3786,礼拜,lǐ bài,to attend a religious service; week,"สัปดาห์, การบูชา",1,6,นมัสการ(พระเจ้า); สัปดาห์,
+3787,社,shè,society; organization,สังคม,1,4,สมาคม; หน่วยงาน,
+3790,神仙,shén xiān,Daoist immortal; supernatural entity,"เทพเจ้า, เทพสิทธิ์",1,5,เซียน; เทพเจ้า,
+3791,神圣,shén shèng,divine; hallow,ศักดิ์สิทธิ์,1,6,ศักดิ์สิทธิ์,
+3796,私自,sī zì,private; personal,"ลับๆ, โดยไม่บอก",1,6,โดยพลการ; ลับๆ,EN-GLOSS-BUG: 私自 is adverbial 'on one's own / without authorization'; 'private; personal' points to 私人 instead.
+3797,科,kē,branch of study; administrative section,"สาขา, หน่วยงาน",1,6,สาขาวิชา; แผนก,
+3804,稍后,shāo hòu,in a little while; shortly after,หลังจากนั้นไม่นาน,1,4,อีกสักครู่; ในภายหลัง,
+3805,稳,wěn,settled; steady,"มั่น, เสถียร",1,6,"มั่น, เสถียร",
+3809,穿越,chuān yuè,to pass through; to traverse,ผ่าน,1,6,ข้ามผ่าน; ทะลุ,
+3812,窘迫,jiǒng pò,poverty-stricken; very poor,ยากจน,1,5,ลำบากใจอึดอัด; ขัดสน,"EN-GLOSS-BUG: 窘迫 mainly means embarrassed / in an awkward or hard-pressed spot, not only 'poor'"
+3814,竖,shù,to erect; vertical,"ตั้ง, แนวตั้ง",1,6,ตั้งขึ้น; แนวตั้ง,
+3821,笔试,bǐ shì,written examination; paper test,การสอบเขียน,1,4,การสอบข้อเขียน,
+3830,简陋,jiǎn lòu,simple and crude,เรียบง่ายและหยาบ,1,5,เรียบง่ายซอมซ่อ,
+3831,算了,suàn le,let it be; let it pass,ลืมไปเสีย,1,4,"ช่างเถอะ, ช่างมันเถอะ",
+3832,管,guǎn,to manage; to control,ดูแล,1,4,จัดการ; ควบคุม,
+3833,管用,guǎn yòng,efficacious; useful,มีประโยชน์,1,5,ได้ผล; ใช้ได้จริง,
+3836,精简,jīng jiǎn,to simplify; to reduce,"ลดเบา, ย่อ",1,6,ตัดทอน; ลดขนาด,
+3846,纪念日,jì niàn rì,day of commemoration; memorial day,วันสำเร็จฉลอง,1,5,วันที่ระลึก; วันครบรอบ,
+3850,练,liàn,to practice; to train,ซ้อม,1,3,ซ้อม,
+3860,绝缘,jué yuán,to have no contact with; to be cut off from,"ไม่ติดต่อกับ, ตัดขาดจากกัน",1,5,ตัดขาดไม่เกี่ยวข้อง; เป็นฉนวน,
+3862,绣,xiù,to embroider; embroidery,ปักหลวม,1,5,ปัก; งานปัก,
+3863,绿地,lǜ dì,green area,บริเวณสีเขียว,1,6,พื้นที่สีเขียว,
+3873,罢了,bà le,that's all; nothing more (particle),จบแค่นั้น,1,5,เท่านั้นเอง (คำลงท้ายบอกว่าไม่มีอะไรมากกว่านั้น),
+3875,罪魁祸首,zuì kuí huò shǒu,idiom criminal ringleader,คนร้ายสำคัญ,1,6,ตัวการใหญ่; ต้นเหตุสำคัญ,
+3879,美景,měi jǐng,beautiful scenery,ทัศนียภาพ,1,4,ทิวทัศน์งดงาม,
+3882,翻天覆地,fān tiān fù dì,earth-shattering (idiom),พลิกฟ้าคว่ำแผ่นดิน,1,6,เปลี่ยนแปลงครั้งใหญ่,
+3890,耗费,hào fèi,to waste; to spend,"ใช้, เสียเวลา",1,6,สิ้นเปลือง; ใช้ไป,
+3892,耳目一新,ěr mù yī xīn,a pleasant change; a breath of fresh air,"มองใหม่, ฟังใหม่",1,6,แปลกใหม่สดชื่น; ให้ความรู้สึกสดใหม่,
+3897,股票,gǔ piào,share certificate; stock,หุ้น,1,5,หุ้น,
+3899,肥料,féi liào,fertilizer; manure,ปุ๋ย,1,6,ปุ๋ย,
+3901,肩,jiān,shoulder; to shoulder,ไหล่,1,5,ไหล่; แบกรับ,
+3904,背诵,bèi sòng,to recite; to repeat from memory,"อ่านจำ, ท่องจำ",1,6,ท่องจำ; ท่อง,
+3905,胎,tāi,fetus; classifier for litters,"ทารก, ลูก",1,6,ทารกในครรภ์; ครรภ์,
+3909,胸部,xiōng bù,chest; bosom,หน้าอกส่วนบน,1,6,หน้าอก; ทรวงอก,
+3913,脑海,nǎo hǎi,the mind; the brain,"ใจ, สมอง",1,6,ห้วงความคิด; ในหัว,
+3915,脑袋,nǎo dài,head; skull,"ศรีษะ, หัว",1,6,หัว; ศีรษะ,
+3917,脱口而出,tuō kǒu ér chū,idiom to blurt out; to let slip,พูดออกมาอย่างไม่ได้คิด,1,6,พูดโพล่งออกมา,
+3923,自主,zì zhǔ,to act independently,อิสระ,1,6,ตัดสินใจเอง; เป็นอิสระ,
+3927,自发,zì fā,spontaneous,เกิดขึ้นเอง,1,6,เกิดขึ้นเอง,
+3932,自立,zì lì,independent; self-reliant,"เป็นอิสระ, อาศัยตนเอง",1,6,พึ่งพาตนเอง; ยืนได้ด้วยตัวเอง,
+3936,航行,háng xíng,to sail; to fly,"แล่นเรือ, บิน",1,6,แล่นเรือ; บิน,
+3941,艳丽,yàn lì,gorgeous; garish and beautiful,"งดงาม, ประหลาด",1,6,งดงามสดใส; ฉูดฉาด,
+3945,节气,jié qì,solar term,ฤดูกาล,1,6,ช่วงฤดูกาลตามปฏิทินจีน,no exact Thai for 'solar term'; glossed descriptively
+3947,芝麻,zhī má,sesame,งาดำ,1,6,งา,
+3952,英雄,yīng xióng,hero,วีรชน,1,6,วีรบุรุษ; ฮีโร่,
+3960,药方,yào fāng,prescription,ตำรับสูตร,1,5,ตำรับยา; ใบสั่งยา,
+3961,菜市场,cài shì chǎng,food market,ตลาดผัก,1,4,ตลาดสด,
+3963,蓝图,lán tú,blueprint,"แบบขาว, แผนแนวคิด",1,6,พิมพ์เขียว; แผนแม่บท,
+3964,蕴藏,yùn cáng,to hold in store; to contain,เก็บไว้ภายใน,1,6,มีอยู่ภายใน,
+3970,虚构,xū gòu,to make up; fabrication,สร้างสรรค์ขึ้นมา,1,6,แต่งขึ้น; กุเรื่อง,
+3973,蚊子,wén zi,mosquito,ยุง,1,5,ยุง,
+3975,融合,róng hé,a mixture; an amalgam,ผสมกลาย,1,6,หลอมรวม; ผสมกลมกลืน,
+3978,街头,jiē tóu,street,ตรอกถนน,1,5,ริมถนน; ตามท้องถนน,
+3980,补,bǔ,to repair; to patch,ซ่อม,1,5,ซ่อม; ปะ,
+3982,表态,biǎo tài,to state one's position,แสดงทัศนะ,1,5,แสดงจุดยืน; แสดงท่าที,
+3983,衬托,chèn tuō,to serve to highlight,"ขับให้เด่น, เสริมให้โดดเด่น",1,5,"ขับให้เด่น, เสริมให้โดดเด่น",
+3988,裁,cái,to cut out; to cut,เฉือก,1,5,ตัด; เจียน,
+3989,裁决,cái jué,ruling; adjudication,คำตัดสินของศาล,1,5,คำตัดสิน; คำวินิจฉัย,
+3993,要强,yào qiáng,eager to excel; eager to get ahead in life,ปรารถนาชนะใจ,1,5,อยากเอาชนะเก่งกว่าคนอื่น; ทะเยอทะยาน,
+3994,见义勇为,jiàn yì yǒng wéi,"idiom, from the Analects to step in and help",เห็นความชอบธรรมแล้วกระทำกล้า,1,6,กล้าทำในสิ่งที่ถูกต้อง; ลงมือช่วยเมื่อเห็นความอยุติธรรม,"EN-GLOSS-BUG: garbled gloss 'idiom, from the Analects to step in and help'; real sense = act bravely for what is right"
+4001,解开,jiě kāi,to untie; to undo,ปลดออก,1,6,ปลดออก,
+4003,解读,jiě dú,to decipher; to decode,อ่านแล้วเข้าใจ,1,6,ตีความ; ถอดรหัส,
+4004,解除,jiě chú,to remove; to sack,"ยกเลิก, จำหน่าย",1,6,ยกเลิก; ปลดออกจากตำแหน่ง,
+4005,触动,chù dòng,to touch; to stir up,"สัมผัส, กระทบใจ",1,6,กระทบใจ; สัมผัส,
+4007,言辞,yán cí,words; expression,ถ้อยแถลง,1,6,ถ้อยคำ; คำพูด,
+4014,讲话,jiǎng huà,a speech; to speak,การปราศรัย,1,4,พูด; ปราศรัย,
+4018,证件,zhèng jiàn,certificate,เอกสารแสดงตัวตน,1,5,เอกสารแสดงตัวตน,
+4019,证据,zhèng jù,evidence; proof,หลักฐาน,1,6,หลักฐาน,
+4023,试用,shì yòng,to try something out; to be on probation,ใช้ทดลอง,1,4,ทดลองใช้; ทดลองงาน,
+4038,谈起,tán qǐ,to mention; to speak of,พูดเล่า,1,6,พูดถึง; เอ่ยถึง,
+4042,豆浆,dòu jiāng,soy milk,นมถั่ว,1,6,น้ำเต้าหู้; นมถั่วเหลือง,
+4048,账,zhàng,account; bill,"บัญชี, ค่า",1,5,บัญชี; บิล,
+4050,质地,zhì dì,texture; background,"วัฒนภูมิ, เนื้อแน่น",1,6,เนื้อสัมผัส; คุณภาพวัสดุ,EN-GLOSS-BUG: 质地 = texture/quality of material; 'background' is not a standard sense
+4055,贯通,guàn tōng,to link up; to thread together,เชื่อมให้ยาว,1,6,เชื่อมต่อ; เข้าใจถ่องแท้,
+4056,贴切,tiē qiè,close-fitting; closest,มีความเกี่ยวข้องกับ,1,6,เหมาะเจาะ; เหมาะสม,"EN-GLOSS-BUG: 贴切 means apt/fitting (esp. of wording), not 'close-fitting/closest'"
+4059,贿赂,huì lù,to bribe; a bribe,ดำเนินการประพฤติมิชอบ,1,6,ติดสินบน; สินบน,
+4068,赶到,gǎn dào,to hurry,ไปถึงเร็ว,1,6,รีบไปถึง,
+4069,赶忙,gǎn máng,to hurry; to hasten,รีบไป,1,5,รีบไป,
+4077,超,chāo,to exceed; to overtake,"เกิน, เหวี่ยงจม",1,6,เกิน; แซง,
+4086,趣味,qù wèi,fun; interest,ความสนใจ,1,6,ความสนุก; รสนิยม,
+4089,路况,lù kuàng,road condition,สภาพถนน,1,4,สภาพถนน,
+4093,路过,lù guò,to pass by or through,ผ่านไป,1,4,ผ่านไป,
+4095,跳远,tiào yuǎn,long jump,กระโดดยาว,1,6,กระโดดไกล,
+4096,踊跃,yǒng yuè,to leap; to jump,กระโดดลุกขึ้น,1,6,กระตือรือร้น; กระโจน,EN-GLOSS-BUG: 踊跃 in modern use means eagerly/enthusiastically; 'to leap/jump' is only the literal sense
+4097,踏上,tà shàng,to set foot on; to step on or into,เหยียบขึ้นไป,1,5,ก้าวขึ้นสู่; เหยียบย่าง,
+4098,蹦,bèng,to jump; to bounce,ตุยกระดด,1,6,กระโดด; เด้ง,
+4099,蹭,cèng,to rub against; to walk slowly,"ถู, เดินอืดอาด",1,6,ถู; เดินอืดอาด,
+4107,躲避,duǒ bì,to hide; to evade,หลบหนี,1,5,หลบเลี่ยง; หลบ,
+4130,边缘,biān yuán,edge; fringe,ขอบริ่ม,1,6,ขอบ; ชายขอบ,
+4132,过不去,guò bù qù,to make life difficult for; to embarrass,ไม่สามารถผ่านไป,1,4,จงใจทำให้ลำบากใจ; หาเรื่อง,
+4140,过瘾,guò yǐn,to satisfy a craving; thrilling,คลายความหิวของหา,1,6,สะใจ; จุใจ,
+4145,迎合,yíng hé,to cater to; to pander to,พาง่วนพนันให้,1,6,เอาใจ; ประจบ,
+4146,迎来,yíng lái,to welcome,ต้อนรับความมา,1,6,ต้อนรับการมาถึง; ก้าวสู่,
+4149,近代,jìn dài,modern times; recent era,เวลาใกล้เคียง,1,6,สมัยใหม่; ยุคใกล้ปัจจุบัน,
+4151,近视,jìn shì,myopic; nearsighted,เห็นใกล้ไม่ไกล,1,6,สายตาสั้น,
+4163,迫害,pò hài,to persecute,ทำให้ทรมาน,1,6,กดขี่ข่มเหง; ประทุษร้าย,
+4164,迷,mí,to bewilder; crazy about,"หลงใหล, บ้าคลั่ง",1,5,หลงใหล; ทำให้งงงวย,
+4168,追逐,zhuī zhú,to chase; to pursue vigorously,ไล่ตามอย่างหลง,1,6,ไล่ตาม; ไล่กวด,
+4175,选手,xuǎn shǒu,athlete; contestant,นักกีฬา,1,6,ผู้เข้าแข่งขัน; นักกีฬา,
+4177,透过,tòu guò,to pass through; to penetrate,ผ่านไป,1,6,ทะลุผ่าน; ผ่านทาง,
+4181,通信,tōng xìn,to communicate; correspond,โต้ตอบจดหมาย,1,6,ติดต่อสื่อสาร; เขียนจดหมายโต้ตอบ,
+4193,遭遇,zāo yù,to meet with; to encounter,"พบเจอ, ประสบ",1,5,"พบเจอ, ประสบ",
+4200,部位,bù wèi,part,ตำแหน่ง,1,6,ส่วน; บริเวณ,
+4204,酗酒,xù jiǔ,heavy drinking; to get drunk,ดื่มสุรามาก,1,6,ดื่มเหล้าหนัก,
+4205,酝酿,yùn niàng,to ferment; to brew (plans),หมักเหล้า,1,6,บ่มเพาะ; หมัก,lead is figurative 'brew (plans)'; หมัก = literal ferment
+4207,酸甜苦辣,suān tián kǔ là,joys and sorrows of life,เปรี้ยว หวาน ขม เผ็ด,1,4,"สุขทุกข์ของชีวิต, รสชาติชีวิต",idiom = joys and sorrows of life; current is literal flavors
+4208,酿造,niàng zào,to brew; to make by fermentation,"หมักขึ้น, คิดค้น",1,5,หมักบ่ม,
+4209,醉,zuì,intoxicated,"เมา, ชึ่มเชื่อ",1,5,เมา; หลงใหล,current 'ชึ่มเชื่อ' looks like a typo
+4211,采,cǎi,to pick; to pluck,เก็บ,1,6,"เก็บ, เด็ด",
+4213,释放,shì fàng,to release; to set free,"ปล่อย, คลายตัว",1,5,"ปล่อย, ปลดปล่อย",
+4217,金,jīn,gold; metal,ทอง,1,6,ทอง; โลหะ,
+4227,铃声,líng shēng,ring; ringtone,"เสียงระฆัง, เสียงเรียก",1,5,เสียงกริ่ง; เสียงเรียกเข้า,
+4229,铭记,míng jì,to engrave in one's memory,"จดจำลึก, ยึดมั่น",1,5,"จดจำไว้ไม่ลืม, จารึกในใจ",
+4231,铺,pù,store,"ร้าน, ปูลง",1,5,ร้านค้า,current ปูลง is the pū 'to spread' reading; pinyin here is pù = shop
+4232,销,xiāo,to sell; to cancel,"ขาย, ยกเลิก",1,6,ขาย; ยกเลิก,
+4233,错觉,cuò jué,misconception; illusion,ภาพหลวง,1,6,ภาพลวงตา; ความเข้าใจผิด,current 'ภาพหลวง' typo for ภาพลวงตา
+4235,镜头,jìng tóu,camera lens; camera shot,เลนส์กล้อง,1,6,เลนส์กล้อง; ช็อตภาพ,
+4237,长期以来,cháng qī yǐ lái,for a long time,มาเป็นเวลานาน,1,5,มาเป็นเวลานาน,
+4238,长跑,cháng pǎo,long-distance running,วิ่งไกล,1,5,วิ่งระยะไกล,
+4240,门槛,mén kǎn,doorstep; sill,เกณฑ์เข้า,1,6,ธรณีประตู; เกณฑ์ขั้นต่ำ,EN gloss literal only; figurative 'threshold/barrier' added as 2nd sense
+4242,门诊,mén zhěn,outpatient service,คลินิก,1,6,แผนกผู้ป่วยนอก,
+4250,防治,fáng zhì,to prevent and cure; prevention and cure,ป้องกันรักษา,1,6,ป้องกันและรักษา,
+4252,阴影,yīn yǐng,shadow,"เงา, ความมืด",1,5,เงา,
+4254,阶层,jiē céng,social class,"ชั้นหนึ่ง, ลำดับชั้น",1,5,ชนชั้น,
+4256,陈列,chén liè,to display; to exhibit,จัดแสดง,1,6,จัดแสดง,
+4260,院,yuàn,courtyard; institution,สถาบัน,1,6,สถาบัน; ลานบ้าน,
+4261,陨石,yǔn shí,meteorite; aerolite,อุกาบาต,1,5,อุกกาบาต,current 'อุกาบาต' misspelling
+4263,陷,xiàn,pitfall; trap,"บ่อ, กับดัก",1,5,"หลุมพราง, กับดัก",
+4264,随处可见,suí chù kě jiàn,can be seen everywhere,เห็นได้ทั่วไป,1,6,เห็นได้ทั่วไป,
+4270,隔离,gé lí,to separate; to isolate,แยก,1,6,แยกออก; กักตัว,
+4271,隔阂,gé hé,misunderstanding; estrangement,ความเข้าใจผิด,1,6,"ความห่างเหิน, ช่องว่างระหว่างกัน",
+4272,难以,nán yǐ,hard to,"ยาก, ลำบาก",1,5,ยากที่จะ,
+4274,难听,nán tīng,unpleasant to hear; coarse,เสียงแหลว,1,4,ฟังไม่เพราะ; หยาบคาย,current 'เสียงแหลว' is not a standard word; sense = unpleasant to hear / coarse
+4278,雄伟,xióng wěi,grand; imposing,"งดงาม, ยิ่งใหญ่",1,5,ยิ่งใหญ่อลังการ,
+4284,震惊,zhèn jīng,to shock; to astonish,ตกใจ,1,6,"ตกตะลึง, ตกใจ",
+4285,青蛙,qīng wā,frog; old ugly guy,กบ,1,6,กบ,"EN-GLOSS-BUG: 'old ugly guy' is derogatory internet slang, not a dictionary sense; real meaning = frog"
+4287,静止,jìng zhǐ,still; immobile,นิ่ง,1,6,หยุดนิ่ง,
+4291,韧性,rèn xìng,toughness,ความยืดหยุ่น,1,5,"ความเหนียว, ความยืดหยุ่น",
+4293,音像,yīn xiàng,audio and video; audiovisual,เสียงภาพ,1,6,ภาพและเสียง,
+4294,顶级,dǐng jí,top-notch; first-rate,ระดับสูง,1,6,"ระดับสูงสุด, ชั้นยอด",
+4296,顺其自然,shùn qí zì rán,to let nature take its course,ตามธรรมชาติ,1,5,ปล่อยให้เป็นไปตามธรรมชาติ,
+4297,顺手,shùn shǒu,conveniently; in passing,อย่างไม่เสียหาย,1,4,"สะดวกมือ, ทำไปในตัว",current 'อย่างไม่เสียหาย' (=without damage) is wrong; 顺手 = conveniently / in passing
+4298,须,xū,must; to have to,ต้องจำเป็น,1,4,"ต้อง, จำเป็นต้อง",
+4299,顽强,wán qiáng,tenacious; hard to defeat,ดื้อ,1,6,"ทรหดอดทน, ไม่ยอมแพ้",current ดื้อ (stubborn) has wrong negative connotation; 顽强 = tenacious / indomitable
+4300,顾,gù,to look after; to consider,ดูแล,1,6,ดูแล; คำนึงถึง,
+4303,预期,yù qī,to expect; to anticipate,คาดการณ์,1,5,คาดการณ์,
+4308,频道,pín dào,frequency; television channel,"ช่อง, ความถี่",1,5,ช่อง; คลื่นความถี่,'frequency' sense is imprecise — that is 频率; 频道 = channel
+4312,风趣,fēng qù,charm; humor,ความเสน่ห์,1,6,"อารมณ์ขัน, ไหวพริบชวนหัว",
+4313,风采,fēng cǎi,svelte; elegant manner,ความงดงาม,1,5,ความสง่างาม,
+4315,餐桌,cān zhuō,dining table; dinner table,โต๊ะรับประทาน,1,5,"โต๊ะอาหาร, โต๊ะกินข้าว",
+4317,饭碗,fàn wǎn,rice bowl,"อาชีพ, งาน",1,5,ชามข้าว; อาชีพการงาน,
+4320,首府,shǒu fǔ,capital city of an autonomous region,เมืองหลวง,1,6,"เมืองหลวงของมณฑล, เมืองเอก","regional/provincial capital, distinct from 首都 national capital"
+4322,马路,mǎ lù,street; road,ถนน,1,4,ถนน,
+4323,驱动,qū dòng,to drive; to propel,ขับเคลื่อน,1,6,ขับเคลื่อน,
+4324,驱逐,qū zhú,to expel; to deport,ไล่ออก,1,6,ขับไล่; เนรเทศ,
+4326,骤然,zhòu rán,suddenly; abruptly,ทันที,1,6,"อย่างกะทันหัน, ทันทีทันใด",
+4329,高尚,gāo shàng,noble; lofty,สูงส่วน,1,6,"สูงส่ง, มีคุณธรรม",current 'สูงส่วน' typo for สูงส่ง
+4331,高手,gāo shǒu,expert; past master,ผู้เชี่ยวชาญ,1,4,"ผู้เชี่ยวชาญ, เซียน",
+4333,高贵,gāo guì,grandeur; noble,สูงส่วน,1,6,"สูงส่ง, สูงศักดิ์",current 'สูงส่วน' typo for สูงส่ง
+4335,高速,gāo sù,high speed; expressway,ความเร็วสูง,1,6,ความเร็วสูง; ทางด่วน,
+4337,鲜美,xiān měi,fresh and delicious; tasty,สดชื่นอร่อย,1,6,"อร่อยกลมกล่อม, รสเลิศ",
+4340,鸦雀无声,yā què wú shēng,dead silence; not a sound,นิ่งเงียบ,1,5,"เงียบกริบ, เงียบสนิท",
+4341,麻木,má mù,numb; insensitive,"ชา, มึนชา",1,6,ชา; เฉยชา,
+4344,默读,mò dú,to read in silence,อ่านเงียบ,1,6,อ่านในใจ,
+4345,默默,mò mò,in silence; not speaking,เงียบ,1,6,"อย่างเงียบๆ, โดยไม่พูดสักคำ",
