@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { pickDistractors } from "../src/distractors.js";
 
 const mk = (h, e, t, f) => ({ h, p: "x", e, t, lv: 1, f, ta: 1, tt: 1, c: 1, n: 1, fs: f });
+const mk2 = (h, e, t, f) => ({ h, e, t, f });
 const pool = [
   mk("目标", "to run; to jog", "วิ่ง", 100),
   mk("跑步", "to run (sport)", "วิ่งออกกำลัง", 90), // same content token "run" as target -> still excluded (genuinely same meaning)
@@ -145,5 +146,43 @@ describe("pickDistractors", () => {
     const hanzi = d.map(w => w.h);
     expect(hanzi).not.toContain("廖2");
     expect(hanzi.sort()).toEqual(["吃", "大", "水"]);
+  });
+
+  it("excludes a distractor whose Thai first sense matches the target's", () => {
+    const pool = [
+      mk2("看", "to look", "ดู; มอง", 100),      // target
+      mk2("望", "to gaze", "มอง, ดู", 90),        // Thai overlap -> excluded
+      mk2("吃", "to eat", "กิน", 80),
+      mk2("水", "water", "น้ำ", 70),
+      mk2("大", "big", "ใหญ่", 60),
+    ];
+    const d = pickDistractors(pool, pool[0], firstRand);
+    expect(d.map(w => w.h)).not.toContain("望");
+  });
+  it("keeps Thai-distinct candidates even when short", () => {
+    const pool = [
+      mk2("看", "to look", "ดู", 100),
+      mk2("门", "door", "ประตู", 90),
+      mk2("吃", "to eat", "กิน", 80),
+      mk2("水", "water", "น้ำ", 70),
+    ];
+    expect(pickDistractors(pool, pool[0], firstRand)).toHaveLength(3);
+  });
+
+  // The two tests above use firstRand (deterministic shuffle), which happens to rotate
+  // 望 to the end of the candidate list regardless of Thai logic -- they'd pass even
+  // without sameThai. This loop uses Math.random across many draws so it actually goes
+  // red without the implementation (old code only excludes exact-string Thai matches;
+  // "ดู; มอง" !== "มอง, ดู" as strings, so 望 slips through the old filter).
+  it("excludes Thai first-sense synonym overlap across shuffles", () => {
+    const pool = [
+      mk2("看", "to look", "ดู; มอง", 100),
+      mk2("望", "to gaze", "มอง, ดู", 90),
+      mk2("吃", "to eat", "กิน", 80),
+      mk2("水", "water", "น้ำ", 70),
+    ];
+    for (let i = 0; i < 30; i++) {
+      expect(pickDistractors(pool, pool[0], Math.random).map(w => w.h)).not.toContain("望");
+    }
   });
 });
