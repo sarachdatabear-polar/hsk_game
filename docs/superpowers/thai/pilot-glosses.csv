@@ -1,7 +1,7 @@
 hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
 的,de,of; ~'s,คำแสดงความเป็นเจ้าของ (ของ),3433,1,ของ (แสดงความเป็นเจ้าของ),
 了,le,completed action marker,คำบอกเหตุการณ์เสร็จสิ้น/เกิดขึ้นแล้ว,978,1,แล้ว (บอกว่าเกิดขึ้น/เสร็จแล้ว),
-是,shì,to be; correct,"เป็น, คือ, ใช่",837,1,เป็น; ใช่,split copula (เป็น) vs affirmation (ใช่); dropped คือ to keep max-two
+是,shì,to be; correct,"เป็น, คือ, ใช่",837,1,คือ; ใช่,Jordan calibration: copula leads with คือ
 很,hěn,very; quite,มาก,570,1,มาก,
 在,zài,to be at; (progressive marker),อยู่ที่; กำลัง (ทำอยู่),534,1,อยู่ที่; กำลัง (ทำอยู่),
 有,yǒu,to have; there is,มี,450,1,มี,
@@ -38,7 +38,7 @@ hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
 说,shuō,to speak; to talk,"พูด, บอก",144,1,"พูด, บอก",
 更,gèng,even more; further,"ยิ่ง, ยิ่งขึ้น, มากกว่า",138,3,"ยิ่งขึ้น, ยิ่ง",trimmed 3 near-synonyms to 2 (dropped มากกว่า)
 没有,méi yǒu,haven't; hasn't,ไม่มี; ยังไม่,138,1,ไม่มี; ยังไม่,
-想,xiǎng,to think; to think of,อยาก; คิด; คิดถึง,134,1,คิด; คิดถึง,matches EN think/think-of; EN gloss omits 想's common spoken 'want to' (อยาก)
+想,xiǎng,to want to; to think,อยาก; คิด; คิดถึง,134,1,อยาก; คิด,EN gloss fixed at product source (want-sense added) per Jordan; Thai follows
 被,bèi,(passive marker); quilt,คำแสดงถูกกระทำ (ถูก); ผ้าห่ม,133,3,ถูก (คำแสดงการถูกกระทำ); ผ้าห่ม,
 可以,kě yǐ,can; may,"ได้, สามารถ; อนุญาต",129,2,"ได้, สามารถ",can;may collapse to one Thai sense (ได้/สามารถ); dropped verb อนุญาต
 太,tài,too; extremely,"เกินไป, ...เกิน",129,1,เกินไป; มากเกิน,
@@ -152,11 +152,11 @@ hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
 水,shuǐ,water,น้ำ,43,1,น้ำ,
 不同,bù tóng,different; distinct,แตกต่าง,42,3,แตกต่าง,
 事情,shì qíng,affair; matter,"เรื่อง, ธุระ",42,2,เรื่อง; ธุระ,
-作用,zuò yòng,to act on; to affect,"บทบาท, ผล, การออกฤทธิ์",42,3,ผล; บทบาท,"作用 is a noun 'effect/function/role'; EN gloss reads verb-ish | EN-GLOSS-BUG: English verb-shaped; word is primarily the noun ""effect; function; role"". Thai follows the real sense."
+作用,zuò yòng,effect; role,"บทบาท, ผล, การออกฤทธิ์",42,3,ผล; บทบาท,EN gloss fixed at product source per Jordan (2026-07-24)
 写,xiě,to write,เขียน,42,1,เขียน,
 快,kuài,rapid; quick,เร็ว; ไว; ใกล้จะ,42,2,เร็ว,
 找,zhǎo,to try to find; to look for,หา,42,2,หา,
-不错,bù cuò,correct; right,"ดีทีเดียว, ไม่เลว",41,2,ดีทีเดียว,"不错 idiomatically means 'pretty good/not bad'; EN gloss 'correct; right' misses that common sense | EN-GLOSS-BUG: English ""correct; right"" is wrong — word means ""pretty good; not bad"". Thai follows the real sense."
+不错,bù cuò,pretty good; not bad,"ดีทีเดียว, ไม่เลว",41,2,ดีทีเดียว,EN gloss fixed at product source per Jordan (2026-07-24)
 像,xiàng,to resemble; to be like,"เหมือน, คล้าย",41,3,เหมือน,
 听,tīng,to listen to; to hear,ฟัง,41,1,ฟัง,
 呢,ne,(question particle),คำลงท้ายคำถาม (ล่ะ),41,1,คำลงท้ายคำถาม (ล่ะ),
@@ -195,7 +195,7 @@ hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
 马,mǎ,horse,ม้า,37,3,ม้า,
 事,shì,matter; thing,"เรื่อง, ธุระ",36,2,เรื่อง; ธุระ,
 发展,fā zhǎn,development; growth,พัฒนา; การพัฒนา,36,4,พัฒนา; การพัฒนา,
-地方,dì fāng,region; regional,"สถานที่, ที่; ท้องถิ่น",36,3,สถานที่; ท้องถิ่น,"EN-GLOSS-BUG (borderline): English ""region; regional"" narrower than everyday ""place; local""."
+地方,dì fāng,place; local,"สถานที่, ที่; ท้องถิ่น",36,3,สถานที่; ท้องถิ่น,EN gloss fixed at product source per Jordan (2026-07-24)
 爱,ài,to love; to be fond of,รัก,36,1,รัก,
 前,qián,front; forward,"หน้า, ข้างหน้า; ก่อน",35,1,ข้างหน้า,
 提高,tí gāo,to raise; to increase,"ยกระดับ, เพิ่มขึ้น",35,3,ยกระดับ; เพิ่มขึ้น,
