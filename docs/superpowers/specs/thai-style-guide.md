@@ -77,7 +77,14 @@ Never produce these patterns:
 
 | EN term | TH |
 |---|---|
-| streak | เรียนต่อเนื่อง |
+| streak (adjectival: "{n}-day streak of learning") | เรียนต่อเนื่อง {n} วัน |
+| streak (object position: freeze/lose/back up your streak) | สถิติ {n} วัน / สถิติเรียนต่อเนื่อง — never "freeze/lose การเรียนต่อเนื่อง" |
+| streak snaps/breaks | หลุด |
+| Streak Freeze (item) | น้ำแข็งกันหลุด |
+| session | รอบ |
+| collection | ของสะสม |
+| set (item set) | ชุด |
+| Word Quest (mode name) | ภารกิจคำศัพท์ |
 | word / words | คำ / คำศัพท์ |
 | review | ทบทวน |
 | coins | เหรียญ |
