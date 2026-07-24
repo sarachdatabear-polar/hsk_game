@@ -1,0 +1,201 @@
+hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
+到来,dào lái,to arrive; arrival,มาถึง,3,3,มาถึง,
+制度,zhì dù,system; institution,ระบบ,3,5,ระบบ,
+刻,kè,quarter; moment,นาที,3,5,ชั่วขณะ,刻 = a moment / quarter-hour (15 min); current นาที (minute) was imprecise
+前台,qián tái,front desk; reception,แผนกต้อนรับ; เคาน์เตอร์ต้อนรับ,3,5,"เคาน์เตอร์ต้อนรับ, แผนกต้อนรับ",
+前方,qián fāng,ahead; the front,ข้างหน้า,3,4,ข้างหน้า,
+副作用,fù zuò yòng,side effect,ผลข้างเคียง,3,6,ผลข้างเคียง,
+加工,jiā gōng,to process; processing,โปรเซส,3,6,แปรรูป,current โปรเซส is an English loan; แปรรูป is the natural Thai for processing materials
+加强,jiā qiáng,to reinforce; to strengthen,เสริมแข็งแกร่ง,3,5,เสริมสร้างความแข็งแกร่ง,
+加速,jiā sù,to accelerate; to speed up,เพิ่มความเร็ว,3,6,เพิ่มความเร็ว,
+劳累,láo lèi,tired; exhausted,เหนื่อย,3,5,เหนื่อยล้า,
+勇于,yǒng yú,to dare to; to be brave enough to,กล้าหาญ,3,5,กล้าที่จะ,
+勤奋,qín fèn,hardworking; diligent,ขยัน,3,5,ขยัน,
+北,běi,north,เหนือ,3,3,ทิศเหนือ,matched 南=ทิศใต้ for direction consistency
+北极,běi jí,the North Pole; the north magnetic pole,ขั้วโลกเหนือ,3,6,ขั้วโลกเหนือ,
+区域,qū yù,area; region,เขต,3,6,เขต,
+升,shēng,to ascend; to rise,ขึ้น,3,5,ขึ้น,
+升高,shēng gāo,to raise; to ascend,ยกสูง,3,5,สูงขึ้น,升高 is intransitive (rise); current ยกสูง = lift up (transitive)
+南,nán,south,ทิศใต้,3,3,ทิศใต้,
+南部,nán bù,southern part,ภาคใต้,3,6,ภาคใต้,
+卫生间,wèi shēng jiān,bathroom; toilet,ห้องน้ำ,3,4,ห้องน้ำ,
+即将,jí jiāng,about to; on the point of,กำลัง,3,5,กำลังจะ; ใกล้จะ,current กำลัง = progressive 'currently'; 即将 = about to (imminent)
+原则,yuán zé,principle; doctrine,หลักการ,3,5,หลักการ,
+原始,yuán shǐ,first; original,เดิม,3,6,ดั้งเดิม; แรกเริ่ม,EN-GLOSS-BUG: 原始 means primitive/original/raw; 'first' alone is misleading
+去掉,qù diào,to get rid of; to exclude,ลบออก,3,5,เอาออก; กำจัด,
+参考,cān kǎo,consultation; reference,อ้างอิง,3,5,อ้างอิง,
+友情,yǒu qíng,friendly feelings; friendship,มิตรภาพ,3,5,มิตรภาพ,
+反复,fǎn fù,repeatedly; over and over,ซ้ำแล้วซ้ำเล่า,3,5,ซ้ำแล้วซ้ำเล่า,
+反正,fǎn zhèng,anyway; in any case,อย่างไรก็ตาม,3,5,ยังไงก็ตาม; ยังไงเสีย,spoken register; current อย่างไรก็ตาม is a formal connective
+发射,fā shè,to shoot; to fire,ยิงปล่อย,3,6,ยิง; ปล่อย,current ยิงปล่อย is an awkward compound
+发源地,fā yuán dì,place of origin; birthplace,สถานที่เกิด,3,6,แหล่งกำเนิด; ต้นกำเนิด,current สถานที่เกิด = a person's birthplace
+发票,fā piào,invoice; receipt,ใบเสร็จ,3,5,ใบเสร็จ,
+发育,fā yù,to develop; to mature,เจริญเติบโต,3,6,เจริญเติบโต,
+取代,qǔ dài,to replace; to supersede,แทนที่,3,5,แทนที่,
+变为,biàn wèi,to change into,เปลี่ยนเป็น,3,5,เปลี่ยนเป็น,
+古老,gǔ lǎo,ancient; old,เก่าแก่,3,5,เก่าแก่,
+句子,jù zi,sentence,ประโยค,3,3,ประโยค,
+另一方面,lìng yì fāng miàn,on the other hand; another aspect,ในด้านอื่น,3,4,อีกด้านหนึ่ง; ในอีกแง่หนึ่ง,current ในด้านอื่น = 'in other aspects'
+只不过,zhǐ bù guò,only; merely,แค่เพียง,3,4,แค่เพียง,
+可口,kě kǒu,tasty; to taste good,อร่อย,3,5,อร่อย,
+可靠,kě kào,reliable,น่าเชื่อถือ,3,5,น่าเชื่อถือ,
+右,yòu,right; right-hand side,ขวา,3,3,ขวา,
+各地,gè dì,in all parts of; various regions,ต่างแห่ง,3,6,ทุกพื้นที่; ทั่วทุกแห่ง,current ต่างแห่ง is unnatural
+各自,gè zì,each; respective,แต่ละคน,3,6,"ต่างคนต่าง, แต่ละคน",
+同一,tóng yī,identical; the same,เหมือนกัน,3,5,เดียวกัน,同一 = one and the same; current เหมือนกัน = merely similar
+同类,tóng lèi,similar; same type,ประเภทเดียวกัน,3,5,ประเภทเดียวกัน,
+名著,míng zhù,masterpiece,ผลงานชิ้นเอก,3,6,ผลงานชิ้นเอก,
+后果,hòu guǒ,consequences; aftermath,ผลกระทบ,3,5,ผลที่ตามมา,后果 = (usually negative) consequence; current ผลกระทบ = impact
+含糊,hán hú,ambiguous; vague,คลุมเครือ,3,6,คลุมเครือ,
+听取,tīng qǔ,to hear; to listen to,ฟัง,3,5,รับฟัง,听取 = listen to attentively (opinions/reports)
+吵架,chǎo jià,to quarrel; to have a row,ทะเลาะกัน,3,5,ทะเลาะกัน,
+呆,dāi,foolish; stupid,โง่,3,5,โง่,
+告,gào,to say; to tell,บอก,3,5,บอก,
+命,mìng,life; fate,"ชีวิต, โชคชะตา",3,5,ชีวิต; โชคชะตา,"separator fix: life and fate are distinct senses (';' not ',')"
+咨询,zī xún,to inquire,ปรึกษา,3,5,ปรึกษา,
+品德,pǐn dé,moral character,จริยธรรม,3,6,คุณธรรม,品德 = moral character; current จริยธรรม = ethics (abstract)
+品质,pǐn zhì,character; intrinsic quality,คุณภาพ,3,5,คุณภาพ,
+哪怕,nǎ pà,even; even if,แม้ว่า,3,5,แม้ว่า,
+唯一,wéi yī,only; sole,เพียงหนึ่งเดียว,3,5,เพียงหนึ่งเดียว,
+善,shàn,good; benevolent,ดี,3,6,ใจดี; ดีงาม,current ดี is too generic for benevolent/kind
+嗅觉,xiù jué,sense of smell,การดมกลิ่น,3,6,ประสาทรับกลิ่น,嗅觉 = the sense of smell; current การดมกลิ่น = the act of sniffing
+噪声,zào shēng,noise,เสียงรบกวน,3,6,เสียงรบกวน,
+噪音,zào yīn,rumble; noise,เสียงรบกวน,3,5,เสียงรบกวน,
+四周,sì zhōu,all around,รอบๆ,3,5,รอบๆ,
+四季,sì jì,the four seasons,สี่ฤดู,3,4,สี่ฤดู,
+回报,huí bào,in return; reciprocation,ตอบแทน,3,5,ตอบแทน,
+团体,tuán tǐ,group; organization,กลุ่ม,3,6,กลุ่ม,
+围,wéi,to surround; to enclose,ล้อม,3,5,ล้อม,
+固定,gù dìng,to fix; to fasten,ติดตั้ง,3,5,ยึดให้แน่น; คงที่,current ติดตั้ง = install
+固然,gù rán,admittedly,จริงอยู่,3,6,จริงอยู่,
+国外,guó wài,abroad; external,ต่างประเทศ,3,3,ต่างประเทศ,
+圆,yuán,circle; round,วงกลม,3,4,วงกลม; กลม,
+地域,dì yù,area; district,พื้นที่,3,5,พื้นที่,
+地形,dì xíng,topography; terrain,ภูมิประเทศ,3,6,ภูมิประเทศ,
+地理,dì lǐ,geography,ภูมิศาสตร์,3,6,ภูมิศาสตร์,
+场,chǎng,site; (classifier for an event),พื้นที่,3,4,สถานที่,current พื้นที่ = area; 场 = venue/site
+坐下,zuò xià,to sit down,นั่งลง,3,2,นั่งลง,
+坚硬,jiān yìng,hard; solid,แข็งแรง,3,6,แข็ง,current แข็งแรง = strong/healthy; 坚硬 = physically hard
+坟墓,fén mù,grave; tomb,สุสาน,3,6,หลุมศพ; หลุมฝังศพ,current สุสาน = cemetery (墓地)
+坦然,tǎn rán,calm; undisturbed,สงบ,3,6,สบายใจ; ไม่วิตกกังวล,
+埋怨,mán yuàn,to complain; to grumble,บ่นเบื่อ,3,5,บ่น; ต่อว่า,current บ่นเบื่อ = complain from boredom; 埋怨 = grumble/blame
+基因,jī yīn,gene,ยีน,3,6,ยีน,
+基本上,jī běn shàng,basically; on the whole,พื้นฐาน,3,5,โดยพื้นฐานแล้ว; โดยหลักแล้ว,adverb; current พื้นฐาน = noun 'foundation'
+堂,táng,main hall; large room for a specific purpose,ห้องโถง,3,6,ห้องโถง,
+填,tián,to fill or stuff; of a form etc to fill in,ยัด,3,4,เติม; กรอก,added the 'fill in a form' sense (กรอก)
+增进,zēng jìn,to promote; to enhance,"ส่งเสริม, เพิ่มพูน",3,6,"ส่งเสริม, เพิ่มพูน",
+壮观,zhuàng guān,spectacular; magnificent sight,ยิ่งใหญ่,3,6,ตระการตา; อลังการ,current ยิ่งใหญ่ = great; 壮观 = spectacular sight
+壳,ké,shell; case,เปลือก,3,5,เปลือก,
+夏令营,xià lìng yíng,summer camp,ค่ายฤดูร้อน,3,5,ค่ายฤดูร้อน,
+外婆,wài pó,mother's mother; maternal grandmother,ยายทางแม่,3,6,ยาย,ยาย already = maternal grandmother; current ยายทางแม่ is redundant
+夜里,yè lǐ,during the night; at night,ยามค่ำคืน,3,5,ยามค่ำคืน,
+大批,dà pī,large quantities of,จำนวนมาก,3,6,จำนวนมาก,
+大海,dà hǎi,sea; ocean,ทะเล,3,5,ทะเล,
+天分,tiān fèn,natural gift; talent,พรสวรรค์,3,6,พรสวรรค์,
+天地,tiān dì,heaven and earth; world,ท้องฟ้าและแผ่นดิน,3,6,ฟ้าดิน; โลกกว้าง,ฟ้าดิน is the idiomatic Thai for heaven-and-earth
+太太,tài tài,married woman; Mrs.,ผู้หญิงแต่งงาน,3,5,คุณนาย; ภรรยา,current ผู้หญิงแต่งงาน is descriptive/awkward
+头发,tóu fà,hair,ผม,3,3,ผม,
+夸奖,kuā jiǎng,to praise; to applaud,ยกย่อง,3,5,ชมเชย; ชม,current ยกย่อง = extol/honor; 夸奖 = praise/compliment
+奉献,fèng xiàn,to offer respectfully; to consecrate,อุทิศ,3,6,อุทิศ,
+奋斗,fèn dòu,to strive; to struggle,พยายาม,3,5,ต่อสู้; ดิ้นรน,current พยายาม = try; 奋斗 = strive/struggle
+奖励,jiǎng lì,to reward; reward,รางวัล,3,5,รางวัล,
+奥运会,ào yùn huì,Olympic Games; the Olympics,โอลิมปิก,3,6,โอลิมปิก,
+奶,nǎi,breast; milk,นม,3,5,นม,
+好事,hǎo shì,"good action, deed, thing or work; charity",สิ่งดี,3,4,เรื่องดี; ความดี,
+好心人,hǎo xīn rén,kindhearted person; good Samaritan,คนหนใจดี,3,6,คนใจดี; คนใจบุญ,fixed typo in current (คนหนใจดี -> คนใจดี)
+好比,hǎo bǐ,to be just like; can be compared to,เปรียบได้เหมือน,3,6,เปรียบเสมือน; ก็เหมือนกับ,
+如同,rú tóng,like; as,เช่น,3,5,เหมือนกับ; ราวกับ,"current เช่น = 'for example', wrong sense"
+姐,jiě,older sister,พี่สาว,3,2,พี่สาว,
+孝顺,xiào shùn,filial; dutiful,กตัญญู,3,5,กตัญญู,
+孤独,gū dú,lonely; solitary,เดียวดาย,3,6,เดียวดาย,
+学历,xué lì,educational background,ระดับการศึกษา,3,5,วุฒิการศึกษา,学历 = academic qualification; current ระดับการศึกษา is close but less precise
+学术,xué shù,learning; science,การศึกษา,3,5,วิชาการ,current การศึกษา = education; 学术 = academic/scholarly
+学问,xué wèn,learning; knowledge,ความรู้,3,5,ความรู้,
+宁可,nìng kě,preferably; one would prefer to...,"ยอมที่จะ, ขอเลือก",3,5,ยอม...ดีกว่า; ยอมที่จะ,宁可 = would rather ... (than)
+宁静,níng jìng,tranquil; tranquility,เงียบสงบ,3,6,เงียบสงบ,
+完整,wán zhěng,complete; intact,สมบูรณ์,3,5,สมบูรณ์,
+实事求是,shí shì qiú shì,to seek truth from facts,สืบค้นความจริง,3,6,ยึดความจริงตามข้อเท็จจริง,chengyu; rendered by meaning (seek truth from facts)
+实力,shí lì,strength,กำลัง,3,6,ศักยภาพ; ความสามารถ,current กำลัง is ambiguous (also 'currently'); 实力 = real strength/capability
+实施,shí shī,to implement; to carry out,ปฏิบัติ,3,5,นำไปปฏิบัติ; ดำเนินการ,current ปฏิบัติ = practise; 实施 = implement/enforce
+客厅,kè tīng,living room; sitting room,ห้องรับแขก,3,4,ห้องรับแขก,
+宣布,xuān bù,to declare; to announce,ประกาศ,3,5,ประกาศ,
+宫,gōng,palace,พระราชวัง,3,6,พระราชวัง,
+害,hài,to do harm to; to cause trouble to,เสียหาย,3,5,ทำร้าย; ทำให้เดือดร้อน,current เสียหาย = 'damaged' (result); 害 verb = to harm
+宴会,yàn huì,banquet; feast,งานเลี้ยง,3,5,งานเลี้ยง,
+家乡,jiā xiāng,hometown; native place,บ้านเกิด,3,5,บ้านเกิด,
+家务,jiā wù,household duties; housework,งานบ้าน,3,5,งานบ้าน,
+家长,jiā zhǎng,head of a household; family head,เจ้าบ้าน,3,5,ผู้ปกครอง; หัวหน้าครอบครัว,current เจ้าบ้าน = host; 家长 = guardian/parent
+宽,kuān,wide; broad,กว้าง,3,4,กว้าง,
+宽阔,kuān kuò,expansive; wide,กว้างมาก,3,6,กว้างขวาง,current กว้างมาก = 'very wide'
+宿舍,sù shè,dormitory; dorm room,หอพัก,3,5,หอพัก,
+密度,mì dù,density; concentration,ความหนาแน่น,3,6,ความหนาแน่น,
+富含,fù hán,to contain in great quantities; rich in,มีอย่างมากมาย,3,6,อุดมไปด้วย,current มีอย่างมากมาย is generic; 富含 = rich in
+对比,duì bǐ,to contrast; contrast,เปรียบเทียบ,3,6,เปรียบเทียบ,
+射,shè,to shoot; to launch,ยิง,3,6,ยิง,
+尊敬,zūn jìng,to respect; to revere,เคารพ,3,5,เคารพ,
+小伙子,xiǎo huǒ zi,young man; young fellow,หนุ่ม,3,4,หนุ่ม,
+少年,shào nián,early youth; youngster,เด็กวัยรุ่น,3,5,เด็กวัยรุ่น,
+尚未,shàng wèi,not yet; still not,ยังไม่,3,6,ยังไม่,
+尝,cháng,to taste; to try,ลิ้มรส,3,4,ชิม; ลิ้มลอง,ชิม is the everyday word for tasting food
+尴尬,gān gà,awkward; embarrassed,อึดอัด,3,5,กระอักกระอ่วน; เขินอาย,current อึดอัด = physically stifled; 尴尬 = socially awkward
+尽可能,jǐn kě néng,as far as possible,เต็มที่,3,6,เท่าที่จะทำได้; ให้มากที่สุด,current เต็มที่ = 'fully'
+层次,céng cì,layer; level,ระดับ,3,5,ระดับ,
+屋,wū,house; room,บ้าน,3,5,บ้าน,
+屋顶,wū dǐng,roof,หลังคา,3,5,หลังคา,
+展示,zhǎn shì,to reveal; to display,แสดง,3,5,แสดง,
+展览,zhǎn lǎn,to put on display; to exhibit,นิทรรศการ,3,5,นิทรรศการ,
+崇尚,chóng shàng,to hold up; to hold in esteem,ยกย่อง,3,6,เชิดชู; นิยม,current ยกย่อง ok; 崇尚 = advocate/esteem a value
+左,zuǒ,left; left side,ซ้าย,3,3,ซ้าย,
+巧,qiǎo,opportunely; coincidentally,บังเอิญ,3,6,บังเอิญ,
+巧妙,qiǎo miào,ingenious; clever,ฉลาด,3,5,แยบยล; ชาญฉลาด,current ฉลาด = smart (person); 巧妙 = ingenious (method)
+市民,shì mín,city resident; townspeople,ชาวเมือง,3,5,ชาวเมือง,
+师父,shī fù,master (teacher or craftsman),ครูอาจารย์,3,5,ครูอาจารย์,
+帐篷,zhàng péng,tent,เต็นท์,3,6,เต็นท์,
+带有,dài yǒu,to have as a feature or characteristic,มี,3,5,มี,
+干什么,gàn shén me,what are you doing?; what's he up to?,ทำอะไร,3,4,ทำอะไร,
+干旱,gān hàn,"drought; of land, climate etc arid",แห้งแล้ง,3,5,แห้งแล้ง,
+平凡,píng fán,commonplace; ordinary,ธรรมดา,3,5,ธรรมดา,
+平常,píng cháng,ordinary; common,"ธรรมดา, ปกติ",3,6,"ธรรมดา, ปกติ",
+平稳,píng wěn,smooth; steady,ราบเรียบ,3,6,ราบรื่น; มั่นคง,current ราบเรียบ = flat; 平稳 = smooth and stable
+年前,nián qián,... years ago,ปีที่แล้ว,3,4,เมื่อ...ปีก่อน,current ปีที่แล้ว = last year (去年); 年前 = X years ago
+年底,nián dǐ,the end of the year; year-end,ท้ายปี,3,4,ปลายปี; สิ้นปี,current ท้ายปี is unnatural
+广大,guǎng dà,of an area vast or extensive; large-scale,กว้างใหญ่,3,5,กว้างใหญ่,
+应付,yìng fù,to deal with; to cope,จัดการ,3,5,รับมือ; จัดการ,รับมือ better captures 'cope with'
+应聘,yìng pìn,to apply for a job,สมัครงาน,3,4,สมัครงาน,
+延伸,yán shēn,to extend,ขยายออก,3,6,ทอดยาว; ต่อขยาย,current ขยายออก = expand out; 延伸 = extend/stretch
+开花,kāi huā,to bloom; to blossom,บานดอก,3,5,ออกดอก; ผลิบาน,current บานดอก is reversed word order
+异常,yì cháng,unusual; abnormal,ผิดปกติ,3,6,ผิดปกติ,
+引发,yǐn fā,to lead to; to trigger,นำไปสู่,3,5,นำไปสู่,
+引用,yǐn yòng,to quote; to cite,อ้างอิง,3,6,อ้างอิง,
+弟子,dì zǐ,disciple; follower,"สาวก, ลูกศิษย์",3,6,"สาวก, ลูกศิษย์",
+弥补,mí bǔ,to complement; to make up for a deficiency,ชดเชย,3,5,ชดเชย,
+弱点,ruò diǎn,weak point; failing,จุดอ่อน,3,6,จุดอ่อน,
+弹,dàn,bullet; bomb,กระสุน,3,4,กระสุน; ลูกระเบิด,added the 'bomb' sense
+强制,qiáng zhì,to force; to compel,บังคับใช้,3,5,บังคับ,current บังคับใช้ = enforce (a law); 强制 = force/compel
+强调,qiáng diào,to emphasize; to stress,เน้น,3,5,เน้น,
+当初,dāng chū,at that time; originally,ตอนแรก,3,5,แต่แรก; ตอนนั้น,current ตอนแรก = 'at first'; 当初 = back then/originally
+形势,xíng shì,circumstances; situation,สถานการณ์,3,5,สถานการณ์,
+影子,yǐng zi,shadow; reflection,เงา,3,5,เงา,
+往事,wǎng shì,past events; former happenings,เหตุการณ์ในอดีต,3,6,เหตุการณ์ในอดีต,
+待,dài,to stay; to remain,อยู่,3,6,อยู่,
+忽然,hū rán,suddenly; all of a sudden,อย่างกะทันหัน,3,5,อย่างกะทันหัน,
+思路,sī lù,line of thought; way of thinking,แนวคิด,3,5,แนวคิด,
+总共,zǒng gòng,altogether; in sum,รวม,3,5,รวม,
+总算,zǒng suàn,at long last; finally,ก็สำเร็จแล้วที่สุด,3,5,ในที่สุดก็; ในที่สุด,current ก็สำเร็จแล้วที่สุด was garbled Thai
+悠久,yōu jiǔ,long,ยาวนาน,3,5,ยาวนาน,
+惊奇,jīng qí,to be amazed; to be surprised,ประหลาดใจ,3,5,ประหลาดใจ,
+惩罚,chéng fá,penalty; punishment,ลงโทษ,3,6,ลงโทษ,
+惭愧,cán kuì,ashamed,อาย,3,5,ละอายใจ; รู้สึกผิด,current อาย = shy; 惭愧 = ashamed/guilty
+想起,xiǎng qǐ,to recall; to think of,นึกขึ้นมา,3,3,นึกขึ้นมา,
+感恩,gǎn ēn,to be grateful,ขอบคุณ,3,5,สำนึกในบุญคุณ; ซาบซึ้งใจ,current ขอบคุณ = merely 'thank'; 感恩 = deep gratitude
+感慨,gǎn kǎi,"to sigh with sorrow, regret etc; rueful","ถอนใจ, สะเทือนใจ",3,6,"ถอนใจ, สะเทือนใจ",
+感染,gǎn rǎn,to infect; infection,ติดเชื้อ,3,6,ติดเชื้อ,
+愣,lèng,to look distracted; to stare blankly,งง,3,5,ตะลึง; อึ้ง,current งง = confused; 愣 = stunned/dazed/blank
+成千上万,chéng qiān shàng wàn,thousands upon thousands; countless,"นับไม่ถ้วน, มากมายนัก",3,4,เป็นพันเป็นหมื่น; นับไม่ถ้วน,เป็นพันเป็นหมื่น mirrors the idiom
+成年,chéng nián,to grow to adulthood; fully grown,เป็นผู้ใหญ่,3,6,เป็นผู้ใหญ่,
+成果,chéng guǒ,result; achievement,ผลลัพธ์,3,5,ผลสำเร็จ; ผลงาน,current ผลลัพธ์ = neutral 'result'; 成果 = achievement
+或是,huò shì,or; either one or the other,หรือ,3,5,หรือ,
+所在,suǒ zài,place; location,สถานที่,3,6,สถานที่,
+扇,shàn,to fan; to slap someone on the face,พัด,3,6,พัด; ตบ,added the 'slap' sense (扇耳光)
+手指,shǒu zhǐ,finger,นิ้วมือ,3,5,นิ้วมือ,
+才华,cái huá,talent,พรสวรรค์,3,6,พรสวรรค์; ความสามารถ,
