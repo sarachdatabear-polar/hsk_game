@@ -5,7 +5,7 @@ import { BUILDINGS, DECO_IDS, DECO_SPRITE_SCALE, UNIT_FRAC, streetPieces, street
          WELCOME_ID, DECO_META, STREET_PLOTS, defaultStreetLayout,
          normalizeStreetLayout, itemFitsPlot, streetOwnedIds, compatibleStreetPlots,
          firstFreeStreetPlot,
-         unplacedStreetItems, placeStreetItem, storeStreetItem, autoArrangeStreet,
+         unplacedStreetItems, streetInventory, placeStreetItem, storeStreetItem, autoArrangeStreet,
          migrateLegacyStreet, streetWorldMetrics, STREET_LAYOUT_VERSION } from "../src/street.js";
 import { MILESTONES } from "../src/growth.js";
 
@@ -305,6 +305,19 @@ describe("street v2 authored layout", () => {
     expect(streetOwnedIds(["red-lantern"], defaultStreetLayout())).toEqual(["red-lantern"]);
     expect(streetOwnedIds(["red-lantern"], { ...defaultStreetLayout(), welcomeOwned: true }))
       .toEqual(["red-lantern", WELCOME_ID]);
+  });
+
+  it("streetInventory lists only placeable street items, tagged and filtered by placement", () => {
+    const owned = ["red-lantern", "panda", "market", "sakura-fx", "bells", "tea-sign"];
+    const layout = placeStreetItem(defaultStreetLayout(), owned, "red-lantern", "plot-small-01");
+    expect(streetInventory(owned, layout, "all")).toEqual([
+      { id: "red-lantern", placed: true },
+      { id: "tea-sign", placed: false },
+    ]);
+    expect(streetInventory(owned, layout, "placed")).toEqual([{ id: "red-lantern", placed: true }]);
+    expect(streetInventory(owned, layout, "stored")).toEqual([{ id: "tea-sign", placed: false }]);
+    expect(streetInventory(owned, { ...layout, welcomeOwned: true }, "all"))
+      .toContainEqual({ id: WELCOME_ID, placed: false });
   });
 
   it("place, move, store and swap are immutable", () => {

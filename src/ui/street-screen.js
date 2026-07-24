@@ -29,7 +29,7 @@ import {
   WELCOME_ID, STREET_PLOTS, streetPieces, streetProgress,
   streetWorldMetrics, DECO_SPRITE_SCALE, defaultStreetLayout,
   normalizeStreetLayout, compatibleStreetPlots, firstFreeStreetPlot,
-  unplacedStreetItems,
+  unplacedStreetItems, streetInventory,
   placeStreetItem, storeStreetItem, autoArrangeStreet, migrateLegacyStreet,
   streetMeta, streetClass, STREET_LAYOUT_VERSION,
 } from "../street.js";
@@ -834,18 +834,16 @@ export function createStreetScreen({
       const on=btn.dataset.streetFilter===streetEdit.filter; btn.classList.toggle("on",on); btn.setAttribute("aria-pressed",String(on));
     });
     const box=$("#street-inventory"); box.replaceChildren();
-    const all=[...getShopState().owned]; if(streetEdit.layout.welcomeOwned) all.push(WELCOME_ID);
-    const placed=new Set(Object.values(streetEdit.layout.placements));
-    const visible=all.filter(id=>streetEdit.filter==="all"||(streetEdit.filter==="placed")===placed.has(id));
+    const visible=streetInventory(getShopState().owned,streetEdit.layout,streetEdit.filter);
     if(!visible.length){
       const empty=document.createElement("div"); empty.className="street-inventory-empty"; empty.textContent=t("street.inventoryEmpty"); box.appendChild(empty);
     }
-    for(const id of visible){
+    for(const {id,placed} of visible){
       const btn=document.createElement("button"); btn.className="street-inventory-item"+(streetEdit.selected===id?" on":"");
       btn.setAttribute("role","listitem"); btn.setAttribute("aria-pressed",String(streetEdit.selected===id));
       const img=document.createElement("img"); img.src="assets/deco-"+(streetMeta(id)?.spriteId||id)+".png"; img.alt="";
       const label=document.createElement("span"); label.textContent=streetItemLabel(id);
-      const status=document.createElement("small"); status.textContent=t(placed.has(id)?"street.placed":"street.stored");
+      const status=document.createElement("small"); status.textContent=t(placed?"street.placed":"street.stored");
       btn.append(img,label,status); btn.onclick=()=>{
         streetEdit.selected=id;
         const count=validStreetPlotIds(id,streetEdit.layout,false).size;
