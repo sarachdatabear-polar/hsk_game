@@ -70,6 +70,19 @@ export function profileStats({ levels, mastery, stickerState, stickerDefs, shop,
   };
 }
 
+// Best Word Quest score across every scope the player has finished a session
+// in. `best` is the persisted map of scope-key -> { score, date } (store key
+// "best"); tolerant of missing/garbage entries so a corrupt row never NaNs
+// the Profile.
+export function bestSessionScore(best) {
+  let top = 0;
+  for (const entry of Object.values(best || {})) {
+    const score = Number(entry && entry.score);
+    if (Number.isFinite(score) && score > top) top = score;
+  }
+  return top;
+}
+
 export function equippedSummary(shop, catalog) {
   const state = shop || {};
   const owned = new Set(state.owned || []);
