@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { defaultProfile, normalizeDisplayName, profileInitial, profileStats, equippedSummary } from "../src/profile.js";
+import { defaultProfile, normalizeDisplayName, profileInitial, profileStats, bestSessionScore, equippedSummary } from "../src/profile.js";
 
 describe("profile identity", () => {
   it("returns a fresh empty profile", () => {
@@ -73,6 +73,25 @@ describe("profileStats", () => {
     });
     profileStats({ levels, mastery, stickerState, stickerDefs, shop, catalog });
     expect(JSON.stringify({ levels, mastery, stickerState, stickerDefs, shop, catalog })).toBe(before);
+  });
+});
+
+describe("bestSessionScore", () => {
+  it("returns 0 for undefined or empty best maps", () => {
+    expect(bestSessionScore(undefined)).toBe(0);
+    expect(bestSessionScore({})).toBe(0);
+  });
+
+  it("returns the max score across scopes", () => {
+    expect(bestSessionScore({ a: { score: 120, date: "x" }, b: { score: 340, date: "y" } })).toBe(340);
+  });
+
+  it("ignores garbage entries", () => {
+    expect(bestSessionScore({ a: { score: "nope" }, b: null, c: { score: 210 } })).toBe(210);
+  });
+
+  it("never lets a negative score beat 0", () => {
+    expect(bestSessionScore({ a: { score: -50 } })).toBe(0);
   });
 });
 

@@ -819,6 +819,7 @@ export function createStreetScreen({
   function renderStreetEditor(){
     const editor=$("#street-editor"), actions=$("#street-actions"), info=$("#street-info");
     editor.hidden=!streetEdit; actions.hidden=!!streetEdit||!!streetPreview;
+    $("#s-street").classList.toggle("street-editing",!!streetEdit);
     if(streetEdit||streetPreview) info.hidden=true;
     if(!streetEdit) return;
     const coach=$("#street-coach"); coach.hidden=!streetEdit.coaching;

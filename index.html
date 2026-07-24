@@ -329,6 +329,19 @@
      gives the mascot and landmarks enough room to read as a composed place
      instead of a thin strip floating over an empty screen. */
   .street-world{position:relative; height:auto; min-height:0; aspect-ratio:3/4;}
+  /* Tall phones: let the diorama absorb the otherwise-empty band above the
+     tab bar. h/w stays >= .95 so the portrait art keeps being selected and
+     the cover-crop trims only ~13% off the sides. Edit mode is excluded —
+     there the scene shrinks instead so the inventory surfaces (below). */
+  @media (min-height:780px) and (orientation:portrait){
+    #s-street:not(.street-editing) .street-world{aspect-ratio:13/20;}
+  }
+  /* Edit mode on normal/tall portrait: a shorter scene keeps the toolbar and
+     the first inventory row on screen without scrolling. Short viewports
+     (<=700px) already have their own 2/1 override further down. */
+  @media (min-height:701px) and (orientation:portrait){
+    #s-street.street-editing .street-world{aspect-ratio:1/1;}
+  }
   #street-cv{display:block; width:100%; height:100%;}
   #street-resident-cv{position:absolute; z-index:1; inset:0; display:block; width:100%; height:100%; pointer-events:none;}
   #street-hit-layer{position:absolute; inset:0; pointer-events:none;}
@@ -1998,7 +2011,7 @@
       <div class="profile-stat"><b id="profile-mastered">0</b><span data-i18n="profile.mastered">Words mastered</span></div>
       <div class="profile-stat"><b id="profile-seen">0</b><span data-i18n="profile.seen">Words seen</span></div>
       <div class="profile-stat"><b id="profile-stickers">0/0</b><span data-i18n="profile.stickers">Stickers earned</span></div>
-      <div class="profile-stat"><b id="profile-cosmetics">0/0</b><span data-i18n="profile.cosmetics">Cosmetics owned</span></div>
+      <div class="profile-stat"><b id="profile-best">0</b><span data-i18n="profile.bestSession">Best session</span></div>
     </div>
     <div class="sect" data-i18n="profile.collectionTitle">Your collection</div>
     <section class="profile-collection">
