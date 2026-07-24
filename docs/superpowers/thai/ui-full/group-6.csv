@@ -1,0 +1,73 @@
+key,english,thai_current
+streak.restUsed,🍵 Rest day used — your {n}-day streak is safe.,🍵 ใช้วันพักแล้ว — สตรีค {n} วันของคุณยังปลอดภัย
+scope.title,Choose your words,เลือกคำศัพท์
+scope.levels,Levels,ระดับ
+scope.filters,Filters,ตัวกรอง
+scope.highYield,High-yield only,เฉพาะคำออกบ่อย
+scope.newOnly,New words only,เฉพาะคำใหม่
+scope.topN,Top-N by frequency,จัดอันดับตามความถี่
+scope.all,All,ทั้งหมด
+scope.meaningLang,Meaning language,ภาษาที่ใช้แสดงความหมาย
+scope.english,English,ภาษาอังกฤษ
+scope.both,Both,ทั้งสอง
+scope.sessionLen,Session length,จำนวนคำต่อรอบ
+scope.custom,Custom,กำหนดเอง
+scope.customPh,5–500,5–500
+scope.endless,Endless,ไม่จำกัด
+scope.cards,Cards,บัตรคำ
+scope.cardsResume,Resume Cards · {n},เล่นบัตรคำต่อ · {n}
+scope.wordQuest,Word Quest · {n},เควสต์คำศัพท์ · {n}
+scope.smartReview,Smart Review,ทบทวนอัจฉริยะ
+scope.smartReviewProgress,Smart Review · {have}/{min},ทบทวนอัจฉริยะ · {have}/{min}
+scope.smartReviewReady,Smart Review · {n},ทบทวนอัจฉริยะ · {n}
+scope.smartReviewLocked,Play a session first — Smart Review learns your weak words,เล่นสักรอบก่อน — ทบทวนอัจฉริยะจะเรียนรู้คำที่คุณยังไม่แม่น
+scope.readout,Pool: <b>{count}</b> words · ~<b>{pct}%</b> of exam text,คลังคำ: <b>{count}</b> คำ · ~<b>{pct}%</b> ของข้อสอบ
+scope.readoutNoThai,* {n} long-tail words have no Thai yet — English shown instead.,* มี {n} คำที่ยังไม่มีภาษาไทย — แสดงภาษาอังกฤษแทน
+scope.tabPicker,Picker,เลือกเอง
+scope.tabJourney,Journey,เส้นทาง
+scores.title,Best Sessions,สถิติดีที่สุด
+scores.empty,No sessions yet — complete a Word Quest.,ยังไม่มีสถิติ — เล่นเควสต์คำศัพท์ก่อน
+profile.defaultName,Lucky Learner,นักเรียนแมวนำโชค
+profile.avatar,Profile picture for {name},รูปโปรไฟล์ของ {name}
+profile.editName,Edit,แก้ไข
+profile.namePh,Player name,ชื่อผู้เล่น
+profile.saveName,Save,บันทึก
+profile.cancelName,Cancel,ยกเลิก
+profile.level,Lucky Cat · Lv {lv},แมวนำโชค · Lv {lv}
+profile.xp,{into}/{need} XP toward the next level,{into}/{need} XP สู่เลเวลถัดไป
+profile.streak,{n}-day streak,สตรีค {n} วัน
+profile.coins,{n} coins,{n} เหรียญ
+profile.mastered,Words mastered,คำที่เชี่ยวชาญ
+profile.seen,Words seen,คำที่เคยเรียน
+profile.stickers,Stickers earned,สติกเกอร์ที่ได้รับ
+profile.bestSession,Best session,คะแนนรอบดีที่สุด
+profile.collectionTitle,Your collection,คอลเลกชันของคุณ
+profile.collectionCount,{owned}/{total} cosmetics,ของตกแต่ง {owned}/{total}
+profile.stickerCount,{earned}/{total} stickers,สติกเกอร์ {earned}/{total}
+profile.skin,Cat: {name},แมว: {name}
+profile.backdrop,Backdrop: {name},ฉากหลัง: {name}
+profile.defaultCat,Default Cat,แมวเริ่มต้น
+profile.defaultBackdrop,Default,ค่าเริ่มต้น
+profile.viewCollection,View Collection,ดูคอลเลกชัน
+profile.viewAlbum,Sticker Album,อัลบั้มสติกเกอร์
+friend.compareCta,Compare with a friend,เทียบกับเพื่อน
+friend.title,Compare with a friend,เทียบกับเพื่อน
+friend.yourCode,Your code — share it,รหัสของคุณ — แชร์เลย
+friend.share,Share my code,แชร์รหัสของฉัน
+friend.shareText,Compare our Lucky Cat HSK progress!,มาเทียบความคืบหน้า Lucky Cat HSK กัน!
+friend.pasteLabel,Have a friend's code?,มีรหัสของเพื่อนไหม?
+friend.pastePlaceholder,Paste their code here,วางรหัสของเพื่อนที่นี่
+friend.compareBtn,Compare,เทียบ
+friend.compareAnother,Compare another,เทียบคนอื่น
+friend.invalidCode,That code doesn't look right. Ask for a fresh one.,รหัสนี้ดูไม่ถูกต้อง ขอรหัสใหม่จากเพื่อน
+friend.copied,Code copied to clipboard,คัดลอกรหัสแล้ว
+friend.you,You,คุณ
+friend.them,Friend,เพื่อน
+friend.leadMine,You're ahead! 🎉,คุณนำอยู่! 🎉
+friend.leadTheirs,Your friend is ahead — catch up!,เพื่อนนำอยู่ — ตามให้ทัน!
+friend.leadTie,Neck and neck!,สูสีกันมาก!
+friend.metric.level,Level,เลเวล
+friend.metric.streak,Day streak,สถิติต่อเนื่อง (วัน)
+friend.metric.mastered,Words mastered,คำที่เชี่ยวชาญ
+friend.metric.stickers,Stickers earned,สติกเกอร์ที่ได้รับ
+profile.learningTitle,Learning progress,ความคืบหน้าการเรียน

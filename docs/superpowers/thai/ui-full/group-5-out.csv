@@ -1,0 +1,62 @@
+key,english,thai_current,thai_proposed
+album.title,Sticker Album,อัลบั้มสติกเกอร์,อัลบั้มสติกเกอร์
+album.back,← Profile,← โปรไฟล์,← โปรไฟล์
+album.events,Events,อีเวนต์,อีเวนต์
+sticker.scopeName,HSK{lv} · Top {n},HSK{lv} · Top {n},HSK{lv} · Top {n}
+sticker.scopeHint,Master all Top {n} words of HSK{lv},เชี่ยวชาญคำศัพท์ Top {n} ของ HSK{lv} ให้ครบ,เชี่ยวชาญคำศัพท์ Top {n} ของ HSK{lv} ให้ครบ
+sticker.msName,HSK{lv} · {pct}%,HSK{lv} · {pct}%,HSK{lv} · {pct}%
+sticker.msHint,Master {pct}% of HSK{lv},เชี่ยวชาญ {pct}% ของ HSK{lv},เชี่ยวชาญ {pct}% ของ HSK{lv}
+sticker.welcomeName,Welcome!,ยินดีต้อนรับ!,ยินดีต้อนรับ!
+sticker.welcomeHint,Finish your first session,จบเซสชันแรกของคุณ,จบเซสชันแรกของคุณ
+sticker.bossName,Challenge Champion,แชมป์ด่านทบทวน,แชมป์ด่านทบทวน
+sticker.bossHint,Complete your first Review Challenge,ผ่านด่านทบทวนครั้งแรก,ผ่านด่านทบทวนครั้งแรก
+sticker.streak7Name,7-Day Streak,สตรีค 7 วัน,เรียนต่อเนื่อง 7 วัน
+sticker.streak7Hint,Keep a 7-day study streak,รักษาสตรีคการเรียนต่อเนื่อง 7 วัน,รักษาการเรียนต่อเนื่อง 7 วัน
+sticker.streak30Name,30-Day Streak,สตรีค 30 วัน,เรียนต่อเนื่อง 30 วัน
+sticker.streak30Hint,Keep a 30-day study streak,รักษาสตรีคการเรียนต่อเนื่อง 30 วัน,รักษาการเรียนต่อเนื่อง 30 วัน
+sticker.monthlyName,Monthly Champion,แชมป์รายเดือน,แชมป์รายเดือน
+sticker.monthlyHint,Finish 40 quests in a month,ทำเควสต์สำเร็จ 40 ครั้งในหนึ่งเดือน,ทำภารกิจสำเร็จ 40 ครั้งในหนึ่งเดือน
+shop.title,Shop,ร้านค้า,ร้านค้า
+shop.skins,Cat skins,สกินแมว,สกินแมว
+shop.backdrops,Quest backdrops,ฉากหลัง,ฉากหลัง
+shop.effects,Effects,เอฟเฟกต์,เอฟเฟกต์
+shop.sounds,Sounds,เสียง,เสียง
+shop.supplies,Supplies,ของใช้,ของใช้
+shop.street,Street decorations,ของตกแต่งถนน,ของตกแต่งถนน
+shop.streetAvailable,Available for your street,ของที่ใช้บนถนนได้,ของที่ใช้บนถนนได้
+shop.streetFocusTitle,Build your street,สร้างถนนของคุณ,สร้างถนนของคุณ
+shop.streetFocusNote,Preview every decoration in your own street before spending coins.,ลองดูของตกแต่งบนถนนจริงก่อนใช้เหรียญ,ลองดูของตกแต่งบนถนนจริงก่อนใช้เหรียญ
+shop.viewStreet,View my street,ดูถนนของฉัน,ดูถนนของฉัน
+shop.preview,Preview,ลองดู,ลองดู
+shop.previewItem,Preview {name} on your street,ลองดู{name}บนถนนของคุณ,ลองดู{name}บนถนนของคุณ
+shop.wallet,Wallet: <b>{coins}</b> coins,กระเป๋าเงิน: <b>{coins}</b> เหรียญ,กระเป๋าเงิน: <b>{coins}</b> เหรียญ
+shop.buy,Buy,ซื้อ,ซื้อ
+shop.equip,Equip,ใช้งาน,ใช้งาน
+shop.equipped,Equipped,ใช้งานอยู่,ใช้งานอยู่
+shop.coins,{coins} coins,{coins} เหรียญ,{coins} เหรียญ
+shop.daily,Today's Stock,สินค้าวันนี้,สินค้าวันนี้
+shop.dailyNote,New stock at midnight,อัปเดตสินค้าใหม่ตอนเที่ยงคืน,อัปเดตสินค้าใหม่ตอนเที่ยงคืน
+shop.dailyAllOwned,All stocked up! Fresh finds at midnight 🌙,มีครบทุกชิ้นแล้ว! ของใหม่มาตอนเที่ยงคืน 🌙,มีครบทุกชิ้นแล้ว! ของใหม่มาตอนเที่ยงคืน 🌙
+shop.season,Season Corner,มุมเทศกาล,มุมเทศกาล
+shop.seasonUntil,Available until {date},มีถึง {date},มีถึง {date}
+shop.seasonReturns,🏮 {name} set returns {date},🏮 เซ็ต {name} จะกลับมา {date},🏮 เซ็ต {name} จะกลับมา {date}
+shop.upgrade,Upgrade {stars} ({coins}),อัปเกรด {stars} ({coins}),อัปเกรด {stars} ({coins})
+shop.owned-count,Owned: {n}/{cap},มีอยู่: {n}/{cap},มีอยู่: {n}/{cap}
+shop.getCoins,Get Coins,เติมเหรียญ,เติมเหรียญ
+shop.supporterTitle,Supporter,ผู้สนับสนุน,ผู้สนับสนุน
+shop.supporterDesc,"Remove ads forever · +2,000 coins · Supporter badge","ปิดโฆษณาถาวร · รับ 2,000 เหรียญ · แบดจ์ผู้สนับสนุน","ปิดโฆษณาถาวร · รับ 2,000 เหรียญ · แบดจ์ผู้สนับสนุน"
+shop.supporterOwned,Thank you for supporting Lucky Cat! ♥,ขอบคุณที่สนับสนุน Lucky Cat! ♥,ขอบคุณที่สนับสนุน Lucky Cat! ♥
+iap.amount,{coins} coins,{coins} เหรียญ,{coins} เหรียญ
+iap.pending,Processing…,กำลังดำเนินการ…,กำลังดำเนินการ…
+iap.failed,Purchase failed — nothing was charged. Try again.,การซื้อไม่สำเร็จ — ยังไม่มีการเรียกเก็บเงิน ลองใหม่อีกครั้ง,การซื้อไม่สำเร็จ — ยังไม่มีการเรียกเก็บเงิน ลองใหม่อีกครั้ง
+iap.success,+{coins} coins added!,ได้รับ +{coins} เหรียญแล้ว!,ได้รับ +{coins} เหรียญแล้ว!
+iap.supporterThanks,You're a Supporter now — thank you! ♥,คุณเป็นผู้สนับสนุนแล้ว — ขอบคุณ! ♥,คุณเป็นผู้สนับสนุนแล้ว — ขอบคุณ! ♥
+iap.restore,Restore Purchases,กู้คืนการซื้อ,กู้คืนการซื้อ
+iap.restored,Supporter restored ♥,กู้คืนสถานะผู้สนับสนุนแล้ว ♥,กู้คืนสถานะผู้สนับสนุนแล้ว ♥
+iap.nothingToRestore,Nothing to restore,ไม่มีรายการให้กู้คืน,ไม่มีรายการให้กู้คืน
+iap.restoreFailed,Restore failed — check your connection and try again.,กู้คืนไม่สำเร็จ — ตรวจสอบการเชื่อมต่อแล้วลองใหม่,กู้คืนไม่สำเร็จ — ตรวจสอบการเชื่อมต่อแล้วลองใหม่
+iap.processing,Purchase is processing — your coins will arrive shortly.,การซื้อกำลังดำเนินการ — เหรียญของคุณจะเข้าบัญชีในไม่ช้า,การซื้อกำลังดำเนินการ — เหรียญของคุณจะเข้าบัญชีในไม่ช้า
+shop.maxed,★★★,★★★,★★★
+season.summer,Summer,ฤดูร้อน,ฤดูร้อน
+season.midautumn,Mid-Autumn,ไหว้พระจันทร์,ไหว้พระจันทร์
+season.cny,Lunar New Year,ตรุษจีน,ตรุษจีน

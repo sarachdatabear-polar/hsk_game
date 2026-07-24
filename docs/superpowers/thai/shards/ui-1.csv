@@ -1,0 +1,66 @@
+key,english,thai_current,thai_proposed
+home.smart,Smart Review,ทบทวนอัจฉริยะ,ทบทวนอัจฉริยะ
+home.flashcards,Flashcards,บัตรคำ,บัตรคำ
+home.tones,Tone Trainer,ฝึกวรรณยุกต์,ฝึกวรรณยุกต์
+home.tonesDisabledHint,Needs sound,ต้องเปิดเสียง,ต้องเปิดเสียง
+home.shop,Shop,ร้านค้า,ร้านค้า
+home.best,Best Sessions,สถิติดีที่สุด,สถิติดีที่สุด
+home.progress,Progress,ความคืบหน้า,ความคืบหน้า
+home.howto,How to play,วิธีเล่น,วิธีเล่น
+home.sound,Sound effects,เสียงประกอบ,เสียงประกอบ
+home.settings,Settings,ตั้งค่า,ตั้งค่า
+home.streakTitle,Study Streak,เรียนต่อเนื่อง,เรียนต่อเนื่อง
+home.streakDays,{n} days,{n} วัน,{n} วัน
+home.freezes,{n} freezes,น้ำแข็ง {n} ชิ้น,น้ำแข็ง {n} ชิ้น
+home.freeze-one,1 freeze,น้ำแข็ง 1 ชิ้น,น้ำแข็ง 1 ชิ้น
+home.start,START,เริ่ม,เริ่มเลย
+home.startReview,REVIEW {n} DUE WORDS,ทบทวนคำที่ถึงกำหนด {n} คำ,ถึงเวลาทบทวน {n} คำ
+home.startHint,Need at least 8 words in scope to start — widen it below.,ต้องมีคำอย่างน้อย 8 คำในขอบเขตจึงจะเริ่มได้ — ขยายขอบเขตด้านล่าง,ต้องมีอย่างน้อย 8 คำในขอบเขตถึงจะเริ่มได้ — ขยายขอบเขตด้านล่างได้เลย
+home.scopeWords,{n} words,{n} คำ,{n} คำ
+home.levelChip,Lv {lv},Lv {lv},Lv {lv}
+common.playAudio,Play audio,เล่นเสียง,เล่นเสียง
+common.close,Close,ปิด,ปิด
+results.introHint,Great first session! Come back tomorrow to start your streak 🍵,ครั้งแรกเยี่ยมมาก! กลับมาพรุ่งนี้เพื่อเริ่มสตรีคของคุณ 🍵,ครั้งแรกเยี่ยมไปเลย! พรุ่งนี้กลับมาเริ่มเรียนต่อเนื่องกันนะ 🍵
+nav.home,Home,หน้าหลัก,หน้าหลัก
+nav.street,Street,ถนน,ถนน
+nav.progress,Profile,โปรไฟล์,โปรไฟล์
+nav.more,More,เพิ่มเติม,เพิ่มเติม
+results.roundOver,Word Quest complete,จบภารกิจคำศัพท์,ภารกิจคำศัพท์สำเร็จ
+results.routeLabel,Village Gate journey,เส้นทางประตูหมู่บ้าน,เส้นทางประตูหมู่บ้าน
+results.chapter,Chapter {n},บทที่ {n},บทที่ {n}
+results.learnedTarget,{learned} / {target} words learned,เรียนรู้แล้ว {learned} / {target} คำ,เรียนรู้แล้ว {learned} / {target} คำ
+results.attempts,Attempts,ครั้งที่ตอบ,ตอบทั้งหมด
+results.accuracy,Accuracy,ความแม่นยำ,ความแม่นยำ
+results.lanterns,Lanterns,โคมไฟ,โคมไฟ
+results.rewardTitle,Lucky rewards,รางวัลนำโชค,รางวัลนำโชค
+results.nextReviewPractice,Next: revisit your extra-practice words,ต่อไป: ทบทวนคำที่ต้องฝึกเพิ่ม,ต่อไป: ทบทวนคำที่ต้องฝึกเพิ่ม
+results.nextReviewTomorrow,Your Lantern Trail continues tomorrow,เส้นทางโคมไฟของคุณดำเนินต่อพรุ่งนี้,เส้นทางโคมไฟไปต่อพรุ่งนี้นะ
+results.lanternAlt,Lit lantern,โคมไฟที่จุดแล้ว,โคมไฟที่จุดแล้ว
+results.missed,Needed extra practice,คำที่ต้องฝึกเพิ่ม,คำที่ต้องฝึกเพิ่ม
+results.reviewWords,Review Words,ทบทวนคำ,ทบทวนคำ
+results.practiceMissed,Practice these words again,ฝึกคำเหล่านี้อีกครั้ง,ฝึกคำเหล่านี้อีกครั้ง
+results.playAgain,Play again,เล่นอีกครั้ง,เล่นอีกครั้ง
+results.home,Home,หน้าหลัก,หน้าหลัก
+results.banked,+{score} coins banked · total {total},+{score} เหรียญ · รวม {total},+{score} เหรียญ · รวม {total}
+results.perfect,Perfect Word Quest! +{bonus} coin bonus,ภารกิจคำศัพท์สมบูรณ์แบบ! โบนัส +{bonus} เหรียญ,ภารกิจคำศัพท์สมบูรณ์แบบ! โบนัส +{bonus} เหรียญ
+results.levelUp,Level up! Lv {lv},เลื่อนระดับ! Lv {lv},เลื่อนระดับ! Lv {lv}
+results.levelUpUnlocked,Level up! Lv {lv} — unlocked: {items},เลื่อนระดับ! Lv {lv} — ปลดล็อก: {items},เลื่อนระดับ! Lv {lv} — ปลดล็อก: {items}
+results.sub,{acc}% accuracy · {words} words · {key},แม่นยำ {acc}% · {words} คำ · {key},แม่นยำ {acc}% · {words} คำ · {key}
+results.bestTag,Best session!,สถิติใหม่!,สถิติใหม่!
+results.bestPrev,best {prev},ดีที่สุด {prev},ดีที่สุด {prev}
+results.questComplete,Quest complete: {desc} +{reward} coins,เควสต์สำเร็จ: {desc} +{reward} เหรียญ,ภารกิจสำเร็จ: {desc} +{reward} เหรียญ
+results.projectTitle,Next street build,สิ่งที่จะสร้างบนถนนต่อไป,สิ่งที่จะสร้างบนถนนต่อไป
+results.projectProgress,+{earned} this quest · {remaining} coins to go,+{earned} จากภารกิจนี้ · เหลืออีก {remaining} เหรียญ,+{earned} จากภารกิจนี้ · เหลืออีก {remaining} เหรียญ
+results.projectNoGain,{remaining} coins to go,เหลืออีก {remaining} เหรียญ,เหลืออีก {remaining} เหรียญ
+results.projectReadyEarned,+{earned} this quest · ready to build!,+{earned} จากภารกิจนี้ · พร้อมสร้างแล้ว!,+{earned} จากภารกิจนี้ · พร้อมสร้างแล้ว!
+results.projectReady,Ready to build!,พร้อมสร้างแล้ว!,พร้อมสร้างแล้ว!
+results.viewProject,View project,ดูโปรเจกต์,ดูโปรเจกต์
+results.buildNow,Build now,สร้างเลย,สร้างเลย
+common.backProfile,← Profile,← โปรไฟล์,← โปรไฟล์
+results.newSticker,New sticker: {name},สติกเกอร์ใหม่: {name},สติกเกอร์ใหม่: {name}
+common.back,← Home,← หน้าหลัก,← หน้าหลัก
+common.backMore,← More,← เพิ่มเติม,← เพิ่มเติม
+common.backStreet,← Street,← ถนน,← ถนน
+common.cancel,Cancel,ยกเลิก,ยกเลิก
+common.done,Done,เสร็จ,เสร็จ
+common.language,Language,ภาษา,ภาษา

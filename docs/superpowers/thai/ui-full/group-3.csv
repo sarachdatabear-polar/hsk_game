@@ -1,0 +1,70 @@
+key,english,thai_current
+battle.critical,BRILLIANT!,ยอดเยี่ยม!
+toast.freeze-used,Streak Freeze used — your {n}-day streak is safe,ใช้น้ำแข็งพิทักษ์สตรีคแล้ว — สตรีค {n} วันของคุณยังอยู่
+fc.noThai,no Thai yet,ยังไม่มีภาษาไทย
+fc.inSentence,In a sentence,ในประโยค
+battle.round,Round {label},รอบ {label}
+battle.wordQuest,Word Quest,ภารกิจคำศัพท์
+battle.routeName,Lantern Trail,เส้นทางโคมไฟ
+battle.reviewPouch,Review Pouch {n},ถุงทบทวน {n}
+battle.learnedProgress,Learned {label},เรียนแล้ว {label}
+battle.luckyFlow,Lucky Flow,จังหวะโชคดี
+battle.promptChoose,Choose the correct meaning.,เลือกความหมายที่ถูกต้อง
+battle.promptMeaning,Choose the correct meaning.,เลือกความหมายที่ถูกต้อง
+battle.promptListen,"Listen, then choose the meaning you heard.",ฟังเสียง แล้วเลือกความหมายที่ได้ยิน
+battle.promptReverse,Choose the hanzi that matches the meaning.,เลือกอักษรจีนที่ตรงกับความหมาย
+battle.promptTone,Choose the correct pinyin and tone.,เลือกพินอินและวรรณยุกต์ที่ถูกต้อง
+battle.promptCloze,Choose the word that completes the sentence.,เลือกคำที่เติมประโยคให้สมบูรณ์
+battle.promptTyped,"Type the pinyin letters, then choose any tones shown.",พิมพ์ตัวอักษรพินอิน แล้วเลือกวรรณยุกต์ที่แสดง
+battle.reviewChallengeIntro,Review Challenge · recall this word in two steps.,ด่านทบทวน · ทบทวนคำนี้ให้ครบสองขั้น
+battle.feedbackLearned,Got it — this word is growing stronger.,เก่งมาก — คุณจำคำนี้ได้ดีขึ้นอีกขั้น
+battle.feedbackReview,Added to your Review Pouch — you will see it again soon.,เพิ่มลงถุงทบทวนแล้ว — คุณจะได้พบคำนี้อีกในไม่ช้า
+battle.pause,Pause,หยุดชั่วคราว
+battle.paused,Paused,หยุดชั่วคราว
+battle.resume,Resume,เล่นต่อ
+battle.quit,Quit,ออก
+battle.wordAudio,Word audio,เสียงคำศัพท์
+battle.pinyin,Pinyin,พินอิน
+battle.on,On,เปิด
+battle.off,Off,ปิด
+battle.canvasLabel,Word Quest scene. Press Enter or Space to replay the word's audio (when available).,ฉากภารกิจคำศัพท์ กด Enter หรือ Space เพื่อฟังเสียงคำศัพท์อีกครั้ง (เมื่อเปิดให้ฟัง)
+battle.canvasWord,"Current word: {h}, pinyin {p}. Press Enter or Space to replay its audio.",คำปัจจุบัน: {h} พินอิน {p} กด Enter หรือ Space เพื่อฟังเสียงอีกครั้ง
+battle.canvasHanzi,Current hanzi: {h}. Use the task below to recall its pinyin.,อักษรจีนปัจจุบัน: {h} ทำโจทย์ด้านล่างเพื่อนึกพินอิน
+battle.canvasListen,"Listen-only word. Press Enter or Space to replay the audio, then choose its meaning.",โจทย์ฟังเสียง กด Enter หรือ Space เพื่อฟังซ้ำ แล้วเลือกความหมาย
+battle.canvasHidden,The answer is hidden for this recall task. Read the prompt and choices below.,โจทย์นี้ซ่อนคำตอบไว้ อ่านคำสั่งและตัวเลือกด้านล่าง
+battle.canvasRevealed,"Answer revealed: {h}, pinyin {p}. Press Enter or Space to replay its audio.",เฉลย: {h} พินอิน {p} กด Enter หรือ Space เพื่อฟังเสียงอีกครั้ง
+battle.bossPrompt,Review Challenge · pick the hanzi for: {meaning},ด่านทบทวน · เลือกตัวอักษรจีนของคำว่า: {meaning}
+battle.replay,Play it again,ฟังอีกครั้ง
+battle.reversePrompt,Pick the hanzi for: {meaning},เลือกตัวอักษรจีนของคำว่า: {meaning}
+battle.introOk,Got it!,เข้าใจแล้ว!
+battle.introListen,New: listen first! Play the sound and tap the meaning you hear.,ใหม่: ฟังก่อนนะ! กดฟังเสียงแล้วแตะความหมายที่ได้ยิน
+battle.introReverse,New: you know this word — now pick its hanzi from the meaning!,ใหม่: คำนี้คุ้นแล้ว — เลือกตัวอักษรจีนจากความหมายเลย!
+battle.introTone,New: tone check! Tap the pinyin with the right tone marks.,ใหม่: เช็ควรรณยุกต์! แตะพินอินที่มีวรรณยุกต์ถูกต้อง
+battle.introCloze,New: fill the blank! Pick the word that completes the sentence.,ใหม่: เติมคำในช่องว่าง! เลือกคำที่ทำให้ประโยคสมบูรณ์
+battle.introTyped,Master level — now you type it!\n1 · Type the pinyin letters\n2 · Tap any tone selectors shown\n3 · Press CHECK!,ด่านมาสเตอร์ — พิมพ์เองเลย!\n1 · พิมพ์ตัวอักษรพินอิน\n2 · แตะวรรณยุกต์ที่แสดง\n3 · กด ตรวจคำตอบ!
+battle.typedPlaceholder,type the pinyin letters,พิมพ์ตัวอักษรพินอิน
+battle.typedGo,CHECK!,ตรวจคำตอบ!
+battle.typedLettersOk,letters right — check the tones!,ตัวอักษรถูกแล้ว — เช็ควรรณยุกต์!
+battle.typedTonesOk,tones right — check the spelling!,วรรณยุกต์ถูกแล้ว — เช็คตัวสะกด!
+battle.toneAria,tone {n} for {syl},วรรณยุกต์ {n} ของ {syl}
+battle.instruction.meaning,Choose the correct meaning,เลือกความหมายที่ถูกต้อง
+battle.instruction.reverse,Choose the hanzi,เลือกตัวอักษรจีนที่ถูกต้อง
+battle.instruction.listen,"Listen, then choose",ฟังแล้วเลือกความหมาย
+battle.instruction.tone,Choose the pinyin,เลือกพินอินที่ถูกต้อง
+battle.instruction.typed,Type the pinyin,พิมพ์พินอิน
+battle.instruction.cloze,Fill the blank,เติมคำในช่องว่าง
+battle.correct,Correct!,ถูกต้อง!
+tones.title,Tone Trainer,ฝึกวรรณยุกต์
+tones.instruction,Which tone did you hear?,คุณได้ยินวรรณยุกต์อะไร
+tones.replay,Play it again,ฟังอีกครั้ง
+tones.progress,{i} / {n},{i} / {n}
+tones.tone1,1,1
+tones.tone2,2,2
+tones.tone3,3,3
+tones.tone4,4,4
+tones.toneAria,Tone {n},วรรณยุกต์ {n}
+tones.roundDone,Round done!,จบรอบแล้ว!
+tones.score,{score} / {total} correct,ถูก {score} จาก {total}
+tones.bestStreak,Best streak: {n},ต่อเนื่องสูงสุด {n} ครั้ง
+tones.reward,+{coins} coins · +{xp} XP,+{coins} เหรียญ · +{xp} XP
+tones.again,Play again,เล่นอีกครั้ง
