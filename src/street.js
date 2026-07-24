@@ -217,6 +217,17 @@ export function unplacedStreetItems(ownedIds, layout) {
   return streetOwnedIds(ownedIds, l).filter(id => !placed.has(id));
 }
 
+// Editor inventory rows: placeable street items only. Raw shop ownership also
+// holds skins/backdrops/effects/soundpacks — those are equipped elsewhere and
+// must never appear here (they have no deco sprite and fit no plot).
+export function streetInventory(ownedIds, layout, filter = "all") {
+  const l = normalizeStreetLayout(layout, ownedIds);
+  const placedSet = new Set(Object.values(l.placements));
+  return streetOwnedIds(ownedIds, l)
+    .map(id => ({ id, placed: placedSet.has(id) }))
+    .filter(row => filter === "all" || (filter === "placed") === row.placed);
+}
+
 // Move or place an item. An occupied target swaps only when the displaced item
 // fits the selected item's former plot; otherwise the operation is rejected.
 export function placeStreetItem(layout, ownedIds, itemId, plotId) {
