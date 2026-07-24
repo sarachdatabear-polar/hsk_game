@@ -42,7 +42,7 @@ import { comboGlowTier, plaqueBounce, countUpValue, trailMoveX } from "./juice.j
 import { isFirstRun, introDeck } from "./firstrun.js";
 import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue } from "./stickers.js";
 import { journeyNodes, currentNodeId } from "./journey.js";
-import { defaultProfile, normalizeDisplayName, profileInitial, profileStats, equippedSummary } from "./profile.js";
+import { defaultProfile, normalizeDisplayName, profileInitial, profileStats, bestSessionScore, equippedSummary } from "./profile.js";
 import { accountState, accountView, canSendCode, codeLooksValid } from "./account.js";
 import { getSession, ensureGuest, sendCode, verifyCode, saveDisplayName, signOut, deleteAccount } from "./cloud.js";
 import { SYNC_KEYS } from "./merge.js";
@@ -2735,9 +2735,15 @@ function draw(now){
   // combo floaters drifting up from a kill
   if(B.floats.length){
     ctx.font = fontString(700, B.L.floaterPx, LATIN_STACK);
+    // Night backdrops swallow bare gold text (audit 24 Jul); a dark outline
+    // keeps the floater legible on any scene without changing its color.
     ctx.fillStyle = "#f5c518";
+    ctx.strokeStyle = "rgba(46,42,36,.85)";
+    ctx.lineWidth = Math.max(2.5, B.L.floaterPx/6);
+    ctx.lineJoin = "round";
     for(const f of B.floats){
       ctx.globalAlpha = Math.max(0, Math.min(1, f.life/0.9));
+      ctx.strokeText(f.text, f.x, f.y);
       ctx.fillText(f.text, f.x, f.y);
     }
     ctx.globalAlpha = 1;
@@ -3801,7 +3807,7 @@ function renderProfileDashboard(){
   $("#profile-mastered").textContent = stats.masteredWords.toLocaleString();
   $("#profile-seen").textContent = stats.seenWords.toLocaleString();
   $("#profile-stickers").textContent = `${stats.earnedStickers}/${stats.totalStickers}`;
-  $("#profile-cosmetics").textContent = `${stats.ownedCosmetics}/${stats.totalCosmetics}`;
+  $("#profile-best").textContent = bestSessionScore(store.get("best", {})).toLocaleString();
   $("#profile-collection-count").textContent = t("profile.collectionCount", {
     owned: stats.ownedCosmetics, total: stats.totalCosmetics,
   });
