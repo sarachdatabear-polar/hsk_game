@@ -46,7 +46,11 @@ def supplement_path(root):
 
 
 def load_proposals(batch_path):
-    """hanzi -> proposed thai gloss, from a reviewed batch CSV."""
+    """hanzi -> proposed thai gloss, from a reviewed batch CSV.
+
+    Duplicate hanzi keys within the batch last-win (later row overwrites an
+    earlier one); a warning listing the duplicated hanzi is printed when found.
+    """
     with open(batch_path, "r", encoding="utf-8-sig", newline="") as fh:
         reader = csv.DictReader(fh)
         fields = reader.fieldnames or []
@@ -55,11 +59,22 @@ def load_proposals(batch_path):
                 f"batch CSV must have hanzi,thai_proposed columns, got: {fields}"
             )
         proposals = {}
+        seen = set()
+        duplicates = []
         for row in reader:
             hanzi = (row.get("hanzi") or "").strip()
             proposed = (row.get("thai_proposed") or "").strip()
             if hanzi and proposed:
+                if hanzi in seen:
+                    duplicates.append(hanzi)
+                seen.add(hanzi)
                 proposals[hanzi] = proposed
+    if duplicates:
+        uniq_dupes = list(dict.fromkeys(duplicates))
+        print(
+            f"WARNING: duplicate hanzi in batch CSV ({len(uniq_dupes)}, last wins): "
+            f"{', '.join(uniq_dupes)}"
+        )
     return proposals
 
 
@@ -75,8 +90,10 @@ def rewrite_csv(path, proposals, thai_col="thai", source_col=None, out_path=None
     (defaults to path). Always writes (even with zero changes) — that's what
     makes the writer's losslessness testable via --selftest-roundtrip.
 
-    Returns (changed_count, samples) where samples is a list of
-    (hanzi, old_thai, new_thai) tuples, capped at SAMPLE_LIMIT.
+    Returns (changed_count, samples, matched) where samples is a list of
+    (hanzi, old_thai, new_thai) tuples capped at SAMPLE_LIMIT, and matched is
+    the set of proposal hanzi that had a corresponding row in this file
+    (whether or not the value actually changed).
     """
     newline = sniff_newline(path)
     with open(path, "r", encoding="utf-8-sig", newline="") as fh:
@@ -86,11 +103,13 @@ def rewrite_csv(path, proposals, thai_col="thai", source_col=None, out_path=None
 
     changed = 0
     samples = []
+    matched = set()
     for row in rows:
         hanzi = row.get("hanzi", "")
         proposed = proposals.get(hanzi)
         if proposed is None:
             continue
+        matched.add(hanzi)
         current = row.get(thai_col, "")
         if proposed == current:
             continue
@@ -107,7 +126,7 @@ def rewrite_csv(path, proposals, thai_col="thai", source_col=None, out_path=None
         writer.writeheader()
         writer.writerows(rows)
 
-    return changed, samples
+    return changed, samples, matched
 
 
 def process_file(path, proposals, thai_col, source_col, dry_run):
@@ -116,10 +135,10 @@ def process_file(path, proposals, thai_col, source_col, dry_run):
         # file instead of `path`.
         with tempfile.TemporaryDirectory() as tmp:
             scratch = Path(tmp) / path.name
-            changed, samples = rewrite_csv(
+            changed, samples, matched = rewrite_csv(
                 path, proposals, thai_col=thai_col, source_col=source_col, out_path=scratch
             )
-        return changed, samples
+        return changed, samples, matched
     return rewrite_csv(path, proposals, thai_col=thai_col, source_col=source_col)
 
 
@@ -136,7 +155,7 @@ def selftest_roundtrip(path):
     result; does not touch `path`."""
     with tempfile.TemporaryDirectory() as tmp:
         scratch = Path(tmp) / path.name
-        changed, _ = rewrite_csv(path, {}, out_path=scratch)
+        changed, _, _ = rewrite_csv(path, {}, out_path=scratch)
         original = path.read_bytes()
         rewritten = scratch.read_bytes()
         identical = original == rewritten
@@ -181,20 +200,29 @@ def main(argv=None):
         print("(dry run: no files will be written)\n")
 
     total = 0
+    matched_all = set()
     for level in BY_LEVEL_LEVELS:
         path = by_level_path(root, level)
-        changed, samples = process_file(path, proposals, thai_col="thai", source_col=None, dry_run=args.dry_run)
+        changed, samples, matched = process_file(path, proposals, thai_col="thai", source_col=None, dry_run=args.dry_run)
         report(path, changed, samples, root)
         total += changed
+        matched_all |= matched
 
     supp = supplement_path(root)
-    changed, samples = process_file(supp, proposals, thai_col="thai", source_col="source", dry_run=args.dry_run)
+    changed, samples, matched = process_file(supp, proposals, thai_col="thai", source_col="source", dry_run=args.dry_run)
     report(supp, changed, samples, root)
     total += changed
+    matched_all |= matched
 
     print(f"\nTotal changed rows: {total}")
     if args.dry_run:
         print("(dry run: no files written)")
+
+    unmatched = [h for h in proposals if h not in matched_all]
+    if unmatched:
+        print(
+            f"\nWARNING: proposals with 0 matches ({len(unmatched)}): {', '.join(unmatched)}"
+        )
     return 0
 
 
