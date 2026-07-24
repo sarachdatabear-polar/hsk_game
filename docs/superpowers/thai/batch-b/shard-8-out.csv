@@ -1,0 +1,201 @@
+hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
+丝,sī,silk; thread-like thing,ไหม,2,5,ไหม,
+丢失,diū shī,to lose; to misplace,"หาย, สูญหาย",2,5,"หาย, สูญหาย",
+严厉,yán lì,severe; strict,เข้มงวด,2,5,เข้มงวด,
+个性,gè xìng,individuality; personality,บุคลิกภาพ,2,5,บุคลิกภาพ,
+中介,zhōng jiè,to act as intermediary; to link,ตัวกลาง,2,5,ตัวกลาง,
+中华民族,zhōng huá mín zú,the Chinese nation; the Chinese people,ชาวจีน,2,5,ชนชาติจีน,
+中外,zhōng wài,Sino-foreign; Chinese-foreign,ระหว่างจีนและต่างประเทศ,2,6,ระหว่างจีนและต่างประเทศ,
+中奖,zhòng jiǎng,to win a prize,ถูกรางวัล,2,5,ถูกรางวัล,
+中期,zhōng qī,middle; medium-term,ช่วงกลาง,2,6,ช่วงกลาง,
+中部,zhōng bù,middle part,ส่วนกลาง,2,5,ส่วนกลาง,
+丰收,fēng shōu,to reap a bumper harvest,เก็บเกี่ยวดี,2,5,เก็บเกี่ยวได้ผลดี,
+主人公,zhǔ rén gōng,hero; main protagonist,ตัวประกอบสำคัญ,2,6,ตัวเอก,"current ตัวประกอบสำคัญ = supporting character/extra, wrong"
+主张,zhǔ zhāng,to advocate; to stand for,เห็นชอบ,2,5,สนับสนุน,"current เห็นชอบ = approve, off; 主张 = advocate"
+举世闻名,jǔ shì wén míng,world-famous,มีชื่อเสียงท่ั่วโลก,2,6,มีชื่อเสียงไปทั่วโลก,current had typo ท่ั่วโลก
+乃至,nǎi zhì,and even; to go so far as to,และแม้กระทั่ง,2,6,และแม้กระทั่ง,
+之中,zhī zhōng,inside; among,ท่ามกลาง,2,4,ท่ามกลาง,
+之内,zhī nèi,inside; within,"ข้างใน, ในระหว่าง",2,4,ภายใน,
+乘,chéng,to ride; to take (a vehicle),"ขี่, โดยสาร",2,5,"โดยสาร, นั่ง","current ขี่ = ride astride, off for boarding a vehicle"
+乘车,chéng chē,to ride; to drive,โดยสารรถ,2,6,โดยสารรถ,EN-GLOSS-BUG: 'to drive' should be 'to ride/take a vehicle'
+乡村,xiāng cūn,rustic; village,หมู่บ้าน,2,5,ชนบท; หมู่บ้าน,
+书包,shū bāo,schoolbag; satchel,กระเป๋านักเรียน,2,4,กระเป๋านักเรียน,
+予以,yǔ yǐ,to give; to impose,ให้,2,6,ให้,
+争,zhēng,to strive for; to vie for,ชิงชัง,2,5,แย่งชิง,"current ชิงชัง = to loathe, wrong; 争 = strive/vie"
+争吵,zhēng chǎo,to quarrel; dispute,ทะเลาะ,2,5,ทะเลาะ,
+争执,zhēng zhí,to dispute; to disagree,โต้แย้ง,2,5,โต้แย้ง,
+争论,zhēng lùn,to argue; to debate,ถกเถียง,2,5,ถกเถียง,
+事故,shì gù,accident,อุบัติเหตุ,2,6,อุบัติเหตุ,
+云,yún,cloud,เมฆ,2,4,เมฆ,
+互联网,hù lián wǎng,Internet,อินเทอร์เน็ต,2,4,อินเทอร์เน็ต,
+交换,jiāo huàn,to exchange; to swap,แลกเปลี่ยน,2,5,แลกเปลี่ยน,
+产业,chǎn yè,industry; estate,อุตสาหกรรม,2,6,อุตสาหกรรม,
+产地,chǎn dì,source; place of origin,ต้นทาง,2,5,แหล่งผลิต; แหล่งกำเนิด,"current ต้นทาง = route origin, off"
+享有,xiǎng yǒu,to enjoy,ได้รับ,2,6,ได้รับ,
+亲切,qīn qiè,amiable; cordial,เป็นกันเอง,2,5,เป็นกันเอง,
+亲密,qīn mì,intimate; close,สนิทสนม,2,5,สนิทสนม,
+亲眼,qīn yǎn,with one's own eyes; personally,ด้วยตาของเอง,2,6,ด้วยตาตัวเอง,current had typo ตาของเอง
+人事,rén shì,personnel; human resources,บุคลากร,2,5,บุคลากร,
+人手,rén shǒu,manpower; staff,กำลังคน,2,6,กำลังคน,
+人格,rén gé,personality; integrity,บุคลิกภาพ,2,5,บุคลิกภาพ,
+人民币,rén mín bì,"Renminbi, the official currency of the PRC",หยวน,2,4,หยวน,
+人群,rén qún,crowd,ฝูงชน,2,5,ฝูงชน,
+今日,jīn rì,today,วันนี้,2,6,วันนี้,
+从中,cóng zhōng,from among them; from it,จากตรงนี้,2,6,จากในนั้น,"current จากตรงนี้ = from here, off"
+仓库,cāng kù,depot; storehouse,คลังสินค้า,2,6,คลังสินค้า,
+付,fù,to pay; to hand over,"จ่าย, มอบให้",2,5,จ่าย; มอบให้,distinct senses -> semicolon
+付款,fù kuǎn,to pay a sum of money; payment,ชำระเงิน,2,4,ชำระเงิน,
+代,dài,to be a substitute for; generation,แทน,2,4,แทน; รุ่น,added distinct 'generation' sense
+价,jià,price; value,ราคา,2,5,ราคา,
+价钱,jià qián,price,ราคา,2,6,ราคา,
+任,rèn,to appoint; to assign (a post),มอบหมาย,2,6,แต่งตั้ง; มอบหมาย,
+任意,rèn yì,any; arbitrary,ตามต้องการ,2,5,ตามต้องการ,
+众人,zhòng rén,everyone,ทุกคน,2,5,ทุกคน,
+优雅,yōu yǎ,grace; graceful,สง่างาม,2,5,สง่างาม,
+会见,huì jiàn,to meet with,พบปะ,2,5,พบปะ,
+传授,chuán shòu,to impart; to pass on,สอนให้,2,6,"ถ่ายทอด, สอนให้",
+传染,chuán rǎn,to infect; contagious,"ติดเชื้อ, ติด",2,5,"ติดเชื้อ, ติด",
+传真,chuán zhēn,to fax; a fax,แฟกซ์,2,4,แฟกซ์,
+伤口,shāng kǒu,wound; cut,บาดแผล,2,5,บาดแผล,
+伴随,bàn suí,to accompany; to follow,ตามมาด้วย,2,6,ตามมาด้วย,
+住处,zhù chù,residence; dwelling,ที่อยู่,2,6,ที่อยู่,
+住院,zhù yuàn,to stay in hospital; to be hospitalized,อยู่ในโรงพยาบาล,2,4,นอนโรงพยาบาล,more natural than อยู่ในโรงพยาบาล
+体育馆,tǐ yù guǎn,gym; gymnasium,โรงยิม,2,3,โรงยิม,
+体贴,tǐ tiē,considerate,ใจดี,2,6,"เอาใจใส่, เข้าอกเข้าใจ","current ใจดี = kind, not considerate"
+体重,tǐ zhòng,body weight,น้ำหนัก,2,5,น้ำหนัก,
+何况,hé kuàng,let alone; to say nothing of,นอกจากนี้,2,5,ยิ่งไม่ต้องพูดถึง,"current นอกจากนี้ = besides, off"
+余,yú,I; me (literary),ข้าพเจ้า,2,5,ข้าพเจ้า,
+作战,zuò zhàn,combat; to fight,ต่อสู้,2,5,ต่อสู้,
+供奉,gòng fèng,to consecrate; to enshrine and worship,บูชา,2,6,บูชา,
+便利,biàn lì,convenient; easy,สะดวก,2,5,สะดวก,
+促使,cù shǐ,to prompt; to induce,"ผลักดันให้เกิดขึ้น, กระตุ้น",2,5,"ผลักดันให้เกิดขึ้น, กระตุ้น",
+保暖,bǎo nuǎn,to keep warm,"รักษาความอบอุ่น, กันหนาว",2,4,"รักษาความอบอุ่น, กันหนาว",
+保管,bǎo guǎn,to hold in safekeeping; to guarantee,เก็บรักษา,2,5,เก็บรักษา,
+保险,bǎo xiǎn,insurance; to insure,ประกันภัย,2,5,ประกันภัย,
+保障,bǎo zhàng,to ensure; to guarantee,คุ้มครอง,2,6,คุ้มครอง,
+信仰,xìn yǎng,to believe in; firm belief,ศรัทธา,2,6,ศรัทธา,
+信箱,xìn xiāng,mailbox; post office box,กล่องจดหมาย,2,4,กล่องจดหมาย,
+信赖,xìn lài,to trust; to have confidence in,ไว้วางใจ,2,6,ไว้วางใจ,
+修理,xiū lǐ,to repair; to fix,ซ่อม,2,4,ซ่อม,
+倒霉,dǎo méi,to have bad luck; to be out of luck,"โชคร้าย, ซวย",2,5,"โชคร้าย, ซวย",
+借鉴,jiè jiàn,to draw on; to learn from,อ้างอิง,2,6,นำมาเป็นแบบอย่าง,second opinion: draw-lessons-from vs cite
+倾诉,qīng sù,to say everything,บอกทั้งหมด,2,5,ระบายความในใจ,EN-GLOSS-BUG: 'to say everything' weak; real sense = pour out one's feelings/confide
+假使,jiǎ shǐ,if; in case,ถ้า,2,6,ถ้า,
+假装,jiǎ zhuāng,to feign; to pretend,แกล้ง,2,5,"แกล้งทำเป็น, เสแสร้ง",bare แกล้ง can read as tease/bully
+偏,piān,to lean; to slant,"เอียง, เอียงเข้า",2,5,"เอียง, เอียงเข้า",
+偏僻,piān pì,remote; desolate,ห่างไกล,2,6,ห่างไกล,
+做客,zuò kè,to be a guest or visitor,มาเยือน,2,3,มาเยือน,
+做饭,zuò fàn,to prepare a meal; to cook,ทำข้าว,2,3,"ทำกับข้าว, ทำอาหาร",ทำข้าว is casual/regional
+停电,tíng diàn,to have a power failure; power cut,ไฟดับ,2,4,ไฟดับ,
+停车位,tíng chē wèi,parking space; parking spot,ที่จอดรถ,2,5,ที่จอดรถ,
+停顿,tíng dùn,to halt; to break off,หยุด,2,6,หยุดชะงัก,captures pause nuance vs plain หยุด
+偷,tōu,to steal; to pilfer,ลักขโมย,2,5,ลักขโมย,
+傍晚,bàng wǎn,in the evening; when night falls,ตอนเย็น,2,5,ตอนเย็น,
+储备,chǔ bèi,to store up; reserves,สำรองไว้,2,6,สำรองไว้,
+储蓄,chǔ xù,to save money; savings,เก็บสะสม,2,6,เก็บออม; เงินออม,"current เก็บสะสม = accumulate, off from save/savings"
+傲,ào,proud; arrogant,"หยิ่ง, ยโส",2,6,"หยิ่ง, ยโส",
+傻瓜,shǎ guā,idiot; fool,คนโง่,2,6,คนโง่,
+元宵节,yuán xiāo jié,Lantern Festival,เทศกาลโคมไฟ,2,6,เทศกาลโคมไฟ,
+元旦,yuán dàn,New Year's Day,วันปีใหม่,2,5,วันปีใหม่,
+充电器,chōng diàn qì,battery charger,อุปกรณ์ชาร์จแบตเตอรี่,2,5,อุปกรณ์ชาร์จแบตเตอรี่,
+光芒,guāng máng,rays of light; brilliant rays,แสงส่องพรั่ง,2,6,ลำแสง; รัศมี,current แสงส่องพรั่ง unnatural
+免,miǎn,to excuse someone; to exempt,ยกเว้น,2,5,ยกเว้น,
+免疫,miǎn yì,immunity,ภูมิคุ้มกัน,2,6,ภูมิคุ้มกัน,
+全身,quán shēn,the whole body; typography em,ร่างกายทั้งหมด,2,5,"ทั้งตัว, ทั่วร่างกาย",EN-GLOSS-BUG: 'typography em' is a bogus sense
+全长,quán zhǎng,overall length; span,ความยาวทั้งหมด,2,4,ความยาวทั้งหมด,
+八,bā,eight,แปด,2,2,แปด,
+公共,gōng gòng,public; common,สาธารณะ,2,4,สาธารณะ,
+公寓,gōng yù,apartment building; block of flats,"อพาร์ตเมนต์, อาคารชุด",2,5,"อพาร์ตเมนต์, อาคารชุด",
+公布,gōng bù,to announce; to make public,ประกาศ,2,5,ประกาศ,
+公益,gōng yì,public good,สาธารณประโยชน์,2,6,สาธารณประโยชน์,
+公约,gōng yuē,convention,อนุสัญญา,2,6,อนุสัญญา,
+公认,gōng rèn,publicly known; accepted,ยอมรับกันทั่ว,2,6,ยอมรับกันทั่ว,
+关联,guān lián,to be related; to be connected,เกี่ยวข้อง,2,6,เกี่ยวข้อง,
+兴高采烈,xìng gāo cǎi liè,happy and excited; in high spirits,มีความสุขสูง,2,6,"ดีอกดีใจ, ร่าเริงยินดี",current มีความสุขสูง unnatural
+兵,bīng,soldiers; a force,ทหาร,2,6,ทหาร,
+典型,diǎn xíng,model; typical case,ตัวแบบ,2,6,แบบฉบับ,current ตัวแบบ off; 典型 = typical/classic example
+养生,yǎng shēng,to maintain good health; wellness,บำรุงสุขภาพ,2,6,บำรุงสุขภาพ,
+内在,nèi zài,inner; internal,ภายใน,2,5,ภายใน,
+再说,zài shuō,besides; to deal with it later,พูดใหม่,2,3,อีกอย่าง; เอาไว้ค่อยว่ากัน,"current พูดใหม่ = say again, wrong"
+冒,mào,to emit; to risk,ปล่อยออกมา,2,6,พ่นออกมา; เสี่ยง,two distinct senses emit/risk
+军事,jūn shì,military affairs; military,เรื่องทหาร,2,5,เรื่องทหาร,
+军队,jūn duì,armed forces; troops,กองทัพ,2,5,กองทัพ,
+准,zhǔn,to allow; to grant,อนุญาต,2,4,อนุญาต,
+减,jiǎn,to lower; to decrease,ลด,2,4,ลด,
+减弱,jiǎn ruò,to weaken; to diminish,อ่อนลง,2,6,อ่อนลง,
+凝聚,níng jù,to condense; to coagulate,รวมตัว,2,6,รวมตัว,
+凭,píng,to lean against; to rely on,อาศัย,2,5,อาศัย,
+出售,chū shòu,to sell; to offer for sale,ขาย,2,4,ขาย,
+出版,chū bǎn,to publish,พิมพ์,2,5,ตีพิมพ์,current พิมพ์ = print/type; 出版 = publish
+出示,chū shì,to show; to take out and show to others,แสดง,2,5,แสดง,
+出院,chū yuàn,to be discharged from hospital,ออกจากโรงพยาบาล,2,2,ออกจากโรงพยาบาล,
+分工,fēn gōng,to divide up the work; division of labor,แบ่งงาน,2,6,แบ่งงาน,
+分开,fēn kāi,to separate; to part,แยกออกจากกัน,2,6,แยกออกจากกัน,
+分担,fēn dān,to share,แบ่งภาระ,2,5,แบ่งภาระ,
+分类,fēn lèi,to classify,การจำแนก,2,5,จำแนกประเภท,English lead is a verb; de-nominalize การจำแนก
+分辨,fēn biàn,to distinguish; to differentiate,แยกแยะ,2,6,แยกแยะ,
+划,huà,to plan; to delimit,"วางแผน, กำหนดขอบเขต",2,5,"วางแผน, กำหนดขอบเขต",
+划船,huá chuán,to row a boat; rowing,พายเรือ,2,5,พายเรือ,
+创建,chuàng jiàn,to found; to establish,ก่อตั้ง,2,6,ก่อตั้ง,
+初中,chū zhōng,junior high school,มัธยมศึกษาตอนต้น,2,5,มัธยมศึกษาตอนต้น,
+初衷,chū zhōng,original intention,จุดมุ่งหมายแรก,2,6,ความตั้งใจแรกเริ่ม,current จุดมุ่งหมายแรก off
+利润,lì rùn,profits,กำไร,2,5,กำไร,
+利益,lì yì,benefit; in someone's interest,ผลประโยชน์,2,6,ผลประโยชน์,
+制订,zhì dìng,to work out; to formulate,กำหนด,2,6,กำหนด,
+前不久,qián bù jiǔ,not long ago; not long before,เมื่อไม่นานมานี้,2,6,เมื่อไม่นานมานี้,
+前后,qián hòu,around; from beginning to end,"ประมาณ, จากต้นจนจบ",2,5,ประมาณ; ตั้งแต่ต้นจนจบ,distinct senses -> semicolon
+前往,qián wǎng,to leave for; to proceed towards,เดินทางไป,2,6,เดินทางไป,
+前提,qián tí,premise; precondition,เงื่อนไขเบื้องต้น,2,6,เงื่อนไขเบื้องต้น,
+前景,qián jǐng,prospects; outlook,มุมมองล่วงหน้า,2,6,แนวโน้มในอนาคต,current มุมมองล่วงหน้า unnatural
+前期,qián qī,preceding period; early stage,ระยะแรก,2,5,ระยะแรก,
+前来,qián lái,to come; before,มาก่อน,2,3,เดินทางมา,"current มาก่อน = come first, wrong"
+前进,qián jìn,to go forward; to forge ahead,เดินหน้า,2,4,เดินหน้า,
+前途,qián tú,prospects; future outlook,อนาคต,2,5,อนาคต,
+剧,jù,theatrical work; dramatic,บทละคร,2,6,ละคร; บทละคร,
+剧烈,jù liè,violent; acute,รุนแรง,2,6,รุนแรง,
+劝,quàn,to advise; to urge,โน้มน้าว,2,5,โน้มน้าว,
+办事,bàn shì,to handle; to work,ทำการ,2,5,จัดการธุระ,current ทำการ is banned/incomplete pattern
+办理,bàn lǐ,to handle; to transact,บริหารการ,2,5,ดำเนินการ,current บริหารการ incomplete/odd
+功,gōng,meritorious deed or service; achievement,"ความดีความชอบ, ความสำเร็จ",2,4,ความดีความชอบ; ความสำเร็จ,distinct senses -> semicolon
+加入,jiā rù,to become a member; to join,เข้าร่วม,2,4,เข้าร่วม,
+加深,jiā shēn,to deepen,ทำให้ลึกขึ้น,2,4,ทำให้ลึกขึ้น,
+加重,jiā zhòng,to make heavier; to emphasize,ทำให้หนักขึ้น,2,5,ทำให้หนักขึ้น,
+动听,dòng tīng,pleasant to listen to,ฟังพอใจ,2,6,"ไพเราะ, น่าฟัง",current ฟังพอใจ unnatural
+劳动,láo dòng,work; toil,การงาน,2,5,แรงงาน,current การงาน = occupation; 劳动 leans labor
+勉强,miǎn qiǎng,reluctantly; to force,บังคับ,2,6,ฝืนใจ,current บังคับ = force; 勉强 = do reluctantly/barely
+勿,wù,do not,อย่า,2,6,อย่า,
+包子,bāo zi,baozi; bao,ซาลาเปา,2,4,ซาลาเปา,
+包容,bāo róng,to pardon; to forgive,"อภัย, ยอม",2,5,"อภัย, ยอม",
+包袱,bāo fú,wrapping cloth; a bundle wrapped in cloth,หีบห่อ,2,6,หีบห่อ,
+化妆,huà zhuāng,to put on makeup,แต่งหน้า,2,6,แต่งหน้า,
+化肥,huà féi,chemical fertilizer,ปุ๋ยเคมี,2,6,ปุ๋ยเคมี,
+北边,běi biān,north; north side,ทางเหนือ,2,4,ทางเหนือ,
+升级,shēng jí,to go up by one grade; to be promoted,ขึ้นระดับ,2,5,ขึ้นระดับ,
+午睡,wǔ shuì,to take a nap in the afternoon,นอนเที่ยงวัน,2,6,นอนกลางวัน,more natural than นอนเที่ยงวัน
+午餐,wǔ cān,lunch; luncheon,อาหารเที่ยง,2,5,อาหารเที่ยง,
+半年,bàn nián,half a year,ครึ่งปี,2,3,ครึ่งปี,
+华人,huá rén,ethnic Chinese person or people,ชาวจีน,2,6,ชาวจีน,
+卓越,zhuó yuè,outstanding; surpassing,เลิศเด่น,2,6,"ยอดเยี่ยม, เป็นเลิศ",current เลิศเด่น uncommon compound
+单位,dān wèi,unit; work unit,หน่วย,2,5,หน่วย; หน่วยงาน,added work-unit sense
+单独,dān dú,alone; by oneself,คนเดียว,2,5,คนเดียว,
+单调,dān diào,monotonous,น่าเบื่อ,2,5,ซ้ำซากจำเจ,current น่าเบื่อ = boring; 单调 = monotonous
+南瓜,nán guā,pumpkin,ฟักทอง,2,6,ฟักทอง,
+占用,zhàn yòng,to occupy,ยึดครอบ,2,5,ใช้ (พื้นที่/เวลา),current typo ยึดครอบ; 占用 = take up (time/space)
+卡,kǎ,to stop; to block,ติด,2,4,ติด,
+印,yìn,to print; seal,พิมพ์,2,4,พิมพ์; ตราประทับ,added distinct seal sense
+印证,yìn zhèng,to confirm; to corroborate,ยืนยัน,2,6,ยืนยัน,
+即便,jí biàn,even if; even though,แม้ว่า,2,5,แม้ว่า,
+卷,juǎn,to roll up; to sweep up,ม้วน,2,5,ม้วน,
+历程,lì chéng,course; process,ขั้นตอน,2,6,เส้นทาง; กระบวนการ,"current ขั้นตอน = steps, off"
+压,yā,to press; to push down,กด,2,5,กด,
+压抑,yā yì,to constrain or repress emotions; oppressive,"กดข่มความรู้สึก, กดดัน",2,6,"กดข่มความรู้สึก, กดดัน",
+厕所,cè suǒ,toilet; lavatory,ห้องน้ำ,2,5,ห้องน้ำ,
+厘米,lí mǐ,centimeter,เซนติเมตร,2,5,เซนติเมตร,
+原先,yuán xiān,originally; original,ตั้งแต่เดิม,2,5,ตั้งแต่เดิม,
+原地,yuán dì,in place; on the spot,สถานที่เดิม,2,5,อยู่กับที่,"current สถานที่เดิม = former place, off"
+双,shuāng,pair; both,คู่,2,3,คู่,
+双向,shuāng xiàng,bidirectional; two-way,สองทาง,2,6,สองทาง,
+双重,shuāng chóng,double,"สองชั้น, ทวิภาค",2,6,สองชั้น; ซ้อนสอง,second opinion: current ทวิภาค odd for 'double/dual'
+反,fǎn,contrary; in reverse,ตรงกันข้าม,2,4,ตรงกันข้าม,
+反思,fǎn sī,to think back over something; to review,พิจารณาย้อนกลับ,2,6,ทบทวนตัวเอง,current พิจารณาย้อนกลับ literal; 反思 = self-reflect
+反感,fǎn gǎn,to be disgusted with; to dislike,ไม่ชอบ,2,6,รังเกียจ,current ไม่ชอบ mild; 反感 stronger aversion
