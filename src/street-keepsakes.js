@@ -12,6 +12,14 @@ export function makeKeepsake(kind, day, opts = {}) {
   return k;
 }
 
+// The words already displayed on a keepsake list, in ledger order. Callers pass
+// this to mastery.pickKeepsakeWord as the exclude set so a word is remembered by
+// at most one keepsake.
+export function keepsakeWords(list) {
+  const arr = Array.isArray(list) ? list : [];
+  return arr.filter(k => k && typeof k.word === "string" && k.word).map(k => k.word);
+}
+
 export function addKeepsake(list, keepsake) {
   const arr = Array.isArray(list) ? list : [];
   if (!keepsake || typeof keepsake.id !== "string") return arr.slice();

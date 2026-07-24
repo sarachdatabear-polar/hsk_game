@@ -34,14 +34,14 @@ import {
   streetMeta, streetClass, STREET_LAYOUT_VERSION,
 } from "../street.js";
 import { newlyCompletedSets, completedSets, collectionView } from "../street-collection.js";
-import { makeKeepsake, addKeepsake } from "../street-keepsakes.js";
+import { makeKeepsake, addKeepsake, keepsakeWords } from "../street-keepsakes.js";
 import { isNewDay, dailyGift } from "../street-daily.js";
 
 export function createStreetScreen({
   $, store, analytics, show, renderShop, pushEdge, updateWalletChip, todayStr, tOr,
   shopViewedProducts, REDUCED_MOTION, openDialog, closeDialog,
   getWallet, setWallet, getXp, getCurrentScreen, getShopState, setShopState,
-  roundRectOn, drawCoverImage, drawStarMark,
+  roundRectOn, drawCoverImage, drawStarMark, masteredWord = () => "",
 }) {
   let streetEdit = null;       // draft-only editor state; committed on Done
   let streetPreview = null;    // temporary shop preview projected into the scene
@@ -71,16 +71,24 @@ export function createStreetScreen({
   // persisted through the same store-save path placements use (setShopState
   // -> store.set("shop",...) -> pushEdge, which marks the "shop" sync key
   // dirty). Called after a successful deco purchase, with the post-purchase
-  // owned list. The keepsake's optional `word` is intentionally omitted:
-  // deps exposes no mastered-word accessor, and the brief forbids plumbing
-  // new learning/SRS coupling into this cosmetic-only module just to get one.
+  // owned list. The keepsake's optional `word` comes from deps.masteredWord()
+  // — a read-only lookup (src/mastery.js pickKeepsakeWord) that main.js wires
+  // over its own masteryStore. makeKeepsake copies the word in at creation,
+  // so it's a frozen display string from here on; nothing in this module
+  // reads mastery again or writes to it.
+  //
+  // Passing the words already on the ledger excludes them, so two sets
+  // completed by the SAME purchase can't both stamp the same word (the loop
+  // below re-reads `keepsakes` as it grows). "" means nothing new is mastered
+  // — makeKeepsake then omits the field and the shelf omits the line.
+  const wordFor = keepsakes => masteredWord(keepsakeWords(keepsakes));
   function grantCompletedSets(ownedAfterPurchase){
     const layout = ensureStreetLayout();
     const fresh = newlyCompletedSets(ownedAfterPurchase, layout.setsCompleted);
     if(!fresh.length) return;
     let keepsakes = layout.keepsakes, setsCompleted = layout.setsCompleted;
     for(const setId of fresh){
-      keepsakes = addKeepsake(keepsakes, makeKeepsake("set", todayStr(), { set: setId }));
+      keepsakes = addKeepsake(keepsakes, makeKeepsake("set", todayStr(), { set: setId, word: wordFor(keepsakes) }));
       setsCompleted = [...setsCompleted, setId];
     }
     const granted = normalizeStreetLayout({ ...layout, keepsakes, setsCompleted }, ownedAfterPurchase);
@@ -136,11 +144,13 @@ export function createStreetScreen({
     store.set("streetWelcomeEarned",true);
     const base=ensureStreetLayout();
     // Same grant pattern as grantCompletedSets: one keepsake ("welcome",
-    // wordless — deps exposes no mastery accessor), folded into the single
-    // persist below so welcomeOwned + the keepsake save together.
+    // stamped with a mastered word via the same read-only wordFor lookup),
+    // folded into the single persist below so welcomeOwned + the keepsake
+    // save together. A brand-new player can reach this with nothing mastered
+    // yet — wordFor returns "" and the keepsake is simply wordless.
     // addKeepsake dedups by id ("welcome:<day>"), so this stays idempotent
     // even though the guard above already makes this branch run once.
-    const keepsakes=addKeepsake(base.keepsakes,makeKeepsake("welcome",todayStr()));
+    const keepsakes=addKeepsake(base.keepsakes,makeKeepsake("welcome",todayStr(),{word:wordFor(base.keepsakes)}));
     const layout=normalizeStreetLayout({...base,welcomeOwned:true,keepsakes},getShopState().owned);
     setShopState({...getShopState(),streetLayout:layout}); store.set("shop",getShopState());
     pushEdge("purchase");
@@ -205,8 +215,10 @@ export function createStreetScreen({
     setWallet(getWallet() + gift.coins);
     store.set("wallet", getWallet());
     updateWalletChip();
-    // Wordless by design: deps exposes no mastery accessor here (same
-    // constraint documented on grantCompletedSets/earnStreetWelcome above).
+    // Wordless by design — a tone call, not a plumbing limit (wordFor is in
+    // scope). Set-completion and the first lantern are things the player
+    // EARNED, so "— you'd learned X" reads as a memento there; the neighbour
+    // gift is passive, and the same line would read as filler.
     const keepsakes = gift.keepsake
       ? addKeepsake(layout.keepsakes, makeKeepsake("daily", today))
       : layout.keepsakes;
