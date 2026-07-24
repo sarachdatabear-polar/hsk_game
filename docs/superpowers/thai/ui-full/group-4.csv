@@ -1,0 +1,54 @@
+key,english,thai_current
+notify.streak.title,Don't lose your {n}-day streak!,อย่าให้สตรีค {n} วันหลุดนะ!
+notify.streak.body,{remaining} words keep it alive — a quick Word Quest does it.,อีก {remaining} คำสตรีคก็รอด — เล่นภารกิจคำศัพท์สั้น ๆ ก็พอ
+notify.comeback.title,Your lucky cat misses you 🐱,เจ้าแมวนำโชคคิดถึงคุณนะ 🐱
+notify.comeback.body,You were on a {n}-day roll — jump back in and get it going again!,คุณทำสตรีคได้ตั้ง {n} วัน — กลับมาลุยต่อกันเลย!
+account.row,Account,บัญชี
+account.title,Account,บัญชี
+account.status.local,On this device,อยู่บนเครื่องนี้
+account.status.guest,Guest account,บัญชีผู้เยี่ยมชม
+account.status.signedIn,Signed in as {email},เข้าสู่ระบบเป็น {email}
+account.explain.offline,Cloud accounts need an internet connection — your progress is safe on this device.,บัญชีคลาวด์ต้องใช้อินเทอร์เน็ต — ความคืบหน้าของคุณยังปลอดภัยบนเครื่องนี้
+account.explain.local,Your progress lives on this device. Connect to back it up to the cloud.,ความคืบหน้าของคุณอยู่บนเครื่องนี้ เชื่อมต่อเพื่อสำรองข้อมูลบนคลาวด์
+account.explain.guest,Connected as a guest. Add your email so your account isn't lost with this device.,เชื่อมต่อแบบผู้เยี่ยมชมแล้ว เพิ่มอีเมลเพื่อไม่ให้บัญชีหายไปพร้อมเครื่อง
+account.explain.signedIn,Your account is linked. Your progress backs up to the cloud automatically.,บัญชีของคุณเชื่อมต่อแล้ว ความคืบหน้าจะสำรองขึ้นคลาวด์ให้อัตโนมัติ
+account.connect,Connect,เชื่อมต่อ
+account.sendCode,Send code,ส่งรหัส
+account.verify,Verify,ยืนยัน
+account.resend,Resend code,ส่งรหัสอีกครั้ง
+account.resendWait,Resend in {s}s,ส่งใหม่ได้ใน {s} วิ
+account.signOut,Sign out,ออกจากระบบ
+account.delete,Delete account,ลบบัญชี
+account.deleteConfirm,Permanently erase your cloud data? Signing out instead keeps it.,ลบข้อมูลบนคลาวด์อย่างถาวรหรือไม่? การออกจากระบบจะเก็บข้อมูลไว้
+account.deleteConfirmYes,Delete permanently,ลบถาวร
+account.deleteCancel,Cancel,ยกเลิก
+account.deleteDone,Cloud account deleted,ลบบัญชีคลาวด์แล้ว
+account.deleteFail,Couldn't delete — try again,ลบไม่สำเร็จ — ลองอีกครั้ง
+account.emailPh,your@email.com,your@email.com
+account.codePh,code from the email,รหัสจากอีเมล
+account.codeSent,Code sent — check your email,ส่งรหัสแล้ว — เช็กอีเมลของคุณ
+account.changeEmail,Use a different email,ใช้อีเมลอื่น
+account.signedIn,Signed in!,เข้าสู่ระบบแล้ว!
+account.signedOut,Signed out,ออกจากระบบแล้ว
+account.err.offline,No internet connection,ไม่มีการเชื่อมต่ออินเทอร์เน็ต
+account.err.network,Couldn't reach the cloud — try again,ติดต่อคลาวด์ไม่ได้ — ลองอีกครั้ง
+account.err.badEmail,That email doesn't look right,อีเมลนี้ดูไม่ถูกต้อง
+account.err.badCode,Wrong or expired code — try again,รหัสผิดหรือหมดอายุ — ลองอีกครั้ง
+account.lastSynced,Last synced {when},ซิงค์ล่าสุด {when}
+account.neverSynced,Not synced yet,ยังไม่ได้ซิงค์
+account.restored,Progress restored ✓,กู้คืนความคืบหน้าแล้ว ✓
+account.benefit.safe,"Keeps your streak, coins and mastery backed up",สำรองสตรีค เหรียญ และคำที่เชี่ยวชาญของคุณไว้ให้
+account.benefit.devices,Works on phone and computer — pick up where you left off,ใช้ได้ทั้งมือถือและคอมพิวเตอร์ — เล่นต่อจากที่ค้างไว้
+account.benefit.free,"Free — no password, just an email later if you want",ฟรี — ไม่ต้องตั้งรหัสผ่าน แค่อีเมลทีหลังถ้าต้องการ
+welcome.title,Welcome!,ยินดีต้อนรับ!
+welcome.blurb,Learn Chinese words by playing — a couple of minutes a day.,เรียนคำศัพท์จีนผ่านการเล่น — วันละไม่กี่นาที
+welcome.language,Your language,ภาษาของคุณ
+welcome.level,Start at,เริ่มที่ระดับ
+welcome.levelHint,New to HSK? Start with HSK1 — you can change this any time.,เพิ่งเริ่ม HSK ใช่ไหม? เริ่มที่ HSK1 และเปลี่ยนได้ทุกเมื่อ
+welcome.start,START LEARNING,เริ่มเรียนเลย
+account.supporterChip,Supporter ♥,ผู้สนับสนุน ♥
+settings.sfxVol,SFX volume,ระดับเสียงเอฟเฟกต์
+settings.voiceVol,Pronunciation,ระดับเสียงอ่าน
+settings.analytics,Share anonymous usage data,แชร์ข้อมูลการใช้งานแบบไม่ระบุตัวตน
+settings.analyticsHint,"Helps improve the game. No personal info, no word history. Off by default.",ช่วยพัฒนาเกม ไม่มีข้อมูลส่วนตัว ไม่มีประวัติคำศัพท์ ปิดไว้เป็นค่าเริ่มต้น
+settings.privacy,Privacy Policy,นโยบายความเป็นส่วนตัว

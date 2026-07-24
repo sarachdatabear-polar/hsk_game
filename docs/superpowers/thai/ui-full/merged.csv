@@ -1,0 +1,475 @@
+key,english,thai_current,thai_proposed
+street.title,Lucky Cat Street,ถนนนำโชค,ถนนนำโชค
+street.captionEmpty,Lucky Cat Street — grows as you learn · {next},ถนนนำโชค — เติบโตไปพร้อมการเรียนรู้ของคุณ · {next},ถนนนำโชค — เติบโตไปพร้อมการเรียนรู้ของคุณ · {next}
+street.captionProgress,{unlocked}/{total} buildings · {next},{unlocked}/{total} อาคาร · {next},{unlocked}/{total} อาคาร · {next}
+street.captionNew,New on your street: {name}!,ของใหม่บนถนนของคุณ: {name}!,ของใหม่บนถนนของคุณ: {name}!
+street.next,Next: Lv {lv} — {name},ถัดไป: Lv {lv} — {name},ถัดไป: Lv {lv} — {name}
+street.allUnlocked,All buildings unlocked!,ปลดล็อกอาคารครบทุกหลังแล้ว!,ปลดล็อกอาคารครบทุกหลังแล้ว!
+street.questsBtn,Quests,เควสต์,ภารกิจ
+street.sceneLabel,Your panoramic Lucky Cat Street,ถนนนำโชคแบบพาโนรามาของคุณ,ถนนนำโชคแบบพาโนรามาของคุณ
+street.previous,Previous street section,ส่วนก่อนหน้าของถนน,ส่วนก่อนหน้าของถนน
+street.nextSection,Next street section,ส่วนถัดไปของถนน,ส่วนถัดไปของถนน
+street.decorate,Decorate,ตกแต่ง,ตกแต่ง
+street.shop,Street Shop,ร้านค้าถนน,ร้านค้าถนน
+street.undo,Undo,ย้อนกลับ,ย้อนกลับ
+street.storeItem,Store,เก็บ,เก็บ
+street.autoArrange,Auto,จัดอัตโนมัติ,จัดอัตโนมัติ
+street.inventory,Inventory,คลังของ,คลังของ
+street.filterAll,All,ทั้งหมด,ทั้งหมด
+street.filterStored,Stored,เก็บไว้,เก็บไว้
+street.filterPlaced,Placed,วางแล้ว,วางแล้ว
+street.backToShop,Back to shop,กลับร้านค้า,กลับร้านค้า
+street.welcomeRibbon,WELCOME,ยินดีต้อนรับ,ยินดีต้อนรับ
+street.welcomeLantern,Welcome Lantern,โคมต้อนรับ,โคมต้อนรับ
+street.welcomeDesc,Your first-session gift — choose a home for it.,ของขวัญจากเซสชันแรก — เลือกที่วางให้โคมนี้,ของขวัญจากการเล่นครั้งแรก — เลือกที่วางให้โคมนี้
+street.meta,{size} · {set} set · {behavior},{size} · เซ็ต{set} · {behavior},{size} · ชุด{set} · {behavior}
+street.size.small,Small,เล็ก,เล็ก
+street.size.medium,Medium,กลาง,กลาง
+street.size.large,Large,ใหญ่,ใหญ่
+street.size.gateway,Gateway,ซุ้มประตู,ซุ้มประตู
+street.set.market,Night Market,ตลาดกลางคืน,ตลาดกลางคืน
+street.set.garden,Garden,สวน,สวน
+street.set.festival,Festival,เทศกาล,เทศกาล
+street.set.welcome,Welcome,ต้อนรับ,ต้อนรับ
+street.behavior.light,glows when tapped,แตะแล้วเปล่งแสง,แตะแล้วเปล่งแสง
+street.behavior.food,serves a warm treat,เสิร์ฟของอร่อยอุ่น ๆ,เสิร์ฟของอร่อยอุ่น ๆ
+street.behavior.water,ripples when tapped,แตะแล้วเกิดระลอกน้ำ,แตะแล้วเกิดระลอกน้ำ
+street.behavior.flutter,flutters in the breeze,พลิ้วไหวตามลม,พลิ้วไหวตามลม
+street.behavior.celebrate,celebrates when tapped,แตะแล้วฉลอง,แตะแล้วฉลอง
+street.plotLabel,{size} plot. {item},พื้นที่{size} {item},พื้นที่{size} {item}
+street.emptyPlot,Empty,ว่าง,ว่าง
+street.itemLabel,"{name}, {stars}, placed on your street",{name} {stars} วางอยู่บนถนนของคุณ,{name} {stars} วางอยู่บนถนนของคุณ
+street.previewCaption,Previewing on your street — try another highlighted plot or star tier.,กำลังลองบนถนน — เลือกพื้นที่เรืองแสงหรือระดับดาวอื่นได้,กำลังลองบนถนน — เลือกพื้นที่เรืองแสงหรือระดับดาวอื่นได้
+street.editCaption,{placed} placed · {stored} stored,วางแล้ว {placed} · เก็บไว้ {stored},วางแล้ว {placed} · เก็บไว้ {stored}
+street.captionReady,{buildings} landmarks unlocked. Decorate the street to make it yours.,ปลดล็อกจุดเด่นแล้ว {buildings} จุด ตกแต่งถนนในแบบของคุณ,ปลดล็อกจุดเด่นแล้ว {buildings} จุด ตกแต่งถนนในแบบของคุณ
+street.captionSummary,{placed} decorations · {stored} stored · {buildings} landmarks,ของตกแต่ง {placed} · เก็บไว้ {stored} · จุดเด่น {buildings},ของตกแต่ง {placed} · เก็บไว้ {stored} · จุดเด่น {buildings}
+street.nameEdit,Name your street,ตั้งชื่อถนนของคุณ,ตั้งชื่อถนนของคุณ
+street.namePlaceholder,e.g. Sunny Lane,เช่น ถนนแสงตะวัน,เช่น ถนนแสงตะวัน
+street.namedCaption,{name},{name},{name}
+street.coachPlace,"You earned the {name}! Select a glowing plot to place it, or Skip for an automatic home.",คุณได้รับ{name}! เลือกพื้นที่เรืองแสงเพื่อวาง หรือกดข้ามให้จัดอัตโนมัติ,คุณได้รับ{name}! เลือกพื้นที่เรืองแสงเพื่อวาง หรือกดข้ามให้จัดอัตโนมัติ
+street.coachSelect,"Choose your Welcome Lantern, then select a glowing plot.",เลือกโคมต้อนรับ แล้วเลือกพื้นที่เรืองแสง,เลือกโคมต้อนรับ แล้วเลือกพื้นที่เรืองแสง
+street.skip,Skip,ข้าม,ข้าม
+street.placed,Placed,วางแล้ว,วางแล้ว
+street.stored,Stored,เก็บไว้,เก็บไว้
+street.inventoryEmpty,No decorations match this filter.,ไม่มีของตกแต่งในตัวกรองนี้,ไม่มีของตกแต่งในตัวกรองนี้
+street.noMove,That decoration needs a compatible empty plot.,ของชิ้นนี้ต้องใช้พื้นที่ว่างที่มีขนาดเหมาะสม,ของชิ้นนี้ต้องใช้พื้นที่ว่างที่มีขนาดเหมาะสม
+street.placedAnnouncement,Placed {name}.,วาง{name}แล้ว,วาง{name}แล้ว
+street.storedAnnouncement,Moved {name} to storage.,ย้าย{name}ไปเก็บแล้ว,ย้าย{name}ไปเก็บแล้ว
+street.undoAnnouncement,Undid the last street change.,ย้อนกลับการแก้ไขล่าสุดแล้ว,ย้อนกลับการแก้ไขล่าสุดแล้ว
+street.autoAnnouncement,Stored decorations were arranged.,จัดของที่เก็บไว้ลงถนนแล้ว,จัดของที่เก็บไว้ลงถนนแล้ว
+street.selectedAnnouncement,Selected {name}. {count} compatible plots available.,เลือก{name}แล้ว มีพื้นที่ที่ใช้ได้ {count} จุด,เลือก{name}แล้ว มีพื้นที่ที่ใช้ได้ {count} จุด
+street.savedAnnouncement,Your street was saved.,บันทึกถนนของคุณแล้ว,บันทึกถนนของคุณแล้ว
+street.purchaseAnnouncement,Bought {name}. It is ready to place.,ซื้อ{name}แล้ว พร้อมนำไปวาง,ซื้อ{name}แล้ว พร้อมนำไปวาง
+street.upgradeAnnouncement,Upgraded {name} to {stars}.,อัปเกรด{name}เป็น {stars} แล้ว,อัปเกรด{name}เป็น {stars} แล้ว
+street.buyAndPlace,Buy ★ & place · {coins} coins,ซื้อ ★ และวาง · {coins} เหรียญ,ซื้อ ★ และวาง · {coins} เหรียญ
+street.buyToInventory,Buy to inventory · {coins} coins,ซื้อเก็บเข้าคลัง · {coins} เหรียญ,ซื้อเก็บเข้าคลัง · {coins} เหรียญ
+street.buyToInventoryHint,Move or store an item to place this.,ย้ายหรือเก็บของชิ้นอื่นก่อน แล้วค่อยวางชิ้นนี้,ย้ายหรือเก็บของชิ้นอื่นก่อน แล้วค่อยวางชิ้นนี้
+street.placeIt,Place it,วางเลย,วางเลย
+street.notEnough,Not enough coins for that purchase.,เหรียญไม่พอสำหรับการซื้อนี้,เหรียญไม่พอสำหรับการซื้อนี้
+street.reserveToggle,Reserve coins for this build,กันเหรียญไว้สำหรับงานนี้,กันเหรียญไว้สำหรับงานนี้
+street.reserveHint,Reserved coins stay set aside for your next build.,เหรียญที่กันไว้จะถูกเก็บไว้สำหรับงานถัดไป,เหรียญที่กันไว้จะถูกเก็บไว้สำหรับงานถัดไป
+street.reserveBlocked,Those coins are reserved for your build.,เหรียญเหล่านั้นถูกกันไว้สำหรับงานของคุณ,เหรียญเหล่านั้นถูกกันไว้สำหรับงานของคุณ
+street.projectEyebrow,Next street build,สิ่งที่จะสร้างบนถนนต่อไป,สิ่งที่จะสร้างบนถนนต่อไป
+street.projectProgress,{pct}% of price · {coins} coins to go,{pct}% ของราคา · เหลืออีก {coins} เหรียญ,{pct}% ของราคา · เหลืออีก {coins} เหรียญ
+street.projectReady,Ready to build!,พร้อมสร้างแล้ว!,พร้อมสร้างแล้ว!
+street.projectReserved,Reserved while this is your project,เก็บไว้ให้คุณตราบใดที่ยังเป็นโปรเจกต์,เก็บไว้ให้คุณตราบใดที่ยังเป็นสิ่งที่คุณจะสร้าง
+street.makeProject,Set as my next build,ตั้งเป็นสิ่งที่จะสร้างต่อไป,ตั้งเป็นสิ่งที่จะสร้างต่อไป
+street.currentProject,Current next build,สิ่งที่จะสร้างปัจจุบัน,สิ่งที่จะสร้างปัจจุบัน
+street.changeProject,Change,เปลี่ยน,เปลี่ยน
+street.buildNow,Build now,สร้างเลย,สร้างเลย
+street.projectSelectedAnnouncement,{name} is now your next Street build.,ตั้ง{name}เป็นสิ่งที่จะสร้างบนถนนต่อไปแล้ว,ตั้ง{name}เป็นสิ่งที่จะสร้างบนถนนต่อไปแล้ว
+street.projectBlueprintLabel,"{name} project blueprint, {pct}% of price reached",พิมพ์เขียวโปรเจกต์{name} ถึง {pct}% ของราคา,พิมพ์เขียวของ{name} ถึง {pct}% ของราคาแล้ว
+street.setComplete,{set} complete ✨,{set} ครบชุดแล้ว ✨,{set} ครบชุดแล้ว ✨
+street.collection,Collection,คอลเลกชัน,ของสะสม
+street.collectionSetHeader,{name} — {owned}/{total},{name} — {owned}/{total},{name} — {owned}/{total}
+street.collectionComplete,Complete ✓,ครบแล้ว ✓,ครบแล้ว ✓
+street.collectionLocked,Not yet owned,ยังไม่มี,ยังไม่มี
+street.collectionEmpty,No decorations to show yet.,ยังไม่มีของตกแต่งให้แสดง,ยังไม่มีของตกแต่งให้แสดง
+street.layouts,Layouts,เลย์เอาต์,แบบจัดวาง
+street.layoutSave,Save here,บันทึกที่นี่,บันทึกที่นี่
+street.layoutLoad,Load,โหลด,โหลด
+street.layoutSlot,Slot {n},ช่อง {n},ช่อง {n}
+street.layoutOverwrite,Replace this saved layout?,แทนที่เลย์เอาต์ที่บันทึกไว้?,แทนที่แบบจัดวางที่บันทึกไว้?
+street.layoutOverwriteYes,Replace,แทนที่,แทนที่
+street.layoutSavedAnnouncement,Saved to Slot {n}.,บันทึกลงช่อง {n} แล้ว,บันทึกลงช่อง {n} แล้ว
+street.layoutLoadedAnnouncement,Loaded Slot {n}.,โหลดช่อง {n} แล้ว,โหลดช่อง {n} แล้ว
+street.keepsakes,Keepsakes,ของที่ระลึก,ของที่ระลึก
+street.keepsakeWelcome,Your first lantern,โคมไฟดวงแรกของคุณ,โคมไฟดวงแรกของคุณ
+street.keepsakeSet,{set} set completed,สะสมชุด {set} ครบแล้ว,สะสมชุด {set} ครบแล้ว
+street.keepsakeDaily,A neighbour dropped by,เพื่อนบ้านแวะมา,เพื่อนบ้านแวะมา
+street.keepsakeWord,— you'd learned {word},— คุณเรียน {word} แล้ว,— คุณเรียน {word} แล้ว
+street.keepsakesEmpty,Keepsakes you earn will rest here.,ของที่ระลึกที่ได้จะอยู่ที่นี่,ของที่ระลึกที่ได้จะอยู่ที่นี่
+street.dailyGreeting,A neighbour stopped by!,เพื่อนบ้านแวะมา!,เพื่อนบ้านแวะมา!
+street.dailyGift,They left you {coins} coins.,ฝากเหรียญไว้ให้ {coins} เหรียญ,ฝากเหรียญไว้ให้ {coins} เหรียญ
+item.supporter,Supporter Pack,แพ็กผู้สนับสนุน,แพ็กผู้สนับสนุน
+item.coins_s,Coin Pouch,ถุงเหรียญ,ถุงเหรียญ
+item.coins_m,Coin Stack,กองเหรียญ,กองเหรียญ
+item.coins_l,Coin Chest,หีบเหรียญ,หีบเหรียญ
+item.coins_xl,Coin Vault,คลังเหรียญ,คลังเหรียญ
+item.market,Night Market,ตลาดกลางคืน,ตลาดกลางคืน
+item.temple,Temple Dawn,วัดยามรุ่งอรุณ,วัดยามรุ่งอรุณ
+item.bamboo,Bamboo,ไผ่,ไผ่
+item.sakura-fx,Sakura Petals,กลีบซากุระ,กลีบซากุระ
+item.firecracker-fx,Firecrackers,ประทัด,ประทัด
+item.bells,Temple Bells,ระฆังวัด,ระฆังวัด
+item.arcade,Arcade,อาร์เคด,อาร์เคด
+item.red-lantern,Red Lantern,โคมแดง,โคมแดง
+item.red-lantern.desc,A warm lantern that glows when you tap it.,โคมไฟอบอุ่นที่เปล่งแสงเมื่อแตะ,โคมไฟอบอุ่นที่เปล่งแสงเมื่อแตะ
+item.noodle-stall,Noodle Stall,แผงก๋วยเตี๋ยว,แผงก๋วยเตี๋ยว
+item.noodle-stall.desc,A lively street kitchen with a curl of steam.,ครัวริมทางคึกคักพร้อมไอร้อนลอยกรุ่น,ครัวริมทางคึกคักพร้อมไอร้อนลอยกรุ่น
+item.tea-sign,Tea Sign,ป้ายชา,ป้ายชา
+item.tea-sign.desc,A welcoming tea-house sign with a soft glow.,ป้ายร้านชาที่ต้อนรับด้วยแสงนุ่ม ๆ,ป้ายร้านชาที่ต้อนรับด้วยแสงนุ่ม ๆ
+item.foo-dog,Foo Dog,สิงโตหิน,สิงโตหิน
+item.foo-dog.desc,A tiny guardian that sparkles in celebration.,ผู้พิทักษ์ตัวจิ๋วที่เปล่งประกายเมื่อฉลอง,ผู้พิทักษ์ตัวจิ๋วที่เปล่งประกายเมื่อฉลอง
+item.golden-arch,Golden Arch,ซุ้มประตูทอง,ซุ้มประตูทอง
+item.golden-arch.desc,A grand golden gateway for the street entrance.,ซุ้มประตูทองอันสง่างามสำหรับทางเข้าถนน,ซุ้มประตูทองอันสง่างามสำหรับทางเข้าถนน
+item.streak-freeze,Streak Freeze,น้ำแข็งพิทักษ์สตรีค,น้ำแข็งรักษาการเรียนต่อเนื่อง
+item.streak-freeze.desc,Covers a missed day — your streak survives,ชดเชยวันที่ขาดเรียน — รักษาสตรีคของคุณไว้,ชดเชยวันที่ขาดเรียน — รักษาการเรียนต่อเนื่องไว้
+item.panda,Panda,แพนด้า,แพนด้า
+item.ninja,Ninja,นินจา,นินจา
+item.astronaut,Astronaut,นักบินอวกาศ,นักบินอวกาศ
+item.harbor-night,Harbor Night,ท่าเรือยามค่ำคืน,ท่าเรือยามค่ำคืน
+item.snow-festival,Snow Festival,เทศกาลหิมะ,เทศกาลหิมะ
+item.mahjong-table,Mahjong Table,โต๊ะไพ่นกกระจอก,โต๊ะไพ่นกกระจอก
+item.mahjong-table.desc,A social game table ready for a winning hand.,โต๊ะสังสรรค์พร้อมสำหรับไพ่ชุดชนะ,โต๊ะเกมสังสรรค์พร้อมลุ้นไพ่ชุดชนะ
+item.koi-pond,Koi Pond,บ่อปลาคาร์ป,บ่อปลาคาร์ป
+item.koi-pond.desc,A calm garden pond with tappable ripples.,บ่อสวนแสนสงบที่แตะให้เกิดระลอกน้ำได้,บ่อสวนแสนสงบที่แตะให้เกิดระลอกน้ำได้
+item.drum-tower,Drum Tower,หอกลอง,หอกลอง
+item.drum-tower.desc,A festival landmark that celebrates with stars.,จุดเด่นประจำเทศกาลที่ฉลองด้วยดวงดาว,จุดเด่นประจำเทศกาลที่ฉลองด้วยดวงดาว
+item.bubble-tea,Bubble Tea Stand,ร้านชานมไข่มุก,ร้านชานมไข่มุก
+item.bubble-tea.desc,A cheerful drink stand for the market lane.,ร้านเครื่องดื่มสดใสสำหรับย่านตลาด,ร้านเครื่องดื่มสดใสสำหรับย่านตลาด
+item.paper-umbrella,Paper Umbrella,ร่มกระดาษ,ร่มกระดาษ
+item.paper-umbrella.desc,A painted umbrella that flutters in the breeze.,ร่มลายวาดที่พลิ้วไหวตามสายลม,ร่มลายวาดที่พลิ้วไหวตามสายลม
+item.goldfish-banner,Goldfish Banner,ธงปลาทอง,ธงปลาทอง
+item.goldfish-banner.desc,A lucky banner made to dance in the wind.,ธงนำโชคที่เต้นไปกับสายลม,ธงนำโชคที่เต้นไปกับสายลม
+item.neon-cat-sign,Neon Cat Sign,ป้ายไฟแมวนีออน,ป้ายไฟแมวนีออน
+item.neon-cat-sign.desc,A bright cat sign that lights up the night.,ป้ายแมวสว่างไสวที่ทำให้ค่ำคืนมีสีสัน,ป้ายแมวสว่างไสวที่ทำให้ค่ำคืนมีสีสัน
+item.lion-drum,Lion Dance Drum,กลองเชิดสิงโต,กลองเชิดสิงโต
+item.star-shower,Star Shower,ฝนดาว,ฝนดาว
+item.beach,Beach Cat,แมวชายหาด,แมวชายหาด
+item.island-sunset,Island Sunset,พระอาทิตย์ตกที่เกาะ,พระอาทิตย์ตกที่เกาะ
+item.shaved-ice-cart,Shaved-Ice Cart,รถเข็นน้ำแข็งไส,รถเข็นน้ำแข็งไส
+item.shaved-ice-cart.desc,A cool summer cart serving colorful treats.,รถเข็นฤดูร้อนเสิร์ฟของหวานสีสันสดใส,รถเข็นเย็นฉ่ำรับหน้าร้อน เสิร์ฟของหวานสีสันสดใส
+item.mooncake-rabbit,Mooncake Rabbit,กระต่ายขนมไหว้พระจันทร์,กระต่ายขนมไหว้พระจันทร์
+item.lantern-festival,Lantern Festival,เทศกาลโคมไฟ,เทศกาลโคมไฟ
+item.mooncake-stall,Mooncake Stall,แผงขนมไหว้พระจันทร์,แผงขนมไหว้พระจันทร์
+item.mooncake-stall.desc,A moonlit festival stall stacked with mooncakes.,แผงเทศกาลใต้แสงจันทร์ที่เต็มไปด้วยขนม,แผงเทศกาลใต้แสงจันทร์ที่เต็มไปด้วยขนม
+item.dragon,Dragon,มังกร,มังกร
+item.dragon-gate,Dragon Gate,ประตูมังกร,ประตูมังกร
+item.firecracker-arch,Firecracker Arch,ซุ้มประทัด,ซุ้มประทัด
+item.firecracker-arch.desc,A brilliant red gateway built for celebrations.,ซุ้มประตูสีแดงสดใสที่สร้างมาเพื่อการฉลอง,ซุ้มประตูสีแดงสดใสที่สร้างมาเพื่อการฉลอง
+building.lantern-post,Lantern Post,เสาโคมไฟ,เสาโคมไฟ
+building.coin-bank,Coin Bank,ธนาคารเหรียญ,ธนาคารเหรียญ
+building.tailor,Tailor Shop,ร้านตัดเสื้อ,ร้านตัดเสื้อ
+building.kitten-cafe,Kitten Café,คาเฟ่ลูกแมว,คาเฟ่ลูกแมว
+building.emperor-gate,Emperor's Gate,ประตูจักรพรรดิ,ประตูจักรพรรดิ
+battle.critical,BRILLIANT!,ยอดเยี่ยม!,ยอดเยี่ยม!
+toast.freeze-used,Streak Freeze used — your {n}-day streak is safe,ใช้น้ำแข็งพิทักษ์สตรีคแล้ว — สตรีค {n} วันของคุณยังอยู่,ใช้น้ำแข็งรักษาการเรียนต่อเนื่องแล้ว — สถิติ {n} วันของคุณยังอยู่
+fc.noThai,no Thai yet,ยังไม่มีภาษาไทย,ยังไม่มีภาษาไทย
+fc.inSentence,In a sentence,ในประโยค,ในประโยค
+battle.round,Round {label},รอบ {label},รอบ {label}
+battle.wordQuest,Word Quest,ภารกิจคำศัพท์,ภารกิจคำศัพท์
+battle.routeName,Lantern Trail,เส้นทางโคมไฟ,เส้นทางโคมไฟ
+battle.reviewPouch,Review Pouch {n},ถุงทบทวน {n},ถุงทบทวน {n}
+battle.learnedProgress,Learned {label},เรียนแล้ว {label},เรียนแล้ว {label}
+battle.luckyFlow,Lucky Flow,จังหวะโชคดี,จังหวะโชคดี
+battle.promptChoose,Choose the correct meaning.,เลือกความหมายที่ถูกต้อง,เลือกความหมายที่ถูกต้อง
+battle.promptMeaning,Choose the correct meaning.,เลือกความหมายที่ถูกต้อง,เลือกความหมายที่ถูกต้อง
+battle.promptListen,"Listen, then choose the meaning you heard.",ฟังเสียง แล้วเลือกความหมายที่ได้ยิน,ฟังเสียง แล้วเลือกความหมายที่ได้ยิน
+battle.promptReverse,Choose the hanzi that matches the meaning.,เลือกอักษรจีนที่ตรงกับความหมาย,เลือกตัวอักษรจีนที่ตรงกับความหมาย
+battle.promptTone,Choose the correct pinyin and tone.,เลือกพินอินและวรรณยุกต์ที่ถูกต้อง,เลือกพินอินและวรรณยุกต์ที่ถูกต้อง
+battle.promptCloze,Choose the word that completes the sentence.,เลือกคำที่เติมประโยคให้สมบูรณ์,เลือกคำที่เติมประโยคให้สมบูรณ์
+battle.promptTyped,"Type the pinyin letters, then choose any tones shown.",พิมพ์ตัวอักษรพินอิน แล้วเลือกวรรณยุกต์ที่แสดง,พิมพ์ตัวอักษรพินอิน แล้วเลือกวรรณยุกต์ที่แสดง
+battle.reviewChallengeIntro,Review Challenge · recall this word in two steps.,ด่านทบทวน · ทบทวนคำนี้ให้ครบสองขั้น,ด่านทบทวน · ทบทวนคำนี้ให้ครบสองขั้น
+battle.feedbackLearned,Got it — this word is growing stronger.,เก่งมาก — คุณจำคำนี้ได้ดีขึ้นอีกขั้น,เก่งมาก — คุณจำคำนี้ได้ดีขึ้นอีกขั้น
+battle.feedbackReview,Added to your Review Pouch — you will see it again soon.,เพิ่มลงถุงทบทวนแล้ว — คุณจะได้พบคำนี้อีกในไม่ช้า,เพิ่มลงถุงทบทวนแล้ว — คุณจะได้พบคำนี้อีกในไม่ช้า
+battle.pause,Pause,หยุดชั่วคราว,หยุดชั่วคราว
+battle.paused,Paused,หยุดชั่วคราว,หยุดชั่วคราว
+battle.resume,Resume,เล่นต่อ,เล่นต่อ
+battle.quit,Quit,ออก,ออก
+battle.wordAudio,Word audio,เสียงคำศัพท์,เสียงคำศัพท์
+battle.pinyin,Pinyin,พินอิน,พินอิน
+battle.on,On,เปิด,เปิด
+battle.off,Off,ปิด,ปิด
+battle.canvasLabel,Word Quest scene. Press Enter or Space to replay the word's audio (when available).,ฉากภารกิจคำศัพท์ กด Enter หรือ Space เพื่อฟังเสียงคำศัพท์อีกครั้ง (เมื่อเปิดให้ฟัง),ฉากภารกิจคำศัพท์ กด Enter หรือ Space เพื่อฟังเสียงคำศัพท์อีกครั้ง (เมื่อเปิดให้ฟัง)
+battle.canvasWord,"Current word: {h}, pinyin {p}. Press Enter or Space to replay its audio.",คำปัจจุบัน: {h} พินอิน {p} กด Enter หรือ Space เพื่อฟังเสียงอีกครั้ง,คำปัจจุบัน: {h} พินอิน {p} กด Enter หรือ Space เพื่อฟังเสียงอีกครั้ง
+battle.canvasHanzi,Current hanzi: {h}. Use the task below to recall its pinyin.,อักษรจีนปัจจุบัน: {h} ทำโจทย์ด้านล่างเพื่อนึกพินอิน,ตัวอักษรจีนปัจจุบัน: {h} ทำโจทย์ด้านล่างเพื่อนึกพินอิน
+battle.canvasListen,"Listen-only word. Press Enter or Space to replay the audio, then choose its meaning.",โจทย์ฟังเสียง กด Enter หรือ Space เพื่อฟังซ้ำ แล้วเลือกความหมาย,โจทย์ฟังเสียง กด Enter หรือ Space เพื่อฟังซ้ำ แล้วเลือกความหมาย
+battle.canvasHidden,The answer is hidden for this recall task. Read the prompt and choices below.,โจทย์นี้ซ่อนคำตอบไว้ อ่านคำสั่งและตัวเลือกด้านล่าง,โจทย์นี้ซ่อนคำตอบไว้ อ่านคำสั่งและตัวเลือกด้านล่าง
+battle.canvasRevealed,"Answer revealed: {h}, pinyin {p}. Press Enter or Space to replay its audio.",เฉลย: {h} พินอิน {p} กด Enter หรือ Space เพื่อฟังเสียงอีกครั้ง,เฉลย: {h} พินอิน {p} กด Enter หรือ Space เพื่อฟังเสียงอีกครั้ง
+battle.bossPrompt,Review Challenge · pick the hanzi for: {meaning},ด่านทบทวน · เลือกตัวอักษรจีนของคำว่า: {meaning},ด่านทบทวน · เลือกตัวอักษรจีนของคำว่า: {meaning}
+battle.replay,Play it again,ฟังอีกครั้ง,ฟังอีกครั้ง
+battle.reversePrompt,Pick the hanzi for: {meaning},เลือกตัวอักษรจีนของคำว่า: {meaning},เลือกตัวอักษรจีนของคำว่า: {meaning}
+battle.introOk,Got it!,เข้าใจแล้ว!,เข้าใจแล้ว!
+battle.introListen,New: listen first! Play the sound and tap the meaning you hear.,ใหม่: ฟังก่อนนะ! กดฟังเสียงแล้วแตะความหมายที่ได้ยิน,ใหม่: ฟังก่อนนะ! กดฟังเสียงแล้วแตะความหมายที่ได้ยิน
+battle.introReverse,New: you know this word — now pick its hanzi from the meaning!,ใหม่: คำนี้คุ้นแล้ว — เลือกตัวอักษรจีนจากความหมายเลย!,ใหม่: คำนี้คุ้นแล้ว — เลือกตัวอักษรจีนจากความหมายเลย!
+battle.introTone,New: tone check! Tap the pinyin with the right tone marks.,ใหม่: เช็ควรรณยุกต์! แตะพินอินที่มีวรรณยุกต์ถูกต้อง,ใหม่: เช็ควรรณยุกต์! แตะพินอินที่มีวรรณยุกต์ถูกต้อง
+battle.introCloze,New: fill the blank! Pick the word that completes the sentence.,ใหม่: เติมคำในช่องว่าง! เลือกคำที่ทำให้ประโยคสมบูรณ์,ใหม่: เติมคำในช่องว่าง! เลือกคำที่ทำให้ประโยคสมบูรณ์
+battle.introTyped,Master level — now you type it!\n1 · Type the pinyin letters\n2 · Tap any tone selectors shown\n3 · Press CHECK!,ด่านมาสเตอร์ — พิมพ์เองเลย!\n1 · พิมพ์ตัวอักษรพินอิน\n2 · แตะวรรณยุกต์ที่แสดง\n3 · กด ตรวจคำตอบ!,ด่านมาสเตอร์ — พิมพ์เองเลย!\n1 · พิมพ์ตัวอักษรพินอิน\n2 · แตะวรรณยุกต์ที่แสดง\n3 · กด ตรวจคำตอบ!
+battle.typedPlaceholder,type the pinyin letters,พิมพ์ตัวอักษรพินอิน,พิมพ์ตัวอักษรพินอิน
+battle.typedGo,CHECK!,ตรวจคำตอบ!,ตรวจคำตอบ!
+battle.typedLettersOk,letters right — check the tones!,ตัวอักษรถูกแล้ว — เช็ควรรณยุกต์!,ตัวอักษรถูกแล้ว — เช็ควรรณยุกต์!
+battle.typedTonesOk,tones right — check the spelling!,วรรณยุกต์ถูกแล้ว — เช็คตัวสะกด!,วรรณยุกต์ถูกแล้ว — เช็คตัวสะกด!
+battle.toneAria,tone {n} for {syl},วรรณยุกต์ {n} ของ {syl},วรรณยุกต์ {n} ของ {syl}
+battle.instruction.meaning,Choose the correct meaning,เลือกความหมายที่ถูกต้อง,เลือกความหมายที่ถูกต้อง
+battle.instruction.reverse,Choose the hanzi,เลือกตัวอักษรจีนที่ถูกต้อง,เลือกตัวอักษรจีนที่ถูกต้อง
+battle.instruction.listen,"Listen, then choose",ฟังแล้วเลือกความหมาย,ฟังแล้วเลือกความหมาย
+battle.instruction.tone,Choose the pinyin,เลือกพินอินที่ถูกต้อง,เลือกพินอินที่ถูกต้อง
+battle.instruction.typed,Type the pinyin,พิมพ์พินอิน,พิมพ์พินอิน
+battle.instruction.cloze,Fill the blank,เติมคำในช่องว่าง,เติมคำในช่องว่าง
+battle.correct,Correct!,ถูกต้อง!,ถูกต้อง!
+tones.title,Tone Trainer,ฝึกวรรณยุกต์,ฝึกวรรณยุกต์
+tones.instruction,Which tone did you hear?,คุณได้ยินวรรณยุกต์อะไร,คุณได้ยินวรรณยุกต์อะไร
+tones.replay,Play it again,ฟังอีกครั้ง,ฟังอีกครั้ง
+tones.progress,{i} / {n},{i} / {n},{i} / {n}
+tones.tone1,1,1,1
+tones.tone2,2,2,2
+tones.tone3,3,3,3
+tones.tone4,4,4,4
+tones.toneAria,Tone {n},วรรณยุกต์ {n},วรรณยุกต์ {n}
+tones.roundDone,Round done!,จบรอบแล้ว!,จบรอบแล้ว!
+tones.score,{score} / {total} correct,ถูก {score} จาก {total},ถูก {score} จาก {total}
+tones.bestStreak,Best streak: {n},ต่อเนื่องสูงสุด {n} ครั้ง,ต่อเนื่องสูงสุด {n} ครั้ง
+tones.reward,+{coins} coins · +{xp} XP,+{coins} เหรียญ · +{xp} XP,+{coins} เหรียญ · +{xp} XP
+tones.again,Play again,เล่นอีกครั้ง,เล่นอีกครั้ง
+notify.streak.title,Don't lose your {n}-day streak!,อย่าให้สตรีค {n} วันหลุดนะ!,อย่าให้การเรียนต่อเนื่อง {n} วันหลุดนะ!
+notify.streak.body,{remaining} words keep it alive — a quick Word Quest does it.,อีก {remaining} คำสตรีคก็รอด — เล่นภารกิจคำศัพท์สั้น ๆ ก็พอ,อีก {remaining} คำ การเรียนต่อเนื่องก็ไม่ขาด — เล่นภารกิจคำศัพท์สั้น ๆ ก็พอ
+notify.comeback.title,Your lucky cat misses you 🐱,เจ้าแมวนำโชคคิดถึงคุณนะ 🐱,เจ้าแมวนำโชคคิดถึงคุณนะ 🐱
+notify.comeback.body,You were on a {n}-day roll — jump back in and get it going again!,คุณทำสตรีคได้ตั้ง {n} วัน — กลับมาลุยต่อกันเลย!,คุณเรียนต่อเนื่องมาตั้ง {n} วัน — กลับมาลุยต่อกันเลย!
+account.row,Account,บัญชี,บัญชี
+account.title,Account,บัญชี,บัญชี
+account.status.local,On this device,อยู่บนเครื่องนี้,อยู่บนเครื่องนี้
+account.status.guest,Guest account,บัญชีผู้เยี่ยมชม,บัญชีผู้เยี่ยมชม
+account.status.signedIn,Signed in as {email},เข้าสู่ระบบเป็น {email},เข้าสู่ระบบเป็น {email}
+account.explain.offline,Cloud accounts need an internet connection — your progress is safe on this device.,บัญชีคลาวด์ต้องใช้อินเทอร์เน็ต — ความคืบหน้าของคุณยังปลอดภัยบนเครื่องนี้,บัญชีคลาวด์ต้องใช้อินเทอร์เน็ต — ความคืบหน้าของคุณยังปลอดภัยบนเครื่องนี้
+account.explain.local,Your progress lives on this device. Connect to back it up to the cloud.,ความคืบหน้าของคุณอยู่บนเครื่องนี้ เชื่อมต่อเพื่อสำรองข้อมูลบนคลาวด์,ความคืบหน้าของคุณอยู่บนเครื่องนี้ เชื่อมต่อเพื่อสำรองข้อมูลบนคลาวด์
+account.explain.guest,Connected as a guest. Add your email so your account isn't lost with this device.,เชื่อมต่อแบบผู้เยี่ยมชมแล้ว เพิ่มอีเมลเพื่อไม่ให้บัญชีหายไปพร้อมเครื่อง,เชื่อมต่อแบบผู้เยี่ยมชมแล้ว เพิ่มอีเมลเพื่อไม่ให้บัญชีหายไปพร้อมเครื่อง
+account.explain.signedIn,Your account is linked. Your progress backs up to the cloud automatically.,บัญชีของคุณเชื่อมต่อแล้ว ความคืบหน้าจะสำรองขึ้นคลาวด์ให้อัตโนมัติ,บัญชีของคุณเชื่อมต่อแล้ว ความคืบหน้าจะสำรองขึ้นคลาวด์ให้อัตโนมัติ
+account.connect,Connect,เชื่อมต่อ,เชื่อมต่อ
+account.sendCode,Send code,ส่งรหัส,ส่งรหัส
+account.verify,Verify,ยืนยัน,ยืนยัน
+account.resend,Resend code,ส่งรหัสอีกครั้ง,ส่งรหัสอีกครั้ง
+account.resendWait,Resend in {s}s,ส่งใหม่ได้ใน {s} วิ,ส่งใหม่ได้ใน {s} วิ
+account.signOut,Sign out,ออกจากระบบ,ออกจากระบบ
+account.delete,Delete account,ลบบัญชี,ลบบัญชี
+account.deleteConfirm,Permanently erase your cloud data? Signing out instead keeps it.,ลบข้อมูลบนคลาวด์อย่างถาวรหรือไม่? การออกจากระบบจะเก็บข้อมูลไว้,ลบข้อมูลบนคลาวด์อย่างถาวรหรือไม่? การออกจากระบบจะเก็บข้อมูลไว้
+account.deleteConfirmYes,Delete permanently,ลบถาวร,ลบถาวร
+account.deleteCancel,Cancel,ยกเลิก,ยกเลิก
+account.deleteDone,Cloud account deleted,ลบบัญชีคลาวด์แล้ว,ลบบัญชีคลาวด์แล้ว
+account.deleteFail,Couldn't delete — try again,ลบไม่สำเร็จ — ลองอีกครั้ง,ลบไม่สำเร็จ — ลองอีกครั้ง
+account.emailPh,your@email.com,your@email.com,your@email.com
+account.codePh,code from the email,รหัสจากอีเมล,รหัสจากอีเมล
+account.codeSent,Code sent — check your email,ส่งรหัสแล้ว — เช็กอีเมลของคุณ,ส่งรหัสแล้ว — เช็กอีเมลของคุณ
+account.changeEmail,Use a different email,ใช้อีเมลอื่น,ใช้อีเมลอื่น
+account.signedIn,Signed in!,เข้าสู่ระบบแล้ว!,เข้าสู่ระบบแล้ว!
+account.signedOut,Signed out,ออกจากระบบแล้ว,ออกจากระบบแล้ว
+account.err.offline,No internet connection,ไม่มีการเชื่อมต่ออินเทอร์เน็ต,ไม่มีการเชื่อมต่ออินเทอร์เน็ต
+account.err.network,Couldn't reach the cloud — try again,ติดต่อคลาวด์ไม่ได้ — ลองอีกครั้ง,ติดต่อคลาวด์ไม่ได้ — ลองอีกครั้ง
+account.err.badEmail,That email doesn't look right,อีเมลนี้ดูไม่ถูกต้อง,อีเมลนี้ดูไม่ถูกต้อง
+account.err.badCode,Wrong or expired code — try again,รหัสผิดหรือหมดอายุ — ลองอีกครั้ง,รหัสผิดหรือหมดอายุ — ลองอีกครั้ง
+account.lastSynced,Last synced {when},ซิงค์ล่าสุด {when},ซิงค์ล่าสุด {when}
+account.neverSynced,Not synced yet,ยังไม่ได้ซิงค์,ยังไม่ได้ซิงค์
+account.restored,Progress restored ✓,กู้คืนความคืบหน้าแล้ว ✓,กู้คืนความคืบหน้าแล้ว ✓
+account.benefit.safe,"Keeps your streak, coins and mastery backed up",สำรองสตรีค เหรียญ และคำที่เชี่ยวชาญของคุณไว้ให้,สำรองการเรียนต่อเนื่อง เหรียญ และคำที่เชี่ยวชาญของคุณไว้ให้
+account.benefit.devices,Works on phone and computer — pick up where you left off,ใช้ได้ทั้งมือถือและคอมพิวเตอร์ — เล่นต่อจากที่ค้างไว้,ใช้ได้ทั้งมือถือและคอมพิวเตอร์ — เล่นต่อจากที่ค้างไว้
+account.benefit.free,"Free — no password, just an email later if you want",ฟรี — ไม่ต้องตั้งรหัสผ่าน แค่อีเมลทีหลังถ้าต้องการ,ฟรี — ไม่ต้องตั้งรหัสผ่าน แค่อีเมลทีหลังถ้าต้องการ
+welcome.title,Welcome!,ยินดีต้อนรับ!,ยินดีต้อนรับ!
+welcome.blurb,Learn Chinese words by playing — a couple of minutes a day.,เรียนคำศัพท์จีนผ่านการเล่น — วันละไม่กี่นาที,เรียนคำศัพท์จีนผ่านการเล่น — วันละไม่กี่นาที
+welcome.language,Your language,ภาษาของคุณ,ภาษาของคุณ
+welcome.level,Start at,เริ่มที่ระดับ,เริ่มที่ระดับ
+welcome.levelHint,New to HSK? Start with HSK1 — you can change this any time.,เพิ่งเริ่ม HSK ใช่ไหม? เริ่มที่ HSK1 และเปลี่ยนได้ทุกเมื่อ,เพิ่งเริ่ม HSK ใช่ไหม? เริ่มที่ HSK1 และเปลี่ยนได้ทุกเมื่อ
+welcome.start,START LEARNING,เริ่มเรียนเลย,เริ่มเรียนเลย
+account.supporterChip,Supporter ♥,ผู้สนับสนุน ♥,ผู้สนับสนุน ♥
+settings.sfxVol,SFX volume,ระดับเสียงเอฟเฟกต์,ระดับเสียงเอฟเฟกต์
+settings.voiceVol,Pronunciation,ระดับเสียงอ่าน,ระดับเสียงอ่าน
+settings.analytics,Share anonymous usage data,แชร์ข้อมูลการใช้งานแบบไม่ระบุตัวตน,แชร์ข้อมูลการใช้งานแบบไม่ระบุตัวตน
+settings.analyticsHint,"Helps improve the game. No personal info, no word history. Off by default.",ช่วยพัฒนาเกม ไม่มีข้อมูลส่วนตัว ไม่มีประวัติคำศัพท์ ปิดไว้เป็นค่าเริ่มต้น,ช่วยพัฒนาเกม ไม่มีข้อมูลส่วนตัว ไม่มีประวัติคำศัพท์ ปิดไว้เป็นค่าเริ่มต้น
+settings.privacy,Privacy Policy,นโยบายความเป็นส่วนตัว,นโยบายความเป็นส่วนตัว
+album.title,Sticker Album,อัลบั้มสติกเกอร์,อัลบั้มสติกเกอร์
+album.back,← Profile,← โปรไฟล์,← โปรไฟล์
+album.events,Events,อีเวนต์,อีเวนต์
+sticker.scopeName,HSK{lv} · Top {n},HSK{lv} · Top {n},HSK{lv} · Top {n}
+sticker.scopeHint,Master all Top {n} words of HSK{lv},เชี่ยวชาญคำศัพท์ Top {n} ของ HSK{lv} ให้ครบ,เชี่ยวชาญคำศัพท์ Top {n} ของ HSK{lv} ให้ครบ
+sticker.msName,HSK{lv} · {pct}%,HSK{lv} · {pct}%,HSK{lv} · {pct}%
+sticker.msHint,Master {pct}% of HSK{lv},เชี่ยวชาญ {pct}% ของ HSK{lv},เชี่ยวชาญ {pct}% ของ HSK{lv}
+sticker.welcomeName,Welcome!,ยินดีต้อนรับ!,ยินดีต้อนรับ!
+sticker.welcomeHint,Finish your first session,จบเซสชันแรกของคุณ,จบเซสชันแรกของคุณ
+sticker.bossName,Challenge Champion,แชมป์ด่านทบทวน,แชมป์ด่านทบทวน
+sticker.bossHint,Complete your first Review Challenge,ผ่านด่านทบทวนครั้งแรก,ผ่านด่านทบทวนครั้งแรก
+sticker.streak7Name,7-Day Streak,สตรีค 7 วัน,เรียนต่อเนื่อง 7 วัน
+sticker.streak7Hint,Keep a 7-day study streak,รักษาสตรีคการเรียนต่อเนื่อง 7 วัน,รักษาการเรียนต่อเนื่อง 7 วัน
+sticker.streak30Name,30-Day Streak,สตรีค 30 วัน,เรียนต่อเนื่อง 30 วัน
+sticker.streak30Hint,Keep a 30-day study streak,รักษาสตรีคการเรียนต่อเนื่อง 30 วัน,รักษาการเรียนต่อเนื่อง 30 วัน
+sticker.monthlyName,Monthly Champion,แชมป์รายเดือน,แชมป์รายเดือน
+sticker.monthlyHint,Finish 40 quests in a month,ทำเควสต์สำเร็จ 40 ครั้งในหนึ่งเดือน,ทำภารกิจสำเร็จ 40 ครั้งในหนึ่งเดือน
+shop.title,Shop,ร้านค้า,ร้านค้า
+shop.skins,Cat skins,สกินแมว,สกินแมว
+shop.backdrops,Quest backdrops,ฉากหลัง,ฉากหลัง
+shop.effects,Effects,เอฟเฟกต์,เอฟเฟกต์
+shop.sounds,Sounds,เสียง,เสียง
+shop.supplies,Supplies,ของใช้,ของใช้
+shop.street,Street decorations,ของตกแต่งถนน,ของตกแต่งถนน
+shop.streetAvailable,Available for your street,ของที่ใช้บนถนนได้,ของที่ใช้บนถนนได้
+shop.streetFocusTitle,Build your street,สร้างถนนของคุณ,สร้างถนนของคุณ
+shop.streetFocusNote,Preview every decoration in your own street before spending coins.,ลองดูของตกแต่งบนถนนจริงก่อนใช้เหรียญ,ลองดูของตกแต่งบนถนนจริงก่อนใช้เหรียญ
+shop.viewStreet,View my street,ดูถนนของฉัน,ดูถนนของฉัน
+shop.preview,Preview,ลองดู,ลองดู
+shop.previewItem,Preview {name} on your street,ลองดู{name}บนถนนของคุณ,ลองดู{name}บนถนนของคุณ
+shop.wallet,Wallet: <b>{coins}</b> coins,กระเป๋าเงิน: <b>{coins}</b> เหรียญ,กระเป๋าเงิน: <b>{coins}</b> เหรียญ
+shop.buy,Buy,ซื้อ,ซื้อ
+shop.equip,Equip,ใช้งาน,ใช้งาน
+shop.equipped,Equipped,ใช้งานอยู่,ใช้งานอยู่
+shop.coins,{coins} coins,{coins} เหรียญ,{coins} เหรียญ
+shop.daily,Today's Stock,สินค้าวันนี้,สินค้าวันนี้
+shop.dailyNote,New stock at midnight,อัปเดตสินค้าใหม่ตอนเที่ยงคืน,อัปเดตสินค้าใหม่ตอนเที่ยงคืน
+shop.dailyAllOwned,All stocked up! Fresh finds at midnight 🌙,มีครบทุกชิ้นแล้ว! ของใหม่มาตอนเที่ยงคืน 🌙,มีครบทุกชิ้นแล้ว! ของใหม่มาตอนเที่ยงคืน 🌙
+shop.season,Season Corner,มุมเทศกาล,มุมเทศกาล
+shop.seasonUntil,Available until {date},มีถึง {date},มีถึง {date}
+shop.seasonReturns,🏮 {name} set returns {date},🏮 เซ็ต {name} จะกลับมา {date},🏮 เซ็ต {name} จะกลับมา {date}
+shop.upgrade,Upgrade {stars} ({coins}),อัปเกรด {stars} ({coins}),อัปเกรด {stars} ({coins})
+shop.owned-count,Owned: {n}/{cap},มีอยู่: {n}/{cap},มีอยู่: {n}/{cap}
+shop.getCoins,Get Coins,เติมเหรียญ,เติมเหรียญ
+shop.supporterTitle,Supporter,ผู้สนับสนุน,ผู้สนับสนุน
+shop.supporterDesc,"Remove ads forever · +2,000 coins · Supporter badge","ปิดโฆษณาถาวร · รับ 2,000 เหรียญ · แบดจ์ผู้สนับสนุน","ปิดโฆษณาถาวร · รับ 2,000 เหรียญ · แบดจ์ผู้สนับสนุน"
+shop.supporterOwned,Thank you for supporting Lucky Cat! ♥,ขอบคุณที่สนับสนุน Lucky Cat! ♥,ขอบคุณที่สนับสนุน Lucky Cat! ♥
+iap.amount,{coins} coins,{coins} เหรียญ,{coins} เหรียญ
+iap.pending,Processing…,กำลังดำเนินการ…,กำลังดำเนินการ…
+iap.failed,Purchase failed — nothing was charged. Try again.,การซื้อไม่สำเร็จ — ยังไม่มีการเรียกเก็บเงิน ลองใหม่อีกครั้ง,การซื้อไม่สำเร็จ — ยังไม่มีการเรียกเก็บเงิน ลองใหม่อีกครั้ง
+iap.success,+{coins} coins added!,ได้รับ +{coins} เหรียญแล้ว!,ได้รับ +{coins} เหรียญแล้ว!
+iap.supporterThanks,You're a Supporter now — thank you! ♥,คุณเป็นผู้สนับสนุนแล้ว — ขอบคุณ! ♥,คุณเป็นผู้สนับสนุนแล้ว — ขอบคุณ! ♥
+iap.restore,Restore Purchases,กู้คืนการซื้อ,กู้คืนการซื้อ
+iap.restored,Supporter restored ♥,กู้คืนสถานะผู้สนับสนุนแล้ว ♥,กู้คืนสถานะผู้สนับสนุนแล้ว ♥
+iap.nothingToRestore,Nothing to restore,ไม่มีรายการให้กู้คืน,ไม่มีรายการให้กู้คืน
+iap.restoreFailed,Restore failed — check your connection and try again.,กู้คืนไม่สำเร็จ — ตรวจสอบการเชื่อมต่อแล้วลองใหม่,กู้คืนไม่สำเร็จ — ตรวจสอบการเชื่อมต่อแล้วลองใหม่
+iap.processing,Purchase is processing — your coins will arrive shortly.,การซื้อกำลังดำเนินการ — เหรียญของคุณจะเข้าบัญชีในไม่ช้า,การซื้อกำลังดำเนินการ — เหรียญของคุณจะเข้าบัญชีในไม่ช้า
+shop.maxed,★★★,★★★,★★★
+season.summer,Summer,ฤดูร้อน,ฤดูร้อน
+season.midautumn,Mid-Autumn,ไหว้พระจันทร์,ไหว้พระจันทร์
+season.cny,Lunar New Year,ตรุษจีน,ตรุษจีน
+streak.restUsed,🍵 Rest day used — your {n}-day streak is safe.,🍵 ใช้วันพักแล้ว — สตรีค {n} วันของคุณยังปลอดภัย,🍵 ใช้วันพักแล้ว — สถิติเรียนต่อเนื่อง {n} วันของคุณยังปลอดภัย
+scope.title,Choose your words,เลือกคำศัพท์,เลือกคำศัพท์
+scope.levels,Levels,ระดับ,ระดับ
+scope.filters,Filters,ตัวกรอง,ตัวกรอง
+scope.highYield,High-yield only,เฉพาะคำออกบ่อย,เฉพาะคำออกบ่อย
+scope.newOnly,New words only,เฉพาะคำใหม่,เฉพาะคำใหม่
+scope.topN,Top-N by frequency,จัดอันดับตามความถี่,จัดอันดับตามความถี่
+scope.all,All,ทั้งหมด,ทั้งหมด
+scope.meaningLang,Meaning language,ภาษาที่ใช้แสดงความหมาย,ภาษาที่ใช้แสดงความหมาย
+scope.english,English,ภาษาอังกฤษ,ภาษาอังกฤษ
+scope.both,Both,ทั้งสอง,ทั้งสอง
+scope.sessionLen,Session length,จำนวนคำต่อรอบ,จำนวนคำต่อรอบ
+scope.custom,Custom,กำหนดเอง,กำหนดเอง
+scope.customPh,5–500,5–500,5–500
+scope.endless,Endless,ไม่จำกัด,ไม่จำกัด
+scope.cards,Cards,บัตรคำ,บัตรคำ
+scope.cardsResume,Resume Cards · {n},เล่นบัตรคำต่อ · {n},เล่นบัตรคำต่อ · {n}
+scope.wordQuest,Word Quest · {n},เควสต์คำศัพท์ · {n},ภารกิจคำศัพท์ · {n}
+scope.smartReview,Smart Review,ทบทวนอัจฉริยะ,ทบทวนอัจฉริยะ
+scope.smartReviewProgress,Smart Review · {have}/{min},ทบทวนอัจฉริยะ · {have}/{min},ทบทวนอัจฉริยะ · {have}/{min}
+scope.smartReviewReady,Smart Review · {n},ทบทวนอัจฉริยะ · {n},ทบทวนอัจฉริยะ · {n}
+scope.smartReviewLocked,Play a session first — Smart Review learns your weak words,เล่นสักรอบก่อน — ทบทวนอัจฉริยะจะเรียนรู้คำที่คุณยังไม่แม่น,เล่นสักรอบก่อน — ทบทวนอัจฉริยะจะเรียนรู้คำที่คุณยังไม่แม่น
+scope.readout,Pool: <b>{count}</b> words · ~<b>{pct}%</b> of exam text,คลังคำ: <b>{count}</b> คำ · ~<b>{pct}%</b> ของข้อสอบ,คลังคำ: <b>{count}</b> คำ · ~<b>{pct}%</b> ของข้อสอบ
+scope.readoutNoThai,* {n} long-tail words have no Thai yet — English shown instead.,* มี {n} คำที่ยังไม่มีภาษาไทย — แสดงภาษาอังกฤษแทน,* มี {n} คำที่ยังไม่มีภาษาไทย — แสดงภาษาอังกฤษแทน
+scope.tabPicker,Picker,เลือกเอง,เลือกเอง
+scope.tabJourney,Journey,เส้นทาง,เส้นทาง
+scores.title,Best Sessions,สถิติดีที่สุด,สถิติดีที่สุด
+scores.empty,No sessions yet — complete a Word Quest.,ยังไม่มีสถิติ — เล่นเควสต์คำศัพท์ก่อน,ยังไม่มีสถิติ — เล่นภารกิจคำศัพท์ก่อน
+profile.defaultName,Lucky Learner,นักเรียนแมวนำโชค,นักเรียนแมวนำโชค
+profile.avatar,Profile picture for {name},รูปโปรไฟล์ของ {name},รูปโปรไฟล์ของ {name}
+profile.editName,Edit,แก้ไข,แก้ไข
+profile.namePh,Player name,ชื่อผู้เล่น,ชื่อผู้เล่น
+profile.saveName,Save,บันทึก,บันทึก
+profile.cancelName,Cancel,ยกเลิก,ยกเลิก
+profile.level,Lucky Cat · Lv {lv},แมวนำโชค · Lv {lv},แมวนำโชค · Lv {lv}
+profile.xp,{into}/{need} XP toward the next level,{into}/{need} XP สู่เลเวลถัดไป,{into}/{need} XP สู่เลเวลถัดไป
+profile.streak,{n}-day streak,สตรีค {n} วัน,เรียนต่อเนื่อง {n} วัน
+profile.coins,{n} coins,{n} เหรียญ,{n} เหรียญ
+profile.mastered,Words mastered,คำที่เชี่ยวชาญ,คำที่เชี่ยวชาญ
+profile.seen,Words seen,คำที่เคยเรียน,คำที่เคยเรียน
+profile.stickers,Stickers earned,สติกเกอร์ที่ได้รับ,สติกเกอร์ที่ได้รับ
+profile.bestSession,Best session,คะแนนรอบดีที่สุด,คะแนนรอบดีที่สุด
+profile.collectionTitle,Your collection,คอลเลกชันของคุณ,คอลเลกชันของคุณ
+profile.collectionCount,{owned}/{total} cosmetics,ของตกแต่ง {owned}/{total},ของตกแต่ง {owned}/{total}
+profile.stickerCount,{earned}/{total} stickers,สติกเกอร์ {earned}/{total},สติกเกอร์ {earned}/{total}
+profile.skin,Cat: {name},แมว: {name},แมว: {name}
+profile.backdrop,Backdrop: {name},ฉากหลัง: {name},ฉากหลัง: {name}
+profile.defaultCat,Default Cat,แมวเริ่มต้น,แมวเริ่มต้น
+profile.defaultBackdrop,Default,ค่าเริ่มต้น,ค่าเริ่มต้น
+profile.viewCollection,View Collection,ดูคอลเลกชัน,ดูคอลเลกชัน
+profile.viewAlbum,Sticker Album,อัลบั้มสติกเกอร์,อัลบั้มสติกเกอร์
+friend.compareCta,Compare with a friend,เทียบกับเพื่อน,เทียบกับเพื่อน
+friend.title,Compare with a friend,เทียบกับเพื่อน,เทียบกับเพื่อน
+friend.yourCode,Your code — share it,รหัสของคุณ — แชร์เลย,รหัสของคุณ — แชร์เลย
+friend.share,Share my code,แชร์รหัสของฉัน,แชร์รหัสของฉัน
+friend.shareText,Compare our Lucky Cat HSK progress!,มาเทียบความคืบหน้า Lucky Cat HSK กัน!,มาเทียบความคืบหน้า Lucky Cat HSK กัน!
+friend.pasteLabel,Have a friend's code?,มีรหัสของเพื่อนไหม?,มีรหัสของเพื่อนไหม?
+friend.pastePlaceholder,Paste their code here,วางรหัสของเพื่อนที่นี่,วางรหัสของเพื่อนที่นี่
+friend.compareBtn,Compare,เทียบ,เทียบ
+friend.compareAnother,Compare another,เทียบคนอื่น,เทียบคนอื่น
+friend.invalidCode,That code doesn't look right. Ask for a fresh one.,รหัสนี้ดูไม่ถูกต้อง ขอรหัสใหม่จากเพื่อน,รหัสนี้ดูไม่ถูกต้อง ขอรหัสใหม่จากเพื่อน
+friend.copied,Code copied to clipboard,คัดลอกรหัสแล้ว,คัดลอกรหัสแล้ว
+friend.you,You,คุณ,คุณ
+friend.them,Friend,เพื่อน,เพื่อน
+friend.leadMine,You're ahead! 🎉,คุณนำอยู่! 🎉,คุณนำอยู่! 🎉
+friend.leadTheirs,Your friend is ahead — catch up!,เพื่อนนำอยู่ — ตามให้ทัน!,เพื่อนนำอยู่ — ตามให้ทัน!
+friend.leadTie,Neck and neck!,สูสีกันมาก!,สูสีกันมาก!
+friend.metric.level,Level,เลเวล,เลเวล
+friend.metric.streak,Day streak,สถิติต่อเนื่อง (วัน),เรียนต่อเนื่อง (วัน)
+friend.metric.mastered,Words mastered,คำที่เชี่ยวชาญ,คำที่เชี่ยวชาญ
+friend.metric.stickers,Stickers earned,สติกเกอร์ที่ได้รับ,สติกเกอร์ที่ได้รับ
+profile.learningTitle,Learning progress,ความคืบหน้าการเรียน,ความคืบหน้าการเรียน
+growth.title,Lucky Cat · Lv {lv},แมวนำโชค · Lv {lv},แมวนำโชค · Lv {lv}
+growth.allUnlocked,All milestones unlocked!,ปลดล็อกครบทุกเป้าหมายแล้ว!,ปลดล็อกครบทุกเป้าหมายแล้ว!
+progress.levelRow,{pct} mastered · {seen}/{total} seen,{pct} เชี่ยวชาญ · พบแล้ว {seen}/{total} คำ,{pct} เชี่ยวชาญ · พบแล้ว {seen}/{total} คำ
+milestone.scarf,Red scarf,ผ้าพันคอสีแดง,ผ้าพันคอสีแดง
+milestone.coin,Gold coin charm,เครื่องรางเหรียญทอง,เครื่องรางเหรียญทอง
+milestone.outfit,Chinese outfit,ชุดจีน,ชุดจีน
+milestone.kitten,Kitten follower,ลูกแมวติดตาม,ลูกแมวติดตาม
+milestone.emperor,Emperor crown,มงกุฎจักรพรรดิ,มงกุฎจักรพรรดิ
+more.tagline,Lucky Cat HSK — learn the words that actually appear on the test,Lucky Cat HSK — เรียนคำศัพท์ที่ออกข้อสอบจริง,Lucky Cat HSK — เรียนคำศัพท์ที่ออกข้อสอบจริง
+quests.title,Daily Quests,เควสต์ประจำวัน,ภารกิจประจำวัน
+journey.youAreHere,You are here,คุณอยู่ตรงนี้,คุณอยู่ตรงนี้
+journey.nodeAll,HSK{lv} · All words,HSK{lv} · คำทั้งหมด,HSK{lv} · คำทั้งหมด
+journey.nodeTop,HSK{lv} · Top {n},HSK{lv} · Top {n},HSK{lv} · {n} คำแรก
+journey.play,Play,เล่น,เล่น
+learn.exit,Exit,ออก,ออก
+learn.stillLearning,Still learning,ยังไม่แม่น,ยังไม่แม่น
+learn.knowIt,Know it,รู้แล้ว,รู้แล้ว
+learn.count,{done} done · {left} left,เรียนแล้ว {done} · เหลือ {left},เรียนแล้ว {done} · เหลือ {left}
+learn.hintFront,tap to flip · HSK{lv} · in {ta}/{tt} papers,แตะเพื่อพลิก · HSK{lv} · พบใน {ta}/{tt} ชุดข้อสอบ,แตะเพื่อพลิก · HSK{lv} · พบใน {ta}/{tt} ชุดข้อสอบ
+learn.hintBack,tap to flip back,แตะเพื่อพลิกกลับ,แตะเพื่อพลิกกลับ
+wd.info,Word detail,รายละเอียดคำ,รายละเอียดคำ
+wd.core,Core,หลัก,หลัก
+wd.extended,Extended,เพิ่มเติม,เพิ่มเติม
+wd.appearsInPapers,Appears in {n} of {total} papers,พบใน {n} จาก {total} ชุดข้อสอบ,พบใน {n} จาก {total} ชุดข้อสอบ
+wd.alsoInHsk3,Also in HSK 3.0 · Band {band},มีใน HSK 3.0 · ระดับ {band},มีใน HSK 3.0 · ระดับ {band}
+quest.status.done,Done,สำเร็จ,สำเร็จ
+quest.status.open,Open,ยังไม่เสร็จ,ยังไม่เสร็จ
+quest.reward,+{reward} coins,+{reward} เหรียญ,+{reward} เหรียญ
+quest.correct30,Answer 30 words correctly,ตอบถูก 30 คำ,ตอบถูก 30 คำ
+quest.combo5,Reach a ×5 learning streak,ทำจังหวะโชคดี ×5,ทำจังหวะโชคดี ×5
+quest.boss1,Complete a Review Challenge,ผ่านด่านทบทวน,ผ่านด่านทบทวน
+quest.perfect1,Finish a Word Quest with no extra-practice words,จบภารกิจคำศัพท์โดยไม่มีคำที่ต้องฝึกเพิ่ม,จบภารกิจคำศัพท์โดยไม่มีคำที่ต้องฝึกเพิ่ม
+quest.review1,Play a Smart Review quest,เล่นภารกิจทบทวนอัจฉริยะ,เล่นภารกิจทบทวนอัจฉริยะ
+quest.learn20,Mark 20 flashcards as known,ทำเครื่องหมายรู้แล้ว 20 บัตร,ทำเครื่องหมายรู้แล้ว 20 บัตรคำ
+quest.monthly.title,Monthly: {done}/{target} quests,รายเดือน: {done}/{target} เควสต์,รายเดือน: {done}/{target} ภารกิจ
+quest.monthly.claim,Claim +{reward},รับ +{reward},รับ +{reward}
+quest.monthly.badge,Monthly badge earned!,ได้เหรียญตรารายเดือนแล้ว!,ได้เหรียญตรารายเดือนแล้ว!
+quest.monthly.autoClaimed,Monthly reward claimed for you: +{reward} coins,รับรางวัลรายเดือนให้คุณแล้ว: +{reward} เหรียญ,รับรางวัลรายเดือนให้คุณแล้ว: +{reward} เหรียญ
+progress.title,Profile,โปรไฟล์,โปรไฟล์
+progress.needsWork,Needs work,ต้องฝึกเพิ่ม,ต้องฝึกเพิ่ม
+progress.reviewThese,Review these,ทบทวนคำเหล่านี้,ทบทวนคำเหล่านี้
+progress.practiceThese,Practice These,ฝึกคำเหล่านี้,ฝึกคำเหล่านี้
+progress.nothing,Nothing needs work — go play!,ไม่มีคำที่ต้องฝึก — ไปเล่นกันเลย!,ไม่มีคำที่ต้องฝึก — ไปเล่นกันเลย!
+progress.album,Sticker Album,อัลบั้มสติกเกอร์,อัลบั้มสติกเกอร์
+howto.title,How to play,วิธีเล่น,วิธีเล่น
+howto.intro,Follow Lucky Cat along the <b>Lantern Trail</b>. Each stop presents a Chinese word with pinyin.,เดินไปกับแมวนำโชคตาม<b>เส้นทางโคมไฟ</b> แต่ละจุดจะแสดงคำศัพท์จีนพร้อมพินอิน,เดินไปกับแมวนำโชคตาม<b>เส้นทางโคมไฟ</b> แต่ละจุดจะแสดงคำศัพท์จีนพร้อมพินอิน
+howto.tapMeaning,Choose the <b>correct meaning</b>. Consecutive first-try answers build Lucky Flow.,เลือก<b>ความหมายที่ถูกต้อง</b> การตอบถูกครั้งแรกต่อเนื่องจะสร้างจังหวะโชคดี,เลือก<b>ความหมายที่ถูกต้อง</b> การตอบถูกครั้งแรกต่อเนื่องจะสร้างจังหวะโชคดี
+howto.oneShot,Missed words return.,คำที่พลาดจะกลับมา,คำที่พลาดจะกลับมา
+howto.oneShotDetail,"A wrong tap reveals the answer and adds the word to your Review Pouch, so you can learn it when it returns.",หากแตะผิด เกมจะแสดงคำตอบและเพิ่มคำนั้นลงถุงทบทวน เพื่อให้คุณเรียนรู้อีกครั้งเมื่อคำนั้นกลับมา,หากแตะผิด เกมจะแสดงคำตอบและเพิ่มคำนั้นลงถุงทบทวน เพื่อให้คุณเรียนรู้อีกครั้งเมื่อคำนั้นกลับมา
+howto.tooSlow,"If time runs out, the answer is revealed and the word returns soon. Your Word Quest continues until every planned word is learned.",หากหมดเวลา เกมจะแสดงคำตอบและนำคำนั้นกลับมาในไม่ช้า ภารกิจคำศัพท์จะดำเนินต่อจนคุณเรียนรู้ครบทุกคำที่วางไว้,หากหมดเวลา เกมจะแสดงคำตอบและนำคำนั้นกลับมาในไม่ช้า ภารกิจคำศัพท์จะดำเนินต่อจนคุณเรียนรู้ครบทุกคำที่วางไว้
+howto.reviewChallenge,"Every tenth planned word becomes a <b>two-step Review Challenge</b>: meaning first, then reverse recall.",ทุกคำลำดับที่สิบจะเป็น<b>ด่านทบทวนสองขั้น</b>: เลือกความหมายก่อน แล้วนึกคำตอบย้อนกลับ,ทุกคำลำดับที่สิบจะเป็น<b>ด่านทบทวนสองขั้น</b>: เลือกความหมายก่อน แล้วนึกคำตอบย้อนกลับ
+howto.results,"Finish every planned word to receive a results postcard with learned words, extra practice, rewards, and your next review.",เรียนรู้คำที่วางไว้ให้ครบเพื่อรับโปสการ์ดสรุปคำที่เรียน คำที่ต้องฝึกเพิ่ม รางวัล และการทบทวนครั้งถัดไป,เรียนรู้คำที่วางไว้ให้ครบเพื่อรับโปสการ์ดสรุปคำที่เรียน คำที่ต้องฝึกเพิ่ม รางวัล และการทบทวนครั้งถัดไป
+howto.everyWord,"Every word shows <b>pinyin</b> and can be <b>heard aloud</b> — during the Word Quest, in flashcards, and in extra-practice review.",ทุกคำแสดง<b>พินอิน</b>และสามารถ<b>ฟังเสียงได้</b> — ทั้งระหว่างภารกิจคำศัพท์ ในบัตรคำ และตอนทบทวนคำที่ต้องฝึกเพิ่ม,ทุกคำแสดง<b>พินอิน</b>และสามารถ<b>ฟังเสียงได้</b> — ทั้งระหว่างภารกิจคำศัพท์ ในบัตรคำ และตอนทบทวนคำที่ต้องฝึกเพิ่ม
+howto.learnMode,"<b>Learn mode</b> drills the same word pool as flashcards first, so you can study, then play.",<b>โหมดเรียนรู้</b>ฝึกคลังคำเดียวกับบัตรคำก่อน เพื่อให้คุณได้ทบทวนก่อนเริ่มเล่น,<b>โหมดเรียนรู้</b>ฝึกคลังคำเดียวกับบัตรคำก่อน เพื่อให้คุณได้ทบทวนก่อนเริ่มเล่น
+howto.attribution,"Some example sentences from Tatoeba (tatoeba.org), CC-BY 2.0 FR.",ประโยคตัวอย่างบางส่วนจาก Tatoeba (tatoeba.org) สัญญาอนุญาต CC-BY 2.0 FR,ประโยคตัวอย่างบางส่วนจาก Tatoeba (tatoeba.org) สัญญาอนุญาต CC-BY 2.0 FR

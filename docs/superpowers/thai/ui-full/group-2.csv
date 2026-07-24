@@ -1,0 +1,63 @@
+key,english,thai_current
+item.supporter,Supporter Pack,แพ็กผู้สนับสนุน
+item.coins_s,Coin Pouch,ถุงเหรียญ
+item.coins_m,Coin Stack,กองเหรียญ
+item.coins_l,Coin Chest,หีบเหรียญ
+item.coins_xl,Coin Vault,คลังเหรียญ
+item.market,Night Market,ตลาดกลางคืน
+item.temple,Temple Dawn,วัดยามรุ่งอรุณ
+item.bamboo,Bamboo,ไผ่
+item.sakura-fx,Sakura Petals,กลีบซากุระ
+item.firecracker-fx,Firecrackers,ประทัด
+item.bells,Temple Bells,ระฆังวัด
+item.arcade,Arcade,อาร์เคด
+item.red-lantern,Red Lantern,โคมแดง
+item.red-lantern.desc,A warm lantern that glows when you tap it.,โคมไฟอบอุ่นที่เปล่งแสงเมื่อแตะ
+item.noodle-stall,Noodle Stall,แผงก๋วยเตี๋ยว
+item.noodle-stall.desc,A lively street kitchen with a curl of steam.,ครัวริมทางคึกคักพร้อมไอร้อนลอยกรุ่น
+item.tea-sign,Tea Sign,ป้ายชา
+item.tea-sign.desc,A welcoming tea-house sign with a soft glow.,ป้ายร้านชาที่ต้อนรับด้วยแสงนุ่ม ๆ
+item.foo-dog,Foo Dog,สิงโตหิน
+item.foo-dog.desc,A tiny guardian that sparkles in celebration.,ผู้พิทักษ์ตัวจิ๋วที่เปล่งประกายเมื่อฉลอง
+item.golden-arch,Golden Arch,ซุ้มประตูทอง
+item.golden-arch.desc,A grand golden gateway for the street entrance.,ซุ้มประตูทองอันสง่างามสำหรับทางเข้าถนน
+item.streak-freeze,Streak Freeze,น้ำแข็งพิทักษ์สตรีค
+item.streak-freeze.desc,Covers a missed day — your streak survives,ชดเชยวันที่ขาดเรียน — รักษาสตรีคของคุณไว้
+item.panda,Panda,แพนด้า
+item.ninja,Ninja,นินจา
+item.astronaut,Astronaut,นักบินอวกาศ
+item.harbor-night,Harbor Night,ท่าเรือยามค่ำคืน
+item.snow-festival,Snow Festival,เทศกาลหิมะ
+item.mahjong-table,Mahjong Table,โต๊ะไพ่นกกระจอก
+item.mahjong-table.desc,A social game table ready for a winning hand.,โต๊ะสังสรรค์พร้อมสำหรับไพ่ชุดชนะ
+item.koi-pond,Koi Pond,บ่อปลาคาร์ป
+item.koi-pond.desc,A calm garden pond with tappable ripples.,บ่อสวนแสนสงบที่แตะให้เกิดระลอกน้ำได้
+item.drum-tower,Drum Tower,หอกลอง
+item.drum-tower.desc,A festival landmark that celebrates with stars.,จุดเด่นประจำเทศกาลที่ฉลองด้วยดวงดาว
+item.bubble-tea,Bubble Tea Stand,ร้านชานมไข่มุก
+item.bubble-tea.desc,A cheerful drink stand for the market lane.,ร้านเครื่องดื่มสดใสสำหรับย่านตลาด
+item.paper-umbrella,Paper Umbrella,ร่มกระดาษ
+item.paper-umbrella.desc,A painted umbrella that flutters in the breeze.,ร่มลายวาดที่พลิ้วไหวตามสายลม
+item.goldfish-banner,Goldfish Banner,ธงปลาทอง
+item.goldfish-banner.desc,A lucky banner made to dance in the wind.,ธงนำโชคที่เต้นไปกับสายลม
+item.neon-cat-sign,Neon Cat Sign,ป้ายไฟแมวนีออน
+item.neon-cat-sign.desc,A bright cat sign that lights up the night.,ป้ายแมวสว่างไสวที่ทำให้ค่ำคืนมีสีสัน
+item.lion-drum,Lion Dance Drum,กลองเชิดสิงโต
+item.star-shower,Star Shower,ฝนดาว
+item.beach,Beach Cat,แมวชายหาด
+item.island-sunset,Island Sunset,พระอาทิตย์ตกที่เกาะ
+item.shaved-ice-cart,Shaved-Ice Cart,รถเข็นน้ำแข็งไส
+item.shaved-ice-cart.desc,A cool summer cart serving colorful treats.,รถเข็นฤดูร้อนเสิร์ฟของหวานสีสันสดใส
+item.mooncake-rabbit,Mooncake Rabbit,กระต่ายขนมไหว้พระจันทร์
+item.lantern-festival,Lantern Festival,เทศกาลโคมไฟ
+item.mooncake-stall,Mooncake Stall,แผงขนมไหว้พระจันทร์
+item.mooncake-stall.desc,A moonlit festival stall stacked with mooncakes.,แผงเทศกาลใต้แสงจันทร์ที่เต็มไปด้วยขนม
+item.dragon,Dragon,มังกร
+item.dragon-gate,Dragon Gate,ประตูมังกร
+item.firecracker-arch,Firecracker Arch,ซุ้มประทัด
+item.firecracker-arch.desc,A brilliant red gateway built for celebrations.,ซุ้มประตูสีแดงสดใสที่สร้างมาเพื่อการฉลอง
+building.lantern-post,Lantern Post,เสาโคมไฟ
+building.coin-bank,Coin Bank,ธนาคารเหรียญ
+building.tailor,Tailor Shop,ร้านตัดเสื้อ
+building.kitten-cafe,Kitten Café,คาเฟ่ลูกแมว
+building.emperor-gate,Emperor's Gate,ประตูจักรพรรดิ
