@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { recordAnswer, wordStreak, isMastered, levelMastery } from "../src/mastery.js";
+import { recordAnswer, wordStreak, isMastered, levelMastery, pickKeepsakeWord } from "../src/mastery.js";
 
 describe("mastery", () => {
   it("three correct in a row masters a word", () => {
@@ -53,5 +53,75 @@ describe("mastery", () => {
     // recording a new answer on top of an old record adds ls without breaking counts
     recordAnswer(s, "水", true, 999);
     expect(s["水"]).toEqual({ s: 4, k: 4, r: 4, ls: 999 });
+  });
+});
+
+describe("pickKeepsakeWord", () => {
+  it("picks the most-recently-mastered word among several", () => {
+    const s = {
+      "水": { s: 3, k: 3, r: 3, ls: 100 },
+      "火": { s: 3, k: 3, r: 3, ls: 300 },
+      "土": { s: 3, k: 3, r: 3, ls: 200 },
+    };
+    expect(pickKeepsakeWord(s)).toBe("火");
+  });
+  it("ignores non-mastered words (r < 3)", () => {
+    const s = {
+      "水": { s: 3, k: 3, r: 3, ls: 100 },
+      "火": { s: 2, k: 2, r: 2, ls: 999 },
+    };
+    expect(pickKeepsakeWord(s)).toBe("水");
+  });
+  it("breaks ties on ls deterministically by hanzi", () => {
+    const s = {
+      "水": { s: 3, k: 3, r: 3, ls: 500 },
+      "火": { s: 3, k: 3, r: 3, ls: 500 },
+    };
+    // "水" (U+6C34) sorts before "火" (U+706B) via localeCompare
+    expect(pickKeepsakeWord(s)).toBe("水");
+  });
+  it("returns \"\" for an empty store", () => {
+    expect(pickKeepsakeWord({})).toBe("");
+  });
+  it("returns \"\" for an undefined store", () => {
+    expect(pickKeepsakeWord(undefined)).toBe("");
+  });
+  it("returns \"\" when no word is mastered", () => {
+    const s = { "水": { s: 1, k: 1, r: 1, ls: 100 } };
+    expect(pickKeepsakeWord(s)).toBe("");
+  });
+  it("does not mutate the store", () => {
+    const s = { "水": { s: 3, k: 3, r: 3, ls: 100 } };
+    const before = JSON.stringify(s);
+    pickKeepsakeWord(s);
+    expect(JSON.stringify(s)).toBe(before);
+  });
+
+  // A word already displayed on an earlier keepsake is skipped, so no two
+  // keepsakes ever remember the same word.
+  it("skips excluded words and falls to the next most recent", () => {
+    const s = {
+      "水": { s: 3, k: 3, r: 3, ls: 100 },
+      "火": { s: 3, k: 3, r: 3, ls: 300 },
+      "土": { s: 3, k: 3, r: 3, ls: 200 },
+    };
+    expect(pickKeepsakeWord(s, ["火"])).toBe("土");
+    expect(pickKeepsakeWord(s, ["火", "土"])).toBe("水");
+  });
+  it("returns \"\" when every mastered word is excluded", () => {
+    const s = { "水": { s: 3, k: 3, r: 3, ls: 100 } };
+    expect(pickKeepsakeWord(s, ["水"])).toBe("");
+  });
+  it("accepts a Set as the exclude list", () => {
+    const s = {
+      "水": { s: 3, k: 3, r: 3, ls: 100 },
+      "火": { s: 3, k: 3, r: 3, ls: 300 },
+    };
+    expect(pickKeepsakeWord(s, new Set(["火"]))).toBe("水");
+  });
+  it("ignores a null/undefined exclude list", () => {
+    const s = { "水": { s: 3, k: 3, r: 3, ls: 100 } };
+    expect(pickKeepsakeWord(s, null)).toBe("水");
+    expect(pickKeepsakeWord(s, undefined)).toBe("水");
   });
 });

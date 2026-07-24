@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { makeKeepsake, addKeepsake } from "../src/street-keepsakes.js";
+import { makeKeepsake, addKeepsake, keepsakeWords } from "../src/street-keepsakes.js";
 
 describe("street keepsakes", () => {
   it("makes a deterministic id per (kind, day, set) and includes a word only when given", () => {
@@ -17,5 +17,21 @@ describe("street keepsakes", () => {
     expect(b).toHaveLength(1);
     const c = addKeepsake(b, makeKeepsake("welcome", "2026-07-23"));
     expect(c).toHaveLength(1);             // duplicate id ignored
+  });
+
+  it("collects the words already displayed on a keepsake list", () => {
+    const list = [
+      makeKeepsake("welcome", "2026-07-20", { word: "水" }),
+      makeKeepsake("set", "2026-07-21", { set: "garden" }),          // wordless
+      makeKeepsake("set", "2026-07-22", { set: "market", word: "火" }),
+    ];
+    expect(keepsakeWords(list)).toEqual(["水", "火"]);
+  });
+
+  it("returns [] for a missing or wordless list", () => {
+    expect(keepsakeWords(undefined)).toEqual([]);
+    expect(keepsakeWords([])).toEqual([]);
+    expect(keepsakeWords([makeKeepsake("welcome", "2026-07-23")])).toEqual([]);
+    expect(keepsakeWords([null, { id: "x" }])).toEqual([]);
   });
 });
