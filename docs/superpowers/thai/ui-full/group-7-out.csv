@@ -1,0 +1,56 @@
+key,english,thai_current,thai_proposed
+growth.title,Lucky Cat · Lv {lv},แมวนำโชค · Lv {lv},แมวนำโชค · Lv {lv}
+growth.allUnlocked,All milestones unlocked!,ปลดล็อกครบทุกเป้าหมายแล้ว!,ปลดล็อกครบทุกเป้าหมายแล้ว!
+progress.levelRow,{pct} mastered · {seen}/{total} seen,{pct} เชี่ยวชาญ · พบแล้ว {seen}/{total} คำ,{pct} เชี่ยวชาญ · พบแล้ว {seen}/{total} คำ
+milestone.scarf,Red scarf,ผ้าพันคอสีแดง,ผ้าพันคอสีแดง
+milestone.coin,Gold coin charm,เครื่องรางเหรียญทอง,เครื่องรางเหรียญทอง
+milestone.outfit,Chinese outfit,ชุดจีน,ชุดจีน
+milestone.kitten,Kitten follower,ลูกแมวติดตาม,ลูกแมวติดตาม
+milestone.emperor,Emperor crown,มงกุฎจักรพรรดิ,มงกุฎจักรพรรดิ
+more.tagline,Lucky Cat HSK — learn the words that actually appear on the test,Lucky Cat HSK — เรียนคำศัพท์ที่ออกข้อสอบจริง,Lucky Cat HSK — เรียนคำศัพท์ที่ออกข้อสอบจริง
+quests.title,Daily Quests,เควสต์ประจำวัน,ภารกิจประจำวัน
+journey.youAreHere,You are here,คุณอยู่ตรงนี้,คุณอยู่ตรงนี้
+journey.nodeAll,HSK{lv} · All words,HSK{lv} · คำทั้งหมด,HSK{lv} · คำทั้งหมด
+journey.nodeTop,HSK{lv} · Top {n},HSK{lv} · Top {n},HSK{lv} · {n} คำแรก
+journey.play,Play,เล่น,เล่น
+learn.exit,Exit,ออก,ออก
+learn.stillLearning,Still learning,ยังไม่แม่น,ยังไม่แม่น
+learn.knowIt,Know it,รู้แล้ว,รู้แล้ว
+learn.count,{done} done · {left} left,เรียนแล้ว {done} · เหลือ {left},เรียนแล้ว {done} · เหลือ {left}
+learn.hintFront,tap to flip · HSK{lv} · in {ta}/{tt} papers,แตะเพื่อพลิก · HSK{lv} · พบใน {ta}/{tt} ชุดข้อสอบ,แตะเพื่อพลิก · HSK{lv} · พบใน {ta}/{tt} ชุดข้อสอบ
+learn.hintBack,tap to flip back,แตะเพื่อพลิกกลับ,แตะเพื่อพลิกกลับ
+wd.info,Word detail,รายละเอียดคำ,รายละเอียดคำ
+wd.core,Core,หลัก,หลัก
+wd.extended,Extended,เพิ่มเติม,เพิ่มเติม
+wd.appearsInPapers,Appears in {n} of {total} papers,พบใน {n} จาก {total} ชุดข้อสอบ,พบใน {n} จาก {total} ชุดข้อสอบ
+wd.alsoInHsk3,Also in HSK 3.0 · Band {band},มีใน HSK 3.0 · ระดับ {band},มีใน HSK 3.0 · ระดับ {band}
+quest.status.done,Done,สำเร็จ,สำเร็จ
+quest.status.open,Open,ยังไม่เสร็จ,ยังไม่เสร็จ
+quest.reward,+{reward} coins,+{reward} เหรียญ,+{reward} เหรียญ
+quest.correct30,Answer 30 words correctly,ตอบถูก 30 คำ,ตอบถูก 30 คำ
+quest.combo5,Reach a ×5 learning streak,ทำจังหวะโชคดี ×5,ทำจังหวะโชคดี ×5
+quest.boss1,Complete a Review Challenge,ผ่านด่านทบทวน,ผ่านด่านทบทวน
+quest.perfect1,Finish a Word Quest with no extra-practice words,จบภารกิจคำศัพท์โดยไม่มีคำที่ต้องฝึกเพิ่ม,จบภารกิจคำศัพท์โดยไม่มีคำที่ต้องฝึกเพิ่ม
+quest.review1,Play a Smart Review quest,เล่นภารกิจทบทวนอัจฉริยะ,เล่นภารกิจทบทวนอัจฉริยะ
+quest.learn20,Mark 20 flashcards as known,ทำเครื่องหมายรู้แล้ว 20 บัตร,ทำเครื่องหมายรู้แล้ว 20 บัตรคำ
+quest.monthly.title,Monthly: {done}/{target} quests,รายเดือน: {done}/{target} เควสต์,รายเดือน: {done}/{target} ภารกิจ
+quest.monthly.claim,Claim +{reward},รับ +{reward},รับ +{reward}
+quest.monthly.badge,Monthly badge earned!,ได้เหรียญตรารายเดือนแล้ว!,ได้เหรียญตรารายเดือนแล้ว!
+quest.monthly.autoClaimed,Monthly reward claimed for you: +{reward} coins,รับรางวัลรายเดือนให้คุณแล้ว: +{reward} เหรียญ,รับรางวัลรายเดือนให้คุณแล้ว: +{reward} เหรียญ
+progress.title,Profile,โปรไฟล์,โปรไฟล์
+progress.needsWork,Needs work,ต้องฝึกเพิ่ม,ต้องฝึกเพิ่ม
+progress.reviewThese,Review these,ทบทวนคำเหล่านี้,ทบทวนคำเหล่านี้
+progress.practiceThese,Practice These,ฝึกคำเหล่านี้,ฝึกคำเหล่านี้
+progress.nothing,Nothing needs work — go play!,ไม่มีคำที่ต้องฝึก — ไปเล่นกันเลย!,ไม่มีคำที่ต้องฝึก — ไปเล่นกันเลย!
+progress.album,Sticker Album,อัลบั้มสติกเกอร์,อัลบั้มสติกเกอร์
+howto.title,How to play,วิธีเล่น,วิธีเล่น
+howto.intro,Follow Lucky Cat along the <b>Lantern Trail</b>. Each stop presents a Chinese word with pinyin.,เดินไปกับแมวนำโชคตาม<b>เส้นทางโคมไฟ</b> แต่ละจุดจะแสดงคำศัพท์จีนพร้อมพินอิน,เดินไปกับแมวนำโชคตาม<b>เส้นทางโคมไฟ</b> แต่ละจุดจะแสดงคำศัพท์จีนพร้อมพินอิน
+howto.tapMeaning,Choose the <b>correct meaning</b>. Consecutive first-try answers build Lucky Flow.,เลือก<b>ความหมายที่ถูกต้อง</b> การตอบถูกครั้งแรกต่อเนื่องจะสร้างจังหวะโชคดี,เลือก<b>ความหมายที่ถูกต้อง</b> การตอบถูกครั้งแรกต่อเนื่องจะสร้างจังหวะโชคดี
+howto.oneShot,Missed words return.,คำที่พลาดจะกลับมา,คำที่พลาดจะกลับมา
+howto.oneShotDetail,"A wrong tap reveals the answer and adds the word to your Review Pouch, so you can learn it when it returns.",หากแตะผิด เกมจะแสดงคำตอบและเพิ่มคำนั้นลงถุงทบทวน เพื่อให้คุณเรียนรู้อีกครั้งเมื่อคำนั้นกลับมา,หากแตะผิด เกมจะแสดงคำตอบและเพิ่มคำนั้นลงถุงทบทวน เพื่อให้คุณเรียนรู้อีกครั้งเมื่อคำนั้นกลับมา
+howto.tooSlow,"If time runs out, the answer is revealed and the word returns soon. Your Word Quest continues until every planned word is learned.",หากหมดเวลา เกมจะแสดงคำตอบและนำคำนั้นกลับมาในไม่ช้า ภารกิจคำศัพท์จะดำเนินต่อจนคุณเรียนรู้ครบทุกคำที่วางไว้,หากหมดเวลา เกมจะแสดงคำตอบและนำคำนั้นกลับมาในไม่ช้า ภารกิจคำศัพท์จะดำเนินต่อจนคุณเรียนรู้ครบทุกคำที่วางไว้
+howto.reviewChallenge,"Every tenth planned word becomes a <b>two-step Review Challenge</b>: meaning first, then reverse recall.",ทุกคำลำดับที่สิบจะเป็น<b>ด่านทบทวนสองขั้น</b>: เลือกความหมายก่อน แล้วนึกคำตอบย้อนกลับ,ทุกคำลำดับที่สิบจะเป็น<b>ด่านทบทวนสองขั้น</b>: เลือกความหมายก่อน แล้วนึกคำตอบย้อนกลับ
+howto.results,"Finish every planned word to receive a results postcard with learned words, extra practice, rewards, and your next review.",เรียนรู้คำที่วางไว้ให้ครบเพื่อรับโปสการ์ดสรุปคำที่เรียน คำที่ต้องฝึกเพิ่ม รางวัล และการทบทวนครั้งถัดไป,เรียนรู้คำที่วางไว้ให้ครบเพื่อรับโปสการ์ดสรุปคำที่เรียน คำที่ต้องฝึกเพิ่ม รางวัล และการทบทวนครั้งถัดไป
+howto.everyWord,"Every word shows <b>pinyin</b> and can be <b>heard aloud</b> — during the Word Quest, in flashcards, and in extra-practice review.",ทุกคำแสดง<b>พินอิน</b>และสามารถ<b>ฟังเสียงได้</b> — ทั้งระหว่างภารกิจคำศัพท์ ในบัตรคำ และตอนทบทวนคำที่ต้องฝึกเพิ่ม,ทุกคำแสดง<b>พินอิน</b>และสามารถ<b>ฟังเสียงได้</b> — ทั้งระหว่างภารกิจคำศัพท์ ในบัตรคำ และตอนทบทวนคำที่ต้องฝึกเพิ่ม
+howto.learnMode,"<b>Learn mode</b> drills the same word pool as flashcards first, so you can study, then play.",<b>โหมดเรียนรู้</b>ฝึกคลังคำเดียวกับบัตรคำก่อน เพื่อให้คุณได้ทบทวนก่อนเริ่มเล่น,<b>โหมดเรียนรู้</b>ฝึกคลังคำเดียวกับบัตรคำก่อน เพื่อให้คุณได้ทบทวนก่อนเริ่มเล่น
+howto.attribution,"Some example sentences from Tatoeba (tatoeba.org), CC-BY 2.0 FR.",ประโยคตัวอย่างบางส่วนจาก Tatoeba (tatoeba.org) สัญญาอนุญาต CC-BY 2.0 FR,ประโยคตัวอย่างบางส่วนจาก Tatoeba (tatoeba.org) สัญญาอนุญาต CC-BY 2.0 FR

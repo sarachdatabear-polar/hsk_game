@@ -1,0 +1,103 @@
+key,english,thai_current,thai_proposed
+street.title,Lucky Cat Street,ถนนนำโชค,ถนนนำโชค
+street.captionEmpty,Lucky Cat Street — grows as you learn · {next},ถนนนำโชค — เติบโตไปพร้อมการเรียนรู้ของคุณ · {next},ถนนนำโชค — เติบโตไปพร้อมการเรียนรู้ของคุณ · {next}
+street.captionProgress,{unlocked}/{total} buildings · {next},{unlocked}/{total} อาคาร · {next},{unlocked}/{total} อาคาร · {next}
+street.captionNew,New on your street: {name}!,ของใหม่บนถนนของคุณ: {name}!,ของใหม่บนถนนของคุณ: {name}!
+street.next,Next: Lv {lv} — {name},ถัดไป: Lv {lv} — {name},ถัดไป: Lv {lv} — {name}
+street.allUnlocked,All buildings unlocked!,ปลดล็อกอาคารครบทุกหลังแล้ว!,ปลดล็อกอาคารครบทุกหลังแล้ว!
+street.questsBtn,Quests,เควสต์,ภารกิจ
+street.sceneLabel,Your panoramic Lucky Cat Street,ถนนนำโชคแบบพาโนรามาของคุณ,ถนนนำโชคแบบพาโนรามาของคุณ
+street.previous,Previous street section,ส่วนก่อนหน้าของถนน,ส่วนก่อนหน้าของถนน
+street.nextSection,Next street section,ส่วนถัดไปของถนน,ส่วนถัดไปของถนน
+street.decorate,Decorate,ตกแต่ง,ตกแต่ง
+street.shop,Street Shop,ร้านค้าถนน,ร้านค้าถนน
+street.undo,Undo,ย้อนกลับ,ย้อนกลับ
+street.storeItem,Store,เก็บ,เก็บ
+street.autoArrange,Auto,จัดอัตโนมัติ,จัดอัตโนมัติ
+street.inventory,Inventory,คลังของ,คลังของ
+street.filterAll,All,ทั้งหมด,ทั้งหมด
+street.filterStored,Stored,เก็บไว้,เก็บไว้
+street.filterPlaced,Placed,วางแล้ว,วางแล้ว
+street.backToShop,Back to shop,กลับร้านค้า,กลับร้านค้า
+street.welcomeRibbon,WELCOME,ยินดีต้อนรับ,ยินดีต้อนรับ
+street.welcomeLantern,Welcome Lantern,โคมต้อนรับ,โคมต้อนรับ
+street.welcomeDesc,Your first-session gift — choose a home for it.,ของขวัญจากเซสชันแรก — เลือกที่วางให้โคมนี้,ของขวัญจากการเล่นครั้งแรก — เลือกที่วางให้โคมนี้
+street.meta,{size} · {set} set · {behavior},{size} · เซ็ต{set} · {behavior},{size} · ชุด{set} · {behavior}
+street.size.small,Small,เล็ก,เล็ก
+street.size.medium,Medium,กลาง,กลาง
+street.size.large,Large,ใหญ่,ใหญ่
+street.size.gateway,Gateway,ซุ้มประตู,ซุ้มประตู
+street.set.market,Night Market,ตลาดกลางคืน,ตลาดกลางคืน
+street.set.garden,Garden,สวน,สวน
+street.set.festival,Festival,เทศกาล,เทศกาล
+street.set.welcome,Welcome,ต้อนรับ,ต้อนรับ
+street.behavior.light,glows when tapped,แตะแล้วเปล่งแสง,แตะแล้วเปล่งแสง
+street.behavior.food,serves a warm treat,เสิร์ฟของอร่อยอุ่น ๆ,เสิร์ฟของอร่อยอุ่น ๆ
+street.behavior.water,ripples when tapped,แตะแล้วเกิดระลอกน้ำ,แตะแล้วเกิดระลอกน้ำ
+street.behavior.flutter,flutters in the breeze,พลิ้วไหวตามลม,พลิ้วไหวตามลม
+street.behavior.celebrate,celebrates when tapped,แตะแล้วฉลอง,แตะแล้วฉลอง
+street.plotLabel,{size} plot. {item},พื้นที่{size} {item},พื้นที่{size} {item}
+street.emptyPlot,Empty,ว่าง,ว่าง
+street.itemLabel,"{name}, {stars}, placed on your street",{name} {stars} วางอยู่บนถนนของคุณ,{name} {stars} วางอยู่บนถนนของคุณ
+street.previewCaption,Previewing on your street — try another highlighted plot or star tier.,กำลังลองบนถนน — เลือกพื้นที่เรืองแสงหรือระดับดาวอื่นได้,กำลังลองบนถนน — เลือกพื้นที่เรืองแสงหรือระดับดาวอื่นได้
+street.editCaption,{placed} placed · {stored} stored,วางแล้ว {placed} · เก็บไว้ {stored},วางแล้ว {placed} · เก็บไว้ {stored}
+street.captionReady,{buildings} landmarks unlocked. Decorate the street to make it yours.,ปลดล็อกจุดเด่นแล้ว {buildings} จุด ตกแต่งถนนในแบบของคุณ,ปลดล็อกจุดเด่นแล้ว {buildings} จุด ตกแต่งถนนในแบบของคุณ
+street.captionSummary,{placed} decorations · {stored} stored · {buildings} landmarks,ของตกแต่ง {placed} · เก็บไว้ {stored} · จุดเด่น {buildings},ของตกแต่ง {placed} · เก็บไว้ {stored} · จุดเด่น {buildings}
+street.nameEdit,Name your street,ตั้งชื่อถนนของคุณ,ตั้งชื่อถนนของคุณ
+street.namePlaceholder,e.g. Sunny Lane,เช่น ถนนแสงตะวัน,เช่น ถนนแสงตะวัน
+street.namedCaption,{name},{name},{name}
+street.coachPlace,"You earned the {name}! Select a glowing plot to place it, or Skip for an automatic home.",คุณได้รับ{name}! เลือกพื้นที่เรืองแสงเพื่อวาง หรือกดข้ามให้จัดอัตโนมัติ,คุณได้รับ{name}! เลือกพื้นที่เรืองแสงเพื่อวาง หรือกดข้ามให้จัดอัตโนมัติ
+street.coachSelect,"Choose your Welcome Lantern, then select a glowing plot.",เลือกโคมต้อนรับ แล้วเลือกพื้นที่เรืองแสง,เลือกโคมต้อนรับ แล้วเลือกพื้นที่เรืองแสง
+street.skip,Skip,ข้าม,ข้าม
+street.placed,Placed,วางแล้ว,วางแล้ว
+street.stored,Stored,เก็บไว้,เก็บไว้
+street.inventoryEmpty,No decorations match this filter.,ไม่มีของตกแต่งในตัวกรองนี้,ไม่มีของตกแต่งในตัวกรองนี้
+street.noMove,That decoration needs a compatible empty plot.,ของชิ้นนี้ต้องใช้พื้นที่ว่างที่มีขนาดเหมาะสม,ของชิ้นนี้ต้องใช้พื้นที่ว่างที่มีขนาดเหมาะสม
+street.placedAnnouncement,Placed {name}.,วาง{name}แล้ว,วาง{name}แล้ว
+street.storedAnnouncement,Moved {name} to storage.,ย้าย{name}ไปเก็บแล้ว,ย้าย{name}ไปเก็บแล้ว
+street.undoAnnouncement,Undid the last street change.,ย้อนกลับการแก้ไขล่าสุดแล้ว,ย้อนกลับการแก้ไขล่าสุดแล้ว
+street.autoAnnouncement,Stored decorations were arranged.,จัดของที่เก็บไว้ลงถนนแล้ว,จัดของที่เก็บไว้ลงถนนแล้ว
+street.selectedAnnouncement,Selected {name}. {count} compatible plots available.,เลือก{name}แล้ว มีพื้นที่ที่ใช้ได้ {count} จุด,เลือก{name}แล้ว มีพื้นที่ที่ใช้ได้ {count} จุด
+street.savedAnnouncement,Your street was saved.,บันทึกถนนของคุณแล้ว,บันทึกถนนของคุณแล้ว
+street.purchaseAnnouncement,Bought {name}. It is ready to place.,ซื้อ{name}แล้ว พร้อมนำไปวาง,ซื้อ{name}แล้ว พร้อมนำไปวาง
+street.upgradeAnnouncement,Upgraded {name} to {stars}.,อัปเกรด{name}เป็น {stars} แล้ว,อัปเกรด{name}เป็น {stars} แล้ว
+street.buyAndPlace,Buy ★ & place · {coins} coins,ซื้อ ★ และวาง · {coins} เหรียญ,ซื้อ ★ และวาง · {coins} เหรียญ
+street.buyToInventory,Buy to inventory · {coins} coins,ซื้อเก็บเข้าคลัง · {coins} เหรียญ,ซื้อเก็บเข้าคลัง · {coins} เหรียญ
+street.buyToInventoryHint,Move or store an item to place this.,ย้ายหรือเก็บของชิ้นอื่นก่อน แล้วค่อยวางชิ้นนี้,ย้ายหรือเก็บของชิ้นอื่นก่อน แล้วค่อยวางชิ้นนี้
+street.placeIt,Place it,วางเลย,วางเลย
+street.notEnough,Not enough coins for that purchase.,เหรียญไม่พอสำหรับการซื้อนี้,เหรียญไม่พอสำหรับการซื้อนี้
+street.reserveToggle,Reserve coins for this build,กันเหรียญไว้สำหรับงานนี้,กันเหรียญไว้สำหรับงานนี้
+street.reserveHint,Reserved coins stay set aside for your next build.,เหรียญที่กันไว้จะถูกเก็บไว้สำหรับงานถัดไป,เหรียญที่กันไว้จะถูกเก็บไว้สำหรับงานถัดไป
+street.reserveBlocked,Those coins are reserved for your build.,เหรียญเหล่านั้นถูกกันไว้สำหรับงานของคุณ,เหรียญเหล่านั้นถูกกันไว้สำหรับงานของคุณ
+street.projectEyebrow,Next street build,สิ่งที่จะสร้างบนถนนต่อไป,สิ่งที่จะสร้างบนถนนต่อไป
+street.projectProgress,{pct}% of price · {coins} coins to go,{pct}% ของราคา · เหลืออีก {coins} เหรียญ,{pct}% ของราคา · เหลืออีก {coins} เหรียญ
+street.projectReady,Ready to build!,พร้อมสร้างแล้ว!,พร้อมสร้างแล้ว!
+street.projectReserved,Reserved while this is your project,เก็บไว้ให้คุณตราบใดที่ยังเป็นโปรเจกต์,เก็บไว้ให้คุณตราบใดที่ยังเป็นสิ่งที่คุณจะสร้าง
+street.makeProject,Set as my next build,ตั้งเป็นสิ่งที่จะสร้างต่อไป,ตั้งเป็นสิ่งที่จะสร้างต่อไป
+street.currentProject,Current next build,สิ่งที่จะสร้างปัจจุบัน,สิ่งที่จะสร้างปัจจุบัน
+street.changeProject,Change,เปลี่ยน,เปลี่ยน
+street.buildNow,Build now,สร้างเลย,สร้างเลย
+street.projectSelectedAnnouncement,{name} is now your next Street build.,ตั้ง{name}เป็นสิ่งที่จะสร้างบนถนนต่อไปแล้ว,ตั้ง{name}เป็นสิ่งที่จะสร้างบนถนนต่อไปแล้ว
+street.projectBlueprintLabel,"{name} project blueprint, {pct}% of price reached",พิมพ์เขียวโปรเจกต์{name} ถึง {pct}% ของราคา,พิมพ์เขียวของ{name} ถึง {pct}% ของราคาแล้ว
+street.setComplete,{set} complete ✨,{set} ครบชุดแล้ว ✨,{set} ครบชุดแล้ว ✨
+street.collection,Collection,คอลเลกชัน,ของสะสม
+street.collectionSetHeader,{name} — {owned}/{total},{name} — {owned}/{total},{name} — {owned}/{total}
+street.collectionComplete,Complete ✓,ครบแล้ว ✓,ครบแล้ว ✓
+street.collectionLocked,Not yet owned,ยังไม่มี,ยังไม่มี
+street.collectionEmpty,No decorations to show yet.,ยังไม่มีของตกแต่งให้แสดง,ยังไม่มีของตกแต่งให้แสดง
+street.layouts,Layouts,เลย์เอาต์,แบบจัดวาง
+street.layoutSave,Save here,บันทึกที่นี่,บันทึกที่นี่
+street.layoutLoad,Load,โหลด,โหลด
+street.layoutSlot,Slot {n},ช่อง {n},ช่อง {n}
+street.layoutOverwrite,Replace this saved layout?,แทนที่เลย์เอาต์ที่บันทึกไว้?,แทนที่แบบจัดวางที่บันทึกไว้?
+street.layoutOverwriteYes,Replace,แทนที่,แทนที่
+street.layoutSavedAnnouncement,Saved to Slot {n}.,บันทึกลงช่อง {n} แล้ว,บันทึกลงช่อง {n} แล้ว
+street.layoutLoadedAnnouncement,Loaded Slot {n}.,โหลดช่อง {n} แล้ว,โหลดช่อง {n} แล้ว
+street.keepsakes,Keepsakes,ของที่ระลึก,ของที่ระลึก
+street.keepsakeWelcome,Your first lantern,โคมไฟดวงแรกของคุณ,โคมไฟดวงแรกของคุณ
+street.keepsakeSet,{set} set completed,สะสมชุด {set} ครบแล้ว,สะสมชุด {set} ครบแล้ว
+street.keepsakeDaily,A neighbour dropped by,เพื่อนบ้านแวะมา,เพื่อนบ้านแวะมา
+street.keepsakeWord,— you'd learned {word},— คุณเรียน {word} แล้ว,— คุณเรียน {word} แล้ว
+street.keepsakesEmpty,Keepsakes you earn will rest here.,ของที่ระลึกที่ได้จะอยู่ที่นี่,ของที่ระลึกที่ได้จะอยู่ที่นี่
+street.dailyGreeting,A neighbour stopped by!,เพื่อนบ้านแวะมา!,เพื่อนบ้านแวะมา!
+street.dailyGift,They left you {coins} coins.,ฝากเหรียญไว้ให้ {coins} เหรียญ,ฝากเหรียญไว้ให้ {coins} เหรียญ
