@@ -15,7 +15,7 @@ import { uiScale, layout, lanternTrailLayout, lanternTrailBackdrop, lanternAppro
 import { sprite } from "./sprites.js";
 import { nineSliceRects } from "./nineslice.js";
 import { preload as preloadAssets } from "./assets.js";
-import { recordAnswer, levelMastery } from "./mastery.js";
+import { recordAnswer, levelMastery, pickKeepsakeWord } from "./mastery.js";
 import { levelForXp, xpToNext, accessoriesFor, MILESTONES } from "./growth.js";
 import { smartDeck, weakWords, isDue } from "./srs.js";
 import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
@@ -3767,6 +3767,9 @@ const streetScreen = createStreetScreen({
   getCurrentScreen: () => currentScreen,
   getShopState: () => shopState, setShopState: v => { shopState = v; },
   roundRectOn, drawCoverImage, drawStarMark,
+  // Read-only view of mastery for keepsake DISPLAY only: the Street never
+  // writes mastery and never re-reads a keepsake's word after creation.
+  masteredWord: used => pickKeepsakeWord(masteryStore, used),
 });
 
 /* ============================== profile / progress ============================== */
