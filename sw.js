@@ -10,7 +10,7 @@
 // audio name each release (v80..v105) wiped every cached mp3 on every
 // update, leaving installed PWAs silent offline until words re-fetched.
 // Bump AUDIO_VERSION only when build_audio.py regenerates the mp3 set.
-const CACHE_VERSION = "v107";
+const CACHE_VERSION = "v108";
 const AUDIO_VERSION = "v1";
 const SHELL = `nbhsk-shell-${CACHE_VERSION}`;
 const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`;
