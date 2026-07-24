@@ -1,8 +1,39 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 
 const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const main = readFileSync(new URL("../src/main.js", import.meta.url), "utf8");
+const srcDir = new URL("../src/", import.meta.url);
+const srcJs = readdirSync(srcDir, { recursive: true })
+  .filter(f => String(f).endsWith(".js"))
+  .map(f => readFileSync(new URL(String(f), srcDir), "utf8"))
+  .join("\n");
+
+// Ids whose `.hidden` is assigned somewhere in src/. Two spellings are used:
+// `$("#id").hidden = …` directly, and `const row = $("#id"), …` followed by
+// `row.hidden = …`. The second is resolved only inside a short window after the
+// declaration so a common variable name (`el`, `panel`) can't be matched
+// against an unrelated assignment in a different function.
+function idsToggledHidden() {
+  const ids = new Set();
+  for (const m of srcJs.matchAll(/\$\("#([\w-]+)"\)\.hidden\s*=/g)) ids.add(m[1]);
+  for (const m of srcJs.matchAll(/([\w$]+)\s*=\s*\$\("#([\w-]+)"\)/g)) {
+    const [, varName, id] = m;
+    const window = srcJs.slice(m.index, m.index + 1200);
+    if (new RegExp(`\\b${varName.replace(/\$/g, "\\$")}\\.hidden\\s*=`).test(window)) ids.add(id);
+  }
+  return [...ids];
+}
+
+const esc = s => s.replace(/[-]/g, "\\-");
+const classesOf = id =>
+  html.match(new RegExp(`<[^>]*\\bid="${esc(id)}"[^>]*>`))?.[0]
+    .match(/\bclass="([^"]*)"/)?.[1].split(/\s+/).filter(Boolean) ?? [];
+const declaresDisplay = cls =>
+  [...html.matchAll(new RegExp(`\\.${esc(cls)}\\s*\\{([^}]*)\\}`, "g"))]
+    .some(r => /display\s*:\s*(?!none)/.test(r[1]));
+const hasHiddenOverride = (cls, id) =>
+  new RegExp(`\\.${esc(cls)}\\[hidden\\]`).test(html) || new RegExp(`#${esc(id)}\\[hidden\\]`).test(html);
 
 describe("accessibility markup contract", () => {
   it("allows browser zoom", () => {
@@ -29,6 +60,23 @@ describe("accessibility markup contract", () => {
     expect(html).toContain('<nav id="bottom-nav" aria-label="Primary">');
     expect(main).toContain('b.setAttribute("aria-current", "page")');
     expect(main).toContain('el.setAttribute("aria-pressed", String(!!on))');
+  });
+
+  // An author `display:` rule beats the UA `[hidden]{display:none}` rule, so
+  // any JS-toggled element whose class declares a display needs an explicit
+  // `[hidden]` override or setting `.hidden = true` silently does nothing.
+  // This has bitten three times (.street-layouts-panel, .street-caption-row,
+  // .profile-name-row) — guard the whole family rather than each instance.
+  it("gives every JS-toggled element a [hidden] override when its class sets display", () => {
+    const broken = [];
+    for (const id of idsToggledHidden()) {
+      for (const cls of classesOf(id)) {
+        if (declaresDisplay(cls) && !hasHiddenOverride(cls, id)) {
+          broken.push(`#${id}: .${cls} declares display with no .${cls}[hidden] override`);
+        }
+      }
+    }
+    expect(broken).toEqual([]);
   });
 
   it("contains a focus-trap and Escape path for dialogs", () => {
