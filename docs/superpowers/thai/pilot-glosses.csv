@@ -1,6 +1,6 @@
 hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
-的,de,of; ~'s,คำแสดงความเป็นเจ้าของ (ของ),3433,1,คำแสดงความเป็นเจ้าของ (ของ),
-了,le,completed action marker,คำบอกเหตุการณ์เสร็จสิ้น/เกิดขึ้นแล้ว,978,1,คำบอกเหตุการณ์เสร็จสิ้น/เกิดขึ้นแล้ว,
+的,de,of; ~'s,คำแสดงความเป็นเจ้าของ (ของ),3433,1,ของ (แสดงความเป็นเจ้าของ),
+了,le,completed action marker,คำบอกเหตุการณ์เสร็จสิ้น/เกิดขึ้นแล้ว,978,1,แล้ว (บอกว่าเกิดขึ้น/เสร็จแล้ว),
 是,shì,to be; correct,"เป็น, คือ, ใช่",837,1,เป็น; ใช่,split copula (เป็น) vs affirmation (ใช่); dropped คือ to keep max-two
 很,hěn,very; quite,มาก,570,1,มาก,
 在,zài,to be at; (progressive marker),อยู่ที่; กำลัง (ทำอยู่),534,1,อยู่ที่; กำลัง (ทำอยู่),
@@ -12,7 +12,7 @@ hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
 要,yào,to want; must,ต้องการ; จะ; ต้อง,310,2,อยาก; ต้อง,matches EN want;must — dropped 要's future sense (จะ) not in EN gloss
 不,bù,no; not so,ไม่,302,1,ไม่,
 和,hé,and; with,และ; กับ,298,1,และ; กับ,
-会,huì,can; to have the skill,ทำเป็น/ได้; จะ,274,1,ทำเป็น/ได้; จะ,
+会,huì,can; to have the skill,ทำเป็น/ได้; จะ,274,1,ทำเป็น; ได้,
 都,dōu,all; both,"ทั้งหมด, ล้วน",258,1,"ทั้งหมด, ล้วน",
 就,jiù,then; right away; only,ก็; ทันที; เพียง,248,2,ก็; เพียง,3 EN senses (then/right away/only) trimmed to 2; ก็ covers then/soon
 我们,wǒ men,we; us,พวกเรา,246,1,พวกเรา,
@@ -27,27 +27,27 @@ hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
 也,yě,also; too,"ก็, เช่นกัน",198,2,"ก็, เช่นกัน",
 好,hǎo,good; appropriate,ดี,198,1,ดี,
 地,dì,earth; ground,"ดิน, พื้นดิน",197,3,"ดิน, พื้นดิน",
-时,shí,time; when,"เวลา, เมื่อ",169,2,"เวลา, เมื่อ",
+时,shí,time; when,"เวลา, เมื่อ",169,2,เวลา; เมื่อ,
 她,tā,she,เธอ (ผู้หญิง),168,1,เธอ (ผู้หญิง),
 自己,zì jǐ,oneself; one's own,ตัวเอง,162,3,ตัวเอง,
-没,méi,not; haven’t,ไม่ (ไม่มี/ยังไม่),158,1,ไม่ (ไม่มี/ยังไม่),
+没,méi,not; haven’t,ไม่ (ไม่มี/ยังไม่),158,1,ไม่มี; ยังไม่,
 人们,rén men,people,ผู้คน,157,2,ผู้คน,
 什么,shén me,what?; something,อะไร,155,1,อะไร,
 这,zhè,this; these,"นี่, นี้",151,1,"นี่, นี้",
-到,dào,to reach; to arrive,ถึง; ไปยัง,150,2,ถึง; ไปยัง,
+到,dào,to reach; to arrive,ถึง; ไปยัง,150,2,ถึง,
 说,shuō,to speak; to talk,"พูด, บอก",144,1,"พูด, บอก",
 更,gèng,even more; further,"ยิ่ง, ยิ่งขึ้น, มากกว่า",138,3,"ยิ่งขึ้น, ยิ่ง",trimmed 3 near-synonyms to 2 (dropped มากกว่า)
 没有,méi yǒu,haven't; hasn't,ไม่มี; ยังไม่,138,1,ไม่มี; ยังไม่,
 想,xiǎng,to think; to think of,อยาก; คิด; คิดถึง,134,1,คิด; คิดถึง,matches EN think/think-of; EN gloss omits 想's common spoken 'want to' (อยาก)
-被,bèi,(passive marker); quilt,คำแสดงถูกกระทำ (ถูก); ผ้าห่ม,133,3,คำแสดงถูกกระทำ (ถูก); ผ้าห่ม,
+被,bèi,(passive marker); quilt,คำแสดงถูกกระทำ (ถูก); ผ้าห่ม,133,3,ถูก (คำแสดงการถูกกระทำ); ผ้าห่ม,
 可以,kě yǐ,can; may,"ได้, สามารถ; อนุญาต",129,2,"ได้, สามารถ",can;may collapse to one Thai sense (ได้/สามารถ); dropped verb อนุญาต
-太,tài,too; extremely,"เกินไป, ...เกิน",129,1,"เกินไป, ...เกิน",
+太,tài,too; extremely,"เกินไป, ...เกิน",129,1,เกินไป; มากเกิน,
 与,yǔ,formal and; together with,และ; กับ,126,4,และ; กับ,
 来,lái,to come,มา,126,1,มา,
 一,yī,one; single,หนึ่ง,125,1,หนึ่ง,
 喜欢,xǐ huān,to like; to be fond of,ชอบ,122,1,ชอบ,
 使,shǐ,to make; to cause,"ทำให้, ก่อให้เกิด",118,3,"ทำให้, ก่อให้เกิด",
-把,bǎ,to hold; to grasp,คำชี้กรรม (วางหน้ากรรม); ถือ,116,3,คำชี้กรรม (วางหน้ากรรม); ถือ,
+把,bǎ,to hold; to grasp,คำชี้กรรม (วางหน้ากรรม); ถือ,116,3,คำนำหน้ากรรม; ถือ,
 做,zuò,to make; to produce,ทำ,115,1,ทำ,
 让,ràng,to let; to allow,"ให้, ปล่อยให้, ทำให้",115,2,ให้; ปล่อยให้,
 别人,bié rén,other people; others,คนอื่น,112,3,คนอื่น,
@@ -93,7 +93,7 @@ hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
 不要,bú yào,don't!; must not,"อย่า, ไม่เอา",64,3,อย่า; ไม่เอา,
 将,jiāng,will; shall,จะ; (คำชี้กรรมในภาษาเขียน),64,4,จะ (ในภาษาเขียน),"EN only ""will; shall""; dropped the literary object-marker sense"
 出现,chū xiàn,to appear; to arise,"ปรากฏ, เกิดขึ้น",63,3,ปรากฏ; เกิดขึ้น,
-所,suǒ,place; (measure word for buildings); (nominalizing particle),สถานที่; (คำเสริมในภาษาเขียน),63,4,สถานที่; (คำเสริมในภาษาเขียน),
+所,suǒ,place; (measure word for buildings); (nominalizing particle),สถานที่; (คำเสริมในภาษาเขียน),63,4,สถานที่; (คำนำหน้ากริยาในภาษาเขียน),
 才,cái,only then; talent,เพิ่งจะ; ถึงจะ,63,3,ถึงจะ; พรสวรรค์,"added พรสวรรค์ for the ""talent"" noun sense the EN gloss lists"
 生活,shēng huó,to live; life,ชีวิต; ใช้ชีวิต,63,4,ชีวิต; ใช้ชีวิต,
 根据,gēn jù,according to; based on,"ตาม, อ้างอิงจาก",62,3,"ตาม, อ้างอิงจาก",
@@ -103,7 +103,7 @@ hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
 广告,guǎng gào,to advertise; a commercial,โฆษณา,60,4,โฆษณา,
 朋友,péng yǒu,friend,เพื่อน,60,1,เพื่อน,
 如果,rú guǒ,if; in case,"ถ้า, หาก",59,3,ถ้า; หาก,
-发现,fā xiàn,to notice; to become aware of,"ค้นพบ, พบว่า",58,3,พบว่า; ค้นพบ,EN 'notice/become aware' is narrower than 发现 (also = discover); led with พบว่า
+发现,fā xiàn,to notice; to become aware of,"ค้นพบ, พบว่า",58,3,พบว่า; สังเกตเห็น,EN 'notice/become aware' is narrower than 发现 (also = discover); led with พบว่า
 开始,kāi shǐ,to begin; beginning,"เริ่ม, เริ่มต้น",58,2,เริ่ม; เริ่มต้น,
 您,nín,you,คุณ (สุภาพ),58,2,คุณ (สุภาพ),
 时候,shí hòu,time; length of time,"เวลา, ตอน, ช่วง",58,1,ตอน; เวลา,
@@ -127,7 +127,7 @@ hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
 银行,yín háng,bank,ธนาคาร,50,3,ธนาคาร,
 却,què,but; yet,"แต่กลับ, ทว่า",49,4,แต่กลับ; ทว่า,
 点,diǎn,o’clock; a little,โมง (นาฬิกา); จุด; นิดหน่อย,49,1,โมง (นาฬิกา); นิดหน่อย,
-画,huà,to draw; to paint,วาด; ภาพวาด,49,3,วาด; ระบายสี,"Thai has no crisp draw/paint split; วาด=draw, ระบายสี=paint/apply color"
+画,huà,to draw; to paint,วาด; ภาพวาด,49,3,วาด,"Thai has no crisp draw/paint split; วาด=draw, ระบายสี=paint/apply color"
 老板,lǎo bǎn,boss; shop owner,"เจ้านาย, เถ้าแก่",49,5,เจ้านาย; เถ้าแก่,
 不管,bù guǎn,not to be concerned; regardless of,ไม่ว่า...ก็ตาม,48,4,ไม่ว่า...ก็ตาม,
 会议,huì yì,meeting; conference,การประชุม,48,3,การประชุม,
@@ -152,11 +152,11 @@ hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
 水,shuǐ,water,น้ำ,43,1,น้ำ,
 不同,bù tóng,different; distinct,แตกต่าง,42,3,แตกต่าง,
 事情,shì qíng,affair; matter,"เรื่อง, ธุระ",42,2,เรื่อง; ธุระ,
-作用,zuò yòng,to act on; to affect,"บทบาท, ผล, การออกฤทธิ์",42,3,ผล; บทบาท,作用 is a noun 'effect/function/role'; EN gloss reads verb-ish
+作用,zuò yòng,to act on; to affect,"บทบาท, ผล, การออกฤทธิ์",42,3,ผล; บทบาท,"作用 is a noun 'effect/function/role'; EN gloss reads verb-ish | EN-GLOSS-BUG: English verb-shaped; word is primarily the noun ""effect; function; role"". Thai follows the real sense."
 写,xiě,to write,เขียน,42,1,เขียน,
 快,kuài,rapid; quick,เร็ว; ไว; ใกล้จะ,42,2,เร็ว,
 找,zhǎo,to try to find; to look for,หา,42,2,หา,
-不错,bù cuò,correct; right,"ดีทีเดียว, ไม่เลว",41,2,ดีทีเดียว,不错 idiomatically means 'pretty good/not bad'; EN gloss 'correct; right' misses that common sense
+不错,bù cuò,correct; right,"ดีทีเดียว, ไม่เลว",41,2,ดีทีเดียว,"不错 idiomatically means 'pretty good/not bad'; EN gloss 'correct; right' misses that common sense | EN-GLOSS-BUG: English ""correct; right"" is wrong — word means ""pretty good; not bad"". Thai follows the real sense."
 像,xiàng,to resemble; to be like,"เหมือน, คล้าย",41,3,เหมือน,
 听,tīng,to listen to; to hear,ฟัง,41,1,ฟัง,
 呢,ne,(question particle),คำลงท้ายคำถาม (ล่ะ),41,1,คำลงท้ายคำถาม (ล่ะ),
@@ -183,11 +183,11 @@ hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
 生命,shēng mìng,life; living being,"ชีวิต, สิ่งมีชีวิต",38,4,ชีวิต; สิ่งมีชีวิต,
 缺点,quē diǎn,weak point; fault,"ข้อเสีย, จุดด้อย",38,4,ข้อเสีย,
 较,jiào,comparatively; to compare,ค่อนข้าง; เปรียบเทียบ,38,3,ค่อนข้าง; เปรียบเทียบ,
-那么,nà me,like that; in that way,"เช่นนั้น, ขนาดนั้น; งั้น",38,3,แบบนั้น; ขนาดนั้น,
+那么,nà me,like that; in that way,"เช่นนั้น, ขนาดนั้น; งั้น",38,3,"แบบนั้น, อย่างนั้น",
 具有,jù yǒu,to have; to possess,"มี, ประกอบด้วย",37,4,มี,
 告诉,gào su,to tell; to inform,บอก,37,2,บอก,
 地球,dì qiú,the earth,โลก (ดาวเคราะห์),37,4,โลก (ดาวเคราะห์),
-已经,yǐ jīng,already,"...แล้ว, เรียบร้อยแล้ว",37,2,แล้ว,
+已经,yǐ jīng,already,"...แล้ว, เรียบร้อยแล้ว",37,2,"แล้ว, เรียบร้อยแล้ว",
 桥,qiáo,bridge,สะพาน,37,4,สะพาน,
 点心,diǎn xīn,light refreshments; pastry,"ของว่าง, ขนม",37,6,ของว่าง; ขนม,
 老人,lǎo rén,old man or woman; the elderly,"คนแก่, ผู้สูงอายุ",37,3,ผู้สูงอายุ,
@@ -195,7 +195,7 @@ hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
 马,mǎ,horse,ม้า,37,3,ม้า,
 事,shì,matter; thing,"เรื่อง, ธุระ",36,2,เรื่อง; ธุระ,
 发展,fā zhǎn,development; growth,พัฒนา; การพัฒนา,36,4,พัฒนา; การพัฒนา,
-地方,dì fāng,region; regional,"สถานที่, ที่; ท้องถิ่น",36,3,สถานที่; ท้องถิ่น,
+地方,dì fāng,region; regional,"สถานที่, ที่; ท้องถิ่น",36,3,สถานที่; ท้องถิ่น,"EN-GLOSS-BUG (borderline): English ""region; regional"" narrower than everyday ""place; local""."
 爱,ài,to love; to be fond of,รัก,36,1,รัก,
-前,qián,front; forward,"หน้า, ข้างหน้า; ก่อน",35,1,ข้างหน้า; ก่อน,
+前,qián,front; forward,"หน้า, ข้างหน้า; ก่อน",35,1,ข้างหน้า,
 提高,tí gāo,to raise; to increase,"ยกระดับ, เพิ่มขึ้น",35,3,ยกระดับ; เพิ่มขึ้น,

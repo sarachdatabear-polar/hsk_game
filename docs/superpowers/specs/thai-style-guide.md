@@ -43,6 +43,14 @@ Never produce these patterns:
   are context only
 - **Lead sense + max one more.** Second sense only when the English carries two
   truly distinct senses; separate with "; " (semicolon+space). Never three.
+- **Separator convention:** "; " separates two DISTINCT senses (เวลา; เมื่อ);
+  a comma joins register-variants of ONE sense (ฉัน, ผม). Never comma-join
+  distinct senses.
+- **Grammar particles (的/了/吗-class):** lead with the real Thai word a speaker
+  says, descriptor in a short parenthetical after it — ของ (แสดงความเป็นเจ้าของ),
+  never descriptor-first.
+- มีความสุข is a lexical word for "happy", NOT the banned มีความ+adj pattern —
+  do not "fix" it.
 - **Register-match the source word:** everyday EN word → everyday Thai; formal/
   literary EN word → the corresponding formal Thai (เชิญ vs ชวน both exist for a
   reason)
