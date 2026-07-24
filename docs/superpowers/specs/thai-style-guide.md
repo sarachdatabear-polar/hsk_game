@@ -1,7 +1,6 @@
 # Thai Style Guide — Lucky Cat HSK
 
-**Status: v0 DRAFT — awaiting Jordan's pilot calibration (2026-07-24).** After the
-pilot review, fold every correction Jordan makes into a rule here and bump to v1.
+**Status: v1 — pilot-calibrated by Jordan (2026-07-24).** Binding for the full run.
 Every Thai-producing worker MUST receive this file verbatim in its prompt.
 
 ## Voice
@@ -43,6 +42,14 @@ Never produce these patterns:
   are context only
 - **Lead sense + max one more.** Second sense only when the English carries two
   truly distinct senses; separate with "; " (semicolon+space). Never three.
+- **Separator convention:** "; " separates two DISTINCT senses (เวลา; เมื่อ);
+  a comma joins register-variants of ONE sense (ฉัน, ผม). Never comma-join
+  distinct senses.
+- **Grammar particles (的/了/吗-class):** lead with the real Thai word a speaker
+  says, descriptor in a short parenthetical after it — ของ (แสดงความเป็นเจ้าของ),
+  never descriptor-first.
+- มีความสุข is a lexical word for "happy", NOT the banned มีความ+adj pattern —
+  do not "fix" it.
 - **Register-match the source word:** everyday EN word → everyday Thai; formal/
   literary EN word → the corresponding formal Thai (เชิญ vs ชวน both exist for a
   reason)
@@ -76,14 +83,23 @@ Never produce these patterns:
 | coins | เหรียญ |
 | level (HSK) | ระดับ HSK {n} |
 | level (cat growth) | Lv {n} (Latin, branded) |
-| mastered | เชี่ยวชาญ (pending pilot — candidate: จำแม่นแล้ว) |
+| mastered | เชี่ยวชาญ (Jordan-confirmed) |
 | quest | ภารกิจ |
 | shop | ร้านค้า |
-| street | ถนน (pending pilot — candidate: ย่าน) |
+| street | ถนน (Jordan-confirmed) |
 
 Add rows as workers hit recurring terms; conflicts resolve here, not per-batch.
 
-## Calibration log
+## Calibration log (Jordan, 2026-07-24)
 
-_(empty until Jordan's pilot review — record each correction as
-"pattern → rule" so the full run inherits it)_
+- **Copula lead is คือ:** 是-class "to be" glosses lead with คือ, not เป็น
+  (是 → คือ; ใช่).
+- **mastered = เชี่ยวชาญ, Street = ถนน** — confirmed, do not revisit.
+- **Wrong/deficient English glosses get fixed at the product source** (ROOT
+  `product/` CSVs), then Thai follows the corrected English — never force Thai
+  toward a buggy English gloss. Applied 2026-07-24: 不错 → "pretty good; not
+  bad", 作用 → "effect; role", 地方 → "place; local", 想 → "to want to; to
+  think" (อยาก; คิด). Workers must keep flagging suspect English as
+  EN-GLOSS-BUG notes.
+- Everything else in the pilot (89 gloss + 9 UI changes) approved as delivered —
+  the v0 rules plus the conventions added during verification stand unchanged.

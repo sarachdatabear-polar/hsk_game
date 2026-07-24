@@ -1,0 +1,51 @@
+hanzi,pinyin,english,thai_current,freq,level,thai_proposed,note
+的,de,of; ~'s,คำแสดงความเป็นเจ้าของ (ของ),3433,1,คำแสดงความเป็นเจ้าของ (ของ),
+了,le,completed action marker,คำบอกเหตุการณ์เสร็จสิ้น/เกิดขึ้นแล้ว,978,1,คำบอกเหตุการณ์เสร็จสิ้น/เกิดขึ้นแล้ว,
+是,shì,to be; correct,"เป็น, คือ, ใช่",837,1,เป็น; ใช่,split copula (เป็น) vs affirmation (ใช่); dropped คือ to keep max-two
+很,hěn,very; quite,มาก,570,1,มาก,
+在,zài,to be at; (progressive marker),อยู่ที่; กำลัง (ทำอยู่),534,1,อยู่ที่; กำลัง (ทำอยู่),
+有,yǒu,to have; there is,มี,450,1,มี,
+人,rén,person; people,คน,422,1,คน,
+我,wǒ,I; me,"ฉัน, ผม",391,1,"ฉัน, ผม",
+他,tā,he; him,เขา (ผู้ชาย),367,1,เขา (ผู้ชาย),
+你,nǐ,you,"คุณ, เธอ",310,1,"คุณ, เธอ",
+要,yào,to want; must,ต้องการ; จะ; ต้อง,310,2,อยาก; ต้อง,matches EN want;must — dropped 要's future sense (จะ) not in EN gloss
+不,bù,no; not so,ไม่,302,1,ไม่,
+和,hé,and; with,และ; กับ,298,1,และ; กับ,
+会,huì,can; to have the skill,ทำเป็น/ได้; จะ,274,1,ทำเป็น/ได้; จะ,
+都,dōu,all; both,"ทั้งหมด, ล้วน",258,1,"ทั้งหมด, ล้วน",
+就,jiù,then; right away; only,ก็; ทันที; เพียง,248,2,ก็; เพียง,3 EN senses (then/right away/only) trimmed to 2; ก็ covers then/soon
+我们,wǒ men,we; us,พวกเรา,246,1,พวกเรา,
+中,zhōng,middle; center,"กลาง, ใน; จีน",237,2,กลาง,EN gloss narrow; 中 also very common = ใน (in/within) — omitted to match EN
+去,qù,to go; to go to,ไป,224,1,ไป,
+上,shàng,on; above; to get on,"บน, ขึ้น; ก่อนหน้า",219,1,บน; ขึ้น,dropped 'previous' sense (ก่อนหน้า) not in EN gloss
+能,néng,can; to be able to,สามารถ,214,1,สามารถ,
+对,duì,right; correct,"ถูกต้อง; ต่อ, แก่",210,2,ถูกต้อง; ใช่,EN = right/correct; ใช่ = spoken 'that's right'; dropped preposition sense ต่อ/แก่
+得,dé,to obtain; to get,"ได้, ได้รับ",210,2,"ได้, ได้รับ",
+多,duō,many; much,"มาก, เยอะ",208,1,"มาก, เยอะ",
+它,tā,it,มัน,199,2,มัน,
+也,yě,also; too,"ก็, เช่นกัน",198,2,"ก็, เช่นกัน",
+好,hǎo,good; appropriate,ดี,198,1,ดี,
+地,dì,earth; ground,"ดิน, พื้นดิน",197,3,"ดิน, พื้นดิน",
+时,shí,time; when,"เวลา, เมื่อ",169,2,"เวลา, เมื่อ",
+她,tā,she,เธอ (ผู้หญิง),168,1,เธอ (ผู้หญิง),
+自己,zì jǐ,oneself; one's own,ตัวเอง,162,3,ตัวเอง,
+没,méi,not; haven’t,ไม่ (ไม่มี/ยังไม่),158,1,ไม่ (ไม่มี/ยังไม่),
+人们,rén men,people,ผู้คน,157,2,ผู้คน,
+什么,shén me,what?; something,อะไร,155,1,อะไร,
+这,zhè,this; these,"นี่, นี้",151,1,"นี่, นี้",
+到,dào,to reach; to arrive,ถึง; ไปยัง,150,2,ถึง; ไปยัง,
+说,shuō,to speak; to talk,"พูด, บอก",144,1,"พูด, บอก",
+更,gèng,even more; further,"ยิ่ง, ยิ่งขึ้น, มากกว่า",138,3,"ยิ่งขึ้น, ยิ่ง",trimmed 3 near-synonyms to 2 (dropped มากกว่า)
+没有,méi yǒu,haven't; hasn't,ไม่มี; ยังไม่,138,1,ไม่มี; ยังไม่,
+想,xiǎng,to think; to think of,อยาก; คิด; คิดถึง,134,1,คิด; คิดถึง,matches EN think/think-of; EN gloss omits 想's common spoken 'want to' (อยาก)
+被,bèi,(passive marker); quilt,คำแสดงถูกกระทำ (ถูก); ผ้าห่ม,133,3,คำแสดงถูกกระทำ (ถูก); ผ้าห่ม,
+可以,kě yǐ,can; may,"ได้, สามารถ; อนุญาต",129,2,"ได้, สามารถ",can;may collapse to one Thai sense (ได้/สามารถ); dropped verb อนุญาต
+太,tài,too; extremely,"เกินไป, ...เกิน",129,1,"เกินไป, ...เกิน",
+与,yǔ,formal and; together with,และ; กับ,126,4,และ; กับ,
+来,lái,to come,มา,126,1,มา,
+一,yī,one; single,หนึ่ง,125,1,หนึ่ง,
+喜欢,xǐ huān,to like; to be fond of,ชอบ,122,1,ชอบ,
+使,shǐ,to make; to cause,"ทำให้, ก่อให้เกิด",118,3,"ทำให้, ก่อให้เกิด",
+把,bǎ,to hold; to grasp,คำชี้กรรม (วางหน้ากรรม); ถือ,116,3,คำชี้กรรม (วางหน้ากรรม); ถือ,
+做,zuò,to make; to produce,ทำ,115,1,ทำ,
