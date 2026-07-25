@@ -1,7 +1,10 @@
 # Thai example-sentence review queue (#127)
 
-**Status: DRAFT — machine-translated, NOT live.** These Thai strings have not
-been reviewed by a native speaker and are **not** wired into the game build.
+**Status: PROMOTED (2026-07-25, Thai-humanization arc).** All 7,120 example
+sentences (the 923 HSK3 drafts rewritten + 6,197 HSK4-6 translated fresh) now
+carry reviewed Thai in `data/examples.csv` and ship live via
+`build_examples_data.py` (`th` field; `exampleFor` serves it to th-locale
+users). The machine-draft queue below is retained for history only.
 
 ## What this is
 
