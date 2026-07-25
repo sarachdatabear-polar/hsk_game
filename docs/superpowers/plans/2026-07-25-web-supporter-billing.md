@@ -662,3 +662,21 @@ git commit -m "feat(web-iap): wire web billing provider + email-save + restore a
 **Placeholder scan:** No TBD/TODO. The only "verify against installed SDK" note (Task 4) is the deliberate real-bridge boundary, with a concrete reference implementation shown. i18n key names in Task 5 are marked "adjust to file's actual shape" because the exact `i18n.js` structure must be read first — Step 1 forces that read before Step 4 writes.
 
 **Type consistency:** adapter interface `{ configure({apiKey,appUserId}), price(id)->string|null, buy(id)->{orderId}, entitlements()->string[] }` is identical across Task 2 (consumer/fake), Task 4 (real producer). `revenueCatWebProvider(opts)` signature and `kind:"revenuecat-web"` consistent across Tasks 2/3. Web config export names identical across Tasks 1/3.
+
+---
+
+## Approach A revision (2026-07-25) — separate runtime chunk
+
+**Why:** the IIFE bundle inlines a dynamic `import()`, so wiring `@revenuecat/purchases-js`
+as-is would add ~849KB to `dist/app.js` (precache ~11.66MB, over the 10.5MB pin). Owner
+chose Approach A: build the SDK as a separate `dist/webbilling.js`, kept OUT of PRECACHE and
+runtime-loaded on shop-open. sw.js already RUNTIME-caches same-origin non-precache files
+(fetch handler) and `stage-www.js` copies all of `dist/` — so no sw/deploy changes.
+
+**Task 4b** (supersedes the direct-import loader from Task 4): move the SDK-verified adapter
+into a new entry `src/monetization/webbilling-entry.js`, add a second esbuild output for it in
+`scripts/build.mjs`, and rework `src/monetization/revenuecat-web-sdk.js` into a thin
+script-injection loader that reads the adapter factory off `self.__luckyWebBilling.create`.
+After the build, `dist/app.js` must NOT contain `@revenuecat` and `dist/webbilling.js` must.
+Tasks 5 (i18n copy) and 6 (main.js wiring via `loadWebBillingSdk()`) are unchanged — Task 6's
+`revenuecatWeb.sdk = await loadWebBillingSdk()` now transparently script-loads the chunk.
