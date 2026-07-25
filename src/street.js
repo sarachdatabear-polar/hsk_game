@@ -22,6 +22,11 @@ export const LANDMARK_SCALE = {
   "emperor-gate": 3.35,
 };
 
+// World unit doubled for the decorations-pop pass (streetWorldMetrics); landmarks
+// were already right-sized, so they draw at half-units to keep their original
+// pre-pass pixel footprint.
+export const LANDMARK_UNIT_DAMP = 0.5;
+
 // Display order for owned decorations; ids owned but absent here are ignored.
 // v7 adds the permanent prestige decos, the daily-pool decos, and the three
 // seasonal decos (order fixes each one's street slot below).
@@ -337,7 +342,7 @@ export function streetPieces(level, owned, tiers = {}, layout = null) {
   BUILDINGS.forEach((b, i) => {
     if (level >= b.lv) pieces.push({
       id: b.id, kind: "building", slot: buildingSlots[i],
-      laneY: layout ? 0.70 : 0.82, scale: LANDMARK_SCALE[b.id],
+      laneY: layout ? 0.70 : 0.82, scale: LANDMARK_SCALE[b.id] * LANDMARK_UNIT_DAMP,
     });
   });
   if (layout) {
