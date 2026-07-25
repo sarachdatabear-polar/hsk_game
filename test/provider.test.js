@@ -27,3 +27,32 @@ describe("getProvider selection", () => {
     expect(typeof p.purchase).toBe("function");
   });
 });
+
+// Web-billing selection. Inject a non-empty web key + not-native + not-file://.
+const webOpts = (over) => ({
+  revenuecat: { apiKey: "", isNative: () => false },   // keep native branch off
+  revenuecatWeb: { apiKey: "rcb_web_key", isNative: () => false, isFileProtocol: () => false, sdk: {}, ...over },
+});
+
+describe("getProvider web selection", () => {
+  it("web key + not native + not file:// -> revenuecat-web", () => {
+    expect(getProvider(webOpts()).kind).toBe("revenuecat-web");
+  });
+  it("blank web key -> mock", () => {
+    expect(getProvider(webOpts({ apiKey: "" })).kind).toBe("mock");
+  });
+  it("native takes the native branch, never web", () => {
+    // Native key set + native true -> native; web opts ignored.
+    const p = getProvider({
+      revenuecat: { apiKey: "goog_key", isNative: () => true, sdk: {} },
+      revenuecatWeb: { apiKey: "rcb_web_key", isNative: () => true, isFileProtocol: () => false, sdk: {} },
+    });
+    expect(p.kind).toBe("revenuecat");
+  });
+  it("file:// -> mock (never web)", () => {
+    expect(getProvider(webOpts({ isFileProtocol: () => true })).kind).toBe("mock");
+  });
+  it("no opts -> mock (shipped keys are blank)", () => {
+    expect(getProvider().kind).toBe("mock");
+  });
+});

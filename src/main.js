@@ -53,6 +53,8 @@ import { reconcile, pushDirty } from "./sync.js";
 import { PRODUCTS, productById, displayPrice } from "./monetization/products.js";
 import { defaultEnt, isSupporter, applyPurchase, restoreFrom } from "./monetization/purchases.js";
 import { getProvider } from "./monetization/provider.js";
+import { REVENUECAT_WEB_PUBLIC_KEY } from "./monetization/revenuecat-config.js";
+import { loadWebBillingSdk } from "./monetization/revenuecat-web-sdk.js";
 import { iapVisible } from "./monetization/gating.js";
 import { pollForCredit } from "./monetization/purchase-poll.js";
 import { createQuestSession } from "./quest-session.js";
@@ -190,22 +192,50 @@ let iapPending = null;   // productId of the purchase in flight — survives re-
 // but the funnel event should fire once per product per shop *open* — cleared
 // at the shop-tab entry point (see "shop" branch of the [data-go] handler).
 const shopViewedProducts = new Set();
+// A store purchase must be attributed to the UUID accepted by the Supabase
+// grant_purchase RPC. ensureGuest reuses an existing signed-in session or
+// creates an anonymous UUID before RevenueCat configures. Module-level so
+// ensureWebBilling() can reuse the identical identity closure.
+async function ensureIapUserId(){
+  const r = await ensureGuest(getLocale(), playerProfile.displayName || undefined);
+  if(!r.ok || !r.session || !r.session.user) return null;
+  accountUI.session = r.session;
+  renderAccount();
+  return r.session.user.id;
+}
 function provider(){
   if(!iapProvider) iapProvider = getProvider({
     get: (k,d)=>store.get(k,d),
     set: (k,v)=>store.set(k,v),
-    // A store purchase must be attributed to the UUID accepted by the
-    // Supabase grant_purchase RPC. ensureGuest reuses an existing signed-in
-    // session or creates an anonymous UUID before RevenueCat configures.
-    ensureUserId: async () => {
-      const r = await ensureGuest(getLocale(), playerProfile.displayName || undefined);
-      if(!r.ok || !r.session || !r.session.user) return null;
-      accountUI.session = r.session;
-      renderAccount();
-      return r.session.user.id;
-    },
+    ensureUserId: ensureIapUserId,
   });
   return iapProvider;
+}
+let webBillingLoaded = false;
+// Loads the separate ~843KB web-billing chunk (dist/webbilling.js) and swaps
+// iapProvider to the sdk-backed web provider — ONLY when web billing is
+// configured, off-native, and not file://. Called on shop-open, never at boot.
+// Blank key (shipped-dark) => early return, chunk never fetched, provider stays mock.
+async function ensureWebBilling(){
+  if(webBillingLoaded) return;
+  const eligible = REVENUECAT_WEB_PUBLIC_KEY.trim() && !isNative()
+    && (typeof location === "undefined" || location.protocol !== "file:");
+  if(!eligible) return;
+  webBillingLoaded = true;             // set before await so a second shop-open can't double-load
+  try {
+    const sdk = await loadWebBillingSdk();
+    iapProvider = getProvider({
+      get: (k,d)=>store.get(k,d),
+      set: (k,v)=>store.set(k,v),
+      ensureUserId: ensureIapUserId,
+      revenuecatWeb: { sdk },
+    });
+    iapOn = await iapVisible(iapProvider, iapEnabled());
+    renderIapSections();
+    renderAccount();                   // reveals the restore button once web provider is available
+  } catch(e){
+    webBillingLoaded = false;          // allow a later retry; stay on the pre-existing provider
+  }
 }
 // Availability-driven visibility (go-live plan §4 T1, src/monetization/gating.js):
 // a real provider un-darks the purchase UI on its own; the mock stays behind
@@ -1189,6 +1219,10 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
     // follow a purchase/equip while already on the shop screen.
     analytics.track("store_open");
     shopViewedProducts.clear();   // fresh "shown once per open" window for product_view
+    // Lazily pull the heavy web-billing chunk (no-op unless web billing is
+    // configured + off-native + not file://). Fire-and-forget: it re-renders
+    // the IAP sections itself once the sdk-backed provider is ready.
+    ensureWebBilling();
     streetScreen.setShopFocusMode(false);
     const fromProfile = currentScreen === "progress";
     const back = $("#shop-back");
@@ -3487,9 +3521,12 @@ function makeSupporterCard(){
   row.className = "scorerow shoprow";
   const copy = document.createElement("span");
   copy.className = "shop-copy";
+  // On web the "remove ads" pitch is dishonest (no web ads) — show the web-honest
+  // framing (spec §4) when the web billing provider is the active one.
+  const webPitch = provider().kind === "revenuecat-web";
   copy.innerHTML = owned
     ? `<b>${t("shop.supporterTitle")} ♥</b><small>${t("shop.supporterOwned")}</small>`
-    : `<b>${t("shop.supporterTitle")}</b><small>${t("shop.supporterDesc")}</small>`;
+    : `<b>${webPitch ? t("iap.supporter.web.title") : t("shop.supporterTitle")}</b><small>${webPitch ? t("iap.supporter.web.blurb") : t("shop.supporterDesc")}</small>`;
   row.appendChild(copy);
   if(!owned){
     if(!shopViewedProducts.has("supporter")){
@@ -3548,7 +3585,8 @@ async function iapBuy(p, btn){
       store.set("wallet", wallet); store.set("ent", ent);
       pushEdge("purchase");
       updateWalletChip();
-      toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: p.coins.toLocaleString() }));
+      if(p.entitlement) toast(accountState(accountUI.session) !== "signedIn" ? t("iap.supporterThanksSave") : t("iap.supporterThanks"));
+      else toast(t("iap.success", { coins: p.coins.toLocaleString() }));
       // analytics (dark): purchase_success — mock self-grant confirmed.
       analytics.track("purchase_success", { product: p.id });
     }else{
@@ -3594,7 +3632,8 @@ async function iapBuy(p, btn){
   if(poll.credited){
     // Server is authoritative: toast the delta on this exact transaction's
     // ledger row, never an aggregate wallet increase or the local catalog.
-    toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: poll.delta.toLocaleString() }));
+    if(p.entitlement) toast(accountState(accountUI.session) !== "signedIn" ? t("iap.supporterThanksSave") : t("iap.supporterThanks"));
+    else toast(t("iap.success", { coins: poll.delta.toLocaleString() }));
     // analytics (dark): purchase_success — server-side grant confirmed via
     // the reconcile poll (the actual credit, not just the store transaction).
     analytics.track("purchase_success", { product: p.id });

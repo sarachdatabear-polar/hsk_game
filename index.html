@@ -583,6 +583,21 @@
   .hud-progress-track{width:100%; max-width:140px; height:6px; border-radius:3px; background:var(--lc-sand); overflow:hidden;}
   .hud-progress-fill{display:block; height:100%; border-radius:3px; background:var(--lc-green); transition:width .25s ease; width:0%;}
   .hud-progress-count{font-size:12px; font-weight:700; color:var(--lc-brown); white-space:nowrap;}
+  /* Narrow-portrait squeeze: on ≤360px phones the base HUD row (route name +
+     progress + Review Pouch pill + 44px pause, all nowrap) runs out of width and
+     the route name collides with the progress count. Tighten type/spacing the way
+     the landscape block does — the 44px pause stays a full touch target. Mutually
+     exclusive with the landscape (max-height:500px) block by orientation. */
+  @media (max-width: 360px){
+    #hud{gap:4px;}
+    .quest-route{min-width:70px;}
+    .quest-eyebrow{font-size:9px;}
+    .quest-route-name{font-size:12px;}
+    .hud-progress-track{max-width:96px;}
+    .hud-progress-count{font-size:11px;}
+    .hud-pill{padding:3px 7px;}
+    .hud-review{font-size:11px;}
+  }
   /* pause overlay — cream plaque on a dim scrim, covers #s-battle only (nav is
      hidden during battle anyway). Mirrors the .screen.on show/hide convention. */
   #s-battle{position:relative;}
