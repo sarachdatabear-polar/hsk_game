@@ -14,3 +14,14 @@ await esbuild.build({
   outfile: "dist/app.js",
   define: { __APP_VERSION__: JSON.stringify(pkg.version) },
 });
+
+// Second bundle: RevenueCat Web Billing SDK + adapter, kept OUT of dist/app.js
+// (and out of PRECACHE) so the precached shell stays lean. Runtime-loaded by
+// revenuecat-web-sdk.js only when the shop opens.
+await esbuild.build({
+  entryPoints: ["src/monetization/webbilling-entry.js"],
+  bundle: true,
+  format: "iife",
+  minify: true,
+  outfile: "dist/webbilling.js",
+});
