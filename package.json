@@ -41,6 +41,7 @@
     "@capacitor/splash-screen": "^6.0.4",
     "@capacitor/status-bar": "^6.0.3",
     "@revenuecat/purchases-capacitor": "9.2.2",
+    "@revenuecat/purchases-js": "^1.48.1",
     "@supabase/supabase-js": "^2.110.2"
   },
   "overrides": {
