@@ -89,7 +89,7 @@ export const UNIT_FRAC = 0.105;
 // front ground line main.js draws on); laneScale shrinks pieces with
 // distance. The wider lane gaps keep the compact one-screen editor tappable.
 export const LANES = {
-  back:  { laneY: 0.66, laneScale: 0.68 },
+  back:  { laneY: 0.66, laneScale: 0.60 },
   mid:   { laneY: 0.83, laneScale: 0.84 },
   front: { laneY: 1.0,  laneScale: 1.0  },
 };
@@ -391,7 +391,7 @@ export function streetWorldMetrics(viewportW, h) {
   const vh = Math.max(1, Number(h) || 1);
   return {
     worldW: vw,
-    unit: Math.min(vh * 0.22, vw * 0.085),
+    unit: Math.min(vh * 0.22, vw * 0.17),
     sections: 1,
     backY: 0.74,
     frontY: 1,
