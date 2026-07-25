@@ -21,11 +21,15 @@
 // readiness in available(), never in construction, or app boot stalls on it.
 import { mockProvider } from "./provider-mock.js";
 import { revenueCatProvider } from "./provider-revenuecat.js";
+import { revenueCatWebProvider } from "./provider-revenuecat-web.js";
 import { isNative } from "../native.js";
 import {
   REVENUECAT_ANDROID_PUBLIC_KEY,
   REVENUECAT_PRODUCT_IDS,
   REVENUECAT_RESTORABLE_PRODUCT_IDS,
+  REVENUECAT_WEB_PUBLIC_KEY,
+  REVENUECAT_WEB_PRODUCT_IDS,
+  REVENUECAT_WEB_RESTORABLE_PRODUCT_IDS,
 } from "./revenuecat-config.js";
 
 export function getProvider(opts = {}) {
@@ -40,6 +44,21 @@ export function getProvider(opts = {}) {
       productIds: rc.productIds || REVENUECAT_PRODUCT_IDS,
       restorableProductIds: rc.restorableProductIds || REVENUECAT_RESTORABLE_PRODUCT_IDS,
       sdk: rc.sdk,
+    });
+  }
+  const rcw = opts.revenuecatWeb || {};
+  const webKey = rcw.apiKey == null ? REVENUECAT_WEB_PUBLIC_KEY : rcw.apiKey;
+  const webIsNative = rcw.isNative || isNative;
+  const isFileProtocol = rcw.isFileProtocol
+    || (() => typeof location !== "undefined" && location.protocol === "file:");
+  if (String(webKey || "").trim() && !webIsNative() && !isFileProtocol()) {
+    return revenueCatWebProvider({
+      apiKey: webKey,
+      isNative: webIsNative,
+      ensureUserId: opts.ensureUserId,
+      productIds: rcw.productIds || REVENUECAT_WEB_PRODUCT_IDS,
+      restorableProductIds: rcw.restorableProductIds || REVENUECAT_WEB_RESTORABLE_PRODUCT_IDS,
+      sdk: rcw.sdk,
     });
   }
   return mockProvider(opts);
