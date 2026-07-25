@@ -9,3 +9,11 @@
 export const REVENUECAT_ANDROID_PUBLIC_KEY = "";
 export const REVENUECAT_PRODUCT_IDS = ["coins_s", "coins_m", "coins_l", "coins_xl"];
 export const REVENUECAT_RESTORABLE_PRODUCT_IDS = [];
+
+// Public, non-secret RevenueCat Web Billing (Stripe) client config. Blank key
+// until RC Web Billing is configured in the dashboard — a blank key leaves the
+// web purchase UI dark (getProvider falls back to the mock). Web sells the
+// one-time supporter unlock only; coin packs (consumables) are deferred.
+export const REVENUECAT_WEB_PUBLIC_KEY = "";
+export const REVENUECAT_WEB_PRODUCT_IDS = ["supporter"];
+export const REVENUECAT_WEB_RESTORABLE_PRODUCT_IDS = ["supporter"];
