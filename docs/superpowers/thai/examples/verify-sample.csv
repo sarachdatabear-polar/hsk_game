@@ -1,0 +1,934 @@
+orig_row,hanzi,sentence,en,th
+1,阿姨,阿姨在做饭。,Auntie is cooking.,ป้ากำลังทำอาหาร
+5,爱好,我的爱好是画画。,My hobby is painting.,งานอดิเรกของฉันคือวาดรูป
+17,班,我们班有三十个学生。,Our class has thirty students.,ห้องเรียนของเรามีนักเรียนสามสิบคน
+30,帮忙,你能帮忙吗？,Can you help?,คุณช่วยได้ไหม?
+38,本词典,本词典很有用。,This dictionary is very useful.,พจนานุกรมเล่มนี้มีประโยชน์มาก
+45,笔记本电脑,他有一台笔记本电脑。,He has a laptop computer.,เขามีโน้ตบุ๊กหนึ่งเครื่อง
+56,别难过,别难过会好的。,"Don't be sad, it'll be okay.",อย่าเสียใจไปเลย เดี๋ยวก็ดีขึ้นเอง
+59,不吃,我今天不吃早饭。,I'm not eating breakfast today.,วันนี้ฉันไม่กินข้าวเช้า
+62,不好,今天天气不好。,The weather isn't good today.,วันนี้อากาศไม่ดี
+84,草地上,孩子们在草地上跑。,The children are running on the lawn.,เด็กๆ วิ่งเล่นอยู่บนสนามหญ้า
+101,吃饱,我已经吃饱了。,I'm already full.,ฉันอิ่มแล้ว
+110,除了,"除了英语,我还会说汉语。","Besides English, I can also speak Chinese.",นอกจากภาษาอังกฤษแล้ว ฉันยังพูดภาษาจีนได้ด้วย
+113,船长,船长站在船上。,The captain stands on the ship.,กัปตันยืนอยู่บนเรือ
+117,词典,我有一本词典。,I have a dictionary.,ฉันมีพจนานุกรมหนึ่งเล่ม
+118,词语,这个词语很难。,This word is difficult.,คำนี้ยากมาก
+121,从小,他从小喜欢画画。,He has liked drawing since he was little.,เขาชอบวาดรูปมาตั้งแต่เด็ก
+142,到来,我们欢迎他的到来。,We welcome his arrival.,เรายินดีต้อนรับการมาของเขา
+152,等会儿,你等会儿再走。,Wait a moment before you go.,รอสักครู่ค่อยไปนะ
+153,低,这张桌子很低。,This table is low.,โต๊ะตัวนี้เตี้ยมาก
+155,第二天,第二天他就走了。,He left the very next day.,วันรุ่งขึ้นเขาก็ไปแล้ว
+159,电视节目,这个电视节目很好看。,This TV program is very good.,รายการทีวีนี้สนุกมาก
+174,锻炼,我每天锻炼一小时。,I exercise for an hour every day.,ฉันออกกำลังกายวันละหนึ่งชั่วโมง
+178,多块,这本书三十多块。,This book costs more than thirty yuan.,หนังสือเล่มนี้ราคากว่าสามสิบหยวน
+196,飞,小鸟飞走了。,The little bird flew away.,นกตัวน้อยบินหนีไปแล้ว
+225,关,请关上窗户。,Please close the window.,ช่วยปิดหน้าต่างหน่อย
+233,国外,他在国外工作。,He works abroad.,เขาทำงานอยู่ต่างประเทศ
+248,好几百年,这座城市有好几百年历史。,This city has several hundred years of history.,เมืองนี้มีประวัติศาสตร์หลายร้อยปี
+253,喝茶,他喜欢喝茶。,He likes to drink tea.,เขาชอบดื่มชา
+254,喝酒,他不喜欢喝酒。,He doesn't like to drink alcohol.,เขาไม่ชอบดื่มเหล้า
+255,喝咖啡,我早上喜欢喝咖啡。,I like to drink coffee in the morning.,ฉันชอบดื่มกาแฟตอนเช้า
+275,红茶,我喜欢喝红茶。,I like drinking black tea.,ฉันชอบดื่มชาแดง
+281,花茶,我喜欢喝花茶。,I like to drink scented tea.,ฉันชอบดื่มชาดอกไม้
+294,回国,他明年回国。,He is returning to his home country next year.,ปีหน้าเขาจะกลับประเทศ
+296,会上,老师在会上讲话。,The teacher spoke at the meeting.,ครูพูดในที่ประชุม
+301,或者,你可以喝茶或者喝咖啡。,You can drink tea or coffee.,คุณจะดื่มชาหรือดื่มกาแฟก็ได้
+316,记错,我记错时间了。,I got the time wrong.,ฉันจำเวลาผิด
+333,教,他信什么教？,What religion does he believe in?,เขานับถือศาสนาอะไร
+364,就是,这就是我要的答案。,This is exactly the answer I want.,นี่แหละคือคำตอบที่ฉันต้องการ
+370,开班,学校开班教汉语。,The school started a class to teach Chinese.,โรงเรียนเปิดชั้นเรียนสอนภาษาจีน
+382,看清楚,请你看清楚地图。,Please look at the map clearly.,กรุณาดูแผนที่ให้ชัดเจน
+386,看一看,让我看一看。,Let me have a look.,ให้ฉันดูหน่อยสิ
+396,快点儿,你快点儿走。,Hurry up and go.,คุณรีบไปเร็วๆ หน่อย
+407,老李,老李是我的邻居。,Old Li is my neighbor.,เหลาหลี่เป็นเพื่อนบ้านของฉัน
+414,累坏,今天真是累坏了。,I'm really exhausted today.,วันนี้เหนื่อยมากจริงๆ
+436,两只,她养了两只猫。,She keeps two cats.,เธอเลี้ยงแมวสองตัว
+438,辆,他买了一辆车。,He bought a car.,เขาซื้อรถมาหนึ่งคัน
+452,妈,妈，我回来了。,"Mom, I'm home.",แม่ ฉันกลับมาแล้ว
+478,米,这张桌子长两米。,This table is two meters long.,โต๊ะตัวนี้ยาวสองเมตร
+494,那么,天气怎么那么冷？,Why is the weather so cold?,ทำไมอากาศถึงหนาวขนาดนั้น?
+504,南京,我去过南京。,I have been to Nanjing.,ฉันเคยไปหนานจิงมาแล้ว
+509,你好,他对我说你好。,He said hello to me.,เขาทักทายฉันว่าสวัสดี
+514,年轻人,很多年轻人喜欢跑步。,Many young people like running.,คนหนุ่มสาวหลายคนชอบวิ่งออกกำลังกาย
+516,您好,您好，请问怎么走？,"Hello, excuse me, how do I get there?",สวัสดี ขอถามหน่อยไปทางไหน?
+518,爬,他喜欢爬山。,He likes climbing mountains.,เขาชอบปีนเขา
+519,爬山,周末我们去爬山。,We're going hiking this weekend.,สุดสัปดาห์นี้เราจะไปปีนเขา
+530,瓶,桌上有一瓶水。,There's a bottle of water on the table.,บนโต๊ะมีน้ำอยู่หนึ่งขวด
+542,起飞,飞机马上要起飞了。,The plane is about to take off.,เครื่องบินกำลังจะขึ้นบินแล้ว
+546,前来,他前来看我们。,He came to see us.,เขามาเยี่ยมเรา
+548,前年,我前年去过中国。,I went to China the year before last.,ฉันเคยไปจีนเมื่อสองปีก่อน
+557,热茶,冬天喝热茶很舒服。,Drinking hot tea in winter feels great.,ดื่มชาร้อนในหน้าหนาวสบายมาก
+558,热情,服务员对客人很热情。,The waiter is very warm to guests.,พนักงานเสิร์ฟเป็นกันเองกับลูกค้ามาก
+560,认,我认识他很多年了。,I've known him for many years.,ฉันรู้จักเขามาหลายปีแล้ว
+567,如果,如果下雨我们就不去。,"If it rains, we won't go.",ถ้าฝนตกเราจะไม่ไป
+582,上网,我每天上网学习。,I go online to study every day.,ฉันเข้าอินเทอร์เน็ตเรียนหนังสือทุกวัน
+583,上下,他五十岁上下。,He is about fifty years old.,เขาอายุประมาณห้าสิบปี
+609,树,门前有一棵大树。,There is a big tree in front of the door.,หน้าประตูมีต้นไม้ใหญ่อยู่ต้นหนึ่ง
+611,数学,我的数学成绩不错。,My math grades are pretty good.,คะแนนคณิตศาสตร์ของฉันค่อนข้างดี
+620,司机,我爸爸是司机。,My dad is a driver.,พ่อของฉันเป็นคนขับรถ
+626,她家,她家离学校很近。,Her home is close to school.,บ้านเธออยู่ใกล้โรงเรียนมาก
+635,糖,孩子喜欢吃糖。,Children like eating sweets.,เด็กๆ ชอบกินขนมหวาน
+636,特,这个礼物很特别。,This gift is very special.,ของขวัญชิ้นนี้พิเศษมาก
+637,特别,这道菜特别好吃。,This dish is especially delicious.,อาหารจานนี้อร่อยเป็นพิเศษ
+664,碗筷,妈妈在洗碗筷。,Mom is washing the bowls and chopsticks.,แม่กำลังล้างชามและตะเกียบ
+667,王经理,王经理在开会。,Manager Wang is in a meeting.,ผู้จัดการหวังกำลังประชุมอยู่
+668,王小姐,王小姐是我朋友。,Miss Wang is my friend.,คุณหวังเป็นเพื่อนของฉัน
+677,文化,我喜欢中国文化。,I like Chinese culture.,ฉันชอบวัฒนธรรมจีน
+684,西,太阳从西边落下。,The sun sets in the west.,พระอาทิตย์ตกทางทิศตะวันตก
+706,鲜花,他送了我一束鲜花。,He gave me a bouquet of fresh flowers.,เขามอบดอกไม้สดให้ฉันหนึ่งช่อ
+708,相机,他的相机很贵。,His camera is very expensive.,กล้องของเขาราคาแพงมาก
+710,相信,我完全相信你。,I completely believe you.,ฉันเชื่อคุณอย่างเต็มที่
+718,向左走,到路口向左走。,Turn left at the intersection.,ถึงทางแยกให้เลี้ยวซ้าย
+721,小孩子,小孩子喜欢吃糖。,Children like to eat candy.,เด็กๆ ชอบกินขนมหวาน
+722,小河,村子旁边有一条小河。,There's a stream next to the village.,ข้างหมู่บ้านมีลำธารสายเล็กๆ
+727,小心,过马路要小心。,Be careful when crossing the road.,ข้ามถนนต้องระวัง
+729,小学校长,他是小学校长。,He is an elementary school principal.,เขาเป็นผู้อำนวยการโรงเรียนประถม
+749,需,这件事需要时间。,This matter requires time.,เรื่องนี้ต้องใช้เวลา
+752,选择,你可以自己选择。,You can choose by yourself.,คุณสามารถเลือกเองได้
+760,羊,山上有很多羊。,There are many sheep on the mountain.,บนภูเขามีแกะเยอะมาก
+767,一般,他的成绩一般。,His grades are average.,ผลการเรียนของเขาธรรมดาๆ
+770,一点,我懂一点汉语。,I know a little Chinese.,ฉันรู้ภาษาจีนอยู่บ้างเล็กน้อย
+771,一定,你一定要来。,You must come.,คุณต้องมาให้ได้นะ
+774,一分钟,请等一分钟。,Please wait one minute.,กรุณารอสักหนึ่งนาที
+780,一件,我买了一件新衣服。,I bought a new piece of clothing.,ฉันซื้อเสื้อผ้าตัวใหม่มาหนึ่งตัว
+789,一天,我们玩了一天。,We played for a whole day.,เราเล่นกันทั้งวัน
+801,以前,以前这里是公园。,This used to be a park.,เมื่อก่อนที่นี่เป็นสวนสาธารณะ
+802,以为,我以为你不来了。,I thought you weren't coming.,ฉันนึกว่าคุณจะไม่มาแล้ว
+805,音乐节目,这是一个音乐节目。,This is a music program.,นี่คือรายการดนตรี
+807,饮料,你想喝什么饮料？,What drink would you like?,คุณอยากดื่มเครื่องดื่มอะไร?
+809,应该,你应该多喝水。,You should drink more water.,คุณควรดื่มน้ำให้มากขึ้น
+810,影响,天气影响了我们的计划。,The weather affected our plans.,อากาศมีผลต่อแผนของเรา
+817,游泳馆,我们去游泳馆游泳。,We're going to the pool to swim.,เราไปว่ายน้ำที่สระว่ายน้ำ
+822,有人,门外好像有人。,It seems there's someone outside.,ดูเหมือนจะมีคนอยู่นอกประตู
+824,有时候,我有时候很忙。,Sometimes I'm very busy.,บางครั้งฉันก็ยุ่งมาก
+834,越来越,天气越来越冷了。,The weather is getting colder and colder.,อากาศหนาวขึ้นเรื่อยๆ แล้ว
+847,站着不动,他站着不动。,He stood still.,เขายืนนิ่งไม่ขยับ
+848,长大,孩子们都长大了。,The children have all grown up.,เด็กๆ โตกันหมดแล้ว
+856,这段话,这段话很重要。,This passage is very important.,ข้อความนี้สำคัญมาก
+880,周,我们一周上五天课。,We have classes five days a week.,เราเรียนห้าวันต่อสัปดาห์
+890,总是,他总是迟到。,He is always late.,เขามาสายอยู่เสมอ
+892,走动,吃完饭出去走动一下。,Go out and move around a bit after eating.,กินข้าวเสร็จแล้วออกไปเดินเล่นหน่อย
+895,最好,你最好早点睡。,You'd better sleep early.,คุณควรนอนแต่หัวค่ำจะดีกว่า
+908,坐船去,我们坐船去那个岛。,We went to that island by boat.,เรานั่งเรือไปเกาะนั้น
+917,做事,他做事很认真。,He is very conscientious in his work.,เขาทำงานอย่างจริงจัง
+931,缺点,每个人都有缺点。,Everyone has faults.,ทุกคนก็มีข้อเสีย
+940,尊重,我们应该尊重老师。,We should respect our teachers.,เราควรเคารพครู
+942,骄傲,妈妈为我感到骄傲。,Mom feels proud of me.,แม่รู้สึกภูมิใจในตัวฉัน
+970,拿到,我拿到了新护照。,I got my new passport.,ฉันได้หนังสือเดินทางเล่มใหม่มาแล้ว
+978,父母,我父母都很健康。,My parents are both healthy.,พ่อแม่ของฉันสุขภาพแข็งแรงดีทั้งคู่
+979,复印,请帮我复印文件。,Please help me photocopy the document.,ช่วยถ่ายเอกสารให้ฉันหน่อย
+980,耐心,老师对学生很耐心。,The teacher is very patient with the students.,คุณครูใจเย็นกับนักเรียนมาก
+990,看法,你对这件事有什么看法？,What's your view on this matter?,คุณมีความคิดเห็นยังไงกับเรื่องนี้?
+991,通过,他通过了考试。,He passed the exam.,เขาสอบผ่านแล้ว
+995,乒乓球,我喜欢打乒乓球。,I like playing table tennis.,ฉันชอบเล่นปิงปอง
+996,打乒乓球,他每天打乒乓球。,He plays table tennis every day.,เขาเล่นปิงปองทุกวัน
+1007,警察,警察正在抓小偷。,The police are catching a thief.,ตำรวจกำลังจับขโมย
+1012,情况,现在的情况很复杂。,The current situation is very complicated.,สถานการณ์ตอนนี้ซับซ้อนมาก
+1017,感情,他们之间的感情很深。,Their feelings for each other run deep.,ความผูกพันระหว่างพวกเขาลึกซึ้งมาก
+1023,电视广告,这个电视广告很有意思。,This TV commercial is quite interesting.,โฆษณาทีวีอันนี้น่าสนใจมาก
+1050,主动,他主动帮我拿行李。,He took the initiative to help me carry the luggage.,เขาเสนอตัวช่วยฉันถือกระเป๋าเอง
+1068,值,这本书值一百块。,This book is worth a hundred yuan.,หนังสือเล่มนี้มีค่าตั้งร้อยหยวน
+1078,心情,今天我的心情很好。,My mood is very good today.,วันนี้อารมณ์ฉันดีมาก
+1082,得意,他考了第一名很得意。,He got first place and is very pleased with himself.,เขาสอบได้ที่หนึ่งเลยภูมิใจในตัวเองมาก
+1099,联系,请常常和我联系。,Please keep in touch with me often.,ติดต่อฉันบ่อยๆ นะ
+1105,想法,我的想法和你不一样。,My way of thinking is different from yours.,ความคิดของฉันไม่เหมือนกับคุณ
+1107,免费,这里的水是免费的。,The water here is free.,น้ำที่นี่ฟรี
+1113,气候,这里气候很温暖。,The climate here is very warm.,ภูมิอากาศที่นี่อบอุ่นมาก
+1115,受到,他受到大家的欢迎。,He is welcomed by everyone.,เขาเป็นที่ต้อนรับของทุกคน
+1119,不够,这些钱不够买车票。,This money isn't enough to buy a train ticket.,เงินเท่านี้ไม่พอซื้อตั๋วรถ
+1121,因此,他病了，因此没去上班。,"He was sick, so he didn't go to work.",เขาป่วย เลยไม่ได้ไปทำงาน
+1125,专业,我的专业是经济学。,My major is economics.,วิชาเอกของฉันคือเศรษฐศาสตร์
+1132,购物,周末我们一起去购物。,Let's go shopping together this weekend.,สุดสัปดาห์นี้เราไปซื้อของกันเถอะ
+1146,感谢,非常感谢你的帮助。,Thank you very much for your help.,ขอบคุณมากสำหรับความช่วยเหลือของคุณ
+1161,出差,他这个月要去北京出差。,He has to go to Beijing on a business trip this month.,เดือนนี้เขาต้องเดินทางไปทำงานที่ปักกิ่ง
+1165,数量,这里苹果的数量很多。,The quantity of apples here is large.,จำนวนแอปเปิลที่นี่มีเยอะมาก
+1166,暂时,这个问题暂时不能解决。,This problem can't be solved for now.,ตอนนี้ปัญหานี้ยังแก้ไม่ได้
+1168,继续,请大家继续努力工作。,Please everyone continue working hard.,ขอให้ทุกคนตั้งใจทำงานต่อไป
+1170,价格,这件衣服的价格不贵。,The price of this piece of clothing isn't expensive.,ราคาของเสื้อตัวนี้ไม่แพง
+1177,怀疑,我怀疑他说的是假话。,I suspect what he said is a lie.,ฉันสงสัยว่าสิ่งที่เขาพูดเป็นเรื่องโกหก
+1179,按照,请按照要求填写表格。,Please fill out the form according to the requirements.,กรุณากรอกแบบฟอร์มตามข้อกำหนด
+1218,所有,所有学生都到了。,All the students have arrived.,นักเรียนทุกคนมาถึงแล้ว
+1230,原来,这是他原来的房子。,This is his original house.,นี่คือบ้านเดิมของเขา
+1241,西红柿,妈妈买了西红柿。,Mom bought tomatoes.,แม่ซื้อมะเขือเทศ
+1247,消息,我听到一个好消息。,I heard a piece of good news.,ฉันได้ยินข่าวดีมาอันหนึ่ง
+1262,样子,他看起来很累的样子。,He looks like he's very tired.,เขาดูท่าทางเหนื่อยมาก
+1277,受,他受了很多苦。,He has endured a lot of suffering.,เขาทนทุกข์มามาก
+1286,安排,老师安排了作业。,The teacher assigned homework.,ครูมอบหมายการบ้านให้เรา
+1295,网站,这个网站的信息很多。,This website has a lot of information.,เว็บไซต์นี้มีข้อมูลเยอะมาก
+1310,著名,他是一位著名的医生。,He is a famous doctor.,เขาเป็นหมอที่มีชื่อเสียง
+1313,厚,这本书很厚，要看很久。,"This book is very thick, it'll take a long time to read.",หนังสือเล่มนี้หนามาก ต้องใช้เวลาอ่านนาน
+1320,选,你可以选一个颜色。,You can choose a color.,คุณเลือกสีได้หนึ่งสี
+1325,保证,我保证按时完成作业。,I guarantee I'll finish the homework on time.,ฉันรับรองว่าจะทำการบ้านเสร็จตรงเวลา
+1326,写日记,她每天晚上写日记。,She writes in her diary every evening.,เธอเขียนไดอารี่ทุกคืน
+1336,特点,这个城市有很多特点。,This city has many characteristics.,เมืองนี้มีจุดเด่นหลายอย่าง
+1338,研究生,我姐姐是研究生。,My sister is a graduate student.,พี่สาวฉันเป็นนักศึกษาปริญญาโท
+1339,究竟,你究竟想说什么？,What exactly do you want to say?,ตกลงเธอจะพูดอะไรกันแน่
+1366,一名,他是一名医生。,He is a doctor.,เขาเป็นหมอคนหนึ่ง
+1368,主意,这是个好主意。,This is a good idea.,นี่เป็นความคิดที่ดี
+1371,加,三加五等于八。,Three plus five equals eight.,สามบวกห้าเท่ากับแปด
+1374,吵,他们俩又吵起来了。,The two of them started quarreling again.,สองคนนั้นทะเลาะกันอีกแล้ว
+1375,孙子,爷爷很爱他的孙子。,Grandpa loves his grandson very much.,ปู่รักหลานชายมาก
+1376,对面,他坐在我的对面。,He sits across from me.,เขานั่งตรงข้ามฉัน
+1379,恐怕,恐怕明天会下雨。,I'm afraid it will rain tomorrow.,เกรงว่าพรุ่งนี้ฝนจะตก
+1384,羽毛球,他每天打羽毛球。,He plays badminton every day.,เขาเล่นแบดมินตันทุกวัน
+1392,旅行,我们打算去旅行。,We plan to go traveling.,เราวางแผนจะไปเที่ยว
+1399,喜爱,大家都喜爱这首歌。,Everyone loves this song.,ทุกคนชอบเพลงนี้
+1400,金钱,金钱不能买到幸福。,Money can't buy happiness.,เงินซื้อความสุขไม่ได้
+1401,高速公路,我们开车走高速公路。,We drove on the expressway.,เราขับรถไปทางด่วน
+1404,专门,这是专门为孩子设计的。,This is specially designed for children.,อันนี้ออกแบบมาเพื่อเด็กโดยเฉพาะ
+1407,判断,你要自己判断对错。,You need to judge right from wrong yourself.,เธอต้องตัดสินถูกผิดด้วยตัวเอง
+1408,判断力,他的判断力很强。,His judgment is very strong.,เขามีวิจารณญาณดีมาก
+1412,同情心,她很有同情心。,She has a lot of compassion.,เธอเป็นคนมีความเห็นอกเห็นใจมาก
+1414,成,这件事一定能成。,This matter will definitely work out.,เรื่องนี้ต้องสำเร็จแน่นอน
+1419,极其,这道题极其简单。,This problem is extremely simple.,ข้อนี้ง่ายมากๆ เลย
+1422,稍微,请稍微等一下。,Please wait just a little bit.,ช่วยรอสักครู่นะ
+1428,躺,他躺在床上休息。,He lay on the bed to rest.,เขานอนพักอยู่บนเตียง
+1436,出汗,跑步后他出汗了。,He sweated after running.,หลังวิ่งเสร็จเขาเหงื่อออก
+1443,浪费时间,别浪费时间了。,Stop wasting time.,อย่าเสียเวลาเลย
+1459,车族,越来越多的人加入车族。,More and more people are joining the car-owning group.,มีคนเข้าร่วมกลุ่มคนมีรถมากขึ้นเรื่อยๆ
+1463,五份,请复印五份。,Please make five copies.,ช่วยถ่ายเอกสารห้าชุด
+1472,别着急,遇到问题别着急。,Don't worry when you run into a problem.,เจอปัญหาก็อย่าเพิ่งร้อนใจ
+1486,深,这条河很深。,This river is very deep.,แม่น้ำสายนี้ลึกมาก
+1490,行,他行遍了中国。,He has traveled all over China.,เขาเดินทางไปทั่วประเทศจีน
+1507,聚会,今晚有一个聚会。,There's a party tonight.,คืนนี้มีงานปาร์ตี้
+1508,自备,请大家自备雨伞。,Please bring your own umbrella.,ขอให้ทุกคนเตรียมร่มมาเอง
+1511,不可,这件事不可拖延。,This matter cannot be delayed.,เรื่องนี้จะเลื่อนออกไปไม่ได้
+1515,按,请按这个按钮。,Please press this button.,ช่วยกดปุ่มนี้หน่อย
+1519,责任感,他很有责任感。,He has a strong sense of responsibility.,เขาเป็นคนมีความรับผิดชอบสูง
+1520,购物袋,请自带购物袋。,Please bring your own shopping bag.,ช่วยเอาถุงช้อปปิ้งมาเองนะ
+1535,冷静下来,请大家冷静下来。,Please everyone calm down.,ทุกคนใจเย็นๆ ก่อนนะ
+1537,半小时,我等了半小时。,I waited for half an hour.,ฉันรอมาครึ่งชั่วโมงแล้ว
+1540,各位,各位请注意安全。,Everyone please pay attention to safety.,ทุกท่านระวังความปลอดภัยด้วย
+1541,垃圾桶,垃圾桶在门口。,The trash can is by the door.,ถังขยะอยู่ตรงประตู
+1544,天黑,"天黑了,快回家。","It's getting dark, hurry home.",ฟ้ามืดแล้ว รีบกลับบ้านเถอะ
+1545,姓名,请写下你的姓名。,Please write down your full name.,ช่วยเขียนชื่อ-นามสกุลของเธอด้วย
+1559,笔记,我上课认真做笔记。,I take notes carefully in class.,ฉันตั้งใจจดโน้ตตอนเรียน
+1562,篇文章,他写了一篇文章。,He wrote an article.,เขาเขียนบทความมาหนึ่งชิ้น
+1565,考虑一下,这个问题我要考虑一下。,I need to think this problem over.,เรื่องนี้ฉันขอคิดดูก่อน
+1569,责任,这是我的责任。,This is my responsibility.,นี่คือความรับผิดชอบของฉัน
+1579,假,这是一个假消息。,This is a fake piece of news.,นี่คือข่าวปลอม
+1582,功夫,他的功夫非常厉害。,His skill is extremely impressive.,กังฟูของเขาเก่งมาก
+1591,有效,这个方法很有效。,This method is very effective.,วิธีนี้ได้ผลดีมาก
+1601,十几岁,她今年十几岁。,She is in her teens this year.,ปีนี้เธออายุสิบกว่าขวบ
+1615,一般来说,一般来说，他很准时。,"Generally speaking, he is very punctual.",โดยทั่วไปแล้ว เขาตรงเวลามาก
+1633,关注,大家都很关注这件事。,Everyone is paying close attention to this matter.,ทุกคนให้ความสนใจกับเรื่องนี้มาก
+1644,台,他买了一台电脑。,He bought a computer.,เขาซื้อคอมพิวเตอร์มาหนึ่งเครื่อง
+1653,大雨,外面下着大雨。,It's raining heavily outside.,ข้างนอกฝนตกหนัก
+1664,度,我们在海边度周末。,We're spending the weekend at the beach.,เราไปใช้เวลาสุดสัปดาห์ที่ชายทะเล
+1666,很穷,他家以前很穷。,His family used to be very poor.,เมื่อก่อนบ้านเขาจนมาก
+1672,感,他深有所感。,He felt deeply moved.,เขารู้สึกซาบซึ้งใจอย่างลึกซึ้ง
+1679,擦破,他擦破了手臂。,He scraped open his arm.,เขาทำแขนถลอก
+1687,昨晚,昨晚我没睡好。,I didn't sleep well last night.,เมื่อคืนฉันนอนไม่ค่อยหลับ
+1697,生活态度,他的生活态度很好。,His attitude toward life is very good.,ทัศนคติต่อชีวิตของเขาดีมาก
+1704,短信,他给我发了短信。,He sent me a text message.,เขาส่งข้อความมาหาฉัน
+1720,这方面,这方面我不太懂。,I don't know much about this.,ด้านนี้ฉันไม่ค่อยเข้าใจ
+1721,进食,病人开始进食了。,The patient has started eating again.,คนไข้เริ่มกินอาหารได้แล้ว
+1726,餐厅,我们在餐厅吃饭。,We are eating in the dining hall.,เรากินข้าวกันในร้านอาหาร
+1730,一趟,我去了一趟超市。,I made a trip to the supermarket.,ฉันไปซูเปอร์มาร์เก็ตมารอบหนึ่ง
+1742,无价,友谊是无价的财富。,Friendship is a priceless treasure.,มิตรภาพเป็นสมบัติที่ประเมินค่าไม่ได้
+1748,电子信箱,请发到我的电子信箱。,Please send it to my email inbox.,ส่งมาที่กล่องอีเมลของฉันหน่อย
+1760,南北,这条路贯通南北。,This road runs from north to south.,ถนนเส้นนี้เชื่อมเหนือจรดใต้
+1761,及时雨,这场及时雨救了庄稼。,This timely rain saved the crops.,ฝนที่ตกมาถูกเวลานี้ช่วยพืชผลไว้ได้
+1776,一段,我们认识一段时间了。,We've known each other for a period of time.,เรารู้จักกันมาระยะหนึ่งแล้ว
+1795,今天上午,今天上午我去医院了。,I went to the hospital this morning.,เช้านี้ฉันไปโรงพยาบาลมา
+1808,儿童节,儿童节孩子们很开心。,The children are very happy on Children's Day.,วันเด็กเด็กๆ มีความสุขกันมาก
+1817,几份,请复印几份文件。,Please copy a few documents.,ช่วยถ่ายเอกสารสักสองสามชุดหน่อย
+1819,刀子,用刀子切苹果。,Cut the apple with a knife.,ใช้มีดหั่นแอปเปิล
+1823,剩下,剩下的钱不多了。,There isn't much money left.,เงินที่เหลือไม่มากแล้ว
+1825,功,他为国家立了功。,He achieved merit for the country.,เขาสร้างคุณงามความดีให้ประเทศชาติ
+1832,原,这依然是原计划。,This is still the original plan.,นี่ยังเป็นแผนเดิมอยู่
+1839,另,这是另一个问题。,This is another problem.,นี่เป็นอีกปัญหาหนึ่ง
+1841,吃晚饭,我们一起吃晚饭。,We eat dinner together.,เรากินข้าวเย็นด้วยกัน
+1857,多个,他去过多个国家。,He has been to many countries.,เขาไปมาหลายประเทศแล้ว
+1858,多场,他参加了多场比赛。,He took part in many matches.,เขาเข้าร่วมการแข่งขันมาหลายนัด
+1866,大量,他喝了大量的水。,He drank a large amount of water.,เขาดื่มน้ำไปเป็นจำนวนมาก
+1867,天晴,雨后天晴了。,The sky cleared up after the rain.,หลังฝนหยุด ท้องฟ้าก็แจ่มใส
+1874,好书,这是一本好书。,This is a good book.,นี่เป็นหนังสือดีเล่มหนึ่ง
+1891,弄乱,他把房间弄乱了。,He messed up the room.,เขาทำห้องรกไปหมด
+1892,弄错,他把名字弄错了。,He got the name wrong.,เขาจำชื่อผิด
+1909,放下,请把手机放下吧。,Please put down your phone.,วางมือถือลงเถอะ
+1924,死去,他的爷爷去年死去了。,His grandfather died last year.,ปู่ของเขาเสียชีวิตเมื่อปีที่แล้ว
+1943,爱好音乐,我从小就爱好音乐。,I've been fond of music since childhood.,ฉันชอบดนตรีมาตั้งแต่เด็ก
+1948,瓶子,桌子上有一个瓶子。,There's a bottle on the table.,บนโต๊ะมีขวดใบหนึ่ง
+1961,租,我想租一套房子。,I want to rent an apartment.,ฉันอยากเช่าบ้านสักหลัง
+1963,租房,在北京租房很贵。,Renting an apartment in Beijing is expensive.,เช่าบ้านที่ปักกิ่งแพงมาก
+1967,穷人的孩子早当家,穷人的孩子早当家。,Children of poor families take on responsibility early.,เด็กบ้านจนต้องรับผิดชอบครอบครัวตั้งแต่เล็ก
+1986,认清,我们要认清事实。,We need to clearly recognize the facts.,เราต้องเข้าใจความจริงให้ชัดเจน
+2002,逛逛,我们去商店逛逛。,Let's go take a stroll around the store.,เราไปเดินเล่นในร้านกัน
+2009,重新认识,这件事让他重新认识自己。,This matter made him understand himself anew.,เรื่องนี้ทำให้เขากลับมารู้จักตัวเองใหม่
+2024,饮用,这水可以直接饮用。,This water can be drunk directly.,น้ำนี้ดื่มได้เลย
+2028,一眼,我看了他一眼。,I glanced at him.,ฉันมองเขาแวบหนึ่ง
+2037,减,医生让他减一点体重。,The doctor told him to lose a little weight.,หมอให้เขาลดน้ำหนักลงหน่อย
+2041,场,昨晚下了一场雨。,It rained last night.,เมื่อคืนฝนตกลงมาห่าหนึ่ง
+2046,学到老,他一直坚持学到老。,"He has always kept learning, even into old age.",เขาเรียนรู้ไปเรื่อยๆ จนแก่
+2054,感冒药,我去药店买感冒药。,I'm going to the pharmacy to buy cold medicine.,ฉันไปร้านขายยาซื้อยาแก้หวัด
+2055,手机号码,请告诉我你的手机号码。,Please tell me your mobile phone number.,ช่วยบอกเบอร์มือถือของเธอหน่อย
+2058,教学,他从事教学工作。,He works in teaching.,เขาทำงานด้านการสอน
+2061,无声电影,爷爷喜欢看无声电影。,Grandpa likes watching silent movies.,ปู่ชอบดูหนังเงียบ
+2070,生命力,这棵树很有生命力。,This tree is full of vitality.,ต้นไม้ต้นนี้มีพลังชีวิตสูงมาก
+2071,画面,电影的画面很美。,The scenes in the movie are beautiful.,ภาพในหนังสวยมาก
+2084,风雨,他们一起经历风雨。,They went through hard times together.,พวกเขาฟันฝ่าลมฝนมาด้วยกัน
+2089,人类,人类需要保护环境。,Humanity needs to protect the environment.,มนุษย์จำเป็นต้องปกป้องสิ่งแวดล้อม
+2099,食物,冰箱里有很多食物。,There is a lot of food in the fridge.,ในตู้เย็นมีอาหารเยอะมาก
+2111,兔子,兔子喜欢吃胡萝卜。,Rabbits like to eat carrots.,กระต่ายชอบกินแครอท
+2116,实现,他终于实现了梦想。,He finally achieved his dream.,ในที่สุดเขาก็ทำความฝันให้เป็นจริงได้
+2118,缺乏,这里缺乏水资源。,This place lacks water resources.,ที่นี่ขาดแคลนทรัพยากรน้ำ
+2134,富翁,他是这个城市的富翁。,He is a rich man in this city.,เขาเป็นเศรษฐีของเมืองนี้
+2141,养,她在家养了三只猫。,She raises three cats at home.,เธอเลี้ยงแมวสามตัวที่บ้าน
+2147,地区,这个地区很少下雨。,It rarely rains in this region.,เขตนี้ฝนตกน้อยมาก
+2156,删除,我删除了这张照片。,I deleted this photo.,ฉันลบรูปนี้ทิ้งไปแล้ว
+2168,控制,他很难控制自己的情绪。,He finds it hard to control his emotions.,เขาควบคุมอารมณ์ตัวเองได้ยาก
+2170,充满,他心里充满了希望。,His heart is full of hope.,หัวใจของเขาเต็มไปด้วยความหวัง
+2179,规模,这家公司规模很大。,This company is large in scale.,บริษัทนี้มีขนาดใหญ่มาก
+2182,挑战,他喜欢挑战自己。,He likes to challenge himself.,เขาชอบท้าทายตัวเอง
+2202,根本,这是问题的根本原因。,This is the fundamental cause of the problem.,นี่คือต้นเหตุที่แท้จริงของปัญหา
+2210,满足,这个答案满足了他的好奇心。,This answer satisfied his curiosity.,คำตอบนี้เติมเต็มความอยากรู้อยากเห็นของเขา
+2213,造成,大雨造成了交通堵塞。,The heavy rain caused a traffic jam.,ฝนตกหนักทำให้รถติด
+2246,作为,他工作认真，很有作为。,He works conscientiously and has accomplished a lot.,เขาทำงานอย่างจริงจัง และมีผลงานโดดเด่น
+2247,入,请大家依次入场。,"Please enter the venue in order, everyone.",ขอให้ทุกคนทยอยเข้างานตามลำดับ
+2252,珍惜,我们要珍惜时间。,We should treasure our time.,เราควรเห็นคุณค่าของเวลา
+2255,营养,这种食物很有营养。,This food is very nutritious.,อาหารชนิดนี้มีสารอาหารมาก
+2257,面积,这个房间面积很大。,This room has a large area.,ห้องนี้มีพื้นที่กว้างมาก
+2275,气氛,教室里气氛很好。,The atmosphere in the classroom is great.,บรรยากาศในห้องเรียนดีมาก
+2276,消费,现在的人喜欢网上消费。,People nowadays like to spend money online.,คนสมัยนี้ชอบใช้จ่ายทางออนไลน์
+2277,灵活,他的想法很灵活。,His thinking is very flexible.,ความคิดของเขายืดหยุ่นมาก
+2290,撒谎,你不要对我撒谎。,Don't lie to me.,อย่าโกหกฉันนะ
+2299,下载,我下载了这个软件。,I downloaded this software.,ฉันดาวน์โหลดซอฟต์แวร์นี้แล้ว
+2310,阻止,警察阻止了他们。,The police stopped them.,ตำรวจขัดขวางพวกเขาไว้
+2313,从前,从前这里是农田。,This place used to be farmland.,เมื่อก่อนที่นี่เคยเป็นนา
+2317,委屈,她觉得很委屈。,She felt wronged.,เธอรู้สึกน้อยใจ
+2323,破坏,台风破坏了房屋。,The typhoon damaged the houses.,พายุไต้ฝุ่นทำลายบ้านเรือน
+2328,风格,这幅画风格独特。,This painting has a unique style.,ภาพวาดนี้มีสไตล์ที่เป็นเอกลักษณ์
+2330,一项,这是一项新任务。,This is a new task.,นี่คือภารกิจใหม่อย่างหนึ่ง
+2333,令人,这个消息令人高兴。,This news is delightful.,ข่าวนี้ทำให้คนดีใจ
+2349,粮食,农民种植粮食。,Farmers grow grain.,ชาวนาปลูกธัญพืช
+2357,心理学家,他是一位心理学家。,He is a psychologist.,เขาเป็นนักจิตวิทยา
+2379,不如,今天不如昨天热。,Today isn't as hot as yesterday.,วันนี้ไม่ร้อนเท่าเมื่อวาน
+2387,威胁,他威胁要离开。,He threatened to leave.,เขาขู่ว่าจะจากไป
+2392,确定,这件事还不确定。,This matter isn't certain yet.,เรื่องนี้ยังไม่แน่นอน
+2394,谦虚,他为人很谦虚。,He is a modest person.,เขาเป็นคนถ่อมตัว
+2404,促进,运动促进健康。,Exercise promotes health.,การออกกำลังกายส่งเสริมสุขภาพ
+2412,声,他喊了一声。,He gave a shout.,เขาร้องขึ้นมาหนึ่งเสียง
+2422,抓,猫抓住了老鼠。,The cat caught the mouse.,แมวจับหนูได้
+2435,达,山顶高达三千米。,The mountain peak reaches as high as three thousand meters.,ยอดเขาสูงถึงสามพันเมตร
+2439,不解,大家对他的决定很不解。,Everyone is puzzled by his decision.,ทุกคนงุนงงกับการตัดสินใจของเขา
+2442,传来,远处传来一阵歌声。,A burst of singing came from the distance.,มีเสียงเพลงลอยมาจากที่ไกลๆ
+2459,偶然,我偶然遇见了老朋友。,I ran into an old friend by chance.,ฉันบังเอิญเจอเพื่อนเก่า
+2461,女士,这位女士是我的老师。,This lady is my teacher.,สุภาพสตรีท่านนี้เป็นครูของฉัน
+2466,草原,草原上开满了野花。,The grassland is full of blooming wildflowers.,บนทุ่งหญ้าเต็มไปด้วยดอกไม้ป่าบานสะพรั่ง
+2471,夏眠,有些动物会夏眠避暑。,Some animals aestivate to escape the summer heat.,สัตว์บางชนิดจำศีลหน้าร้อนเพื่อหนีความร้อน
+2482,人员,工作人员正在忙碌。,The staff members are busy working.,เจ้าหน้าที่กำลังง่วนอยู่กับงาน
+2489,制作,她自己制作蛋糕。,She makes cakes herself.,เธอทำเค้กเอง
+2491,力量,团结就是力量。,Unity is strength.,ความสามัคคีคือพลัง
+2499,大加,老师对他大加表扬。,The teacher praised him greatly.,ครูชื่นชมเขาอย่างมากมาย
+2500,安装,他刚安装了新软件。,He just installed new software.,เขาเพิ่งติดตั้งซอฟต์แวร์ใหม่
+2512,担任,她担任这个部门的经理。,She serves as the manager of this department.,เธอรับตำแหน่งเป็นผู้จัดการแผนกนี้
+2531,给予,老师给予我们很大帮助。,The teacher gave us great help.,อาจารย์ให้ความช่วยเหลือเราอย่างมาก
+2538,适当,请选择适当的时间见面。,Please choose an appropriate time to meet.,ช่วยเลือกเวลาที่เหมาะสมมาเจอกันนะ
+2541,避免,我们要避免犯同样的错误。,We must avoid making the same mistake.,เราต้องหลีกเลี่ยงไม่ทำผิดพลาดแบบเดิม
+2550,主持人,她是这个节目的主持人。,She is the host of this show.,เธอเป็นพิธีกรของรายการนี้
+2556,后者,两个选择中我更喜欢后者。,"Of the two choices, I prefer the latter.",ในสองตัวเลือกนี้ ฉันชอบอันหลังมากกว่า
+2563,小姑娘,那个小姑娘很可爱。,That little girl is very cute.,เด็กผู้หญิงคนนั้นน่ารักมาก
+2564,少数,只有少数人同意这个计划。,Only a small number of people agreed to this plan.,มีคนส่วนน้อยเท่านั้นที่เห็นด้วยกับแผนนี้
+2575,沟通,父母要和孩子多沟通。,Parents should communicate more with their children.,พ่อแม่ควรพูดคุยสื่อสารกับลูกให้มากขึ้น
+2576,牌,门口挂着一块牌。,A sign hangs at the entrance.,มีป้ายแขวนอยู่ที่ประตูทางเข้า
+2578,立即,请立即离开这里。,Please leave here immediately.,กรุณาออกไปจากที่นี่ทันที
+2583,行业,他从事餐饮行业。,He works in the catering industry.,เขาทำงานในธุรกิจร้านอาหาร
+2598,书画,他从小喜欢书画。,He has liked painting and calligraphy since childhood.,เขาชอบงานเขียนอักษรและภาพวาดมาตั้งแต่เด็ก
+2603,墙壁,墙壁上挂着照片。,Photos hang on the wall.,มีรูปถ่ายแขวนอยู่บนผนัง
+2604,壶,桌子上有一壶茶。,There is a pot of tea on the table.,บนโต๊ะมีน้ำชาหนึ่งกา
+2612,快餐店,我们在快餐店吃饭。,We ate at the fast food shop.,เรากินข้าวกันที่ร้านอาหารจานด่วน
+2613,恨,他很恨那个坏人。,He hates that bad person very much.,เขาเกลียดคนเลวคนนั้นมาก
+2621,记号,他在书上做了记号。,He made a mark in the book.,เขาทำเครื่องหมายไว้ในหนังสือ
+2626,陛下,大臣对陛下说话。,The minister spoke to His Majesty.,เสนาบดีกราบทูลต่อฝ่าบาท
+2631,冰雪节,我们去看冰雪节。,We went to see the ice and snow festival.,เราไปดูเทศกาลน้ำแข็งและหิมะกัน
+2634,商人,他是一个成功的商人。,He is a successful businessman.,เขาเป็นนักธุรกิจที่ประสบความสำเร็จ
+2637,城门,士兵守着城门。,The soldiers guard the city gate.,ทหารเฝ้าประตูเมือง
+2642,戒指,她买了一枚戒指。,She bought a ring.,เธอซื้อแหวนมาวงหนึ่ง
+2647,泡馍,西安的泡馍很有名。,Xi'an's paomo (meat and bread soup) is very famous.,เปาโหม (ซุปเนื้อกับขนมปัง) ของซีอานขึ้นชื่อมาก
+2658,铁树开花,这件事像铁树开花。,This matter is as rare as an iron tree blooming.,เรื่องนี้เกิดขึ้นยากราวกับต้นเหล็กออกดอก
+2667,不足,睡眠不足影响健康。,Insufficient sleep affects health.,การนอนไม่เพียงพอส่งผลต่อสุขภาพ
+2681,例子,老师举了一个例子。,The teacher gave an example.,อาจารย์ยกตัวอย่างมาหนึ่งอย่าง
+2699,反复,他反复检查了作业。,He checked his homework repeatedly.,เขาตรวจการบ้านซ้ำแล้วซ้ำอีก
+2708,命,医生救了他的命。,The doctor saved his life.,หมอช่วยชีวิตเขาเอาไว้
+2714,夏令营,孩子们参加了夏令营。,The children attended a summer camp.,เด็กๆ เข้าร่วมค่ายฤดูร้อน
+2727,应付,他很会应付困难。,He is good at dealing with difficulties.,เขาเก่งเรื่องรับมือกับความยากลำบาก
+2729,形势,现在形势很复杂。,The situation now is very complicated.,ตอนนี้สถานการณ์ซับซ้อนมาก
+2732,总共,这些东西总共多少钱？,How much do these things cost altogether?,ของพวกนี้ทั้งหมดราคาเท่าไหร่?
+2741,打败,我们打败了对手。,We defeated our opponent.,เราเอาชนะคู่แข่งได้
+2743,指出,老师指出了错误。,The teacher pointed out the mistake.,ครูชี้ให้เห็นข้อผิดพลาด
+2744,指导,老师指导我们写作。,The teacher guides us in writing.,ครูชี้แนะการเขียนให้พวกเรา
+2745,挡住,大树挡住了阳光。,The big tree blocked the sunlight.,ต้นไม้ใหญ่บังแสงแดด
+2751,擅长,她擅长画画。,She is good at drawing.,เธอถนัดวาดรูป
+2757,本领,他有很大的本领。,He has great abilities.,เขามีความสามารถมาก
+2763,毛病,这台电脑有点毛病。,This computer has a bit of a problem.,คอมพิวเตอร์เครื่องนี้มีปัญหานิดหน่อย
+2764,毛笔,爷爷用毛笔写字。,Grandpa writes with a writing brush.,ปู่เขียนหนังสือด้วยพู่กัน
+2768,清淡,医生让我吃清淡的食物。,The doctor told me to eat light food.,หมอให้ฉันกินอาหารรสจืด
+2772,特色,这道菜很有特色。,This dish has a lot of character.,อาหารจานนี้มีเอกลักษณ์มาก
+2774,独立,孩子应该学会独立。,Children should learn to be independent.,เด็กควรหัดพึ่งพาตัวเอง
+2787,编辑,她的工作是编辑杂志。,Her job is editing magazines.,งานของเธอคือเป็นบรรณาธิการนิตยสาร
+2789,能干,她是个很能干的员工。,She is a very capable employee.,เธอเป็นพนักงานที่เก่งมาก
+2794,营养成分,请看看包装上的营养成分。,Please look at the nutritional content on the package.,ลองดูส่วนประกอบทางโภชนาการบนบรรจุภัณฑ์สิ
+2796,表明,这个结果表明他是对的。,This result shows that he is right.,ผลลัพธ์นี้แสดงให้เห็นว่าเขาถูกต้อง
+2798,计算,请帮我计算一下总数。,Please help me calculate the total.,ช่วยคำนวณยอดรวมให้หน่อย
+2803,豪华,他们住在一家豪华酒店。,They are staying at a luxurious hotel.,พวกเขาพักอยู่ที่โรงแรมหรูหรา
+2814,辣椒,这道菜放了很多辣椒。,This dish has a lot of chili in it.,อาหารจานนี้ใส่พริกเยอะมาก
+2818,逃跑,小偷看到警察就逃跑了。,The thief ran away when he saw the police.,พอโจรเห็นตำรวจก็วิ่งหนีไป
+2822,闻到,我闻到了饭的香味。,I smelled the fragrance of the food.,ฉันได้กลิ่นหอมของอาหาร
+2828,颗,桌上有一颗糖。,There's a piece of candy on the table.,บนโต๊ะมีลูกอมเม็ดหนึ่ง
+2832,一笔,他赚了一笔钱。,He earned a sum of money.,เขาหาเงินได้ก้อนหนึ่ง
+2852,制度,这个公司的制度很严格。,This company's system is very strict.,กฎระเบียบของบริษัทนี้เข้มงวดมาก
+2853,刺激,辣的食物刺激他的肠胃。,Spicy food irritates his stomach.,อาหารเผ็ดระคายเคืองกระเพาะของเขา
+2863,围,士兵们围着城堡。,The soldiers surrounded the castle.,เหล่าทหารล้อมรอบปราสาท
+2867,大臣,大臣向皇帝汇报。,The minister reported to the emperor.,เสนาบดีรายงานต่อฮ่องเต้
+2883,接触,我们很少接触。,We rarely have contact.,เราไม่ค่อยได้ติดต่อกัน
+2887,日常生活,手机改变了日常生活。,Phones have changed daily life.,โทรศัพท์มือถือเปลี่ยนชีวิตประจำวันไป
+2892,概念,这是一个新概念。,This is a new concept.,นี่เป็นแนวคิดใหม่
+2901,独特,她的想法很独特。,Her ideas are very unique.,ความคิดของเธอมีเอกลักษณ์ไม่เหมือนใคร
+2925,过于,你过于紧张了。,You're too nervous.,เธอตื่นเต้นเกินไป
+2946,大师,他是武术大师。,He is a martial arts master.,เขาเป็นปรมาจารย์ศิลปะการต่อสู้
+2952,层次,这篇文章层次很清楚。,This essay's structure is very clear.,บทความนี้มีลำดับชั้นชัดเจน
+2988,肉类,他不喜欢吃肉类。,He doesn't like eating meat.,เขาไม่ชอบกินเนื้อสัตว์
+2993,装进去,快把行李装进去！,Hurry and put the luggage inside!,รีบเอากระเป๋าใส่เข้าไปเร็ว!
+2998,遗忘,往事渐渐被遗忘。,The past was gradually forgotten.,เรื่องราวในอดีตค่อยๆ ถูกลืมเลือน
+3007,所,这所大学很有名。,This university is very famous.,มหาวิทยาลัยแห่งนี้มีชื่อเสียงมาก
+3011,第,这是第一名。,This is the first place.,นี่คือที่หนึ่ง
+3022,金鱼,我养了一条金鱼。,I keep a goldfish.,ฉันเลี้ยงปลาทองไว้ตัวหนึ่ง
+3056,母猴,这是一只母猴。,This is a female monkey.,นี่คือลิงตัวเมีย
+3058,调节,请调节空调温度。,Please adjust the air conditioner's temperature.,ช่วยปรับอุณหภูมิแอร์หน่อย
+3072,园林,这座园林非常美丽。,This garden is very beautiful.,สวนแห่งนี้สวยงามมาก
+3075,生长素,生长素能促进生长。,Auxin can promote growth.,ออกซินช่วยกระตุ้นการเจริญเติบโต
+3076,商家,这家商家服务很好。,This merchant provides good service.,ร้านค้าเจ้านี้บริการดีมาก
+3080,人才,公司需要更多人才。,The company needs more talented people.,บริษัทต้องการคนเก่งเพิ่มขึ้น
+3086,疾病,疾病影响人的健康。,Disease affects people's health.,โรคภัยส่งผลต่อสุขภาพของคน
+3089,幅,墙上挂着一幅画。,A painting hangs on the wall.,บนผนังแขวนภาพวาดอยู่หนึ่งภาพ
+3090,分子,知识分子应该多读书。,Intellectuals should read more.,ปัญญาชนควรอ่านหนังสือให้มากขึ้น
+3114,自由,每个人都渴望自由。,Everyone longs for freedom.,ทุกคนต่างโหยหาอิสรภาพ
+3118,大都,学生大都按时到校。,Students mostly arrive at school on time.,นักเรียนส่วนใหญ่มาโรงเรียนตรงเวลา
+3119,患者,医生正在治疗患者。,The doctor is treating the patient.,หมอกำลังรักษาคนไข้
+3126,诊断,医生诊断他得了感冒。,The doctor diagnosed him with a cold.,หมอวินิจฉัยว่าเขาเป็นหวัด
+3128,助,朋友帮助我搬家。,My friend helped me move house.,เพื่อนช่วยฉันย้ายบ้าน
+3132,精致,这个盒子非常精致。,This box is very delicate.,กล่องใบนี้ประณีตมาก
+3135,均匀,他把颜色涂得均匀。,He spread the color evenly.,เขาทาสีได้อย่างสม่ำเสมอ
+3145,对象,他是我的研究对象。,He is my subject of research.,เขาเป็นเป้าหมายการวิจัยของฉัน
+3146,形,月亮渐渐变成圆形。,The moon gradually became round in shape.,พระจันทร์ค่อยๆ กลายเป็นรูปกลม
+3160,伤痕,他手臂上有伤痕。,He has a scar on his arm.,เขามีแผลเป็นที่แขน
+3161,体检,他明天要体检。,He is having a physical checkup tomorrow.,พรุ่งนี้เขาต้องไปตรวจร่างกาย
+3167,意志,他意志非常坚强。,His willpower is very strong.,เขามีความมุ่งมั่นเข้มแข็งมาก
+3168,一部,这是一部好电影。,This is a good movie.,นี่เป็นหนังที่ดีเรื่องหนึ่ง
+3178,天生,她天生很聪明。,She is naturally very smart.,เธอฉลาดมาแต่กำเนิด
+3182,诗歌,这首诗歌很美。,This poem is very beautiful.,บทกวีบทนี้ไพเราะมาก
+3197,南极,南极非常寒冷。,The South Pole is extremely cold.,ขั้วโลกใต้หนาวเย็นมาก
+3205,演变,语言在不断演变。,Language is constantly evolving.,ภาษาค่อยๆ วิวัฒน์เปลี่ยนแปลงไปเรื่อยๆ
+3221,记忆力,老年人的记忆力会下降。,Elderly people's memory ability declines.,ความจำของผู้สูงอายุจะเสื่อมลง
+3222,一棵,院子里有一棵大树。,There is a big tree in the yard.,ในสนามมีต้นไม้ใหญ่ต้นหนึ่ง
+3226,实际,这个计划不太实际。,This plan is not very realistic.,แผนนี้ไม่ค่อยเป็นไปได้จริงเท่าไร
+3245,聚,我们周末聚在一起。,We get together on weekends.,เรามารวมตัวกันในวันหยุดสุดสัปดาห์
+3260,重力,地球有很强的重力。,The earth has strong gravity.,โลกมีแรงโน้มถ่วงมาก
+3263,餐,他们在餐厅吃早餐。,They eat breakfast at the restaurant.,พวกเขากินข้าวเช้าที่ร้านอาหาร
+3265,全价,他买的是全价机票。,He bought a full-price plane ticket.,เขาซื้อตั๋วเครื่องบินราคาเต็ม
+3271,木盆,她用木盆洗衣服。,She washes clothes in a wooden basin.,เธอซักผ้าในกะละมังไม้
+3276,联名卡,我办了一张联名卡。,I got a co-branded card.,ฉันทำบัตรร่วมแบรนด์ไว้ใบหนึ่ง
+3279,且,这个方法简单且有效。,This method is simple and effective.,วิธีนี้ง่ายและได้ผล
+3284,农历,春节是农历新年。,Spring Festival is the lunar new year.,ตรุษจีนคือปีใหม่ตามปฏิทินจันทรคติ
+3285,分析,老师帮我们分析问题。,The teacher helps us analyze the problem.,คุณครูช่วยเราวิเคราะห์ปัญหา
+3287,品,这家店专卖精品服装。,This store specializes in selling high-quality clothing.,ร้านนี้ขายเสื้อผ้าคุณภาพดีโดยเฉพาะ
+3302,公元,这是公元一世纪。,This is the first century CE.,นี่คือคริสต์ศตวรรษที่หนึ่ง
+3309,寒,天气渐渐转寒了。,The weather is gradually turning cold.,อากาศค่อยๆ หนาวขึ้น
+3314,打哈欠,他上课时打哈欠。,He yawned during class.,เขาหาวตอนเรียน
+3315,无关,这件事与我无关。,This matter has nothing to do with me.,เรื่องนี้ไม่เกี่ยวกับฉัน
+3318,有益,运动对健康有益。,Exercise is beneficial to health.,การออกกำลังกายมีประโยชน์ต่อสุขภาพ
+3320,构成,这些问题构成威胁。,These problems constitute a threat.,ปัญหาเหล่านี้ก่อให้เกิดภัยคุกคาม
+3329,运用,他善于运用知识。,He is good at applying knowledge.,เขาเก่งในการนำความรู้ไปใช้
+3342,最佳,他获得了最佳演员奖。,He won the Best Actor award.,เขาได้รับรางวัลนักแสดงยอดเยี่ยม
+3347,生理,这是正常的生理现象。,This is a normal physiological phenomenon.,นี่เป็นปรากฏการณ์ทางสรีระที่ปกติ
+3349,疼痛,他的膝盖感到疼痛。,His knee feels painful.,เขารู้สึกปวดที่หัวเข่า
+3353,观点,我同意你的观点。,I agree with your point of view.,ฉันเห็นด้วยกับมุมมองของคุณ
+3377,丁,成绩分为甲乙丙丁四等。,"Grades are divided into four levels: A, B, C, D.",เกรดแบ่งเป็นสี่ระดับ คือ เอ บี ซี ดี
+3384,烛,风吹灭了烛火。,The wind blew out the candle flame.,ลมพัดเปลวเทียนดับ
+3389,运河,船在运河上行驶。,The boat sails on the canal.,เรือแล่นอยู่บนคลอง
+3391,鳔,鱼鳔可以调节浮力。,The fish swim bladder can adjust buoyancy.,ถุงลมของปลาช่วยปรับการลอยตัวได้
+3397,多次,他多次提醒我。,He reminded me many times.,เขาเตือนฉันหลายครั้ง
+3404,效率,他工作效率很高。,His work efficiency is very high.,เขาทำงานมีประสิทธิภาพสูงมาก
+3406,现实,我们要面对现实。,We must face reality.,เราต้องเผชิญกับความเป็นจริง
+3413,不宜,空腹不宜喝咖啡。,It is not advisable to drink coffee on an empty stomach.,ไม่ควรดื่มกาแฟตอนท้องว่าง
+3422,加上,三加上二等于五。,Three plus two equals five.,สามบวกสองเท่ากับห้า
+3427,大多数,大多数学生都同意。,The great majority of students agree.,นักเรียนส่วนใหญ่เห็นด้วย
+3450,某,某人给我打了电话。,A certain person called me.,มีคนคนหนึ่งโทรมาหาฉัน
+3463,证实,警方证实了这个消息。,The police confirmed this news.,ตำรวจยืนยันข่าวนี้
+3475,亲自,校长亲自参加了会议。,The principal personally attended the meeting.,ผู้อำนวยการมาร่วมประชุมด้วยตัวเอง
+3482,后人,这段历史值得后人铭记。,This history is worth remembering for later generations.,ประวัติศาสตร์ตอนนี้ควรค่าแก่การจดจำของคนรุ่นหลัง
+3483,吨,这艘船能装一万吨货物。,This ship can carry ten thousand tons of cargo.,เรือลำนี้บรรทุกสินค้าได้หนึ่งหมื่นตัน
+3487,强烈,大家强烈反对这个计划。,Everyone strongly opposed this plan.,ทุกคนคัดค้านแผนนี้อย่างรุนแรง
+3510,魔术,他会表演魔术。,He can perform magic tricks.,เขาแสดงมายากลได้
+3514,乙,他是乙方的代表。,He is the representative of Party B.,เขาเป็นตัวแทนของคู่สัญญาฝ่ายที่สอง
+3539,兑换,他去银行兑换外币。,He went to the bank to exchange foreign currency.,เขาไปธนาคารเพื่อแลกเงินตราต่างประเทศ
+3552,桥梁,这座桥梁很长。,This bridge is very long.,สะพานนี้ยาวมาก
+3553,椒,这道菜放了很多辣椒。,This dish has a lot of pepper in it.,อาหารจานนี้ใส่พริกเยอะมาก
+3566,调,他被调去北京工作。,He was transferred to work in Beijing.,เขาถูกย้ายไปทำงานที่ปักกิ่ง
+3592,境界,他达到了新的境界。,He reached a new realm.,เขาก้าวไปถึงขั้นใหม่แล้ว
+3598,居住,他们居住在乡下。,They reside in the countryside.,พวกเขาอาศัยอยู่ที่ชนบท
+3603,得天独厚,这里条件得天独厚。,The conditions here are uniquely favorable.,ที่นี่มีเงื่อนไขได้เปรียบเป็นพิเศษ
+3611,改进,我们需要改进方法。,We need to improve the method.,เราต้องปรับปรุงวิธีการ
+3613,敏感,她皮肤很敏感。,Her skin is very sensitive.,ผิวของเธอแพ้ง่ายมาก
+3622,消耗,运动消耗体力。,Exercise consumes physical energy.,การออกกำลังกายใช้พลังงานร่างกาย
+3636,终究,他终究会明白。,He will understand in the end.,สุดท้ายแล้วเขาก็จะเข้าใจ
+3659,传递,他传递了这个消息。,He passed on this message.,เขาส่งต่อข่าวนี้
+3661,例,请举一个例子。,Please give an example.,ช่วยยกตัวอย่างสักอย่างหนึ่ง
+3666,再次,他再次获得冠军。,He won the championship again.,เขาได้แชมป์อีกครั้ง
+3670,加以,问题需要加以解决。,The problem needs to be addressed.,ปัญหานี้จำเป็นต้องแก้ไข
+3690,平衡,她努力保持身体平衡。,She works hard to keep her body balanced.,เธอพยายามรักษาสมดุลของร่างกาย
+3697,情,他们之间充满真情。,There is genuine feeling between them.,ระหว่างพวกเขาเต็มไปด้วยความรู้สึกจริงใจ
+3725,诗,他写了一首诗。,He wrote a poem.,เขาแต่งบทกวีบทหนึ่ง
+3729,适度,运动要适度，不要过量。,Exercise should be moderate; don't overdo it.,ออกกำลังกายต้องพอดีๆ อย่าหักโหม
+3732,针对,这个计划针对年轻人。,This plan targets young people.,แผนนี้มุ่งเป้าไปที่คนรุ่นใหม่
+3734,随,请大家随我来。,Please everyone follow me.,ทุกคนตามฉันมาเลย
+3735,随即,他听完随即离开了。,He left immediately after listening.,เขาฟังจบก็จากไปทันที
+3744,严谨,他做事非常严谨。,He does things very rigorously.,เขาทำงานละเอียดรอบคอบมาก
+3745,京城,古代京城非常繁华。,The ancient capital was very prosperous.,เมืองหลวงในสมัยโบราณเจริญรุ่งเรืองมาก
+3762,境,他们已经出境了。,They have already crossed the border out of the country.,พวกเขาออกนอกประเทศไปแล้ว
+3766,大面积,大面积的森林被烧毁。,A large area of forest was burned down.,ป่าเป็นบริเวณกว้างถูกไฟเผาทำลาย
+3774,情商,他情商很高。,He has high emotional intelligence.,เขามีความฉลาดทางอารมณ์สูงมาก
+3776,战,双方开战了。,Both sides went to war.,ทั้งสองฝ่ายเปิดศึกกันแล้ว
+3780,担,他勇于担责任。,He is brave enough to take on responsibility.,เขากล้าที่จะแบกรับความรับผิดชอบ
+3781,拨,请拨打这个电话。,Please dial this phone number.,กรุณากดโทรเบอร์นี้
+3809,细胞分裂,细胞分裂速度很快。,Cell division happens very fast.,เซลล์แบ่งตัวได้เร็วมาก
+3816,被誉为,他被誉为音乐天才。,He is hailed as a musical genius.,เขาได้ชื่อว่าเป็นอัจฉริยะทางดนตรี
+3829,乌鸦,乌鸦站在树枝上。,The crow stood on the branch.,อีกาเกาะอยู่บนกิ่งไม้
+3837,咖啡豆,这些咖啡豆香气浓郁。,These coffee beans have a rich aroma.,เมล็ดกาแฟพวกนี้กลิ่นหอมเข้มข้น
+3846,层面,这个问题涉及多个层面。,This issue involves multiple aspects.,ปัญหานี้เกี่ยวข้องกับหลายแง่มุม
+3849,御,军队奋力抵御敌人。,The army fought hard to resist the enemy.,กองทัพสู้อย่างสุดกำลังเพื่อต้านทานข้าศึก
+3853,报酬,这份工作报酬很高。,This job pays a high reward.,งานนี้ค่าตอบแทนสูงมาก
+3855,木质,这张桌子是木质的。,This table is made of wood.,โต๊ะตัวนี้ทำจากไม้
+3856,树枝,小鸟站在树枝上。,The bird stands on the branch.,นกน้อยเกาะอยู่บนกิ่งไม้
+3871,翅膀,小鸟张开翅膀飞走了。,The bird spread its wings and flew away.,นกน้อยกางปีกบินจากไป
+3911,一无所有,创业失败后他几乎一无所有。,After his business failed,หลังจากทำธุรกิจล้มเหลว เขาแทบไม่เหลืออะไรเลย
+3932,上去,你快上去吧。,Go on up quickly.,เธอรีบขึ้นไปเลย
+3953,不准,这里不准抽烟。,Smoking is not allowed here.,ที่นี่ห้ามสูบบุหรี่
+3970,不服,他对判决表示不服。,He expressed disagreement with the verdict.,เขาแสดงท่าทีไม่ยอมรับคำตัดสิน
+3974,不用说,不用说，大家都知道答案。,Needless to say,ไม่ต้องพูดก็รู้ ทุกคนรู้คำตอบดีอยู่แล้ว
+3992,专长,编程是他的专长。,Programming is his specialty.,การเขียนโปรแกรมคือความถนัดพิเศษของเขา
+3993,世代,这门手艺世代相传。,This craft has been passed down for generations.,งานฝีมือนี้สืบทอดกันมารุ่นสู่รุ่น
+3994,世故,他为人处事十分世故。,He is very worldly in how he handles things.,เขาเป็นคนเจนโลกในการวางตัวและการเข้าสังคมมาก
+4001,东南,台风正向东南移动。,The typhoon is moving toward the southeast.,ไต้ฝุ่นกำลังเคลื่อนตัวไปทางทิศตะวันออกเฉียงใต้
+4002,东方,太阳从东方升起。,The sun rises in the east.,ดวงอาทิตย์ขึ้นทางทิศตะวันออก
+4007,丢失,他不小心丢失了钱包。,He accidentally lost his wallet.,เขาทำกระเป๋าเงินหายโดยไม่ตั้งใจ
+4009,丢脸,考试不及格让他丢脸。,Failing the exam made him lose face.,การสอบตกทำให้เขาเสียหน้า
+4011,严密,这个计划安排得十分严密。,This plan was arranged very tightly and carefully.,แผนนี้ถูกวางไว้อย่างรัดกุมมาก
+4013,个儿,他个儿真高。,He's really tall.,เขาตัวสูงจริงๆ
+4018,中华民族,中华民族历史悠久。,The Chinese nation has a long history.,ชนชาติจีนมีประวัติศาสตร์อันยาวนาน
+4025,中餐,他更喜欢吃中餐。,He prefers eating Chinese food.,เขาชอบกินอาหารจีนมากกว่า
+4039,主导,科技正主导着经济发展。,Technology is now dominating economic development.,เทคโนโลยีกำลังมีบทบาทนำในการพัฒนาเศรษฐกิจ
+4044,主观,你的看法太主观了。,Your opinion is too subjective.,ความคิดเห็นของเธอเป็นอัตวิสัยเกินไป
+4054,之内,请在三天之内回复。,Please reply within three days.,ช่วยตอบกลับภายในสามวัน
+4064,书桌,他坐在书桌前写作业。,He sat at the desk doing homework.,เขานั่งทำการบ้านอยู่ที่โต๊ะเขียนหนังสือ
+4071,争夺,两队激烈争夺冠军。,The two teams fiercely contested the title.,สองทีมแย่งชิงตำแหน่งแชมป์กันอย่างดุเดือด
+4072,争执,他们为小事争执起来。,They started arguing over a small matter.,พวกเขาโต้เถียงกันเพราะเรื่องเล็กน้อย
+4073,争气,他发誓一定要争气。,He vowed he would prove himself.,เขาสาบานว่าจะต้องพิสูจน์ตัวเองให้ได้
+4074,争议,这项政策引发了争议。,This policy sparked controversy.,นโยบายนี้จุดชนวนข้อถกเถียง
+4083,五花八门,展会上的商品五花八门。,The goods at the exhibition were of every conceivable kind.,สินค้าในงานมีสารพัดชนิดหลากหลาย
+4105,人手,工地上现在缺人手。,The construction site is short of manpower right now.,ตอนนี้ไซต์ก่อสร้างขาดแรงคนอยู่
+4126,以致,他没复习，以致考试不及格。,He didn't review,เขาไม่ได้อ่านหนังสือทบทวน เลยสอบตก
+4136,众人,众人纷纷点头同意。,Everyone nodded in agreement.,ทุกคนพากันพยักหน้าเห็นด้วย
+4142,会诊,几位专家为病人会诊。,Several experts held a consultation for the patient.,ผู้เชี่ยวชาญหลายคนร่วมกันวินิจฉัยอาการให้คนไข้
+4143,传奇,他的一生充满传奇色彩。,His life was full of legendary color.,ชีวิตของเขาเต็มไปด้วยสีสันแห่งตำนาน
+4145,传授,老师向学生传授知识。,The teacher imparts knowledge to the students.,ครูถ่ายทอดความรู้ให้นักเรียน
+4149,传达,他向大家传达了消息。,He conveyed the news to everyone.,เขาแจ้งข่าวให้ทุกคนได้รู้
+4150,伤口,医生正在处理伤口。,The doctor is treating the wound.,หมอกำลังทำแผลอยู่
+4153,伴,老人希望有个伴。,The old man wishes for a companion.,คนแก่อยากมีเพื่อนคอยอยู่เป็นเพื่อนสักคน
+4159,低温,冰箱要保持低温状态。,The fridge needs to stay at a low temperature.,ตู้เย็นต้องรักษาอุณหภูมิให้ต่ำ
+4168,体重,他最近体重下降了。,His weight has dropped recently.,ช่วงนี้น้ำหนักของเขาลดลง
+4173,作战,士兵们勇敢地作战。,The soldiers fought bravely.,เหล่าทหารต่อสู้อย่างกล้าหาญ
+4176,佳节,中秋佳节全家团圆。,"During the Mid-Autumn festive day, the whole family reunites.",เทศกาลไหว้พระจันทร์ ทั้งครอบครัวได้อยู่พร้อมหน้ากัน
+4177,使劲,他使劲推开了大门。,He pushed the door open with all his strength.,เขาออกแรงดันประตูจนเปิดออก
+4188,依旧,她依旧每天早起锻炼。,She still gets up early to exercise every day.,เธอยังคงตื่นเช้ามาออกกำลังกายทุกวันเหมือนเดิม
+4197,促销,商场正在举行促销活动。,The mall is holding a promotional sales event.,ห้างกำลังจัดกิจกรรมส่งเสริมการขาย
+4210,信用,他很讲信用。,He values his word.,เขาเป็นคนรักษาคำพูดน่าเชื่อถือ
+4212,信赖,大家都很信赖他。,Everyone trusts him a lot.,ทุกคนไว้วางใจเขามาก
+4213,修养,他很有文化修养。,He has strong cultural refinement.,เขาเป็นคนมีภูมิความรู้ทางวัฒนธรรมสูง
+4220,借用,我想借用一下你的手机。,I'd like to borrow your phone for a moment.,ฉันขอยืมโทรศัพท์เธอหน่อยได้ไหม
+4228,假定,我们先假定这个说法成立。,Let's first assume this statement is true.,เราลองสมมติก่อนว่าคำกล่าวนี้เป็นจริง
+4232,偏偏,我出门偏偏忘带雨伞。,"As luck would have it, I forgot my umbrella.",พอจะออกจากบ้าน ดันลืมเอาร่มไปซะงั้น
+4245,储备,国家储备了大量粮食。,The country has stockpiled a large amount of grain.,ประเทศสำรองเสบียงอาหารไว้จำนวนมาก
+4248,催,妈妈催我快点起床。,Mom urged me to get up quickly.,แม่เร่งให้ฉันรีบตื่น
+4252,傲慢,他的态度显得很傲慢。,His attitude seemed very arrogant.,ท่าทีของเขาดูหยิ่งยโสมาก
+4253,傻,别做这么傻的事情。,Don't do such a foolish thing.,อย่าทำเรื่องโง่ๆ แบบนี้
+4257,元素,水由两种元素组成。,Water is made up of two elements.,น้ำประกอบด้วยธาตุสองชนิด
+4262,先前,情况比先前好多了。,The situation is much better than before.,สถานการณ์ดีขึ้นกว่าเมื่อก่อนมาก
+4276,全体,全体同学都到齐了。,All the students have arrived.,นักเรียนทั้งหมดมากันครบแล้ว
+4277,全力,医生全力抢救病人。,The doctors made every effort to save the patient.,หมอทุ่มสุดกำลังช่วยชีวิตคนไข้
+4286,公主,这个故事讲的是一位公主。,This story is about a princess.,เรื่องนี้เล่าเกี่ยวกับเจ้าหญิงองค์หนึ่ง
+4311,其余,其余的问题下次再说。,We'll discuss the rest of the questions next time.,คำถามที่เหลือไว้ค่อยว่ากันครั้งหน้า
+4325,再现,这部电影再现了历史场景。,This movie recreates historical scenes.,หนังเรื่องนี้จำลองภาพเหตุการณ์ในประวัติศาสตร์ขึ้นมาใหม่
+4327,冒,锅里冒出阵阵热气。,Steam kept rising from the pot.,ไอร้อนพุ่งออกมาจากหม้อเป็นระยะ
+4368,出版,这本书明年出版。,This book will be published next year.,หนังสือเล่มนี้จะตีพิมพ์ปีหน้า
+4376,分寸,说话要懂得分寸。,You should know the right measure when speaking.,พูดอะไรต้องรู้จักประมาณ
+4377,分工,团队成员分工明确。,The team members have clearly divided tasks.,สมาชิกในทีมแบ่งงานกันอย่างชัดเจน
+4391,切实,我们要切实解决问题。,We need to genuinely solve the problem.,เราต้องแก้ปัญหาอย่างจริงจัง
+4395,划船,他们在湖上划船。,They rowed a boat on the lake.,พวกเขาพายเรือกันในทะเลสาบ
+4413,制止,老师及时制止了争吵。,The teacher stopped the quarrel in time.,คุณครูเข้าห้ามการทะเลาะได้ทันเวลา
+4417,剂,医生给他开了一种药剂。,The doctor prescribed him a medicine.,หมอสั่งยาชนิดหนึ่งให้เขา
+4425,前辈,他向前辈请教经验。,He asked a senior for advice from experience.,เขาขอคำแนะนำเรื่องประสบการณ์จากรุ่นพี่
+4444,加工,这些原料需要加工。,These raw materials need to be processed.,วัตถุดิบพวกนี้ต้องนำไปแปรรูป
+4445,加强,我们要加强身体锻炼。,We need to strengthen our physical exercise.,เราต้องเสริมการออกกำลังกายให้มากขึ้น
+4446,加深,这加深了他的印象。,This deepened his impression.,สิ่งนี้ทำให้ความประทับใจของเขาลึกซึ้งยิ่งขึ้น
+4458,势力,这个组织的势力很大。,This organization's power is very great.,อิทธิพลขององค์กรนี้ใหญ่มาก
+4465,包袱,他背着一个大包袱。,He carried a large bundle on his back.,เขาแบกห่อผ้าใบใหญ่ไว้บนหลัง
+4491,单纯,她的想法很单纯。,Her way of thinking is very simple.,ความคิดของเธอเรียบง่ายบริสุทธิ์
+4510,厂长,他当上了这家工厂的厂长。,He became the director of this factory.,เขาได้ขึ้นเป็นผู้อำนวยการของโรงงานแห่งนี้
+4516,压缩,这个文件可以压缩后再发送。,This file can be compressed before sending.,ไฟล์นี้บีบอัดก่อนแล้วค่อยส่งได้
+4528,去除,这种方法能去除污渍。,This method can remove stains.,วิธีนี้ช่วยขจัดคราบได้
+4531,叉子,请给我一把叉子。,Please give me a fork.,ขอส้อมให้ฉันหน่อย
+4568,取决于,成功取决于个人的努力。,Success hinges on one's own effort.,ความสำเร็จขึ้นอยู่กับความพยายามของแต่ละคน
+4580,口味,每个人的口味不同。,Everyone's taste is different.,แต่ละคนชอบรสชาติไม่เหมือนกัน
+4590,古怪,那位老人性格十分古怪。,That old man has a very strange personality.,ชายชราคนนั้นนิสัยประหลาดมาก
+4591,古朴,这座小镇风格古朴典雅。,This small town has a simple unadorned and elegant style.,เมืองเล็กๆ แห่งนี้มีสไตล์เรียบง่ายแบบโบราณและสง่างาม
+4593,只顾,他只顾玩手机，不听课。,He was so absorbed in his phone that he ignored the lesson.,เขามัวแต่เล่นมือถือ ไม่ตั้งใจเรียน
+4598,可见,由此可见他很努力。,"From this, it's clear he works hard.",จากตรงนี้ก็เห็นได้ชัดว่าเขาขยันมาก
+4604,台风,这位歌手台风非常稳健。,This singer has very steady stage presence.,นักร้องคนนี้วางตัวบนเวทีได้นิ่งและมั่นใจมาก
+4609,各地,游客来自世界各地。,Tourists come from all over the world.,นักท่องเที่ยวมาจากทั่วทุกมุมโลก
+4621,后代,我们应为后代保护环境。,We should protect the environment for future generations.,เราควรรักษาสิ่งแวดล้อมไว้เพื่อลูกหลานรุ่นหลัง
+4631,吓,那个声音吓了我一跳。,That sound gave me a fright.,เสียงนั้นทำฉันสะดุ้งตกใจ
+4632,否决,议会否决了这项提案。,The council vetoed this proposal.,สภาโหวตคว่ำข้อเสนอนี้
+4634,吩咐,妈妈吩咐我早点回家。,Mom told me to come home early.,แม่สั่งให้ฉันกลับบ้านเร็วๆ หน่อย
+4635,含糊,他的回答很含糊。,His answer was quite vague.,คำตอบของเขาคลุมเครือมาก
+4643,吼,狮子在草原上大声吼叫。,The lion roared loudly on the grassland.,สิงโตคำรามเสียงดังกลางทุ่งหญ้า
+4649,周到,服务员非常周到。,The waiter was very thoughtful.,พนักงานเสิร์ฟดูแลเอาใจใส่มาก
+4655,呼救,溺水的人大声呼救。,The drowning person shouted for help.,คนที่กำลังจมน้ำตะโกนขอความช่วยเหลือ
+4661,咳,他感冒后一直咳个不停。,He has been coughing nonstop since catching a cold.,เขาไอไม่หยุดเลยตั้งแต่เป็นหวัด
+4667,响起,教室里突然响起铃声。,The bell suddenly rang out in the classroom.,จู่ๆ เสียงกริ่งก็ดังขึ้นในห้องเรียน
+4673,啦,太好啦，我们成功了！,Great,ดีจังเลย เราทำสำเร็จแล้ว!
+4689,嘴巴,她张开嘴巴笑了。,She opened her mouth and laughed.,เธออ้าปากหัวเราะ
+4703,回收,这些瓶子可以回收利用。,These bottles can be recycled and reused.,ขวดพวกนี้นำกลับมาใช้ใหม่ได้
+4704,回避,他总是回避这个问题。,He always avoids this question.,เขาหลบเลี่ยงคำถามนี้เสมอ
+4709,园地,这里是孩子们的园地。,This is a garden area for the children.,ที่นี่คือพื้นที่ของเด็กๆ
+4713,固执,老人的脾气很固执。,The old man's temper is very stubborn.,คนแก่คนนี้นิสัยดื้อรั้นมาก
+4716,国土,军队保卫国土安全。,The army defends the security of the nation's territory.,กองทัพปกป้องความมั่นคงของดินแดนประเทศ
+4717,国籍,请填写你的国籍。,Please fill in your nationality.,กรุณากรอกสัญชาติของคุณ
+4718,图书,这里图书很齐全。,The books here are quite extensive.,หนังสือที่นี่มีครบครันมาก
+4719,图形,屏幕上显示一个图形。,A figure is displayed on the screen.,บนหน้าจอแสดงรูปทรงหนึ่งขึ้นมา
+4721,圆形,桌子是圆形的。,The table is round.,โต๊ะตัวนี้เป็นทรงกลม
+4734,地步,事情严重到这个地步。,The situation has become this serious.,เรื่องมันร้ายแรงถึงขนาดนี้
+4739,场地,比赛场地已经准备好。,The competition venue is already prepared.,สนามแข่งเตรียมพร้อมแล้ว
+4749,坚实,这打下了坚实的基础。,This laid a solid foundation.,สิ่งนี้วางรากฐานที่มั่นคง
+4753,坛,他在文坛上很有名气。,He is well-known in the literary world.,เขามีชื่อเสียงมากในวงการวรรณกรรม
+4761,埋,他把宝藏埋在地下。,He buried the treasure underground.,เขาฝังสมบัติไว้ใต้ดิน
+4776,塑造,小说塑造了一个英雄形象。,The novel portrayed a heroic figure.,นวนิยายสร้างภาพของวีรบุรุษขึ้นมา
+4778,填写,请填写这张表格。,Please fill out this form.,กรุณากรอกแบบฟอร์มนี้
+4785,增添,这盏灯增添了不少情调。,This lamp added quite a bit of ambiance.,โคมไฟดวงนี้เพิ่มบรรยากาศขึ้นมาไม่น้อย
+4789,壮观,日出的景象十分壮观。,The sunrise is a spectacular sight.,ภาพพระอาทิตย์ขึ้นงดงามตระการตามาก
+4798,外婆,外婆做的饭菜真香。,The food my grandma makes is delicious.,อาหารที่ยายทำอร่อยจริงๆ
+4806,多余,这些话完全是多余的。,Those words were completely unnecessary.,คำพูดพวกนี้เกินความจำเป็นทั้งนั้น
+4818,大多,学生大多很努力。,Most students work hard.,นักเรียนส่วนใหญ่ขยันมาก
+4821,大意,请说说文章大意。,Please describe the main idea of the article.,ช่วยเล่าใจความสำคัญของบทความหน่อย
+4826,大胆,他提出了一个大胆的计划。,He proposed a bold plan.,เขาเสนอแผนที่กล้าหาญ
+4831,大赛,他赢得了这次大赛。,He won this grand competition.,เขาชนะการแข่งขันครั้งใหญ่นี้
+4834,天分,她在音乐上很有天分。,She has great talent in music.,เธอมีพรสวรรค์ด้านดนตรีมาก
+4839,天桥,行人从天桥上过马路。,Pedestrians cross the road via the overpass.,คนเดินเท้าข้ามถนนผ่านสะพานลอย
+4842,天赋,她在音乐上很有天赋。,She has great talent in music.,เธอมีพรสวรรค์ด้านดนตรีมาก
+4854,夸大,请不要夸大事实。,Please don't exaggerate the facts.,กรุณาอย่าพูดเกินความจริง
+4871,奶,早上喝一杯牛奶。,Drink a glass of milk in the morning.,ตอนเช้าดื่มนมหนึ่งแก้ว
+4876,好学,这个孩子从小就好学。,This child has been eager to learn since childhood.,เด็กคนนี้ใฝ่เรียนมาตั้งแต่เล็ก
+4877,好心人,一位好心人帮了我们。,A kind-hearted person helped us.,คนใจดีคนหนึ่งช่วยเหลือเรา
+4882,好运,祝你考试有好运。,Wishing you good luck on the exam.,ขอให้โชคดีในการสอบนะ
+4891,姿态,她以谦虚的姿态回答问题。,She answered the question with a humble attitude.,เธอตอบคำถามด้วยท่าทีถ่อมตน
+4894,嫌,他嫌房间太小了。,He complains that the room is too small.,เขารังเกียจว่าห้องเล็กเกินไป
+4907,学艺,他年轻时拜师学艺。,"In his youth, he apprenticed himself to learn a craft.",ตอนหนุ่มเขาฝากตัวเป็นศิษย์เรียนวิชา
+4909,孵化,母鸡正在孵化鸡蛋。,The hen is incubating the eggs.,แม่ไก่กำลังฟักไข่
+4915,守,士兵日夜守着大门。,Soldiers guard the gate day and night.,ทหารเฝ้าประตูทั้งวันทั้งคืน
+4923,定义,请给这个词下定义。,Please give a definition for this word.,ช่วยให้คำนิยามของคำนี้หน่อย
+4925,定居,他们决定在国外定居。,They decided to settle abroad.,พวกเขาตัดสินใจไปตั้งรกรากที่ต่างประเทศ
+4937,实惠,这家店的东西又实惠又好。,This shop's goods are both affordable and good.,ของร้านนี้ทั้งคุ้มค่าทั้งดี
+4941,实话,请你跟我说实话。,Please tell me the truth.,ช่วยบอกความจริงกับฉันหน่อย
+4948,宫廷,这是古代宫廷的服饰。,This is ancient palace-style clothing.,นี่คือเครื่องแต่งกายของราชสำนักสมัยโบราณ
+4973,对白,这部电影的对白很精彩。,This movie's dialogue is wonderful.,บทสนทนาในหนังเรื่องนี้ยอดเยี่ยมมาก
+4979,封闭,这条山路已经封闭了。,This mountain road has already been closed off.,ทางบนภูเขาเส้นนี้ถูกปิดไปแล้ว
+4982,将要,我们将要出发了。,We are about to set off.,เรากำลังจะออกเดินทางแล้ว
+4985,尊贵,客人受到了尊贵的礼遇。,The guest received honored treatment.,เขาต้อนรับแขกอย่างสมเกียรติ
+5004,尴尬,他的问题让我很尴尬。,His question made me very embarrassed.,คำถามของเขาทำให้ฉันอึดอัดใจมาก
+5009,尽头,他们走到了小路的尽头。,They walked to the end of the path.,พวกเขาเดินไปจนสุดทาง
+5019,展现,美丽的风景展现在眼前。,A beautiful scene unfolded before our eyes.,ทิวทัศน์ที่สวยงามปรากฏอยู่ตรงหน้า
+5037,崭新,他穿着一身崭新的西装。,He is wearing a brand-new suit.,เขาสวมสูทใหม่เอี่ยมทั้งชุด
+5039,川流不息,街上的车辆川流不息。,The traffic on the street flows without stopping.,รถราบนถนนวิ่งกันไม่ขาดสาย
+5042,工序,这道工序十分复杂。,This working procedure is very complicated.,ขั้นตอนการผลิตนี้ซับซ้อนมาก
+5047,巩固,我们要巩固学习成果。,We should consolidate our learning achievements.,เราต้องเสริมผลการเรียนให้มั่นคง
+5058,带动,新政策带动了经济发展。,The new policy has spurred economic development.,นโยบายใหม่ช่วยกระตุ้นการพัฒนาเศรษฐกิจ
+5068,干活儿,工人正在地里干活儿。,The workers are working in the field.,คนงานกำลังทำงานอยู่ในไร่
+5075,平常心,比赛时要保持平常心。,One should stay calm during a competition.,เวลาแข่งต้องรักษาใจให้เป็นปกติ
+5084,幻觉,他产生了一种奇怪的幻觉。,He experienced a strange hallucination.,เขาเกิดภาพหลอนแปลกๆ ขึ้นมา
+5094,应有尽有,超市里的商品应有尽有。,The supermarket has everything one could need.,สินค้าในซูเปอร์มาร์เก็ตมีครบทุกอย่าง
+5099,庙,村子附近有一座庙。,There is a temple near the village.,ใกล้ๆ หมู่บ้านมีวัดอยู่แห่งหนึ่ง
+5105,庸俗,这部电影的情节很庸俗。,The plot of this movie is very vulgar.,เนื้อเรื่องของหนังเรื่องนี้หยาบคายไร้รสนิยม
+5118,开展,学校开展了阅读活动。,The school launched a reading activity.,โรงเรียนจัดกิจกรรมการอ่านขึ้น
+5125,开辟,政府计划开辟新航线。,The government plans to open a new route.,รัฐบาลวางแผนจะเปิดเส้นทางเดินเรือใหม่
+5128,异性,青春期孩子开始关注异性。,Teenagers begin to notice the opposite sex.,เด็กวัยรุ่นเริ่มสนใจเพศตรงข้าม
+5136,引领,他引领着队伍向前走。,He leads the team forward.,เขานำทีมเดินไปข้างหน้า
+5137,弟子,他收了三个弟子。,He took on three disciples.,เขารับลูกศิษย์สามคน
+5141,弯曲,这条山路十分弯曲。,This mountain road is very winding.,ทางบนภูเขาสายนี้คดเคี้ยวมาก
+5144,强制,学校强制要求穿校服。,The school mandates wearing uniforms.,โรงเรียนบังคับให้ใส่ชุดนักเรียน
+5157,当成,大家把他当成了自己人。,Everyone regarded him as one of their own.,ทุกคนถือว่าเขาเป็นพวกเดียวกัน
+5164,彩色,他画了一幅彩色的画。,He painted a colorful picture.,เขาวาดภาพระบายสีภาพหนึ่ง
+5177,徐徐,晚风徐徐吹进窗户。,The evening breeze blows slowly through the window.,ลมยามค่ำพัดเอื่อยๆ เข้ามาทางหน้าต่าง
+5178,得以,问题终于得以解决。,The problem was finally able to be resolved.,สุดท้ายปัญหาก็แก้ไขได้สำเร็จ
+5190,心疼,妈妈看着我很心疼。,Mom looked at me with heartfelt concern.,แม่มองฉันแล้วรู้สึกสงสารเป็นห่วง
+5199,必然,失败是成功的必然过程。,Failure is an inevitable part of success.,ความล้มเหลวเป็นขั้นตอนที่หลีกเลี่ยงไม่ได้ของความสำเร็จ
+5206,忧郁,他最近情绪十分忧郁。,He has been feeling very depressed lately.,ช่วงนี้อารมณ์ของเขาหม่นหมองมาก
+5225,性质,这两件事性质不同。,These two matters are different in nature.,สองเรื่องนี้มีลักษณะแตกต่างกัน
+5226,怨言,他从来没有过怨言。,He has never had any complaints.,เขาไม่เคยบ่นสักคำ
+5230,恋爱,他们已经恋爱三年了。,They have been in love for three years.,พวกเขาคบกันเป็นแฟนมาสามปีแล้ว
+5249,情侣,公园里坐着不少情侣。,Quite a few couples are sitting in the park.,ในสวนสาธารณะมีคู่รักนั่งอยู่หลายคู่
+5256,惊慌,火灾发生时大家很惊慌。,Everyone panicked when the fire broke out.,ตอนเกิดไฟไหม้ทุกคนตื่นตกใจกันมาก
+5261,惯性,汽车靠惯性继续前进。,The car continues moving forward due to inertia.,รถเคลื่อนที่ต่อไปด้วยแรงเฉื่อย
+5270,愚蠢,这个决定实在愚蠢。,This decision is really foolish.,การตัดสินใจนี้โง่เขลาจริงๆ
+5284,成型,这批产品还没有成型。,This batch of products has not yet taken shape.,สินค้าล็อตนี้ยังไม่ขึ้นรูปเป็นรูปเป็นร่าง
+5291,战场,士兵们奔赴战场。,The soldiers rushed to the battlefield.,เหล่าทหารมุ่งหน้าสู่สนามรบ
+5293,截止,报名将于明天截止。,Registration will close tomorrow.,การรับสมัครจะปิดรับในวันพรุ่งนี้
+5298,所在,请告诉我车站的所在。,Please tell me where the station is located.,กรุณาบอกที่ตั้งของสถานีให้ฉันหน่อย
+5302,手势,他用手势告诉我方向。,He used a gesture to tell me the direction.,เขาใช้ท่ามือบอกทิศทางให้ฉัน
+5313,打交道,他经常跟外国人打交道。,He often deals with foreigners.,เขาติดต่อคบหากับชาวต่างชาติบ่อยๆ
+5316,打击,失败给了他很大打击。,The failure was a huge blow to him.,ความล้มเหลวสร้างความกระทบกระเทือนครั้งใหญ่ให้เขา
+5320,打工,她假期在餐厅打工。,She works part-time at a restaurant during vacation.,ช่วงปิดเทอมเธอทำงานพิเศษที่ร้านอาหาร
+5327,打雷,外面又刮风又打雷。,It's windy and thundering outside.,ข้างนอกทั้งลมแรงทั้งฟ้าร้อง
+5328,托,她把脸托在手心上。,She rested her chin in her palm.,เธอเอามือรองหน้าไว้
+5334,扭头,他听见喊声立刻扭头。,He immediately turned his head when he heard the shout.,พอได้ยินเสียงตะโกน เขาก็หันหัวทันที
+5338,批判,他批判了这种做法。,He criticized this practice.,เขาวิจารณ์วิธีทำแบบนี้
+5340,承包,他承包了这片鱼塘。,He contracted this fish pond.,เขารับเหมาบ่อปลานี้
+5360,报废,这辆旧车已经报废了。,This old car has already been scrapped.,รถเก่าคันนี้กลายเป็นซากรถไปแล้ว
+5363,抵御,城墙能抵御敌人进攻。,The city wall can withstand enemy attacks.,กำแพงเมืองต้านทานการโจมตีของศัตรูได้
+5370,拄,老人拄着拐杖慢慢走。,"The old man walks slowly, leaning on a cane.",คนแก่ค่อยๆ เดินโดยใช้ไม้เท้ายัน
+5374,拆,工人正在拆旧房子。,Workers are demolishing the old house.,คนงานกำลังรื้อบ้านเก่า
+5385,招牌,那家店的招牌很显眼。,That shop's sign is very eye-catching.,ป้ายร้านนั้นสะดุดตามาก
+5402,挂号,我去医院挂号看病。,I went to the hospital to register and see a doctor.,ฉันไปโรงพยาบาลลงทะเบียนหาหมอ
+5403,指定,会议地点已经指定。,The meeting location has already been designated.,สถานที่ประชุมถูกกำหนดไว้แล้ว
+5421,捂,她害怕地捂住了眼睛。,She covered her eyes in fear.,เธอปิดตาด้วยความกลัว
+5424,捏,她轻轻捏了捏我的手。,She gently pinched my hand.,เธอบีบมือฉันเบาๆ
+5425,捐款,大家纷纷为灾区捐款。,People donated money to the disaster area one after another.,ทุกคนพากันบริจาคเงินให้พื้นที่ประสบภัย
+5446,接下来,接下来我们去哪里？,Where shall we go next?,ต่อไปเราจะไปไหนกันดี
+5454,推行,政府正在推行新政策。,The government is implementing a new policy.,รัฐบาลกำลังนำนโยบายใหม่มาใช้
+5462,描述,请你描述一下事情经过。,Please describe how the incident happened.,ช่วยบรรยายเหตุการณ์ที่เกิดขึ้นหน่อย
+5468,提起,别提起那件伤心事了。,Don't bring up that sad matter again.,อย่าพูดถึงเรื่องเศร้านั้นอีกเลย
+5474,揣摩,我仔细揣摩他的意思。,I carefully tried to figure out what he meant.,ฉันค่อยๆ ครุ่นคิดว่าเขาหมายความว่าอะไร
+5480,搬迁,这家工厂即将搬迁。,This factory is about to relocate.,โรงงานแห่งนี้กำลังจะย้ายที่
+5482,搭配,这件衣服颜色搭配得好。,The colors of this outfit are well matched.,เสื้อผ้าชุดนี้จับคู่สีได้เข้ากันดี
+5483,携带,乘客不能携带危险物品。,Passengers may not carry dangerous items.,ผู้โดยสารห้ามพกพาสิ่งของอันตราย
+5485,摄影师,他是一名专业摄影师。,He is a professional photographer.,เขาเป็นช่างภาพมืออาชีพ
+5493,摔倒,小孩在路上摔倒了。,The child fell down on the road.,เด็กหกล้มบนถนน
+5516,改良,这种技术已经过改良。,This technology has already been improved.,เทคโนโลยีนี้ผ่านการปรับปรุงมาแล้ว
+5529,救援,消防队及时进行救援。,The fire brigade carried out the rescue in time.,ข้างหน้ามีปั๊มน้ำมัน
+5538,敬而远之,大家对他敬而远之。,Everyone keeps a respectful distance from him.,ในที่สุดเขาก็สำเร็จ
+5541,敬重,学生们都很敬重老师。,The students deeply respect their teacher.,เขาพูดจามีอารมณ์ขันมาก
+5551,文人,古代文人喜欢写诗。,Ancient scholars loved writing poetry.,ตอนที่เขาถึงบ้าน ฟ้าก็มืดแล้ว
+5552,文献,他查阅了很多文献。,He consulted a lot of reference materials.,คุณครูตำหนิเขา
+5571,旗帜,广场上飘扬着旗帜。,Flags flutter in the square.,น้ำในแก้วเต็มแล้ว
+5577,无忧无虑,孩子们过着无忧无虑的生活。,The children live a carefree life.,นี่เป็นปัญหาสังคม
+5578,无恶不作,这个坏人无恶不作。,This bad person will stop at nothing evil.,พ่อแม่ของฉันสุขภาพแข็งแรงดีทั้งคู่
+5580,无所作为,他整天无所作为。,He achieves nothing all day long.,คุณครูใจเย็นกับนักเรียนมาก
+5612,时空,这部电影探讨了时空穿梭的奥秘。,This movie explores the mystery of time travel.,สถานการณ์ตอนนี้ซับซ้อนมาก
+5622,是非,他从不参与是非。,He never gets involved in disputes.,อาหารจานนี้ใช้น้ำมันเยอะมาก
+5645,暗示,他的话暗示了一些问题。,His words hinted at some problems.,เขาทำโจทย์สะเพร่าตลอดเลย
+5659,有望,这个项目有望成功。,This project is expected to succeed.,เราจะออกเดินทางพรุ่งนี้เช้า
+5667,期望,父母对他期望很高。,His parents have high expectations of him.,เรากำลังถกเรื่องนี้กันอยู่
+5671,木板,工人在钉木板。,The worker is nailing a wooden board.,เธอชอบอ่านนิตยสารแฟชั่น
+5683,权威,他是这个领域的权威。,He is an authority in this field.,เรื่องนี้ทำให้ฉันซาบซึ้งใจมาก
+5685,村,他出生在一个小村。,He was born in a small village.,การเรียนรู้ต้องค่อยๆ สะสม
+5688,束,她送了我一束鲜花。,She gave me a bunch of fresh flowers.,ครูเป็นอาชีพที่ดี
+5689,束缚,传统观念束缚着她。,Traditional ideas held her back.,เขาเป็นนักข่าว
+5696,极为,这件事极为重要。,This matter is extremely important.,ทุกคนคัดค้านแผนนี้
+5717,栏目,这个电视栏目很受欢迎。,This TV program segment is very popular.,นี่คือเรื่องราวความรัก
+5721,株,院子里种着一株梅花。,A plum tree is planted in the yard.,เขาป่วย เลยไม่ได้ไปทำงาน
+5730,桩,这是一桩大事。,This is a major matter.,นี่เป็นเรื่องใหญ่เรื่องหนึ่ง
+5737,检验,产品出厂前要检验。,Products must be inspected before leaving the factory.,สินค้าต้องผ่านการตรวจสอบก่อนออกจากโรงงาน
+5745,概率,这件事发生的概率很低。,The probability of this happening is very low.,โอกาสที่เรื่องนี้จะเกิดขึ้นมีน้อยมาก
+5752,欠,他还欠我一百块钱。,He still owes me a hundred yuan.,เขายังติดเงินฉันอยู่ร้อยหนึ่ง
+5753,次数,他迟到的次数太多了。,He has been late too many times.,เขามาสายหลายครั้งเกินไปแล้ว
+5758,款式,这件衣服的款式很新。,This piece of clothing has a very new style.,ดีไซน์ของเสื้อตัวนี้ใหม่มาก
+5764,歌颂,这首诗歌颂了母爱。,This poem praises a mother's love.,บทกวีนี้สรรเสริญความรักของแม่
+5767,正义,法律代表着社会正义。,The law represents social justice.,กฎหมายเป็นตัวแทนของความยุติธรรมในสังคม
+5775,此后,此后他再也没回来。,"After that, he never came back.",หลังจากนั้นเขาก็ไม่เคยกลับมาอีกเลย
+5779,步骤,请按步骤操作机器。,Please operate the machine according to the steps.,กรุณาใช้งานเครื่องตามขั้นตอน
+5784,死亡,车祸导致三人死亡。,The car accident caused three deaths.,อุบัติเหตุรถชนทำให้มีคนเสียชีวิตสามคน
+5787,殿堂,这座殿堂十分庄严。,This hall is very solemn.,ห้องโถงแห่งนี้ดูสง่างามมาก
+5788,毁,大火毁了整栋房子。,The fire destroyed the entire house.,ไฟไหม้ทำลายบ้านทั้งหลัง
+5789,毅力,学好中文需要毅力。,Learning Chinese well requires perseverance.,การเรียนภาษาจีนให้เก่งต้องใช้ความมานะอดทน
+5790,毅然,他毅然辞去了工作。,He resolutely quit his job.,เขาตัดสินใจลาออกจากงานอย่างเด็ดเดี่ยว
+5812,水域,这片水域禁止游泳。,Swimming is prohibited in this body of water.,ห้ามว่ายน้ำในบริเวณน้ำแห่งนี้
+5816,永久,他们许下了永久的诺言。,They made an everlasting promise.,พวกเขาให้คำมั่นสัญญาที่ยืนยาวชั่วนิรันดร์
+5817,求,他求我帮他一个忙。,He asked me for a favor.,เขาขอให้ฉันช่วยเขาหน่อย
+5831,沉重,他的心情十分沉重。,His mood was very heavy.,จิตใจของเขาหนักอึ้ง
+5835,沟,路边有一条水沟。,There is a ditch by the roadside.,ริมถนนมีร่องน้ำอยู่ร่องหนึ่ง
+5837,没收,老师没收了他的手机。,The teacher confiscated his phone.,คุณครูยึดโทรศัพท์ของเขาไป
+5853,波澜,他的话激起了波澜。,His words stirred up quite a commotion.,คำพูดของเขาก่อให้เกิดกระแสฮือฮา
+5862,泼,小心别把水泼出来。,Be careful not to spill the water.,ระวังอย่าทำน้ำสาดออกมา
+5876,流血,他的伤口一直流血。,His wound keeps bleeding.,บาดแผลของเขาเลือดไหลไม่หยุด
+5882,浑身,他跑完步后浑身都是汗。,After running,หลังวิ่งเสร็จ ตัวเขาเปียกเหงื่อไปทั้งตัว
+5884,浓缩,这瓶果汁是浓缩的。,This bottle of juice is concentrated.,น้ำผลไม้ขวดนี้เป็นแบบเข้มข้น
+5885,浓郁,咖啡的香味十分浓郁。,The coffee's aroma is very rich.,กลิ่นหอมของกาแฟหอมกรุ่นเข้มข้นมาก
+5917,清晨,他习惯清晨跑步。,He is used to running in the early morning.,เขาชอบวิ่งตอนเช้าตรู่จนเป็นนิสัย
+5918,清晰,照片拍得非常清晰。,The photo was taken very clearly.,รูปถ่ายออกมาชัดเจนมาก
+5944,滴,水龙头一直在滴水。,The faucet keeps dripping water.,ก๊อกน้ำหยดน้ำตลอดเลย
+5945,漂,树叶在水面漂着。,The leaves are floating on the water.,ใบไม้ลอยอยู่บนผิวน้ำ
+5951,漫长,这是一段漫长的旅程。,This is a long journey.,นี่เป็นการเดินทางที่ยาวนาน
+5955,潮,海边的潮已经退了。,The tide by the sea has already gone out.,น้ำทะเลที่ชายหาดลงแล้ว
+5958,激情,他对音乐充满激情。,He is full of passion for music.,เขาเต็มไปด้วยความหลงใหลในดนตรี
+5959,激活,请输入密码激活账户。,Please enter the password to activate the account.,กรุณาใส่รหัสผ่านเพื่อเปิดใช้งานบัญชี
+5968,火辣辣,夏天的太阳火辣辣的。,The summer sun is scorching hot.,แดดหน้าร้อนร้อนแผดเผา
+5985,点评,老师对作文做了点评。,The teacher gave comments on the essay.,คุณครูให้ความเห็นเกี่ยวกับเรียงความ
+5992,烦躁,天气太热让人烦躁。,The hot weather makes people irritable.,อากาศร้อนเกินไปทำให้คนหงุดหงิด
+5993,烫,小心别烫伤了手。,Be careful not to scald your hand.,ระวังอย่าให้มือลวกนะ
+5998,焦虑,考试前他感到很焦虑。,He felt very anxious before the exam.,ก่อนสอบเขารู้สึกกังวลมาก
+6007,熏陶,他从小受艺术熏陶。,He was influenced by art since childhood.,เขาซึมซับศิลปะมาตั้งแต่เด็ก
+6023,牌子,门口挂着一块牌子。,A sign hangs at the doorway.,ที่หน้าประตูมีป้ายแขวนอยู่
+6028,牢,门锁得很牢。,The door is locked very firmly.,ประตูล็อกแน่นหนามาก
+6033,牵,妈妈牵着孩子的手。,Mom holds her child's hand.,แม่จูงมือลูก
+6052,狭窄,这条街道十分狭窄。,This street is very narrow.,ถนนสายนี้แคบมาก
+6054,猎人,猎人在森林里追踪野兽。,The hunter tracked the beast through the forest.,นายพรานตามล่าสัตว์ป่าในป่า
+6076,理性,遇事要保持理性。,One should stay rational when facing problems.,เวลาเจอปัญหาต้องมีเหตุผล
+6078,理智,遇事要保持理智。,One should stay rational when facing problems.,เวลาเจอปัญหาต้องรักษาสติ
+6080,琴,她每天练习弹琴。,She practices playing the instrument every day.,เธอฝึกเล่นเครื่องดนตรีทุกวัน
+6081,瓷器,这些瓷器很珍贵。,This porcelain is very precious.,เครื่องกระเบื้องเหล่านี้มีค่ามาก
+6096,用意,我明白你的用意。,I understand your intention.,ฉันเข้าใจเจตนาของเธอ
+6103,甲,他在考试中获得甲等。,He received a grade A on the exam.,เขาได้เกรดเอในการสอบ
+6105,电视剧,她喜欢看电视剧。,She likes watching TV dramas.,เธอชอบดูละครโทรทัศน์
+6110,畅销,这本书非常畅销。,This book sells extremely well.,หนังสือเล่มนี้ขายดีมาก
+6111,界限,两国划定了界限。,The two countries set a boundary.,สองประเทศกำหนดเส้นแบ่งเขตแดน
+6114,略,味道略有些咸。,The taste is slightly salty.,รสชาติเค็มไปนิดหน่อย
+6116,番,他费了一番功夫。,He put in quite an effort.,เขาลงแรงไปไม่น้อย
+6117,番茄,妈妈买了几个新鲜番茄。,Mom bought a few fresh tomatoes.,แม่ซื้อมะเขือเทศสดมาสองสามลูก
+6123,疲倦,长途旅行让他很疲倦。,The long journey left him exhausted.,การเดินทางไกลทำให้เขาเหนื่อยล้ามาก
+6149,盛行,这种风格曾经盛行。,This style was once popular.,สไตล์แบบนี้เคยได้รับความนิยมมาก่อน
+6157,相传,相传这座桥有百年历史。,Legend has it that this bridge is a hundred years old.,เล่าสืบต่อกันมาว่าสะพานนี้มีอายุร้อยปี
+6159,相声,他从小就喜欢听相声。,He has loved listening to comic dialogue since childhood.,เขาชอบฟังการแสดงตลกโต้ตอบมาตั้งแต่เด็ก
+6162,相当,这道题相当难。,This question is quite difficult.,ข้อนี้ยากพอสมควร
+6171,省事,网上购物比较省事。,Online shopping is more convenient.,ช้อปปิ้งออนไลน์สะดวกกว่า
+6175,看似,这道题看似简单其实很难。,This question seems simple but is actually hard.,ข้อนี้ดูเหมือนง่ายแต่จริงๆ ยากมาก
+6184,真诚,他态度真诚地道歉。,He apologized with sincere attitude.,เขาขอโทษด้วยท่าทีจริงใจ
+6201,矮小,那棵树长得很矮小。,That tree is short and small.,ต้นไม้ต้นนั้นเตี้ยและเล็ก
+6229,神仙,传说中神仙住在天上。,Legend says immortals live in the sky.,ตามตำนานเล่าว่าเทวดาอาศัยอยู่บนสวรรค์
+6233,神经,他的神经太紧张了。,His nerves are too tense.,ประสาทของเขาตึงเครียดเกินไป
+6234,福,祝你新年有福。,Wishing you good fortune in the new year.,ขอให้เธอมีโชควาสนาดีในปีใหม่
+6239,私自,他私自离开了岗位。,He left his post without permission.,เขาละทิ้งหน้าที่โดยพลการ
+6262,穿越,火车穿越了隧道。,The train passed through the tunnel.,รถไฟลอดผ่านอุโมงค์
+6265,窗子,请把窗子打开。,Please open the window.,ช่วยเปิดหน้าต่างหน่อย
+6267,窝,小鸟在树上筑了一个窝。,A bird built a nest in the tree.,นกน้อยสร้างรังอยู่บนต้นไม้
+6276,童年,他的童年很快乐。,His childhood was very happy.,วัยเด็กของเขามีความสุขมาก
+6278,端,他站在桥的另一端。,He stood at the other end of the bridge.,เขายืนอยู่ที่ปลายอีกด้านหนึ่งของสะพาน
+6279,端午节,端午节我们一起吃粽子。,We eat zongzi together on Dragon Boat Festival.,ในเทศกาลไหว้บ๊ะจ่างเรากินบ๊ะจ่างด้วยกัน
+6305,粗,这根绳子很粗。,This rope is very thick.,เชือกเส้นนี้หนามาก
+6313,糖果,孩子们喜欢吃糖果。,Children like eating candy.,เด็กๆ ชอบกินลูกอม
+6316,素材,他在收集写作素材。,He is gathering material for writing.,เขากำลังรวบรวมวัตถุดิบสำหรับการเขียน
+6319,紧紧,她紧紧抱住了孩子。,She held the child tightly.,เธอกอดลูกไว้แน่น
+6337,组合,这两种颜色组合得很好。,These two colors combine really well.,สีสองสีนี้เข้ากันได้ดีมาก
+6340,细心,护士照顾得很细心。,The nurse took care of them meticulously.,พยาบาลดูแลอย่างละเอียดรอบคอบ
+6341,细胞,人体由许多细胞组成。,The human body is made up of many cells.,ร่างกายมนุษย์ประกอบด้วยเซลล์มากมาย
+6342,细腻,她的皮肤十分细腻。,Her skin is very smooth and delicate.,ผิวของเธอเนียนละเอียดมาก
+6343,终止,双方终止了合作。,Both sides ended the cooperation.,ทั้งสองฝ่ายยุติความร่วมมือ
+6347,经商,他很早就开始经商。,He started doing business very early.,เขาเริ่มทำธุรกิจตั้งแต่เนิ่นๆ
+6356,络绎不绝,游客络绎不绝地到来。,Tourists arrived in an endless stream.,นักท่องเที่ยวเดินทางมากันไม่ขาดสาย
+6361,统计,老师统计了学生人数。,The teacher counted the number of students.,คุณครูนับจำนวนนักเรียน
+6373,缘故,因为天气的缘故延期了。,It was postponed due to the weather.,ต้องเลื่อนออกไปเพราะสาเหตุเรื่องอากาศ
+6378,网友,他和网友约好见面。,He arranged to meet an online friend.,เขานัดเจอกับเพื่อนออนไลน์
+6385,罪魁祸首,他就是这次事故的罪魁祸首。,He is the chief culprit of this accident.,เขานี่แหละคือต้นเหตุของอุบัติเหตุครั้งนี้
+6391,美景,这里的美景令人陶醉。,The beautiful scenery here is intoxicating.,วิวสวยๆ ที่นี่ทำให้หลงใหล
+6392,美满,他们家庭生活美满。,Their family life is happy and complete.,ชีวิตครอบครัวของพวกเขามีความสุขสมบูรณ์
+6393,美观,这件家具十分美观。,This piece of furniture is very good-looking.,เฟอร์นิเจอร์ชิ้นนี้สวยงามมาก
+6406,耐,这种材料很耐用。,This material is very durable.,วัสดุชนิดนี้ทนทานมาก
+6417,聘用,公司决定聘用他。,The company decided to hire him.,บริษัทตัดสินใจจ้างเขา
+6423,肥胖,肥胖影响身体健康。,Obesity affects physical health.,ความอ้วนส่งผลต่อสุขภาพร่างกาย
+6426,胃口,今天我胃口不好。,I don't have much appetite today.,วันนี้ฉันไม่ค่อยเจริญอาหาร
+6433,胜任,他完全胜任这份工作。,He is fully qualified for this job.,เขามีความสามารถทำงานนี้ได้อย่างเต็มที่
+6442,脑海,这件事浮现在脑海。,This matter surfaced in my mind.,เรื่องนี้ผุดขึ้นมาในหัว
+6446,脱,进屋前请脱鞋。,Please take off your shoes before entering.,กรุณาถอดรองเท้าก่อนเข้าบ้าน
+6450,腐败,政府严厉打击腐败。,The government cracks down harshly on corruption.,รัฐบาลปราบปรามการทุจริตอย่างเข้มงวด
+6456,自从,自从毕业后他很忙。,He's been busy since graduating.,ตั้งแต่เรียนจบมาเขาก็ยุ่งมาก
+6470,自豪,父母为他感到自豪。,His parents are proud of him.,พ่อแม่รู้สึกภูมิใจในตัวเขา
+6472,致,事故是疲劳驾驶所致。,The accident was caused by fatigued driving.,อุบัติเหตุเกิดจากการขับรถขณะเหนื่อยล้า
+6488,节气,立春是一个节气。,Start of Spring is a solar term.,ลี่ชุนเป็นหนึ่งในสารทตามปฏิทินจีน
+6495,花纹,这块布料上印着精美的花纹。,This fabric is printed with an exquisite pattern.,ผ้าผืนนี้พิมพ์ลวดลายสวยงามประณีต
+6502,茂密,山上长满茂密的树林。,The mountain is covered with dense forest.,บนภูเขาปกคลุมไปด้วยป่าไม้หนาทึบ
+6506,荒诞,这个说法太荒诞了。,This claim is too absurd.,คำกล่าวอ้างนี้เหลวไหลเกินไป
+6518,蓝图,他描绘了未来蓝图。,He painted a blueprint for the future.,เขาวาดพิมพ์เขียวแห่งอนาคตเอาไว้
+6521,薪水,他每月准时领薪水。,He receives his salary on time every month.,เขารับเงินเดือนตรงเวลาทุกเดือน
+6542,衔接,两节课内容互相衔接。,The content of the two classes links up.,เนื้อหาสองคาบเรียนเชื่อมโยงต่อกัน
+6545,衣食住行,衣食住行是生活的基本。,"Food, clothing, housing and transport are life's basics.",การกิน การแต่งตัว ที่อยู่อาศัย และการเดินทาง เป็นพื้นฐานของชีวิต
+6553,衷心,我衷心祝福你们。,I sincerely wish you both well.,ฉันขออวยพรให้พวกเธอด้วยความจริงใจ
+6556,被迫,他被迫离开家乡。,He was forced to leave his hometown.,เขาถูกบังคับให้ทิ้งบ้านเกิด
+6566,要强,她从小就很要强。,She has been ambitious since childhood.,เธอเป็นคนไม่ยอมน้อยหน้าใครมาตั้งแต่เด็ก
+6567,要点,请记下会议的要点。,Please note down the key points of the meeting.,ช่วยจดประเด็นสำคัญของการประชุมไว้ด้วย
+6571,见识,旅行让他增长见识。,Traveling broadened his experience.,การท่องเที่ยวช่วยเปิดหูเปิดตาเขา
+6580,视野,山顶的视野十分开阔。,The view from the summit is very expansive.,วิวจากยอดเขาเปิดโล่งกว้างไกลมาก
+6588,触动,这句话触动了我。,This sentence touched me.,คำพูดประโยคนี้สะเทือนใจฉัน
+6589,触目惊心,现场的景象触目惊心。,The scene was shocking to behold.,ภาพในที่เกิดเหตุน่าตกตะลึงมาก
+6591,言语,他的言语让人感动。,His words moved people.,คำพูดของเขาทำให้คนซาบซึ้ง
+6599,计较,别为小事斤斤计较。,Don't fuss over such small matters.,อย่ามัวคิดเล็กคิดน้อยกับเรื่องเล็กๆ
+6618,识,我们应该增长见识。,We should broaden our knowledge.,เราควรเพิ่มพูนความรู้และประสบการณ์
+6620,识字,这个孩子已经会识字。,This child can already read.,เด็กคนนี้อ่านหนังสือออกแล้ว
+6628,语气,她说话语气很温柔。,She speaks in a gentle tone.,เธอพูดด้วยน้ำเสียงอ่อนโยน
+6642,调皮,这个孩子非常调皮。,This child is very naughty.,เด็กคนนี้ซนมาก
+6643,调研,团队去农村调研。,The team went to the countryside for research.,ทีมงานไปลงพื้นที่สำรวจในชนบท
+6645,谅解,希望你能谅解我的难处。,I hope you can understand my difficulties.,หวังว่าคุณจะเข้าใจความลำบากของฉัน
+6656,负面,这条新闻带来负面影响。,This news brought a negative impact.,ข่าวนี้ส่งผลกระทบด้านลบ
+6661,账,他仔细算了一笔账。,He carefully calculated the bill.,เขานั่งคิดบัญชีอย่างละเอียด
+6663,货物,仓库里堆满了货物。,The warehouse is piled with goods.,ในโกดังมีสินค้ากองเต็มไปหมด
+6666,贩卖,小贩在街头贩卖水果。,The vendor sells fruit on the street.,พ่อค้าขายผลไม้อยู่ข้างถนน
+6668,贫困,这个地区十分贫困。,This region is very poor.,พื้นที่นี้ยากจนมาก
+6681,赔偿,公司同意赔偿损失。,The company agreed to compensate for the loss.,บริษัทยอมชดใช้ค่าเสียหาย
+6686,赞叹不已,大家对此赞叹不已。,Everyone was full of praise for it.,ทุกคนพากันชื่นชมไม่หยุดปาก
+6691,走近,他慢慢走近那扇门。,He slowly approached that door.,เขาค่อยๆ เดินเข้าไปใกล้ประตูบานนั้น
+6696,赶快,你赶快去上学吧。,Hurry up and go to school.,เธอรีบไปโรงเรียนเถอะ
+6702,起码,起码要准备三天。,"At the very least, you need to prepare for three days.",อย่างน้อยต้องเตรียมตัวสามวัน
+6708,超标,这里噪音已经超标。,The noise here already exceeds the limit.,เสียงที่นี่ดังเกินมาตรฐานแล้ว
+6714,趋势,这是未来的发展趋势。,This is the future development trend.,นี่คือแนวโน้มการพัฒนาในอนาคต
+6718,跌,他不小心跌倒了。,He accidentally fell down.,เขาพลาดหกล้มลง
+6731,跳远,他擅长跳远项目。,He excels at the long jump event.,เขาเก่งกีฬากระโดดไกล
+6738,身份,请出示您的身份证明。,Please show your identification.,ช่วยแสดงหลักฐานยืนยันตัวตนด้วย
+6751,车间,工人们在车间加班。,The workers are working overtime in the workshop.,คนงานทำงานล่วงเวลากันอยู่ในโรงงาน
+6756,转移,医院把病人转移到别处。,The hospital transferred the patient elsewhere.,โรงพยาบาลย้ายผู้ป่วยไปที่อื่น
+6763,轻微,他受了轻微擦伤。,He suffered a minor scrape.,เขามีแผลถลอกเล็กน้อย
+6765,载体,语言是文化的载体。,Language is the carrier of culture.,ภาษาเป็นสื่อกลางถ่ายทอดวัฒนธรรม
+6793,过错,这不是你的过错。,This is not your fault.,นี่ไม่ใช่ความผิดของเธอ
+6800,运动会,学校举办了运动会。,The school held a sports meet.,โรงเรียนจัดงานกีฬาสี
+6802,运输,货物正在运输途中。,The goods are in transit.,สินค้ากำลังอยู่ระหว่างขนส่ง
+6803,近代,这是近代著名建筑。,This is a famous modern-era building.,นี่คืออาคารชื่อดังยุคใหม่
+6809,这就是说,这就是说他不能来了。,"In other words, he can't come.",นั่นก็หมายความว่าเขามาไม่ได้แล้ว
+6818,远近闻名,这家餐厅远近闻名。,This restaurant is famous far and wide.,ร้านอาหารนี้มีชื่อเสียงเลื่องลือไปทั่ว
+6819,远远,他远远超过了对手。,He far surpassed his opponent.,เขาเหนือกว่าคู่แข่งอยู่มาก
+6829,迷惑,这个谜题让人十分迷惑。,This puzzle leaves people utterly confused.,ปริศนานี้ทำให้คนงงงวยมาก
+6830,迷惑不解,这个问题让他迷惑不解。,This question left him utterly puzzled.,คำถามนี้ทำให้เขางงจนคิดไม่ตก
+6848,透过,阳光透过窗户照进来。,Sunlight shines in through the window.,แสงแดดส่องผ่านหน้าต่างเข้ามา
+6858,造价,这栋楼造价很高。,The construction cost of this building is high.,อาคารหลังนี้มีต้นทุนก่อสร้างสูงมาก
+6860,造就,努力造就了他的成功。,Hard work brought about his success.,ความพยายามหล่อหลอมให้เขาประสบความสำเร็จ
+6882,部位,请注意受伤部位。,Please pay attention to the injured area.,ช่วยระวังบริเวณที่บาดเจ็บด้วย
+6883,部队,他的哥哥在部队服役。,His older brother serves in the military.,พี่ชายของเขารับราชการอยู่ในกองทัพ
+6885,配,这个颜色配那件衣服。,This color matches that piece of clothing.,สีนี้เข้ากับเสื้อตัวนั้น
+6892,酒精,医生用酒精给伤口消毒。,The doctor disinfected the wound with alcohol.,หมอใช้แอลกอฮอล์ฆ่าเชื้อที่แผล
+6893,酗酒,他因酗酒伤了身体。,He damaged his health through heavy drinking.,เขาทำร้ายสุขภาพตัวเองเพราะดื่มเหล้าหนัก
+6912,金,她戴着一枚金戒指。,She wears a gold ring.,เธอสวมแหวนทองวงหนึ่ง
+6926,铁路,这条铁路连接两座城市。,This railway connects two cities.,ทางรถไฟสายนี้เชื่อมสองเมืองเข้าด้วยกัน
+6950,闯,他勇敢地闯进了火场救人。,He bravely rushed into the fire to save people.,เขากล้าหาญบุกเข้าไปในกองเพลิงเพื่อช่วยคน
+6954,阅览室,学生们安静地坐在阅览室。,The students sit quietly in the reading room.,นักเรียนนั่งเงียบๆ อยู่ในห้องอ่านหนังสือ
+6969,陈述,他陈述了事情经过。,He stated how the matter happened.,เขาเล่าลำดับเหตุการณ์ที่เกิดขึ้น
+6974,除非,除非你去，我才愿意去。,I'll only go if you go too.,ฉันจะไปก็ต่อเมื่อเธอไปด้วยเท่านั้น
+6980,隆重,婚礼办得非常隆重。,The wedding was held very grandly.,งานแต่งงานจัดได้อย่างยิ่งใหญ่อลังการ
+6995,雄伟,这座建筑十分雄伟。,This building is very grand.,อาคารหลังนี้ยิ่งใหญ่ตระการตามาก
+6998,雇,老板又雇了两个人。,The boss hired two more people.,เจ้านายจ้างคนเพิ่มอีกสองคน
+7003,零食,她喜欢吃各种零食。,She likes eating all kinds of snacks.,เธอชอบกินขนมขบเคี้ยวหลากหลายชนิด
+7008,霜,早晨草地上结了霜。,Frost formed on the grass this morning.,ตอนเช้ามีน้ำค้างแข็งจับตัวบนสนามหญ้า
+7012,青春,青春是美好的时光。,Youth is a beautiful time.,วัยหนุ่มสาวคือช่วงเวลาที่งดงาม
+7015,静,请大家保持安静。,Please everyone keep quiet.,ขอให้ทุกคนเงียบกันหน่อย
+7025,音乐会,今晚有一场音乐会。,There is a concert tonight.,คืนนี้มีคอนเสิร์ต
+7027,顶级,这是顶级的餐厅。,This is a top-notch restaurant.,นี่คือร้านอาหารระดับท็อป
+7036,顽强,他有顽强的意志。,He has a tenacious will.,เขามีความมุ่งมั่นที่แข็งแกร่ง
+7042,预约,请提前预约看病。,Please make an appointment before seeing the doctor.,กรุณานัดหมายล่วงหน้าก่อนมาพบแพทย์
+7047,颇,这个主意颇有意思。,This idea is rather interesting.,ไอเดียนี้น่าสนใจอยู่ไม่น้อย
+7048,频率,他锻炼的频率很高。,He exercises very frequently.,ความถี่ในการออกกำลังกายของเขาสูงมาก
+7067,饲养,他在农场饲养奶牛。,He raises cows on the farm.,เขาเลี้ยงวัวนมอยู่ในฟาร์ม
+7069,饼,妈妈烤了一张饼。,Mom baked a flatbread.,แม่อบขนมแป้งแผ่นหนึ่ง
+7070,馒头,早餐我吃了两个馒头。,I ate two steamed buns for breakfast.,มื้อเช้าฉันกินหมั่นโถวไปสองลูก
+7075,驱动,这辆车靠电力驱动。,This car is driven by electricity.,รถคันนี้ขับเคลื่อนด้วยพลังงานไฟฟ้า
+7085,高价,他以高价卖掉了车。,He sold the car at a high price.,เขาขายรถไปในราคาสูง
+7086,高低,两座山的高低不同。,The two mountains differ in height.,ภูเขาสองลูกนี้สูงต่ำไม่เท่ากัน
+7100,高龄,奶奶已经是高龄老人了。,Grandma is already an elderly person.,คุณย่าเป็นผู้สูงอายุวัยชรามากแล้ว
+7101,鬼,他害怕看鬼电影。,He's afraid of watching ghost movies.,เขากลัวดูหนังผี
+7113,默读,请大家默读课文。,Please read the text silently.,ขอให้ทุกคนอ่านบทเรียนในใจ
+7118,鼻涕,他感冒了，一直流鼻涕。,He has a cold and keeps having a runny nose.,เขาเป็นหวัด น้ำมูกไหลตลอดเลย

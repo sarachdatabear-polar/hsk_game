@@ -916,6 +916,12 @@ hanzi,sentence,en,th
 做客,我去朋友家做客。,I went to my friend's house as a guest.,ฉันไปเยี่ยมเยือนบ้านเพื่อน
 做人,做人要诚实。,One should be honest in life.,การเป็นคนต้องซื่อสัตย์
 做事,他做事很认真。,He is very conscientious in his work.,เขาทำงานอย่างจริงจัง
+把,他把着方向盘。,He is gripping the steering wheel.,เขาจับพวงมาลัยไว้
+故事,奶奶讲了一个故事。,Grandma told a story.,คุณยายเล่านิทานเรื่องหนึ่ง
+比较,老师比较了两篇作文。,The teacher compared the two essays.,ครูเปรียบเทียบเรียงความสองเรื่อง
+一边,他站在一边等待。,He stood to one side and waited.,เขายืนอยู่ข้างๆ รอคอย
+不想,我今天不想上班。,I don't want to go to work today.,วันนี้ฉันไม่อยากไปทำงาน
+总,这家公司总部很大。,This company's headquarters is very large.,สำนักงานใหญ่ของบริษัทนี้ใหญ่มาก
 生活,我喜欢现在的生活。,I like my current life.,ฉันชอบชีวิตในตอนนี้
 广告,电视上有很多广告。,There are many commercials on TV.,ในทีวีมีโฆษณาเยอะมาก
 不管,不管天气怎么样，我们都要去。,"No matter what the weather is like, we'll still go.",ไม่ว่าอากาศจะเป็นยังไง เราก็จะไป
@@ -2999,7 +3005,6 @@ hanzi,sentence,en,th
 馍,他吃了一个馍。,He ate a piece of steamed bread.,เขากินหมั่นโถวไปหนึ่งลูก
 驾驶者,驾驶者必须系安全带。,Drivers must wear seatbelts.,ผู้ขับขี่ต้องคาดเข็มขัดนิรภัย
 骂,妈妈骂了他一顿。,Mom scolded him.,แม่ดุเขาไปยกใหญ่
-把,他把着方向盘。,He is gripping the steering wheel.,เขาจับพวงมาลัยไว้
 所,这所大学很有名。,This university is very famous.,มหาวิทยาลัยแห่งนี้มีชื่อเสียงมาก
 海,他喜欢在海里游泳。,He likes swimming in the sea.,เขาชอบว่ายน้ำในทะเล
 或,你要茶或咖啡？,Would you like tea or coffee?,เธอเอาชาหรือกาแฟ?
@@ -3013,7 +3018,6 @@ hanzi,sentence,en,th
 因,他因病请假了。,He took leave because of illness.,เขาลางานเพราะป่วย
 存在,这个问题依然存在。,This problem still exists.,ปัญหานี้ยังคงมีอยู่
 窗,请把窗关上。,Please close the window.,ช่วยปิดหน้าต่างหน่อย
-故事,奶奶讲了一个故事。,Grandma told a story.,คุณยายเล่านิทานเรื่องหนึ่ง
 里程,这辆车里程很高。,This car has high mileage.,รถคันนี้เลขไมล์เยอะ
 花盘,向日葵花盘很大。,The sunflower's flower head is very large.,จานดอกของดอกทานตะวันใหญ่มาก
 金鱼,我养了一条金鱼。,I keep a goldfish.,ฉันเลี้ยงปลาทองไว้ตัวหนึ่ง
@@ -3027,7 +3031,6 @@ hanzi,sentence,en,th
 口述,老人口述了往事。,The old man recounted the past orally.,ชายชราเล่าเรื่องในอดีตด้วยปากเปล่า
 动画,这是一部动画电影。,This is an animated movie.,นี่คือหนังการ์ตูนแอนิเมชัน
 坐姿,请保持正确坐姿。,Please maintain correct sitting posture.,ช่วยรักษาท่านั่งให้ถูกต้อง
-比较,老师比较了两篇作文。,The teacher compared the two essays.,ครูเปรียบเทียบเรียงความสองเรื่อง
 一见钟情,他们一见钟情。,They fell in love at first sight.,พวกเขาตกหลุมรักกันตั้งแต่แรกเห็น
 梨园,他出身梨园世家。,He comes from a family in the world of Chinese opera.,เขามาจากครอบครัวที่สืบทอดวงการงิ้ว
 结果,考试结果很理想。,The exam result was very good.,ผลสอบออกมาดีมาก
@@ -3056,7 +3059,6 @@ hanzi,sentence,en,th
 调节,请调节空调温度。,Please adjust the air conditioner's temperature.,ช่วยปรับอุณหภูมิแอร์หน่อย
 力,他用尽了全力。,He used all his strength.,เขาใช้เรี่ยวแรงจนหมด
 最早,他最早到达公司。,He arrived at the company earliest.,เขามาถึงบริษัทเร็วที่สุด
-一边,他站在一边等待。,He stood to one side and waited.,เขายืนอยู่ข้างๆ รอคอย
 氧气,植物能产生氧气。,Plants can produce oxygen.,พืชสามารถผลิตออกซิเจนได้
 神,古人相信神的存在。,Ancient people believed in the existence of gods.,คนโบราณเชื่อว่าเทพเจ้ามีอยู่จริง
 保,妈妈保孩子平安。,Mom keeps the child safe.,แม่ปกป้องลูกให้ปลอดภัย
@@ -3106,7 +3108,6 @@ hanzi,sentence,en,th
 题材,这部电影题材新颖。,This movie's subject matter is original.,หนังเรื่องนี้มีเนื้อหาแปลกใหม่
 本身,问题本身并不复杂。,The problem itself is not complicated.,ตัวปัญหาเองไม่ได้ซับซ้อนอะไร
 长期,他长期在国外工作。,He has worked abroad long-term.,เขาทำงานอยู่ต่างประเทศมาเป็นเวลานาน
-不想,我今天不想上班。,I don't want to go to work today.,วันนี้ฉันไม่อยากไปทำงาน
 供,农场供应新鲜蔬菜。,The farm supplies fresh vegetables.,ฟาร์มจัดหาผักสดให้
 因素,天气是重要因素。,Weather is an important factor.,สภาพอากาศเป็นปัจจัยสำคัญ
 水中,鱼儿在水中游动。,The fish swims in the water.,ปลาแหวกว่ายอยู่ในน้ำ
@@ -3603,7 +3604,6 @@ hanzi,sentence,en,th
 得天独厚,这里条件得天独厚。,The conditions here are uniquely favorable.,ที่นี่ได้เปรียบเป็นพิเศษ
 忽略,不要忽略细节。,Don't overlook the details.,อย่ามองข้ามรายละเอียด
 急于求成,他做事急于求成。,He is impatient for quick results in his work.,เขาทำงานใจร้อนอยากเห็นผลไวๆ
-总,这家公司总部很大。,This company's headquarters is very large.,สำนักงานใหญ่ของบริษัทนี้ใหญ่มาก
 总之,总之，我们成功了。,"In short, we succeeded.",สรุปคือ เราสำเร็จแล้ว
 承受,他能承受压力。,He can bear the pressure.,เขาสามารถแบกรับความกดดันได้
 挣扎,他在水中挣扎。,He struggled in the water.,เขาดิ้นรนอยู่ในน้ำ
