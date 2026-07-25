@@ -6,8 +6,8 @@ import { fileURLToPath } from "node:url";
 // Structural gate for the flashcard example-sentence payload (data/examples.*).
 // Deep content checks (length, terminal punctuation, target-hanzi presence,
 // no cloze overlap) live in build_examples_data.py, which refuses to emit bad
-// rows; this guards what the game actually loads. EN-only by design this round
-// (Thai goes through native review later), so no `th` field is expected.
+// rows; this guards what the game actually loads. Every row carries a
+// native-reviewed Thai translation (`th`) since the 2026-07 humanization arc.
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const jsonPath = join(ROOT, "data", "examples.json");
 const jsPath = join(ROOT, "data", "examples.js");
@@ -48,7 +48,9 @@ describe("data/examples.json", () => {
       expect(body.length).toBeGreaterThanOrEqual(5);
       expect(body.length).toBeLessThanOrEqual(16);
       expect(e.en.length).toBeGreaterThan(0);
-      expect("th" in e, "EN-only round: no th field").toBe(false);
+      expect(typeof e.th, "reviewed Thai present").toBe("string");
+      expect(/[ก-๛]/.test(e.th), "th carries Thai script").toBe(true);
+      expect(e.th, "no full stop in Thai").not.toMatch(/\./);
       expect("d" in e, "not a cloze row: no distractors").toBe(false);
     });
   }
