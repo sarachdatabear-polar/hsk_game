@@ -422,6 +422,10 @@ export const STRINGS = {
     // webhook's idempotent grant guarantees eventual delivery, so this is
     // reassurance, not an error — the next ordinary sync credits it.
     "iap.processing": "Purchase is processing — your coins will arrive shortly.",
+    // Web Supporter offer + account save-unlock copy (Task 5, web IAP billing)
+    "iap.supporter.web.title": "Become a Supporter",
+    "iap.supporter.web.blurb": "Support the project — a thank-you cosmetic, a Supporter badge, 2,000 coins, and ad-free on the mobile app. One payment, yours everywhere.",
+    "account.saveUnlock": "Add your email to save your unlock and use it on the mobile app.",
     "account.supporterChip": "Supporter ♥",
     "item.supporter": "Supporter Pack",
     "item.coins_s": "Coin Pouch",
@@ -988,6 +992,10 @@ export const STRINGS = {
     "iap.nothingToRestore": "ไม่มีรายการให้กู้คืน",
     "iap.restoreFailed": "กู้คืนไม่สำเร็จ — ตรวจสอบการเชื่อมต่อแล้วลองใหม่",
     "iap.processing": "การซื้อกำลังดำเนินการ — เหรียญของคุณจะเข้าบัญชีในไม่ช้า", // TH-REVIEW 2026-07-12: machine-translated, needs native review
+    // Web Supporter offer + account save-unlock copy (Task 5, web IAP billing) — TH-REVIEW: queued for native spot-check
+    "iap.supporter.web.title": "เป็นผู้สนับสนุน",
+    "iap.supporter.web.blurb": "สนับสนุนโปรเจกต์ — รับไอเทมขอบคุณ ตราผู้สนับสนุน เหรียญ 2,000 และไม่มีโฆษณาบนแอปมือถือ จ่ายครั้งเดียว ใช้ได้ทุกเครื่อง",
+    "account.saveUnlock": "เพิ่มอีเมลเพื่อเก็บสิทธิ์ที่ปลดล็อกไว้ และใช้บนแอปมือถือได้",
     "account.supporterChip": "ผู้สนับสนุน ♥",
     "item.supporter": "แพ็กผู้สนับสนุน",
     "item.coins_s": "ถุงเหรียญ",
