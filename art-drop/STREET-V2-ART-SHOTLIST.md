@@ -124,13 +124,17 @@ Generate all four in one chat, same character throughout.
 > Strictly avoid: lettering, photorealism, neon colors, drop shadow, background
 > scenery, watermark, people.
 
-### 4. `neighbour-pang-walk-b.png` — walk frame B
+### 4. `neighbour-pang-walk-b.png` — walk frame B (REDROP — passing pose)
+
+_First drop came back with the same leg forward as frame A (generators can't "swap
+the legs"). Regenerate as a **passing pose** instead — it animates better anyway:_
 
 > Same character as the previous image, identical in every detail — same red panda,
 > same deep teal apron, same parcel, same side profile facing RIGHT, same size in
 > frame, same plain flat light-gray background (#B2AEA9) — changing ONLY the pose:
-> now the RIGHT foreleg is stepped forward in the walk stride (the opposite step of
-> the previous image). No other changes.
+> now the mid-step PASSING pose of the walk — both feet close together directly
+> under the body, one heel just lifting off the ground, the body raised slightly
+> taller than the previous image. Not a wide stride. No other changes.
 
 ### 5. `neighbour-pang-idle.png` — idle pose
 
@@ -169,13 +173,17 @@ Generate all four in one chat, same character throughout.
 > Strictly avoid: lettering, photorealism, neon colors, drop shadow, background
 > scenery, watermark, people.
 
-### 8. `neighbour-tiao-walk-b.png` — walk frame B
+### 8. `neighbour-tiao-walk-b.png` — walk frame B (REDROP — passing pose)
+
+_First drop came back with the same leg forward as frame A. Regenerate as a
+**passing pose**:_
 
 > Same character as the previous image, identical in every detail — same rabbit,
 > same flopped ear, same coral satchel, same side profile facing RIGHT, same size in
 > frame, same plain flat light-gray background (#B2AEA9) — changing ONLY the pose:
-> now the RIGHT foot is stepped forward in the walk stride (the opposite step of the
-> previous image). No other changes.
+> now the mid-step PASSING pose of the walk — both feet close together directly
+> under the body, one heel just lifting off the ground, the body raised slightly
+> taller than the previous image. Not a wide stride. No other changes.
 
 ### 9. `neighbour-tiao-idle.png` — idle pose
 
@@ -216,13 +224,18 @@ Generate all four in one chat, same character throughout.
 > Strictly avoid: lettering, photorealism, neon colors, drop shadow, background
 > scenery, watermark, people.
 
-### 12. `neighbour-wen-walk-b.png` — walk frame B
+### 12. `neighbour-wen-walk-b.png` — walk frame B (REDROP — passing pose)
+
+_First drop came back with the same leg forward as frame A. Regenerate as a
+**passing pose**:_
 
 > Same character as the previous image, identical in every detail — same tortoise,
 > same glasses, same teacup held in both hands, same side profile facing RIGHT,
 > same size in frame, same plain flat light-gray background (#B2AEA9) — changing
-> ONLY the pose: now the RIGHT foot is stepped slightly forward (the opposite slow
-> step of the previous image). No other changes.
+> ONLY the pose: now the slow mid-step PASSING pose of the walk — both feet close
+> together directly under the body, one heel just lifting off the ground, the body
+> raised slightly taller than the previous image. Not a wide stride. No other
+> changes.
 
 ### 13. `neighbour-wen-idle.png` — idle pose
 
