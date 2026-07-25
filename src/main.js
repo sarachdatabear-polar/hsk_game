@@ -3521,9 +3521,12 @@ function makeSupporterCard(){
   row.className = "scorerow shoprow";
   const copy = document.createElement("span");
   copy.className = "shop-copy";
+  // On web the "remove ads" pitch is dishonest (no web ads) — show the web-honest
+  // framing (spec §4) when the web billing provider is the active one.
+  const webPitch = provider().kind === "revenuecat-web";
   copy.innerHTML = owned
     ? `<b>${t("shop.supporterTitle")} ♥</b><small>${t("shop.supporterOwned")}</small>`
-    : `<b>${t("shop.supporterTitle")}</b><small>${t("shop.supporterDesc")}</small>`;
+    : `<b>${webPitch ? t("iap.supporter.web.title") : t("shop.supporterTitle")}</b><small>${webPitch ? t("iap.supporter.web.blurb") : t("shop.supporterDesc")}</small>`;
   row.appendChild(copy);
   if(!owned){
     if(!shopViewedProducts.has("supporter")){
@@ -3582,8 +3585,8 @@ async function iapBuy(p, btn){
       store.set("wallet", wallet); store.set("ent", ent);
       pushEdge("purchase");
       updateWalletChip();
-      toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: p.coins.toLocaleString() }));
-      if(p.entitlement && accountState(accountUI.session) !== "signedIn") toast(t("account.saveUnlock"));
+      if(p.entitlement) toast(accountState(accountUI.session) !== "signedIn" ? t("iap.supporterThanksSave") : t("iap.supporterThanks"));
+      else toast(t("iap.success", { coins: p.coins.toLocaleString() }));
       // analytics (dark): purchase_success — mock self-grant confirmed.
       analytics.track("purchase_success", { product: p.id });
     }else{
@@ -3629,8 +3632,8 @@ async function iapBuy(p, btn){
   if(poll.credited){
     // Server is authoritative: toast the delta on this exact transaction's
     // ledger row, never an aggregate wallet increase or the local catalog.
-    toast(p.entitlement ? t("iap.supporterThanks") : t("iap.success", { coins: poll.delta.toLocaleString() }));
-    if(p.entitlement && accountState(accountUI.session) !== "signedIn") toast(t("account.saveUnlock"));
+    if(p.entitlement) toast(accountState(accountUI.session) !== "signedIn" ? t("iap.supporterThanksSave") : t("iap.supporterThanks"));
+    else toast(t("iap.success", { coins: poll.delta.toLocaleString() }));
     // analytics (dark): purchase_success — server-side grant confirmed via
     // the reconcile poll (the actual credit, not just the store transaction).
     analytics.track("purchase_success", { product: p.id });

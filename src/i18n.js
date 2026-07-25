@@ -414,6 +414,7 @@ export const STRINGS = {
     "iap.failed": "Purchase failed — nothing was charged. Try again.",
     "iap.success": "+{coins} coins added!",
     "iap.supporterThanks": "You're a Supporter now — thank you! ♥",
+    "iap.supporterThanksSave": "You're a Supporter now ♥ — add your email to keep it on every device.",
     "iap.restore": "Restore Purchases",
     "iap.restored": "Supporter restored ♥",
     "iap.nothingToRestore": "Nothing to restore",
@@ -425,7 +426,6 @@ export const STRINGS = {
     // Web Supporter offer + account save-unlock copy (Task 5, web IAP billing)
     "iap.supporter.web.title": "Become a Supporter",
     "iap.supporter.web.blurb": "Support the project — a thank-you cosmetic, a Supporter badge, 2,000 coins, and ad-free on the mobile app. One payment, yours everywhere.",
-    "account.saveUnlock": "Add your email to save your unlock and use it on the mobile app.",
     "account.supporterChip": "Supporter ♥",
     "item.supporter": "Supporter Pack",
     "item.coins_s": "Coin Pouch",
@@ -987,6 +987,7 @@ export const STRINGS = {
     "iap.failed": "การซื้อไม่สำเร็จ — ยังไม่มีการเรียกเก็บเงิน ลองใหม่อีกครั้ง",
     "iap.success": "ได้รับ +{coins} เหรียญแล้ว!",
     "iap.supporterThanks": "คุณเป็นผู้สนับสนุนแล้ว — ขอบคุณ! ♥",
+    "iap.supporterThanksSave": "คุณเป็นผู้สนับสนุนแล้ว ♥ — เพิ่มอีเมลเพื่อใช้ได้ทุกเครื่อง", // TH-REVIEW: machine-drafted, queued for native spot-check
     "iap.restore": "กู้คืนการซื้อ",
     "iap.restored": "กู้คืนสถานะผู้สนับสนุนแล้ว ♥",
     "iap.nothingToRestore": "ไม่มีรายการให้กู้คืน",
@@ -995,7 +996,6 @@ export const STRINGS = {
     // Web Supporter offer + account save-unlock copy (Task 5, web IAP billing) — TH-REVIEW: queued for native spot-check
     "iap.supporter.web.title": "เป็นผู้สนับสนุน",
     "iap.supporter.web.blurb": "สนับสนุนโปรเจกต์ — รับไอเทมขอบคุณ ตราผู้สนับสนุน เหรียญ 2,000 และไม่มีโฆษณาบนแอปมือถือ จ่ายครั้งเดียว ใช้ได้ทุกเครื่อง",
-    "account.saveUnlock": "เพิ่มอีเมลเพื่อเก็บสิทธิ์ที่ปลดล็อกไว้ และใช้บนแอปมือถือได้",
     "account.supporterChip": "ผู้สนับสนุน ♥",
     "item.supporter": "แพ็กผู้สนับสนุน",
     "item.coins_s": "ถุงเหรียญ",
