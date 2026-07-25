@@ -140,7 +140,7 @@ hanzi,sentence,en,th
 担心,妈妈很担心我。,Mom is very worried about me.,แม่เป็นห่วงฉันมาก
 蛋糕,妈妈做了蛋糕。,Mom made a cake.,แม่ทำเค้ก
 当然,这个我当然知道。,Of course I know that.,เรื่องนี้ฉันรู้อยู่แล้วแน่นอน
-到来,我们欢迎他的到来。,We welcome his arrival.,เรายินดีต้อนรับการมาของเขา
+到来,我们欢迎他的到来。,We welcome his arrival.,เราดีใจที่เขามาถึง
 到时候,到时候我给你打电话。,I'll call you when the time comes.,ถึงเวลานั้นฉันจะโทรหาคุณ
 道,你说的很有道理。,What you said makes a lot of sense.,สิ่งที่คุณพูดมีเหตุผลมาก
 地,书掉在地上了。,The book fell on the ground.,หนังสือตกลงพื้น
@@ -273,7 +273,7 @@ hanzi,sentence,en,th
 很瘦,她最近很瘦。,She's been very thin lately.,ช่วงนี้เธอผอมมาก
 很小,这只猫很小。,This cat is very small.,แมวตัวนี้ตัวเล็กมาก
 很着急,妈妈很着急。,Mom is very anxious.,แม่กังวลใจมาก
-红茶,我喜欢喝红茶。,I like drinking black tea.,ฉันชอบดื่มชาแดง
+红茶,我喜欢喝红茶。,I like drinking black tea.,ฉันชอบดื่มชาดำ
 红酒,这瓶红酒很好喝。,This red wine tastes great.,ไวน์แดงขวดนี้อร่อยมาก
 红葡萄酒,他喜欢喝红葡萄酒。,He likes drinking red wine.,เขาชอบดื่มไวน์แดง
 后来,后来他去了北京。,Afterwards he went to Beijing.,ต่อมาเขาก็ไปปักกิ่ง
@@ -292,7 +292,7 @@ hanzi,sentence,en,th
 换,我想换一件衣服。,I want to change my clothes.,ฉันอยากเปลี่ยนเสื้อผ้าสักตัว
 黄,这朵花是黄色的。,This flower is yellow.,ดอกไม้ดอกนี้เป็นสีเหลือง
 黄河,黄河是中国的大河。,The Yellow River is a great river of China.,แม่น้ำฮวงโหเป็นแม่น้ำสายใหญ่ของจีน
-回国,他明年回国。,He is returning to his home country next year.,ปีหน้าเขาจะกลับประเทศ
+回国,他明年回国。,He is returning to his home country next year.,ปีหน้าเขาจะกลับบ้านเกิด
 回家,我六点回家。,I go home at six.,ฉันกลับบ้านตอนหกโมง
 会上,老师在会上讲话。,The teacher spoke at the meeting.,ครูพูดในที่ประชุม
 会议,明天有一个会议。,There's a meeting tomorrow.,พรุ่งนี้มีการประชุม
@@ -331,7 +331,7 @@ hanzi,sentence,en,th
 脚下,小狗在我脚下睡觉。,The puppy is sleeping at my feet.,ลูกสุนัขนอนอยู่ที่เท้าของฉัน
 叫声,我听到狗的叫声。,I heard the dog's bark.,ฉันได้ยินเสียงหมาเห่า
 较,这个比较贵。,This one is relatively expensive.,อันนี้ค่อนข้างแพง
-教,他信什么教？,What religion does he believe in?,เขานับถือศาสนาอะไร
+教,他信什么教？,What religion does he believe in?,เขานับถือศาสนาอะไร?
 接,妈妈去机场接我。,Mom is going to the airport to pick me up.,แม่ไปรับฉันที่สนามบิน
 接到,我接到了一个电话。,I received a phone call.,ฉันได้รับโทรศัพท์สายหนึ่ง
 接着,他接着讲故事。,He continued telling the story.,เขาเล่าเรื่องต่อไป
@@ -512,7 +512,7 @@ hanzi,sentence,en,th
 年级,他是三年级学生。,He is a third-grade student.,เขาเป็นนักเรียนชั้นปีที่สาม
 年票,我买了一张年票。,I bought an annual pass.,ฉันซื้อบัตรผ่านรายปีมาหนึ่งใบ
 年轻,她看起来很年轻。,She looks very young.,เธอดูอ่อนเยาว์มาก
-年轻人,很多年轻人喜欢跑步。,Many young people like running.,คนหนุ่มสาวหลายคนชอบวิ่งออกกำลังกาย
+年轻人,很多年轻人喜欢跑步。,Many young people like running.,คนหนุ่มสาวหลายคนชอบวิ่ง
 鸟,树上有一只鸟。,There is a bird in the tree.,บนต้นไม้มีนกอยู่ตัวหนึ่ง
 您好,您好，请问怎么走？,"Hello, excuse me, how do I get there?",สวัสดี ขอถามหน่อยไปทางไหน?
 努力,他学习很努力。,He studies very hard.,เขาตั้งใจเรียนมาก
@@ -540,7 +540,7 @@ hanzi,sentence,en,th
 骑,他每天骑车上班。,He rides a bike to work every day.,เขาปั่นจักรยานไปทำงานทุกวัน
 骑车,我每天骑车上班。,I ride a bike to work every day.,ฉันปั่นจักรยานไปทำงานทุกวัน
 骑马,我们在草原上骑马。,We rode horses on the grassland.,เราขี่ม้าบนทุ่งหญ้า
-起飞,飞机马上要起飞了。,The plane is about to take off.,เครื่องบินกำลังจะขึ้นบินแล้ว
+起飞,飞机马上要起飞了。,The plane is about to take off.,เครื่องบินกำลังจะบินขึ้นแล้ว
 起风,外面起风了。,It's getting windy outside.,ข้างนอกลมเริ่มพัดแล้ว
 千种,这里有千种商品。,There are a thousand kinds of goods here.,ที่นี่มีสินค้านับพันชนิด
 铅笔画,这是一张铅笔画。,This is a pencil drawing.,นี่คือภาพวาดดินสอ
@@ -556,7 +556,7 @@ hanzi,sentence,en,th
 裙子,她穿了一条新裙子。,She wore a new skirt.,เธอใส่กระโปรงตัวใหม่
 然后,先吃饭然后睡觉。,"Eat first, then go to sleep.",กินข้าวก่อนแล้วค่อยไปนอน
 热茶,冬天喝热茶很舒服。,Drinking hot tea in winter feels great.,ดื่มชาร้อนในหน้าหนาวสบายมาก
-热情,服务员对客人很热情。,The waiter is very warm to guests.,พนักงานเสิร์ฟเป็นกันเองกับลูกค้ามาก
+热情,服务员对客人很热情。,The waiter is very warm to guests.,พนักงานเสิร์ฟดูแลลูกค้าอย่างอบอุ่น
 热水,请给我一杯热水。,Please give me a cup of hot water.,ขอน้ำร้อนหนึ่งแก้ว
 认,我认识他很多年了。,I've known him for many years.,ฉันรู้จักเขามาหลายปีแล้ว
 认出来,我一眼就认出来了。,I recognized him at a glance.,ฉันจำเขาได้ทันทีที่เห็น
@@ -1144,7 +1144,7 @@ hanzi,sentence,en,th
 首先,首先，我们要买机票。,"First of all, we need to buy plane tickets.",ก่อนอื่นเราต้องซื้อตั๋วเครื่องบินก่อน
 麻烦,对不起，给你添麻烦了。,Sorry for causing you trouble.,ขอโทษที่รบกวนคุณนะ
 另外,另外，我还想问一个问题。,"In addition, I want to ask one more question.",อีกอย่างหนึ่ง ฉันอยากถามอีกคำถามหนึ่ง
-感谢,非常感谢你的帮助。,Thank you very much for your help.,ขอบคุณมากสำหรับความช่วยเหลือของคุณ
+感谢,非常感谢你的帮助。,Thank you very much for your help.,ขอบคุณมากๆ ที่ช่วยเหลือนะ
 打扮,她打扮得很漂亮。,She dressed herself up very beautifully.,เธอแต่งตัวสวยมาก
 羡慕,我很羡慕你的生活。,I really envy your life.,ฉันอิจฉาชีวิตของเธอมาก
 详细,请详细介绍一下情况。,Please introduce the situation in detail.,ช่วยอธิบายสถานการณ์อย่างละเอียดหน่อย
@@ -1337,7 +1337,7 @@ hanzi,sentence,en,th
 特点,这个城市有很多特点。,This city has many characteristics.,เมืองนี้มีจุดเด่นหลายอย่าง
 睡醒,他早上七点睡醒了。,He woke up at seven in the morning.,เขาตื่นนอนตอนเจ็ดโมงเช้า
 研究生,我姐姐是研究生。,My sister is a graduate student.,พี่สาวฉันเป็นนักศึกษาปริญญาโท
-究竟,你究竟想说什么？,What exactly do you want to say?,ตกลงเธอจะพูดอะไรกันแน่
+究竟,你究竟想说什么？,What exactly do you want to say?,ตกลงเธอจะพูดอะไรกันแน่?
 符合,这个答案符合要求。,This answer meets the requirements.,คำตอบนี้ตรงตามที่กำหนด
 请客,今天我请客，你随便点。,"I'm treating today, order whatever you like.",วันนี้ฉันเลี้ยงเอง สั่งอะไรก็ได้ตามใจ
 负责,这件事由他负责。,He is responsible for this matter.,เรื่องนี้เขาเป็นคนรับผิดชอบ
@@ -1580,7 +1580,7 @@ hanzi,sentence,en,th
 假,这是一个假消息。,This is a fake piece of news.,นี่คือข่าวปลอม
 假话,他从不说假话。,He never tells lies.,เขาไม่เคยพูดโกหก
 刚刚,他刚刚离开这里。,He just left here a moment ago.,เขาเพิ่งออกไปจากที่นี่เมื่อกี้
-功夫,他的功夫非常厉害。,His skill is extremely impressive.,กังฟูของเขาเก่งมาก
+功夫,他的功夫非常厉害。,His skill is extremely impressive.,ฝีมือเขาเก่งมาก
 发现自己,我发现自己爱上了她。,I found myself falling in love with her.,ฉันพบว่าตัวเองตกหลุมรักเธอ
 同样,我们有同样的想法。,We have the same idea.,เรามีความคิดเหมือนกัน
 周围环境,这里的周围环境很安静。,The surrounding environment here is quiet.,สภาพแวดล้อมรอบๆ ที่นี่เงียบมาก
@@ -1670,7 +1670,7 @@ hanzi,sentence,en,th
 心情愉快,今天她心情愉快。,She is in a cheerful mood today.,วันนี้เธออารมณ์ดี
 怎么回事,这到底是怎么回事？,What on earth is going on?,นี่มันเกิดอะไรขึ้นกันแน่?
 急,这件事很急。,This matter is urgent.,เรื่องนี้ด่วนมาก
-感,他深有所感。,He felt deeply moved.,เขารู้สึกซาบซึ้งใจอย่างลึกซึ้ง
+感,他深有所感。,He felt deeply moved.,เขารู้สึกซาบซึ้งใจมาก
 感谢您,感谢您的帮助。,Thank you for your help.,ขอบคุณสำหรับความช่วยเหลือของคุณ
 成千上万,成千上万的人来看。,Thousands upon thousands of people came to see it.,คนเป็นพันเป็นหมื่นมาดู
 戴眼镜,他喜欢戴眼镜。,He likes wearing glasses.,เขาชอบใส่แว่น
@@ -2208,7 +2208,7 @@ hanzi,sentence,en,th
 依然,他依然每天早起。,He still gets up early every day.,เขายังคงตื่นเช้าทุกวัน
 失眠,他昨晚失眠了。,He suffered from insomnia last night.,เมื่อคืนเขานอนไม่หลับ
 导致,压力过大导致失眠。,Too much stress leads to insomnia.,ความเครียดมากเกินไปทำให้นอนไม่หลับ
-满足,这个答案满足了他的好奇心。,This answer satisfied his curiosity.,คำตอบนี้เติมเต็มความอยากรู้อยากเห็นของเขา
+满足,这个答案满足了他的好奇心。,This answer satisfied his curiosity.,คำตอบนี้ทำให้เขาหายสงสัย
 观察,科学家认真观察星星。,The scientist carefully observed the stars.,นักวิทยาศาสตร์สังเกตดวงดาวอย่างตั้งใจ
 角度,换个角度看问题。,Look at the problem from a different angle.,ลองมองปัญหาจากมุมอื่นดู
 造成,大雨造成了交通堵塞。,The heavy rain caused a traffic jam.,ฝนตกหนักทำให้รถติด
@@ -2497,7 +2497,7 @@ hanzi,sentence,en,th
 商业,这条街全是商业活动。,This street is full of commercial activity.,ถนนสายนี้เต็มไปด้วยกิจกรรมทางการค้า
 嗓子,他唱歌把嗓子喊哑了。,He shouted his throat hoarse from singing.,เขาร้องเพลงจนเสียงแหบ
 基本,这是最基本的常识。,This is the most basic common sense.,นี่คือความรู้พื้นฐานที่สุด
-大加,老师对他大加表扬。,The teacher praised him greatly.,ครูชื่นชมเขาอย่างมากมาย
+大加,老师对他大加表扬。,The teacher praised him greatly.,ครูชื่นชมเขาอย่างมาก
 安装,他刚安装了新软件。,He just installed new software.,เขาเพิ่งติดตั้งซอฟต์แวร์ใหม่
 导演,这部电影的导演很有名。,The director of this movie is very famous.,ผู้กำกับหนังเรื่องนี้มีชื่อเสียงมาก
 工厂,爸爸在工厂上班。,Dad works at a factory.,พ่อทำงานที่โรงงาน
@@ -2950,7 +2950,7 @@ hanzi,sentence,en,th
 寿命,这种植物寿命很长。,This kind of plant has a long lifespan.,พืชชนิดนี้มีอายุยืนยาว
 小女孩,那个小女孩在唱歌。,That little girl is singing.,เด็กผู้หญิงคนนั้นกำลังร้องเพลง
 尽力而为,我一定会尽力而为。,I will definitely do my best.,ฉันจะทำเต็มที่แน่นอน
-层次,这篇文章层次很清楚。,This essay's structure is very clear.,บทความนี้มีลำดับชั้นชัดเจน
+层次,这篇文章层次很清楚。,This essay's structure is very clear.,บทความนี้มีโครงสร้างชัดเจน
 屋,屋里很安静。,It is very quiet inside the room.,ในห้องเงียบมาก
 展品,博物馆的展品很多。,The museum has many exhibits.,พิพิธภัณฑ์มีของจัดแสดงเยอะมาก
 开花,樱花树开花了。,The cherry tree has bloomed.,ต้นซากุระออกดอกแล้ว
@@ -3143,7 +3143,7 @@ hanzi,sentence,en,th
 供应,工厂供应新鲜蔬菜。,The factory supplies fresh vegetables.,โรงงานส่งผักสดให้
 加快,他加快了脚步。,He quickened his pace.,เขาเร่งฝีเท้าให้เร็วขึ้น
 原料,这是做面包的原料。,This is the raw material for making bread.,นี่คือวัตถุดิบสำหรับทำขนมปัง
-对象,他是我的研究对象。,He is my subject of research.,เขาเป็นเป้าหมายการวิจัยของฉัน
+对象,他是我的研究对象。,He is my subject of research.,เขาเป็นกลุ่มตัวอย่างในงานวิจัยของฉัน
 形,月亮渐渐变成圆形。,The moon gradually became round in shape.,พระจันทร์ค่อยๆ กลายเป็นรูปกลม
 视觉,这幅画视觉效果好。,This painting has a good visual effect.,ภาพวาดนี้ให้ผลทางการมองเห็นที่ดี
 饮食,健康饮食很重要。,A healthy diet is very important.,การกินอาหารเพื่อสุขภาพสำคัญมาก
@@ -3480,7 +3480,7 @@ hanzi,sentence,en,th
 动画片,孩子们喜欢看动画片。,Children like watching animated films.,เด็กๆ ชอบดูการ์ตูนแอนิเมชัน
 危机,公司遇到了财务危机。,The company ran into a financial crisis.,บริษัทประสบวิกฤตทางการเงิน
 反而,他不但没生气反而笑了。,Not only did he not get angry he laughed instead.,เขาไม่โกรธเลย กลับหัวเราะเสียอีก
-后人,这段历史值得后人铭记。,This history is worth remembering for later generations.,ประวัติศาสตร์ตอนนี้ควรค่าแก่การจดจำของคนรุ่นหลัง
+后人,这段历史值得后人铭记。,This history is worth remembering for later generations.,เรื่องราวประวัติศาสตร์นี้ควรค่าแก่การจดจำของคนรุ่นหลัง
 吨,这艘船能装一万吨货物。,This ship can carry ten thousand tons of cargo.,เรือลำนี้บรรทุกสินค้าได้หนึ่งหมื่นตัน
 图案,这件衣服图案很漂亮。,This piece of clothing has a beautiful pattern.,เสื้อผ้าชุดนี้มีลวดลายสวยงาม
 外出,爸爸外出办事去了。,Dad went out to run errands.,พ่อออกไปข้างนอกไปทำธุระ
@@ -3601,7 +3601,7 @@ hanzi,sentence,en,th
 年间,那几年间发生了很多事。,Many things happened during those years.,ในช่วงหลายปีนั้นเกิดเรื่องขึ้นมากมาย
 弱,他身体很弱。,His body is weak.,ร่างกายเขาอ่อนแอมาก
 强大,这个国家很强大。,This country is very powerful.,ประเทศนี้เข้มแข็งมาก
-得天独厚,这里条件得天独厚。,The conditions here are uniquely favorable.,ที่นี่มีเงื่อนไขได้เปรียบเป็นพิเศษ
+得天独厚,这里条件得天独厚。,The conditions here are uniquely favorable.,ที่นี่ได้เปรียบเป็นพิเศษ
 忽略,不要忽略细节。,Don't overlook the details.,อย่ามองข้ามรายละเอียด
 急于求成,他做事急于求成。,He is impatient for quick results in his work.,เขาทำงานใจร้อนอยากเห็นผลไวๆ
 总之,总之，我们成功了。,"In short, we succeeded.",สรุปคือ เราสำเร็จแล้ว
@@ -3688,14 +3688,14 @@ hanzi,sentence,en,th
 寺庙,这座寺庙历史悠久。,This temple has a long history.,วัดแห่งนี้มีประวัติศาสตร์ยาวนาน
 尽,教室在楼道尽头。,The classroom is at the very end of the corridor.,ห้องเรียนอยู่สุดทางเดิน
 巨大,这座建筑非常巨大。,This building is extremely huge.,อาคารหลังนี้ใหญ่โตมหึมา
-平衡,她努力保持身体平衡。,She works hard to keep her body balanced.,เธอพยายามรักษาสมดุลของร่างกาย
+平衡,她努力保持身体平衡。,She works hard to keep her body balanced.,เธอพยายามรักษาสมดุลร่างกาย
 建造,工人正在建造大桥。,Workers are building a bridge.,คนงานกำลังสร้างสะพานใหญ่
 引导,老师引导学生思考。,The teacher guides students to think.,คุณครูชี้นำให้นักเรียนได้คิด
 强者,只有强者才能生存。,Only the strong can survive.,มีแต่ผู้ที่แข็งแกร่งเท่านั้นที่จะอยู่รอดได้
 心跳,运动后他心跳加快。,"After exercising, his heartbeat sped up.",หลังออกกำลังกาย หัวใจเขาเต้นเร็วขึ้น
 必定,努力必定会有回报。,Hard work is bound to be rewarded.,ความพยายามจะได้รับผลตอบแทนอย่างแน่นอน
 恰到好处,她的回答恰到好处。,Her answer was just right.,คำตอบของเธอพอดิบพอดี
-情,他们之间充满真情。,There is genuine feeling between them.,ระหว่างพวกเขาเต็มไปด้วยความรู้สึกจริงใจ
+情,他们之间充满真情。,There is genuine feeling between them.,พวกเขามีใจให้กันจริงๆ
 想象力,这个孩子想象力丰富。,This child has a rich imagination.,เด็กคนนี้มีจินตนาการกว้างไกล
 意味着,成功意味着不断努力。,Success means constant effort.,ความสำเร็จหมายถึงความพยายามอย่างต่อเนื่อง
 技能,他学会了新技能。,He learned a new skill.,เขาได้เรียนรู้ทักษะใหม่
@@ -3727,7 +3727,7 @@ hanzi,sentence,en,th
 说完,他说完就走了。,He left right after finishing speaking.,เขาพูดจบก็เดินจากไป
 跪,他跪在地上哭了。,He knelt on the ground and cried.,เขาคุกเข่าลงกับพื้นแล้วร้องไห้
 辐射,手机辐射对人体有害。,Mobile phone radiation is harmful to the human body.,รังสีจากมือถือเป็นอันตรายต่อร่างกาย
-适度,运动要适度，不要过量。,Exercise should be moderate; don't overdo it.,ออกกำลังกายต้องพอดีๆ อย่าหักโหม
+适度,运动要适度，不要过量。,Exercise should be moderate; don't overdo it.,ออกกำลังกายต้องพอประมาณ อย่าหักโหม
 遗传,这种病会遗传给孩子。,This disease can be inherited by children.,โรคนี้ถ่ายทอดทางพันธุกรรมไปสู่ลูกได้
 鉴定,专家鉴定这幅画是真的。,Experts authenticated that this painting is genuine.,ผู้เชี่ยวชาญตรวจพิสูจน์ว่าภาพนี้เป็นของแท้
 针对,这个计划针对年轻人。,This plan targets young people.,แผนนี้มุ่งเป้าไปที่คนรุ่นใหม่
@@ -3779,7 +3779,7 @@ hanzi,sentence,en,th
 手脚,他手脚很麻利。,His hands and feet move nimbly.,เขาทำอะไรคล่องแคล่วว่องไว
 扛,他扛着一袋米。,He is carrying a bag of rice on his shoulder.,เขาแบกข้าวสารกระสอบหนึ่งไว้บนบ่า
 担,他勇于担责任。,He is brave enough to take on responsibility.,เขากล้าที่จะแบกรับความรับผิดชอบ
-拨,请拨打这个电话。,Please dial this phone number.,กรุณากดโทรเบอร์นี้
+拨,请拨打这个电话。,Please dial this phone number.,กรุณาโทรไปที่เบอร์นี้
 指令,电脑执行指令。,The computer executes the command.,คอมพิวเตอร์ทำงานตามคำสั่ง
 推,他推开了门。,He pushed the door open.,เขาผลักประตูเปิดออก
 放进,把书放进包里。,Put the book into the bag.,เอาหนังสือใส่เข้าไปในกระเป๋า
@@ -3992,7 +3992,7 @@ hanzi,sentence,en,th
 专注,她学习时非常专注。,She is very focused when studying.,เวลาเรียนเธอมีสมาธิจดจ่อมาก
 专长,编程是他的专长。,Programming is his specialty.,การเขียนโปรแกรมคือความถนัดพิเศษของเขา
 世代,这门手艺世代相传。,This craft has been passed down for generations.,งานฝีมือนี้สืบทอดกันมารุ่นสู่รุ่น
-世故,他为人处事十分世故。,He is very worldly in how he handles things.,เขาเป็นคนเจนโลกในการวางตัวและการเข้าสังคมมาก
+世故,他为人处事十分世故。,He is very worldly in how he handles things.,เขาเป็นคนเจนโลกมาก
 世界杯,他们在看世界杯。,They are watching the World Cup.,พวกเขากำลังดูฟุตบอลโลกกันอยู่
 业余,他业余时间喜欢画画。,In his spare time,ยามว่างนอกเวลางานเขาชอบวาดรูป
 业务,公司业务发展很快。,The company's business is growing fast.,กิจการของบริษัทเติบโตเร็วมาก
@@ -4151,7 +4151,7 @@ hanzi,sentence,en,th
 伤口,医生正在处理伤口。,The doctor is treating the wound.,หมอกำลังทำแผลอยู่
 伪装,他伪装成一名医生。,He disguised himself as a doctor.,เขาปลอมตัวเป็นหมอ
 伯父,我伯父住在上海。,My uncle lives in Shanghai.,ลุงของฉันอาศัยอยู่ที่เซี่ยงไฮ้
-伴,老人希望有个伴。,The old man wishes for a companion.,คนแก่อยากมีเพื่อนคอยอยู่เป็นเพื่อนสักคน
+伴,老人希望有个伴。,The old man wishes for a companion.,คนแก่อยากมีเพื่อนสักคนคอยอยู่ด้วย
 伴随,成功往往伴随着汗水。,Success is often accompanied by hard work.,ความสำเร็จมักมาพร้อมกับหยาดเหงื่อ
 位子,请帮我占一个位子。,Please save a seat for me.,ช่วยจองที่นั่งให้ฉันหน่อย
 低下,他出身低下但很努力。,His background is humble but he works hard.,เขาเกิดมาต่ำต้อยแต่ก็ขยันมาก
@@ -4208,7 +4208,7 @@ hanzi,sentence,en,th
 信仰,每个人都有自己的信仰。,Everyone has their own beliefs.,ทุกคนต่างก็มีศรัทธาความเชื่อของตัวเอง
 信号,这里的手机信号很弱。,The phone signal here is very weak.,สัญญาณโทรศัพท์ที่นี่อ่อนมาก
 信念,坚定的信念帮他渡过难关。,His firm belief helped him get through the crisis.,ความเชื่อมั่นที่แน่วแน่ช่วยให้เขาผ่านช่วงยากลำบากไปได้
-信用,他很讲信用。,He values his word.,เขาเป็นคนรักษาคำพูดน่าเชื่อถือ
+信用,他很讲信用。,He values his word.,เขาเป็นคนรักษาคำพูด น่าเชื่อถือมาก
 信誉,这家银行信誉很好。,This bank has a very good reputation.,ธนาคารนี้มีชื่อเสียงน่าเชื่อถือมาก
 信赖,大家都很信赖他。,Everyone trusts him a lot.,ทุกคนไว้วางใจเขามาก
 修养,他很有文化修养。,He has strong cultural refinement.,เขาเป็นคนมีภูมิความรู้ทางวัฒนธรรมสูง
@@ -4463,7 +4463,7 @@ hanzi,sentence,en,th
 勿,请勿在此吸烟。,Please do not smoke here.,กรุณาอย่าสูบบุหรี่ที่นี่
 包围,敌人被军队包围了。,The enemy was surrounded by the army.,ศัตรูถูกกองทัพล้อมไว้
 包容,父母要包容孩子的错误。,Parents should tolerate their children's mistakes.,พ่อแม่ควรเปิดใจให้อภัยความผิดพลาดของลูก
-包袱,他背着一个大包袱。,He carried a large bundle on his back.,เขาแบกห่อผ้าใบใหญ่ไว้บนหลัง
+包袱,他背着一个大包袱。,He carried a large bundle on his back.,เขาแบกห่อผ้าใหญ่ไว้บนหลัง
 包装,这个礼物包装得很漂亮。,This gift is beautifully wrapped.,ของขวัญชิ้นนี้ห่อได้สวยงามมาก
 匆匆,他匆匆吃完早饭就走了。,He hurriedly finished breakfast and left.,เขารีบกินข้าวเช้าเสร็จแล้วก็ออกไป
 化妆,她每天早上都要化妆。,She puts on makeup every morning.,เธอแต่งหน้าทุกเช้า
@@ -4892,7 +4892,7 @@ hanzi,sentence,en,th
 姿态,她以谦虚的姿态回答问题。,She answered the question with a humble attitude.,เธอตอบคำถามด้วยท่าทีถ่อมตน
 威信,老师在班里很有威信。,The teacher has great authority in the class.,คุณครูมีบารมีในห้องเรียนมาก
 娶,他打算明年娶她为妻。,He plans to marry her next year.,เขาวางแผนจะแต่งเธอเป็นภรรยาปีหน้า
-嫌,他嫌房间太小了。,He complains that the room is too small.,เขารังเกียจว่าห้องเล็กเกินไป
+嫌,他嫌房间太小了。,He complains that the room is too small.,เขาบ่นว่าห้องเล็กเกินไป
 嫩,这块牛肉很嫩。,This piece of beef is very tender.,เนื้อวัวชิ้นนี้นุ่มมาก
 子女,他很关心子女。,He cares a lot about his children.,เขาใส่ใจลูกๆ มาก
 孕育,大地孕育着新的生命。,The earth nurtures new life.,ผืนแผ่นดินฟูมฟักชีวิตใหม่
@@ -5444,7 +5444,7 @@ hanzi,sentence,en,th
 探索,科学家不断探索太空。,Scientists keep exploring outer space.,นักวิทยาศาสตร์สำรวจอวกาศอย่างไม่หยุดยั้ง
 探讨,大家一起探讨这个问题。,Everyone discussed this problem together.,ทุกคนร่วมกันถกปัญหานี้
 探险,他们去森林里探险。,They went exploring in the forest.,พวกเขาไปผจญภัยในป่า
-接下来,接下来我们去哪里？,Where shall we go next?,ต่อไปเราจะไปไหนกันดี
+接下来,接下来我们去哪里？,Where shall we go next?,ต่อไปเราจะไปไหนกันดี?
 接听,他正在接听客户的电话。,He is answering a customer's phone call.,เขากำลังรับสายลูกค้าอยู่
 接待,公司派人接待客户。,The company sent someone to receive the clients.,บริษัทส่งคนไปต้อนรับลูกค้า
 推动,政府努力推动经济发展。,The government is working hard to promote economic development.,รัฐบาลพยายามผลักดันการพัฒนาเศรษฐกิจ
@@ -5522,206 +5522,206 @@ hanzi,sentence,en,th
 放大,请把这张照片放大。,Please enlarge this photo.,ช่วยขยายรูปนี้ให้ใหญ่ขึ้นหน่อย
 政府,政府发布了新政策。,The government issued a new policy.,รัฐบาลออกนโยบายใหม่
 政治,他对政治很感兴趣。,He is very interested in politics.,เขาสนใจการเมืองมาก
-政策,新政策鼓励年轻人创业。,The new policy encourages young people to start businesses.,ฉันชอบชีวิตในตอนนี้
-效应,这个决定产生了连锁效应。,This decision triggered a chain reaction.,ในทีวีมีโฆษณาเยอะมาก
-效益,公司今年经济效益很好。,The company had good economic returns this year.,ไม่ว่าอากาศจะเป็นยังไง เราก็จะไป
-敏捷,猴子的动作十分敏捷。,The monkey's movements are very agile.,ฉันไปสวนสาธารณะกับเพื่อน
-敏锐,他有一双敏锐的眼睛。,He has a pair of sharp eyes.,เขาออกกำลังกายทุกวันไม่เคยขาด
-救援,消防队及时进行救援。,The fire brigade carried out the rescue in time.,ข้างหน้ามีปั๊มน้ำมัน
-教养,这个孩子很有教养。,This child is very well-mannered.,ฉันขับรถไปกลับที่ทำงานทุกวัน
-教练,教练教我们打篮球。,The coach teaches us to play basketball.,ทุกคนก็มีข้อเสีย
-散,花瓣散落在地上。,The flower petals scattered on the ground.,สะพานนี้ทั้งยาวทั้งสูง
-散布,有人在网上散布谣言。,Someone spread rumors online.,หนังสือเล่มนี้น่าสนใจมาก
-散文,这本书收录了他的散文。,This book collects his prose writings.,การประชุมเลื่อนไปเป็นพรุ่งนี้แล้ว
-敬,我们应该敬老爱幼。,We should respect the old and cherish the young.,เมืองนี้พัฒนาเร็วมาก
-敬业,她工作起来非常敬业。,She is very dedicated when she works.,เขามีประสบการณ์ทำอาหารมาก
-敬礼,士兵向国旗敬礼。,The soldier saluted the flag.,เราแลกเปลี่ยนวิธีการเรียนกันบ่อยๆ
-敬而远之,大家对他敬而远之。,Everyone keeps a respectful distance from him.,ในที่สุดเขาก็สำเร็จ
-敬请,敬请各位准时到场。,Please kindly arrive on time.,ช่วยบอกเหตุผลกับฉันหน่อย
-敬酒,新郎向客人敬酒。,The groom toasted the guests.,เราควรเคารพครู
-敬重,学生们都很敬重老师。,The students deeply respect their teacher.,เขาพูดจามีอารมณ์ขันมาก
-数目,参加人数的数目不小。,The number of participants isn't small.,แม่รู้สึกภูมิใจในตัวฉัน
-敲门,有人在敲门。,Someone is knocking on the door.,โรงงานลดมลพิษลง
-整,他整整等了一个小时。,He waited for a whole hour.,ชีวิตเปลี่ยนไปเยอะมาก
-整体,这个方案整体上不错。,This plan is pretty good overall.,เขาเหนื่อยมาก แต่กลับไม่ยอมพัก
-整合,公司决定整合各部门资源。,The company decided to integrate resources across departments.,คุณครูชมเขา
-整天,他整天坐在电脑前。,He sits in front of the computer all day.,ช่วยแก้เวลาหน่อย
-整洁,她的房间总是很整洁。,Her room is always very tidy.,ฉันไปเป็นเพื่อนแม่ที่โรงพยาบาล
-整顿,学校决定整顿纪律。,The school decided to tighten up discipline.,การแข่งครั้งนี้เขาแพ้
-整齐,桌上的书摆放得很整齐。,The books on the desk are arranged neatly.,เขามักจะกลับบ้านดึก
-文人,古代文人喜欢写诗。,Ancient scholars loved writing poetry.,ตอนที่เขาถึงบ้าน ฟ้าก็มืดแล้ว
-文献,他查阅了很多文献。,He consulted a lot of reference materials.,คุณครูตำหนิเขา
-斗,两只公鸡在斗架。,The two roosters are fighting.,ฉันอยากไป แต่ไม่มีเวลา
-断定,医生断定他得了感冒。,The doctor concluded that he had a cold.,เด็กคนนี้ร่าเริงมาก
-断断续续,雨断断续续下了一天。,It rained on and off all day.,อย่าเสียเวลาเปล่า
-断裂,这根绳子突然断裂了。,This rope suddenly snapped.,เขาไม่ยอมล้มเลิกความหวัง
-新人,公司来了新人。,A newcomer joined the company.,เธอออกกำลังกายลดน้ำหนักทุกวัน
-新型,公司推出了新型手机。,The company launched a new type of phone.,วิธีนี้มีประโยชน์มาก
-新房,他们搬进了新房。,They moved into their new house.,ครอบครัวของเขามีความสุขมาก
-新款,这是今年的新款手机。,This is this year's new model phone.,เด็กผู้หญิงคนนั้นขี้อายมาก
-新生,新生们正在报到。,The new students are registering.,อุณหภูมิวันนี้สูงมาก
-新陈代谢,运动能加快新陈代谢。,Exercise can speed up metabolism.,ในสวนมีดอกไม้มากมาย
-方,你知道正确的方向吗？,Do you know the correct direction?,ปกติแล้วเขาไม่ค่อยออกกำลังกาย
-方向盘,司机紧握着方向盘。,The driver gripped the steering wheel tightly.,ทำการบ้านจะสะเพร่าไม่ได้
-施行,新法律下个月起施行。,The new law will be put into practice next month.,เรื่องนี้ทำให้เขากลุ้มใจมาก
-旁,他坐在我的旁边。,He sat down beside me.,กินข้าวเสร็จแล้วออกไปขยับร่างกายข้างนอกหน่อย
-旅客,机场里挤满了旅客。,The airport was packed with travelers.,ฉันมีหนังสือสามเล่ม เล่มหนึ่งในนั้นดีมาก
-旅程,这次旅程让我难忘。,This journey was unforgettable for me.,เขาดูเหมือนจะไม่มีความสุข
-旅行社,我们通过旅行社订票。,We booked tickets through a travel agency.,ความกดดันจากงานเยอะมาก
-旋律,这首歌的旋律很动听。,This song's melody is very pleasant.,ฉันได้หนังสือเดินทางเล่มใหม่มาแล้ว
-旗帜,广场上飘扬着旗帜。,Flags flutter in the square.,น้ำในแก้วเต็มแล้ว
-无不,大家听了无不感动。,Everyone who heard it was moved.,ช่วยยกโทษให้ความผิดของฉันด้วยนะ
-无偿,他无偿捐献了骨髓。,He donated bone marrow free of charge.,ฉันเห็นด้วยและสนับสนุนแผนนี้
-无关紧要,这件小事无关紧要。,This small matter is insignificant.,ก่อนสอบฉันประหม่ามาก
-无形,压力是一种无形的负担。,Pressure is an invisible burden.,เราคุยกันนานมาก
-无形中,他无形中影响了我们。,He influenced us imperceptibly.,นิสัยของเขาร่าเริงแจ่มใสมาก
-无忧无虑,孩子们过着无忧无虑的生活。,The children live a carefree life.,นี่เป็นปัญหาสังคม
-无恶不作,这个坏人无恶不作。,This bad person will stop at nothing evil.,พ่อแม่ของฉันสุขภาพแข็งแรงดีทั้งคู่
-无意,我无意伤害你的感情。,I didn't mean to hurt your feelings.,ช่วยถ่ายเอกสารให้ฉันหน่อย
-无所作为,他整天无所作为。,He achieves nothing all day long.,คุณครูใจเย็นกับนักเรียนมาก
-无所谓,他对结果无所谓。,He doesn't care about the result.,บริษัทให้ความสำคัญกับคุณภาพมาก
-无比,这里的风景无比美丽。,The scenery here is incomparably beautiful.,คุณครูคอยให้กำลังใจให้เราขยัน
-无疑,这无疑是个好消息。,This is undoubtedly good news.,กรุณากรอกรหัสผ่านของคุณ
-无知,他的话显得很无知。,His words sound very ignorant.,เขาปฏิเสธคำขอของฉัน
-无私,她无私地帮助大家。,She selflessly helps everyone.,ภาษาจีนเป็นภาษาหนึ่ง
-无穷,大海蕴藏着无穷的力量。,The sea holds endless power.,ฉันชอบที่นี่มากๆ
-无线,家里安装了无线网络。,Wireless internet was installed at home.,เขาปรับตัวเข้ากับงานใหม่ได้เร็วมาก
-无能,他因无能被解雇了。,He was fired for incompetence.,เขามีความสามารถสูงมาก
-无能为力,面对失败他无能为力。,Faced with failure he was powerless.,วัสดุเหล่านี้มีประโยชน์มาก
-无足轻重,这个职位无足轻重。,This position is insignificant.,คุณมีความคิดเห็นยังไงกับเรื่องนี้?
-无限,宇宙的可能性近乎无限。,The universe's possibilities are nearly unlimited.,เขาสอบผ่านแล้ว
-日前,日前他刚回国。,He just returned home the other day.,ร้านนี้มีลูกค้าเยอะมาก
-日后,日后我们再见面。,We'll meet again someday.,ความฝันของเขาคือการเป็นหมอ
-日夜,工人们日夜赶工。,The workers rushed the job day and night.,ขอถามหน่อยว่าคุณอายุเท่าไหร่?
-日常,这是我们的日常工作。,This is our daily work.,ฉันชอบเล่นปิงปอง
-日期,请确认出发日期。,Please confirm the departure date.,เขาเล่นปิงปองทุกวัน
-日益,城市交通日益拥堵。,Urban traffic is getting more congested day by day.,คืนนี้โรแมนติกมาก
-日程,会议日程已经安排好了。,The meeting schedule has already been arranged.,คุณปู่ชอบดูงิ้วปักกิ่ง
-旨在,这项政策旨在减少污染。,This policy is aimed at reducing pollution.,เศรษฐกิจของประเทศนี้พัฒนาเร็ว
-早就,我早就想去旅行了。,I've long wanted to go traveling.,สินค้าชิ้นนี้คุณภาพดีมาก
-早年,他早年在国外生活过。,In his early years he lived abroad.,โลกคือบ้านของเรา
-早日,祝你早日康复。,I wish you a speedy recovery.,เขาไปเติมน้ำมันรถที่ปั๊ม
-早晚,他早晚会明白真相。,He will understand the truth sooner or later.,คุณครูแจกการบ้านให้นักเรียน
-早晨,我每天早晨去跑步。,I go running every morning.,ช่วยเปิดหน้าต่างหน่อย
-早餐,我每天七点吃早餐。,I eat breakfast at seven every day.,มิตรภาพของเราลึกซึ้งมาก
-早饭,他每天都吃早饭。,He eats breakfast every day.,นี่คือมาตรฐานล่าสุด
-旱,今年夏天发生了大旱。,There was a severe drought this summer.,ตำรวจกำลังจับขโมย
-时常,他时常去图书馆看书。,He often goes to the library to read.,เขาเสียใจที่ไม่ฟังคำแม่
-时时,他时时想起故乡。,He often thinks of his hometown.,พวกเราทุกคนสนับสนุนการตัดสินใจของคุณ
-时机,现在不是投资的好时机。,Now is not a good time to invest.,ช่วยเก็บกวาดห้องหน่อย
-时段,这个时段很拥挤。,This time period is very crowded.,ฉันทำกุญแจหาย
-时空,这部电影探讨了时空穿梭的奥秘。,This movie explores the mystery of time travel.,สถานการณ์ตอนนี้ซับซ้อนมาก
-时节,清明时节雨水较多。,There's more rain during the Qingming season.,ช่วยใช้เครื่องมือนี้ให้ถูกต้อง
-时装,她喜欢看时装杂志。,She likes reading fashion magazines.,ข่าวนี้เรียกความสนใจจากทุกคน
-昂贵,这件外套价格昂贵。,This coat is very expensive.,แตงโมลูกนี้สุกแล้ว
-昆虫,花园里生活着很多种昆虫。,Many kinds of insects live in the garden.,ช่วยทำการบ้านให้เสร็จตรงเวลา
-明亮,教室里灯光很明亮。,The classroom lights are very bright.,ความผูกพันระหว่างพวกเขาลึกซึ้งมาก
-明日,明日天气将会转晴。,Tomorrow's weather will turn clear.,พ่อแม่ควรอบรมสั่งสอนลูก
-明星,她是一位电影明星。,She is a movie star.,คำตอบของคุณถูกต้องทั้งหมด
-明智,这是一个明智的选择。,This is a wise choice.,บ่ายนี้ฉันต้องไปโรงพยาบาล
-昏迷,他因车祸陷入昏迷。,He fell into a coma from the car accident.,ฉันต้องไปธนาคารสักรอบ
-是非,他从不参与是非。,He never gets involved in disputes.,อาหารจานนี้ใช้น้ำมันเยอะมาก
-昼夜,工厂昼夜不停地生产。,The factory produces around the clock.,โฆษณาทีวีอันนี้น่าสนใจมาก
-显出,他脸上显出担心的表情。,His face showed a worried expression.,ข่าวนี้ทำให้ฉันตกใจมาก
-显眼,这个广告牌很显眼。,This billboard is very eye-catching.,ผลสอบทำให้เขาผิดหวังมาก
-显而易见,结果显而易见。,The result is obvious.,คุณครูสรุปบทเรียนคาบนี้
-显著,治疗效果十分显著。,The treatment's effect is very notable.,ฉันเห็นด้วยกับความคิดเห็นของคุณอย่างเต็มที่
-晒,妈妈把衣服拿去晒。,Mom took the clothes out to dry in the sun.,เขาผ่านความยากลำบากมามากมาย
-晕,她突然感到有点晕。,She suddenly felt a bit dizzy.,แผนเที่ยวของเราเปลี่ยนไปแล้ว
-晕倒,她在路上突然晕倒了。,She suddenly fainted on the road.,คุณเข้าใจความหมายของฉันผิดแล้ว
-晚报,爸爸每天都看晚报。,Dad reads the evening paper every day.,ขอหนังสือพิมพ์ให้ฉันหนึ่งฉบับ
-晚期,他被诊断为癌症晚期。,He was diagnosed with late-stage cancer.,ทุกคนมีความคิดเห็นต่อแผนนี้
-晚点,飞机晚点了两小时。,The flight was delayed by two hours.,เพลงนี้กำลังฮิตมากตอนนี้
-普及,智能手机已经普及了。,Smartphones have already become widespread.,ห้องนี้ขาดแสงแดด
-普通人,他只是个普通人。,He is just an ordinary person.,ผู้ชมชอบการแสดงนี้กันมาก
-景区,这个景区门票很贵。,The tickets for this scenic area are expensive.,วันนี้ทีมเราชนะการแข่งขัน
-景点,这座城市有很多景点。,This city has many tourist attractions.,เรื่องนี้ดึงดูดคนมากมาย
-景观,公园的景观十分优美。,The park's scenery is very beautiful.,การเรียนรู้เป็นกระบวนการที่ยาวนาน
-晶莹,露珠晶莹剔透。,The dewdrop is sparkling and clear.,เสื้อตัวนี้เหมาะกับคุณมาก
-智能,这款手机很智能。,This phone is very smart.,เธอรดน้ำต้นไม้ทุกวัน
-暂,请大家暂时安静。,"Please be quiet for now, everyone.",นี่คือนักเรียนที่สูงที่สุดในห้อง
-暂停,比赛因下雨暂停了。,The match was suspended because of rain.,ต้องมีมารยาทกับคนอื่น
-暑期,暑期他去打工挣钱。,During summer vacation he worked a part-time job to earn money.,สุดสัปดาห์นี้ฉันอยากพักผ่อนสบายๆ สักหน่อย
-暖,春天的阳光很暖。,The spring sunshine is very warm.,ไกด์ของเราอัธยาศัยดีมาก
-暗示,他的话暗示了一些问题。,His words hinted at some problems.,เขาทำโจทย์สะเพร่าตลอดเลย
-暴雨,昨晚下了一场暴雨。,There was a rainstorm last night.,เขาขอโทษคุณครูแล้ว
-暴露,这个错误暴露了问题。,This mistake exposed the problem.,เธอฝึกจนติดนิสัยตื่นเช้า
-暴风雨,一场暴风雨即将来临。,A rainstorm is about to arrive.,ศาสตราจารย์ท่านนี้มีชื่อเสียงมาก
-曲折,这条山路十分曲折。,This mountain road is very winding.,เขาไม่เพียงแต่ฉลาด แต่ยังขยันอีกด้วย
-更新,手机系统需要更新。,The phone system needs an update.,เขาเสนอตัวช่วยฉันถือกระเป๋าเอง
-曾经,我曾经去过北京。,I have been to Beijing before.,ข้ามถนนต้องระวังความปลอดภัย
-替代,机器无法完全替代人。,Machines cannot fully replace humans.,ร้านนี้กำลังลดราคา
-替换,请替换损坏的零件。,Please replace the damaged part.,เธอเป็นนักแสดงที่มีชื่อเสียง
-月份,现在是什么月份？,What month is it now?,ฉันคุ้นเคยกับเมืองนี้ดี
-月初,房租要在月初交。,Rent must be paid at the start of the month.,เขาได้รับคำชมจากคุณครู
-月球,人类登上了月球。,Humans landed on the moon.,ฉันเกลียดวันฝนตกมาก
-有利,这个决定对我们有利。,This decision is beneficial for us.,ช่วงนี้ฉันกำลังอ่านนิยายอยู่เล่มหนึ่ง
-有力,他的发言非常有力。,His speech was very powerful.,การอ่านหนังสือช่วยเพิ่มความรู้
-有望,这个项目有望成功。,This project is expected to succeed.,เราจะออกเดินทางพรุ่งนี้เช้า
-有毒,这种蘑菇有毒不能吃。,This kind of mushroom is poisonous and inedible.,ช่วงตรุษจีนบนถนนคึกคักมาก
-有的是,这里有的是时间。,There's plenty of time here.,คนที่นี่เป็นมิตรกันทุกคน
-服从,士兵必须服从命令。,Soldiers must obey orders.,ฉันมั่นใจกับการสอบครั้งนี้
-服饰,这家店卖传统服饰。,This shop sells traditional clothing.,โรงเรียนจัดอาหารกลางวันฟรีให้
-朝代,唐朝是一个繁荣的朝代。,The Tang dynasty was a prosperous era.,เราจะเป็นเพื่อนที่ดีกันตลอดไป
-朝气蓬勃,年轻人朝气蓬勃。,Young people are full of youthful energy.,แมวนอนหลับอยู่บนโซฟา
-期待,大家都期待假期到来。,Everyone looks forward to the vacation.,โรงเรียนกำหนดว่าห้ามมาสาย
-期望,父母对他期望很高。,His parents have high expectations of him.,เรากำลังถกเรื่องนี้กันอยู่
-期限,这份合同有期限。,This contract has a time limit.,หนังสือเล่มนี้มีค่าตั้งร้อยหยวน
-木匠,他的父亲是一位木匠。,His father is a carpenter.,เด็กคนนี้กล้าหาญมาก
-木材,这栋房子用了很多木材。,This house used a lot of wood.,ฉันรู้สึกว่าวันนี้เหนื่อยมาก
-木板,工人在钉木板。,The worker is nailing a wooden board.,เธอชอบอ่านนิตยสารแฟชั่น
-末,这是本世纪末的重大事件。,This is a major event at the end of this century.,คำตอบของข้อนี้ผิด
-本事,他真有本事解决这个难题。,He really has the ability to solve this hard problem.,การแข่งขันครั้งนี้สุดยอดมาก
-本人,这封信是他本人写的。,This letter was written by him personally.,เราไปถึงสนามบินก่อนเวลา
-朴实,他的衣着十分朴实。,His clothing is very plain and simple.,ฉันเข้าใจความรู้สึกของคุณดี
-朴素,她的穿着很朴素。,Her clothing is very simple.,เนื้อหาของหนังสือเล่มนี้เข้มข้นมาก
-朵,她买了一朵花。,She bought a flower.,พ่อของฉันเป็นหมอ
-机智,他机智地解决了难题。,He cleverly solved the difficult problem.,วันนี้อารมณ์ฉันดีมาก
-机灵,这只小狗非常机灵。,This little dog is very clever.,ในป่ามีสัตว์เยอะมาก
-机遇,这是难得的发展机遇。,This is a rare opportunity for development.,จีนมีชนชาติห้าสิบหกกลุ่ม
-杀,士兵不能随意杀人。,Soldiers must not kill people at will.,คืนนี้เขาต้องทำงานล่วงเวลา
-杀手,电影里的杀手很冷酷。,The killer in the movie is very cold-blooded.,เขาสอบได้ที่หนึ่งเลยภูมิใจในตัวเองมาก
-权威,他是这个领域的权威。,He is an authority in this field.,เรื่องนี้ทำให้ฉันซาบซึ้งใจมาก
-杆,旗杆上挂着国旗。,A national flag hangs on the flagpole.,หมอบอกว่าการสูบบุหรี่ไม่ดี
-村,他出生在一个小村。,He was born in a small village.,การเรียนรู้ต้องค่อยๆ สะสม
-村庄,这个村庄风景很美。,This village has beautiful scenery.,ความพยายามคือกุญแจสู่ความสำเร็จ
-杜绝,学校要杜绝浪费现象。,The school must put an end to wastefulness.,คืนนี้ฉันมีนัดเดต
-束,她送了我一束鲜花。,She gave me a bunch of fresh flowers.,ครูเป็นอาชีพที่ดี
-束缚,传统观念束缚着她。,Traditional ideas held her back.,เขาเป็นนักข่าว
-来临,春天的脚步已经来临。,Spring has already arrived.,ฉันลืมเอากุญแจบ้านมา
-来信,我收到了朋友的来信。,I received a letter from my friend.,ซุปถ้วยนี้เค็มไปนิดหน่อย
-来往,两家一直有来往。,The two families have always kept in touch.,ปัญหานี้ยากมาก
-来源于,这个故事来源于真实事件。,This story originates from a true event.,ช่วยเตือนฉันเรื่องประชุมพรุ่งนี้ด้วย
-杰出,他是一位杰出的科学家。,He is an outstanding scientist.,ผู้เขียนหนังสือเล่มนี้มีชื่อเสียงมาก
-松,他终于松了一口气。,He finally breathed a sigh of relief.,ช่วยบอกเวลาที่แน่นอนหน่อย
-极为,这件事极为重要。,This matter is extremely important.,ทุกคนคัดค้านแผนนี้
-极力,他极力反对这个方案。,He strongly opposed this plan.,นี่คือที่นั่งของฉัน
-极度,他现在感到极度疲惫。,He feels extremely exhausted right now.,วิธีนี้ได้ผลดีมาก
-极端,他的想法太极端了。,His idea is too extreme.,ติดต่อฉันบ่อยๆ นะ
-极限,他挑战了自己的极限。,He challenged his own limits.,เที่ยวบินของเราล่าช้า
-构思,作者花了两年构思这本书。,The author spent two years conceiving this book.,เราควรปกป้องสิ่งแวดล้อม
-构想,他提出了一个新构想。,He proposed a new concept.,อากาศวันนี้สดชื่นมาก
-构造,这座建筑的构造非常复杂。,This building's structure is very complex.,พอโตขึ้นเขาก็กลายเป็นหมอ
-果园,秋天果园里挂满了苹果。,In autumn the orchard is full of apples.,เรื่องนี้ฉันต้องคิดพิจารณาให้ดี
-果断,领导做事非常果断。,The leader is very decisive in handling matters.,ความคิดของฉันไม่เหมือนกับคุณ
-果然,他果然来了。,"Sure enough, he came.",เขาใช้นิ้วชี้ไปที่แผนที่
-枪,警察举起了枪。,The police officer raised his gun.,น้ำที่นี่ฟรี
-架,书架上摆满了新书。,The bookshelf is filled with new books.,น้องสาวเล่นเปียโนทุกวัน
-柔软,这条毛毯摸起来很柔软。,This blanket feels very soft to the touch.,หนังเรื่องนี้น่าเบื่อมาก
-柜台,顾客在柜台前排队。,Customers are lining up in front of the counter.,เขาเป็นคนซื่อสัตย์
-柜子,衣服放在柜子里。,The clothes are in the cupboard.,เด็กๆ ตื่นเต้นกันมาก
-查找,他在网上查找资料。,He searched for materials online.,ถึงแม้ฝนจะตก ฉันก็จะไป
-查明,警方正在查明真相。,Police are investigating to find out the truth.,ภูมิอากาศที่นี่อบอุ่นมาก
-柱子,大厅中央立着柱子。,A pillar stands in the center of the hall.,ฉันชอบผลไม้ โดยเฉพาะแอปเปิล
-标,请标出重点。,Please mark the key points.,เขาเป็นที่ต้อนรับของทุกคน
-标志,这座塔是城市的标志。,This tower is a landmark of the city.,ท่าทีของเธอเป็นมิตรมาก
-栏目,这个电视栏目很受欢迎。,This TV program segment is very popular.,นี่คือเรื่องราวความรัก
-树叶,秋天树叶都黄了。,"In autumn, the leaves all turn yellow.",เขารับผิดชอบบริหารบริษัทนี้
-树木,公园里种满了树木。,The park is full of trees.,เงินเท่านี้ไม่พอซื้อตั๋วรถ
-树林,孩子们在树林里玩。,The children are playing in the woods.,รูปนี้ทำให้ฉันหวนนึกถึงอดีต
-株,院子里种着一株梅花。,A plum tree is planted in the yard.,เขาป่วย เลยไม่ได้ไปทำงาน
-核对,请仔细核对数据。,Please carefully verify the data.,การแข่งขันในวงการนี้ดุเดือดมาก
-根基,良好的根基很重要。,A solid foundation is very important.,เราควรประหยัดน้ำ
+政策,新政策鼓励年轻人创业。,The new policy encourages young people to start businesses.,นโยบายใหม่สนับสนุนให้คนหนุ่มสาวเริ่มทำธุรกิจ
+效应,这个决定产生了连锁效应。,This decision triggered a chain reaction.,การตัดสินใจนี้ทำให้เกิดผลกระทบต่อเนื่องเป็นลูกโซ่
+效益,公司今年经济效益很好。,The company had good economic returns this year.,ปีนี้บริษัทมีผลตอบแทนทางเศรษฐกิจดีมาก
+敏捷,猴子的动作十分敏捷。,The monkey's movements are very agile.,ลิงเคลื่อนไหวคล่องแคล่วว่องไวมาก
+敏锐,他有一双敏锐的眼睛。,He has a pair of sharp eyes.,เขามีดวงตาที่เฉียบคม
+救援,消防队及时进行救援。,The fire brigade carried out the rescue in time.,หน่วยดับเพลิงเข้าช่วยเหลือได้ทันเวลา
+教养,这个孩子很有教养。,This child is very well-mannered.,เด็กคนนี้มีมารยาทและได้รับการอบรมมาดี
+教练,教练教我们打篮球。,The coach teaches us to play basketball.,โค้ชสอนพวกเราเล่นบาสเกตบอล
+散,花瓣散落在地上。,The flower petals scattered on the ground.,กลีบดอกไม้ร่วงกระจายอยู่บนพื้น
+散布,有人在网上散布谣言。,Someone spread rumors online.,มีคนกระจายข่าวลือทางอินเทอร์เน็ต
+散文,这本书收录了他的散文。,This book collects his prose writings.,หนังสือเล่มนี้รวบรวมงานเขียนร้อยแก้วของเขา
+敬,我们应该敬老爱幼。,We should respect the old and cherish the young.,เราควรเคารพผู้สูงอายุและรักเด็ก
+敬业,她工作起来非常敬业。,She is very dedicated when she works.,เธอทำงานอย่างทุ่มเทมาก
+敬礼,士兵向国旗敬礼。,The soldier saluted the flag.,ทหารทำความเคารพธงชาติ
+敬而远之,大家对他敬而远之。,Everyone keeps a respectful distance from him.,ทุกคนต่างพากันหลีกห่างเขาด้วยความเกรงใจ
+敬请,敬请各位准时到场。,Please kindly arrive on time.,ขอเรียนเชิญทุกท่านมาถึงตรงเวลา
+敬酒,新郎向客人敬酒。,The groom toasted the guests.,เจ้าบ่าวยกแก้วดื่มอวยพรแขก
+敬重,学生们都很敬重老师。,The students deeply respect their teacher.,นักเรียนทุกคนเคารพนับถือครูมาก
+数目,参加人数的数目不小。,The number of participants isn't small.,จำนวนคนที่เข้าร่วมนั้นไม่น้อยเลย
+敲门,有人在敲门。,Someone is knocking on the door.,มีคนเคาะประตูอยู่
+整,他整整等了一个小时。,He waited for a whole hour.,เขารอตั้งหนึ่งชั่วโมงเต็มๆ
+整体,这个方案整体上不错。,This plan is pretty good overall.,โดยรวมแล้วแผนนี้ใช้ได้เลย
+整合,公司决定整合各部门资源。,The company decided to integrate resources across departments.,บริษัทตัดสินใจรวมทรัพยากรของแต่ละแผนกเข้าด้วยกัน
+整天,他整天坐在电脑前。,He sits in front of the computer all day.,เขานั่งอยู่หน้าคอมพิวเตอร์ทั้งวัน
+整洁,她的房间总是很整洁。,Her room is always very tidy.,ห้องของเธอสะอาดเป็นระเบียบเสมอ
+整顿,学校决定整顿纪律。,The school decided to tighten up discipline.,โรงเรียนตัดสินใจจัดระเบียบวินัยเสียใหม่
+整齐,桌上的书摆放得很整齐。,The books on the desk are arranged neatly.,หนังสือบนโต๊ะวางเรียงกันอย่างเป็นระเบียบ
+文人,古代文人喜欢写诗。,Ancient scholars loved writing poetry.,ปราชญ์ในสมัยโบราณชอบแต่งบทกวี
+文献,他查阅了很多文献。,He consulted a lot of reference materials.,เขาค้นคว้าเอกสารอ้างอิงมามากมาย
+斗,两只公鸡在斗架。,The two roosters are fighting.,ไก่ตัวผู้สองตัวกำลังตีกัน
+断定,医生断定他得了感冒。,The doctor concluded that he had a cold.,หมอสรุปว่าเขาเป็นหวัด
+断断续续,雨断断续续下了一天。,It rained on and off all day.,ฝนตกๆ หยุดๆ อยู่ทั้งวัน
+断裂,这根绳子突然断裂了。,This rope suddenly snapped.,เชือกเส้นนี้ขาดออกจากกันกะทันหัน
+新人,公司来了新人。,A newcomer joined the company.,มีคนใหม่เข้ามาที่บริษัท
+新型,公司推出了新型手机。,The company launched a new type of phone.,บริษัทเปิดตัวโทรศัพท์แบบใหม่
+新房,他们搬进了新房。,They moved into their new house.,พวกเขาย้ายเข้าบ้านใหม่แล้ว
+新款,这是今年的新款手机。,This is this year's new model phone.,นี่คือโทรศัพท์รุ่นใหม่ของปีนี้
+新生,新生们正在报到。,The new students are registering.,นักศึกษาใหม่กำลังมารายงานตัว
+新陈代谢,运动能加快新陈代谢。,Exercise can speed up metabolism.,การออกกำลังกายช่วยเร่งการเผาผลาญของร่างกาย
+方,你知道正确的方向吗？,Do you know the correct direction?,คุณรู้ทิศทางที่ถูกต้องไหม
+方向盘,司机紧握着方向盘。,The driver gripped the steering wheel tightly.,คนขับกำพวงมาลัยไว้แน่น
+施行,新法律下个月起施行。,The new law will be put into practice next month.,กฎหมายใหม่จะเริ่มบังคับใช้เดือนหน้า
+旁,他坐在我的旁边。,He sat down beside me.,เขานั่งอยู่ข้างๆ ฉัน
+旅客,机场里挤满了旅客。,The airport was packed with travelers.,สนามบินเต็มไปด้วยผู้โดยสาร
+旅程,这次旅程让我难忘。,This journey was unforgettable for me.,การเดินทางครั้งนี้ทำให้ฉันประทับใจไม่รู้ลืม
+旅行社,我们通过旅行社订票。,We booked tickets through a travel agency.,เราจองตั๋วผ่านบริษัททัวร์
+旋律,这首歌的旋律很动听。,This song's melody is very pleasant.,ทำนองของเพลงนี้ไพเราะมาก
+旗帜,广场上飘扬着旗帜。,Flags flutter in the square.,ธงโบกสะบัดอยู่กลางลานกว้าง
+无不,大家听了无不感动。,Everyone who heard it was moved.,ทุกคนที่ได้ฟังต่างก็ซาบซึ้งใจไปตามๆ กัน
+无偿,他无偿捐献了骨髓。,He donated bone marrow free of charge.,เขาบริจาคไขกระดูกโดยไม่คิดเงิน
+无关紧要,这件小事无关紧要。,This small matter is insignificant.,เรื่องเล็กน้อยนี้ไม่สำคัญอะไร
+无形,压力是一种无形的负担。,Pressure is an invisible burden.,ความเครียดเป็นภาระที่มองไม่เห็น
+无形中,他无形中影响了我们。,He influenced us imperceptibly.,เขาส่งผลต่อเราโดยไม่รู้ตัว
+无忧无虑,孩子们过着无忧无虑的生活。,The children live a carefree life.,เด็กๆ ใช้ชีวิตอย่างไร้กังวล
+无恶不作,这个坏人无恶不作。,This bad person will stop at nothing evil.,คนชั่วคนนี้ทำเลวได้ทุกอย่าง
+无意,我无意伤害你的感情。,I didn't mean to hurt your feelings.,ฉันไม่ได้ตั้งใจจะทำร้ายความรู้สึกของเธอ
+无所作为,他整天无所作为。,He achieves nothing all day long.,เขาเอาแต่อยู่ไปวันๆ ไม่ทำอะไรเป็นชิ้นเป็นอัน
+无所谓,他对结果无所谓。,He doesn't care about the result.,เขาไม่แคร์ผลลัพธ์เลย
+无比,这里的风景无比美丽。,The scenery here is incomparably beautiful.,ทิวทัศน์ที่นี่สวยงามอย่างหาที่เปรียบไม่ได้
+无疑,这无疑是个好消息。,This is undoubtedly good news.,นี่เป็นข่าวดีอย่างไม่ต้องสงสัย
+无知,他的话显得很无知。,His words sound very ignorant.,คำพูดของเขาฟังดูไม่มีความรู้เอาเสียเลย
+无私,她无私地帮助大家。,She selflessly helps everyone.,เธอช่วยเหลือทุกคนอย่างไม่เห็นแก่ตัว
+无穷,大海蕴藏着无穷的力量。,The sea holds endless power.,ท้องทะเลซ่อนพลังอันไม่มีที่สิ้นสุดเอาไว้
+无线,家里安装了无线网络。,Wireless internet was installed at home.,ที่บ้านติดตั้งเครือข่ายไร้สายไว้
+无能,他因无能被解雇了。,He was fired for incompetence.,เขาถูกไล่ออกเพราะไร้ความสามารถ
+无能为力,面对失败他无能为力。,Faced with failure he was powerless.,เมื่อเจอความล้มเหลวเขาก็ทำอะไรไม่ได้เลย
+无足轻重,这个职位无足轻重。,This position is insignificant.,ตำแหน่งนี้ไม่ได้มีบทบาทสำคัญอะไรเลย
+无限,宇宙的可能性近乎无限。,The universe's possibilities are nearly unlimited.,ความเป็นไปได้ของจักรวาลแทบจะไร้ขีดจำกัด
+日前,日前他刚回国。,He just returned home the other day.,เมื่อไม่กี่วันก่อนเขาเพิ่งกลับประเทศ
+日后,日后我们再见面。,We'll meet again someday.,ไว้วันหลังเราค่อยเจอกันใหม่
+日夜,工人们日夜赶工。,The workers rushed the job day and night.,คนงานเร่งงานกันทั้งวันทั้งคืน
+日常,这是我们的日常工作。,This is our daily work.,นี่คืองานประจำวันของเรา
+日期,请确认出发日期。,Please confirm the departure date.,กรุณายืนยันวันที่ออกเดินทาง
+日益,城市交通日益拥堵。,Urban traffic is getting more congested day by day.,การจราจรในเมืองติดขัดมากขึ้นทุกวัน
+日程,会议日程已经安排好了。,The meeting schedule has already been arranged.,กำหนดการประชุมจัดเรียบร้อยแล้ว
+旨在,这项政策旨在减少污染。,This policy is aimed at reducing pollution.,นโยบายนี้มีเป้าหมายเพื่อลดมลพิษ
+早就,我早就想去旅行了。,I've long wanted to go traveling.,ฉันอยากไปเที่ยวมาตั้งนานแล้ว
+早年,他早年在国外生活过。,In his early years he lived abroad.,เมื่อก่อนตอนหนุ่มๆ เขาเคยใช้ชีวิตอยู่ต่างประเทศ
+早日,祝你早日康复。,I wish you a speedy recovery.,ขอให้หายป่วยไวๆ นะ
+早晚,他早晚会明白真相。,He will understand the truth sooner or later.,ไม่ช้าก็เร็วเขาต้องเข้าใจความจริง
+早晨,我每天早晨去跑步。,I go running every morning.,ฉันไปวิ่งทุกเช้า
+早餐,我每天七点吃早餐。,I eat breakfast at seven every day.,ฉันกินอาหารเช้าตอนเจ็ดโมงทุกวัน
+早饭,他每天都吃早饭。,He eats breakfast every day.,เขากินข้าวเช้าทุกวัน
+旱,今年夏天发生了大旱。,There was a severe drought this summer.,หน้าร้อนปีนี้เกิดภัยแล้งครั้งใหญ่
+时常,他时常去图书馆看书。,He often goes to the library to read.,เขาไปอ่านหนังสือที่ห้องสมุดอยู่บ่อยๆ
+时时,他时时想起故乡。,He often thinks of his hometown.,เขานึกถึงบ้านเกิดอยู่เสมอ
+时机,现在不是投资的好时机。,Now is not a good time to invest.,ตอนนี้ไม่ใช่จังหวะที่ดีในการลงทุน
+时段,这个时段很拥挤。,This time period is very crowded.,ช่วงเวลานี้คนเยอะมาก
+时空,这部电影探讨了时空穿梭的奥秘。,This movie explores the mystery of time travel.,หนังเรื่องนี้พูดถึงความลี้ลับของการเดินทางข้ามเวลาและมิติ
+时节,清明时节雨水较多。,There's more rain during the Qingming season.,ช่วงเทศกาลเช็งเม้งมักมีฝนตกค่อนข้างมาก
+时装,她喜欢看时装杂志。,She likes reading fashion magazines.,เธอชอบอ่านนิตยสารแฟชั่น
+昂贵,这件外套价格昂贵。,This coat is very expensive.,เสื้อโค้ตตัวนี้ราคาแพงมาก
+昆虫,花园里生活着很多种昆虫。,Many kinds of insects live in the garden.,ในสวนมีแมลงอาศัยอยู่หลายชนิด
+明亮,教室里灯光很明亮。,The classroom lights are very bright.,แสงไฟในห้องเรียนสว่างมาก
+明日,明日天气将会转晴。,Tomorrow's weather will turn clear.,พรุ่งนี้อากาศจะเปลี่ยนเป็นแจ่มใส
+明星,她是一位电影明星。,She is a movie star.,เธอเป็นดาราภาพยนตร์
+明智,这是一个明智的选择。,This is a wise choice.,นี่เป็นทางเลือกที่ชาญฉลาด
+昏迷,他因车祸陷入昏迷。,He fell into a coma from the car accident.,เขาหมดสติเพราะอุบัติเหตุรถชน
+是非,他从不参与是非。,He never gets involved in disputes.,เขาไม่เคยเข้าไปยุ่งกับเรื่องผิดถูกวุ่นวาย
+昼夜,工厂昼夜不停地生产。,The factory produces around the clock.,โรงงานเดินเครื่องผลิตไม่หยุดทั้งกลางวันและกลางคืน
+显出,他脸上显出担心的表情。,His face showed a worried expression.,ใบหน้าของเขาแสดงสีหน้ากังวลออกมา
+显眼,这个广告牌很显眼。,This billboard is very eye-catching.,ป้ายโฆษณานี้สะดุดตามาก
+显而易见,结果显而易见。,The result is obvious.,ผลลัพธ์เห็นได้ชัดอยู่แล้ว
+显著,治疗效果十分显著。,The treatment's effect is very notable.,ผลการรักษาดีขึ้นอย่างเห็นได้ชัด
+晒,妈妈把衣服拿去晒。,Mom took the clothes out to dry in the sun.,แม่เอาเสื้อผ้าไปตากแดด
+晕,她突然感到有点晕。,She suddenly felt a bit dizzy.,จู่ๆ เธอก็รู้สึกเวียนหัวนิดหน่อย
+晕倒,她在路上突然晕倒了。,She suddenly fainted on the road.,เธอเป็นลมล้มลงกลางถนนกะทันหัน
+晚报,爸爸每天都看晚报。,Dad reads the evening paper every day.,พ่ออ่านหนังสือพิมพ์ตอนเย็นทุกวัน
+晚期,他被诊断为癌症晚期。,He was diagnosed with late-stage cancer.,เขาถูกวินิจฉัยว่าเป็นมะเร็งระยะสุดท้าย
+晚点,飞机晚点了两小时。,The flight was delayed by two hours.,เครื่องบินดีเลย์ไปสองชั่วโมง
+普及,智能手机已经普及了。,Smartphones have already become widespread.,สมาร์ทโฟนแพร่หลายไปทั่วแล้ว
+普通人,他只是个普通人。,He is just an ordinary person.,เขาก็แค่คนธรรมดาคนหนึ่ง
+景区,这个景区门票很贵。,The tickets for this scenic area are expensive.,ค่าเข้าแหล่งท่องเที่ยวนี้แพงมาก
+景点,这座城市有很多景点。,This city has many tourist attractions.,เมืองนี้มีสถานที่ท่องเที่ยวเยอะมาก
+景观,公园的景观十分优美。,The park's scenery is very beautiful.,ทิวทัศน์ของสวนสาธารณะสวยงามมาก
+晶莹,露珠晶莹剔透。,The dewdrop is sparkling and clear.,หยดน้ำค้างใสแวววาว
+智能,这款手机很智能。,This phone is very smart.,โทรศัพท์รุ่นนี้ฉลาดมาก
+暂,请大家暂时安静。,"Please be quiet for now, everyone.",ขอให้ทุกคนเงียบไว้ชั่วคราวก่อน
+暂停,比赛因下雨暂停了。,The match was suspended because of rain.,การแข่งขันถูกพักชั่วคราวเพราะฝนตก
+暑期,暑期他去打工挣钱。,During summer vacation he worked a part-time job to earn money.,ช่วงปิดเทอมหน้าร้อนเขาไปทำงานหาเงิน
+暖,春天的阳光很暖。,The spring sunshine is very warm.,แสงแดดในฤดูใบไม้ผลิอบอุ่นมาก
+暗示,他的话暗示了一些问题。,His words hinted at some problems.,คำพูดของเขาบอกเป็นนัยถึงปัญหาบางอย่าง
+暴雨,昨晚下了一场暴雨。,There was a rainstorm last night.,เมื่อคืนฝนตกหนักมาก
+暴露,这个错误暴露了问题。,This mistake exposed the problem.,ความผิดพลาดนี้เผยให้เห็นปัญหา
+暴风雨,一场暴风雨即将来临。,A rainstorm is about to arrive.,พายุฝนกำลังจะมาถึง
+曲折,这条山路十分曲折。,This mountain road is very winding.,ทางภูเขาเส้นนี้คดเคี้ยวมาก
+更新,手机系统需要更新。,The phone system needs an update.,ระบบโทรศัพท์ต้องอัปเดต
+曾经,我曾经去过北京。,I have been to Beijing before.,ฉันเคยไปปักกิ่งมาก่อน
+替代,机器无法完全替代人。,Machines cannot fully replace humans.,เครื่องจักรไม่สามารถแทนที่คนได้อย่างสมบูรณ์
+替换,请替换损坏的零件。,Please replace the damaged part.,กรุณาเปลี่ยนอะไหล่ที่เสียหายออก
+月份,现在是什么月份？,What month is it now?,ตอนนี้เดือนอะไรแล้ว
+月初,房租要在月初交。,Rent must be paid at the start of the month.,ค่าเช่าบ้านต้องจ่ายตอนต้นเดือน
+月球,人类登上了月球。,Humans landed on the moon.,มนุษย์ได้ขึ้นไปเหยียบดวงจันทร์แล้ว
+有利,这个决定对我们有利。,This decision is beneficial for us.,การตัดสินใจนี้เป็นประโยชน์ต่อเรา
+有力,他的发言非常有力。,His speech was very powerful.,คำพูดของเขาหนักแน่นมาก
+有望,这个项目有望成功。,This project is expected to succeed.,โครงการนี้มีความหวังว่าจะสำเร็จ
+有毒,这种蘑菇有毒不能吃。,This kind of mushroom is poisonous and inedible.,เห็ดชนิดนี้มีพิษกินไม่ได้
+有的是,这里有的是时间。,There's plenty of time here.,ที่นี่มีเวลาเหลือเฟือ
+服从,士兵必须服从命令。,Soldiers must obey orders.,ทหารต้องปฏิบัติตามคำสั่ง
+服饰,这家店卖传统服饰。,This shop sells traditional clothing.,ร้านนี้ขายเครื่องแต่งกายแบบดั้งเดิม
+朝代,唐朝是一个繁荣的朝代。,The Tang dynasty was a prosperous era.,ราชวงศ์ถังเป็นราชวงศ์ที่รุ่งเรือง
+朝气蓬勃,年轻人朝气蓬勃。,Young people are full of youthful energy.,คนหนุ่มสาวเต็มไปด้วยพลังและความสดใส
+期待,大家都期待假期到来。,Everyone looks forward to the vacation.,ทุกคนต่างเฝ้ารอวันหยุดมาถึง
+期望,父母对他期望很高。,His parents have high expectations of him.,พ่อแม่คาดหวังกับเขาสูงมาก
+期限,这份合同有期限。,This contract has a time limit.,สัญญาฉบับนี้มีกำหนดระยะเวลา
+木匠,他的父亲是一位木匠。,His father is a carpenter.,พ่อของเขาเป็นช่างไม้
+木材,这栋房子用了很多木材。,This house used a lot of wood.,บ้านหลังนี้ใช้ไม้เยอะมาก
+木板,工人在钉木板。,The worker is nailing a wooden board.,คนงานกำลังตอกแผ่นไม้
+末,这是本世纪末的重大事件。,This is a major event at the end of this century.,นี่เป็นเหตุการณ์สำคัญในช่วงปลายศตวรรษนี้
+本事,他真有本事解决这个难题。,He really has the ability to solve this hard problem.,เขามีความสามารถจริงๆ ที่แก้ปัญหายากๆ นี้ได้
+本人,这封信是他本人写的。,This letter was written by him personally.,จดหมายฉบับนี้เขาเขียนเองกับมือ
+朴实,他的衣着十分朴实。,His clothing is very plain and simple.,การแต่งตัวของเขาเรียบง่ายมาก
+朴素,她的穿着很朴素。,Her clothing is very simple.,เธอแต่งกายอย่างเรียบง่ายไม่หรูหรา
+朵,她买了一朵花。,She bought a flower.,เธอซื้อดอกไม้มาหนึ่งดอก
+机智,他机智地解决了难题。,He cleverly solved the difficult problem.,เขาแก้ปัญหายากได้อย่างมีไหวพริบ
+机灵,这只小狗非常机灵。,This little dog is very clever.,ลูกสุนัขตัวนี้ฉลาดแสนรู้มาก
+机遇,这是难得的发展机遇。,This is a rare opportunity for development.,นี่เป็นโอกาสในการพัฒนาที่หาได้ยาก
+杀,士兵不能随意杀人。,Soldiers must not kill people at will.,ทหารจะฆ่าคนตามอำเภอใจไม่ได้
+杀手,电影里的杀手很冷酷。,The killer in the movie is very cold-blooded.,มือสังหารในหนังเย็นชามาก
+权威,他是这个领域的权威。,He is an authority in this field.,เขาถือเป็นผู้เชี่ยวชาญระดับผู้นำในวงการนี้
+杆,旗杆上挂着国旗。,A national flag hangs on the flagpole.,บนเสาธงมีธงชาติแขวนอยู่
+村,他出生在一个小村。,He was born in a small village.,เขาเกิดในหมู่บ้านเล็กๆ
+村庄,这个村庄风景很美。,This village has beautiful scenery.,หมู่บ้านแห่งนี้ทิวทัศน์สวยงามมาก
+杜绝,学校要杜绝浪费现象。,The school must put an end to wastefulness.,โรงเรียนต้องกำจัดพฤติกรรมสิ้นเปลืองให้หมดสิ้น
+束,她送了我一束鲜花。,She gave me a bunch of fresh flowers.,เธอให้ช่อดอกไม้สดฉันหนึ่งช่อ
+束缚,传统观念束缚着她。,Traditional ideas held her back.,ความคิดเก่าๆ คอยพันธนาการเธอเอาไว้
+来临,春天的脚步已经来临。,Spring has already arrived.,ย่างก้าวของฤดูใบไม้ผลิมาถึงแล้ว
+来信,我收到了朋友的来信。,I received a letter from my friend.,ฉันได้รับจดหมายจากเพื่อน
+来往,两家一直有来往。,The two families have always kept in touch.,สองครอบครัวไปมาหาสู่กันมาโดยตลอด
+来源于,这个故事来源于真实事件。,This story originates from a true event.,เรื่องนี้มีที่มาจากเหตุการณ์จริง
+杰出,他是一位杰出的科学家。,He is an outstanding scientist.,เขาเป็นนักวิทยาศาสตร์ที่โดดเด่น
+松,他终于松了一口气。,He finally breathed a sigh of relief.,ในที่สุดเขาก็ถอนหายใจโล่งอก
+极为,这件事极为重要。,This matter is extremely important.,เรื่องนี้สำคัญอย่างยิ่ง
+极力,他极力反对这个方案。,He strongly opposed this plan.,เขาคัดค้านแผนนี้อย่างสุดกำลัง
+极度,他现在感到极度疲惫。,He feels extremely exhausted right now.,ตอนนี้เขารู้สึกเหนื่อยล้าอย่างที่สุด
+极端,他的想法太极端了。,His idea is too extreme.,ความคิดของเขาสุดโต่งเกินไป
+极限,他挑战了自己的极限。,He challenged his own limits.,เขาท้าทายขีดจำกัดของตัวเอง
+构思,作者花了两年构思这本书。,The author spent two years conceiving this book.,ผู้เขียนใช้เวลาสองปีในการคิดโครงเรื่องหนังสือเล่มนี้
+构想,他提出了一个新构想。,He proposed a new concept.,เขาเสนอแนวคิดใหม่
+构造,这座建筑的构造非常复杂。,This building's structure is very complex.,โครงสร้างของอาคารหลังนี้ซับซ้อนมาก
+果园,秋天果园里挂满了苹果。,In autumn the orchard is full of apples.,ในฤดูใบไม้ร่วงสวนผลไม้เต็มไปด้วยแอปเปิล
+果断,领导做事非常果断。,The leader is very decisive in handling matters.,หัวหน้าทำงานเด็ดขาดมาก
+果然,他果然来了。,"Sure enough, he came.",เขามาจริงๆ ด้วย
+枪,警察举起了枪。,The police officer raised his gun.,ตำรวจยกปืนขึ้น
+架,书架上摆满了新书。,The bookshelf is filled with new books.,บนชั้นวางหนังสือเต็มไปด้วยหนังสือใหม่
+柔软,这条毛毯摸起来很柔软。,This blanket feels very soft to the touch.,ผ้าห่มผืนนี้จับดูแล้วนุ่มมาก
+柜台,顾客在柜台前排队。,Customers are lining up in front of the counter.,ลูกค้าต่อแถวอยู่หน้าเคาน์เตอร์
+柜子,衣服放在柜子里。,The clothes are in the cupboard.,เสื้อผ้าอยู่ในตู้
+查找,他在网上查找资料。,He searched for materials online.,เขาค้นหาข้อมูลบนอินเทอร์เน็ต
+查明,警方正在查明真相。,Police are investigating to find out the truth.,ตำรวจกำลังสืบหาความจริง
+柱子,大厅中央立着柱子。,A pillar stands in the center of the hall.,ตรงกลางห้องโถงมีเสาตั้งอยู่
+标,请标出重点。,Please mark the key points.,กรุณาทำเครื่องหมายจุดสำคัญไว้
+标志,这座塔是城市的标志。,This tower is a landmark of the city.,หอคอยนี้เป็นสัญลักษณ์ของเมือง
+栏目,这个电视栏目很受欢迎。,This TV program segment is very popular.,รายการโทรทัศน์ช่วงนี้ได้รับความนิยมมาก
+树叶,秋天树叶都黄了。,"In autumn, the leaves all turn yellow.",พอถึงฤดูใบไม้ร่วงใบไม้ก็เปลี่ยนเป็นสีเหลืองหมด
+树木,公园里种满了树木。,The park is full of trees.,ในสวนสาธารณะปลูกต้นไม้ไว้เต็มไปหมด
+树林,孩子们在树林里玩。,The children are playing in the woods.,เด็กๆ เล่นกันอยู่ในป่า
+株,院子里种着一株梅花。,A plum tree is planted in the yard.,ในสนามปลูกต้นเหมยไว้หนึ่งต้น
+核对,请仔细核对数据。,Please carefully verify the data.,กรุณาตรวจสอบข้อมูลอย่างละเอียด
+根基,良好的根基很重要。,A solid foundation is very important.,รากฐานที่ดีสำคัญมาก
 根源,找到问题的根源很重要。,It's important to find the root of the problem.,การหาต้นตอของปัญหาเป็นเรื่องสำคัญ
 格局,这场比赛的格局变了。,The pattern of this match has changed.,รูปแบบของการแข่งขันนัดนี้เปลี่ยนไปแล้ว
 格式,请按照要求调整格式。,Please adjust the format as required.,ช่วยปรับรูปแบบให้ตรงตามที่กำหนดด้วย
@@ -6431,7 +6431,7 @@ hanzi,sentence,en,th
 胎,这是她的第一胎。,This is her first pregnancy.,นี่เป็นท้องแรกของเธอ
 胖子,他从小就是个胖子。,He has been a chubby person since childhood.,เขาเป็นคนอ้วนมาตั้งแต่เด็ก
 胜,我们队最终获胜了。,Our team finally won.,ในที่สุดทีมเราก็ชนะ
-胜任,他完全胜任这份工作。,He is fully qualified for this job.,เขามีความสามารถทำงานนี้ได้อย่างเต็มที่
+胜任,他完全胜任这份工作。,He is fully qualified for this job.,เขาเหมาะกับงานนี้มาก
 胶片,老相机用的是胶片。,The old camera uses film.,กล้องเก่าใช้ฟิล์ม
 胸部,他感到胸部疼痛。,He felt pain in his chest.,เขารู้สึกเจ็บที่หน้าอก
 能否,我不知道能否成功。,I don't know whether it will succeed.,ฉันไม่รู้ว่าจะสำเร็จได้ไหม
@@ -6486,7 +6486,7 @@ hanzi,sentence,en,th
 艺人,他是有名的艺人。,He is a well-known entertainer.,เขาเป็นศิลปินที่มีชื่อเสียง
 节假日,节假日商场人特别多。,There are especially many people at the mall on public holidays.,ช่วงวันหยุดเทศกาล ห้างสรรพสินค้าคนเยอะเป็นพิเศษ
 节奏,这首歌的节奏很快。,This song has a fast rhythm.,เพลงนี้จังหวะเร็วมาก
-节气,立春是一个节气。,Start of Spring is a solar term.,ลี่ชุนเป็นหนึ่งในสารทตามปฏิทินจีน
+节气,立春是一个节气。,Start of Spring is a solar term.,ลี่ชุนเป็นหนึ่งใน 24 ฤดูกาลย่อยตามปฏิทินจีน
 节省,我们应该节省用水。,We should conserve water.,เราควรประหยัดน้ำ
 芝麻,这个饼上撒了芝麻。,This pancake is sprinkled with sesame.,ขนมแป้งชิ้นนี้โรยงาไว้ด้วย
 芬芳,花园里花朵芬芳迷人。,The flowers in the garden are fragrant and charming.,ดอกไม้ในสวนหอมกรุ่นน่าหลงใหล
@@ -7034,7 +7034,7 @@ hanzi,sentence,en,th
 顺畅,今天交通很顺畅。,Traffic is very smooth today.,วันนี้การจราจรคล่องตัวมาก
 顺着,顺着这条路一直走。,Follow this road straight ahead.,เดินไปตามถนนสายนี้เรื่อยๆ
 须,出门必须带伞。,You must bring an umbrella when going out.,ออกจากบ้านต้องพกร่มไปด้วย
-顽强,他有顽强的意志。,He has a tenacious will.,เขามีความมุ่งมั่นที่แข็งแกร่ง
+顽强,他有顽强的意志。,He has a tenacious will.,เขามีความมุ่งมั่นแข็งแกร่งมาก
 顾,他一心照顾家人。,He devotes himself to caring for his family.,เขาทุ่มเทดูแลคนในครอบครัว
 顿,他说话时突然顿了一下。,He suddenly paused while speaking.,เขาพูดไปแล้วจู่ๆ ก็หยุดชะงักไปครู่หนึ่ง
 颁布,政府颁布了新法律。,The government issued a new law.,รัฐบาลประกาศใช้กฎหมายใหม่
