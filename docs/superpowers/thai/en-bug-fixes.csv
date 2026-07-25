@@ -1,0 +1,127 @@
+hanzi,english_current,english_fixed,verdict,reason
+意思,idea; opinion,"meaning; idea, intention",fix,add dominant sense 'meaning'
+比较,to compare; to contrast,"to compare, to contrast; relatively, quite",fix,add adverbial sense 'quite/relatively'
+种,kind; type,"kind, type; seed; to plant, to sow",fix,add omitted seed / to-plant senses
+学会,to learn; to master,"to learn, to master; academic society, association",fix,add omitted noun sense 'society/association'
+幽默,loanword humor; humorous,humor; humorous,fix,strip meta tag 'loanword'
+变化,intransitive to change; to vary,"to change, to vary; change, variation",fix,strip meta tag 'intransitive'
+运动,to move; to exercise,"to exercise, to move; sports, athletics; movement, campaign",fix,add omitted 'sports' and 'movement/campaign' senses
+还是,still; had better,still; or (in a question),fix,add common 'or' choice-question sense; trimmed to two
+活动,to exercise; to move about,"activity, event; to move about, to exercise",fix,add dominant noun sense 'activity/event'
+分,to divide; to separate,"to divide, to separate; minute, point, fraction",fix,add noun senses (minute/point/fraction); trimmed to two
+开,to open; to turn on,to open; to turn on; to drive,fix,add common 'drive' sense
+该,should; ought to,"should, ought to; the aforementioned, this",fix,add omitted demonstrative sense 'the said/this'
+作为,one's conduct; deed,"as, in the capacity of; conduct, deed",fix,add dominant 'as / in the capacity of' sense
+表现,to show; to show off,"to show, to display; performance, behavior",fix,add omitted noun sense 'performance/behavior'
+加油,to add oil; to top up with gas,"come on!, go for it!; to cheer on; to refuel",fix,add dominant idiomatic 'go!/cheer on' sense
+友谊,companionship; fellowship,friendship,fix,'companionship; fellowship' too loose; word means friendship
+手,hand; formal to hold,hand,fix,drop spurious 'formal to hold'
+讨厌,to dislike; to loathe,"to dislike, to loathe; annoying, disgusting",fix,add adjectival sense 'annoying/disgusting'
+轻松,light; gentle,"relaxed, easygoing; effortless",fix,'light; gentle' wrong; real sense is relaxed/effortless
+不过,only; merely,"but, however; only, merely",fix,add primary sense 'but; however'
+块,lump; chunk,"piece, lump, chunk; (classifier for pieces); yuan (colloquial)",fix,add classifier and money senses
+原来,original; former,"originally, formerly; as it turns out (realization)",fix,add common realization sense 'it turns out'
+受,to receive; to accept,"to receive, to accept; to endure, to bear",fix,add omitted 'endure/suffer' sense
+一边,one side; either side,"one side; while, at the same time (一边…一边)",fix,add omitted simultaneity sense
+交通,to be connected; traffic,"traffic; transportation, communications",fix,'to be connected' rare/archaic; primary is traffic/transport
+反映,to mirror; to reflect,"to reflect, to mirror; to report, to make known",fix,add omitted 'report/make known' sense
+放,to put; to place,"to put, to place; to release, to let go",fix,add common 'release/let go' sense; trimmed to two
+位,position; location,"(polite classifier for people); position, place",fix,add primary sense: polite classifier for people
+巧克力,loanword chocolate,chocolate,fix,strip meta tag 'loanword'
+表示,of someone to express; to state,"to express, to indicate; to show",fix,malformed 'of someone to express'; sense = to express/indicate
+心灵,bright; smart,"soul, spirit; heart, inner world",fix,'bright; smart' wrong; word means soul/inner-heart
+信,letter; mail,"letter, mail; to believe, to trust; faith",fix,add omitted verb sense 'to believe/trust'
+度,to pass; to spend,"degree, extent; to spend, to pass (time)",fix,add omitted noun sense 'degree/extent'
+外面,outside (; surface,"outside; exterior, surface",fix,fix malformed 'outside (; surface'
+香,fragrant; sweet smelling,"fragrant, sweet-smelling; delicious, appetizing; incense",fix,add omitted 'delicious' and 'incense' senses
+兴趣,interest; interest,interest,fix,remove duplicated sense
+千万,ten million; countless,"ten million; countless; by all means, be sure to",fix,add omitted emphatic-adverb sense
+天生,nature; disposition,"inborn, innate; natural, by nature",fix,'nature; disposition' wrong; word means inborn/innate
+心中,central point; in one's thoughts,"in one's heart, in one's mind",fix,'central point' is 中心; 心中 = in one's heart/mind
+根本,fundamental; basic,"fundamental, basic; root, foundation; (not) at all (根本不)",fix,add omitted noun and adverbial (not-at-all) senses
+符合,in accordance with; physics coincidence,"to conform to, to accord with; to match",fix,'physics coincidence' nonsensical; word = to conform to
+到底,finally; in the end,"in the end, after all; on earth, actually (in questions)",fix,add omitted interrogative-emphatic sense
+卫星,aerospace satellite; astronomy satellite,satellite,fix,'aerospace satellite; astronomy satellite' redundant; word = satellite
+总,general; overall,"general, overall, chief; always, invariably",fix,add omitted adverbial sense 'always'
+恐怕,fear; to dread,"I'm afraid that, probably; perhaps",fix,"adverbial 'I'm afraid/probably', not verb 'to dread'"
+名,name; noun,"name; fame, reputation; (classifier for people)",fix,'noun' corrupt; word = name / fame / classifier for people
+妹妹,younger sister; young woman,younger sister,fix,drop colloquial extension 'young woman'
+机构,mechanism; structure,"organization, institution, agency; mechanism",fix,add dominant sense 'organization/institution/agency'
+灵敏,smart; clever,"sensitive, responsive; agile",fix,'smart; clever' wrong; word means sensitive/agile
+阿姨,maternal aunt; step-mother,"auntie, aunt; nanny, domestic helper",fix,'step-mother' wrong; word = auntie / nanny-helper
+人家,household; dwelling,"other people, someone else; household, family",fix,add dominant 'other people' sense
+分别,to part; to leave each other,"to part, to separate; separately, respectively; to distinguish",fix,add 'separately/respectively' and 'to distinguish' senses
+打发,to send away; to dismiss,"to send away, to dismiss; to pass, to while away (time)",fix,add common '打发时间 = pass/kill time' sense
+故,happening; instance,"reason, cause; deliberately, on purpose; former, old",fix,'happening; instance' wrong; senses = reason / deliberately / former
+教训,to provide guidance; a talking-to,"to teach a lesson, to reprimand; a lesson (learned)",fix,restore negative connotation (scold / harsh lesson)
+过敏,medicine allergic; hypersensitive,allergic; hypersensitive,fix,strip meta tag 'medicine'
+加以,formal to apply; literary moreover,"to apply, to carry out (an action upon something)",fix,"formal dummy-verb marker, not 'moreover'"
+包裹,to wrap up; to bind up,"parcel, package; to wrap up, to bind up",fix,add dominant noun sense 'parcel/package'
+启发,to enlighten; to explain,"to inspire, to enlighten; to stimulate (thought)",fix,drop wrong sense 'to explain'
+启示,to reveal; to enlighten,"to enlighten, to inspire; revelation, insight",fix,'to reveal' imprecise; add revelation/insight
+尾巴,tail; colloquial pr.,tail,fix,strip dictionary artifact 'colloquial pr.'
+答应,to answer; to respond,"to agree, to consent, to promise; to answer, to respond",fix,add primary sense 'to agree/consent/promise'
+领导,lead; leading,"leader, leadership; to lead, to guide",fix,add dominant noun sense 'leader/leadership'
+俱乐部,loanword club,club,fix,strip meta tag 'loanword'
+原始,first; original,"primitive, original; raw, primary",fix,'first' misleading; word = primitive/original/raw
+携带,to carry; to support,"to carry, to bring along",fix,drop spurious sense 'to support'
+一代,an era; an age,a generation,fix,'an era; an age' wrong; word = a generation
+不止,incessantly; without end,"more than, not only; incessantly, without end",fix,add common 'more than / not only' sense
+乘车,to ride; to drive,"to ride in a vehicle, to take (a bus/train)",fix,'to drive' wrong; word = to ride/take a vehicle
+倾诉,to say everything,"to pour out (one's feelings), to confide",fix,'to say everything' weak; real sense = pour out/confide
+全身,the whole body; typography em,the whole body,fix,strip bogus 'typography em' sense
+失落,to lose; to drop,"dejected, feeling a sense of loss; to lose, to drop",fix,add dominant sense 'feel a sense of loss / dejected'
+开朗,spacious and well-lit; open and clear,"cheerful, optimistic; open and clear, spacious",fix,add dominant personality sense 'cheerful/optimistic'
+恐龙,dinosaur; old ugly person,dinosaur,fix,strip internet slang 'old ugly person'
+感性,perception; perceptual,"emotional, sensuous; perceptual (vs. rational)",fix,'perception; perceptual' deficient; real sense = emotional/sensuous
+报社,newspaper,"newspaper office, newspaper publisher",fix,"报社 = newspaper office/publisher, not the paper (报纸)"
+无不,none lacking; none missing,"invariably, without exception",fix,misread as 无缺; means 'invariably / all without exception'
+朵,flower; earlobe,(classifier for flowers and clouds),fix,mislabeled; 朵 is a measure word for flowers/clouds
+松,pine tree; relaxed,"pine tree; loose, slack; relaxed",fix,add omitted sense 'loose'
+淘汰,to wash out,"to eliminate, to weed out; to phase out",fix,'to wash out' misleading; real sense = eliminate/weed out
+潮流,tide; current,"trend, fashion; tide, current",fix,add dominant figurative sense 'trend/fashion'
+相当,equivalent to; appropriate,"quite, fairly, considerably; to be equivalent to; appropriate",fix,add dominant adverbial sense 'quite/fairly'
+视野,field of view,"field of view; vision, horizons",fix,add figurative sense 'vision/horizons'
+闭幕,the curtain falls; lower the curtain,"to lower the curtain, to close (a performance); to conclude, to close (a meeting/event)",fix,add figurative closing-ceremony sense
+隆重,grand; prosperous,"grand, ceremonious; solemn",fix,'prosperous' confuses with 兴隆; word = grand/ceremonious/solemn
+不假思索,idiom to act without taking time to think,"without hesitation, without a second thought",fix,strip meta label 'idiom'
+不已,used after a verb endlessly; incessantly,"endlessly, incessantly",fix,strip embedded grammar note 'used after a verb'
+与众不同,idiom to stand out from the crowd,"unique, unlike others; standing out from the crowd",fix,strip meta label 'idiom'
+争先恐后,idiom to compete to be first,"to scramble to be first, to vie to be ahead",fix,strip meta label 'idiom'
+争分夺秒,lit; making every second count,"to race against time, to make every second count",fix,strip meta label 'lit;'
+亲,parent; one's own,"close, dear; relative, kin; one's own",fix,'parent' too narrow; word = dear / blood relation / one's own
+侧面,lateral side; side,"side, lateral side; aspect, facet",fix,add figurative sense 'aspect'
+偏偏,contrary to expectations; just,"contrary to expectations, as luck would have it; of all things, precisely",fix,clarify vague 'just'; 偏偏 = contrary to expectations / of all things
+入门,entrance door; to enter a door,"to get started, to learn the basics; introduction, primer",fix,mis-parsed as 'enter a door'; real sense = get started / learn basics
+创伤,wound; injury,"wound, injury; trauma (psychological)",fix,add psychological-trauma sense
+即可,equivalent to; can then,"and that will do, will suffice; then it is fine",fix,'equivalent to' wrong; means '...and that will do'
+咱,I or me; we,I or me; we,keep,current already carries both 'I/me' and 'we' facets; note is over-cautious
+地道,tunnel; causeway,"authentic, genuine; tunnel, underground passage",fix,add dominant sense 'authentic/genuine'; 'causeway' wrong
+大片,wide expanse; large area,"blockbuster (film); large expanse, wide area",fix,add dominant modern sense 'blockbuster (film)'
+引领,to crane one's neck; to await eagerly,"to lead, to guide; to usher",fix,add common modern sense 'to lead/guide'
+恭维,to compliment; to praise,"to flatter, to compliment (often insincerely)",fix,add flattery connotation
+手臂,arm; assistant,arm,fix,drop questionable sense 'assistant'
+教养,to educate; to bring up,"upbringing, breeding, good manners; to educate, to bring up",fix,add noun sense 'good manners/breeding'
+新生,new; newborn,"newborn, new life; new student, freshman",fix,add omitted sense 'new student/freshman'
+桩,stump; stake,"stake, pile, post; (classifier for matters/affairs)",fix,'stump' rare; add measure-word sense
+欣欣向荣,idiom flourishing; thriving,"flourishing, thriving; prosperous",fix,strip meta label 'idiom'
+正宗,orthodox school,"authentic, genuine; orthodox, original",fix,'orthodox school' archaic; word = authentic/original
+流程,course; stream,"process, workflow; procedure",fix,'course; stream' wrong; word = process/workflow
+深入人心,to win people's hearts,"deeply rooted in people's hearts, widely accepted",fix,'win people's hearts' imprecise; means deeply rooted in hearts
+生成,to generate; to be born with,"to generate, to form, to produce",fix,drop dubious sense 'to be born with'
+看好,to keep an eye on,"to be optimistic about, to be bullish on (prospects)",fix,kànhǎo = be optimistic/bullish; 'keep an eye on' is the kānhāo reading
+私自,private; personal,"on one's own, without authorization, privately",fix,"adverbial 'on one's own / unauthorized', not 私人"
+窘迫,poverty-stricken; very poor,"embarrassed, awkward; hard-pressed, in dire straits",fix,"mainly embarrassed / hard-pressed, not only 'poor'"
+绝缘,to have no contact with; to be cut off from,to insulate; insulation; to be cut off from,fix,add dominant technical 'insulate/insulator' sense
+见义勇为,"idiom, from the Analects to step in and help","to act bravely for a just cause, to stand up for what is right",fix,fix garbled gloss; sense = act bravely for what is right
+质地,texture; background,"texture, quality (of material); grain",fix,'background' not a standard sense of 质地
+贯通,to link up; to thread together,"to link up, to thread together; to master thoroughly",fix,add '融会贯通 = understand thoroughly' sense
+贴切,close-fitting; closest,"apt, fitting, appropriate (esp. of wording)",fix,'close-fitting/closest' wrong; word = apt/fitting
+赶到,to hurry,"to hurry to, to rush over and arrive",fix,'to hurry' incomplete; 赶到 = hurry AND arrive
+踊跃,to leap; to jump,"eagerly, enthusiastically; to leap, to jump",fix,add dominant modern sense 'eagerly/enthusiastically'
+迎来,to welcome,"to usher in, to welcome (an era or event)",fix,add 'usher in (era/event)' sense
+门槛,doorstep; sill,"threshold, doorstep; barrier to entry, qualifying bar",fix,add figurative sense 'threshold/barrier'
+青蛙,frog; old ugly guy,frog,fix,strip derogatory internet slang 'old ugly guy'
+频道,frequency; television channel,channel (TV or radio),fix,'frequency' is 频率; 频道 = channel
+风采,svelte; elegant manner,"elegant bearing, graceful demeanor; charisma",fix,'svelte' bogus; word = elegant bearing/presence
+饭碗,rice bowl,"rice bowl; job, livelihood",fix,add figurative sense 'job/livelihood'
