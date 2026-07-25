@@ -428,15 +428,15 @@ describe("stopAudio", () => {
   });
 });
 
-describe("preferAmbientAudioSession", () => {
-  it("sets navigator.audioSession.type to ambient when the API is available", async () => {
+describe("preferPlaybackAudioSession", () => {
+  it("sets navigator.audioSession.type to playback when the API is available", async () => {
     vi.resetModules();
     const audioSession = { type: "auto" };
     vi.stubGlobal("navigator", { audioSession });
     try {
       const mod = await import("../src/audio.js");
-      mod.preferAmbientAudioSession();
-      expect(audioSession.type).toBe("ambient");
+      mod.preferPlaybackAudioSession();
+      expect(audioSession.type).toBe("playback");
     } finally {
       vi.unstubAllGlobals();
     }
@@ -447,7 +447,7 @@ describe("preferAmbientAudioSession", () => {
     vi.stubGlobal("navigator", {});
     try {
       const mod = await import("../src/audio.js");
-      expect(() => mod.preferAmbientAudioSession()).not.toThrow();
+      expect(() => mod.preferPlaybackAudioSession()).not.toThrow();
     } finally {
       vi.unstubAllGlobals();
     }

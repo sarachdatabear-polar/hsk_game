@@ -25,7 +25,7 @@ import { defaultQuestState, noteQuestEvent, questStatus,
 import { reviewChallengePoints, reviewChallengeSpeedFactor } from "./boss.js";
 import { initAudio, speak, speakWhenReady, audioAvailable, hasMp3, setVoiceVolume,
          unlockAudio, prefetchAudio, initRemoteAudio, stopAudio, resetAudioUnlock,
-         preferAmbientAudioSession } from "./audio.js";
+         preferPlaybackAudioSession } from "./audio.js";
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, syncReengageReminder, requestNotifPermission, isNative } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, isAvailable, seasonStatus, unownedDailyStock } from "./shop.js";
 // Street's own draft/preview state, canvas drawing and street.js/street-project.js/
@@ -1038,9 +1038,9 @@ $("#welcome-start").onclick = ()=>{
 };
 
 /* ============================== audio (pre-recorded mp3 first, Web Speech fallback) ============================== */
-// Short game prompts should mix with music/podcasts already playing on iOS.
+// iOS's ringer/silent switch must not mute the game (it did under "ambient").
 // Feature-detected: browsers without Audio Session support keep their default.
-preferAmbientAudioSession();
+preferPlaybackAudioSession();
 // index.json lists which words have a bundled mp3; fetch fails silently on file://
 // (keeping TTS-only), which is fine per the file:// constraint.
 fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>initAudio([]))

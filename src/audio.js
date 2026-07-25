@@ -295,13 +295,15 @@ export function resetAudioUnlock() {
   unlocking = null;
 }
 
-// Safari exposes a subset of the Audio Session API. Ambient is the appropriate
-// policy for short game prompts/SFX: it lets the user's music or podcast mix
-// with the game while the PWA is in the foreground.
-export function preferAmbientAudioSession() {
+// Safari exposes a subset of the Audio Session API. iOS mutes "ambient"-session
+// audio when the ringer/silent switch is on silent, which silenced the whole
+// game (words + SFX) for silent-switch users. "playback" ignores the switch,
+// at the cost of no longer mixing with the user's background music — accepted
+// tradeoff, owner call 2026-07-25.
+export function preferPlaybackAudioSession() {
   if (typeof navigator === "undefined" || !navigator.audioSession) return false;
   try {
-    navigator.audioSession.type = "ambient";
-    return navigator.audioSession.type === "ambient";
+    navigator.audioSession.type = "playback";
+    return navigator.audioSession.type === "playback";
   } catch (e) { return false; }
 }
