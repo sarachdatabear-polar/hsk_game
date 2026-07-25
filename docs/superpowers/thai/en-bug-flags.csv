@@ -1,0 +1,127 @@
+hanzi,english_current,note
+意思,idea; opinion,EN-GLOSS-BUG: 'idea; opinion' misses the primary sense 'meaning'; rendered real sense meaning; idea
+比较,to compare; to contrast,EN-GLOSS-BUG: EN 'to compare; to contrast' omits the common adverbial sense 'quite/relatively' (already led in TH as ค่อนข้าง)
+种,kind; type,EN-GLOSS-BUG: 'kind; type' omits the seed (zhǒng) / to-plant (zhòng) senses
+学会,to learn; to master,EN-GLOSS-BUG: English omits this sense
+幽默,loanword humor; humorous,EN-GLOSS-BUG: gloss contains meta text 'loanword'
+变化,intransitive to change; to vary,EN-GLOSS-BUG: gloss contains meta text 'intransitive'
+运动,to move; to exercise,EN-GLOSS-BUG: English omits this sense
+还是,still; had better,EN-GLOSS-BUG: 'still; had better' omits the very common 'or' (choice-question) sense; trimmed to two
+活动,to exercise; to move about,EN-GLOSS-BUG: EN gives only verb senses; omits the dominant noun 'activity/event' (led in TH as กิจกรรม)
+分,to divide; to separate,EN-GLOSS-BUG: 'to divide; to separate' omits common noun senses (minute; point/score; cent); trimmed to two
+开,to open; to turn on,"open/turn-on both = เปิด, merged; kept common 'drive' sense; EN-GLOSS-BUG: English omits this sense"
+该,should; ought to,EN-GLOSS-BUG: English omits this sense
+作为,one's conduct; deed,EN-GLOSS-BUG: 'one's conduct; deed' omits the dominant 'as / in the capacity of' sense
+表现,to show; to show off,EN-GLOSS-BUG: English omits this sense
+加油,to add oil; to top up with gas,EN-GLOSS-BUG: gloss is only the literal 'add oil/top up gas'; 加油 is far more commonly the idiomatic 'go!/cheer on' — Thai keeps สู้ๆ for that sense
+友谊,companionship; fellowship,EN-GLOSS-BUG: 'companionship; fellowship' is loose — 友谊 = friendship (มิตรภาพ)
+手,hand; formal to hold,EN-GLOSS-BUG: second sense 'formal to hold' is spurious; 手 = hand
+讨厌,to dislike; to loathe,EN-GLOSS-BUG: verb-only gloss misses common adjectival sense 'annoying/disgusting'; Thai leads น่ารำคาญ
+轻松,light; gentle,EN-GLOSS-BUG: 'light; gentle' misses real sense 'relaxed/easygoing/effortless'; kept correct Thai
+不过,only; merely,EN-GLOSS-BUG: 'only; merely' misses primary sense 'but; however'; Thai keeps แต่
+块,lump; chunk,EN-GLOSS-BUG: English omits this sense
+原来,original; former,EN-GLOSS-BUG: 'original; former' misses common realization sense 'it turns out'; added ที่แท้
+受,to receive; to accept,EN-GLOSS-BUG: English omits this sense
+一边,one side; either side,EN-GLOSS-BUG: English omits this sense
+交通,to be connected; traffic,EN-GLOSS-BUG: lead 'to be connected' is rare/archaic; primary sense is traffic/transport. Thai kept.
+反映,to mirror; to reflect,EN-GLOSS-BUG: English omits this sense
+放,to put; to place,EN-GLOSS-BUG: 'to put; place' omits very common sense 'to release/let go'(ปล่อย); added as 2nd. Trimmed 3->2.
+位,position; location,EN-GLOSS-BUG: EN omits 位's primary use = classifier for people (polite); Thai keeps it as lead.
+巧克力,loanword chocolate,EN-GLOSS-BUG: 'loanword chocolate' — 'loanword' is a meta tag; sense is just 'chocolate'.
+表示,of someone to express; to state,EN-GLOSS-BUG: 'of someone to express' is malformed EN; sense = to express/indicate. Thai kept.
+心灵,bright; smart,"EN-GLOSS-BUG: 心灵 = soul/spirit/inner-heart, not 'bright; smart' (clever sense only in 心灵手巧); retranslated to real sense."
+信,letter; mail,EN-GLOSS-BUG: English omits this sense
+度,to pass; to spend,Fixed separator: was 3 semicolon senses; comma-joined the degree variants. EN-GLOSS-BUG: English omits this sense
+外面,outside (; surface,EN-GLOSS-BUG: malformed gloss 'outside (; surface' (stray paren); sense = outside
+香,fragrant; sweet smelling,EN-GLOSS-BUG: English omits this sense
+兴趣,interest; interest,EN-GLOSS-BUG: 'interest; interest' duplicated
+千万,ten million; countless,EN-GLOSS-BUG: English omits this sense
+天生,nature; disposition,EN-GLOSS-BUG: English omits this sense
+心中,central point; in one's thoughts,"EN-GLOSS-BUG: 'central point' is the sense of 中心, not 心中 (=in one's heart/mind); thai ในใจ correct"
+根本,fundamental; basic,EN-GLOSS-BUG: English omits this sense
+符合,in accordance with; physics coincidence,EN-GLOSS-BUG: 'physics coincidence' is nonsensical; 符合 = to conform to / accord with; thai correct
+到底,finally; in the end,EN-GLOSS-BUG: English omits this sense
+卫星,aerospace satellite; astronomy satellite,EN-GLOSS-BUG: redundant 'aerospace satellite; astronomy satellite'; word just means 'satellite'
+总,general; overall,EN-GLOSS-BUG: English omits this sense
+恐怕,fear; to dread,"EN-GLOSS-BUG: '恐怕' is adverbial 'I'm afraid that/probably', not verb 'to dread'; Thai renders real sense"
+名,name; noun,EN-GLOSS-BUG: 'noun' is corrupt; 名 = name + classifier for people (or fame); Thai keeps name; classifier
+妹妹,younger sister; young woman,"EN-GLOSS-BUG: 妹妹 = younger sister; 'young woman' is a colloquial extension, not a core sense. Thai keeps the real sense."
+机构,mechanism; structure,"EN-GLOSS-BUG: 机构 most often = 'organization/institution/agency' (องค์กร), which the EN gloss ('mechanism; structure') omits. Thai already carries it."
+灵敏,smart; clever,"EN-GLOSS-BUG: 灵敏 = sensitive/responsive/agile (ว่องไว/ไว), not 'smart; clever' (that's 聪明). Thai follows the real sense."
+阿姨,maternal aunt; step-mother,"EN-GLOSS-BUG: 阿姨 = auntie / nanny-helper, not 'step-mother' (that's 继母). Thai keeps the real senses (aunt; nanny)."
+人家,household; dwelling,"EN-GLOSS-BUG: 人家's most common sense 'other people / one (colloquial pronoun)' is missing from EN 'household; dwelling'; kept คนอื่น to reflect real usage | EN-GLOSS-BUG: EN ""household; dwelling"" missing dominant ""other people"" sense"
+分别,to part; to leave each other,EN-GLOSS-BUG: EN 'to part' omits 分别's common senses 'separately/respectively' and 'to distinguish'
+打发,to send away; to dismiss,EN-GLOSS-BUG: EN omits very common 打发时间 = 'to pass/kill time' (ฆ่าเวลา); thai_current ส่งตัว/บังคับออก mis-rendered the sense
+故,happening; instance,EN-GLOSS-BUG: EN 'happening; instance' does not match 故 (reason/cause 缘故; therefore; former/old; deliberately)
+教训,to provide guidance; a talking-to,EN-GLOSS-BUG: 教训 is usually negative (to teach a harsh lesson / scold); EN 'to provide guidance' softens it
+过敏,medicine allergic; hypersensitive,EN-GLOSS-BUG: 'medicine allergic' is malformed; sense is 'allergic; hypersensitive'
+加以,formal to apply; literary moreover,"EN-GLOSS-BUG: 加以 is a formal dummy-verb marker (加以+V = carry out V on sth), not 'moreover'; no clean 1-word Thai gloss -- second opinion"
+包裹,to wrap up; to bind up,EN-GLOSS-BUG: english lists only verb senses but 包裹's dominant sense is the noun 'parcel/package' (พัสดุ)
+启发,to enlighten; to explain,"dropped อธิบาย (explain); 启发 = inspire/enlighten | EN-GLOSS-BUG: EN ""to explain"" is not a real sense of 启发"
+启示,to reveal; to enlighten,"current เปิดเผย = disclose (揭示); 启示 = revelation/insight | EN-GLOSS-BUG: EN ""to reveal"" imprecise; 启示 = enlighten/give insight"
+尾巴,tail; colloquial pr.,EN-GLOSS-BUG: stray 'colloquial pr.' dictionary artifact in the English gloss
+答应,to answer; to respond,EN-GLOSS-BUG: gloss 'to answer; to respond' omits the primary sense 'to agree/consent/promise' (รับปาก/ตกลง)
+领导,lead; leading,EN-GLOSS-BUG: primary sense is the noun 'leader/leadership'; 'lead; leading' understates it.
+俱乐部,loanword club,EN-GLOSS-BUG: gloss 'loanword club' contains a lexical annotation; sense is just 'club'.
+原始,first; original,EN-GLOSS-BUG: 原始 means primitive/original/raw; 'first' alone is misleading
+携带,to carry; to support,EN-GLOSS-BUG: 携带 means to carry/bring along; 'to support' is not a real sense.
+一代,an era; an age,"EN-GLOSS-BUG: 一代 = 'a generation' (รุ่น), not 'an era/age'; Thai keeps the real sense"
+不止,incessantly; without end,EN-GLOSS-BUG: 不止 more commonly = 'more than / not only' (ไม่เพียงแค่); gloss only gives the 'incessant' sense
+乘车,to ride; to drive,EN-GLOSS-BUG: 'to drive' should be 'to ride/take a vehicle'
+倾诉,to say everything,EN-GLOSS-BUG: 'to say everything' weak; real sense = pour out one's feelings/confide
+全身,the whole body; typography em,EN-GLOSS-BUG: 'typography em' is a bogus sense
+失落,to lose; to drop,EN-GLOSS-BUG: gloss 'to lose; to drop' omits dominant sense 'feel a sense of loss / dejected'; led with the real sense
+开朗,spacious and well-lit; open and clear,EN-GLOSS-BUG: gloss gives only spatial 'spacious/well-lit'; 开朗 usually = cheerful/optimistic (personality); led with the real sense
+恐龙,dinosaur; old ugly person,"EN-GLOSS-BUG: 'old ugly person' is internet slang, unsuitable as a learner gloss; core sense is dinosaur"
+感性,perception; perceptual,"EN-GLOSS-BUG: EN ""perception; perceptual"" deficient; real sense = emotional/sensuous (vs rational)"
+报社,newspaper,"EN-GLOSS-BUG: 报社 is the newspaper office/publisher, not the paper itself (报纸)"
+无不,none lacking; none missing,EN-GLOSS-BUG: 'none lacking; none missing' reads 无不 as 无缺; it actually means 'invariably / all without exception'
+朵,flower; earlobe,EN-GLOSS-BUG: 朵 is a measure word for flowers/clouds; 'flower; earlobe' mislabels it
+松,pine tree; relaxed,"EN-GLOSS-BUG: 松 also = loose (หลวม), missing from EN"
+淘汰,to wash out,EN-GLOSS-BUG: 'to wash out' is misleading; real sense is to eliminate/weed out (in competition or selection)
+潮流,tide; current,EN-GLOSS-BUG: gloss omits the dominant figurative sense 'trend/fashion'
+相当,equivalent to; appropriate,EN-GLOSS-BUG: gloss omits the dominant adverbial sense 'quite/fairly/considerably'
+视野,field of view,"EN-GLOSS-BUG: EN ""field of view"" missing figurative ""vision/horizons"" sense (kept)"
+闭幕,the curtain falls; lower the curtain,"ต้นฉบับ 'ลดจอ, ปิดหมาก' ไม่มีความหมาย | EN-GLOSS-BUG: EN literal-only; 闭幕(式) closing-ceremony sense kept"
+隆重,grand; prosperous,EN-GLOSS-BUG: 隆重 = grand/ceremonious/solemn ไม่ใช่ 'prosperous' (สับสนกับ 兴隆); แปลตามความหมายจริง
+不假思索,idiom to act without taking time to think,EN-GLOSS-BUG: 'idiom' meta-label leaked into gloss; sense = without hesitation
+不已,used after a verb endlessly; incessantly,EN-GLOSS-BUG: gloss embeds a grammar note ('used after a verb'); sense = endlessly/incessantly
+与众不同,idiom to stand out from the crowd,EN-GLOSS-BUG: 'idiom' meta-label leaked into gloss; sense = unique/unlike others
+争先恐后,idiom to compete to be first,EN-GLOSS-BUG: 'idiom' meta-label leaked into gloss; sense = scramble to be first
+争分夺秒,lit; making every second count,EN-GLOSS-BUG: 'lit;' meta-label leaked into gloss; sense = race against time
+亲,parent; one's own,second opinion: 亲 standalone glossed 'parent' is weak; usually blood relation / dear | EN-GLOSS-BUG: EN for 亲 unclear; parent lead restored
+侧面,lateral side; side,"EN-GLOSS-BUG: EN missing figurative ""aspect"" sense of 侧面 (kept)"
+偏偏,contrary to expectations; just,"second opinion: 偏偏 = contrary to one's wishes/expectations; hard to gloss in one word | EN-GLOSS-BUG: EN missing ""just/precisely"" sense of 偏偏"
+入门,entrance door; to enter a door,"EN-GLOSS-BUG: ""entrance door/to enter a door"" mis-parses 入门; real sense = get started / learn the basics of a subject"
+创伤,wound; injury,EN-GLOSS-BUG: EN physical-only; 创伤 psych-trauma sense kept
+即可,equivalent to; can then,"EN-GLOSS-BUG: ""equivalent to"" is wrong for 即可; means ""...and that will do / then it is fine"""
+咱,I or me; we,"EN-GLOSS-BUG: EN missing ""I/me"" facet of 咱"
+地道,tunnel; causeway,"EN-GLOSS-BUG: '地道' rarely means causeway; dominant sense 'authentic/genuine' (dìdao) missing | EN-GLOSS-BUG(fix EN): 地道 = authentic; genuine — ""causeway"" wrong"
+大片,wide expanse; large area,EN-GLOSS-BUG: dominant modern sense 'blockbuster (film)' missing
+引领,to crane one's neck; to await eagerly,"EN-GLOSS-BUG: English lists only the archaic ""crane one's neck; await eagerly"" sense; the common modern meaning is ""to lead/guide"". Translated to the real sense (นำทาง)."
+恭维,to compliment; to praise,"Nuance is flattery / complimenting (often insincere), hence ยกยอ rather than plain ชื่นชม. | EN-GLOSS-BUG: EN neutral ""compliment"" but 恭维 connotes flattery — kept ยกยอ"
+手臂,arm; assistant,"EN-GLOSS-BUG: ""assistant"" is a questionable gloss for 手臂; the word means arm (only แขน translated)"
+教养,to educate; to bring up,EN-GLOSS-BUG: EN verb-only; 有教养 manners noun sense real (kept)
+新生,new; newborn,"EN-GLOSS-BUG: 新生 also means new student/freshman, omitted from English gloss; kept both senses"
+桩,stump; stake,"EN-GLOSS-BUG: EN ""stump"" rare; 桩 also measure word (一桩事)"
+欣欣向荣,idiom flourishing; thriving,EN-GLOSS-BUG: stray 'idiom' label leaked into english gloss
+正宗,orthodox school,"EN-GLOSS-BUG(fix EN): 正宗 = authentic; original — ""orthodox school"" archaic"
+流程,course; stream,EN-GLOSS-BUG: 'course; stream' wrong for process/workflow; Thai follows real sense
+深入人心,to win people's hearts,"idiom: idea rooted in people's minds; 'win hearts' is one reading | EN-GLOSS-BUG: EN ""win people's hearts"" imprecise; 深入人心 = deeply rooted in hearts"
+生成,to generate; to be born with,"EN-GLOSS-BUG: EN ""to be born with"" dubious for 生成 (= generate/form)"
+看好,to keep an eye on,EN-GLOSS-BUG: pinyin kan hao (4th-tone 看) = 'be optimistic/bullish about'; 'to keep an eye on' is the kan hao (1st-tone) reading. Led with the optimistic sense per pinyin.
+私自,private; personal,EN-GLOSS-BUG: 私自 is adverbial 'on one's own / without authorization'; 'private; personal' points to 私人 instead.
+窘迫,poverty-stricken; very poor,"EN-GLOSS-BUG: 窘迫 mainly means embarrassed / in an awkward or hard-pressed spot, not only 'poor'"
+绝缘,to have no contact with; to be cut off from,"EN-GLOSS-BUG: EN missing dominant technical ""insulate/insulator"" sense (kept)"
+见义勇为,"idiom, from the Analects to step in and help","EN-GLOSS-BUG: garbled gloss 'idiom, from the Analects to step in and help'; real sense = act bravely for what is right"
+质地,texture; background,EN-GLOSS-BUG: 质地 = texture/quality of material; 'background' is not a standard sense
+贯通,to link up; to thread together,"EN-GLOSS-BUG: 融会贯通 ""understand thoroughly"" sense real (kept)"
+贴切,close-fitting; closest,"EN-GLOSS-BUG: 贴切 means apt/fitting (esp. of wording), not 'close-fitting/closest'"
+赶到,to hurry,"EN-GLOSS-BUG: EN ""to hurry"" incomplete; 赶到 = hurry AND arrive"
+踊跃,to leap; to jump,EN-GLOSS-BUG: 踊跃 in modern use means eagerly/enthusiastically; 'to leap/jump' is only the literal sense
+迎来,to welcome,"EN-GLOSS-BUG: 迎来 ""usher in (era/event)"" sense real (kept)"
+门槛,doorstep; sill,"EN gloss literal only; figurative 'threshold/barrier' added as 2nd sense | EN-GLOSS-BUG: EN literal-only; 门槛 figurative ""threshold/bar"" kept"
+青蛙,frog; old ugly guy,"EN-GLOSS-BUG: 'old ugly guy' is derogatory internet slang, not a dictionary sense; real meaning = frog"
+频道,frequency; television channel,"'frequency' sense is imprecise — that is 频率; 频道 = channel | EN-GLOSS-BUG(fix EN): 频道 = channel; ""frequency"" belongs to 频率"
+风采,svelte; elegant manner,"EN-GLOSS-BUG(fix EN): ""svelte"" bogus; 风采 = elegant bearing/presence"
+饭碗,rice bowl,EN-GLOSS-BUG: EN literal-only; 饭碗 livelihood sense real (kept)
