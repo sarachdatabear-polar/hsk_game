@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { BUILDINGS, DECO_IDS, DECO_SPRITE_SCALE, UNIT_FRAC, streetPieces, streetProgress, streetMetrics,
          assignDecoAnchors, DECO_CLASS, CLASS_SIZE, DECO_ANCHORS, LANES,
-         LANDMARK_SCALE,
+         LANDMARK_SCALE, LANDMARK_UNIT_DAMP,
          WELCOME_ID, DECO_META, STREET_PLOTS, defaultStreetLayout,
          normalizeStreetLayout, itemFitsPlot, streetOwnedIds, compatibleStreetPlots,
          firstFreeStreetPlot,
@@ -27,12 +27,12 @@ describe("street", () => {
     expect(pieces[0].slot).toBeLessThan(pieces[1].slot);
   });
 
-  it("every milestone building uses an authored landmark draw scale", () => {
+  it("every milestone building uses an authored landmark draw scale damped for the doubled world unit", () => {
     const landmarks = streetPieces(50, []);
     expect(landmarks).toHaveLength(BUILDINGS.length);
     for (const piece of landmarks) {
-      expect(piece.scale).toBe(LANDMARK_SCALE[piece.id]);
-      expect(piece.scale).toBeGreaterThan(2.5);
+      expect(piece.scale).toBe(LANDMARK_SCALE[piece.id] * LANDMARK_UNIT_DAMP);
+      expect(piece.scale).toBeGreaterThan(1.25);
     }
   });
 

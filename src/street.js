@@ -22,6 +22,11 @@ export const LANDMARK_SCALE = {
   "emperor-gate": 3.35,
 };
 
+// World unit doubled for the decorations-pop pass (streetWorldMetrics); landmarks
+// were already right-sized, so they draw at half-units to keep their original
+// pre-pass pixel footprint.
+export const LANDMARK_UNIT_DAMP = 0.5;
+
 // Display order for owned decorations; ids owned but absent here are ignored.
 // v7 adds the permanent prestige decos, the daily-pool decos, and the three
 // seasonal decos (order fixes each one's street slot below).
@@ -89,7 +94,7 @@ export const UNIT_FRAC = 0.105;
 // front ground line main.js draws on); laneScale shrinks pieces with
 // distance. The wider lane gaps keep the compact one-screen editor tappable.
 export const LANES = {
-  back:  { laneY: 0.66, laneScale: 0.68 },
+  back:  { laneY: 0.66, laneScale: 0.60 },
   mid:   { laneY: 0.83, laneScale: 0.84 },
   front: { laneY: 1.0,  laneScale: 1.0  },
 };
@@ -337,7 +342,7 @@ export function streetPieces(level, owned, tiers = {}, layout = null) {
   BUILDINGS.forEach((b, i) => {
     if (level >= b.lv) pieces.push({
       id: b.id, kind: "building", slot: buildingSlots[i],
-      laneY: layout ? 0.70 : 0.82, scale: LANDMARK_SCALE[b.id],
+      laneY: layout ? 0.70 : 0.82, scale: LANDMARK_SCALE[b.id] * LANDMARK_UNIT_DAMP,
     });
   });
   if (layout) {
@@ -391,7 +396,7 @@ export function streetWorldMetrics(viewportW, h) {
   const vh = Math.max(1, Number(h) || 1);
   return {
     worldW: vw,
-    unit: Math.min(vh * 0.22, vw * 0.085),
+    unit: Math.min(vh * 0.22, vw * 0.17),
     sections: 1,
     backY: 0.74,
     frontY: 1,

@@ -595,6 +595,10 @@ export function createStreetScreen({
     }
   }
   function renderStreet(){
+    // Settle the editing class before any measurement below — .street-world's
+    // aspect-ratio (and thus clientHeight) depends on it, so the class must
+    // reach its final state before we measure, not after.
+    $("#s-street").classList.toggle("street-editing",!!streetEdit);
     const scv = $("#street-cv"), world = $("#street-world"), scroll = $("#street-scroll");
     if(!scv || !world || !scroll || !world.clientHeight || !scroll.clientWidth) return;
     const h = world.clientHeight, m = streetWorldMetrics(scroll.clientWidth, h), w = m.worldW;
@@ -819,7 +823,6 @@ export function createStreetScreen({
   function renderStreetEditor(){
     const editor=$("#street-editor"), actions=$("#street-actions"), info=$("#street-info");
     editor.hidden=!streetEdit; actions.hidden=!!streetEdit||!!streetPreview;
-    $("#s-street").classList.toggle("street-editing",!!streetEdit);
     if(streetEdit||streetPreview) info.hidden=true;
     if(!streetEdit) return;
     const coach=$("#street-coach"); coach.hidden=!streetEdit.coaching;
