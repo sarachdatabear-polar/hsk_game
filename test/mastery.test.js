@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { recordAnswer, wordStreak, isMastered, levelMastery, pickKeepsakeWord } from "../src/mastery.js";
+import { recordAnswer, wordStreak, isMastered, levelMastery, pickKeepsakeWord, masteredCount } from "../src/mastery.js";
 
 describe("mastery", () => {
   it("three correct in a row masters a word", () => {
@@ -123,5 +123,20 @@ describe("pickKeepsakeWord", () => {
     const s = { "水": { s: 3, k: 3, r: 3, ls: 100 } };
     expect(pickKeepsakeWord(s, null)).toBe("水");
     expect(pickKeepsakeWord(s, undefined)).toBe("水");
+  });
+});
+
+describe("masteredCount", () => {
+  it("counts words whose current streak is >= 3", () => {
+    const store = {
+      "火": { s: 5, k: 5, r: 4 },  // mastered
+      "水": { s: 3, k: 3, r: 3 },  // mastered
+      "土": { s: 2, k: 1, r: 1 },  // not yet
+    };
+    expect(masteredCount(store)).toBe(2);
+  });
+  it("is 0 for empty/undefined stores", () => {
+    expect(masteredCount({})).toBe(0);
+    expect(masteredCount(undefined)).toBe(0);
   });
 });
