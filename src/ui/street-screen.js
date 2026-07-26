@@ -622,8 +622,9 @@ export function createStreetScreen({
   // distinct from drawStreetDailyNeighbour's transient recolour cameo above.
   // Drawn in the resident canvas layer, same ground-Y/scale basis as the
   // player's own cat below, but as authored PNGs (sprite(), Task 6's
-  // walk-a/walk-b/idle poses) rather than drawCat's recolourable vector —
-  // portrait is used only by the move-in greeting, never this walk loop.
+  // walk-a/walk-b/idle poses) rather than drawCat's recolourable vector.
+  // The portrait art (neighbour-<id>-portrait) is registered but not yet
+  // surfaced anywhere — the move-in greeting is text-only for now (deferred).
   // sprite() returns null while an art file is still loading (or on any
   // registry miss); skipping that frame is the same fallback every other
   // sprite() caller in this file already relies on, and the existing
