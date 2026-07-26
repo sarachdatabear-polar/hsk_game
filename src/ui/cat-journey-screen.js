@@ -191,7 +191,9 @@ export function createCatJourneyScreen({
     const minutes = minutesUntilReturn(state, now());
     $("#cat-status-copy").textContent = statusCopy(status, daily, minutes);
     const primary = $("#cat-primary");
-    primary.disabled = status === "exploring";
+    // Exploring is a waiting state, but it should not be a dead end. The same
+    // primary control routes back to study while the return timer continues.
+    primary.disabled = false;
     primary.textContent = status === "ready" ? t("cat.cta.explore")
       : status === "returned" ? t("cat.cta.return")
       : status === "exploring" ? t("cat.cta.exploring")

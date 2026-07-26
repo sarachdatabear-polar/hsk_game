@@ -555,6 +555,7 @@ function stickerIcon(def){
   if(def.event === "monthly-40") return "calendar";
   return "streak";
 }
+let albumFilter = String(store.get("albumFilter", "next"));
 function renderAlbum(){
   const box = $("#album-list");
   box.innerHTML = "";
@@ -570,23 +571,56 @@ function renderAlbum(){
     el.appendChild(hint);
     return el;
   };
-  for(let lv = 1; lv <= 6; lv++){
-    const defs = STICKER_DEFS.filter(d => d.lv === lv);
-    if(!defs.length) continue;
+  const earnedDefs = STICKER_DEFS.filter(d => stickerState.earned[d.id]);
+  const lockedDefs = STICKER_DEFS.filter(d => !stickerState.earned[d.id]);
+  $("#album-progress").textContent = t("album.progress", {
+    earned: earnedDefs.length, total: STICKER_DEFS.length,
+  });
+  $("#album-next").textContent = lockedDefs[0]
+    ? t("album.nextTarget", { name: stickerLabel(lockedDefs[0]) })
+    : t("album.complete");
+  document.querySelectorAll("#album-filters [data-album-filter]").forEach(button =>
+    setPressed(button, button.dataset.albumFilter === albumFilter));
+
+  let groups = [];
+  if(albumFilter === "earned"){
+    groups = [{ title:t("album.filterEarned"), defs:earnedDefs }];
+  }else if(albumFilter === "events"){
+    groups = [{ title:t("album.events"), defs:STICKER_DEFS.filter(d => d.kind === "event") }];
+  }else if(/^[1-6]$/.test(albumFilter)){
+    groups = [{ title:`HSK${albumFilter}`, defs:STICKER_DEFS.filter(d => d.lv === Number(albumFilter)) }];
+  }else{
+    const latestEarned = earnedDefs
+      .slice()
+      .sort((a,b)=>String(stickerState.earned[b.id]).localeCompare(String(stickerState.earned[a.id])))
+      .slice(0,1);
+    groups = [{ title:t("album.upNext"), defs:[...latestEarned, ...lockedDefs.slice(0,3)] }];
+  }
+
+  let rendered = 0;
+  for(const group of groups){
+    if(!group.defs.length) continue;
     const head = document.createElement("div");
-    head.className = "sect"; head.textContent = `HSK${lv}`;
+    head.className = "sect"; head.textContent = group.title;
     box.appendChild(head);
     const grid = document.createElement("div"); grid.className = "album-grid";
-    defs.forEach(d => grid.appendChild(tile(d)));
+    group.defs.forEach(d => grid.appendChild(tile(d)));
     box.appendChild(grid);
+    rendered += group.defs.length;
   }
-  const evHead = document.createElement("div");
-  evHead.className = "sect"; evHead.textContent = t("album.events");
-  box.appendChild(evHead);
-  const evGrid = document.createElement("div"); evGrid.className = "album-grid";
-  STICKER_DEFS.filter(d => d.kind === "event").forEach(d => evGrid.appendChild(tile(d)));
-  box.appendChild(evGrid);
+  if(!rendered){
+    const empty = document.createElement("div");
+    empty.className = "album-empty";
+    empty.textContent = t("album.emptyEarned");
+    box.appendChild(empty);
+  }
 }
+document.querySelectorAll("#album-filters [data-album-filter]").forEach(button =>
+  button.addEventListener("click", ()=>{
+    albumFilter = button.dataset.albumFilter;
+    store.set("albumFilter", albumFilter);
+    renderAlbum();
+  }));
 function questEvent(eventId, n=1){
   const r = noteQuestEvent(questState, todayStr(), eventId, n);
   questState = r.state;
@@ -738,11 +772,22 @@ function renderAccount(){
   }
   if(v.showConnect) p.appendChild(accountBtn(t("account.connect"), onAccountConnect));
   if(v.showEmailForm){
+    const step = document.createElement("p");
+    step.className = "account-step";
+    step.textContent = t("account.stepEmail");
+    p.appendChild(step);
     const emailInput = accountInput("email", t("account.emailPh"), accountUI.email);
     p.appendChild(emailInput);
     p.appendChild(accountBtn(t("account.sendCode"), ()=>onAccountSendCode(emailInput.value)));
   }
   if(v.showCodeForm){
+    const step = document.createElement("p");
+    step.className = "account-step";
+    step.textContent = t("account.stepVerify");
+    const sent = document.createElement("p");
+    sent.className = "account-email-note";
+    sent.textContent = t("account.codeFor", { email:accountUI.email });
+    p.append(step, sent);
     const code = accountInput("text", t("account.codePh"), "");
     code.inputMode = "numeric"; code.maxLength = 10; code.autocomplete = "one-time-code";
     p.appendChild(code);
@@ -998,6 +1043,12 @@ function renderHome(){
   if(hint) hint.hidden = startable;
   const chip = $("#home-scope-chip");
   if(chip) chip.textContent = scopeChipLabel();
+  const next = $("#home-next-action");
+  if(next){
+    next.textContent = smart.length >= 8
+      ? t("home.nextReview", { n: smart.length })
+      : t("home.nextQuest", { n: normalizeLen(scope.sessionLen) });
+  }
   // v6p3 Tone Trainer: hidden/greyed when the scoped pool has no MP3-backed
   // eligible words (e.g. file:// where audio/index.json can't be fetched) —
   // TTS-only tone training would be misleading, so we hide rather than mislead.
@@ -1192,6 +1243,7 @@ function updateNav(name){
   if(!nav) return;
   const visible = navVisibleOn(name);
   nav.style.display = visible ? "flex" : "none";
+  document.body.classList.toggle("nav-on", visible);
   const active = activeTabFor(name);
   nav.querySelectorAll(".nav-btn").forEach(b=>{
     const on = b.dataset.tab===active;
@@ -1303,7 +1355,7 @@ function renderScope(){
   const lenInput = $("#len-custom");
   lenInput.hidden = !lenCustomOpen;
   if(lenCustomOpen && document.activeElement !== lenInput) lenInput.value = len;
-  setIconLabel($("#go-battle"), "quest", t("scope.wordQuest", { n: len }));
+  setIconLabel($("#go-battle"), "quest", t("scope.startQuest", { n: len }));
   const savedCards = store.get("flashcards", null);
   const cardsKey = cardSessionKey(scopeKey(scope), len);
   const cardsLeft = savedCards?.key === cardsKey && Array.isArray(savedCards.deck)
@@ -1344,44 +1396,88 @@ function playJourneyNode(n){
   renderScope();          // rebuilds pool + persists scope
   if(pool.length >= 8) startBattle("round");
 }
+let journeyExpandedLv = Number(store.get("journeyExpandedLv", 0)) || 0;
+function journeyActionLabel(n, hereId){
+  if(n.stars >= 3) return t("journey.review");
+  if(n.id === hereId || n.pct > 0) return t("journey.continue");
+  return t("journey.start");
+}
+function makeJourneyRow(n, hereId){
+  const row = document.createElement("button");
+  row.className = "j-node" + (n.stars >= 3 ? " done" : "");
+  const dot = document.createElement("span");
+  dot.className = "j-dot";
+  dot.textContent = n.stars >= 3 ? "✓" : `${n.pct}%`;
+  row.appendChild(dot);
+  const copy = document.createElement("span");
+  copy.className = "j-copy";
+  const name = document.createElement("b");
+  name.textContent = nodeLabel(n);
+  copy.appendChild(name);
+  const stars = document.createElement("span");
+  stars.className = "j-stars";
+  stars.innerHTML = "★".repeat(n.stars) + `<span class="off">${"★".repeat(3 - n.stars)}</span>`;
+  copy.appendChild(stars);
+  if(n.id === hereId){
+    const here = document.createElement("span");
+    here.className = "j-here";
+    here.appendChild(iconSvg("paw"));
+    const hl = document.createElement("span");
+    hl.textContent = t("journey.youAreHere");
+    here.appendChild(hl);
+    copy.appendChild(here);
+  }
+  row.appendChild(copy);
+  const action = document.createElement("span");
+  action.className = "j-play";
+  action.textContent = journeyActionLabel(n, hereId);
+  row.appendChild(action);
+  row.onclick = ()=> playJourneyNode(n);
+  return row;
+}
 function renderJourney(){
   const facts = scopeFacts(D.levels, masteryStore);
   const nodes = journeyNodes(STICKER_LEVEL_COUNTS, facts.scopePcts);
   const hereId = currentNodeId(nodes);
   const box = $("#journey-list");
   box.innerHTML = "";
-  for(const n of nodes){
-    const row = document.createElement("button");
-    row.className = "j-node" + (n.stars >= 3 ? " done" : "");
-    const dot = document.createElement("span");
-    dot.className = "j-dot";
-    dot.textContent = n.stars >= 3 ? "✓" : `${n.pct}%`;
-    row.appendChild(dot);
-    const copy = document.createElement("span");
-    copy.className = "j-copy";
-    const name = document.createElement("b");
-    name.textContent = nodeLabel(n);
-    copy.appendChild(name);
-    const stars = document.createElement("span");
-    stars.className = "j-stars";
-    stars.innerHTML = "★".repeat(n.stars) + `<span class="off">${"★".repeat(3 - n.stars)}</span>`;
-    copy.appendChild(stars);
-    if(n.id === hereId){
-      const here = document.createElement("span");
-      here.className = "j-here";
-      here.appendChild(iconSvg("paw"));
-      const hl = document.createElement("span");
-      hl.textContent = t("journey.youAreHere");
-      here.appendChild(hl);
-      copy.appendChild(here);
+  const current = nodes.find(n => n.id === hereId) || nodes[0];
+  if(!journeyExpandedLv) journeyExpandedLv = current?.lv || 1;
+  if(current){
+    const recommended = document.createElement("section");
+    recommended.className = "journey-recommended";
+    const label = document.createElement("span");
+    label.className = "journey-recommended-label";
+    label.textContent = t("journey.recommended");
+    recommended.append(label, makeJourneyRow(current, hereId));
+    box.appendChild(recommended);
+  }
+  for(let lv=1; lv<=6; lv++){
+    const levelNodes = nodes.filter(n => n.lv === lv);
+    if(!levelNodes.length) continue;
+    const section = document.createElement("section");
+    const expanded = journeyExpandedLv === lv;
+    section.className = "journey-level" + (expanded ? "" : " collapsed");
+    const toggle = document.createElement("button");
+    toggle.className = "journey-level-toggle";
+    toggle.setAttribute("aria-expanded", String(expanded));
+    const complete = levelNodes.filter(n => n.stars >= 3).length;
+    toggle.innerHTML = `<span>HSK${lv}</span><small>${t("journey.levelProgress", {
+      done: complete, total: levelNodes.length,
+    })}</small>`;
+    const body = document.createElement("div");
+    body.className = "journey-level-body";
+    body.hidden = !expanded;
+    for(const n of levelNodes){
+      if(n.id !== current?.id) body.appendChild(makeJourneyRow(n, hereId));
     }
-    row.appendChild(copy);
-    const play = document.createElement("span");
-    play.className = "j-play";
-    play.textContent = t("journey.play");
-    row.appendChild(play);
-    row.onclick = ()=> playJourneyNode(n);
-    box.appendChild(row);
+    toggle.onclick = ()=>{
+      journeyExpandedLv = journeyExpandedLv === lv ? 0 : lv;
+      store.set("journeyExpandedLv", journeyExpandedLv);
+      renderJourney();
+    };
+    section.append(toggle, body);
+    box.appendChild(section);
   }
 }
 $("#f-core").onclick = ()=>{ scope.core = !scope.core; renderScope(); };
@@ -1406,7 +1502,7 @@ document.querySelectorAll("#len-chips .chip").forEach(c=>c.onclick = ()=>{
 $("#len-custom").addEventListener("input", ()=>{
   scope.sessionLen = normalizeLen($("#len-custom").value);
   store.set("scope", scope);
-  setIconLabel($("#go-battle"), "quest", t("scope.wordQuest", { n: scope.sessionLen }));
+  setIconLabel($("#go-battle"), "quest", t("scope.startQuest", { n: scope.sessionLen }));
 });
 $("#len-custom").addEventListener("change", ()=>renderScope());  // blur/Enter: snap display to normalized value
 document.querySelectorAll("#preset-chips .chip").forEach(c=>c.onclick = ()=>{
@@ -1415,6 +1511,12 @@ document.querySelectorAll("#preset-chips .chip").forEach(c=>c.onclick = ()=>{
 $("#go-battle").onclick  = ()=>startBattle("round");
 $("#go-endless").onclick = ()=>startBattle("endless");
 $("#go-learn").onclick   = ()=>{ learnDeck = null; startLearn("home"); };
+$("#howto-try").onclick = ()=>{
+  scope.sessionLen = 5;
+  store.set("scope", scope);
+  pool = buildPool(D.levels, scope);
+  startBattle("round");
+};
 
 /* ============================== flashcards ============================== */
 const fc = {deck:[], i:0, flipped:false, done:0, total:0, persist:false, key:""};
@@ -1788,6 +1890,17 @@ function replayCurrentWord(){
 // outside the speaker's hit box means "move on" — fast-forward straight to
 // the next word instead of waiting out the rest of REVEAL_MS.
 function inRevealWindow(now){ return !B.zombie && !!B.reveal && B.nextAt > now; }
+function setQuestContinue(visible){
+  const button = $("#quest-continue");
+  if(button) button.hidden = !visible;
+}
+function continueQuestReveal(){
+  const now = performance.now();
+  if(!inRevealWindow(now)) return;
+  B.nextAt = now;
+  setQuestContinue(false);
+}
+$("#quest-continue").onclick = continueQuestReveal;
 cv.addEventListener("click", e=>{
   const box = cv.getBoundingClientRect();
   const x = e.clientX - box.left, y = e.clientY - box.top;
@@ -1797,7 +1910,7 @@ cv.addEventListener("click", e=>{
   const sr = B.speakerRect;
   if(sr && x>=sr.x && x<=sr.x+sr.w && y>=sr.y && y<=sr.y+sr.h){ replayCurrentWord(); return; }
   const now = performance.now();
-  if(inRevealWindow(now)){ B.nextAt = now; return; }   // T6: tap-to-skip — plate + recap strip are both on-canvas, so this single check covers either
+  if(inRevealWindow(now)){ continueQuestReveal(); return; }   // T6: tap-to-skip — plate + recap strip are both on-canvas, so this single check covers either
   const r = B.plaqueRect;
   if(!r) return;
   if(x>=r.x && x<=r.x+r.w && y>=r.y && y<=r.y+r.h) replayCurrentWord();
@@ -1807,7 +1920,7 @@ cv.addEventListener("keydown", e=>{
   if(B.paused) return;   // overlay is up — same guard as replayCurrentWord/answer
   e.preventDefault();
   const now = performance.now();
-  if(inRevealWindow(now)){ B.nextAt = now; return; }   // T6: keyboard tap-to-skip
+  if(inRevealWindow(now)){ continueQuestReveal(); return; }   // T6: keyboard tap-to-skip
   replayCurrentWord();
 });
 // Pointer cursor over the plaque only (2026-07-11 audit F6, whole-card replay
@@ -1861,6 +1974,7 @@ function startBattle(mode){
   B.masteredAtStart = masteredCount(masteryStore);   // canonical snapshot — earn math in endBattle() is jackpot-proof against a stale/missing value
   B.recent = []; B.misses = []; B.missSet = new Set();
   B.nextAt = 0; B.lastT = 0; B.locked = false; B.bossStageAt = 0;
+  setQuestContinue(false);
   B.paused = false; B.pausedAt = 0;
   closeDialog($("#pause-overlay"), false);
   closeDialog($("#format-intro"), false);   // a quit mid soft-intro must not carry it into the next battle
@@ -1884,6 +1998,7 @@ function startBattle(mode){
 }
 function stopBattle(){
   B.on = false; keepAwake(false);
+  setQuestContinue(false);
   closeDialog($("#pause-overlay"), false);
   closeDialog($("#format-intro"), false);
   stopAudio();
@@ -1983,16 +2098,24 @@ function updateComboStrip(){
    B.nextAt, B.dyingUntil, B.mascotHopUntil, B.feedback.until, B.zombie.wrongUntil,
    B.hitFlash.until, B.plaqueHitAt, B.trailMove.at. */
 const PAUSE_TOGGLES = [
-  { icon:"bell", iconOff:"bell-off", labelKey:"home.sound", isOn:()=>sfx.enabled, toggle:()=>toggleSfx() },
-  { icon:"sound", iconOff:"muted", labelKey:"battle.wordAudio", isOn:()=>settings.autoSpeak,
+  { groupKey:"battle.audioGroup", icon:"bell", iconOff:"bell-off", labelKey:"home.sound", isOn:()=>sfx.enabled, toggle:()=>toggleSfx() },
+  { groupKey:"battle.audioGroup", icon:"sound", iconOff:"muted", labelKey:"battle.wordAudio", isOn:()=>settings.autoSpeak,
     toggle:()=>{ settings.autoSpeak = !settings.autoSpeak; store.set("settings", settings); } },
-  { icon:"pinyin", iconOff:"pinyin-off", labelKey:"battle.pinyin", isOn:()=>settings.showPinyin,
+  { groupKey:"battle.learningAidsGroup", icon:"pinyin", iconOff:"pinyin-off", labelKey:"battle.pinyin", isOn:()=>settings.showPinyin,
     toggle:()=>{ settings.showPinyin = !settings.showPinyin; store.set("settings", settings); } },
 ];
 function renderPauseToggles(){
   const box = $("#pause-toggles");
   box.innerHTML = "";
+  let groupKey = "";
   for(const cfg of PAUSE_TOGGLES){
+    if(cfg.groupKey !== groupKey){
+      groupKey = cfg.groupKey;
+      const heading = document.createElement("div");
+      heading.className = "pause-group-label";
+      heading.textContent = t(groupKey);
+      box.appendChild(heading);
+    }
     const on = cfg.isOn();
     const btn = document.createElement("button");
     btn.className = "pause-toggle"+(on? " on":"");
@@ -2009,7 +2132,7 @@ function renderPauseToggles(){
     btn.appendChild(state);
     // state changes (e.g. muting sfx) don't need the deadline shift below —
     // only the pause/resume clock does — so just re-render in place.
-    btn.onclick = ()=>{ cfg.toggle(); renderPauseToggles(); };
+    btn.onclick = ()=>{ cfg.toggle(); renderPauseToggles(); syncPauseSliders(); };
     box.appendChild(btn);
   }
 }
@@ -2019,8 +2142,14 @@ function renderPauseToggles(){
 // settings.* field — assign, then store.set("settings", settings).
 const pauseSfxVol = $("#pause-sfxvol"), pauseVoiceVol = $("#pause-voicevol");
 function syncPauseSliders(){
-  if(pauseSfxVol) pauseSfxVol.value = settings.sfxVol;
-  if(pauseVoiceVol) pauseVoiceVol.value = settings.voiceVol;
+  if(pauseSfxVol){
+    pauseSfxVol.value = settings.sfxVol;
+    pauseSfxVol.closest("label").hidden = !sfx.enabled;
+  }
+  if(pauseVoiceVol){
+    pauseVoiceVol.value = settings.voiceVol;
+    pauseVoiceVol.closest("label").hidden = !settings.autoSpeak;
+  }
 }
 if(pauseSfxVol) pauseSfxVol.oninput = ()=>{
   settings.sfxVol = clampVol(pauseSfxVol.value);
@@ -2035,6 +2164,9 @@ if(pauseVoiceVol) pauseVoiceVol.oninput = ()=>{
 function pauseBattle(){
   if(!B.on || B.paused) return;
   B.paused = true;
+  pauseQuitArmed = false;
+  $("#pause-quit").classList.remove("confirm");
+  setIconLabel($("#pause-quit"), "close", t("battle.quit"));
   B.pausedAt = performance.now();
   stopAudio();
   keepAwake(false);   // nothing moves while paused — let the screen sleep
@@ -2106,7 +2238,17 @@ document.addEventListener("visibilitychange", ()=>{
 window.addEventListener("online", ()=>{ analytics.flush(); syncEdge("online"); });
 $("#hud-pause").onclick = ()=> pauseBattle();
 $("#pause-resume").onclick = ()=> resumeBattleWithAudio();
-$("#pause-quit").onclick = ()=>{ closeDialog($("#pause-overlay"), false); endBattle(true); };
+let pauseQuitArmed = false;
+$("#pause-quit").onclick = ()=>{
+  if(!pauseQuitArmed){
+    pauseQuitArmed = true;
+    $("#pause-quit").classList.add("confirm");
+    setIconLabel($("#pause-quit"), "close", t("battle.quitConfirm"));
+    return;
+  }
+  closeDialog($("#pause-overlay"), false);
+  endBattle(true);
+};
 function syncQuestOutcome(correct, timedOut=false){
   const result = B.quest.resolve({ correct, timedOut });
   const q = B.quest.view();
@@ -2119,6 +2261,7 @@ function syncQuestOutcome(correct, timedOut=false){
   return result;
 }
 function spawnZombie(){
+  setQuestContinue(false);
   const encounter = B.quest.next();
   if(!encounter) return false;
   const w = encounter.word;
@@ -2477,6 +2620,7 @@ function answer(btn, o){
 function scheduleNext(ms){
   B.zombie = null; B.proj = null;
   B.nextAt = performance.now()+ms;
+  setQuestContinue(ms > 0);
   // options stay visible (locked) so the revealed answer can sink in;
   // the next spawn's renderQuestion replaces them
 }
@@ -3282,6 +3426,8 @@ function endBattle(quit){
   $("#r-fight-miss").style.display = B.misses.length >= 2 ? "block" : "none";
   $("#r-fight-miss").onclick = ()=>{ battleDeckOverride = B.misses.slice(); startBattle("round"); };
   $("#r-again").onclick = ()=>startBattle(lastMode);
+  $("#r-review").classList.toggle("primary", B.misses.length > 0);
+  $("#r-again").classList.toggle("primary", B.misses.length === 0);
   // A4 intro round: mark the intro complete and point at the streak
   // ("come back tomorrow"), calm framing. The Welcome sticker occupies
   // #r-sticker-slot in Phase 4 (stickers.js).
@@ -3341,7 +3487,23 @@ function renderScores(){
   const best = store.get("best", {});
   const box = $("#scorelist");
   const keys = Object.keys(best).sort((a,b)=>best[b].score-best[a].score);
-  box.innerHTML = keys.length ? "" : `<div class="scorerow" style="color:var(--muted)">${t("scores.empty")}</div>`;
+  box.innerHTML = "";
+  if(!keys.length){
+    const empty = document.createElement("div");
+    empty.className = "scorerow";
+    empty.style.flexDirection = "column";
+    empty.style.alignItems = "stretch";
+    empty.style.gap = "10px";
+    const copy = document.createElement("span");
+    copy.style.color = "var(--muted)";
+    copy.textContent = t("scores.empty");
+    const play = document.createElement("button");
+    play.className = "big primary";
+    play.textContent = t("scores.play");
+    play.onclick = ()=>{ if(pool.length >= 8) startBattle("round"); };
+    empty.append(copy, play);
+    box.appendChild(empty);
+  }
   for(const k of keys){
     const row = document.createElement("div");
     row.className = "scorerow";
@@ -3351,6 +3513,25 @@ function renderScores(){
 }
 
 /* ============================== shop ============================== */
+let shopCategory = String(store.get("shopCategory", "featured"));
+function applyShopCategory(streetFocus=false){
+  const available = ["featured","skins","backdrops","effects","sounds","supplies"];
+  if(!available.includes(shopCategory)) shopCategory = "featured";
+  const active = streetFocus ? "street" : shopCategory;
+  const tabs = $("#shop-category-tabs");
+  if(tabs) tabs.style.display = streetFocus ? "none" : "flex";
+  document.querySelectorAll("[data-shop-category-tab]").forEach(button =>
+    setPressed(button, button.dataset.shopCategoryTab === active));
+  document.querySelectorAll("[data-shop-category-panel]").forEach(panel =>
+    panel.hidden = panel.dataset.shopCategoryPanel !== active);
+}
+document.querySelectorAll("[data-shop-category-tab]").forEach(button =>
+  button.addEventListener("click", ()=>{
+    shopCategory = button.dataset.shopCategoryTab;
+    store.set("shopCategory", shopCategory);
+    applyShopCategory(false);
+    $("#shop-category-tabs").scrollIntoView({ block:"nearest" });
+  }));
 function renderShop(){
   sfx.pack = shopState.soundpack || "default";  // keep sfx in sync with the equipped slot
   $("#shop-wallet").innerHTML = t("shop.wallet", { coins: wallet.toLocaleString() });
@@ -3373,6 +3554,7 @@ function renderShop(){
     for(const item of CATALOG.filter(i => i.type === "deco" && (shopState.owned.includes(i.id) || isAvailable(i, today)))){
       decoBox.appendChild(makeShopRow(item, today));
     }
+    applyShopCategory(true);
     startShopPreviewLoop();
     return;
   }
@@ -3413,6 +3595,7 @@ function renderShop(){
   }
   startShopPreviewLoop();
   renderIapSections();
+  applyShopCategory(false);
 }
 
 // "Jul 1" / "1 ก.ค." for a [month, day] pair, in the active locale.
@@ -3446,6 +3629,12 @@ function makeShopRow(item, today){
   const desc = item.type === "consumable" || item.type === "deco" ? tOr("item." + item.id + ".desc", "") : "";
   const descHtml = desc ? `<small class="item-desc">${desc}</small>` : "";
   copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}${stars}</b>${descHtml}<small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
+  if(!owned && wallet < item.price && item.type !== "deco"){
+    const shortage = document.createElement("small");
+    shortage.className = "shop-shortage";
+    shortage.textContent = t("shop.needMore", { n:(item.price - wallet).toLocaleString() });
+    copy.appendChild(shortage);
+  }
   left.replaceChildren(preview, copy);
   const btn = document.createElement("button");
   const doBuy = () => {
@@ -3872,6 +4061,24 @@ catJourneyScreen = createCatJourneyScreen({
 });
 
 /* ============================== profile / progress ============================== */
+let profileView = String(store.get("profileView", "overview"));
+function applyProfileView(){
+  if(!["overview","progress","collection"].includes(profileView)) profileView = "overview";
+  document.querySelectorAll("#profile-tabs [data-profile-view]").forEach(button => {
+    const on = button.dataset.profileView === profileView;
+    setPressed(button, on);
+    button.setAttribute("aria-selected", String(on));
+  });
+  document.querySelectorAll("#s-progress [data-profile-pane]").forEach(pane =>
+    pane.hidden = pane.dataset.profilePane !== profileView);
+}
+document.querySelectorAll("#profile-tabs [data-profile-view]").forEach(button =>
+  button.addEventListener("click", ()=>{
+    profileView = button.dataset.profileView;
+    store.set("profileView", profileView);
+    applyProfileView();
+    window.scrollTo(0, 0);
+  }));
 function renderProfileDashboard(){
   const level = levelForXp(xp);
   const prog = xpToNext(xp);
@@ -3901,6 +4108,9 @@ function renderProfileDashboard(){
   $("#profile-seen").textContent = stats.seenWords.toLocaleString();
   $("#profile-stickers").textContent = `${stats.earnedStickers}/${stats.totalStickers}`;
   $("#profile-best").textContent = bestSessionScore(store.get("best", {})).toLocaleString();
+  const empty = stats.seenWords === 0;
+  $("#profile-empty").hidden = !empty;
+  document.querySelector(".profile-stats").hidden = empty;
   $("#profile-collection-count").textContent = t("profile.collectionCount", {
     owned: stats.ownedCosmetics, total: stats.totalCosmetics,
   });
@@ -3934,6 +4144,7 @@ function renderProfileDashboard(){
 }
 function renderProgress(){
   renderProfileDashboard();
+  applyProfileView();
   // #go-smart now lives on this screen (2026-07-11 audit F1) — refresh its
   // label here too, not just on renderHome(), so it reflects the latest
   // deck size the moment the player opens Progress.
@@ -3955,6 +4166,10 @@ function renderProgress(){
   }
   renderNeedsWork();
 }
+$("#profile-first-quest").onclick = ()=>{
+  if(pool.length < 8) return;
+  startBattle("round");
+};
 function renderNeedsWork(){
   const weak = weakWords(masteryStore, pool).slice(0, 20);
   const list = $("#needswork-list");
