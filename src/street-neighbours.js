@@ -1,13 +1,14 @@
 "use strict";
 // Pure model for the three named neighbours who live on the Street once their
 // landmark is finished. Presence derives from level; nothing here reads storage
-// or the clock. Anchors are hand-placed x-fractions beside each building
-// (coin-bank .34, tailor .5, kitten-cafe .66 slots → stand just to the side).
-
+// or the clock. Anchors are hand-placed x-fractions beside each building: the
+// live Street lays landmarks at slots [.10,.30,.50,.70,.90] (coin-bank .30,
+// tailor .50, kitten-cafe .70), so each neighbour stands a uniform +.06 to the
+// right of its building — just to the side, not on top of it.
 export const NEIGHBOURS = [
-  { id: "tiao", landmarkId: "coin-bank",  unlock: 10, anchor: 0.40 },
+  { id: "tiao", landmarkId: "coin-bank",  unlock: 10, anchor: 0.36 },
   { id: "pang", landmarkId: "tailor",     unlock: 20, anchor: 0.56 },
-  { id: "wen",  landmarkId: "kitten-cafe", unlock: 30, anchor: 0.72 },
+  { id: "wen",  landmarkId: "kitten-cafe", unlock: 30, anchor: 0.76 },
 ];
 
 export function residentNeighbours(level) {
