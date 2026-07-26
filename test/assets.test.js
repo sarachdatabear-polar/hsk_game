@@ -191,6 +191,26 @@ describe("createAssets", () => {
     image.onload();
     expect(assets.frameCSS("ui-badge-mastery")).toBe("none");
   });
+
+  it("JS-loads webp backdrops flagged canvasImage but not plain CSS webps", () => {
+    const { created, makeImage } = fakeImages();
+    const { load, img } = createAssets(manifest, { makeImage });
+    // canvasImage webp → an Image is created
+    load("bg-street-wide");
+    const wideImage = created.find(i => i._src === "assets/bg-street-wide.webp");
+    expect(wideImage, "canvasImage webp should create an Image request").toBeTruthy();
+    if (wideImage) {
+      wideImage.complete = true;
+      wideImage.naturalWidth = 2048;
+      expect(img("bg-street-wide")).not.toBeNull();
+    }
+    // a plain webp CSS background (no canvasImage) stays unloaded
+    const cssWebp = manifest.assets.find(a => a.file.endsWith(".webp") && !a.canvasImage);
+    if (cssWebp) {
+      load(cssWebp.id);
+      expect(img(cssWebp.id)).toBeNull();
+    }
+  });
 });
 
 describe("singleton bound to the real manifest", () => {
