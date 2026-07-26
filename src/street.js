@@ -127,7 +127,7 @@ export const STREET_PLOTS = [
   { id: "plot-small-05",   x: 0.91, lane: "front", size: "small" },
 ];
 
-export const STREET_LAYOUT_VERSION = 3;
+export const STREET_LAYOUT_VERSION = 4;
 
 const STREET_NAME_MAX = 24;
 const SAVED_LAYOUTS_MAX = 3;
@@ -136,6 +136,7 @@ export function defaultStreetLayout() {
   return {
     v: STREET_LAYOUT_VERSION, placements: {}, welcomeOwned: false, coachDone: false,
     name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null,
+    metNeighbours: [],
   };
 }
 
@@ -151,6 +152,9 @@ function normKeepsakes(v) {
     .filter(k => k && typeof k === "object" && typeof k.id === "string" && typeof k.kind === "string");
 }
 function normSetsCompleted(v) {
+  return [...new Set((Array.isArray(v) ? v : []).filter(s => typeof s === "string"))];
+}
+function normMetNeighbours(v) {
   return [...new Set((Array.isArray(v) ? v : []).filter(s => typeof s === "string"))];
 }
 function normLastVisitDay(v) { return typeof v === "string" && v ? v : null; }
@@ -187,6 +191,7 @@ export function normalizeStreetLayout(layout, ownedIds = []) {
     savedLayouts: normSavedLayouts(raw.savedLayouts),
     keepsakes: normKeepsakes(raw.keepsakes),
     setsCompleted: normSetsCompleted(raw.setsCompleted),
+    metNeighbours: normMetNeighbours(raw.metNeighbours),
     lastVisitDay: normLastVisitDay(raw.lastVisitDay),
   };
   const allowed = new Set(streetOwnedIds(ownedIds, out));
