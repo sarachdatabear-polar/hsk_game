@@ -41,6 +41,7 @@ import { landmarkStage, constructionSprite } from "../street-construction.js";
 import { makeKeepsake, addKeepsake, keepsakeWords } from "../street-keepsakes.js";
 import { isNewDay, dailyGift } from "../street-daily.js";
 import { backdropFor, backdropAsset } from "../street-backdrop.js";
+import { createToastQueue } from "../toast-queue.js";
 // The wide time-of-day panoramas are .webp, loaded through assets.js's
 // canvasImage registry (Task 2) — a different lazy loader than sprite()'s
 // SPRITE_NAMES/.png registry above. `img` is aliased to avoid colliding with
@@ -67,15 +68,17 @@ export function createStreetScreen({
   // safe (the required file:// resilience path).
   const wideBackdropPending = new Set();
   let streetReaction = null;   // lightweight tap reaction, never persisted
-  let streetBannerTimer = 0;   // one-shot "set complete" banner, never persisted
   // Mirrors main.js's own #toast-pop element/CSS (index.html .toast-pop) —
   // reused rather than duplicated so main.js stays untouched (its seam here
-  // is the deps object, and a banner isn't part of it). Two independent
-  // timers targeting the same element is fine: main.js's toast() and this
-  // one behave the same way it already documents — a later call just
-  // replaces whatever is showing.
-  function streetToast(msg){
-    clearTimeout(streetBannerTimer);
+  // is the deps object, and a banner isn't part of it).
+  //
+  // Backed by a small sequential queue (src/toast-queue.js) rather than one
+  // shared timer: a set-completion toast and the daily-gift greeting can
+  // both fire on the same street-open, and a single-slot timer used to let
+  // the second call clobber the first before the player ever saw it. The
+  // queue gives each message its full 2600ms on-screen window before the
+  // next one shows.
+  function toastShow(msg){
     let el = document.getElementById("toast-pop");
     if(!el){
       el = document.createElement("div");
@@ -85,7 +88,16 @@ export function createStreetScreen({
     }
     el.textContent = msg;
     requestAnimationFrame(() => el.classList.add("show"));
-    streetBannerTimer = setTimeout(() => { el.classList.remove("show"); }, 2600);
+  }
+  function toastHide(){
+    const el = document.getElementById("toast-pop");
+    if(el) el.classList.remove("show");
+  }
+  const streetToastQueue = createToastQueue({
+    show: toastShow, hide: toastHide, schedule: setTimeout, holdMs: 2600,
+  });
+  function streetToast(msg){
+    streetToastQueue.push(msg);
   }
   // Grants exactly one "set" keepsake per newly-completed collectible set,
   // persisted through the same store-save path placements use (setShopState
