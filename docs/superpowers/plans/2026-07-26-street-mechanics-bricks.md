@@ -18,6 +18,7 @@
 - **Thai strings tagged `TH-REVIEW`** per existing i18n convention; values are machine drafts pending Jordan's native review.
 - **After `src/` changes run `npm run build`.** Never mask the test exit code.
 - **Constants:** landmarks = `BUILDINGS` (`lantern-post` lv5, `coin-bank` lv10, `tailor` lv20, `kitten-cafe` lv30, `emperor-gate` lv50). Neighbours (`street-neighbours.js NEIGHBOURS`): tiao→coin-bank, pang→tailor, wen→kitten-cafe. `BRICK_STAGE_COST = [8, 12, 16]`. Earn = `2 × masteredThisRound + (completedRound ? 1 : 0)`.
+- **Earn scope (v1, intentional):** bricks are earned from **Battle rounds only** (`endBattle`). Tone Trainer (`endToneRound`, ~line 1636) credits coins but **no bricks** in v1 — an accepted scope call, not an oversight. Revisit post-launch if Tone should also feed the build loop.
 
 ---
 
@@ -802,7 +803,10 @@ Add near `grantMovedInNeighbours`:
     setShopState({ ...getShopState(), streetLayout: granted });
     store.set("shop", getShopState());
     pushEdge("purchase");
-    streetReveal = { id, start: null };                  // reuse the construction pop/dust
+    // NOTE: do NOT reuse `streetReveal` here — its render-time stamp is gated on
+    // `owned.includes(id)`, and landmarks are build-gated, not purchased, so the
+    // pop/dust would never fire. v1 simply re-renders (the new stage art appears);
+    // a dedicated non-ownership-gated build-pop animation is deferred polish.
     if(res.reachedStage >= 3) grantMovedInNeighbours();  // finishing a home may move a neighbour in
     renderStreet();
   }
@@ -834,7 +838,7 @@ In `street-screen.js` near line 817 where `#street-wallet` is set:
     $("#street-bricks").textContent=t("street.bricks",{n:getBricks().toLocaleString()});
 ```
 
-Also render the single "Opens at level N" locked hint for the next-unlock landmark (the lowest `BUILDINGS` entry with `level < lv`) — a small inert label near its slot using `t("street.opensAtLevel",{lv})`.
+Also render the single "Opens at level N" locked hint for the next-unlock landmark (the lowest `BUILDINGS` entry with `level < lv`) — a small inert label near its slot using `t("street.opensAtLevel",{lv})`. **Its slot must come from the PRE-filter `streetPieces(Infinity,...)` result** (which includes every landmark regardless of unlock), NOT the filtered `pieces` array — the Step-2 filter drops below-unlock buildings, so their slot geometry isn't in `pieces`. Capture the unfiltered building pieces once and look up the next-unlock landmark's slot there.
 
 - [ ] **Step 7: Build + browser-verify**
 
@@ -879,20 +883,25 @@ Near the post-sync re-read `wallet = store.get("wallet", 0);` (line ~830):
 bricks = store.get("bricks", 0);
 ```
 
-- [ ] **Step 2: Snapshot mastery at battle start**
+- [ ] **Step 2: Snapshot mastery at battle start (canonical)**
 
-Where the battle-state object `B` is initialized (grep `B = {` / `B={` in the battle-start path), add after it:
+`B` is a reused module-level `const B = {on:false}` (line ~1678). The snapshot MUST be set every time a battle starts, at the battle-start init where `B.on` is set true and `B.score`/`B.resolved` are (re)initialized — grep for `B.on = true` / `B.resolved = 0` in the start-battle path. Add there:
 
 ```js
 B.masteredAtStart = masteredCount(masteryStore);
 ```
 
-- [ ] **Step 3: Award bricks in `endBattle`**
+**Why canonical, not just one grep site:** `B` persists across rounds, so a stale value from a prior round must never leak into a new round's earn math. Setting it at the single start-battle init covers every mode that opens a battle. The earn math in Step 3 is additionally fail-safe against a missing snapshot.
+
+- [ ] **Step 3: Award bricks in `endBattle` (jackpot-proof)**
+
+**CRITICAL:** never fall back the start snapshot to `0` — a missing `masteredAtStart` with a `|| 0` fallback would credit the player's *entire lifetime mastered count* as one round's gain (hundreds of bricks). Fall back to the CURRENT count so a missing snapshot yields **zero** bricks, never a jackpot.
 
 In the normal path, right after `store.set("wallet", wallet); updateWalletChip();` (before `streetScreen.renderProjectResults`):
 
 ```js
-  const gained = Math.max(0, masteredCount(masteryStore) - (B.masteredAtStart || 0));
+  const startMastered = (typeof B.masteredAtStart === "number") ? B.masteredAtStart : masteredCount(masteryStore);
+  const gained = Math.max(0, masteredCount(masteryStore) - startMastered);
   const earnedBricks = bricksForRound({ mastered: gained, completed: true });
   if(earnedBricks){ bricks += earnedBricks; store.set("bricks", bricks); }
 ```
@@ -900,7 +909,8 @@ In the normal path, right after `store.set("wallet", wallet); updateWalletChip()
 In the quit path, right after `if(B.score > 0){ wallet += B.score; store.set("wallet", wallet); updateWalletChip(); }`:
 
 ```js
-    const gainedQ = Math.max(0, masteredCount(masteryStore) - (B.masteredAtStart || 0));
+    const startMasteredQ = (typeof B.masteredAtStart === "number") ? B.masteredAtStart : masteredCount(masteryStore);
+    const gainedQ = Math.max(0, masteredCount(masteryStore) - startMasteredQ);
     const earnedBricksQ = bricksForRound({ mastered: gainedQ, completed: false });
     if(earnedBricksQ){ bricks += earnedBricksQ; store.set("bricks", bricks); }
 ```
