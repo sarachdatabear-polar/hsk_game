@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { chooseTts, speak, setVoiceVolume } from "../src/audio.js";
 import { initAudio, audioAvailable } from "../src/audio.js";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 class FakeUtterance {
   constructor(text) {
@@ -545,5 +547,36 @@ describe("retry after unlock", () => {
     expect(played.length).toBe(2);         // original attempt + one retry
     expect(played[1]).toContain(encodeURIComponent("你"));
     delete globalThis.Audio;
+  });
+});
+
+describe("SILENT_WAV", () => {
+  // SILENT_WAV isn't exported (it's an internal priming constant) — read the
+  // source text and extract the payload rather than adding an export just for
+  // this test.
+  const srcPath = fileURLToPath(new URL("../src/audio.js", import.meta.url));
+  const src = readFileSync(srcPath, "utf8");
+  const match = src.match(/const SILENT_WAV = "data:audio\/wav;base64,([^"]+)";/);
+  const payload = match ? match[1] : null;
+
+  it("payload is found in src/audio.js", () => {
+    expect(payload).toBeTruthy();
+  });
+
+  it("payload length is a multiple of 4 (valid base64 padding)", () => {
+    // Regression: the previous payload was 1129 chars (length % 4 === 1),
+    // which is structurally invalid base64 — strict decoders (Chromium's
+    // data: audio decode) rejected it with NotSupportedError.
+    expect(payload.length % 4).toBe(0);
+  });
+
+  it("payload matches the strict base64 alphabet", () => {
+    expect(payload).toMatch(/^[A-Za-z0-9+/]+={0,2}$/);
+  });
+
+  it("decodes to a valid RIFF/WAVE header", () => {
+    const bytes = Buffer.from(payload, "base64");
+    expect(bytes.subarray(0, 4).toString("ascii")).toBe("RIFF");
+    expect(bytes.subarray(8, 12).toString("ascii")).toBe("WAVE");
   });
 });
