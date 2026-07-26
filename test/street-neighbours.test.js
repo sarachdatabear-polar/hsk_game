@@ -55,4 +55,24 @@ describe("neighbourPose", () => {
   it("is deterministic for a given time", () => {
     expect(neighbourPose(16000, 0.5, false)).toEqual(neighbourPose(16000, 0.5, false));
   });
+  it("walks back during the return window with facing:-1", () => {
+    // return window is [20000, 24000); at 22000 should be mid-return.
+    const p = neighbourPose(22000, 0.5, false);
+    expect(p.facing).toBe(-1);
+    expect(p.sprite === "walk-a" || p.sprite === "walk-b").toBe(true);
+    expect(p.x).toBeGreaterThan(0.5);
+    expect(p.x).toBeLessThan(0.56);
+  });
+  it("maintains continuity at walk-out to return boundary", () => {
+    // at 19999 (end of walk-out) and 20000 (start of return), x should both be ~0.56.
+    const atEnd = neighbourPose(19999, 0.5, false);
+    const atStart = neighbourPose(20000, 0.5, false);
+    expect(atEnd.x).toBeCloseTo(0.56, 2);
+    expect(atStart.x).toBeCloseTo(0.56, 2);
+  });
+  it("wraps to idle at anchor after full cycle", () => {
+    const idle = neighbourPose(0, 0.5, false);
+    const wrapped = neighbourPose(24000, 0.5, false);
+    expect(wrapped).toEqual(idle);
+  });
 });
