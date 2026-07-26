@@ -125,12 +125,51 @@ export function createStreetScreen({
   // pattern as grantCompletedSets just above, but gated on LEVEL crossing an
   // unlock threshold (residentNeighbours/newlyMovedIn) rather than a
   // purchase, and guarded by streetLayout.metNeighbours (Task 7 — persisted,
-  // migrated, union-merged) instead of setsCompleted. No toast surface exists
-  // dedicated to this moment, so it reuses streetToast (the same one-shot
-  // #toast-pop element the daily-surprise cameo and setComplete banner above
-  // already share).
+  // migrated, union-merged) instead of setsCompleted.
+  //
+  // The move-in moment gets its OWN portrait card (#neighbour-greet), not the
+  // plain text #toast-pop: it surfaces the neighbour's authored portrait art
+  // and, being a separate element, no longer clobbers a same-day daily-gift
+  // toast. Auto-dismisses; file://-safe (relative img src, and the card still
+  // shows the text if the portrait can't decode). Styles are injected once so
+  // this stays self-contained in the module (index.html CSS untouched).
+  let neighbourGreetTimer;
+  function ensureNeighbourGreetStyle(){
+    if(document.getElementById("neighbour-greet-style")) return;
+    const s = document.createElement("style");
+    s.id = "neighbour-greet-style";
+    s.textContent =
+      "#neighbour-greet{position:fixed;left:50%;top:22%;transform:translate(-50%,-8px);"
+      + "z-index:9999;display:flex;align-items:center;gap:12px;max-width:min(92vw,340px);"
+      + "padding:12px 16px;border-radius:18px;background:#FBF5E8;color:#2E2A24;"
+      + "box-shadow:0 8px 28px rgba(46,42,36,.28);border:2px solid #EAC796;"
+      + "font-weight:700;text-align:left;opacity:0;pointer-events:none;"
+      + "transition:opacity .25s ease,transform .25s ease}"
+      + "#neighbour-greet.show{opacity:1;transform:translate(-50%,0)}"
+      + "#neighbour-greet img{width:64px;height:64px;border-radius:12px;object-fit:cover;"
+      + "background:#EAC796;flex:0 0 auto}"
+      + "@media (prefers-reduced-motion:reduce){#neighbour-greet{transition:none}}";
+    document.head.appendChild(s);
+  }
   function showNeighbourGreeting(id){
-    streetToast(t("street.neighbourMovedIn", { name: t("street.neighbour." + id) }));
+    ensureNeighbourGreetStyle();
+    clearTimeout(neighbourGreetTimer);
+    let el = document.getElementById("neighbour-greet");
+    if(!el){
+      el = document.createElement("div");
+      el.id = "neighbour-greet";
+      document.body.appendChild(el);
+    }
+    el.innerHTML = "";
+    const img = document.createElement("img");
+    img.alt = "";
+    img.onerror = () => { img.style.display = "none"; };  // text-only if art can't decode
+    img.src = "assets/neighbour-" + id + "-portrait.png";
+    const msg = document.createElement("span");
+    msg.textContent = t("street.neighbourMovedIn", { name: t("street.neighbour." + id) });
+    el.append(img, msg);
+    requestAnimationFrame(() => el.classList.add("show"));
+    neighbourGreetTimer = setTimeout(() => { el.classList.remove("show"); }, 3200);
   }
   function grantMovedInNeighbours(){
     const layout = ensureStreetLayout();     // same accessor grantCompletedSets uses
@@ -623,8 +662,8 @@ export function createStreetScreen({
   // Drawn in the resident canvas layer, same ground-Y/scale basis as the
   // player's own cat below, but as authored PNGs (sprite(), Task 6's
   // walk-a/walk-b/idle poses) rather than drawCat's recolourable vector.
-  // The portrait art (neighbour-<id>-portrait) is registered but not yet
-  // surfaced anywhere — the move-in greeting is text-only for now (deferred).
+  // (The portrait pose isn't used in this walk loop — it's surfaced by the
+  // move-in greeting card, showNeighbourGreeting.)
   // sprite() returns null while an art file is still loading (or on any
   // registry miss); skipping that frame is the same fallback every other
   // sprite() caller in this file already relies on, and the existing
