@@ -21,6 +21,14 @@ export function newlyMovedIn(level, met) {
   return residentNeighbours(level).filter(id => !seen.has(id));
 }
 
+export function newlyMovedInByBuild(builtStages, met) {
+  const seen = new Set(Array.isArray(met) ? met : []);
+  const bs = builtStages && typeof builtStages === "object" ? builtStages : {};
+  return NEIGHBOURS
+    .filter(n => (Number(bs[n.landmarkId]) || 0) >= 3 && !seen.has(n.id))
+    .map(n => n.id);
+}
+
 const REST_MS = 16000;      // idle at the anchor
 const WALK_MS = 4000;       // short stroll out
 const RETURN_MS = 4000;     // and back

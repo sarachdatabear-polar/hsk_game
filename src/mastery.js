@@ -8,6 +8,13 @@ export function recordAnswer(store, hanzi, correct, now = Date.now()) {
 export const wordStreak = (store, hanzi) => (store[hanzi] ? store[hanzi].r : 0);
 export const isMastered = (store, hanzi) => wordStreak(store, hanzi) >= 3;
 
+export function masteredCount(store) {
+  const s = store || {};
+  let n = 0;
+  for (const h in s) if (isMastered(s, h)) n++;
+  return n;
+}
+
 // Read-only: picks a word to DISPLAY on a keepsake (frozen at creation, never
 // re-read). Never mutates `store`. Returns "" when there's nothing mastered.
 // `exclude` (array or Set of hanzi) skips words already shown on an earlier

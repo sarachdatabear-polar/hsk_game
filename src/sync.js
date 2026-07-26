@@ -45,6 +45,7 @@ export function localSnapshot(store) {
     shop: store.get("shop", null),
     stickers: store.get("stickers", null),
     best: store.get("best", {}),
+    bricks: store.get("bricks", 0),
   };
 }
 

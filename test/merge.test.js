@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { SYNC_KEYS, defaultSyncMeta, slotsOf, mergeXp, mergeWallet, mergeFreezes,
+import { SYNC_KEYS, defaultSyncMeta, slotsOf, mergeXp, mergeWallet, mergeBricks, mergeFreezes,
          mergeBest, mergeStickers, mergeShop, mergeMastery, mergeQuests,
          mergeMonthly, mergeAll, streetLayoutOf, streetLayoutPrefsOf, streetProjectOf, shopPreferencesOf } from "../src/merge.js";
 import { defaultShop } from "../src/shop.js";
 
 describe("merge: scalars", () => {
-  it("SYNC_KEYS lists the 10 synced keys", () =>
-    expect(SYNC_KEYS).toEqual(["mastery","xp","daily","quests","monthly","wallet","freezes","shop","stickers","best"]));
+  it("SYNC_KEYS lists the 11 synced keys", () =>
+    expect(SYNC_KEYS).toEqual(["mastery","xp","daily","quests","monthly","wallet","bricks","freezes","shop","stickers","best"]));
   it("defaultSyncMeta shape", () =>
     expect(defaultSyncMeta()).toEqual({ dirty: {}, lastSyncAt: 0, lastLedgerAt: "", shopSlots: null, shopPreferences: null }));
   it("xp/wallet take max; nullish sides are 0", () => {
@@ -54,7 +54,7 @@ describe("mergeStickers", () => {
 });
 
 describe("mergeShop", () => {
-  const emptyLayout = { v: 4, placements: {}, welcomeOwned: false, coachDone: false, name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null, metNeighbours: [] };
+  const emptyLayout = { v: 5, placements: {}, welcomeOwned: false, coachDone: false, name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null, metNeighbours: [], builtStages: {} };
   const emptyProject = { v: 1, itemId: "", plotId: "", reserve: false };
   const local = { owned: ["skin-a", "deco-1"], skin: "skin-a", backdrop: "", effect: "", soundpack: "", tiers: { "deco-1": 2 }, streetLayout: emptyLayout, streetProject: emptyProject };
   const cloud = { owned: ["skin-b", "deco-1"], skin: "skin-b", backdrop: "bd-1", effect: "", soundpack: "", tiers: { "deco-1": 3 }, streetLayout: emptyLayout, streetProject: emptyProject };
@@ -142,7 +142,7 @@ describe("mergeShop", () => {
     expect(prefs.savedLayouts).toEqual([{ name: "L", placements: {} }]);
     expect(prefs.welcomeOwned).toBe(true);
     expect(prefs.coachDone).toBe(true);
-    expect(prefs.v).toBe(4);
+    expect(prefs.v).toBe(5);
     // additive fields excluded entirely
     expect(prefs).not.toHaveProperty("keepsakes");
     expect(prefs).not.toHaveProperty("setsCompleted");
@@ -373,8 +373,8 @@ describe("merge: ledger-cursor purchase fold (THE FOLD, coin-purchase go-live)",
 
 describe("mergeShop folds v3 ownership fields", () => {
   const base = () => ({ owned: [], tiers: {},
-    streetLayout: { v: 4, placements: {}, welcomeOwned: false, coachDone: false,
-      name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null, metNeighbours: [] } });
+    streetLayout: { v: 5, placements: {}, welcomeOwned: false, coachDone: false,
+      name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null, metNeighbours: [], builtStages: {} } });
 
   it("unions keepsakes by id and setsCompleted, and takes the max lastVisitDay", () => {
     const a = base(); a.streetLayout.keepsakes = [{ id: "k1", kind: "welcome", day: "2026-07-20" }];
@@ -396,8 +396,8 @@ describe("mergeShop folds v3 ownership fields", () => {
   });
 
   it("unions metNeighbours across devices", () => {
-    const A = { owned: [], streetLayout: { v: 4, placements: {}, metNeighbours: ["tiao"] } };
-    const B = { owned: [], streetLayout: { v: 4, placements: {}, metNeighbours: ["pang"] } };
+    const A = { owned: [], streetLayout: { v: 5, placements: {}, metNeighbours: ["tiao"] } };
+    const B = { owned: [], streetLayout: { v: 5, placements: {}, metNeighbours: ["pang"] } };
     const merged = mergeShop(A, B, false);   // signature: mergeShop(A, B, flags), as used elsewhere in this file
     expect([...merged.streetLayout.metNeighbours].sort()).toEqual(["pang", "tiao"]);
   });
@@ -419,5 +419,29 @@ describe("slotsOf", () => {
 describe("defaultSyncMeta shopSlots", () => {
   it("defaults shopSlots to null (pre-upgrade metas adopt it via Object.assign)", () => {
     expect(defaultSyncMeta().shopSlots).toBeNull();
+  });
+});
+
+describe("bricks sync", () => {
+  it("bricks is a synced key and folds by max", () => {
+    expect(SYNC_KEYS).toContain("bricks");
+    expect(mergeBricks(30, 12)).toBe(30);
+    expect(mergeBricks(undefined, 7)).toBe(7);
+    expect(mergeBricks(-5, 0)).toBe(0);
+    expect(mergeAll({ bricks: 5 }, { bricks: 40 }).bricks).toBe(40);
+  });
+});
+
+describe("builtStages merge (per-landmark max)", () => {
+  it("takes the higher stage per landmark across devices", () => {
+    const a = { owned: [], streetLayout: { v: 5, builtStages: { "coin-bank": 3, "tailor": 1 } } };
+    const b = { owned: [], streetLayout: { v: 5, builtStages: { "coin-bank": 1, "tailor": 2 } } };
+    const out = mergeShop(a, b);
+    expect(out.streetLayout.builtStages).toEqual({ "coin-bank": 3, "tailor": 2 });
+  });
+  it("tolerates a legacy cloud row with no builtStages", () => {
+    const a = { owned: [], streetLayout: { v: 5, builtStages: { "tailor": 2 } } };
+    const b = { owned: [], streetLayout: { v: 4 } };
+    expect(mergeShop(a, b).streetLayout.builtStages).toEqual({ "tailor": 2 });
   });
 });

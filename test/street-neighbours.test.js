@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  NEIGHBOURS, residentNeighbours, newlyMovedIn, neighbourPose,
+  NEIGHBOURS, residentNeighbours, newlyMovedIn, newlyMovedInByBuild, neighbourPose,
 } from "../src/street-neighbours.js";
 
 describe("NEIGHBOURS", () => {
@@ -74,5 +74,17 @@ describe("neighbourPose", () => {
     const idle = neighbourPose(0, 0.5, false);
     const wrapped = neighbourPose(24000, 0.5, false);
     expect(wrapped).toEqual(idle);
+  });
+});
+
+describe("newlyMovedInByBuild", () => {
+  it("returns neighbours whose landmark is finished and not yet met", () => {
+    expect(newlyMovedInByBuild({ "coin-bank": 3 }, [])).toEqual(["tiao"]);
+    expect(newlyMovedInByBuild({ "coin-bank": 3, "tailor": 3 }, ["tiao"])).toEqual(["pang"]);
+  });
+  it("ignores unfinished landmarks and already-met neighbours", () => {
+    expect(newlyMovedInByBuild({ "coin-bank": 2 }, [])).toEqual([]);
+    expect(newlyMovedInByBuild({ "kitten-cafe": 3 }, ["wen"])).toEqual([]);
+    expect(newlyMovedInByBuild({}, [])).toEqual([]);
   });
 });
