@@ -101,7 +101,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
     expect(end).toBe(4);
     expect(s.dump()["nbhsk.schemaVersion"]).toBe("4");
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
-    expect(shop.streetLayout.v).toBe(4);
+    expect(shop.streetLayout.v).toBe(5);
     expect(shop.streetLayout.welcomeOwned).toBe(true);
     expect(typeof shop.streetLayout.placements).toBe("object");
     expect(shop.streetProject).toEqual({ v: 1, itemId: "", plotId: "", reserve: false });
@@ -169,7 +169,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
     expect(s.dump()["nbhsk.schemaVersion"]).toBe("4");
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
     expect(shop.streetLayout.placements).toEqual({ "plot-small-01": "red-lantern" });
-    expect(shop.streetLayout.v).toBe(4);
+    expect(shop.streetLayout.v).toBe(5);
     expect(shop.streetLayout.coachDone).toBe(true);
   });
 
@@ -199,7 +199,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
     });
     runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
-    expect(shop.streetLayout.v).toBe(4);
+    expect(shop.streetLayout.v).toBe(5);
     expect(shop.streetLayout.coachDone).toBe(true);                       // NOT reset
     expect(shop.streetLayout.placements).toEqual({ "plot-small-01": "red-lantern" }); // NOT rebuilt
   });
@@ -228,7 +228,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
     expect(end).toBe(4);
     expect(s.dump()["nbhsk.schemaVersion"]).toBe("4");
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
-    expect(shop.streetLayout.v).toBe(4);
+    expect(shop.streetLayout.v).toBe(5);
     expect(shop.streetLayout.welcomeOwned).toBe(true);
   });
 
@@ -252,7 +252,7 @@ describe("v2 → v3 street ownership migration", () => {
     });
     runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
     const shop = JSON.parse(s.getItem("nbhsk.shop"));
-    expect(shop.streetLayout.v).toBe(4);
+    expect(shop.streetLayout.v).toBe(5);
     expect(shop.streetLayout.keepsakes).toEqual([]);
     expect(shop.streetLayout.setsCompleted).toEqual([]);
     expect(shop.streetLayout.lastVisitDay).toBeNull();
@@ -289,7 +289,7 @@ describe("v3→v4 migration", () => {
     const shop = JSON.parse(s.getItem("nbhsk.shop"));
     expect(shop.streetLayout.metNeighbours).toEqual([]);
     expect(shop.streetLayout.setsCompleted).toEqual(["market"]);
-    expect(shop.streetLayout.v).toBe(4);
+    expect(shop.streetLayout.v).toBe(5);
   });
   it("no-ops without throwing on a corrupt shop", () => {
     const s = fakeStorage({ "nbhsk.schemaVersion": "3", "nbhsk.shop": "{not json" });

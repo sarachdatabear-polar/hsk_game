@@ -54,7 +54,7 @@ describe("mergeStickers", () => {
 });
 
 describe("mergeShop", () => {
-  const emptyLayout = { v: 4, placements: {}, welcomeOwned: false, coachDone: false, name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null, metNeighbours: [] };
+  const emptyLayout = { v: 5, placements: {}, welcomeOwned: false, coachDone: false, name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null, metNeighbours: [], builtStages: {} };
   const emptyProject = { v: 1, itemId: "", plotId: "", reserve: false };
   const local = { owned: ["skin-a", "deco-1"], skin: "skin-a", backdrop: "", effect: "", soundpack: "", tiers: { "deco-1": 2 }, streetLayout: emptyLayout, streetProject: emptyProject };
   const cloud = { owned: ["skin-b", "deco-1"], skin: "skin-b", backdrop: "bd-1", effect: "", soundpack: "", tiers: { "deco-1": 3 }, streetLayout: emptyLayout, streetProject: emptyProject };
@@ -142,7 +142,7 @@ describe("mergeShop", () => {
     expect(prefs.savedLayouts).toEqual([{ name: "L", placements: {} }]);
     expect(prefs.welcomeOwned).toBe(true);
     expect(prefs.coachDone).toBe(true);
-    expect(prefs.v).toBe(4);
+    expect(prefs.v).toBe(5);
     // additive fields excluded entirely
     expect(prefs).not.toHaveProperty("keepsakes");
     expect(prefs).not.toHaveProperty("setsCompleted");
@@ -373,8 +373,8 @@ describe("merge: ledger-cursor purchase fold (THE FOLD, coin-purchase go-live)",
 
 describe("mergeShop folds v3 ownership fields", () => {
   const base = () => ({ owned: [], tiers: {},
-    streetLayout: { v: 4, placements: {}, welcomeOwned: false, coachDone: false,
-      name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null, metNeighbours: [] } });
+    streetLayout: { v: 5, placements: {}, welcomeOwned: false, coachDone: false,
+      name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null, metNeighbours: [], builtStages: {} } });
 
   it("unions keepsakes by id and setsCompleted, and takes the max lastVisitDay", () => {
     const a = base(); a.streetLayout.keepsakes = [{ id: "k1", kind: "welcome", day: "2026-07-20" }];
@@ -396,8 +396,8 @@ describe("mergeShop folds v3 ownership fields", () => {
   });
 
   it("unions metNeighbours across devices", () => {
-    const A = { owned: [], streetLayout: { v: 4, placements: {}, metNeighbours: ["tiao"] } };
-    const B = { owned: [], streetLayout: { v: 4, placements: {}, metNeighbours: ["pang"] } };
+    const A = { owned: [], streetLayout: { v: 5, placements: {}, metNeighbours: ["tiao"] } };
+    const B = { owned: [], streetLayout: { v: 5, placements: {}, metNeighbours: ["pang"] } };
     const merged = mergeShop(A, B, false);   // signature: mergeShop(A, B, flags), as used elsewhere in this file
     expect([...merged.streetLayout.metNeighbours].sort()).toEqual(["pang", "tiao"]);
   });

@@ -294,10 +294,10 @@ describe("street v2 authored layout", () => {
     const n = normalizeStreetLayout(input, ["red-lantern", "golden-arch", "tea-sign"]);
     expect(input).toEqual(before);
     expect(n).toEqual({
-      v: 4, welcomeOwned: true, coachDone: true,
+      v: 5, welcomeOwned: true, coachDone: true,
       placements: { "plot-small-01": "red-lantern" },
       name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null,
-      metNeighbours: [],
+      metNeighbours: [], builtStages: {},
     });
     expect(normalizeStreetLayout(n, ["red-lantern", "golden-arch", "tea-sign"])).toEqual(n);
   });
@@ -434,11 +434,11 @@ describe("street v2 authored layout", () => {
 describe("streetLayout v3 ownership fields", () => {
   it("defaults the five new fields", () => {
     expect(defaultStreetLayout()).toEqual({
-      v: 4, placements: {}, welcomeOwned: false, coachDone: false,
+      v: 5, placements: {}, welcomeOwned: false, coachDone: false,
       name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null,
-      metNeighbours: [],
+      metNeighbours: [], builtStages: {},
     });
-    expect(STREET_LAYOUT_VERSION).toBe(4);
+    expect(STREET_LAYOUT_VERSION).toBe(5);
   });
 
   it("normalizes and defends the new fields", () => {
@@ -450,7 +450,7 @@ describe("streetLayout v3 ownership fields", () => {
       setsCompleted: ["market", "market", 7, "garden"],
       lastVisitDay: "2026-07-23",
     }, []);
-    expect(out.v).toBe(4);
+    expect(out.v).toBe(5);
     expect(out.name).toBe("My Street");            // trimmed, capped at 24
     expect(out.savedLayouts).toHaveLength(3);      // capped at 3, junk dropped
     expect(out.keepsakes).toEqual([{ id: "k1", kind: "welcome", day: "2026-07-23" }]); // nulls dropped
@@ -466,14 +466,30 @@ describe("streetLayout v3 ownership fields", () => {
 });
 
 describe("normalizeStreetLayout metNeighbours", () => {
-  it("defaults metNeighbours to [] and stamps v4", () => {
+  it("defaults metNeighbours to [] and stamps v5", () => {
     const l = normalizeStreetLayout({}, []);
-    expect(l.v).toBe(4);
-    expect(STREET_LAYOUT_VERSION).toBe(4);
+    expect(l.v).toBe(5);
+    expect(STREET_LAYOUT_VERSION).toBe(5);
     expect(l.metNeighbours).toEqual([]);
   });
   it("keeps only string ids, de-duplicated", () => {
     const l = normalizeStreetLayout({ metNeighbours: ["pang", "pang", 7, null, "wen"] }, []);
     expect(l.metNeighbours).toEqual(["pang", "wen"]);
+  });
+});
+
+describe("builtStages normalization", () => {
+  it("defaults to an empty object and stamps version 5", () => {
+    expect(STREET_LAYOUT_VERSION).toBe(5);
+    expect(defaultStreetLayout().builtStages).toEqual({});
+  });
+  it("clamps to 0-3, drops zeros and unknown ids", () => {
+    const out = normalizeStreetLayout(
+      { builtStages: { "coin-bank": 2, "tailor": 9, "bogus": 3, "lantern-post": 0 } }, []);
+    expect(out.builtStages).toEqual({ "coin-bank": 2, "tailor": 3 });
+  });
+  it("tolerates a missing/garbage builtStages", () => {
+    expect(normalizeStreetLayout({}, []).builtStages).toEqual({});
+    expect(normalizeStreetLayout({ builtStages: "x" }, []).builtStages).toEqual({});
   });
 });
