@@ -55,4 +55,12 @@ describe("sprite registry", () => {
       expect(SPRITE_NAMES).toContain(`landmark-${id}-stage2`);
     }
   });
+
+  it("registers the neighbour residents", () => {
+    for (const id of ["tiao", "pang", "wen"]) {
+      for (const pose of ["walk-a", "walk-b", "idle", "portrait"]) {
+        expect(SPRITE_NAMES).toContain(`neighbour-${id}-${pose}`);
+      }
+    }
+  });
 });

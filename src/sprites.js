@@ -29,6 +29,10 @@ export const SPRITE_NAMES = [
   "landmark-tailor-stage1", "landmark-tailor-stage2",
   "landmark-kitten-cafe-stage1", "landmark-kitten-cafe-stage2",
   "landmark-emperor-gate-stage1", "landmark-emperor-gate-stage2",
+  // named neighbour residents (walk-a/walk-b passing cycle, idle, portrait)
+  "neighbour-tiao-walk-a", "neighbour-tiao-walk-b", "neighbour-tiao-idle", "neighbour-tiao-portrait",
+  "neighbour-pang-walk-a", "neighbour-pang-walk-b", "neighbour-pang-idle", "neighbour-pang-portrait",
+  "neighbour-wen-walk-a", "neighbour-wen-walk-b", "neighbour-wen-idle", "neighbour-wen-portrait",
   // street decos — PNG art with a canvas (drawStreetDeco) vector fallback
   "deco-red-lantern", "deco-noodle-stall", "deco-tea-sign",
   "deco-foo-dog", "deco-golden-arch",

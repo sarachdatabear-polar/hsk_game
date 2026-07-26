@@ -26,6 +26,9 @@ import {
   streetResidentPose, streetResidentRoute, streetResidentScale,
 } from "../street-resident.js";
 import {
+  NEIGHBOURS, residentNeighbours, newlyMovedIn, neighbourPose,
+} from "../street-neighbours.js";
+import {
   WELCOME_ID, STREET_PLOTS, streetPieces, streetProgress,
   streetWorldMetrics, DECO_SPRITE_SCALE, defaultStreetLayout,
   normalizeStreetLayout, compatibleStreetPlots, firstFreeStreetPlot,
@@ -116,6 +119,39 @@ export function createStreetScreen({
     // so a single purchase can complete at most one set: fresh.length is
     // always <= 1 here, hence no banner queue is needed.
     streetToast(t("street.setComplete", { set: t("street.set." + fresh[0]) }));
+  }
+  // Task 8: the one-time "neighbour moved in" moment for the three named
+  // residents (street-neighbours.js NEIGHBOURS: tiao/pang/wen). Same grant
+  // pattern as grantCompletedSets just above, but gated on LEVEL crossing an
+  // unlock threshold (residentNeighbours/newlyMovedIn) rather than a
+  // purchase, and guarded by streetLayout.metNeighbours (Task 7 — persisted,
+  // migrated, union-merged) instead of setsCompleted. No toast surface exists
+  // dedicated to this moment, so it reuses streetToast (the same one-shot
+  // #toast-pop element the daily-surprise cameo and setComplete banner above
+  // already share).
+  function showNeighbourGreeting(id){
+    streetToast(t("street.neighbourMovedIn", { name: t("street.neighbour." + id) }));
+  }
+  function grantMovedInNeighbours(){
+    const layout = ensureStreetLayout();     // same accessor grantCompletedSets uses
+    const level = levelForXp(getXp());       // same level source the scene itself uses
+    const fresh = newlyMovedIn(level, layout.metNeighbours);
+    if(!fresh.length) return;
+    let keepsakes = layout.keepsakes, metNeighbours = layout.metNeighbours;
+    for(const id of fresh){
+      // `seq: id` (not a bare custom field) so makeKeepsake's id becomes
+      // "neighbour:<id>:<day>" — the same "kind:seg:day" shape "set" keepsakes
+      // use (see keepsakeSetId below). Without a seg, two neighbours moving in
+      // on the SAME day would both mint the id "neighbour:<day>" and the
+      // second would be silently dropped by addKeepsake's id-dedup.
+      keepsakes = addKeepsake(keepsakes, makeKeepsake("neighbour", todayStr(), { seq: id, word: wordFor(keepsakes) }));
+      metNeighbours = [...metNeighbours, id];
+    }
+    const granted = normalizeStreetLayout({ ...layout, keepsakes, metNeighbours }, getShopState().owned);
+    setShopState({ ...getShopState(), streetLayout: granted });
+    store.set("shop", getShopState());
+    pushEdge("purchase");
+    showNeighbourGreeting(fresh[0]);
   }
 
   /* ============================== Lucky Cat Street (home) ============================== */
@@ -249,6 +285,11 @@ export function createStreetScreen({
   }
   function enterStreet(previousScreen=""){
     const layout = grantDailySurprise(ensureStreetLayout());
+    // Same on-show slot as the daily-surprise/set checks above: level-gated,
+    // so it belongs on entry (a level crossed while away from Street should
+    // still greet on the next visit), independent of grantDailySurprise's
+    // once-per-calendar-day gate — this one's guard is metNeighbours, not a day.
+    grantMovedInNeighbours();
     const owned=getShopState().owned.length+(layout.welcomeOwned?1:0),placed=Object.keys(layout.placements).length;
     analytics.track("street_open",{
       source:streetPreview?"shop_preview":previousScreen==="shop"?"shop":"navigation",
@@ -576,6 +617,32 @@ export function createStreetScreen({
     drawCat(c,x,groundY,now,"walk",SKIN_PALETTES[streetDailyReveal.neighbour],scale*0.86,[],false);
     c.restore();
   }
+  // Task 8: the named residents (street-neighbours.js NEIGHBOURS) who live on
+  // the street once their landmark finishes (residentNeighbours(level)) —
+  // distinct from drawStreetDailyNeighbour's transient recolour cameo above.
+  // Drawn in the resident canvas layer, same ground-Y/scale basis as the
+  // player's own cat below, but as authored PNGs (sprite(), Task 6's
+  // walk-a/walk-b/idle poses) rather than drawCat's recolourable vector —
+  // portrait is used only by the move-in greeting, never this walk loop.
+  // sprite() returns null while an art file is still loading (or on any
+  // registry miss); skipping that frame is the same fallback every other
+  // sprite() caller in this file already relies on, and the existing
+  // nbhsk:sprite-ready listener (main.js) repaints once it's ready.
+  function drawStreetResidentNeighbours(c,w,groundY,scale,now,reducedMotion){
+    for(const id of residentNeighbours(levelForXp(getXp()))){
+      const n=NEIGHBOURS.find(x=>x.id===id);
+      if(!n) continue;
+      const npose=neighbourPose(now,n.anchor,reducedMotion);
+      const img=sprite(`neighbour-${id}-${npose.sprite}`);
+      if(!img) continue;
+      const px=npose.x*w, size=CONTENT_H*scale;
+      c.save();
+      if(npose.facing<0){ c.translate(px,0); c.scale(-1,1); c.translate(-px,0); }
+      drawContactShadow(c,px,groundY,size*.7);
+      c.drawImage(img,px-size/2,groundY-size+size*.07,size,size);
+      c.restore();
+    }
+  }
   function drawStreetResidentFrame(now,reducedMotion=false){
     const scene=streetResidentScene;
     if(!scene) return;
@@ -591,6 +658,7 @@ export function createStreetScreen({
     const activityX=Number.isFinite(pose.activityX)?pose.activityX*w:x;
     drawStreetResidentActivity(c,pose.activity,activityX,groundY,CONTENT_H*scale,now,pose.facing);
     drawContactShadow(c,x,groundY,CONTENT_H*scale*.82);
+    drawStreetResidentNeighbours(c,w,groundY,scale,now,reducedMotion);
     const hasKitten=accessoriesFor(levelForXp(getXp())).includes("kitten");
     c.save();
     if(pose.facing<0){ c.translate(x,0); c.scale(-1,1); c.translate(-x,0); }
@@ -1253,14 +1321,24 @@ export function createStreetScreen({
     const parts = String(k.id).split(":");
     return parts.length > 2 ? parts[1] : "";
   }
+  // Task 8: `kind:"neighbour"` ids are `neighbour:<neighbourId>:<day>`
+  // (makeKeepsake, opts.seq — see grantMovedInNeighbours above), the same
+  // "kind:seg:day" shape keepsakeSetId already parses for "set"; a dedicated
+  // reader keeps each kind's id-shape assumption local to its own copy line.
+  function keepsakeNeighbourId(k){
+    const parts = String(k.id).split(":");
+    return parts.length > 2 ? parts[1] : "";
+  }
   function keepsakeCopy(k){
     if(k.kind === "set") return t("street.keepsakeSet", { set: t("street.set." + keepsakeSetId(k)) });
     if(k.kind === "daily") return t("street.keepsakeDaily", { day: k.day });
+    if(k.kind === "neighbour") return t("street.keepsake.neighbour", { name: t("street.neighbour." + keepsakeNeighbourId(k)) });
     return t("street.keepsakeWelcome");
   }
   function keepsakeIcon(k){
     if(k.kind === "set") return "trophy";
     if(k.kind === "daily") return "calendar";
+    if(k.kind === "neighbour") return "heart";
     return "star";
   }
   function keepsakeItemEl(k){
