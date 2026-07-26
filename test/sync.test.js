@@ -109,6 +109,24 @@ describe("reconcile", () => {
     expect(meta.lastSyncAt).toBe(1000000);
     expect(meta.dirty).toEqual({});
   });
+  // Regression (bricks data-loss): bricks is a SYNC_KEYS/mergeAll-fold field
+  // but v1-scoped device-local (no cloud row column yet — cross-device brick
+  // sync is deferred). localSnapshot must still read the stored value so the
+  // reconcile fold sees local.bricks=40 against cloud's undefined and keeps
+  // 40, instead of defaulting to undefined -> mergeBricks(undefined,undefined)
+  // -> 0 -> a store.set("bricks", 0) that zeroes the player's bricks on every
+  // cloud sync.
+  it("reconcile never zeroes bricks: cloud rows carry no bricks column, local bricks must survive the fold", async () => {
+    const { client } = fakeClient({ session: SESSION,
+      progressRow: { user_id: "u1", xp: 900, mastery: {}, daily: { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" },
+        quests: {}, monthly: {}, best: {}, cosmetics: {}, stickers: { earned: {} } },
+      walletRow: { user_id: "u1", coins: 50, freezes: 0 } });
+    __setClientForTests(client);
+    const store = memStore({ bricks: 40, sync: { dirty: {}, lastSyncAt: 0 } });
+    const r = await reconcile(store, "sign-in", 1000000);
+    expect(r.ok).toBe(true);
+    expect(store.get("bricks", 0)).toBe(40);   // must NOT be zeroed by the fold
+  });
   it("changed:false when cloud contributes nothing", async () => {
     const { client } = fakeClient({ session: SESSION, progressRow: null, walletRow: null });
     __setClientForTests(client);
