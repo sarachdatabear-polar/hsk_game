@@ -552,8 +552,20 @@ export function createStreetScreen({
       const btn = document.createElement("button");
       btn.className = "street-hit build-hit";
       const x = p.slot*w, py = gy-h*(1-(p.laneY ?? 1)), du=m.unit*(p.scale||3);
+      // Task 9 fix: this pill is a small VISIBLE labeled control (unlike the
+      // invisible full-object item-hit rects above), so it must be
+      // content-sized around its own text, not stretched to the landmark's
+      // rect — a landmark-sized pill spans ~0.21-0.26 of the scene width
+      // while adjacent landmark slots are only ~0.20w apart, so two
+      // buildable landmarks at once (e.g. player reaches level 10 having
+      // skipped the level-5 build) produced overlapping opaque pills that
+      // swallowed taps meant for the neighbour. Anchor at the landmark's
+      // center-x/near-top (same x/py basis as item-hit) and let CSS size the
+      // button to its text; translate(-50%,-50%) re-centers the now
+      // content-sized box on that anchor point instead of growing from the
+      // top-left corner.
       btn.style.left=x+"px"; btn.style.top=(py-du*.58)+"px";
-      btn.style.width=Math.max(44,du*.9)+"px"; btn.style.height=Math.max(44,du*1.05)+"px";
+      btn.style.transform="translate(-50%,-50%)";
       btn.textContent=t("street.build",{cost});
       btn.onclick=()=>doBuildLandmark(p.id);
       layer.appendChild(btn);
