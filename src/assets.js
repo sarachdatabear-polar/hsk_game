@@ -95,4 +95,3 @@ export const REGISTRY = assets.REGISTRY;
 export const preload = assets.preload;
 export const frameCSS = assets.frameCSS;
 export const img = assets.img;
-export const load = assets.load;
