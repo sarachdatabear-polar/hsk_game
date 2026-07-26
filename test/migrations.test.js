@@ -98,8 +98,8 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
       "nbhsk.mastery": JSON.stringify({ "妈妈|1": 3 }),
     });
     const end = runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
-    expect(end).toBe(4);
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("4");
+    expect(end).toBe(5);
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
     expect(shop.streetLayout.v).toBe(5);
     expect(shop.streetLayout.welcomeOwned).toBe(true);
@@ -114,7 +114,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
       "nbhsk.mastery": JSON.stringify({}),
     });
     runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("4");
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
     expect(shop.streetLayout.welcomeOwned).toBe(false);
   });
@@ -125,7 +125,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
       "nbhsk.shop": JSON.stringify({ owned: [] }),
     });
     runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("4");
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
     expect(shop.streetLayout.welcomeOwned).toBe(false);
   });
@@ -137,7 +137,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
       "nbhsk.mastery": JSON.stringify({ "妈妈|1": 3 }),
     });
     expect(() => runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION)).not.toThrow();
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("4");
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
     // corrupt shop payload is left untouched, not rewritten
     expect(s.dump()["nbhsk.shop"]).toBe("{not valid json");
   });
@@ -148,7 +148,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
       "nbhsk.mastery": JSON.stringify({ "妈妈|1": 3 }),
     });
     expect(() => runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION)).not.toThrow();
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("4");
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
     expect(s.dump()["nbhsk.shop"]).toBeUndefined();
   });
 
@@ -166,7 +166,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
       "nbhsk.mastery": JSON.stringify({}),
     });
     runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("4");
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
     expect(shop.streetLayout.placements).toEqual({ "plot-small-01": "red-lantern" });
     expect(shop.streetLayout.v).toBe(5);
@@ -181,14 +181,14 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
       "nbhsk.mastery": JSON.stringify({}),
     });
     runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("4");
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
     expect(shop.streetLayout.welcomeOwned).toBe(true);
   });
 
   it("a dormant v2 layout is NORMALIZED (not rebuilt) — coachDone + placements survive the to:2 entry", () => {
     // Regression (Finding 2): the to:2 entry must not branch on the live
-    // current-version constant. With STREET_LAYOUT_VERSION now 4, a `=== 4`
+    // current-version constant. With STREET_LAYOUT_VERSION now 5, a `=== 5`
     // check would mis-route this v2 install into migrateLegacyStreet, rebuilding
     // placements and resetting coachDone. `v >= 2` keeps it on the normalize path.
     const existingLayout = { v: 2, placements: { "plot-small-01": "red-lantern" }, welcomeOwned: false, coachDone: true };
@@ -225,8 +225,8 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
     });
     expect(readVersion(s)).toBe(0);
     const end = runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
-    expect(end).toBe(4);
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("4");
+    expect(end).toBe(5);
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
     expect(shop.streetLayout.v).toBe(5);
     expect(shop.streetLayout.welcomeOwned).toBe(true);
@@ -235,7 +235,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
   it("fresh install (no legacy sentinels) is a pure stamp; migration body never runs", () => {
     const s = fakeStorage();
     runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("4");
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
     expect(s.dump()["nbhsk.shop"]).toBeUndefined();
   });
 });
@@ -258,25 +258,25 @@ describe("v2 → v3 street ownership migration", () => {
     expect(shop.streetLayout.lastVisitDay).toBeNull();
     expect(shop.streetLayout.welcomeOwned).toBe(true);   // preserved
     expect(shop.streetProject.reserve).toBe(false);
-    expect(s.getItem("nbhsk.schemaVersion")).toBe("4");
+    expect(s.getItem("nbhsk.schemaVersion")).toBe("5");
   });
 
   it("no-ops without throwing on corrupt shop JSON", () => {
     const s = fakeStorage({ "nbhsk.schemaVersion": "2", "nbhsk.shop": "{not json" });
     expect(() => runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION)).not.toThrow();
-    expect(s.getItem("nbhsk.schemaVersion")).toBe("4");   // still stamps current
+    expect(s.getItem("nbhsk.schemaVersion")).toBe("5");   // still stamps current
   });
 
   it("stamps a fresh install straight to current without running entries", () => {
     const s = fakeStorage({});
     runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
-    expect(s.getItem("nbhsk.schemaVersion")).toBe("4");
+    expect(s.getItem("nbhsk.schemaVersion")).toBe("5");
     expect(s.getItem("nbhsk.shop")).toBeNull();
   });
 });
 
 describe("v3→v4 migration", () => {
-  it("defaults metNeighbours on a v3 shop layout and stamps v4", () => {
+  it("defaults metNeighbours on a v3 shop layout and stamps v5", () => {
     const s = fakeStorage({
       "nbhsk.schemaVersion": "3",
       "nbhsk.shop": JSON.stringify({
@@ -285,7 +285,7 @@ describe("v3→v4 migration", () => {
     });
     const v = runMigrations(s);
     expect(v).toBe(CURRENT_SCHEMA_VERSION);
-    expect(CURRENT_SCHEMA_VERSION).toBe(4);
+    expect(CURRENT_SCHEMA_VERSION).toBe(5);
     const shop = JSON.parse(s.getItem("nbhsk.shop"));
     expect(shop.streetLayout.metNeighbours).toEqual([]);
     expect(shop.streetLayout.setsCompleted).toEqual(["market"]);
@@ -294,5 +294,71 @@ describe("v3→v4 migration", () => {
   it("no-ops without throwing on a corrupt shop", () => {
     const s = fakeStorage({ "nbhsk.schemaVersion": "3", "nbhsk.shop": "{not json" });
     expect(() => runMigrations(s)).not.toThrow();
+  });
+});
+
+describe("v4->v5 migration (builtStages)", () => {
+  it("bumps CURRENT_SCHEMA_VERSION to 5", () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe(5);
+  });
+
+  it("seeds finished landmarks from level, leaves unreached at 0", () => {
+    // A very-high-xp player has cleared every landmark's unlock level
+    // (highest is emperor-gate at level 50; xpForLevel(50) = 30625).
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "4",
+      "nbhsk.xp": JSON.stringify(999999),
+      "nbhsk.shop": JSON.stringify({ owned: [], streetLayout: { v: 4 } }),
+    });
+    runMigrations(s);
+    const shop = JSON.parse(s.dump()["nbhsk.shop"]);
+    expect(shop.streetLayout.builtStages).toEqual({
+      "lantern-post": 3, "coin-bank": 3, "tailor": 3, "kitten-cafe": 3, "emperor-gate": 3,
+    });
+    expect(shop.streetLayout.v).toBe(5);
+  });
+
+  it("leaves builtStages at 0 for a level-0 (fresh xp) player", () => {
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "4",
+      "nbhsk.shop": JSON.stringify({ owned: [], streetLayout: { v: 4 } }),
+    });
+    runMigrations(s);
+    const shop = JSON.parse(s.dump()["nbhsk.shop"]);
+    // normBuiltStages omits zero-stage entries (see normBuiltStages in street.js).
+    expect(shop.streetLayout.builtStages).toEqual({});
+  });
+
+  it("is a no-op on corrupt shop data (never throws)", () => {
+    const s = fakeStorage({ "nbhsk.schemaVersion": "4", "nbhsk.shop": "{not json" });
+    expect(() => runMigrations(s)).not.toThrow();
+  });
+
+  it("PRESERVES existing streetLayout fields (name, keepsakes, metNeighbours) and re-stamps v:5", () => {
+    // Data-safety regression: ensureStreetLayout() in src/ui/street-screen.js
+    // routes any stored layout whose v !== live STREET_LAYOUT_VERSION into
+    // migrateLegacyStreet, which DISCARDS name/savedLayouts/keepsakes/
+    // setsCompleted/metNeighbours/placements. This migration must re-stamp a
+    // stored v:4 layout to v:5 (via normalizeStreetLayout, which preserves
+    // fields) BEFORE the player's next Street visit, or that data is lost.
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "4",
+      "nbhsk.shop": JSON.stringify({
+        owned: [],
+        streetLayout: {
+          v: 4,
+          placements: {},
+          name: "Meow Lane",
+          keepsakes: [{ id: "lantern-keepsake", kind: "gift" }],
+          metNeighbours: ["neighbour-a"],
+        },
+      }),
+    });
+    runMigrations(s);
+    const shop = JSON.parse(s.dump()["nbhsk.shop"]);
+    expect(shop.streetLayout.v).toBe(5);
+    expect(shop.streetLayout.name).toBe("Meow Lane");
+    expect(shop.streetLayout.keepsakes).toEqual([{ id: "lantern-keepsake", kind: "gift" }]);
+    expect(shop.streetLayout.metNeighbours).toEqual(["neighbour-a"]);
   });
 });

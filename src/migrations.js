@@ -1,6 +1,7 @@
 "use strict";
-import { migrateLegacyStreet, normalizeStreetLayout } from "./street.js";
+import { migrateLegacyStreet, normalizeStreetLayout, BUILDINGS } from "./street.js";
 import { defaultStreetProject } from "./street-project.js";
+import { levelForXp } from "./growth.js";
 // Save-data schema versioning. main.js calls runMigrations(localStorage) once
 // at boot, BEFORE constructing the store — migrations must see raw
 // pre-migration values, so this module reads/writes storage directly.
@@ -15,7 +16,7 @@ const VERSION_KEY = "nbhsk.schemaVersion";
 // (run the ladder from 0) from a fresh one (just stamp and go).
 const LEGACY_SENTINELS = ["nbhsk.xp", "nbhsk.mastery", "nbhsk.daily", "nbhsk.settings", "nbhsk.scope"];
 
-export const CURRENT_SCHEMA_VERSION = 4;
+export const CURRENT_SCHEMA_VERSION = 5;
 
 export const MIGRATIONS = [
   // v1→v2: street.js's shop-state layout gained a `streetLayout` scene
@@ -101,6 +102,35 @@ export const MIGRATIONS = [
       const owned = Array.isArray(shop.owned) ? shop.owned : [];
       try {
         shop.streetLayout = normalizeStreetLayout(shop.streetLayout, owned);
+      } catch (e) { return; }
+      try { storage.setItem("nbhsk.shop", JSON.stringify(shop)); } catch (e) {}
+    },
+  },
+  {
+    to: 5,
+    up(storage) {
+      // v4->v5: streetLayout gains builtStages (per-landmark construction
+      // stage, now player-driven via bricks instead of level-derived). Seed
+      // each landmark from the player's CURRENT level so nothing regresses:
+      // anything already past its unlock level stays finished (3), the rest
+      // start at 0 and open for brick-building. Every step guarded.
+      let level = 0;
+      try {
+        const rawXp = storage.getItem("nbhsk.xp");
+        if (rawXp !== null) level = levelForXp(Number(JSON.parse(rawXp)) || 0);
+      } catch (e) { level = 0; }
+      let shop;
+      try {
+        const raw = storage.getItem("nbhsk.shop");
+        if (raw === null) return;
+        shop = JSON.parse(raw);
+      } catch (e) { return; }
+      if (!shop || typeof shop !== "object") return;
+      const owned = Array.isArray(shop.owned) ? shop.owned : [];
+      const builtStages = {};
+      for (const b of BUILDINGS) builtStages[b.id] = level >= b.lv ? 3 : 0;
+      try {
+        shop.streetLayout = normalizeStreetLayout({ ...(shop.streetLayout || {}), builtStages }, owned);
       } catch (e) { return; }
       try { storage.setItem("nbhsk.shop", JSON.stringify(shop)); } catch (e) {}
     },
