@@ -34,7 +34,7 @@ import {
   normalizeStreetLayout, compatibleStreetPlots, firstFreeStreetPlot,
   unplacedStreetItems, streetInventory,
   placeStreetItem, storeStreetItem, autoArrangeStreet, migrateLegacyStreet,
-  streetMeta, streetClass, STREET_LAYOUT_VERSION,
+  streetMeta, streetClass, STREET_LAYOUT_VERSION, streetCharm,
 } from "../street.js";
 import { newlyCompletedSets, completedSets, collectionView } from "../street-collection.js";
 import { landmarkStage, constructionSprite } from "../street-construction.js";
@@ -416,6 +416,57 @@ export function createStreetScreen({
       c.restore();
     }
   }
+  // A new or lightly decorated Street should show a believable future, not a
+  // large empty dirt lot. These are non-persisted, tap-to-preview silhouettes
+  // from the three permanent sets. They disappear naturally as real pieces
+  // occupy the scene; ownership and placement remain entirely player-authored.
+  const STREET_DREAM_IDS = ["red-lantern", "koi-pond", "golden-arch"];
+  function streetDreamPieces(layout, owned, tiers){
+    if(streetEdit || streetPreview) return [];
+    const placedCount=Object.keys(layout.placements).length;
+    const limit=placedCount===0 ? 3 : placedCount<4 ? 1 : 0;
+    if(!limit) return [];
+    let simulatedOwned=[...owned], simulatedLayout=normalizeStreetLayout(layout,simulatedOwned);
+    const dreams=[];
+    for(const id of STREET_DREAM_IDS){
+      if(dreams.length>=limit || simulatedOwned.includes(id)) continue;
+      simulatedOwned=[...simulatedOwned,id];
+      simulatedLayout=normalizeStreetLayout(simulatedLayout,simulatedOwned);
+      const plotId=firstFreeStreetPlot(id,simulatedLayout);
+      if(!plotId) continue;
+      simulatedLayout=placeStreetItem(simulatedLayout,simulatedOwned,id,plotId);
+      const piece=streetPieces(Infinity,simulatedOwned,tiers,simulatedLayout)
+        .find(p=>p.kind==="deco"&&p.id===id);
+      if(piece) dreams.push({...piece,dream:true});
+    }
+    return dreams;
+  }
+  function drawStreetDream(c,p,x,py,du){
+    c.save();
+    const halo=c.createRadialGradient(x,py-du*.58,2,x,py-du*.58,du*.88);
+    halo.addColorStop(0,"rgba(255,225,112,.28)");
+    halo.addColorStop(1,"rgba(255,225,112,0)");
+    c.fillStyle=halo; c.beginPath(); c.arc(x,py-du*.58,du*.88,0,Math.PI*2); c.fill();
+    // Keep enough of the real colour to sell the reward. The transparency,
+    // dashed home, and gold wish badge—not a dull monochrome treatment—carry
+    // the "preview, not owned" meaning.
+    c.globalAlpha=.46;
+    c.filter="saturate(.86) contrast(1.03)";
+    c.shadowColor="rgba(255,214,95,.9)"; c.shadowBlur=16;
+    drawStreetDeco(c,p.spriteId||p.id,x,py,du);
+    c.restore();
+
+    c.save();
+    c.strokeStyle="rgba(255,249,234,.9)"; c.fillStyle="rgba(46,102,86,.36)";
+    c.lineWidth=Math.max(1.5,du*.025); c.setLineDash([5,4]);
+    c.beginPath(); c.ellipse(x,py+2,du*.48,du*.12,0,0,Math.PI*2); c.fill(); c.stroke();
+    c.setLineDash([]);
+    const bx=x+du*.34, by=py-du*.93, br=Math.max(9,du*.14);
+    c.fillStyle="#FFD65F"; c.strokeStyle="rgba(255,249,234,.96)"; c.lineWidth=2;
+    c.beginPath(); c.arc(bx,by,br,0,Math.PI*2); c.fill(); c.stroke();
+    c.fillStyle="#2E6656"; drawStarMark(c,bx,by,br*.42);
+    c.restore();
+  }
   function drawStreetProjectBlueprint(c, target, p, x, py, du){
     const stage=target.progress.stage;
     const alpha=[.20,.34,.52,.72][stage]||.20;
@@ -512,7 +563,7 @@ export function createStreetScreen({
     renderStreet();
     setTimeout(() => { if(getCurrentScreen() === "street" && streetReaction?.id === id){ streetReaction = null; renderStreet(); } }, REDUCED_MOTION ? 260 : 710);
   }
-  function renderStreetHitLayer(pieces, layout, w, h, gy, m, allPieces, level){
+  function renderStreetHitLayer(pieces, dreams, layout, w, h, gy, m, allPieces, level){
     const layer = $("#street-hit-layer");
     layer.replaceChildren();
     const selected = streetEdit?.selected || streetPreview?.itemId || null;
@@ -539,6 +590,16 @@ export function createStreetScreen({
       btn.style.width=Math.max(44,du*.9)+"px"; btn.style.height=Math.max(44,du*1.05)+"px";
       btn.setAttribute("aria-label", t("street.itemLabel", { name:streetItemLabel(p.id), stars:"★".repeat(p.tier||1) }));
       btn.onclick=()=>showStreetItemInfo(p.id);
+      layer.appendChild(btn);
+    }
+    for(const p of dreams){
+      const btn=document.createElement("button");
+      btn.className="street-hit dream-hit";
+      const x=p.slot*w, py=gy-h*(1-(p.laneY??1)), du=m.unit*(p.scale||1);
+      btn.style.left=x+"px"; btn.style.top=(py-du*.58)+"px";
+      btn.style.width=Math.max(44,du*1.05)+"px"; btn.style.height=Math.max(44,du*1.2)+"px";
+      btn.setAttribute("aria-label",t("street.dreamLabel",{name:streetItemLabel(p.id)}));
+      btn.onclick=()=>openStreetPreview(p.id,"street_dream",p.plotId);
       layer.appendChild(btn);
     }
     // Task 9: a "Build · N 🧱" pill over each buildable landmark, positioned
@@ -641,6 +702,13 @@ export function createStreetScreen({
     c.fillStyle=groundWash; c.fillRect(0,h*.64,w,h*.36);
     const tint=STREET_TOD_TINT[streetTimeOfDay(new Date().getHours())];
     if(tint){ c.save(); c.fillStyle=tint; c.fillRect(0,0,w,h); c.restore(); }
+    // Cinematic edge light makes the diorama read as one authored scene and
+    // keeps the bright centre focused without covering any collectible art.
+    const vignette=c.createRadialGradient(w*.5,h*.48,w*.18,w*.5,h*.48,w*.76);
+    vignette.addColorStop(0,"rgba(255,249,234,0)");
+    vignette.addColorStop(.72,"rgba(46,42,36,.015)");
+    vignette.addColorStop(1,"rgba(46,42,36,.17)");
+    c.fillStyle=vignette; c.fillRect(0,0,w,h);
   }
   function residentActivityTargets(pieces){
     return pieces.filter(p=>p.kind==="deco").map(p=>({
@@ -766,6 +834,7 @@ export function createStreetScreen({
     const {canvas,w,h,dpr,gy,m,route}=scene;
     const c=canvas.getContext("2d");
     c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,w,h);
+    drawStreetAtmosphere(c,w,h,now,reducedMotion);
     const pose=streetResidentPose(now,route,reducedMotion);
     const x=pose.x*w, groundY=gy+4;
     const scale=streetResidentScale(m.unit);
@@ -789,6 +858,31 @@ export function createStreetScreen({
       c.restore();
     }
     drawStreetDailyNeighbour(c,w,groundY,scale,now);
+  }
+  const STREET_MOTES = [
+    [.08,.24,.7],[.16,.38,1.1],[.26,.18,.9],[.35,.44,1.3],[.46,.29,.8],
+    [.57,.17,1.2],[.66,.41,.75],[.74,.25,1.05],[.84,.36,.85],[.93,.20,1.15],
+  ];
+  function drawStreetAtmosphere(c,w,h,now,reducedMotion){
+    const phase=reducedMotion?0:now/1700;
+    const night=streetTimeOfDay(new Date().getHours())==="night";
+    c.save();
+    for(let i=0;i<STREET_MOTES.length;i++){
+      const [sx,sy,s]=STREET_MOTES[i];
+      const x=(sx+Math.sin(phase+i*1.7)*.018)*w;
+      const y=(sy+Math.cos(phase*.72+i)*.014)*h;
+      const r=Math.max(1.5,w*.006*s);
+      c.globalAlpha=.28+.22*(.5+.5*Math.sin(phase*2+i));
+      if(night){
+        const glow=c.createRadialGradient(x,y,0,x,y,r*3.5);
+        glow.addColorStop(0,"rgba(255,226,112,.94)"); glow.addColorStop(1,"rgba(255,226,112,0)");
+        c.fillStyle=glow; c.beginPath(); c.arc(x,y,r*3.5,0,Math.PI*2); c.fill();
+      }else{
+        c.fillStyle=i%3===0?"#F3A29B":"#FFF3BF";
+        c.beginPath(); c.ellipse(x,y,r*1.35,r*.65,phase+i*.8,0,Math.PI*2); c.fill();
+      }
+    }
+    c.restore();
   }
   function streetResidentLoop(now){
     streetResidentRaf=0;
@@ -851,9 +945,14 @@ export function createStreetScreen({
     const allPieces=streetPieces(Infinity,owned,tiers,layout)
       .map(p=>p.kind==="building" ? {...p, stage:landmarkStage(layout.builtStages,p.id), buildable:landmarkBuildable(level,p.id,layout.builtStages)} : p);
     const pieces=allPieces.filter(p=>p.kind!=="building" || p.stage>=1 || p.buildable);
+    const dreams=streetDreamPieces(layout,owned,tiers);
     const completeSetIds=new Set(completedSets(owned));
     const project=!streetEdit&&!streetPreview ? activeStreetProject(getWallet(),layout) : null;
     if(streetEdit || streetPreview) drawStreetPlotGrid(sc,w,h,gy,m,layout);
+    for(const p of dreams){
+      const x=p.slot*w, py=gy-h*(1-(p.laneY??1)), du=m.unit*(p.scale||1);
+      drawStreetDream(sc,p,x,py,du);
+    }
     if(streetReveal && !streetReveal.start && owned.includes(streetReveal.id)) streetReveal.start=performance.now();
     for(const p of pieces){
       const x=p.slot*w, py=gy-h*(1-(p.laneY??1));
@@ -882,11 +981,17 @@ export function createStreetScreen({
       }
     }
     renderStreetResidentLayer(w,h,gy,m,dpr,project,pieces);
-    renderStreetHitLayer(pieces,layout,w,h,gy,m,allPieces,level);
+    renderStreetHitLayer(pieces,dreams,layout,w,h,gy,m,allPieces,level);
     renderStreetEditor(); renderStreetPreviewPanel();
     renderStreetProjectCard(project);
     $("#street-wallet").textContent=t("shop.coins",{coins:getWallet().toLocaleString()});
     $("#street-bricks").textContent=t("street.bricks",{n:getBricks().toLocaleString()});
+    const charm=streetCharm(owned,tiers,layout);
+    $("#street-charm-score").textContent=charm.score.toLocaleString();
+    $("#street-charm-rank").textContent=t("street.rank."+charm.rank);
+    $("#street-charm-fill").style.width=charm.pct+"%";
+    $("#street-collected").textContent=t("street.collected",{owned:charm.collected,total:charm.total});
+    $("#street-dream-guide").hidden=!dreams.length;
     const prog=streetProgress(levelForXp(getXp()));
     const placed=Object.keys(layout.placements).length;
     const stored=unplacedStreetItems(getShopState().owned,layout).length;

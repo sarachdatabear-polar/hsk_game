@@ -132,11 +132,56 @@ export const STREET_LAYOUT_VERSION = 5;
 const STREET_NAME_MAX = 24;
 const SAVED_LAYOUTS_MAX = 3;
 
+// A compact, derived-only measure of how authored the player's Street feels.
+// It intentionally rewards ownership a little, placement more, star upgrades,
+// and finished landmark stages. Nothing is stored, so old saves and cloud
+// merge remain untouched while every visible improvement moves the meter.
+export const STREET_CHARM_RANKS = [
+  { min: 0,   id: "firstSteps" },
+  { min: 24,  id: "cozyCorner" },
+  { min: 70,  id: "lanternLane" },
+  { min: 140, id: "marketGlow" },
+  { min: 230, id: "festivalStreet" },
+  { min: 340, id: "legendary" },
+];
+
 export function defaultStreetLayout() {
   return {
     v: STREET_LAYOUT_VERSION, placements: {}, welcomeOwned: false, coachDone: false,
     name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null,
     metNeighbours: [], builtStages: {},
+  };
+}
+
+export function streetCharm(ownedIds, tiers = {}, layout = defaultStreetLayout()) {
+  const l = normalizeStreetLayout(layout, ownedIds);
+  const owned = streetOwnedIds(ownedIds, l);
+  const placed = new Set(Object.values(l.placements));
+  let score = owned.length * 2;
+  for (const id of placed) {
+    if (!owned.includes(id)) continue;
+    const tier = Math.min(3, Math.max(1, Math.round(Number(tiers[id]) || 1)));
+    score += 8 + (tier - 1) * 4;
+  }
+  for (const stage of Object.values(l.builtStages)) score += stage * 5;
+
+  let rankIndex = 0;
+  for (let i = 1; i < STREET_CHARM_RANKS.length; i++) {
+    if (score < STREET_CHARM_RANKS[i].min) break;
+    rankIndex = i;
+  }
+  const rank = STREET_CHARM_RANKS[rankIndex];
+  const next = STREET_CHARM_RANKS[rankIndex + 1] || null;
+  const floor = rank.min;
+  const pct = next ? Math.round(100 * (score - floor) / (next.min - floor)) : 100;
+  return {
+    score,
+    rank: rank.id,
+    rankIndex,
+    next: next?.id || null,
+    pct: Math.min(100, Math.max(0, pct)),
+    collected: owned.length,
+    total: DECO_IDS.length + 1,
   };
 }
 

@@ -6,10 +6,44 @@ import { BUILDINGS, DECO_IDS, DECO_SPRITE_SCALE, UNIT_FRAC, streetPieces, street
          normalizeStreetLayout, itemFitsPlot, streetOwnedIds, compatibleStreetPlots,
          firstFreeStreetPlot,
          unplacedStreetItems, streetInventory, placeStreetItem, storeStreetItem, autoArrangeStreet,
-         migrateLegacyStreet, streetWorldMetrics, STREET_LAYOUT_VERSION } from "../src/street.js";
+         migrateLegacyStreet, streetWorldMetrics, STREET_LAYOUT_VERSION,
+         streetCharm, STREET_CHARM_RANKS } from "../src/street.js";
 import { MILESTONES } from "../src/growth.js";
 
 describe("street", () => {
+  it("Street Charm is derived from ownership, placement, tiers, and landmark stages", () => {
+    const empty = streetCharm([], {}, defaultStreetLayout());
+    expect(empty).toMatchObject({ score: 0, rank: "firstSteps", collected: 0, total: 16, pct: 0 });
+
+    const owned = ["red-lantern", "koi-pond"];
+    const layout = {
+      ...defaultStreetLayout(),
+      placements: { "plot-small-01": "red-lantern", "plot-medium-01": "koi-pond" },
+      builtStages: { "lantern-post": 2 },
+    };
+    const charm = streetCharm(owned, { "red-lantern": 3, "koi-pond": 2 }, layout);
+    // owned 4 + placed (16 + 12) + landmark 10
+    expect(charm.score).toBe(42);
+    expect(charm.rank).toBe("cozyCorner");
+    expect(charm.collected).toBe(2);
+    expect(charm.pct).toBeGreaterThan(0);
+  });
+
+  it("Street Charm ranks are strictly ascending and cap at 100%", () => {
+    for (let i = 1; i < STREET_CHARM_RANKS.length; i++)
+      expect(STREET_CHARM_RANKS[i].min).toBeGreaterThan(STREET_CHARM_RANKS[i - 1].min);
+    const layout = {
+      ...autoArrangeStreet(DECO_IDS),
+      welcomeOwned: true,
+      placements: {
+        ...autoArrangeStreet(DECO_IDS).placements,
+        "plot-small-05": WELCOME_ID,
+      },
+      builtStages: Object.fromEntries(BUILDINGS.map(b => [b.id, 3])),
+    };
+    expect(streetCharm(DECO_IDS, Object.fromEntries(DECO_IDS.map(id => [id, 3])), layout).pct).toBe(100);
+  });
+
   it("BUILDINGS mirrors growth MILESTONES levels", () => {
     expect(BUILDINGS.map(b => b.lv)).toEqual(MILESTONES.map(m => m.lv));
     expect(BUILDINGS.map(b => b.lv)).toEqual([5, 10, 20, 30, 50]);

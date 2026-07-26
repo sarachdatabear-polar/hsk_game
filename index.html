@@ -317,16 +317,20 @@
   /* Lucky Cat Street v2 — a compact player-authored diorama. Canvas paints
      one complete scene; the DOM layer supplies accessible item/plot controls. */
   #s-street{position:relative; justify-content:flex-start;}
-  .street-title-row{width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px;}
-  .street-title-row h2{margin:0;}
+  .street-title-row{position:relative; z-index:2; width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .street-title-row h2{position:relative; margin:0; padding:3px 7px; border-radius:10px;
+    background:rgba(251,245,232,.82); box-shadow:0 2px 10px rgba(46,42,36,.08);}
   .street-chips{display:inline-flex; align-items:center; gap:6px;}
   .street-wallet{display:inline-flex; align-items:center; justify-content:center; min-height:36px; padding:6px 11px;
     border:1px solid var(--panel-border); border-radius:999px; background:var(--panel-wash); color:var(--lc-green-deep);
     font-size:13px; font-weight:800; white-space:nowrap;}
   .street-chips .chip#street-bricks{min-height:36px; padding:6px 11px; border-radius:999px; font-size:13px; font-weight:800; white-space:nowrap;}
-  .street-stage{position:relative; width:100%; max-width:430px; margin:8px auto 0;}
-  .street-scroll{width:100%; overflow:hidden; border:2px solid var(--lc-brown); border-radius:14px;
-    box-shadow:0 3px 10px rgba(46,42,36,.22); background:var(--lc-cream);}
+  .street-stage{position:relative; width:100%; max-width:430px; margin:8px auto 0; isolation:isolate;}
+  .street-stage::before{content:""; position:absolute; z-index:-1; inset:-5px; border-radius:27px;
+    background:linear-gradient(145deg,rgba(255,226,135,.86),rgba(46,102,86,.52) 48%,rgba(132,96,67,.78));
+    box-shadow:0 14px 30px rgba(46,42,36,.22),0 3px 8px rgba(46,42,36,.18);}
+  .street-scroll{position:relative; width:100%; overflow:hidden; border:1px solid rgba(255,249,234,.88); border-radius:22px;
+    box-shadow:inset 0 0 0 2px rgba(132,96,67,.65),inset 0 1px 0 rgba(255,255,255,.8); background:var(--lc-cream);}
   /* Street's default scene is authored for a true portrait 3:4 window. It
      gives the mascot and landmarks enough room to read as a composed place
      instead of a thin strip floating over an empty screen. */
@@ -347,6 +351,30 @@
   #street-cv{display:block; width:100%; height:100%;}
   #street-resident-cv{position:absolute; z-index:1; inset:0; display:block; width:100%; height:100%; pointer-events:none;}
   #street-hit-layer{position:absolute; inset:0; pointer-events:none;}
+  .street-scene-hud{position:absolute; z-index:3; top:10px; left:10px; right:10px; display:flex;
+    align-items:flex-start; justify-content:space-between; gap:8px; pointer-events:none;}
+  .street-charm-card,.street-collection-chip{border:1px solid rgba(255,249,234,.86);
+    background:linear-gradient(145deg,rgba(46,102,86,.91),rgba(28,82,72,.84)); color:#fff9ea;
+    box-shadow:0 5px 14px rgba(46,42,36,.24),inset 0 1px 0 rgba(255,255,255,.18);
+    -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);}
+  .street-charm-card{min-width:132px; padding:7px 10px 8px; border-radius:14px;}
+  .street-charm-label{display:flex; align-items:center; justify-content:space-between; gap:8px;
+    font-size:8px; font-weight:900; letter-spacing:.09em; text-transform:uppercase; opacity:.86;}
+  .street-charm-card b{display:block; margin-top:1px; font-size:13px; line-height:1.15;}
+  .street-charm-meter{height:4px; margin-top:5px; overflow:hidden; border-radius:999px; background:rgba(255,249,234,.2);}
+  .street-charm-meter i{display:block; width:0; height:100%; border-radius:inherit;
+    background:linear-gradient(90deg,#FFD65F,#fff0ad); box-shadow:0 0 8px rgba(255,214,95,.9);
+    transition:width .55s cubic-bezier(.2,.8,.2,1);}
+  .street-collection-chip{display:flex; align-items:center; gap:5px; padding:7px 9px; border-radius:999px;
+    font-size:10px; font-weight:900; white-space:nowrap;}
+  .street-collection-chip .asset-icon{width:14px; height:14px; color:#FFD65F;}
+  .street-dream-guide{position:absolute; z-index:3; top:18%; left:50%; transform:translateX(-50%);
+    width:max-content; max-width:78%; padding:6px 11px; border:1px solid rgba(255,249,234,.88); border-radius:999px;
+    background:rgba(251,245,232,.78); color:var(--lc-green-deep); box-shadow:0 4px 14px rgba(46,42,36,.14);
+    -webkit-backdrop-filter:blur(7px); backdrop-filter:blur(7px); font-size:10px; font-weight:900;
+    pointer-events:none; animation:street-dream-float 2.6s ease-in-out infinite;}
+  .street-dream-guide[hidden]{display:none;}
+  @keyframes street-dream-float{50%{transform:translate(-50%,-3px); box-shadow:0 7px 18px rgba(46,42,36,.17);}}
   .street-hit{position:absolute; z-index:2; min-width:44px; min-height:44px; padding:0; border-radius:50%;
     transform:translate(-50%,-50%); pointer-events:auto; color:transparent; background:transparent; border:2px solid transparent;}
   .street-hit:focus-visible{outline:3px solid var(--lc-sky); outline-offset:2px; background:rgba(255,255,255,.22);}
@@ -354,6 +382,9 @@
   .street-hit.plot-hit.compatible{border-color:var(--lc-green); background:rgba(255,214,95,.30); animation:street-plot-pulse 1.1s ease-in-out infinite;}
   .street-hit.plot-hit.incompatible{border-color:rgba(132,96,67,.32); background:rgba(46,42,36,.08);}
   .street-hit.item-hit.selected{border-color:var(--lc-green); background:rgba(255,214,95,.22);}
+  .street-hit.dream-hit{border:1.5px dashed rgba(255,214,95,.76); background:rgba(255,249,234,.06);
+    box-shadow:0 0 0 4px rgba(255,214,95,.09); cursor:pointer;}
+  .street-hit.dream-hit:focus-visible{outline-color:#FFD65F; background:rgba(255,214,95,.16);}
   /* Task 9: build pill — unlike the invisible circular item/plot hit targets
      above, this one must actually read as a tappable "Build · N brick" call
      to action, so it overrides the base .street-hit's transparent/circular
@@ -380,9 +411,19 @@
     border:1px solid var(--panel-border); background:var(--panel-wash); color:var(--lc-green);
     display:inline-flex; align-items:center; justify-content:center; cursor:pointer;}
   .street-caption-row + .profile-name-form{max-width:430px; margin:6px auto 0;}
-  .street-actions{width:100%; display:grid; grid-template-columns:1.1fr 1fr 1fr 1fr 1fr; gap:7px; margin-top:6px;}
+  .street-actions{width:100%; display:grid; grid-template-columns:minmax(70px,1.15fr) minmax(70px,1.1fr) repeat(3,44px);
+    gap:7px; margin-top:6px; align-items:stretch;}
   .street-actions[hidden]{display:none;}
-  .street-actions .sec-btn{min-height:44px; margin:0; padding:7px 4px; font-size:12px;}
+  .street-actions .sec-btn{min-width:0; min-height:44px; margin:0; padding:6px 5px; border-radius:13px; font-size:11px;}
+  .street-actions .icon-text{gap:4px;}
+  .street-actions .asset-icon{width:17px; height:17px;}
+  .street-action-secondary .icon-text{justify-content:center;}
+  .street-action-secondary .action-label{position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;}
+  @media (min-width:520px){
+    .street-actions{grid-template-columns:repeat(5,minmax(0,1fr));}
+    .street-action-secondary .action-label{position:static; width:auto; height:auto; margin:0; overflow:visible; clip:auto; white-space:normal;}
+  }
   /* Collection book (Task 9): reuses the .pause-overlay/.pause-panel dialog
      convention (see #quest-overlay just below) — read-only, so its own panel
      just needs a scroll cap since it can list up to 3 full sets at once. */
@@ -509,6 +550,7 @@
     overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important;}
   @media (prefers-reduced-motion:reduce){
     .street-hit.plot-hit.compatible{animation:none; box-shadow:0 0 0 4px rgba(255,214,95,.15);}
+    .street-dream-guide{animation:none;}
   }
   /* Quest popup reuses .pause-overlay/.pause-panel (see #s-battle) — scoped to
      #s-street (position:relative above) so it doesn't cover the bottom nav. */
@@ -1623,17 +1665,29 @@
       </div>
     </div>
     <div class="street-actions" id="street-actions">
-      <button class="sec-btn" id="street-decorate-btn" data-i18n="street.decorate">Decorate</button>
-      <button class="sec-btn" id="street-shop-btn" data-i18n="street.shop">Street Shop</button>
-      <button class="sec-btn" id="street-quests-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span data-i18n="street.questsBtn">Quests</span></span></button>
-      <button class="sec-btn" id="street-collection-btn" data-i18n="street.collection">Collection</button>
-      <button class="sec-btn" id="street-keepsakes-btn" data-i18n="street.keepsakes">Keepsakes</button>
+      <button class="sec-btn street-action-primary" id="street-decorate-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#pencil"></use></svg><span data-i18n="street.decorate">Decorate</span></span></button>
+      <button class="sec-btn street-action-primary" id="street-shop-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#shop"></use></svg><span data-i18n="street.shop">Street Shop</span></span></button>
+      <button class="sec-btn street-action-secondary" id="street-quests-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span class="action-label" data-i18n="street.questsBtn">Quests</span></span></button>
+      <button class="sec-btn street-action-secondary" id="street-collection-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#collection"></use></svg><span class="action-label" data-i18n="street.collection">Collection</span></span></button>
+      <button class="sec-btn street-action-secondary" id="street-keepsakes-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#book"></use></svg><span class="action-label" data-i18n="street.keepsakes">Keepsakes</span></span></button>
     </div>
     <div class="street-stage" id="street-stage">
       <div class="street-scroll" id="street-scroll" tabindex="0" data-i18n-aria="street.sceneLabel" aria-label="Your Lucky Cat Street">
         <div class="street-world" id="street-world">
           <canvas id="street-cv"></canvas>
           <canvas id="street-resident-cv" aria-hidden="true"></canvas>
+          <div class="street-scene-hud">
+            <div class="street-charm-card">
+              <span class="street-charm-label"><span data-i18n="street.charm">Street Charm</span><span id="street-charm-score">0</span></span>
+              <b id="street-charm-rank"></b>
+              <span class="street-charm-meter" aria-hidden="true"><i id="street-charm-fill"></i></span>
+            </div>
+            <div class="street-collection-chip">
+              <svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg>
+              <span id="street-collected">0 / 16</span>
+            </div>
+          </div>
+          <div class="street-dream-guide" id="street-dream-guide" data-i18n="street.dreamGuide" hidden>Tap a dream to preview it</div>
           <div id="street-hit-layer"></div>
         </div>
       </div>
