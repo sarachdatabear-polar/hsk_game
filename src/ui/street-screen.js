@@ -36,6 +36,12 @@ import {
 import { newlyCompletedSets, completedSets, collectionView } from "../street-collection.js";
 import { makeKeepsake, addKeepsake, keepsakeWords } from "../street-keepsakes.js";
 import { isNewDay, dailyGift } from "../street-daily.js";
+import { backdropFor, backdropAsset } from "../street-backdrop.js";
+// The wide time-of-day panoramas are .webp, loaded through assets.js's
+// canvasImage registry (Task 2) — a different lazy loader than sprite()'s
+// SPRITE_NAMES/.png registry above. `img` is aliased to avoid colliding with
+// the many local `const img` draw-target variables already in this file.
+import { img as canvasImg } from "../assets.js";
 
 export function createStreetScreen({
   $, store, analytics, show, renderShop, pushEdge, updateWalletChip, todayStr, tOr,
@@ -46,6 +52,16 @@ export function createStreetScreen({
   let streetEdit = null;       // draft-only editor state; committed on Done
   let streetPreview = null;    // temporary shop preview projected into the scene
   let streetShopMode = false;  // focused decoration catalog opened from Street
+  // Unlike sprite()'s lazy PNGs (which dispatch nbhsk:sprite-ready, letting
+  // main.js coalesce one Street repaint once art arrives — see main.js),
+  // assets.js's canvasImage webp loader has no load-complete signal. Street's
+  // background canvas only repaints on discrete events (enter/edit/resize/
+  // etc.), so a wide backdrop still fetching on first paint would otherwise
+  // never appear until some unrelated interaction happened to call
+  // renderStreet() again. Poll a few seconds after the first request, then
+  // give up for the session — falling back to the painted base is always
+  // safe (the required file:// resilience path).
+  const wideBackdropPending = new Set();
   let streetReaction = null;   // lightweight tap reaction, never persisted
   let streetBannerTimer = 0;   // one-shot "set complete" banner, never persisted
   // Mirrors main.js's own #toast-pop element/CSS (index.html .toast-pop) —
@@ -431,10 +447,30 @@ export function createStreetScreen({
     if(hour>=17 && hour<20) return "dusk";
     return "night";
   }
+  // See wideBackdropPending above: polls assets.js's canvasImage cache (cheap
+  // — just checks Image.complete/naturalWidth, no new network request) until
+  // the wide backdrop finishes loading, then fires exactly one repaint if
+  // Street is still the visible screen. Caps at ~5s of frames so a failed/
+  // slow decode can't poll forever; the painted-base fallback stands in for
+  // the rest of the session in that case.
+  function watchWideBackdrop(name, tries=0){
+    if(canvasImg(name)){ wideBackdropPending.delete(name); if(getCurrentScreen()==="street") renderStreet(); return; }
+    if(tries>=300){ wideBackdropPending.delete(name); return; }
+    requestAnimationFrame(()=>watchWideBackdrop(name, tries+1));
+  }
   function drawStreetSceneBackground(c,w,h){
     const selected=getShopState().backdrop ? sprite("bg-"+getShopState().backdrop) : null;
+    const wideName=backdropAsset(backdropFor(streetTimeOfDay(new Date().getHours())));
+    // Short-circuits exactly like the brief's plain sprite() chain would:
+    // canvasImg(wideName) — and the network request its first call starts —
+    // never runs at all while a purchased backdrop wins.
+    const wide=selected?null:canvasImg(wideName);
+    if(!selected && !wide && !wideBackdropPending.has(wideName)){
+      wideBackdropPending.add(wideName);
+      requestAnimationFrame(()=>watchWideBackdrop(wideName));
+    }
     const defaultName=h/w>=.95 ? "bg-street-portrait" : "bg-street";
-    const img=selected||sprite(defaultName);
+    const img=selected||wide||sprite(defaultName);
     if(img){
       // Default Street art has a portrait-safe 4:3 composition. Purchased
       // themes remain wide and are center-cropped into the same diorama window.
