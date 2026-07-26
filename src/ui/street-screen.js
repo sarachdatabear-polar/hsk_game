@@ -26,7 +26,7 @@ import {
   streetResidentPose, streetResidentRoute, streetResidentScale,
 } from "../street-resident.js";
 import {
-  NEIGHBOURS, residentNeighbours, newlyMovedInByBuild, neighbourPose,
+  NEIGHBOURS, newlyMovedInByBuild, neighbourPose,
 } from "../street-neighbours.js";
 import {
   WELCOME_ID, STREET_PLOTS, streetPieces, streetProgress, BUILDINGS,
@@ -732,7 +732,8 @@ export function createStreetScreen({
     c.restore();
   }
   // Task 8: the named residents (street-neighbours.js NEIGHBOURS) who live on
-  // the street once their landmark finishes (residentNeighbours(level)) —
+  // the street once their landmark finishes and they've moved in
+  // (streetLayout.metNeighbours, build-gated — see grantMovedInNeighbours) —
   // distinct from drawStreetDailyNeighbour's transient recolour cameo above.
   // Drawn in the resident canvas layer, same ground-Y/scale basis as the
   // player's own cat below, but as authored PNGs (sprite(), Task 6's
@@ -744,7 +745,8 @@ export function createStreetScreen({
   // sprite() caller in this file already relies on, and the existing
   // nbhsk:sprite-ready listener (main.js) repaints once it's ready.
   function drawStreetResidentNeighbours(c,w,groundY,scale,now,reducedMotion){
-    for(const id of residentNeighbours(levelForXp(getXp()))){
+    const movedIn = getShopState().streetLayout?.metNeighbours || [];
+    for(const id of movedIn){
       const n=NEIGHBOURS.find(x=>x.id===id);
       if(!n) continue;
       const npose=neighbourPose(now,n.anchor,reducedMotion);
