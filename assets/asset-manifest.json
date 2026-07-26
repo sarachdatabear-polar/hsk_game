@@ -1277,6 +1277,7 @@
       "priority": "P1",
       "w": 2048,
       "h": 1024,
+      "canvasImage": true,
       "note": "Street v2 wide day stage panorama (2:1); central 60% empty for game objects; webp like other full-screen bgs (PNG cannot reach 350KB at 2048x1024); extend assets.js load() regex when wiring"
     },
     {
@@ -1287,6 +1288,7 @@
       "priority": "P1",
       "w": 2048,
       "h": 1024,
+      "canvasImage": true,
       "note": "Street v2 wide night-market stage panorama (2:1); central 60% empty for game objects; webp like other full-screen bgs (PNG cannot reach 350KB at 2048x1024); extend assets.js load() regex when wiring"
     },
     {

@@ -26,6 +26,9 @@ import {
   streetResidentPose, streetResidentRoute, streetResidentScale,
 } from "../street-resident.js";
 import {
+  NEIGHBOURS, residentNeighbours, newlyMovedIn, neighbourPose,
+} from "../street-neighbours.js";
+import {
   WELCOME_ID, STREET_PLOTS, streetPieces, streetProgress,
   streetWorldMetrics, DECO_SPRITE_SCALE, defaultStreetLayout,
   normalizeStreetLayout, compatibleStreetPlots, firstFreeStreetPlot,
@@ -34,8 +37,15 @@ import {
   streetMeta, streetClass, STREET_LAYOUT_VERSION,
 } from "../street.js";
 import { newlyCompletedSets, completedSets, collectionView } from "../street-collection.js";
+import { landmarkStage, constructionSprite } from "../street-construction.js";
 import { makeKeepsake, addKeepsake, keepsakeWords } from "../street-keepsakes.js";
 import { isNewDay, dailyGift } from "../street-daily.js";
+import { backdropFor, backdropAsset } from "../street-backdrop.js";
+// The wide time-of-day panoramas are .webp, loaded through assets.js's
+// canvasImage registry (Task 2) — a different lazy loader than sprite()'s
+// SPRITE_NAMES/.png registry above. `img` is aliased to avoid colliding with
+// the many local `const img` draw-target variables already in this file.
+import { img as canvasImg } from "../assets.js";
 
 export function createStreetScreen({
   $, store, analytics, show, renderShop, pushEdge, updateWalletChip, todayStr, tOr,
@@ -46,6 +56,16 @@ export function createStreetScreen({
   let streetEdit = null;       // draft-only editor state; committed on Done
   let streetPreview = null;    // temporary shop preview projected into the scene
   let streetShopMode = false;  // focused decoration catalog opened from Street
+  // Unlike sprite()'s lazy PNGs (which dispatch nbhsk:sprite-ready, letting
+  // main.js coalesce one Street repaint once art arrives — see main.js),
+  // assets.js's canvasImage webp loader has no load-complete signal. Street's
+  // background canvas only repaints on discrete events (enter/edit/resize/
+  // etc.), so a wide backdrop still fetching on first paint would otherwise
+  // never appear until some unrelated interaction happened to call
+  // renderStreet() again. Poll a few seconds after the first request, then
+  // give up for the session — falling back to the painted base is always
+  // safe (the required file:// resilience path).
+  const wideBackdropPending = new Set();
   let streetReaction = null;   // lightweight tap reaction, never persisted
   let streetBannerTimer = 0;   // one-shot "set complete" banner, never persisted
   // Mirrors main.js's own #toast-pop element/CSS (index.html .toast-pop) —
@@ -99,6 +119,78 @@ export function createStreetScreen({
     // so a single purchase can complete at most one set: fresh.length is
     // always <= 1 here, hence no banner queue is needed.
     streetToast(t("street.setComplete", { set: t("street.set." + fresh[0]) }));
+  }
+  // Task 8: the one-time "neighbour moved in" moment for the three named
+  // residents (street-neighbours.js NEIGHBOURS: tiao/pang/wen). Same grant
+  // pattern as grantCompletedSets just above, but gated on LEVEL crossing an
+  // unlock threshold (residentNeighbours/newlyMovedIn) rather than a
+  // purchase, and guarded by streetLayout.metNeighbours (Task 7 — persisted,
+  // migrated, union-merged) instead of setsCompleted.
+  //
+  // The move-in moment gets its OWN portrait card (#neighbour-greet), not the
+  // plain text #toast-pop: it surfaces the neighbour's authored portrait art
+  // and, being a separate element, no longer clobbers a same-day daily-gift
+  // toast. Auto-dismisses; file://-safe (relative img src, and the card still
+  // shows the text if the portrait can't decode). Styles are injected once so
+  // this stays self-contained in the module (index.html CSS untouched).
+  let neighbourGreetTimer;
+  function ensureNeighbourGreetStyle(){
+    if(document.getElementById("neighbour-greet-style")) return;
+    const s = document.createElement("style");
+    s.id = "neighbour-greet-style";
+    s.textContent =
+      "#neighbour-greet{position:fixed;left:50%;top:22%;transform:translate(-50%,-8px);"
+      + "z-index:9999;display:flex;align-items:center;gap:12px;max-width:min(92vw,340px);"
+      + "padding:12px 16px;border-radius:18px;background:#FBF5E8;color:#2E2A24;"
+      + "box-shadow:0 8px 28px rgba(46,42,36,.28);border:2px solid #EAC796;"
+      + "font-weight:700;text-align:left;opacity:0;pointer-events:none;"
+      + "transition:opacity .25s ease,transform .25s ease}"
+      + "#neighbour-greet.show{opacity:1;transform:translate(-50%,0)}"
+      + "#neighbour-greet img{width:64px;height:64px;border-radius:12px;object-fit:cover;"
+      + "background:#EAC796;flex:0 0 auto}"
+      + "@media (prefers-reduced-motion:reduce){#neighbour-greet{transition:none}}";
+    document.head.appendChild(s);
+  }
+  function showNeighbourGreeting(id){
+    ensureNeighbourGreetStyle();
+    clearTimeout(neighbourGreetTimer);
+    let el = document.getElementById("neighbour-greet");
+    if(!el){
+      el = document.createElement("div");
+      el.id = "neighbour-greet";
+      document.body.appendChild(el);
+    }
+    el.innerHTML = "";
+    const img = document.createElement("img");
+    img.alt = "";
+    img.onerror = () => { img.style.display = "none"; };  // text-only if art can't decode
+    img.src = "assets/neighbour-" + id + "-portrait.png";
+    const msg = document.createElement("span");
+    msg.textContent = t("street.neighbourMovedIn", { name: t("street.neighbour." + id) });
+    el.append(img, msg);
+    requestAnimationFrame(() => el.classList.add("show"));
+    neighbourGreetTimer = setTimeout(() => { el.classList.remove("show"); }, 3200);
+  }
+  function grantMovedInNeighbours(){
+    const layout = ensureStreetLayout();     // same accessor grantCompletedSets uses
+    const level = levelForXp(getXp());       // same level source the scene itself uses
+    const fresh = newlyMovedIn(level, layout.metNeighbours);
+    if(!fresh.length) return;
+    let keepsakes = layout.keepsakes, metNeighbours = layout.metNeighbours;
+    for(const id of fresh){
+      // `seq: id` (not a bare custom field) so makeKeepsake's id becomes
+      // "neighbour:<id>:<day>" — the same "kind:seg:day" shape "set" keepsakes
+      // use (see keepsakeSetId below). Without a seg, two neighbours moving in
+      // on the SAME day would both mint the id "neighbour:<day>" and the
+      // second would be silently dropped by addKeepsake's id-dedup.
+      keepsakes = addKeepsake(keepsakes, makeKeepsake("neighbour", todayStr(), { seq: id, word: wordFor(keepsakes) }));
+      metNeighbours = [...metNeighbours, id];
+    }
+    const granted = normalizeStreetLayout({ ...layout, keepsakes, metNeighbours }, getShopState().owned);
+    setShopState({ ...getShopState(), streetLayout: granted });
+    store.set("shop", getShopState());
+    pushEdge("purchase");
+    showNeighbourGreeting(fresh[0]);
   }
 
   /* ============================== Lucky Cat Street (home) ============================== */
@@ -232,6 +324,11 @@ export function createStreetScreen({
   }
   function enterStreet(previousScreen=""){
     const layout = grantDailySurprise(ensureStreetLayout());
+    // Same on-show slot as the daily-surprise/set checks above: level-gated,
+    // so it belongs on entry (a level crossed while away from Street should
+    // still greet on the next visit), independent of grantDailySurprise's
+    // once-per-calendar-day gate — this one's guard is metNeighbours, not a day.
+    grantMovedInNeighbours();
     const owned=getShopState().owned.length+(layout.welcomeOwned?1:0),placed=Object.keys(layout.placements).length;
     analytics.track("street_open",{
       source:streetPreview?"shop_preview":previousScreen==="shop"?"shop":"navigation",
@@ -431,10 +528,31 @@ export function createStreetScreen({
     if(hour>=17 && hour<20) return "dusk";
     return "night";
   }
+  // See wideBackdropPending above: polls assets.js's canvasImage cache (cheap
+  // — just checks Image.complete/naturalWidth, no new network request) until
+  // the wide backdrop finishes loading, then fires exactly one repaint if
+  // Street is still the visible screen. Caps at ~5s of frames so a failed/
+  // slow decode can't poll forever; the painted-base fallback stands in for
+  // the rest of the session in that case.
+  function watchWideBackdrop(name, tries=0){
+    if(getCurrentScreen()!=="street"){ wideBackdropPending.delete(name); return; }
+    if(canvasImg(name)){ wideBackdropPending.delete(name); if(getCurrentScreen()==="street") renderStreet(); return; }
+    if(tries>=300){ wideBackdropPending.delete(name); return; }
+    requestAnimationFrame(()=>watchWideBackdrop(name, tries+1));
+  }
   function drawStreetSceneBackground(c,w,h){
     const selected=getShopState().backdrop ? sprite("bg-"+getShopState().backdrop) : null;
+    const wideName=backdropAsset(backdropFor(streetTimeOfDay(new Date().getHours())));
+    // Short-circuits exactly like the brief's plain sprite() chain would:
+    // canvasImg(wideName) — and the network request its first call starts —
+    // never runs at all while a purchased backdrop wins.
+    const wide=selected?null:canvasImg(wideName);
+    if(!selected && !wide && !wideBackdropPending.has(wideName)){
+      wideBackdropPending.add(wideName);
+      requestAnimationFrame(()=>watchWideBackdrop(wideName));
+    }
     const defaultName=h/w>=.95 ? "bg-street-portrait" : "bg-street";
-    const img=selected||sprite(defaultName);
+    const img=selected||wide||sprite(defaultName);
     if(img){
       // Default Street art has a portrait-safe 4:3 composition. Purchased
       // themes remain wide and are center-cropped into the same diorama window.
@@ -538,6 +656,33 @@ export function createStreetScreen({
     drawCat(c,x,groundY,now,"walk",SKIN_PALETTES[streetDailyReveal.neighbour],scale*0.86,[],false);
     c.restore();
   }
+  // Task 8: the named residents (street-neighbours.js NEIGHBOURS) who live on
+  // the street once their landmark finishes (residentNeighbours(level)) —
+  // distinct from drawStreetDailyNeighbour's transient recolour cameo above.
+  // Drawn in the resident canvas layer, same ground-Y/scale basis as the
+  // player's own cat below, but as authored PNGs (sprite(), Task 6's
+  // walk-a/walk-b/idle poses) rather than drawCat's recolourable vector.
+  // (The portrait pose isn't used in this walk loop — it's surfaced by the
+  // move-in greeting card, showNeighbourGreeting.)
+  // sprite() returns null while an art file is still loading (or on any
+  // registry miss); skipping that frame is the same fallback every other
+  // sprite() caller in this file already relies on, and the existing
+  // nbhsk:sprite-ready listener (main.js) repaints once it's ready.
+  function drawStreetResidentNeighbours(c,w,groundY,scale,now,reducedMotion){
+    for(const id of residentNeighbours(levelForXp(getXp()))){
+      const n=NEIGHBOURS.find(x=>x.id===id);
+      if(!n) continue;
+      const npose=neighbourPose(now,n.anchor,reducedMotion);
+      const img=sprite(`neighbour-${id}-${npose.sprite}`);
+      if(!img) continue;
+      const px=npose.x*w, size=CONTENT_H*scale;
+      c.save();
+      if(npose.facing<0){ c.translate(px,0); c.scale(-1,1); c.translate(-px,0); }
+      drawContactShadow(c,px,groundY,size*.7);
+      c.drawImage(img,px-size/2,groundY-size+size*.07,size,size);
+      c.restore();
+    }
+  }
   function drawStreetResidentFrame(now,reducedMotion=false){
     const scene=streetResidentScene;
     if(!scene) return;
@@ -553,6 +698,7 @@ export function createStreetScreen({
     const activityX=Number.isFinite(pose.activityX)?pose.activityX*w:x;
     drawStreetResidentActivity(c,pose.activity,activityX,groundY,CONTENT_H*scale,now,pose.facing);
     drawContactShadow(c,x,groundY,CONTENT_H*scale*.82);
+    drawStreetResidentNeighbours(c,w,groundY,scale,now,reducedMotion);
     const hasKitten=accessoriesFor(levelForXp(getXp())).includes("kitten");
     c.save();
     if(pose.facing<0){ c.translate(x,0); c.scale(-1,1); c.translate(-x,0); }
@@ -615,7 +761,14 @@ export function createStreetScreen({
     const owned=preview?.owned || getShopState().owned;
     const layout=preview?.layout || liveStreetLayout();
     const tiers=preview?.tiers || getShopState().tiers || {};
-    const pieces=streetPieces(levelForXp(getXp()),owned,tiers,layout);
+    const level=levelForXp(getXp());
+    // streetPieces only gates buildings on level>=b.lv (decos never depend on
+    // it), so calling with Infinity yields every landmark's slot/laneY/scale
+    // regardless of unlock — then landmarkStage tags each with its real
+    // construction stage and drops any not yet started (stage 0).
+    const pieces=streetPieces(Infinity,owned,tiers,layout)
+      .map(p=>p.kind==="building" ? {...p, stage:landmarkStage(level,p.id)} : p)
+      .filter(p=>p.kind!=="building" || p.stage>=1);
     const completeSetIds=new Set(completedSets(owned));
     const project=!streetEdit&&!streetPreview ? activeStreetProject(getWallet(),layout) : null;
     if(streetEdit || streetPreview) drawStreetPlotGrid(sc,w,h,gy,m,layout);
@@ -624,7 +777,7 @@ export function createStreetScreen({
       const x=p.slot*w, py=gy-h*(1-(p.laneY??1));
       if(p.kind==="building"){
         const du=m.unit*(p.scale||3);
-        drawStreetLandmark(sc,p.id,x,py,du);
+        drawStreetLandmark(sc,p.id,x,py,du,p.stage);
       }else{
         const pop=revealPopScale(p.id), du=m.unit*(p.scale||1)*pop;
         drawStreetBehavior(sc,p,x,py,du);
@@ -1208,14 +1361,24 @@ export function createStreetScreen({
     const parts = String(k.id).split(":");
     return parts.length > 2 ? parts[1] : "";
   }
+  // Task 8: `kind:"neighbour"` ids are `neighbour:<neighbourId>:<day>`
+  // (makeKeepsake, opts.seq — see grantMovedInNeighbours above), the same
+  // "kind:seg:day" shape keepsakeSetId already parses for "set"; a dedicated
+  // reader keeps each kind's id-shape assumption local to its own copy line.
+  function keepsakeNeighbourId(k){
+    const parts = String(k.id).split(":");
+    return parts.length > 2 ? parts[1] : "";
+  }
   function keepsakeCopy(k){
     if(k.kind === "set") return t("street.keepsakeSet", { set: t("street.set." + keepsakeSetId(k)) });
     if(k.kind === "daily") return t("street.keepsakeDaily", { day: k.day });
+    if(k.kind === "neighbour") return t("street.keepsake.neighbour", { name: t("street.neighbour." + keepsakeNeighbourId(k)) });
     return t("street.keepsakeWelcome");
   }
   function keepsakeIcon(k){
     if(k.kind === "set") return "trophy";
     if(k.kind === "daily") return "calendar";
+    if(k.kind === "neighbour") return "heart";
     return "star";
   }
   function keepsakeItemEl(k){
@@ -1348,8 +1511,9 @@ export function createStreetScreen({
     c.beginPath(); c.ellipse(x, y + basis*.05, basis*.5, basis*.12, 0, 0, Math.PI*2); c.fill();
     c.restore();
   }
-  function drawStreetLandmark(c, id, x, groundY, size){
-    const img=sprite("landmark-"+id);
+  function drawStreetLandmark(c, id, x, groundY, size, stage=3){
+    const spriteId=constructionSprite(id, stage);
+    const img=spriteId ? sprite(spriteId) : null;
     if(!img) return false;
     // The transparent source files leave roughly 7% below their painted
     // silhouette. Lowering the image by that amount puts every object on the

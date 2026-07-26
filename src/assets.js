@@ -34,7 +34,7 @@ export function createAssets(m, opts = {}) {
     const asset = REGISTRY[id];
     // .webp rows (full-screen CSS backgrounds) are deliberately not JS-loaded;
     // extend this regex on purpose if a webp ever needs the runtime registry.
-    if (!asset || !/\.(png|svg)$/.test(asset.file) || !LOADABLE.has(asset.status)) return;
+    if (!asset || !(/\.(png|svg)$/.test(asset.file) || asset.canvasImage) || !LOADABLE.has(asset.status)) return;
     if (asset.file === "ui-icons.svg") return; // icon sprite is <use>-referenced, not an image
 
     const imageKey = key(id, state);
@@ -87,7 +87,7 @@ export function createAssets(m, opts = {}) {
     return frames.get(key(id, state)) || "none";
   }
 
-  return { REGISTRY, preload, frameCSS, img };
+  return { REGISTRY, preload, frameCSS, img, load };
 }
 
 const assets = createAssets(manifest);
