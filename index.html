@@ -314,6 +314,119 @@
   #journey-list .j-play{
     display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2;
     overflow:hidden; overflow-wrap:anywhere;}
+  /* Cat Journey — the cat is the reward surface. A portrait scene carries
+     most of the visual weight; compact learning/bond controls overlap its
+     lower edge so the screen stays focused instead of becoming a dashboard. */
+  #s-cat-journey{position:relative; gap:0; padding:11px 12px 14px;
+    background:
+      radial-gradient(circle at 50% 18%,rgba(255,229,155,.34),transparent 38%),
+      linear-gradient(180deg,#fdf7e9 0%,#f5ead3 100%);}
+  .cat-journey-head{display:flex; align-items:center; justify-content:space-between; gap:12px;
+    width:100%; max-width:450px; margin:0 auto 7px;}
+  .cat-journey-head-copy{min-width:0;}
+  .cat-journey-eyebrow{display:block; color:var(--lc-brown); font-size:9px; font-weight:900;
+    letter-spacing:.13em; text-transform:uppercase;}
+  .cat-journey-head h2{margin:1px 0 0; color:var(--lc-green-deep); font-size:21px; line-height:1.15;}
+  .cat-memory-head-btn{display:flex; align-items:center; gap:6px; min-width:44px; min-height:44px;
+    padding:7px 10px; border:1px solid rgba(132,96,67,.35); border-radius:999px;
+    background:rgba(251,245,232,.92); color:var(--lc-green-deep); font-size:11px; font-weight:900;
+    box-shadow:0 3px 10px rgba(46,42,36,.10);}
+  .cat-memory-head-btn .asset-icon{color:var(--lc-sun-shadow);}
+  .cat-scene{position:relative; isolation:isolate; width:100%; max-width:450px; aspect-ratio:4/5;
+    max-height:540px; margin:0 auto; overflow:hidden; border:2px solid rgba(255,249,234,.92);
+    border-radius:28px; background-position:center; background-size:cover; background-color:var(--lc-sand);
+    box-shadow:0 15px 34px rgba(76,55,37,.24),inset 0 0 0 2px rgba(122,90,68,.32);
+    transition:background-image .25s ease-out;}
+  .cat-scene::before{content:""; position:absolute; z-index:-1; inset:0;
+    background:linear-gradient(180deg,rgba(46,42,36,.02) 35%,rgba(46,42,36,.18) 72%,rgba(46,42,36,.48));}
+  .cat-scene::after{content:""; position:absolute; z-index:3; inset:auto 0 0; height:32%;
+    pointer-events:none; background:linear-gradient(180deg,transparent,rgba(34,52,57,.44));}
+  .cat-bond-chip{position:absolute; z-index:5; top:12px; left:12px; display:flex; align-items:center; gap:7px;
+    min-height:38px; max-width:78%; padding:7px 11px; border:1px solid rgba(255,249,234,.88);
+    border-radius:999px; color:#fff9ea; background:rgba(31,77,74,.88);
+    box-shadow:0 5px 14px rgba(46,42,36,.22); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);}
+  .cat-bond-chip .asset-icon{color:var(--lc-sun-hi);}
+  .cat-bond-chip b{overflow:hidden; font-size:12px; line-height:1.1; text-overflow:ellipsis; white-space:nowrap;}
+  .cat-bond-chip small{font-size:9px; opacity:.84; white-space:nowrap;}
+  .cat-journey-character{position:absolute; z-index:2; left:50%; bottom:49px; width:auto; height:69%;
+    max-width:94%; object-fit:contain; object-position:center bottom; transform:translateX(-50%);
+    filter:drop-shadow(0 9px 8px rgba(61,43,26,.25)); animation:cat-companion-breathe 3.2s ease-in-out infinite;}
+  #s-cat-journey[data-journey-status="done"] .cat-journey-character{height:58%; bottom:61px;}
+  #s-cat-journey[data-journey-status="returned"] .cat-journey-character{height:67%;}
+  @keyframes cat-companion-breathe{50%{transform:translate(-50%,-4px) rotate(-.4deg);}}
+  .cat-away{position:absolute; z-index:4; inset:29% 12% auto; padding:16px; border:1px solid rgba(255,249,234,.88);
+    border-radius:22px; background:rgba(251,245,232,.86); color:var(--lc-green-deep); text-align:center;
+    box-shadow:0 8px 24px rgba(46,42,36,.18); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);}
+  .cat-away[hidden]{display:none;}
+  .cat-away .asset-icon{width:34px; height:34px; color:var(--lc-coral-deep); animation:cat-away-paw 1.8s ease-in-out infinite;}
+  .cat-away b{display:block; margin-top:5px; font-size:15px;}
+  @keyframes cat-away-paw{50%{transform:translateY(-5px) rotate(7deg);}}
+  .cat-scene-status{position:absolute; z-index:5; left:12px; right:12px; bottom:12px; min-height:42px;
+    display:flex; align-items:center; justify-content:center; padding:8px 12px; border:1px solid rgba(255,249,234,.72);
+    border-radius:15px; background:rgba(31,77,74,.88); color:#fff9ea; text-align:center;
+    font-size:12px; font-weight:800; line-height:1.3; -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);}
+  .cat-progress-card{position:relative; z-index:6; width:calc(100% - 22px); max-width:428px; margin:-10px auto 0;
+    padding:10px 13px 11px; border:1px solid rgba(132,96,67,.28); border-radius:18px;
+    background:rgba(251,245,232,.97); box-shadow:0 7px 18px rgba(46,42,36,.15);}
+  .cat-progress-top,.cat-goal-row{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .cat-progress-top b{color:var(--lc-green-deep); font-size:13px;}
+  .cat-progress-top span,.cat-goal-row{color:var(--lc-brown); font-size:10px;}
+  .cat-meter{height:8px; margin-top:6px; overflow:hidden; border-radius:999px; background:rgba(132,96,67,.15);
+    box-shadow:inset 0 1px 2px rgba(46,42,36,.12);}
+  .cat-meter i{display:block; width:0; height:100%; border-radius:inherit;
+    background:linear-gradient(90deg,var(--lc-green),var(--lc-sun)); transition:width .55s cubic-bezier(.2,.8,.2,1);}
+  .cat-goal-row{margin-top:8px;}
+  .cat-goal-row .asset-icon{color:var(--lc-coral-deep);}
+  .cat-goal-copy{display:flex; align-items:center; gap:5px; font-weight:800;}
+  .cat-goal-meter{flex:0 0 34%; height:5px; margin:0;}
+  .cat-primary{width:calc(100% - 22px); max-width:428px; min-height:49px; margin:9px auto 0;
+    padding:10px 16px; border:2px solid var(--lc-sun-shadow); border-radius:16px;
+    background:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun) 55%,var(--lc-sun-deep));
+    color:var(--lc-teal); font-size:15px; font-weight:900;
+    box-shadow:0 4px 0 var(--lc-sun-shadow),0 7px 15px rgba(46,42,36,.18);}
+  .cat-primary:active:not(:disabled){transform:translateY(2px); box-shadow:0 2px 0 var(--lc-sun-shadow);}
+  .cat-primary:disabled{border-color:var(--lc-green-deep); background:linear-gradient(180deg,var(--lc-green-hi),var(--lc-green));
+    color:var(--lc-cream); box-shadow:0 3px 0 var(--lc-green-deep); cursor:default;}
+  .cat-secondary-actions{display:grid; grid-template-columns:1fr 1fr; gap:8px; width:calc(100% - 22px);
+    max-width:428px; margin:9px auto 0;}
+  .cat-secondary-actions button{display:flex; align-items:center; justify-content:center; gap:6px; min-height:44px;
+    padding:7px 9px; border:1px solid rgba(132,96,67,.35); border-radius:13px;
+    background:rgba(251,245,232,.94); color:var(--lc-green-deep); font-size:11px; font-weight:900;}
+  .cat-drawer{width:calc(100% - 22px); max-width:428px; margin:8px auto 0; padding:10px;
+    border:1px solid rgba(132,96,67,.28); border-radius:16px; background:rgba(251,245,232,.96);
+    box-shadow:0 5px 14px rgba(46,42,36,.11);}
+  .cat-drawer[hidden]{display:none;}
+  .cat-drawer h3{margin:0 0 8px; color:var(--lc-green-deep); font-size:13px;}
+  .cat-background-list{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px;}
+  .cat-bg-choice{min-width:0; min-height:44px; padding:4px; border:2px solid transparent; border-radius:12px;
+    background:var(--lc-cream); color:var(--lc-ink); text-align:left;}
+  .cat-bg-choice.on{border-color:var(--lc-green); background:rgba(78,174,138,.12);}
+  .cat-bg-choice.locked{opacity:.58; filter:saturate(.55);}
+  .cat-bg-preview{display:block; width:100%; aspect-ratio:4/3; border-radius:8px; background-position:center; background-size:cover;}
+  .cat-bg-label{display:block; margin-top:4px; overflow:hidden; font-size:9px; font-weight:900; text-overflow:ellipsis; white-space:nowrap;}
+  .cat-bg-choice small{display:block; min-height:12px; color:var(--lc-brown); font-size:8px;}
+  .cat-memory-empty{margin:3px 0; color:var(--lc-brown); font-size:11px; text-align:center;}
+  .cat-memory-empty[hidden]{display:none;}
+  .cat-memory-list{display:flex; flex-direction:column; gap:7px; max-height:50vh; overflow-y:auto;}
+  .cat-memory-card{display:grid; grid-template-columns:34px minmax(0,1fr); gap:9px; align-items:start; padding:9px 10px;
+    border:1px solid rgba(132,96,67,.22); border-radius:13px; background:#fffaf0;}
+  .cat-memory-card.new{border-color:var(--lc-sun-shadow); box-shadow:0 0 0 2px rgba(242,188,87,.22);}
+  .cat-memory-card>.asset-icon{width:30px; height:30px; padding:6px; border-radius:50%;
+    background:rgba(78,174,138,.16); color:var(--lc-green);}
+  .cat-memory-card b{display:block; color:var(--lc-green-deep); font-size:12px;}
+  .cat-memory-card p{margin:2px 0 3px; color:var(--lc-brown); font-size:10.5px; line-height:1.35;}
+  .cat-memory-card time{color:var(--lc-gray); font-size:8.5px;}
+  @media (max-height:700px) and (orientation:portrait){
+    .cat-scene{aspect-ratio:1/1; max-height:350px;}
+    .cat-journey-character{height:67%; bottom:47px;}
+  }
+  @media (max-height:600px) and (orientation:portrait){
+    .cat-scene{height:270px; aspect-ratio:auto;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .cat-journey-character,.cat-away .asset-icon{animation:none;}
+    .cat-scene,.cat-meter i{transition:none;}
+  }
   /* Lucky Cat Street v2 — a compact player-authored diorama. Canvas paints
      one complete scene; the DOM layer supplies accessible item/plot controls. */
   #s-street{position:relative; justify-content:flex-start;}
@@ -1552,6 +1665,24 @@
     .welcome-hint{font-size:10px; line-height:1.25; margin:4px 0 0; max-width:none;}
     .welcome-start{margin-top:6px;}
 
+    /* ---- Cat Journey ---- */
+    #s-cat-journey{display:none; padding:4px 10px 3px;}
+    #s-cat-journey.on{display:grid; grid-template-columns:minmax(230px,1.35fr) minmax(220px,1fr);
+      grid-template-rows:auto auto auto auto 1fr; column-gap:10px; align-items:start; overflow-y:auto;}
+    .cat-journey-head{grid-column:1/-1; max-width:none; margin-bottom:4px;}
+    .cat-journey-eyebrow{display:none;}
+    .cat-journey-head h2{font-size:17px;}
+    .cat-scene{grid-column:1; grid-row:2/7; width:100%; max-width:none; max-height:calc(100dvh - 108px);
+      aspect-ratio:auto; height:calc(100dvh - 108px); min-height:220px; border-radius:20px;}
+    .cat-journey-character{height:72%; bottom:45px;}
+    #s-cat-journey[data-journey-status="done"] .cat-journey-character{height:62%; bottom:52px;}
+    .cat-progress-card{grid-column:2; grid-row:2; width:100%; margin:0; padding:8px 10px;}
+    .cat-primary{grid-column:2; grid-row:3; width:100%; min-height:44px; margin:8px 0 0;}
+    .cat-secondary-actions{grid-column:2; grid-row:4; width:100%; margin:8px 0 0;}
+    .cat-drawer{grid-column:2; grid-row:5; width:100%; max-height:calc(100dvh - 205px); margin:8px 0 0; overflow-y:auto;}
+    .cat-background-list{grid-template-columns:repeat(3,minmax(0,1fr));}
+    .cat-memory-list{max-height:none;}
+
     /* ---- Lucky Cat Street ----
        Keep the scene above the sticky nav on short landscape phones while
        retaining a deliberate 2:1 cinematic crop for the limited height. */
@@ -1650,6 +1781,78 @@
         <button class="start-btn welcome-start" id="welcome-start" data-i18n="welcome.start">START LEARNING</button>
       </div>
     </div>
+  </div>
+
+  <!-- CAT JOURNEY — cat-first retention loop. Street remains in the document
+       for the local rollback flag, but the visible tab routes here by default. -->
+  <div class="screen" id="s-cat-journey">
+    <header class="cat-journey-head">
+      <div class="cat-journey-head-copy">
+        <span class="cat-journey-eyebrow" data-i18n="cat.eyebrow">Your learning companion</span>
+        <h2 data-i18n="cat.title">Lucky Cat Journey</h2>
+      </div>
+      <button class="cat-memory-head-btn" id="cat-memories-toggle" aria-controls="cat-memories-panel" aria-expanded="false">
+        <svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#book"></use></svg>
+        <span data-i18n="cat.memories">Memories</span>
+        <b id="cat-memory-count">0</b>
+      </button>
+    </header>
+
+    <section class="cat-scene" id="cat-scene" aria-labelledby="cat-status-copy">
+      <div class="cat-bond-chip">
+        <svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#focus-heart"></use></svg>
+        <b id="cat-bond-tier">Study Buddy</b>
+        <small id="cat-bond-points">0 bond</small>
+      </div>
+      <img class="cat-journey-character" id="cat-journey-character" src="assets/cat-thinking.png" alt="">
+      <div class="cat-away" id="cat-away" hidden>
+        <svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#paw"></use></svg>
+        <b data-i18n="cat.away">Exploring nearby…</b>
+      </div>
+      <div class="cat-scene-status" id="cat-status-copy">Ready to learn together?</div>
+    </section>
+
+    <section class="cat-progress-card">
+      <div class="cat-progress-top">
+        <b data-i18n="cat.bond">Cat Bond</b>
+        <span id="cat-bond-next"></span>
+      </div>
+      <div class="cat-meter" role="progressbar" aria-label="Cat Bond" data-i18n-aria="cat.bond">
+        <i id="cat-bond-fill"></i>
+      </div>
+      <div class="cat-goal-row">
+        <span class="cat-goal-copy">
+          <svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#calendar"></use></svg>
+          <span id="cat-goal-copy"></span>
+        </span>
+        <div class="cat-meter cat-goal-meter" id="cat-goal-meter" role="progressbar" aria-label="Daily goal" data-i18n-aria="cat.dailyGoal">
+          <i id="cat-goal-fill"></i>
+        </div>
+      </div>
+    </section>
+
+    <button class="cat-primary" id="cat-primary">Study now</button>
+    <div class="cat-secondary-actions">
+      <button id="cat-backgrounds-toggle" aria-controls="cat-background-panel" aria-expanded="false">
+        <svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#collection"></use></svg>
+        <span data-i18n="cat.backgrounds">Backgrounds</span>
+      </button>
+      <button data-go="progress">
+        <svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#progress"></use></svg>
+        <span data-i18n="cat.profile">My progress</span>
+      </button>
+    </div>
+
+    <section class="cat-drawer" id="cat-background-panel" hidden>
+      <h3 data-i18n="cat.backgrounds">Backgrounds</h3>
+      <div class="cat-background-list" id="cat-background-list"></div>
+    </section>
+    <section class="cat-drawer" id="cat-memories-panel" hidden>
+      <h3 data-i18n="cat.memoriesTitle">Journey memories</h3>
+      <p class="cat-memory-empty" id="cat-memory-empty" data-i18n="cat.memoriesEmpty">Complete today's goal and send your cat exploring to make your first memory.</p>
+      <div class="cat-memory-list" id="cat-memory-list"></div>
+    </section>
+    <div class="visually-hidden" id="cat-live" aria-live="polite"></div>
   </div>
 
   <!-- STREET — quests reverted back out (2026-07-11 audit F2/F3, supersedes the
@@ -2234,7 +2437,7 @@
   <!-- BOTTOM NAV -->
   <nav id="bottom-nav" aria-label="Primary">
     <button class="nav-btn" data-go="home" data-tab="home"><svg class="asset-icon"><use href="assets/ui-icons.svg#home"></use></svg><span data-i18n="nav.home">Home</span></button>
-    <button class="nav-btn" data-go="street" data-tab="street"><svg class="asset-icon"><use href="assets/ui-icons.svg#street"></use></svg><span data-i18n="nav.street">Street</span></button>
+    <button class="nav-btn" data-go="street" data-tab="street"><svg class="asset-icon"><use href="assets/ui-icons.svg#paw"></use></svg><span data-i18n="nav.cat">Cat</span></button>
     <button class="nav-btn" data-go="progress" data-tab="progress"><svg class="asset-icon"><use href="assets/ui-icons.svg#progress"></use></svg><span data-i18n="nav.progress">Profile</span></button>
     <button class="nav-btn" data-go="more" data-tab="more"><svg class="asset-icon"><use href="assets/ui-icons.svg#more"></use></svg><span data-i18n="nav.more">More</span></button>
   </nav>

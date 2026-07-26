@@ -63,6 +63,21 @@ describe("makeEvent", () => {
     expect(makeEvent("street_project_complete", { ...base, props: { item_id: "koi-pond", source: "street_project", email: "nope@example.com" } }).props)
       .toEqual({ item_id: "koi-pond", source: "street_project" });
   });
+
+  it("keeps only the PII-free Cat Journey dimensions", () => {
+    expect(makeEvent("cat_journey_viewed", {
+      ...base,
+      props: { source: "nav", bond_tier: "curious-paws", status: "ready", exact_points: 23 },
+    }).props).toEqual({ source: "nav", bond_tier: "curious-paws", status: "ready" });
+    expect(makeEvent("cat_journey_returned", {
+      ...base,
+      props: { memory_id: "garden-leaf", story: "private text" },
+    }).props).toEqual({ memory_id: "garden-leaf" });
+    expect(makeEvent("cat_background_selected", {
+      ...base,
+      props: { background_id: "bg-cat-garden-v1", email: "nope@example.com" },
+    }).props).toEqual({ background_id: "bg-cat-garden-v1" });
+  });
 });
 
 describe("durationBucket", () => {

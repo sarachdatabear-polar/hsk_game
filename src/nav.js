@@ -15,7 +15,7 @@ const PROGRESS_SUBSCREENS = ["album"];
 
 // Every screen where the bottom nav is shown at all: the 4 tabs, the More
 // sub-screens, plus shop (reachable from home's icon row this milestone).
-const NAV_VISIBLE = new Set([...TABS, ...MORE_SUBSCREENS, ...PROGRESS_SUBSCREENS, "shop"]);
+const NAV_VISIBLE = new Set([...TABS, ...MORE_SUBSCREENS, ...PROGRESS_SUBSCREENS, "shop", "cat-journey"]);
 
 export function navVisibleOn(screen) {
   return NAV_VISIBLE.has(screen);
@@ -29,5 +29,6 @@ export function activeTabFor(screen) {
   if (MORE_SUBSCREENS.includes(screen)) return "more";
   if (PROGRESS_SUBSCREENS.includes(screen)) return "progress";
   if (screen === "shop") return "home";
+  if (screen === "cat-journey") return "street";
   return null;
 }

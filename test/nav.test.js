@@ -9,6 +9,7 @@ describe("nav", () => {
   describe("navVisibleOn", () => {
     it("shows the nav on every tab screen", () => {
       for (const s of TABS) expect(navVisibleOn(s), s).toBe(true);
+      expect(navVisibleOn("cat-journey")).toBe(true);
     });
     it("shows the nav on More sub-screens and shop", () => {
       expect(navVisibleOn("scores")).toBe(true);
@@ -38,6 +39,9 @@ describe("nav", () => {
     });
     it("is 'home' for shop", () => {
       expect(activeTabFor("shop")).toBe("home");
+    });
+    it("keeps the Cat Journey replacement under the former Street tab", () => {
+      expect(activeTabFor("cat-journey")).toBe("street");
     });
     it("is null when the nav is hidden", () => {
       expect(activeTabFor("battle")).toBe(null);

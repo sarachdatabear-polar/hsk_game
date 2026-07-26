@@ -1532,6 +1532,79 @@
       "h": 512,
       "anchor": "bottom-center",
       "note": "Street v2 construction half-built stage of landmark-emperor-gate"
+    },
+    {
+      "id": "bg-cat-garden-v1",
+      "file": "bg-cat-garden-v1.webp",
+      "type": "background",
+      "status": "approved",
+      "priority": "P1",
+      "w": 1080,
+      "h": 1920,
+      "note": "Cat Journey v1 vocabulary garden bond-tier background"
+    },
+    {
+      "id": "bg-cat-market-v1",
+      "file": "bg-cat-market-v1.webp",
+      "type": "background",
+      "status": "approved",
+      "priority": "P1",
+      "w": 1080,
+      "h": 1920,
+      "note": "Cat Journey v1 morning market bond-tier background"
+    },
+    {
+      "id": "bg-cat-lantern-v1",
+      "file": "bg-cat-lantern-v1.webp",
+      "type": "background",
+      "status": "approved",
+      "priority": "P1",
+      "w": 1080,
+      "h": 1920,
+      "note": "Cat Journey v1 lantern riverside bond-tier background"
+    },
+    {
+      "id": "bg-cat-scholar-gate-v1",
+      "file": "bg-cat-scholar-gate-v1.webp",
+      "type": "background",
+      "status": "approved",
+      "priority": "P1",
+      "w": 1080,
+      "h": 1920,
+      "note": "Cat Journey v1 scholar gate bond-tier background"
+    },
+    {
+      "id": "cat-journey-ready-v1",
+      "file": "cat-journey-ready-v1.png",
+      "type": "character",
+      "status": "approved",
+      "priority": "P1",
+      "w": 1254,
+      "h": 1254,
+      "anchor": "bottom-center",
+      "note": "Cat Journey v1 ready-to-explore state with book satchel"
+    },
+    {
+      "id": "cat-journey-return-v1",
+      "file": "cat-journey-return-v1.png",
+      "type": "character",
+      "status": "approved",
+      "priority": "P1",
+      "w": 1254,
+      "h": 1254,
+      "anchor": "bottom-center",
+      "note": "Cat Journey v1 return state with text-free leaf memory"
+    },
+    {
+      "id": "cat-rest-v1",
+      "file": "cat-rest-v1.png",
+      "type": "character",
+      "status": "approved",
+      "priority": "P1",
+      "w": 1254,
+      "h": 1254,
+      "anchor": "bottom-center",
+      "note": "Cat Journey v1 safe and content resting state"
     }
   ],
   "required_icons": [

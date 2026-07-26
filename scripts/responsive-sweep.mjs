@@ -320,7 +320,7 @@ async function selectFlashcardWord(page, hanzi) {
 // ---------------------------------------------------------------------------
 // Navigation helpers shared by the full sweep and the --battle single-shot.
 // ---------------------------------------------------------------------------
-async function preparePage(browser, width, height) {
+async function preparePage(browser, width, height, { catJourneyEnabled = false } = {}) {
   const page = await browser.newPage({ viewport: { width, height } });
   const errs = [];
   page.on("pageerror", e => errs.push(e.message));
@@ -332,14 +332,17 @@ async function preparePage(browser, width, height) {
     let state = seed >>> 0;
     Math.random = () => ((state = (Math.imul(state, 1664525) + 1013904223) >>> 0) / 4294967296);
   }, 9);
-  await page.addInitScript(locale => {
+  await page.addInitScript(({ locale, catJourneyEnabled }) => {
     localStorage.setItem("nbhsk.introDone", "true");
     localStorage.setItem("nbhsk.locale", JSON.stringify(locale));
     localStorage.setItem("nbhsk.wallet", "5000");
+    // The main matrix still regression-tests the preserved Street rollback
+    // surface. Cat Journey has its own dedicated flow/viewport probe below.
+    localStorage.setItem("nbhsk.features.catJourney", JSON.stringify(catJourneyEnabled));
     // Lv50 makes the permanent sweep exercise every milestone landmark and
     // the kitten path while verifying that no legacy costume overlay returns.
     localStorage.setItem("nbhsk.xp", "30625");
-  }, LOCALE);
+  }, { locale:LOCALE, catJourneyEnabled });
   await page.goto(`${BASE_URL}/index.html`, { waitUntil: "load" });
   await page.waitForTimeout(700);
   return { page, errs };
@@ -705,6 +708,110 @@ async function runStreetProjectProbe(browser) {
   if(errs.length) failures.push(`JSERR:${errs[0]}`);
   const line=`[${failures.length?"FAIL":"PASS"}] Street Project 390x844: `+
     `item=${selected.project?.itemId||"missing"} progress=${selected.pct}% complete=${completed.owned}`+
+    (failures.length?` | FAILURES: ${failures.join("; ")}`:"");
+  await page.close();
+  return {line,failed:failures.length>0};
+}
+
+// Cat Journey replacement gate: verify the default route, the highest-value
+// interaction states, tap floors, nav clearance, persistence, and a background
+// unlock across the three most failure-prone viewport shapes.
+async function runCatJourneyProbe(browser, width, height) {
+  const { page, errs } = await preparePage(browser, width, height, { catJourneyEnabled:true });
+  await page.evaluate(() => {
+    const d = new Date();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    const today = `${d.getFullYear()}-${mm}-${dd}`;
+    localStorage.setItem("nbhsk.daily", JSON.stringify({
+      last:today, streak:4, today:{date:today,resolved:20}, restWeek:"", restDay:"",
+    }));
+    localStorage.setItem("nbhsk.xp", "4200");
+    localStorage.removeItem("nbhsk.catJourney");
+  });
+  await page.reload({ waitUntil:"load" });
+  await page.waitForTimeout(400);
+  await page.locator('[data-tab="street"]').click();
+  await page.waitForTimeout(200);
+
+  const layout = await page.evaluate(minTap => {
+    const screen=document.querySelector("#s-cat-journey");
+    const scene=document.querySelector("#cat-scene")?.getBoundingClientRect();
+    const cta=document.querySelector("#cat-primary")?.getBoundingClientRect();
+    const nav=document.querySelector("#bottom-nav")?.getBoundingClientRect();
+    const small=[...screen.querySelectorAll("button")]
+      .filter(b=>b.offsetParent!==null)
+      .filter(b=>{const r=b.getBoundingClientRect();return r.width<minTap||r.height<minTap;})
+      .map(b=>b.textContent.trim().slice(0,16));
+    return {
+      active:screen?.classList.contains("on")??false,
+      overflowX:document.documentElement.scrollWidth>innerWidth+1,
+      sceneClear:!!scene&&!!nav&&scene.bottom<=nav.top+1,
+      ctaClear:!!cta&&!!nav&&cta.bottom<=nav.top+1,
+      ctaText:(document.querySelector("#cat-primary")?.textContent||"").trim(),
+      catLoaded:document.querySelector("#cat-journey-character")?.complete??false,
+      small,
+    };
+  }, MIN_TAP);
+
+  await page.locator("#cat-primary").click();
+  const exploring=await page.evaluate(()=>({
+    status:document.querySelector("#s-cat-journey")?.dataset.journeyStatus,
+    catHidden:document.querySelector("#cat-journey-character")?.hidden,
+    awayVisible:document.querySelector("#cat-away")?.offsetParent!==null,
+  }));
+  await page.evaluate(()=>{
+    const state=JSON.parse(localStorage.getItem("nbhsk.catJourney"));
+    state.activeJourney.readyAt=Date.now()-1;
+    localStorage.setItem("nbhsk.catJourney",JSON.stringify(state));
+  });
+  await page.reload({waitUntil:"load"});
+  await page.waitForTimeout(300);
+  await page.locator('[data-tab="street"]').click();
+  await page.waitForTimeout(120);
+  const returnedBefore=await page.locator("#s-cat-journey").getAttribute("data-journey-status");
+  await page.locator("#cat-primary").click();
+  await page.waitForTimeout(100);
+  const returned=await page.evaluate(()=>({
+    status:document.querySelector("#s-cat-journey")?.dataset.journeyStatus,
+    memoryCount:document.querySelectorAll(".cat-memory-card").length,
+    persisted:JSON.parse(localStorage.getItem("nbhsk.catJourney")||"{}").memories?.length||0,
+  }));
+  await page.locator("#cat-backgrounds-toggle").click();
+  await page.locator('[data-cat-background="bg-cat-garden-v1"]').click();
+  const background=await page.evaluate(()=>
+    JSON.parse(localStorage.getItem("nbhsk.catJourney")||"{}").selectedBackground);
+  await page.locator('[data-tab="home"]').click();
+  await page.locator('#s-home [data-go="shop"]').click();
+  await page.waitForTimeout(100);
+  const shop=await page.evaluate(()=>({
+    streetSectionHidden:document.querySelector("#shop-street-sect")?.hidden,
+    streetShelfHidden:document.querySelector("#shop-street")?.hidden,
+    visibleDecos:[...document.querySelectorAll("#s-shop .shoprow")]
+      .filter(row=>row.offsetParent!==null)
+      .filter(row=>["red-lantern","noodle-stall","tea-sign","foo-dog","golden-arch",
+        "mahjong-table","koi-pond","drum-tower","bubble-tea","paper-umbrella",
+        "goldfish-banner","neon-cat-sign","shaved-ice-cart","mooncake-stall",
+        "firecracker-arch"].includes(row.dataset.itemId)).length,
+  }));
+
+  const failures=[];
+  if(!layout.active||layout.overflowX||!layout.sceneClear||!layout.ctaClear||
+      !layout.catLoaded||layout.small.length)
+    failures.push(`layout=${JSON.stringify(layout)}`);
+  if(layout.ctaText !== (LOCALE==="th"?"ออกไปสำรวจ":"Go exploring"))
+    failures.push(`ready CTA=${layout.ctaText}`);
+  if(exploring.status!=="exploring"||!exploring.catHidden||!exploring.awayVisible)
+    failures.push(`exploring=${JSON.stringify(exploring)}`);
+  if(returnedBefore!=="returned"||returned.status!=="done"||
+      returned.memoryCount!==1||returned.persisted!==1)
+    failures.push(`return=${returnedBefore}/${JSON.stringify(returned)}`);
+  if(background!=="bg-cat-garden-v1") failures.push(`background=${background}`);
+  if(!shop.streetSectionHidden||!shop.streetShelfHidden||shop.visibleDecos)
+    failures.push(`shop=${JSON.stringify(shop)}`);
+  if(errs.length) failures.push(`JSERR:${errs[0]}`);
+  const line=`[${failures.length?"FAIL":"PASS"}] Cat Journey ${width}x${height}: `+
+    `flow=${exploring.status}->${returned.status} memory=${returned.persisted}`+
     (failures.length?` | FAILURES: ${failures.join("; ")}`:"");
   await page.close();
   return {line,failed:failures.length>0};
@@ -1217,6 +1324,18 @@ async function runFullSweep() {
   console.log("\n" + streetProject.line);
   if(streetProject.failed) anyFail = true;
 
+  const catJourneyTiers = [[320,568], [390,844], [844,390]];
+  const catJourneyLines = [];
+  for(const [w,h] of catJourneyTiers){
+    const r = await runCatJourneyProbe(browser, w, h);
+    catJourneyLines.push(r.line);
+    if(r.failed) anyFail = true;
+  }
+  console.log("\n" + catJourneyLines.join("\n"));
+  console.log(
+    `\n${catJourneyLines.filter(l => l.startsWith("[PASS]")).length}/${catJourneyTiers.length} Cat Journey probes passed`
+  );
+
   const resultsTiers = [[360,640], [390,844], [640,360]];
   const resultsLines = [];
   for(const [w,h] of resultsTiers){
@@ -1318,12 +1437,25 @@ async function runStreetProjectSingleShot() {
   process.exit(result.failed ? 1 : 0);
 }
 
+async function runCatJourneySingleShot() {
+  await assertServerReachable();
+  const browser = await chromium.launch(launchOpts());
+  const tiers = [[320,568], [390,844], [844,390]];
+  const results = [];
+  for(const [width,height] of tiers) results.push(await runCatJourneyProbe(browser,width,height));
+  for(const result of results) console.log(result.line);
+  await browser.close();
+  process.exit(results.some(result=>result.failed) ? 1 : 0);
+}
+
 // ---------------------------------------------------------------------------
 const battleArgIdx = process.argv.indexOf("--battle");
 if (battleArgIdx !== -1) {
   await runBattleSingleShot(process.argv[battleArgIdx + 1]);
 } else if (process.argv.includes("--street-project")) {
   await runStreetProjectSingleShot();
+} else if (process.argv.includes("--cat-journey")) {
+  await runCatJourneySingleShot();
 } else {
   await runFullSweep();
 }

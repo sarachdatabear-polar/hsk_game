@@ -69,6 +69,7 @@ import { SUPABASE_URL, SUPABASE_KEY } from "./cloud-config.js";
 import { createWordDetail } from "./ui/word-detail-screen.js";
 import { createFriendCompare } from "./ui/friend-screen.js";
 import { createStreetScreen } from "./ui/street-screen.js";
+import { createCatJourneyScreen } from "./ui/cat-journey-screen.js";
 import { friendCardFromHash } from "./friend-compare.js";
 
 /* ============================== data & state ============================== */
@@ -107,6 +108,10 @@ function fxUntil(ms){ return performance.now() + fxDuration(ms); }
 // Must run before anything reads through the store: migrations see raw values.
 runMigrations(localStorage);
 const store = createStore({ storage: localStorage, syncKeys: SYNC_KEYS });
+// Cat Journey replaces the visible Street tab by default. This local escape
+// hatch preserves an immediate, data-safe rollback:
+// localStorage.setItem("nbhsk.features.catJourney", "false"); location.reload()
+const CAT_JOURNEY_ENABLED = store.get("features.catJourney", true) !== false;
 // Crash visibility: persist uncaught errors/rejections to a local-only ring
 // buffer (nbhsk.errlog). Inspect via devtools: JSON.parse(localStorage["nbhsk.errlog"]).
 function logGlobalError(ev){
@@ -145,6 +150,7 @@ let analyticsSessionStart = Date.now();
 const scope = Object.assign({levels:[1], core:false, newOnly:false, topN:0, lang:"both", sessionLen:20},
                             store.get("scope", {}));
 let settings = Object.assign({autoSpeak:true, showPinyin:true, sfxVol:1, voiceVol:1}, store.get("settings", {}));
+let catJourneyScreen = null;
 // Defensive clamp — a corrupt/out-of-range stored value shouldn't survive a
 // reload (see clampVol in sfx.js, shared with audio.js's voice volume).
 settings.sfxVol = clampVol(settings.sfxVol);
@@ -291,6 +297,7 @@ function addXp(n){
     B.hasKitten = acc.includes("kitten");
   }
   if(after > before) streetScreen.render();
+  if(after > before) catJourneyScreen?.render();
   updateLevelChip();
 }
 
@@ -458,6 +465,7 @@ function noteDaily(count){
     toast(t("toast.freeze-used", { n: r.streak }));
   }
   updateStreakChip();
+  catJourneyScreen?.render();
   const info = streakInfo(daily, todayStr(), freezes);
   // retention pack: once today's goal is first met, cancel any pending
   // streak-saver reminder rather than waiting for the next backgrounding.
@@ -841,6 +849,7 @@ function rehydrateFromStore(){
   const st = Object.assign(defaultStickers(), store.get("stickers", {}) || {});
   stickerState = { earned: Object.assign({}, st.earned), queue: stickerState.queue };
   updateWalletChip();
+  catJourneyScreen?.render();
 }
 
 // Reconcile edge: never during an active round (design §3 — merged state must
@@ -1147,7 +1156,16 @@ function applyStaticI18n(root = document){
   });
   root.querySelectorAll("[data-i18n-ph]").forEach(el => { el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph"))); });
   root.querySelectorAll("[data-i18n-aria]").forEach(el => { el.setAttribute("aria-label", t(el.getAttribute("data-i18n-aria"))); });
+  const companionTab = document.querySelector('.nav-btn[data-tab="street"]');
+  if(companionTab){
+    const label = companionTab.querySelector("span");
+    const use = companionTab.querySelector("use");
+    const key = CAT_JOURNEY_ENABLED ? "nav.cat" : "nav.street";
+    if(label){ label.setAttribute("data-i18n", key); label.textContent = t(key); }
+    if(use) use.setAttribute("href", `assets/ui-icons.svg#${CAT_JOURNEY_ENABLED ? "paw" : "street"}`);
+  }
   document.documentElement.lang = getLocale();
+  catJourneyScreen?.render();
 }
 // Localized display name for a shop/street id (t("item."+id) / t("building."+id)),
 // falling back to the English name when the key is missing — t() returns the
@@ -1183,6 +1201,7 @@ function updateNav(name){
   });
 }
 function show(name){
+  if(name === "street" && CAT_JOURNEY_ENABLED) name = "cat-journey";
   const previousScreen=currentScreen;
   if(activeDialog && !activeDialog.dialog.closest("#s-"+name)){
     closeDialog(activeDialog.dialog, false);
@@ -1209,6 +1228,7 @@ function show(name){
   window.scrollTo(0, 0);
   if(name==="home"){ renderHome(); }
   if(name==="street"){ streetScreen.enter(previousScreen); renderQuests(); }
+  if(name==="cat-journey"){ catJourneyScreen?.enter(previousScreen); }
 }
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()=>{
   const tab = b.dataset.go;
@@ -3171,7 +3191,8 @@ function endBattle(quit){
   const gained = Math.max(0, masteredCount(masteryStore) - startMastered);
   const earnedBricks = bricksForRound({ mastered: gained, completed: true });
   if(earnedBricks){ bricks += earnedBricks; store.set("bricks", bricks); }
-  streetScreen.renderProjectResults(B.walletAtStart, wallet);
+  if(CAT_JOURNEY_ENABLED) $("#r-project").hidden = true;
+  else streetScreen.renderProjectResults(B.walletAtStart, wallet);
   $("#r-learned").textContent = t("results.learnedTarget", { learned:results.learned, target:results.target });
   $("#r-attempts").textContent = results.attempts;
   $("#r-accuracy").textContent = results.accuracy + "%";
@@ -3335,9 +3356,12 @@ function renderShop(){
   $("#shop-wallet").innerHTML = t("shop.wallet", { coins: wallet.toLocaleString() });
   const today = todayStr();
   const shopScreen = $("#s-shop");
-  shopScreen.classList.toggle("street-focus", streetScreen.isShopFocusMode());
-  $("#shop-street-focus").hidden = !streetScreen.isShopFocusMode();
-  $("#shop-street-sect").textContent = t(streetScreen.isShopFocusMode() ? "shop.streetAvailable" : "shop.street");
+  const streetFocus = !CAT_JOURNEY_ENABLED && streetScreen.isShopFocusMode();
+  shopScreen.classList.toggle("street-focus", streetFocus);
+  $("#shop-street-focus").hidden = !streetFocus;
+  $("#shop-street-sect").hidden = CAT_JOURNEY_ENABLED;
+  $("#shop-street").hidden = CAT_JOURNEY_ENABLED;
+  $("#shop-street-sect").textContent = t(streetFocus ? "shop.streetAvailable" : "shop.street");
   const dailyBox = $("#shop-daily"), seasonBox = $("#shop-season");
   const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), supBox = $("#shop-supplies"), decoBox = $("#shop-street");
   for(const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, supBox, decoBox]) b.innerHTML = "";
@@ -3345,7 +3369,7 @@ function renderShop(){
   // Street Shop is an intent-focused shelf: show only decorations the player
   // can buy today (plus everything already owned for tier previews). The
   // actual spend still happens from the in-scene preview below.
-  if(streetScreen.isShopFocusMode()){
+  if(streetFocus){
     for(const item of CATALOG.filter(i => i.type === "deco" && (shopState.owned.includes(i.id) || isAvailable(i, today)))){
       decoBox.appendChild(makeShopRow(item, today));
     }
@@ -3354,21 +3378,25 @@ function renderShop(){
   }
 
   // Today's Stock — the 3 featured pool items; once owned they live in their type section
-  const stock = unownedDailyStock(today, shopState);
+  const stock = unownedDailyStock(today, shopState).filter(id =>
+    !CAT_JOURNEY_ENABLED || CATALOG.find(item => item.id === id)?.type !== "deco");
   for(const id of stock){
     const item = CATALOG.find(i => i.id === id);
     if(item) dailyBox.appendChild(makeShopRow(item, today));
   }
   if(!stock.length){
     // all featured items owned — cosmetic empty state instead of a bare shelf
-    dailyBox.innerHTML = `<div class="scorerow" style="color:var(--muted)">${t("shop.dailyAllOwned")}</div>`;
+    dailyBox.innerHTML = `<div class="scorerow" style="color:var(--muted)">${t(
+      CAT_JOURNEY_ENABLED ? "shop.dailyCatEmpty" : "shop.dailyAllOwned"
+    )}</div>`;
   }
 
   // Season Corner — active set is buyable; off-season shows the next set's teaser
   const st = seasonStatus(today);
   const seasonNote = $("#shop-season-note");
   if(st.active){
-    for(const item of CATALOG.filter(i => i.season === st.active.id && !shopState.owned.includes(i.id))){
+    for(const item of CATALOG.filter(i => i.season === st.active.id
+      && !shopState.owned.includes(i.id) && (!CAT_JOURNEY_ENABLED || i.type !== "deco"))){
       seasonBox.appendChild(makeShopRow(item, today));
     }
     seasonNote.textContent = t("shop.seasonUntil", { date: fmtMonthDay(st.active.to) });
@@ -3378,6 +3406,7 @@ function renderShop(){
 
   // Permanent sections — pool/season items appear here only once owned
   for(const item of CATALOG){
+    if(CAT_JOURNEY_ENABLED && item.type === "deco") continue;
     if((item.pool || item.season) && !shopState.owned.includes(item.id)) continue;
     const box = item.type==="skin" ? skinBox : item.type==="backdrop" ? bdBox : item.type==="effect" ? fxBox : item.type==="soundpack" ? sndBox : item.type==="consumable" ? supBox : decoBox;
     box.appendChild(makeShopRow(item, today));
@@ -3834,6 +3863,12 @@ const streetScreen = createStreetScreen({
   // Read-only view of mastery for keepsake DISPLAY only: the Street never
   // writes mastery and never re-reads a keepsake's word after creation.
   masteredWord: used => pickKeepsakeWord(masteryStore, used),
+});
+catJourneyScreen = createCatJourneyScreen({
+  $, store, analytics, show, t, todayStr,
+  getXp: () => xp,
+  getDailyInfo: () => streakInfo(daily, todayStr(), freezes),
+  getMasteredCount: () => masteredCount(masteryStore),
 });
 
 /* ============================== profile / progress ============================== */
