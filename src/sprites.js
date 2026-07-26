@@ -23,6 +23,12 @@ export const SPRITE_NAMES = [
   // milestone landmarks — authored transparent cutouts, never canvas boxes
   "landmark-lantern-post", "landmark-coin-bank", "landmark-tailor",
   "landmark-kitten-cafe", "landmark-emperor-gate",
+  // construction stages (scaffold/half-built) for the milestone landmarks
+  "landmark-lantern-post-stage1", "landmark-lantern-post-stage2",
+  "landmark-coin-bank-stage1", "landmark-coin-bank-stage2",
+  "landmark-tailor-stage1", "landmark-tailor-stage2",
+  "landmark-kitten-cafe-stage1", "landmark-kitten-cafe-stage2",
+  "landmark-emperor-gate-stage1", "landmark-emperor-gate-stage2",
   // street decos — PNG art with a canvas (drawStreetDeco) vector fallback
   "deco-red-lantern", "deco-noodle-stall", "deco-tea-sign",
   "deco-foo-dog", "deco-golden-arch",

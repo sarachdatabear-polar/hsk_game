@@ -48,4 +48,11 @@ describe("sprite registry", () => {
       "landmark-tailor", "landmark-kitten-cafe", "landmark-emperor-gate",
     ]) expect(SPRITE_NAMES).toContain(name);
   });
+
+  it("registers the landmark construction stages", () => {
+    for (const id of ["lantern-post", "coin-bank", "tailor", "kitten-cafe", "emperor-gate"]) {
+      expect(SPRITE_NAMES).toContain(`landmark-${id}-stage1`);
+      expect(SPRITE_NAMES).toContain(`landmark-${id}-stage2`);
+    }
+  });
 });

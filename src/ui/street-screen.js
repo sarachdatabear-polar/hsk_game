@@ -34,6 +34,7 @@ import {
   streetMeta, streetClass, STREET_LAYOUT_VERSION,
 } from "../street.js";
 import { newlyCompletedSets, completedSets, collectionView } from "../street-collection.js";
+import { landmarkStage, constructionSprite } from "../street-construction.js";
 import { makeKeepsake, addKeepsake, keepsakeWords } from "../street-keepsakes.js";
 import { isNewDay, dailyGift } from "../street-daily.js";
 import { backdropFor, backdropAsset } from "../street-backdrop.js";
@@ -454,6 +455,7 @@ export function createStreetScreen({
   // slow decode can't poll forever; the painted-base fallback stands in for
   // the rest of the session in that case.
   function watchWideBackdrop(name, tries=0){
+    if(getCurrentScreen()!=="street"){ wideBackdropPending.delete(name); return; }
     if(canvasImg(name)){ wideBackdropPending.delete(name); if(getCurrentScreen()==="street") renderStreet(); return; }
     if(tries>=300){ wideBackdropPending.delete(name); return; }
     requestAnimationFrame(()=>watchWideBackdrop(name, tries+1));
@@ -651,7 +653,14 @@ export function createStreetScreen({
     const owned=preview?.owned || getShopState().owned;
     const layout=preview?.layout || liveStreetLayout();
     const tiers=preview?.tiers || getShopState().tiers || {};
-    const pieces=streetPieces(levelForXp(getXp()),owned,tiers,layout);
+    const level=levelForXp(getXp());
+    // streetPieces only gates buildings on level>=b.lv (decos never depend on
+    // it), so calling with Infinity yields every landmark's slot/laneY/scale
+    // regardless of unlock — then landmarkStage tags each with its real
+    // construction stage and drops any not yet started (stage 0).
+    const pieces=streetPieces(Infinity,owned,tiers,layout)
+      .map(p=>p.kind==="building" ? {...p, stage:landmarkStage(level,p.id)} : p)
+      .filter(p=>p.kind!=="building" || p.stage>=1);
     const completeSetIds=new Set(completedSets(owned));
     const project=!streetEdit&&!streetPreview ? activeStreetProject(getWallet(),layout) : null;
     if(streetEdit || streetPreview) drawStreetPlotGrid(sc,w,h,gy,m,layout);
@@ -660,7 +669,7 @@ export function createStreetScreen({
       const x=p.slot*w, py=gy-h*(1-(p.laneY??1));
       if(p.kind==="building"){
         const du=m.unit*(p.scale||3);
-        drawStreetLandmark(sc,p.id,x,py,du);
+        drawStreetLandmark(sc,p.id,x,py,du,p.stage);
       }else{
         const pop=revealPopScale(p.id), du=m.unit*(p.scale||1)*pop;
         drawStreetBehavior(sc,p,x,py,du);
@@ -1384,8 +1393,9 @@ export function createStreetScreen({
     c.beginPath(); c.ellipse(x, y + basis*.05, basis*.5, basis*.12, 0, 0, Math.PI*2); c.fill();
     c.restore();
   }
-  function drawStreetLandmark(c, id, x, groundY, size){
-    const img=sprite("landmark-"+id);
+  function drawStreetLandmark(c, id, x, groundY, size, stage=3){
+    const spriteId=constructionSprite(id, stage);
+    const img=spriteId ? sprite(spriteId) : null;
     if(!img) return false;
     // The transparent source files leave roughly 7% below their painted
     // silhouette. Lowering the image by that amount puts every object on the
