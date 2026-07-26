@@ -7,11 +7,11 @@ import { defaultShop } from "./shop.js";
 import { defaultStickers } from "./stickers.js";
 import { defaultQuestState, defaultMonthly, MONTHLY_TARGET, settleMonthly } from "./quests.js";
 import { defaultDaily } from "./daily.js";
-import { normalizeStreetLayout, STREET_LAYOUT_VERSION } from "./street.js";
+import { normalizeStreetLayout, STREET_LAYOUT_VERSION, BUILDINGS } from "./street.js";
 import { normalizeStreetProject } from "./street-project.js";
 
 export const SYNC_KEYS = ["mastery", "xp", "daily", "quests", "monthly",
-  "wallet", "freezes", "shop", "stickers", "best"];
+  "wallet", "bricks", "freezes", "shop", "stickers", "best"];
 
 export function defaultSyncMeta() {
   return { dirty: {}, lastSyncAt: 0, lastLedgerAt: "", shopSlots: null, shopPreferences: null };
@@ -21,6 +21,7 @@ const num = v => Number(v) || 0;
 
 export function mergeXp(a, b) { return Math.max(num(a), num(b), 0); }
 export function mergeWallet(a, b) { return Math.max(num(a), num(b), 0); }
+export function mergeBricks(a, b) { return Math.max(num(a), num(b), 0); }
 export function mergeFreezes(a, b) {
   return Math.min(2, Math.max(num(a), num(b), 0));
 }
@@ -131,6 +132,11 @@ export function mergeShop(a, b, localPreferenceDirty = false) {
     if (k && typeof k.id === "string" && !keepsakesById.has(k.id)) keepsakesById.set(k.id, k);
   }
   const maxDay = (x, y) => (String(x || "") > String(y || "") ? (x || null) : (y || null));
+  const builtStages = {};
+  for (const bd of BUILDINGS) {
+    const s = Math.max(num((la.builtStages || {})[bd.id]), num((lb.builtStages || {})[bd.id]));
+    if (s > 0) builtStages[bd.id] = Math.min(3, s);
+  }
   const streetLayout = normalizeStreetLayout({
     ...(chosenLayout || {}),
     welcomeOwned: !!(la.welcomeOwned || lb.welcomeOwned),
@@ -138,6 +144,7 @@ export function mergeShop(a, b, localPreferenceDirty = false) {
     keepsakes: [...keepsakesById.values()],
     setsCompleted: [...new Set([...(la.setsCompleted || []), ...(lb.setsCompleted || [])])],
     metNeighbours: [...new Set([...(la.metNeighbours || []), ...(lb.metNeighbours || [])])],
+    builtStages,
     lastVisitDay: maxDay(la.lastVisitDay, lb.lastVisitDay),
     // name + savedLayouts ride `chosenLayout` (the layoutDirty-selected side).
   }, owned);
@@ -283,6 +290,7 @@ export function mergeAll(local, cloud, {
     quests: mergeQuests(l.quests, c.quests),
     monthly: mergeMonthly(lm.state, cm.state),
     wallet: mergeWallet(num(l.wallet) + lm.earned, num(c.wallet) + cm.earned - unseen) + unseen,
+    bricks: mergeBricks(l.bricks, c.bricks),
     freezes: mergeFreezes(l.freezes, c.freezes),
     shop: mergeShop(l.shop, c.shop, {
       slotsDirty: shopDirty,

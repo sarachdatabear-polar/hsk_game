@@ -183,6 +183,9 @@ export const STRINGS = {
     "street.currentProject": "Current next build",
     "street.changeProject": "Change",
     "street.buildNow": "Build now",
+    "street.bricks": "{n} 🧱",
+    "street.build": "Build · {cost} 🧱",
+    "street.opensAtLevel": "Opens at level {lv}",
     "street.projectSelectedAnnouncement": "{name} is now your next Street build.",
     "street.projectBlueprintLabel": "{name} project blueprint, {pct}% of price reached",
     "street.setComplete": "{set} complete ✨",
@@ -768,6 +771,9 @@ export const STRINGS = {
     "street.currentProject": "สิ่งที่กำลังจะสร้าง",
     "street.changeProject": "เปลี่ยน",
     "street.buildNow": "สร้างเลย",
+    "street.bricks": "{n} 🧱", // TH-REVIEW
+    "street.build": "สร้าง · {cost} 🧱", // TH-REVIEW
+    "street.opensAtLevel": "เปิดที่เลเวล {lv}", // TH-REVIEW
     "street.projectSelectedAnnouncement": "ตั้ง{name}เป็นสิ่งที่จะสร้างบนถนนต่อไปแล้ว",
     "street.projectBlueprintLabel": "พิมพ์เขียวของ{name} ถึง {pct}% ของราคาแล้ว",
     "street.setComplete": "{set} ครบชุดแล้ว ✨",

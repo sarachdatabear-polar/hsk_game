@@ -15,7 +15,8 @@ import { uiScale, layout, lanternTrailLayout, lanternTrailBackdrop, lanternAppro
 import { sprite } from "./sprites.js";
 import { nineSliceRects } from "./nineslice.js";
 import { preload as preloadAssets } from "./assets.js";
-import { recordAnswer, levelMastery, pickKeepsakeWord } from "./mastery.js";
+import { recordAnswer, levelMastery, pickKeepsakeWord, masteredCount } from "./mastery.js";
+import { bricksForRound } from "./bricks.js";
 import { levelForXp, xpToNext, accessoriesFor, MILESTONES } from "./growth.js";
 import { smartDeck, weakWords, isDue } from "./srs.js";
 import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
@@ -173,6 +174,7 @@ function noteAnswer(hanzi, correct){
   store.set("mastery", masteryStore);
 }
 let wallet = store.get("wallet", 0);
+let bricks = store.get("bricks", 0);
 // IAP (mock-provider v1). ent is local-only on purpose — NOT in SYNC_KEYS;
 // entitlements become server-authoritative in the RevenueCat slice.
 let ent = Object.assign(defaultEnt(), store.get("ent", {}));
@@ -828,6 +830,7 @@ async function refreshAccountSession(){
 function rehydrateFromStore(){
   masteryStore = store.get("mastery", {});
   wallet = store.get("wallet", 0);
+  bricks = store.get("bricks", 0);
   shopState = Object.assign(defaultShop(), store.get("shop", {}));
   freezes = Math.min(2, Number(store.get("freezes")) || 0);
   xp = store.get("xp", 0);
@@ -1835,6 +1838,7 @@ function startBattle(mode){
   });
   B.wordsTotal = B.quest.view().target;
   B.spawned = 0; B.resolved = 0; B.correct = 0; B.attempts = 0;
+  B.masteredAtStart = masteredCount(masteryStore);   // canonical snapshot — earn math in endBattle() is jackpot-proof against a stale/missing value
   B.recent = []; B.misses = []; B.missSet = new Set();
   B.nextAt = 0; B.lastT = 0; B.locked = false; B.bossStageAt = 0;
   B.paused = false; B.pausedAt = 0;
@@ -3118,6 +3122,13 @@ function endBattle(quit){
     // still bank what was earned so far — no perfect bonus, no best-score, no results screen
     if(B.resolved > 0) noteDaily(B.resolved);
     if(B.score > 0){ wallet += B.score; store.set("wallet", wallet); updateWalletChip(); }
+    // jackpot-proof: never fall back the start snapshot to 0 — a missing masteredAtStart
+    // with a `|| 0` fallback would credit the player's entire lifetime mastered count as
+    // one round's gain. Fall back to the CURRENT count so a missing snapshot yields zero.
+    const startMasteredQ = (typeof B.masteredAtStart === "number") ? B.masteredAtStart : masteredCount(masteryStore);
+    const gainedQ = Math.max(0, masteredCount(masteryStore) - startMasteredQ);
+    const earnedBricksQ = bricksForRound({ mastered: gainedQ, completed: false });
+    if(earnedBricksQ){ bricks += earnedBricksQ; store.set("bricks", bricks); }
     if(introPhase){ introPhase = null; store.set("introDone", true); }
     // B2: evaluate awards on quit too (a streak-7 crossing must not be lost),
     // but silently — the sticker-slot toast queue waits for the next real
@@ -3153,6 +3164,13 @@ function endBattle(quit){
   if(bonus) wallet += bonus;
   store.set("wallet", wallet);
   updateWalletChip();
+  // jackpot-proof: never fall back the start snapshot to 0 — a missing masteredAtStart
+  // with a `|| 0` fallback would credit the player's entire lifetime mastered count as
+  // one round's gain. Fall back to the CURRENT count so a missing snapshot yields zero.
+  const startMastered = (typeof B.masteredAtStart === "number") ? B.masteredAtStart : masteredCount(masteryStore);
+  const gained = Math.max(0, masteredCount(masteryStore) - startMastered);
+  const earnedBricks = bricksForRound({ mastered: gained, completed: true });
+  if(earnedBricks){ bricks += earnedBricks; store.set("bricks", bricks); }
   streetScreen.renderProjectResults(B.walletAtStart, wallet);
   $("#r-learned").textContent = t("results.learnedTarget", { learned:results.learned, target:results.target });
   $("#r-attempts").textContent = results.attempts;
@@ -3808,6 +3826,7 @@ const streetScreen = createStreetScreen({
   $, store, analytics, show, renderShop, pushEdge, updateWalletChip, todayStr, tOr,
   shopViewedProducts, REDUCED_MOTION, openDialog, closeDialog,
   getWallet: () => wallet, setWallet: v => { wallet = v; },
+  getBricks: () => bricks, setBricks: v => { bricks = v; },
   getXp: () => xp,
   getCurrentScreen: () => currentScreen,
   getShopState: () => shopState, setShopState: v => { shopState = v; },

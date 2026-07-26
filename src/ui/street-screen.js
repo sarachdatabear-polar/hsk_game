@@ -26,10 +26,10 @@ import {
   streetResidentPose, streetResidentRoute, streetResidentScale,
 } from "../street-resident.js";
 import {
-  NEIGHBOURS, residentNeighbours, newlyMovedIn, neighbourPose,
+  NEIGHBOURS, newlyMovedInByBuild, neighbourPose,
 } from "../street-neighbours.js";
 import {
-  WELCOME_ID, STREET_PLOTS, streetPieces, streetProgress,
+  WELCOME_ID, STREET_PLOTS, streetPieces, streetProgress, BUILDINGS,
   streetWorldMetrics, DECO_SPRITE_SCALE, defaultStreetLayout,
   normalizeStreetLayout, compatibleStreetPlots, firstFreeStreetPlot,
   unplacedStreetItems, streetInventory,
@@ -38,6 +38,7 @@ import {
 } from "../street.js";
 import { newlyCompletedSets, completedSets, collectionView } from "../street-collection.js";
 import { landmarkStage, constructionSprite } from "../street-construction.js";
+import { landmarkBuildable, advanceLandmark, landmarkBuildCost } from "../bricks.js";
 import { makeKeepsake, addKeepsake, keepsakeWords } from "../street-keepsakes.js";
 import { isNewDay, dailyGift } from "../street-daily.js";
 import { backdropFor, backdropAsset } from "../street-backdrop.js";
@@ -51,7 +52,7 @@ import { img as canvasImg } from "../assets.js";
 export function createStreetScreen({
   $, store, analytics, show, renderShop, pushEdge, updateWalletChip, todayStr, tOr,
   shopViewedProducts, REDUCED_MOTION, openDialog, closeDialog,
-  getWallet, setWallet, getXp, getCurrentScreen, getShopState, setShopState,
+  getWallet, setWallet, getBricks, setBricks, getXp, getCurrentScreen, getShopState, setShopState,
   roundRectOn, drawCoverImage, drawStarMark, masteredWord = () => "",
 }) {
   let streetEdit = null;       // draft-only editor state; committed on Done
@@ -185,8 +186,7 @@ export function createStreetScreen({
   }
   function grantMovedInNeighbours(){
     const layout = ensureStreetLayout();     // same accessor grantCompletedSets uses
-    const level = levelForXp(getXp());       // same level source the scene itself uses
-    const fresh = newlyMovedIn(level, layout.metNeighbours);
+    const fresh = newlyMovedInByBuild(layout.builtStages, layout.metNeighbours);
     if(!fresh.length) return;
     let keepsakes = layout.keepsakes, metNeighbours = layout.metNeighbours;
     for(const id of fresh){
@@ -203,6 +203,24 @@ export function createStreetScreen({
     store.set("shop", getShopState());
     pushEdge("purchase");
     showNeighbourGreeting(fresh[0]);
+  }
+  // Task 9: spend bricks to advance one landmark's construction stage.
+  function doBuildLandmark(id){
+    const layout = ensureStreetLayout();
+    const level = levelForXp(getXp());
+    const res = advanceLandmark(layout.builtStages, id, getBricks(), level);
+    if(!res.ok) return;                                  // not enough bricks / not buildable
+    setBricks(res.bricks); store.set("bricks", getBricks());
+    const granted = normalizeStreetLayout({ ...layout, builtStages: res.builtStages }, getShopState().owned);
+    setShopState({ ...getShopState(), streetLayout: granted });
+    store.set("shop", getShopState());
+    pushEdge("purchase");
+    // NOTE: do NOT reuse `streetReveal` here — its render-time stamp is gated on
+    // `owned.includes(id)`, and landmarks are build-gated, not purchased, so the
+    // pop/dust would never fire. v1 simply re-renders (the new stage art appears);
+    // a dedicated non-ownership-gated build-pop animation is deferred polish.
+    if(res.reachedStage >= 3) grantMovedInNeighbours();  // finishing a home may move a neighbour in
+    renderStreet();
   }
 
   /* ============================== Lucky Cat Street (home) ============================== */
@@ -494,7 +512,7 @@ export function createStreetScreen({
     renderStreet();
     setTimeout(() => { if(getCurrentScreen() === "street" && streetReaction?.id === id){ streetReaction = null; renderStreet(); } }, REDUCED_MOTION ? 260 : 710);
   }
-  function renderStreetHitLayer(pieces, layout, w, h, gy, m){
+  function renderStreetHitLayer(pieces, layout, w, h, gy, m, allPieces, level){
     const layer = $("#street-hit-layer");
     layer.replaceChildren();
     const selected = streetEdit?.selected || streetPreview?.itemId || null;
@@ -522,6 +540,51 @@ export function createStreetScreen({
       btn.setAttribute("aria-label", t("street.itemLabel", { name:streetItemLabel(p.id), stars:"★".repeat(p.tier||1) }));
       btn.onclick=()=>showStreetItemInfo(p.id);
       layer.appendChild(btn);
+    }
+    // Task 9: a "Build · N 🧱" pill over each buildable landmark, positioned
+    // with the same rect math as the item-hit loop above (x/py from
+    // slot+laneY, du from the piece's own scale), except buildings default
+    // their scale to 3 (LANDMARK_SCALE), matching the renderStreet draw loop
+    // rather than the deco default of 1.
+    for(const p of pieces.filter(p => p.kind === "building" && p.buildable)){
+      const cost = landmarkBuildCost(p.stage);
+      if(cost === null) continue;
+      const btn = document.createElement("button");
+      btn.className = "street-hit build-hit";
+      const x = p.slot*w, py = gy-h*(1-(p.laneY ?? 1)), du=m.unit*(p.scale||3);
+      // Task 9 fix: this pill is a small VISIBLE labeled control (unlike the
+      // invisible full-object item-hit rects above), so it must be
+      // content-sized around its own text, not stretched to the landmark's
+      // rect — a landmark-sized pill spans ~0.21-0.26 of the scene width
+      // while adjacent landmark slots are only ~0.20w apart, so two
+      // buildable landmarks at once (e.g. player reaches level 10 having
+      // skipped the level-5 build) produced overlapping opaque pills that
+      // swallowed taps meant for the neighbour. Anchor at the landmark's
+      // center-x/near-top (same x/py basis as item-hit) and let CSS size the
+      // button to its text; translate(-50%,-50%) re-centers the now
+      // content-sized box on that anchor point instead of growing from the
+      // top-left corner.
+      btn.style.left=x+"px"; btn.style.top=(py-du*.58)+"px";
+      btn.style.transform="translate(-50%,-50%)";
+      btn.textContent=t("street.build",{cost});
+      btn.onclick=()=>doBuildLandmark(p.id);
+      layer.appendChild(btn);
+    }
+    // Task 9: a single inert "Opens at level N" hint for the next landmark
+    // still below the player's level. Its slot has to come from the
+    // PRE-filter `allPieces` (streetPieces(Infinity,...)) — the `pieces`
+    // filter above drops below-unlock buildings entirely, so their
+    // slot/laneY/scale geometry isn't in `pieces`.
+    const nextLocked = BUILDINGS.find(b => (Number(level)||0) < b.lv);
+    const lockedPiece = nextLocked && allPieces ? allPieces.find(p => p.kind==="building" && p.id===nextLocked.id) : null;
+    if(lockedPiece){
+      const x = lockedPiece.slot*w, py = gy-h*(1-(lockedPiece.laneY ?? 1)), du=m.unit*(lockedPiece.scale||3);
+      const hint = document.createElement("div");
+      hint.className = "street-lock-hint";
+      hint.style.left=x+"px"; hint.style.top=(py-du*.58)+"px";
+      hint.style.width=Math.max(44,du*.9)+"px";
+      hint.textContent = t("street.opensAtLevel",{lv:nextLocked.lv});
+      layer.appendChild(hint);
     }
   }
   // Task 13: cosmetic time-of-day tint. Purely a rendering concern — the
@@ -669,7 +732,8 @@ export function createStreetScreen({
     c.restore();
   }
   // Task 8: the named residents (street-neighbours.js NEIGHBOURS) who live on
-  // the street once their landmark finishes (residentNeighbours(level)) —
+  // the street once their landmark finishes and they've moved in
+  // (streetLayout.metNeighbours, build-gated — see grantMovedInNeighbours) —
   // distinct from drawStreetDailyNeighbour's transient recolour cameo above.
   // Drawn in the resident canvas layer, same ground-Y/scale basis as the
   // player's own cat below, but as authored PNGs (sprite(), Task 6's
@@ -681,7 +745,8 @@ export function createStreetScreen({
   // sprite() caller in this file already relies on, and the existing
   // nbhsk:sprite-ready listener (main.js) repaints once it's ready.
   function drawStreetResidentNeighbours(c,w,groundY,scale,now,reducedMotion){
-    for(const id of residentNeighbours(levelForXp(getXp()))){
+    const movedIn = getShopState().streetLayout?.metNeighbours || [];
+    for(const id of movedIn){
       const n=NEIGHBOURS.find(x=>x.id===id);
       if(!n) continue;
       const npose=neighbourPose(now,n.anchor,reducedMotion);
@@ -777,10 +842,15 @@ export function createStreetScreen({
     // streetPieces only gates buildings on level>=b.lv (decos never depend on
     // it), so calling with Infinity yields every landmark's slot/laneY/scale
     // regardless of unlock — then landmarkStage tags each with its real
-    // construction stage and drops any not yet started (stage 0).
-    const pieces=streetPieces(Infinity,owned,tiers,layout)
-      .map(p=>p.kind==="building" ? {...p, stage:landmarkStage(level,p.id)} : p)
-      .filter(p=>p.kind!=="building" || p.stage>=1);
+    // construction stage (from the stored builtStages map, bricks-gated, no
+    // longer level-gated) and landmarkBuildable flags the ones a tap can
+    // still advance. allPieces keeps every landmark (used below for the
+    // "opens at level N" hint on the next-unlock building, whose slot the
+    // filtered `pieces` array below would otherwise drop); `pieces` drops
+    // buildings that are neither started nor buildable yet.
+    const allPieces=streetPieces(Infinity,owned,tiers,layout)
+      .map(p=>p.kind==="building" ? {...p, stage:landmarkStage(layout.builtStages,p.id), buildable:landmarkBuildable(level,p.id,layout.builtStages)} : p);
+    const pieces=allPieces.filter(p=>p.kind!=="building" || p.stage>=1 || p.buildable);
     const completeSetIds=new Set(completedSets(owned));
     const project=!streetEdit&&!streetPreview ? activeStreetProject(getWallet(),layout) : null;
     if(streetEdit || streetPreview) drawStreetPlotGrid(sc,w,h,gy,m,layout);
@@ -789,7 +859,8 @@ export function createStreetScreen({
       const x=p.slot*w, py=gy-h*(1-(p.laneY??1));
       if(p.kind==="building"){
         const du=m.unit*(p.scale||3);
-        drawStreetLandmark(sc,p.id,x,py,du,p.stage);
+        if(p.stage===0 && p.buildable) drawFoundationFootprint(sc,x,py,du);
+        else drawStreetLandmark(sc,p.id,x,py,du,p.stage);
       }else{
         const pop=revealPopScale(p.id), du=m.unit*(p.scale||1)*pop;
         drawStreetBehavior(sc,p,x,py,du);
@@ -811,10 +882,11 @@ export function createStreetScreen({
       }
     }
     renderStreetResidentLayer(w,h,gy,m,dpr,project,pieces);
-    renderStreetHitLayer(pieces,layout,w,h,gy,m);
+    renderStreetHitLayer(pieces,layout,w,h,gy,m,allPieces,level);
     renderStreetEditor(); renderStreetPreviewPanel();
     renderStreetProjectCard(project);
     $("#street-wallet").textContent=t("shop.coins",{coins:getWallet().toLocaleString()});
+    $("#street-bricks").textContent=t("street.bricks",{n:getBricks().toLocaleString()});
     const prog=streetProgress(levelForXp(getXp()));
     const placed=Object.keys(layout.placements).length;
     const stored=unplacedStreetItems(getShopState().owned,layout).length;
@@ -1521,6 +1593,18 @@ export function createStreetScreen({
     c.save();
     c.fillStyle = "rgba(46,42,36,.12)";
     c.beginPath(); c.ellipse(x, y + basis*.05, basis*.5, basis*.12, 0, 0, Math.PI*2); c.fill();
+    c.restore();
+  }
+  // Task 9: a buildable-but-unstarted (stage 0) landmark slot draws as a
+  // faint foundation footprint rather than nothing — it needs to read as
+  // "tap here to start building", not an empty gap in the street. Low-alpha
+  // roundRectOn at the piece's own ground line, sized off its landmark scale.
+  function drawFoundationFootprint(c, x, groundY, size){
+    c.save();
+    c.globalAlpha = 0.28;
+    c.fillStyle = "#8A6B45";
+    roundRectOn(c, x-size*.42, groundY-size*.16, size*.84, size*.16, size*.04);
+    c.fill();
     c.restore();
   }
   function drawStreetLandmark(c, id, x, groundY, size, stage=3){
