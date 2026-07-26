@@ -329,6 +329,24 @@ describe("v4->v5 migration (builtStages)", () => {
     expect(shop.streetLayout.builtStages).toEqual({});
   });
 
+  it("seeds exactly three completed landmarks for a mid-level player (level 22)", () => {
+    // xp=6000 maps to level 22 (see growth.js: xpForLevel(6000)=22).
+    // At level 22, unlock thresholds are: lantern-post:5, coin-bank:10, tailor:20
+    // (all pass), but kitten-cafe:30 and emperor-gate:50 do not.
+    // Normalized output omits zero-stage entries, so builtStages has exactly 3.
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "4",
+      "nbhsk.xp": JSON.stringify(6000),
+      "nbhsk.shop": JSON.stringify({ owned: [], streetLayout: { v: 4 } }),
+    });
+    runMigrations(s);
+    const shop = JSON.parse(s.dump()["nbhsk.shop"]);
+    expect(shop.streetLayout.builtStages).toEqual({
+      "lantern-post": 3, "coin-bank": 3, "tailor": 3,
+    });
+    expect(shop.streetLayout.v).toBe(5);
+  });
+
   it("is a no-op on corrupt shop data (never throws)", () => {
     const s = fakeStorage({ "nbhsk.schemaVersion": "4", "nbhsk.shop": "{not json" });
     expect(() => runMigrations(s)).not.toThrow();
