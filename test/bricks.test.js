@@ -12,6 +12,12 @@ describe("cost model", () => {
     expect(landmarkBuildCost(2)).toBe(16);
     expect(landmarkBuildCost(3)).toBeNull(); // already finished
   });
+  it("returns null for invalid stage input", () => {
+    expect(landmarkBuildCost(-1)).toBeNull();
+    expect(landmarkBuildCost("x")).toBeNull();
+    expect(landmarkBuildCost(undefined)).toBeNull();
+    expect(landmarkBuildCost(1.5)).toBeNull();
+  });
   it("maps unlock levels from BUILDINGS", () => {
     expect(landmarkUnlockLevel("coin-bank")).toBe(10);
     expect(landmarkUnlockLevel("emperor-gate")).toBe(50);

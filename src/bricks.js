@@ -13,8 +13,8 @@ export function landmarkUnlockLevel(id) {
 }
 
 export function landmarkBuildCost(stage) {
-  const s = Number(stage) || 0;
-  return s >= 0 && s < 3 ? BRICK_STAGE_COST[s] : null;
+  const s = Number(stage);
+  return Number.isInteger(s) && s >= 0 && s < 3 ? BRICK_STAGE_COST[s] : null;
 }
 
 export function landmarkBuildable(level, id, builtStages) {
