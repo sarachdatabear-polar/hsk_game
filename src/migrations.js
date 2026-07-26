@@ -15,7 +15,7 @@ const VERSION_KEY = "nbhsk.schemaVersion";
 // (run the ladder from 0) from a fresh one (just stamp and go).
 const LEGACY_SENTINELS = ["nbhsk.xp", "nbhsk.mastery", "nbhsk.daily", "nbhsk.settings", "nbhsk.scope"];
 
-export const CURRENT_SCHEMA_VERSION = 3;
+export const CURRENT_SCHEMA_VERSION = 4;
 
 export const MIGRATIONS = [
   // v1→v2: street.js's shop-state layout gained a `streetLayout` scene
@@ -82,6 +82,26 @@ export const MIGRATIONS = [
           && typeof shop.streetProject.reserve !== "boolean") {
         shop.streetProject.reserve = false;
       }
+      try { storage.setItem("nbhsk.shop", JSON.stringify(shop)); } catch (e) {}
+    },
+  },
+  {
+    to: 4,
+    up(storage) {
+      // v3→v4: streetLayout gains metNeighbours (grant-once guard for the B/C
+      // "neighbour moved in" moment). normalizeStreetLayout defaults it;
+      // every step guarded so corrupt data is a no-op, never a throw.
+      let shop;
+      try {
+        const raw = storage.getItem("nbhsk.shop");
+        if (raw === null) return;
+        shop = JSON.parse(raw);
+      } catch (e) { return; }
+      if (!shop || typeof shop !== "object") return;
+      const owned = Array.isArray(shop.owned) ? shop.owned : [];
+      try {
+        shop.streetLayout = normalizeStreetLayout(shop.streetLayout, owned);
+      } catch (e) { return; }
       try { storage.setItem("nbhsk.shop", JSON.stringify(shop)); } catch (e) {}
     },
   },

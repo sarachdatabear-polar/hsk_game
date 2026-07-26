@@ -137,6 +137,7 @@ export function mergeShop(a, b, localPreferenceDirty = false) {
     coachDone: !!(la.coachDone || lb.coachDone),
     keepsakes: [...keepsakesById.values()],
     setsCompleted: [...new Set([...(la.setsCompleted || []), ...(lb.setsCompleted || [])])],
+    metNeighbours: [...new Set([...(la.metNeighbours || []), ...(lb.metNeighbours || [])])],
     lastVisitDay: maxDay(la.lastVisitDay, lb.lastVisitDay),
     // name + savedLayouts ride `chosenLayout` (the layoutDirty-selected side).
   }, owned);

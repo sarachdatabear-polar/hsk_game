@@ -210,6 +210,15 @@ export const STRINGS = {
     // day is skipped, nothing here ever fires or says anything about it.
     "street.dailyGreeting": "A neighbour stopped by!",
     "street.dailyGift": "They left you {coins} coins.",
+    // Task 8: the named residents (street-neighbours.js NEIGHBOURS) who move
+    // in once their landmark finishes — distinct from the daily-surprise
+    // recolour cameo above. One-time celebratory greeting + keepsake, gated
+    // on streetLayout.metNeighbours (grant-once guard).
+    "street.neighbourMovedIn": "{name} moved in! ✨",
+    "street.neighbour.tiao": "Tiao the courier",
+    "street.neighbour.pang": "Pang the shopkeeper",
+    "street.neighbour.wen": "Wen the tea-master",
+    "street.keepsake.neighbour": "A note from {name}",
     "quests.title": "Daily Quests",
     // scope
     "scope.title": "Choose your words",
@@ -783,6 +792,11 @@ export const STRINGS = {
     "street.keepsakesEmpty": "ของที่ระลึกที่ได้จะอยู่ที่นี่",
     "street.dailyGreeting": "เพื่อนบ้านแวะมา!",
     "street.dailyGift": "ฝากเหรียญไว้ให้ {coins} เหรียญ",
+    "street.neighbourMovedIn": "{name} ย้ายเข้ามาแล้ว! ✨", // TH-REVIEW
+    "street.neighbour.tiao": "เตียวคนส่งของ", // TH-REVIEW
+    "street.neighbour.pang": "ปังเจ้าของร้าน", // TH-REVIEW
+    "street.neighbour.wen": "เวินผู้ชงชา", // TH-REVIEW
+    "street.keepsake.neighbour": "จดหมายจาก{name}", // TH-REVIEW
     "quests.title": "ภารกิจประจำวัน",
     // scope
     "scope.title": "เลือกคำศัพท์",
