@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { SYNC_KEYS, defaultSyncMeta, slotsOf, mergeXp, mergeWallet, mergeFreezes,
+import { SYNC_KEYS, defaultSyncMeta, slotsOf, mergeXp, mergeWallet, mergeBricks, mergeFreezes,
          mergeBest, mergeStickers, mergeShop, mergeMastery, mergeQuests,
          mergeMonthly, mergeAll, streetLayoutOf, streetLayoutPrefsOf, streetProjectOf, shopPreferencesOf } from "../src/merge.js";
 import { defaultShop } from "../src/shop.js";
 
 describe("merge: scalars", () => {
-  it("SYNC_KEYS lists the 10 synced keys", () =>
-    expect(SYNC_KEYS).toEqual(["mastery","xp","daily","quests","monthly","wallet","freezes","shop","stickers","best"]));
+  it("SYNC_KEYS lists the 11 synced keys", () =>
+    expect(SYNC_KEYS).toEqual(["mastery","xp","daily","quests","monthly","wallet","bricks","freezes","shop","stickers","best"]));
   it("defaultSyncMeta shape", () =>
     expect(defaultSyncMeta()).toEqual({ dirty: {}, lastSyncAt: 0, lastLedgerAt: "", shopSlots: null, shopPreferences: null }));
   it("xp/wallet take max; nullish sides are 0", () => {
@@ -419,5 +419,29 @@ describe("slotsOf", () => {
 describe("defaultSyncMeta shopSlots", () => {
   it("defaults shopSlots to null (pre-upgrade metas adopt it via Object.assign)", () => {
     expect(defaultSyncMeta().shopSlots).toBeNull();
+  });
+});
+
+describe("bricks sync", () => {
+  it("bricks is a synced key and folds by max", () => {
+    expect(SYNC_KEYS).toContain("bricks");
+    expect(mergeBricks(30, 12)).toBe(30);
+    expect(mergeBricks(undefined, 7)).toBe(7);
+    expect(mergeBricks(-5, 0)).toBe(0);
+    expect(mergeAll({ bricks: 5 }, { bricks: 40 }).bricks).toBe(40);
+  });
+});
+
+describe("builtStages merge (per-landmark max)", () => {
+  it("takes the higher stage per landmark across devices", () => {
+    const a = { owned: [], streetLayout: { v: 5, builtStages: { "coin-bank": 3, "tailor": 1 } } };
+    const b = { owned: [], streetLayout: { v: 5, builtStages: { "coin-bank": 1, "tailor": 2 } } };
+    const out = mergeShop(a, b);
+    expect(out.streetLayout.builtStages).toEqual({ "coin-bank": 3, "tailor": 2 });
+  });
+  it("tolerates a legacy cloud row with no builtStages", () => {
+    const a = { owned: [], streetLayout: { v: 5, builtStages: { "tailor": 2 } } };
+    const b = { owned: [], streetLayout: { v: 4 } };
+    expect(mergeShop(a, b).streetLayout.builtStages).toEqual({ "tailor": 2 });
   });
 });
