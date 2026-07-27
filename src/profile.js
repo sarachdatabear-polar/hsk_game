@@ -3,9 +3,10 @@
 // The profile stores only the player's chosen name; every progress/collection
 // number is derived from the existing authoritative game state.
 import { isMastered } from "./mastery.js";
+import { normalizeAvatar } from "./avatar.js";
 
 export function defaultProfile() {
-  return { displayName: "" };
+  return { displayName: "", avatar: { kind: "monogram" } };
 }
 
 function graphemes(value) {
@@ -30,6 +31,18 @@ export function normalizeDisplayName(value, maxLength = 24) {
 export function profileInitial(value) {
   const first = graphemes(normalizeDisplayName(value))[0] || "";
   return /^[a-z]$/i.test(first) ? first.toUpperCase() : first;
+}
+
+// One call replaces the Object.assign + normalizeDisplayName dance main.js
+// used at boot. Tolerant of any input. The profile stays "the player's
+// chosen name + chosen avatar VALUE" — the photo data URL never passes
+// through here (own key, nbhsk.profilePhoto), and asset/ownership/wire
+// concerns live in avatar.js.
+export function normalizeProfile(raw) {
+  return {
+    displayName: normalizeDisplayName(raw && raw.displayName),
+    avatar: normalizeAvatar(raw && raw.avatar),
+  };
 }
 
 export function profileStats({ levels, mastery, stickerState, stickerDefs, shop, catalog } = {}) {
