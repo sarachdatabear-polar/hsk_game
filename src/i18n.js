@@ -806,23 +806,23 @@ export const STRINGS = {
     "home.startHint": "ต้องมีอย่างน้อย 8 คำในขอบเขตถึงจะเริ่มได้ — ขยายขอบเขตด้านล่างได้เลย",
     "home.scopeWords": "{n} คำ",
     "home.levelChip": "Lv {lv}",
-    "home.nextReview": "มีคำที่ถึงเวลาทบทวน {n} คำ — ทบทวนอัจฉริยะพร้อมแล้ว",
-    "home.nextQuest": "ต่อไป: ภารกิจเส้นทางโคมไฟ {n} คำ",
+    "home.nextReview": "มีคำที่ถึงเวลาทบทวน {n} คำ — ทบทวนอัจฉริยะพร้อมแล้ว", // TH-REVIEW
+    "home.nextQuest": "ต่อไป: ภารกิจเส้นทางโคมไฟ {n} คำ", // TH-REVIEW
     // i18n pass 3 — NEW strings, best-effort TH pending native review (see docs/i18n)
     "growth.title": "แมวนำโชค · Lv {lv}",
     "growth.allUnlocked": "ปลดล็อกครบทุกเป้าหมายแล้ว!",
     "progress.levelRow": "{pct} เชี่ยวชาญ · พบแล้ว {seen}/{total} คำ",
     "common.playAudio": "เล่นเสียง",
     "common.close": "ปิด",
-    "common.continue": "ไปต่อ",
+    "common.continue": "ไปต่อ", // TH-REVIEW
     "battle.critical": "สุดยอด!",
     "toast.freeze-used": "ใช้น้ำแข็งกันหลุดแล้ว — สถิติ {n} วันของคุณยังอยู่",
     "notify.streak.title": "อย่าให้สถิติ {n} วันหลุดนะ!",
     "notify.streak.body": "อีก {remaining} คำ การเรียนต่อเนื่องก็ไม่ขาด — เล่นภารกิจคำศัพท์สั้น ๆ ก็พอ",
     "notify.comeback.title": "เจ้าแมวนำโชคคิดถึงคุณนะ 🐱",
     "notify.comeback.body": "คุณเรียนต่อเนื่องมาตั้ง {n} วัน — กลับมาลุยต่อกันเลย!",
-    "notify.cat.title": "เจ้าแมวนำโชคกลับมาแล้ว",
-    "notify.cat.body": "ความทรงจำใหม่จากการเดินทางพร้อมให้คุณเก็บแล้ว",
+    "notify.cat.title": "เจ้าแมวนำโชคกลับมาแล้ว", // TH-REVIEW
+    "notify.cat.body": "ความทรงจำใหม่จากการเดินทางพร้อมให้คุณเก็บแล้ว", // TH-REVIEW
     // account (client-auth round)
     "account.row": "บัญชี",
     "account.title": "บัญชี",
@@ -834,9 +834,9 @@ export const STRINGS = {
     "account.explain.guest": "เชื่อมต่อแบบผู้เยี่ยมชมแล้ว เพิ่มอีเมลเพื่อไม่ให้บัญชีหายไปพร้อมเครื่อง",
     "account.explain.signedIn": "บัญชีของคุณเชื่อมต่อแล้ว ความคืบหน้าจะสำรองขึ้นคลาวด์ให้อัตโนมัติ",
     "account.connect": "สำรองความคืบหน้าของฉัน",
-    "account.stepEmail": "1 จาก 2 · เพิ่มอีเมล",
-    "account.stepVerify": "2 จาก 2 · ยืนยันตัวตน",
-    "account.codeFor": "กรอกรหัสที่ส่งไปยัง {email}",
+    "account.stepEmail": "1 จาก 2 · เพิ่มอีเมล", // TH-REVIEW
+    "account.stepVerify": "2 จาก 2 · ยืนยันตัวตน", // TH-REVIEW
+    "account.codeFor": "กรอกรหัสที่ส่งไปยัง {email}", // TH-REVIEW
     "account.sendCode": "ส่งรหัส",
     "account.verify": "ยืนยัน",
     "account.resend": "ส่งรหัสอีกครั้ง",
@@ -877,7 +877,7 @@ export const STRINGS = {
     "welcome.level": "เริ่มที่ระดับ",
     "welcome.levelHint": "เพิ่งเริ่ม HSK ใช่ไหม? เริ่มที่ HSK1 และเปลี่ยนได้ทุกเมื่อ",
     "welcome.start": "เริ่มเรียนเลย",
-    "welcome.promise": "เริ่มจากเรียน 6 คำ แล้วเล่นภารกิจคำศัพท์สั้น ๆ",
+    "welcome.promise": "เริ่มจากเรียน 6 คำ แล้วเล่นภารกิจคำศัพท์สั้น ๆ", // TH-REVIEW
     "results.introHint": "ครั้งแรกเยี่ยมไปเลย! พรุ่งนี้กลับมาเริ่มเรียนต่อเนื่องกันนะ 🍵",
     // bottom nav (M2)
     "nav.home": "หน้าหลัก",
@@ -886,126 +886,126 @@ export const STRINGS = {
     "nav.progress": "โปรไฟล์",
     "nav.more": "เพิ่มเติม",
     // Cat Journey
-    "cat.eyebrow": "เพื่อนคู่ใจในการเรียน",
-    "cat.title": "การเดินทางของแมวนำโชค",
-    "cat.memories": "ความทรงจำ",
-    "cat.memoriesTitle": "ความทรงจำจากการเดินทาง",
-    "cat.memoriesEmpty": "ทำเป้าหมายวันนี้ให้สำเร็จ แล้วส่งเจ้าแมวออกสำรวจเพื่อสร้างความทรงจำแรก",
-    "cat.memoriesMore": "แสดงความทรงจำที่เก่ากว่า",
-    "cat.backgrounds": "ฉากหลัง",
-    "cat.profile": "ความคืบหน้าของฉัน",
-    "cat.away": "กำลังสำรวจแถวนี้…",
-    "cat.characterAlt": "เจ้าแมวนำโชค เพื่อนคู่ใจในการเรียนของคุณ",
-    "cat.bond": "สายสัมพันธ์กับเจ้าแมว",
-    "cat.dailyGoal": "เป้าหมายประจำวัน",
-    "cat.bondPoints": "สายสัมพันธ์ {n}",
-    "cat.bondNext": "อีก {n} ถึง {name}",
-    "cat.bondMax": "สายสัมพันธ์เต็มแล้ว",
-    "cat.goalComplete": "ทำเป้าหมายวันนี้สำเร็จ ✓",
-    "cat.goalProgress": "วันนี้ {done}/{goal} คำ",
-    "cat.status.ready": "ออกสำรวจ 20 นาที · นำความทรงจำกลับมา 1 ชิ้น",
-    "cat.status.exploring": "เจ้าแมวกำลังสำรวจ กลับมาในอีกประมาณ {n} นาที",
-    "cat.status.returned": "เจ้าแมวกลับมาพร้อมเรื่องเล่าให้คุณ!",
-    "cat.status.done": "วันนี้เป็นวันที่ดีด้วยกัน ได้เวลาพักสบาย ๆ แล้ว",
-    "cat.status.needsGoal": "เรียนวันนี้ให้ครบ {goal} คำ เพื่อออกผจญภัย · {done}/{goal}",
-    "cat.cta.study": "เรียนตอนนี้",
-    "cat.cta.explore": "ออกไปสำรวจ",
-    "cat.cta.exploring": "เรียนระหว่างที่เจ้าแมวสำรวจ",
-    "cat.cta.return": "เก็บความทรงจำนี้",
-    "cat.cta.studyMore": "เรียนเพิ่มอีกนิด",
-    "cat.bg.home": "ห้องเรียน",
-    "cat.bg.garden": "สวนคำศัพท์",
-    "cat.bg.market": "ตลาดยามเช้า",
-    "cat.bg.lantern": "ริมแม่น้ำแสงโคม",
-    "cat.bg.scholar": "ประตูบัณฑิต",
-    "cat.bg.select": "ใช้ฉาก {name}",
-    "cat.bg.locked": "{name} ปลดล็อกเมื่อสายสัมพันธ์ถึง {n}",
-    "cat.bg.selected": "เลือกแล้ว",
-    "cat.bg.points": "สายสัมพันธ์ {n}",
-    "cat.tier.studyBuddy": "เพื่อนเรียน",
-    "cat.tier.curiousPaws": "อุ้งเท้าช่างสงสัย",
-    "cat.tier.explorer": "นักสำรวจละแวกบ้าน",
-    "cat.tier.lanternFriend": "เพื่อนแสงโคม",
-    "cat.tier.scholarCat": "แมวบัณฑิต",
-    "cat.memory.leaf.title": "ใบไม้จากสวน",
-    "cat.memory.leaf.story": "เจ้าแมวพบใบไม้รูปหัวใจข้างทางอ่านหนังสืออันเงียบสงบ และเก็บไว้ให้คุณ",
-    "cat.memory.tea.title": "ไอชาอุ่น ๆ",
-    "cat.memory.tea.story": "เพื่อนบ้านในตลาดแบ่งชาถ้วยเล็กให้ ขณะที่เจ้าแมวตั้งใจฟังคำศัพท์ใหม่",
-    "cat.memory.lantern.title": "แสงโคม",
-    "cat.memory.lantern.story": "โคมดวงหนึ่งสะท้อนเหมือนพระจันทร์ดวงน้อย เจ้าแมวเดินตามแสงนั้นกลับบ้าน",
-    "cat.memory.bridge.title": "แสงบนสะพาน",
-    "cat.memory.bridge.story": "เจ้าแมวหยุดบนสะพาน มองทุกเงาสะท้อนสว่างกลายเป็นเส้นทาง",
-    "cat.memory.blossom.title": "ดอกเหมย",
-    "cat.memory.blossom.story": "กลีบสีชมพูอ่อนตกบนกระเป๋า พอดีสำหรับคั่นบทเรียนวันนี้",
-    "cat.memory.brush.title": "พู่กันของบัณฑิต",
-    "cat.memory.brush.story": "ที่ศาลาบนเขา เจ้าแมวเห็นพู่กันเปลี่ยนการฝึกฝนอย่างตั้งใจให้เป็นความก้าวหน้า",
-    "cat.memory.book.title": "ริบบิ้นหนังสือสีเขียว",
-    "cat.memory.book.story": "เจ้าแมวนำริบบิ้นกลับมา เพื่อคั่นหน้าว่าพวกคุณเรียนมาด้วยกันไกลแค่ไหนแล้ว",
-    "cat.memory.market.title": "ส้มจากตลาด",
-    "cat.memory.market.story": "เจ้าของร้านเลือกส้มที่สดใสที่สุด เป็นรางวัลแสนร่าเริงสำหรับความพยายามวันนี้",
-    "cat.memory.archived.title": "ความทรงจำล้ำค่า",
-    "cat.memory.archived.story": "เจ้าแมวเก็บความทรงจำจากการเดินทางครั้งก่อนไว้อย่างดี",
-    "cat.memory.from": "จาก {place}",
-    "cat.memory.playWord": "ฟังเสียง {word}",
-    "home.cat.progress": "การเดินทางของเจ้าแมว · {done}/{goal} คำ",
-    "home.cat.ready": "เจ้าแมวพร้อมออกสำรวจแล้ว",
-    "home.cat.exploring": "เจ้าแมวกำลังสำรวจ · ประมาณ {n} นาที",
-    "home.cat.returned": "ยินดีต้อนรับกลับ · ความทรงจำพร้อมแล้ว",
+    "cat.eyebrow": "เพื่อนคู่ใจในการเรียน", // TH-REVIEW
+    "cat.title": "การเดินทางของแมวนำโชค", // TH-REVIEW
+    "cat.memories": "ความทรงจำ", // TH-REVIEW
+    "cat.memoriesTitle": "ความทรงจำจากการเดินทาง", // TH-REVIEW
+    "cat.memoriesEmpty": "ทำเป้าหมายวันนี้ให้สำเร็จ แล้วส่งเจ้าแมวออกสำรวจเพื่อสร้างความทรงจำแรก", // TH-REVIEW
+    "cat.memoriesMore": "แสดงความทรงจำที่เก่ากว่า", // TH-REVIEW
+    "cat.backgrounds": "ฉากหลัง", // TH-REVIEW
+    "cat.profile": "ความคืบหน้าของฉัน", // TH-REVIEW
+    "cat.away": "กำลังสำรวจแถวนี้…", // TH-REVIEW
+    "cat.characterAlt": "เจ้าแมวนำโชค เพื่อนคู่ใจในการเรียนของคุณ", // TH-REVIEW
+    "cat.bond": "สายสัมพันธ์กับเจ้าแมว", // TH-REVIEW
+    "cat.dailyGoal": "เป้าหมายประจำวัน", // TH-REVIEW
+    "cat.bondPoints": "สายสัมพันธ์ {n}", // TH-REVIEW
+    "cat.bondNext": "อีก {n} ถึง {name}", // TH-REVIEW
+    "cat.bondMax": "สายสัมพันธ์เต็มแล้ว", // TH-REVIEW
+    "cat.goalComplete": "ทำเป้าหมายวันนี้สำเร็จ ✓", // TH-REVIEW
+    "cat.goalProgress": "วันนี้ {done}/{goal} คำ", // TH-REVIEW
+    "cat.status.ready": "ออกสำรวจ 20 นาที · นำความทรงจำกลับมา 1 ชิ้น", // TH-REVIEW
+    "cat.status.exploring": "เจ้าแมวกำลังสำรวจ กลับมาในอีกประมาณ {n} นาที", // TH-REVIEW
+    "cat.status.returned": "เจ้าแมวกลับมาพร้อมเรื่องเล่าให้คุณ!", // TH-REVIEW
+    "cat.status.done": "วันนี้เป็นวันที่ดีด้วยกัน ได้เวลาพักสบาย ๆ แล้ว", // TH-REVIEW
+    "cat.status.needsGoal": "เรียนวันนี้ให้ครบ {goal} คำ เพื่อออกผจญภัย · {done}/{goal}", // TH-REVIEW
+    "cat.cta.study": "เรียนตอนนี้", // TH-REVIEW
+    "cat.cta.explore": "ออกไปสำรวจ", // TH-REVIEW
+    "cat.cta.exploring": "เรียนระหว่างที่เจ้าแมวสำรวจ", // TH-REVIEW
+    "cat.cta.return": "เก็บความทรงจำนี้", // TH-REVIEW
+    "cat.cta.studyMore": "เรียนเพิ่มอีกนิด", // TH-REVIEW
+    "cat.bg.home": "ห้องเรียน", // TH-REVIEW
+    "cat.bg.garden": "สวนคำศัพท์", // TH-REVIEW
+    "cat.bg.market": "ตลาดยามเช้า", // TH-REVIEW
+    "cat.bg.lantern": "ริมแม่น้ำแสงโคม", // TH-REVIEW
+    "cat.bg.scholar": "ประตูบัณฑิต", // TH-REVIEW
+    "cat.bg.select": "ใช้ฉาก {name}", // TH-REVIEW
+    "cat.bg.locked": "{name} ปลดล็อกเมื่อสายสัมพันธ์ถึง {n}", // TH-REVIEW
+    "cat.bg.selected": "เลือกแล้ว", // TH-REVIEW
+    "cat.bg.points": "สายสัมพันธ์ {n}", // TH-REVIEW
+    "cat.tier.studyBuddy": "เพื่อนเรียน", // TH-REVIEW
+    "cat.tier.curiousPaws": "อุ้งเท้าช่างสงสัย", // TH-REVIEW
+    "cat.tier.explorer": "นักสำรวจละแวกบ้าน", // TH-REVIEW
+    "cat.tier.lanternFriend": "เพื่อนแสงโคม", // TH-REVIEW
+    "cat.tier.scholarCat": "แมวบัณฑิต", // TH-REVIEW
+    "cat.memory.leaf.title": "ใบไม้จากสวน", // TH-REVIEW
+    "cat.memory.leaf.story": "เจ้าแมวพบใบไม้รูปหัวใจข้างทางอ่านหนังสืออันเงียบสงบ และเก็บไว้ให้คุณ", // TH-REVIEW
+    "cat.memory.tea.title": "ไอชาอุ่น ๆ", // TH-REVIEW
+    "cat.memory.tea.story": "เพื่อนบ้านในตลาดแบ่งชาถ้วยเล็กให้ ขณะที่เจ้าแมวตั้งใจฟังคำศัพท์ใหม่", // TH-REVIEW
+    "cat.memory.lantern.title": "แสงโคม", // TH-REVIEW
+    "cat.memory.lantern.story": "โคมดวงหนึ่งสะท้อนเหมือนพระจันทร์ดวงน้อย เจ้าแมวเดินตามแสงนั้นกลับบ้าน", // TH-REVIEW
+    "cat.memory.bridge.title": "แสงบนสะพาน", // TH-REVIEW
+    "cat.memory.bridge.story": "เจ้าแมวหยุดบนสะพาน มองทุกเงาสะท้อนสว่างกลายเป็นเส้นทาง", // TH-REVIEW
+    "cat.memory.blossom.title": "ดอกเหมย", // TH-REVIEW
+    "cat.memory.blossom.story": "กลีบสีชมพูอ่อนตกบนกระเป๋า พอดีสำหรับคั่นบทเรียนวันนี้", // TH-REVIEW
+    "cat.memory.brush.title": "พู่กันของบัณฑิต", // TH-REVIEW
+    "cat.memory.brush.story": "ที่ศาลาบนเขา เจ้าแมวเห็นพู่กันเปลี่ยนการฝึกฝนอย่างตั้งใจให้เป็นความก้าวหน้า", // TH-REVIEW
+    "cat.memory.book.title": "ริบบิ้นหนังสือสีเขียว", // TH-REVIEW
+    "cat.memory.book.story": "เจ้าแมวนำริบบิ้นกลับมา เพื่อคั่นหน้าว่าพวกคุณเรียนมาด้วยกันไกลแค่ไหนแล้ว", // TH-REVIEW
+    "cat.memory.market.title": "ส้มจากตลาด", // TH-REVIEW
+    "cat.memory.market.story": "เจ้าของร้านเลือกส้มที่สดใสที่สุด เป็นรางวัลแสนร่าเริงสำหรับความพยายามวันนี้", // TH-REVIEW
+    "cat.memory.archived.title": "ความทรงจำล้ำค่า", // TH-REVIEW
+    "cat.memory.archived.story": "เจ้าแมวเก็บความทรงจำจากการเดินทางครั้งก่อนไว้อย่างดี", // TH-REVIEW
+    "cat.memory.from": "จาก {place}", // TH-REVIEW
+    "cat.memory.playWord": "ฟังเสียง {word}", // TH-REVIEW
+    "home.cat.progress": "การเดินทางของเจ้าแมว · {done}/{goal} คำ", // TH-REVIEW
+    "home.cat.ready": "เจ้าแมวพร้อมออกสำรวจแล้ว", // TH-REVIEW
+    "home.cat.exploring": "เจ้าแมวกำลังสำรวจ · ประมาณ {n} นาที", // TH-REVIEW
+    "home.cat.returned": "ยินดีต้อนรับกลับ · ความทรงจำพร้อมแล้ว", // TH-REVIEW
     // Cat Journey evergreen-v1 expansion — Thai draft, native sign-off remains
     // a release gate in the full-product execution plan.
-    "cat.memory.sunnyWindow.title": "หน้าต่างรับแดด",
-    "cat.memory.sunnyWindow.story": "เจ้าแมวพบมุมอุ่น ๆ ที่แสงแดดส่องถึง และเก็บที่นั่งสบายที่สุดไว้ให้บทเรียนครั้งหน้า",
-    "cat.memory.pageCorner.title": "มุมหน้ากระดาษ",
-    "cat.memory.pageCorner.story": "สายลมเปิดหนังสือทีละหน้า ขณะที่เจ้าแมวคอยเฝ้าหน้าที่คุณอ่านค้างไว้อย่างใจเย็น",
-    "cat.memory.pencilCurl.title": "เศษดินสอม้วน",
-    "cat.memory.pencilCurl.story": "เศษดินสอที่เหลาแล้วม้วนเหมือนหางแมวเล็ก ๆ อยู่ข้างหนังสือสีเขียว",
-    "cat.memory.littleBell.title": "เสียงกระดิ่งน้อย",
-    "cat.memory.littleBell.story": "กระดิ่งหน้าห้องเรียนดังเบา ๆ หนึ่งครั้ง ราวกับกำลังยินดีกับความก้าวหน้าของวันนี้",
-    "cat.memory.bambooShadow.title": "เงาไผ่",
-    "cat.memory.bambooShadow.story": "เงาไผ่พาดผ่านทางเหมือนเส้นพู่กันอ่อน ๆ ขณะที่เจ้าแมวเดินเล่นในสวน",
-    "cat.memory.koiRipple.title": "ระลอกน้ำของปลาคาร์ป",
-    "cat.memory.koiRipple.story": "ปลาคาร์ปช่างสงสัยว่ายเป็นวงกลมพอดี เจ้าแมวจึงนั่งรอจนผิวน้ำนิ่งอีกครั้ง",
-    "cat.memory.gardenKite.title": "ว่าวในสวน",
-    "cat.memory.gardenKite.story": "ว่าวกระดาษลอยเหนือศาลา ก้มลงมาทักทายก่อนจะลอยสูงขึ้นอีกครั้ง",
-    "cat.memory.morningDew.title": "น้ำค้างยามเช้า",
-    "cat.memory.morningDew.story": "หยดน้ำใสเกาะบนใบไม้เหมือนลูกแก้วเม็ดจิ๋ว เรียงอยู่ตลอดทางอ่านหนังสือ",
-    "cat.memory.stonePath.title": "ทางหินอันเงียบสงบ",
-    "cat.memory.stonePath.story": "เจ้าแมวค่อย ๆ เดินตามก้อนหินสีอ่อน และพบว่าแต่ละก้าวง่ายขึ้นเรื่อย ๆ",
-    "cat.memory.marketTag.title": "ป้ายเปล่าจากตลาด",
-    "cat.memory.marketTag.story": "เจ้าของร้านให้ป้ายกระดาษสะอาดแก่เจ้าแมว เพื่อใช้คั่นหน้าคำศัพท์ที่จะเรียนต่อไป",
-    "cat.memory.basketRibbon.title": "ริบบิ้นจากตะกร้า",
-    "cat.memory.basketRibbon.story": "ริบบิ้นสีปะการังหลุดจากตะกร้าผลไม้ เจ้าแมวจึงนำกลับมาเก็บไว้ในกล่องความทรงจำ",
-    "cat.memory.sesameBun.title": "ขนมงาอุ่น ๆ",
-    "cat.memory.sesameBun.story": "คนทำขนมแบ่งขนมงาอุ่น ๆ ให้ กลิ่นหอมหวานติดตามเจ้าแมวไปตลอดทางกลับบ้าน",
-    "cat.memory.marketBell.title": "กระดิ่งตลาด",
-    "cat.memory.marketBell.story": "กระดิ่งไม้ในตลาดดังเสียงเป็นมิตรหนึ่งครั้ง เมื่อร้านสุดท้ายเปิดรับเช้าวันใหม่",
-    "cat.memory.umbrellaColors.title": "สีสันของร่มกระดาษ",
-    "cat.memory.umbrellaColors.story": "ร่มกระดาษเรียงเป็นลวดลายสดใสเหนือศีรษะ ขณะที่เจ้าแมวสำรวจตรอกอันเงียบสงบ",
-    "cat.memory.riverPebble.title": "ก้อนกรวดริมแม่น้ำ",
-    "cat.memory.riverPebble.story": "เจ้าแมวเลือกก้อนกรวดสีหยกผิวเรียบ ตรงจุดที่สายน้ำพบกับแสงโคม",
-    "cat.memory.moonReflection.title": "เงาจันทร์ในน้ำ",
-    "cat.memory.moonReflection.story": "พระจันทร์สั่นไหวอยู่บนผิวน้ำ แล้วกลับมากลมอีกครั้งเมื่อลมเย็นสงบลง",
-    "cat.memory.fireflyPath.title": "ทางแสงหิ่งห้อย",
-    "cat.memory.fireflyPath.story": "หิ่งห้อยสามตัวกะพริบแสงข้างแม่น้ำ ส่องเป็นทางเล็ก ๆ ให้เจ้าแมวกลับบ้าน",
-    "cat.memory.riversideCharm.title": "เครื่องรางริมแม่น้ำ",
-    "cat.memory.riversideCharm.story": "ใต้สะพานโค้ง เจ้าแมวพบเครื่องรางไม้เรียบง่ายที่สายน้ำขัดจนผิวเนียน",
-    "cat.memory.inkstoneLight.title": "แสงบนจานฝนหมึก",
-    "cat.memory.inkstoneLight.story": "แสงยามเช้าพาดผ่านจานฝนหมึก ขณะที่ศาลาเงียบสงบพอสำหรับการเรียนอย่างตั้งใจ",
-    "cat.memory.mountainCloud.title": "เมฆเหนือภูเขา",
-    "cat.memory.mountainCloud.story": "เมฆก้อนเล็กลอยต่ำกว่าประตูบัณฑิต ทำให้ศาลาดูสูงเหนือโลกกว้าง",
-    "cat.memory.scholarBookmark.title": "ที่คั่นหนังสือของบัณฑิต",
-    "cat.memory.scholarBookmark.story": "เจ้าแมวพบด้ายสีเขียวเรียบ ๆ แล้วผูกเป็นที่คั่นหนังสือสำหรับบทถัดไป",
-    "cat.memory.scholarDesk.title": "โต๊ะบัณฑิตอันเงียบสงบ",
-    "cat.memory.scholarDesk.story": "โต๊ะสะอาด หนังสือที่ปิดไว้ และเช้าอันสงบ รออยู่ด้วยกันที่ศาลาบนเขา",
-    "cat.announce.started": "เจ้าแมวออกเดินทางของวันนี้แล้ว",
-    "cat.announce.returned": "ได้รับความทรงจำใหม่: {name}",
-    "cat.announce.background": "เปลี่ยนฉากการเดินทางแล้ว",
+    "cat.memory.sunnyWindow.title": "หน้าต่างรับแดด", // TH-REVIEW
+    "cat.memory.sunnyWindow.story": "เจ้าแมวพบมุมอุ่น ๆ ที่แสงแดดส่องถึง และเก็บที่นั่งสบายที่สุดไว้ให้บทเรียนครั้งหน้า", // TH-REVIEW
+    "cat.memory.pageCorner.title": "มุมหน้ากระดาษ", // TH-REVIEW
+    "cat.memory.pageCorner.story": "สายลมเปิดหนังสือทีละหน้า ขณะที่เจ้าแมวคอยเฝ้าหน้าที่คุณอ่านค้างไว้อย่างใจเย็น", // TH-REVIEW
+    "cat.memory.pencilCurl.title": "เศษดินสอม้วน", // TH-REVIEW
+    "cat.memory.pencilCurl.story": "เศษดินสอที่เหลาแล้วม้วนเหมือนหางแมวเล็ก ๆ อยู่ข้างหนังสือสีเขียว", // TH-REVIEW
+    "cat.memory.littleBell.title": "เสียงกระดิ่งน้อย", // TH-REVIEW
+    "cat.memory.littleBell.story": "กระดิ่งหน้าห้องเรียนดังเบา ๆ หนึ่งครั้ง ราวกับกำลังยินดีกับความก้าวหน้าของวันนี้", // TH-REVIEW
+    "cat.memory.bambooShadow.title": "เงาไผ่", // TH-REVIEW
+    "cat.memory.bambooShadow.story": "เงาไผ่พาดผ่านทางเหมือนเส้นพู่กันอ่อน ๆ ขณะที่เจ้าแมวเดินเล่นในสวน", // TH-REVIEW
+    "cat.memory.koiRipple.title": "ระลอกน้ำของปลาคาร์ป", // TH-REVIEW
+    "cat.memory.koiRipple.story": "ปลาคาร์ปช่างสงสัยว่ายเป็นวงกลมพอดี เจ้าแมวจึงนั่งรอจนผิวน้ำนิ่งอีกครั้ง", // TH-REVIEW
+    "cat.memory.gardenKite.title": "ว่าวในสวน", // TH-REVIEW
+    "cat.memory.gardenKite.story": "ว่าวกระดาษลอยเหนือศาลา ก้มลงมาทักทายก่อนจะลอยสูงขึ้นอีกครั้ง", // TH-REVIEW
+    "cat.memory.morningDew.title": "น้ำค้างยามเช้า", // TH-REVIEW
+    "cat.memory.morningDew.story": "หยดน้ำใสเกาะบนใบไม้เหมือนลูกแก้วเม็ดจิ๋ว เรียงอยู่ตลอดทางอ่านหนังสือ", // TH-REVIEW
+    "cat.memory.stonePath.title": "ทางหินอันเงียบสงบ", // TH-REVIEW
+    "cat.memory.stonePath.story": "เจ้าแมวค่อย ๆ เดินตามก้อนหินสีอ่อน และพบว่าแต่ละก้าวง่ายขึ้นเรื่อย ๆ", // TH-REVIEW
+    "cat.memory.marketTag.title": "ป้ายเปล่าจากตลาด", // TH-REVIEW
+    "cat.memory.marketTag.story": "เจ้าของร้านให้ป้ายกระดาษสะอาดแก่เจ้าแมว เพื่อใช้คั่นหน้าคำศัพท์ที่จะเรียนต่อไป", // TH-REVIEW
+    "cat.memory.basketRibbon.title": "ริบบิ้นจากตะกร้า", // TH-REVIEW
+    "cat.memory.basketRibbon.story": "ริบบิ้นสีปะการังหลุดจากตะกร้าผลไม้ เจ้าแมวจึงนำกลับมาเก็บไว้ในกล่องความทรงจำ", // TH-REVIEW
+    "cat.memory.sesameBun.title": "ขนมงาอุ่น ๆ", // TH-REVIEW
+    "cat.memory.sesameBun.story": "คนทำขนมแบ่งขนมงาอุ่น ๆ ให้ กลิ่นหอมหวานติดตามเจ้าแมวไปตลอดทางกลับบ้าน", // TH-REVIEW
+    "cat.memory.marketBell.title": "กระดิ่งตลาด", // TH-REVIEW
+    "cat.memory.marketBell.story": "กระดิ่งไม้ในตลาดดังเสียงเป็นมิตรหนึ่งครั้ง เมื่อร้านสุดท้ายเปิดรับเช้าวันใหม่", // TH-REVIEW
+    "cat.memory.umbrellaColors.title": "สีสันของร่มกระดาษ", // TH-REVIEW
+    "cat.memory.umbrellaColors.story": "ร่มกระดาษเรียงเป็นลวดลายสดใสเหนือศีรษะ ขณะที่เจ้าแมวสำรวจตรอกอันเงียบสงบ", // TH-REVIEW
+    "cat.memory.riverPebble.title": "ก้อนกรวดริมแม่น้ำ", // TH-REVIEW
+    "cat.memory.riverPebble.story": "เจ้าแมวเลือกก้อนกรวดสีหยกผิวเรียบ ตรงจุดที่สายน้ำพบกับแสงโคม", // TH-REVIEW
+    "cat.memory.moonReflection.title": "เงาจันทร์ในน้ำ", // TH-REVIEW
+    "cat.memory.moonReflection.story": "พระจันทร์สั่นไหวอยู่บนผิวน้ำ แล้วกลับมากลมอีกครั้งเมื่อลมเย็นสงบลง", // TH-REVIEW
+    "cat.memory.fireflyPath.title": "ทางแสงหิ่งห้อย", // TH-REVIEW
+    "cat.memory.fireflyPath.story": "หิ่งห้อยสามตัวกะพริบแสงข้างแม่น้ำ ส่องเป็นทางเล็ก ๆ ให้เจ้าแมวกลับบ้าน", // TH-REVIEW
+    "cat.memory.riversideCharm.title": "เครื่องรางริมแม่น้ำ", // TH-REVIEW
+    "cat.memory.riversideCharm.story": "ใต้สะพานโค้ง เจ้าแมวพบเครื่องรางไม้เรียบง่ายที่สายน้ำขัดจนผิวเนียน", // TH-REVIEW
+    "cat.memory.inkstoneLight.title": "แสงบนจานฝนหมึก", // TH-REVIEW
+    "cat.memory.inkstoneLight.story": "แสงยามเช้าพาดผ่านจานฝนหมึก ขณะที่ศาลาเงียบสงบพอสำหรับการเรียนอย่างตั้งใจ", // TH-REVIEW
+    "cat.memory.mountainCloud.title": "เมฆเหนือภูเขา", // TH-REVIEW
+    "cat.memory.mountainCloud.story": "เมฆก้อนเล็กลอยต่ำกว่าประตูบัณฑิต ทำให้ศาลาดูสูงเหนือโลกกว้าง", // TH-REVIEW
+    "cat.memory.scholarBookmark.title": "ที่คั่นหนังสือของบัณฑิต", // TH-REVIEW
+    "cat.memory.scholarBookmark.story": "เจ้าแมวพบด้ายสีเขียวเรียบ ๆ แล้วผูกเป็นที่คั่นหนังสือสำหรับบทถัดไป", // TH-REVIEW
+    "cat.memory.scholarDesk.title": "โต๊ะบัณฑิตอันเงียบสงบ", // TH-REVIEW
+    "cat.memory.scholarDesk.story": "โต๊ะสะอาด หนังสือที่ปิดไว้ และเช้าอันสงบ รออยู่ด้วยกันที่ศาลาบนเขา", // TH-REVIEW
+    "cat.announce.started": "เจ้าแมวออกเดินทางของวันนี้แล้ว", // TH-REVIEW
+    "cat.announce.returned": "ได้รับความทรงจำใหม่: {name}", // TH-REVIEW
+    "cat.announce.background": "เปลี่ยนฉากการเดินทางแล้ว", // TH-REVIEW
     "shop.dailyCatEmpty": "รางวัลใหม่สำหรับเจ้าแมวจะมาในการหมุนเวียนครั้งถัดไป",
     "more.tagline": "Lucky Cat HSK — เรียนคำศัพท์ที่ออกข้อสอบจริง",
-    "more.learnHelp": "เล่นและความช่วยเหลือ",
-    "more.settings": "ตั้งค่า",
-    "more.accountPrivacy": "บัญชีและความเป็นส่วนตัว",
-    "more.version": "Lucky Cat HSK · เวอร์ชัน 0.2.0",
+    "more.learnHelp": "เล่นและความช่วยเหลือ", // TH-REVIEW
+    "more.settings": "ตั้งค่า", // TH-REVIEW
+    "more.accountPrivacy": "บัญชีและความเป็นส่วนตัว", // TH-REVIEW
+    "more.version": "Lucky Cat HSK · เวอร์ชัน 0.2.0", // TH-REVIEW
     "street.title": "ถนนนำโชค",
     "street.captionEmpty": "ถนนนำโชค — โตขึ้นเรื่อยๆ ตามที่คุณเรียน · {next}",
     "street.captionProgress": "{unlocked}/{total} อาคาร · {next}",
@@ -1139,11 +1139,11 @@ export const STRINGS = {
     "scope.english": "ภาษาอังกฤษ",
     "scope.both": "ทั้งสอง",
     "scope.sessionLen": "จำนวนคำต่อรอบ",
-    "scope.stepWords": "1 · เลือกคำศัพท์",
-    "scope.moreFilters": "ตัวกรองคำศัพท์เพิ่มเติม",
-    "scope.stepMeaning": "2 · ภาษาที่ใช้แสดงความหมาย",
-    "scope.stepSession": "3 · จำนวนคำต่อรอบ",
-    "scope.startQuest": "เริ่มภารกิจ {n} คำ",
+    "scope.stepWords": "1 · เลือกคำศัพท์", // TH-REVIEW
+    "scope.moreFilters": "ตัวกรองคำศัพท์เพิ่มเติม", // TH-REVIEW
+    "scope.stepMeaning": "2 · ภาษาที่ใช้แสดงความหมาย", // TH-REVIEW
+    "scope.stepSession": "3 · จำนวนคำต่อรอบ", // TH-REVIEW
+    "scope.startQuest": "เริ่มภารกิจ {n} คำ", // TH-REVIEW
     "scope.custom": "กำหนดเอง",
     "scope.customPh": "5–500",
     "scope.endless": "ไม่จำกัด",
@@ -1159,15 +1159,15 @@ export const STRINGS = {
     // journey map (B3)
     "scope.tabPicker": "เลือกเอง",
     "scope.tabJourney": "เส้นทาง",
-    "journey.youAreHere": "คุณอยู่ตรงนี้",
-    "journey.nodeAll": "HSK{lv} · คำทั้งหมด",
-    "journey.nodeTop": "HSK{lv} · {n} คำแรก",
-    "journey.play": "เล่น",
-    "journey.recommended": "แนะนำให้เล่นต่อ",
-    "journey.review": "ทบทวน",
-    "journey.continue": "เล่นต่อ",
-    "journey.start": "เริ่ม",
-    "journey.levelProgress": "ผ่านแล้ว {done} จาก {total} จุด",
+    "journey.youAreHere": "คุณอยู่ตรงนี้", // TH-REVIEW
+    "journey.nodeAll": "HSK{lv} · คำทั้งหมด", // TH-REVIEW
+    "journey.nodeTop": "HSK{lv} · {n} คำแรก", // TH-REVIEW
+    "journey.play": "เล่น", // TH-REVIEW
+    "journey.recommended": "แนะนำให้เล่นต่อ", // TH-REVIEW
+    "journey.review": "ทบทวน", // TH-REVIEW
+    "journey.continue": "เล่นต่อ", // TH-REVIEW
+    "journey.start": "เริ่ม", // TH-REVIEW
+    "journey.levelProgress": "ผ่านแล้ว {done} จาก {total} จุด", // TH-REVIEW
     // learn / flashcards
     "learn.exit": "ออก",
     "learn.stillLearning": "ฝึกอีกครั้ง",
@@ -1207,8 +1207,8 @@ export const STRINGS = {
     "results.bestTag": "สถิติใหม่!",
     "results.bestPrev": "ดีที่สุด {prev}",
     "results.questComplete": "ภารกิจสำเร็จ: {desc} +{reward} เหรียญ",
-    "results.catReady": "ทำเป้าหมายวันนี้สำเร็จ — เจ้าแมวพร้อมออกสำรวจแล้ว",
-    "results.catReadyAction": "ไปหาเจ้าแมว",
+    "results.catReady": "ทำเป้าหมายวันนี้สำเร็จ — เจ้าแมวพร้อมออกสำรวจแล้ว", // TH-REVIEW
+    "results.catReadyAction": "ไปหาเจ้าแมว", // TH-REVIEW
     "results.projectTitle": "สิ่งที่จะสร้างบนถนนต่อไป",
     "results.projectProgress": "+{earned} จากภารกิจนี้ · เหลืออีก {remaining} เหรียญ",
     "results.projectNoGain": "เหลืออีก {remaining} เหรียญ",
@@ -1234,7 +1234,7 @@ export const STRINGS = {
     // scores / progress
     "scores.title": "สถิติดีที่สุด",
     "scores.empty": "ยังไม่มีสถิติ — เล่นภารกิจคำศัพท์ก่อน",
-    "scores.play": "เล่นภารกิจคำศัพท์ครั้งแรก",
+    "scores.play": "เล่นภารกิจคำศัพท์ครั้งแรก", // TH-REVIEW
     "progress.title": "โปรไฟล์",
     "progress.needsWork": "ต้องฝึกเพิ่ม",
     "progress.reviewThese": "ทบทวนคำเหล่านี้",
@@ -1264,12 +1264,12 @@ export const STRINGS = {
     "profile.defaultBackdrop": "ค่าเริ่มต้น",
     "profile.viewCollection": "ดูของสะสม",
     "profile.viewAlbum": "อัลบั้มสติกเกอร์",
-    "profile.tabOverview": "ภาพรวม",
-    "profile.tabProgress": "ความคืบหน้า",
-    "profile.tabCollection": "ของสะสม",
-    "profile.emptyTitle": "เส้นทางของคุณเริ่มที่นี่",
-    "profile.emptyBody": "เล่นภารกิจคำศัพท์สั้น ๆ หนึ่งรอบ เพื่อเริ่มบันทึกความคืบหน้า การเรียนต่อเนื่อง และของสะสม",
-    "profile.emptyCta": "เริ่มภารกิจแรก",
+    "profile.tabOverview": "ภาพรวม", // TH-REVIEW
+    "profile.tabProgress": "ความคืบหน้า", // TH-REVIEW
+    "profile.tabCollection": "ของสะสม", // TH-REVIEW
+    "profile.emptyTitle": "เส้นทางของคุณเริ่มที่นี่", // TH-REVIEW
+    "profile.emptyBody": "เล่นภารกิจคำศัพท์สั้น ๆ หนึ่งรอบ เพื่อเริ่มบันทึกความคืบหน้า การเรียนต่อเนื่อง และของสะสม", // TH-REVIEW
+    "profile.emptyCta": "เริ่มภารกิจแรก", // TH-REVIEW
     "friend.compareCta": "เทียบกับเพื่อน",
     "friend.title": "เทียบกับเพื่อน",
     "friend.yourCode": "รหัสของคุณ — แชร์เลย",
@@ -1297,13 +1297,13 @@ export const STRINGS = {
     "album.title": "อัลบั้มสติกเกอร์",
     "album.back": "← โปรไฟล์",
     "album.events": "อีเวนต์",
-    "album.progress": "ได้รับสติกเกอร์ {earned} จาก {total} ชิ้น",
-    "album.nextTarget": "ชิ้นต่อไป: {name}",
-    "album.complete": "อัลบั้มครบแล้ว — สติกเกอร์ทุกชิ้นเป็นของคุณ!",
-    "album.filterNext": "เป้าหมายต่อไป",
-    "album.filterEarned": "ได้รับแล้ว",
-    "album.upNext": "เป้าหมายต่อไป",
-    "album.emptyEarned": "ยังไม่ได้รับสติกเกอร์ เล่นภารกิจคำศัพท์ให้จบเพื่อรับชิ้นแรก",
+    "album.progress": "ได้รับสติกเกอร์ {earned} จาก {total} ชิ้น", // TH-REVIEW
+    "album.nextTarget": "ชิ้นต่อไป: {name}", // TH-REVIEW
+    "album.complete": "อัลบั้มครบแล้ว — สติกเกอร์ทุกชิ้นเป็นของคุณ!", // TH-REVIEW
+    "album.filterNext": "เป้าหมายต่อไป", // TH-REVIEW
+    "album.filterEarned": "ได้รับแล้ว", // TH-REVIEW
+    "album.upNext": "เป้าหมายต่อไป", // TH-REVIEW
+    "album.emptyEarned": "ยังไม่ได้รับสติกเกอร์ เล่นภารกิจคำศัพท์ให้จบเพื่อรับชิ้นแรก", // TH-REVIEW
     "sticker.scopeName": "HSK{lv} · Top {n}",
     "sticker.scopeHint": "เชี่ยวชาญคำศัพท์ Top {n} ของ HSK{lv} ให้ครบ",
     "sticker.msName": "HSK{lv} · {pct}%",
@@ -1327,13 +1327,13 @@ export const STRINGS = {
     "shop.sounds": "เสียง",
     "shop.supplies": "ของใช้",
     "shop.street": "ของตกแต่งถนน",
-    "shop.categoryFeatured": "แนะนำ",
-    "shop.categoryCats": "แมว",
-    "shop.categoryBackdrops": "ฉากหลัง",
-    "shop.categoryEffects": "เอฟเฟกต์",
-    "shop.categorySounds": "เสียง",
-    "shop.categorySupplies": "ของใช้",
-    "shop.needMore": "ต้องการอีก {n} เหรียญ",
+    "shop.categoryFeatured": "แนะนำ", // TH-REVIEW
+    "shop.categoryCats": "แมว", // TH-REVIEW
+    "shop.categoryBackdrops": "ฉากหลัง", // TH-REVIEW
+    "shop.categoryEffects": "เอฟเฟกต์", // TH-REVIEW
+    "shop.categorySounds": "เสียง", // TH-REVIEW
+    "shop.categorySupplies": "ของใช้", // TH-REVIEW
+    "shop.needMore": "ต้องการอีก {n} เหรียญ", // TH-REVIEW
     "shop.streetAvailable": "ของที่ใช้บนถนนได้",
     "shop.streetFocusTitle": "สร้างถนนของคุณ",
     "shop.streetFocusNote": "ลองดูของตกแต่งบนถนนจริงก่อนใช้เหรียญ",
@@ -1443,15 +1443,15 @@ export const STRINGS = {
     "building.emperor-gate": "ประตูจักรพรรดิ",
     // howto
     "howto.title": "วิธีเล่น",
-    "howto.stepSeeTitle": "ดูคำศัพท์",
-    "howto.stepSeeBody": "อ่านคำศัพท์จีนและพินอิน แตะลำโพงได้ทุกเมื่อที่ต้องการฟังเสียง",
-    "howto.stepChooseTitle": "เลือกความหมาย",
-    "howto.stepChooseBody": "เลือกความหมายที่ถูกต้อง การตอบถูกครั้งแรกจะสร้างจังหวะโชคดี",
-    "howto.stepLearnTitle": "เรียนรู้แล้วไปต่อ",
-    "howto.stepLearnBody": "คำที่พลาดจะกลับมาอีกครั้ง ทำให้ทุกภารกิจจบลงเมื่อเรียนรู้คำที่วางไว้ครบ",
-    "howto.advanced": "ด่านทบทวนและโหมดเรียนรู้",
-    "howto.credits": "เสียง ตัวอย่าง และเครดิต",
-    "howto.try": "ลองภารกิจ 5 คำ",
+    "howto.stepSeeTitle": "ดูคำศัพท์", // TH-REVIEW
+    "howto.stepSeeBody": "อ่านคำศัพท์จีนและพินอิน แตะลำโพงได้ทุกเมื่อที่ต้องการฟังเสียง", // TH-REVIEW
+    "howto.stepChooseTitle": "เลือกความหมาย", // TH-REVIEW
+    "howto.stepChooseBody": "เลือกความหมายที่ถูกต้อง การตอบถูกครั้งแรกจะสร้างจังหวะโชคดี", // TH-REVIEW
+    "howto.stepLearnTitle": "เรียนรู้แล้วไปต่อ", // TH-REVIEW
+    "howto.stepLearnBody": "คำที่พลาดจะกลับมาอีกครั้ง ทำให้ทุกภารกิจจบลงเมื่อเรียนรู้คำที่วางไว้ครบ", // TH-REVIEW
+    "howto.advanced": "ด่านทบทวนและโหมดเรียนรู้", // TH-REVIEW
+    "howto.credits": "เสียง ตัวอย่าง และเครดิต", // TH-REVIEW
+    "howto.try": "ลองภารกิจ 5 คำ", // TH-REVIEW
     "howto.intro": "เดินไปกับแมวนำโชคตาม<b>เส้นทางโคมไฟ</b> แต่ละจุดจะแสดงคำศัพท์จีนพร้อมพินอิน",
     "howto.tapMeaning": "เลือก<b>ความหมายที่ถูกต้อง</b> การตอบถูกครั้งแรกต่อเนื่องจะสร้างจังหวะโชคดี",
     "howto.oneShot": "คำที่พลาดจะกลับมา",
@@ -1483,9 +1483,9 @@ export const STRINGS = {
     "battle.paused": "หยุดชั่วคราว",
     "battle.resume": "เล่นต่อ",
     "battle.quit": "ออก",
-    "battle.quitConfirm": "ออกจากภารกิจนี้?",
-    "battle.audioGroup": "เสียง",
-    "battle.learningAidsGroup": "ตัวช่วยการเรียน",
+    "battle.quitConfirm": "ออกจากภารกิจนี้?", // TH-REVIEW
+    "battle.audioGroup": "เสียง", // TH-REVIEW
+    "battle.learningAidsGroup": "ตัวช่วยการเรียน", // TH-REVIEW
     "battle.wordAudio": "เสียงคำศัพท์",
     "battle.pinyin": "พินอิน",
     "battle.on": "เปิด",
