@@ -7,11 +7,17 @@ import { defaultShop } from "../src/shop.js";
 import { defaultCatJourney, goalDaysCountOf, memoryRecordsOf } from "../src/cat-journey.js";
 
 describe("merge: scalars", () => {
-  it("SYNC_KEYS lists the 11 synced keys", () =>
-    expect(SYNC_KEYS).toEqual(["mastery","xp","daily","quests","monthly","wallet","bricks","freezes","shop","stickers","best"]));
-  it("Cat Journey sync stays dark until the backend capability is enabled", () => {
-    expect(syncKeysFor(false)).toEqual(SYNC_KEYS);
-    expect(syncKeysFor(true)).toEqual([...SYNC_KEYS, "catJourney"]);
+  // The 11 keys that sync regardless of any capability flag. Pinned via
+  // syncKeysFor(false) rather than SYNC_KEYS: since v129 the module default is
+  // capability-ON, so SYNC_KEYS itself is 12 keys (below).
+  const BASE_11 = ["mastery","xp","daily","quests","monthly","wallet","bricks","freezes","shop","stickers","best"];
+  it("syncKeysFor(false) lists the 11 always-synced keys", () =>
+    expect(syncKeysFor(false)).toEqual(BASE_11));
+  it("Cat Journey is the 12th synced key, and only when the capability is on", () => {
+    expect(syncKeysFor(true)).toEqual([...BASE_11, "catJourney"]);
+    // SYNC_KEYS is frozen at import from the module default, which v129 flipped
+    // on — so the live export is the 12-key list.
+    expect(SYNC_KEYS).toEqual([...BASE_11, "catJourney"]);
   });
   it("defaultSyncMeta shape", () =>
     expect(defaultSyncMeta()).toEqual({ dirty: {}, lastSyncAt: 0, lastLedgerAt: "", shopSlots: null, shopPreferences: null }));

@@ -81,13 +81,17 @@ describe("row mapping", () => {
       ...defaultCatJourney(),
       claims: [{ day: "2026-07-27", returnedAt: 10, storyId: "garden-leaf" }],
     });
-    const dark = rowsFromLocal("u1", { catJourney });
+    // The dark side is asserted EXPLICITLY, not via the module default: since
+    // v129 that default is true, and a bare-default call here would be
+    // asserting the enabled path while claiming to test the dark one.
+    const dark = rowsFromLocal("u1", { catJourney }, { catJourneyCloudEnabled: false });
     expect(dark.progress).not.toHaveProperty("cat_journey");
     const enabled = rowsFromLocal("u1", { catJourney }, { catJourneyCloudEnabled: true });
     expect(enabled.progress.cat_journey).toEqual(catJourney);
     expect(localFromRows(enabled.progress, null, { catJourneyCloudEnabled: true }).catJourney)
       .toEqual(catJourney);
-    expect(localFromRows(enabled.progress, null)).not.toHaveProperty("catJourney");
+    expect(localFromRows(enabled.progress, null, { catJourneyCloudEnabled: false }))
+      .not.toHaveProperty("catJourney");
   });
   it("omits cat_journey entirely when there is no local journey state (never blanks the cloud column)", () => {
     // The column is `not null default '{}'`, so absence CANNOT be sent as null.
@@ -127,10 +131,15 @@ describe("row mapping", () => {
     expect(l2.wallet).toBe(9);
     expect(l2.freezes).toBe(1);
   });
-  it("localSnapshot reads Cat Journey without making the dark capability a sync key", () => {
+  it("localSnapshot reads Cat Journey regardless of the cloud capability", () => {
+    // localSnapshot is unconditional by design — the capability gates what
+    // crosses the wire (rowsFromLocal/localFromRows/SYNC_KEYS), not what the
+    // local snapshot can see. The SYNC_KEYS membership assertion that used to
+    // live here moved to the two capability-scoped files when v129 flipped the
+    // default: positive in test/sync-cat-journey-cloud.test.js, negative in
+    // test/sync-cat-journey-dark.test.js.
     const catJourney = defaultCatJourney();
     expect(localSnapshot(memStore({ catJourney })).catJourney).toEqual(catJourney);
-    expect(SYNC_KEYS).not.toContain("catJourney");
   });
 });
 
@@ -176,23 +185,10 @@ describe("reconcile", () => {
     expect(r.ok).toBe(true);
     expect(store.get("bricks", 0)).toBe(40);   // must NOT be zeroed by the fold
   });
-  it("dark Cat Journey capability preserves local state and omits the unknown cloud column", async () => {
-    const { client, calls } = fakeClient({ session: SESSION,
-      progressRow: { user_id: "u1", xp: 0, mastery: {}, daily: {}, quests: {},
-        monthly: {}, best: {}, cosmetics: {}, stickers: { earned: {} } },
-      walletRow: { user_id: "u1", coins: 0, freezes: 0 } });
-    __setClientForTests(client);
-    const catJourney = normalizeCatJourney({
-      ...defaultCatJourney(),
-      claims: [{ day: "2026-07-27", returnedAt: 10, storyId: "garden-leaf" }],
-    });
-    const store = memStore({ catJourney, sync: { dirty: {}, lastSyncAt: 0 } });
-    const r = await reconcile(store, "sign-in", 1_000_000);
-    expect(r.ok).toBe(true);
-    expect(store.get("catJourney", null)).toEqual(catJourney);
-    const pushed = calls.upserts.find(call => call.table === "progress").row;
-    expect(pushed).not.toHaveProperty("cat_journey");
-  });
+  // The dark-capability reconcile test moved to
+  // test/sync-cat-journey-dark.test.js when v129 flipped the module default:
+  // reconcile() takes no options parameter, so the only way to drive it
+  // flag-OFF is to mock cloud-config, which has to happen at file scope.
   it("changed:false when cloud contributes nothing", async () => {
     const { client } = fakeClient({ session: SESSION, progressRow: null, walletRow: null });
     __setClientForTests(client);
