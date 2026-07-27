@@ -34,9 +34,15 @@ const RULES = [
   ["P0", (k) => k === "toast.freeze-used"],
   ["P0", (k) => k === "streak.restUsed"],
   // ---- P1: core learning and results ----
-  ["P1", (k) => ["welcome.", "scope.", "learn.", "fc.", "battle.", "tones.", "howto.", "results.", "quest."].some((p) => k.startsWith(p))],
+  // "quests." needs its own entry: "quest." does NOT match "quests.title"
+  // (the char after "quest" is "s", not "."), so the Cat Journey quest entry
+  // point was falling through to P3.
+  ["P1", (k) => ["welcome.", "scope.", "learn.", "fc.", "battle.", "tones.", "howto.", "results.", "quest.", "quests."].some((p) => k.startsWith(p))],
   // ---- P2: profile, collection, world ----
-  ["P2", (k) => ["profile.", "progress.", "album.", "sticker.", "milestone.", "shop.", "item.", "season.", "street.", "building.", "journey.", "nav.", "more."].some((p) => k.startsWith(p))],
+  // `cat.` is the Cat Journey full product (v127+). It replaced Street as the
+  // default tab, so it belongs at Street's tier — NOT the unclassified P3
+  // bucket, where 108 live strings would sit below 180 rows of minor copy.
+  ["P2", (k) => ["profile.", "progress.", "album.", "sticker.", "milestone.", "shop.", "item.", "season.", "street.", "cat.", "building.", "journey.", "nav.", "more."].some((p) => k.startsWith(p))],
 ];
 
 function priorityOf(key) {
