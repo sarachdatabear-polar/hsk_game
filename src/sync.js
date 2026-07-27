@@ -24,15 +24,22 @@ export const MIN_SYNC_GAP_MS = 30000;
 const BYPASS_COOLDOWN = new Set(["sign-in", "monthly-dirty", "purchase", "first-settle"]);
 
 let inFlight = false;
-// Latched once a reconcile has folded cloud state into this session's local
+// The uid whose cloud state a reconcile has folded into this session's local
 // store (set at the merged store-writes, so even a failed FINAL push counts —
 // the clobber hazard is gone once cloud is merged in). Until then, pushDirty
 // must not blind-overwrite the cloud row (review 2026-07-19): a purchase or
 // hide edge can fire before any reconcile on a cold boot (visibilitychange
 // only fires on a foreground TRANSITION, never on first paint).
-let sessionReconciled = false;
-export function __resetForTests() { inFlight = false; sessionReconciled = false; }
-export function __setSessionReconciledForTests(v = true) { sessionReconciled = v; }
+// KEYED TO THE UID, not a session boolean (review 2026-07-27, P0): a bare
+// latch survives an identity switch — guest reconcile latches, user signs in,
+// THAT uid's reconcile fails on network, and the next pushDirty edge would
+// blind-upsert guest-era local state over the real account's rows (for a
+// reinstall-then-sign-in user the cloud row is their only copy). Any session
+// whose uid differs from the last-reconciled uid must re-enter through
+// reconcile — this also covers sign-out -> fresh guest uid automatically.
+let reconciledUid = null;
+export function __resetForTests() { inFlight = false; reconciledUid = null; }
+export function __setReconciledUidForTests(uid) { reconciledUid = uid; }
 
 export function localSnapshot(store) {
   return {
@@ -274,7 +281,7 @@ export async function reconcile(store, reason, now = Date.now(), expectedOrderId
       store.set("sync", cursorMeta);
     }
     for (const k of Object.keys(merged)) store.set(k, merged[k]);
-    sessionReconciled = true;
+    reconciledUid = uid;
     const built = rowsFromLocal(uid, merged);
     const push = await pushSyncRows(built.progress, built.wallet);
     // The merged keys above are durable local writes even when the following
@@ -313,21 +320,30 @@ export async function pushDirty(store, reason, now = Date.now(), midRound = fals
     if (midRound) return { ok: false, reason: "mid-round" };
     return reconcile(store, "monthly-dirty", now);
   }
-  // First push of the session: no reconcile has folded cloud state in yet,
-  // so a blind push could overwrite cloud-only progress (another device's
-  // sync, a webhook wallet credit). Redirect through reconcile — same shape
-  // as the monthly redirect above, including the mid-round deferral.
-  if (!sessionReconciled) {
+  // The reconciled latch is keyed to the uid, so the session must be known
+  // BEFORE the latch check. getSession is a local auth-storage read with
+  // cloud.js's never-throws contract (failure resolves {ok:false}), and it
+  // must sit OUTSIDE the inFlight guard: a first-settle redirect delegates to
+  // reconcile, which owns inFlight end-to-end, so pushDirty cannot be holding
+  // it at that point.
+  const s = await getSession();
+  if (!s.ok || !s.session) return { ok: false };
+  const uid = s.session.user.id;
+  // First push for THIS uid: no reconcile has folded this account's cloud
+  // state in yet, so a blind push could overwrite cloud-only progress
+  // (another device's sync, a webhook wallet credit — or, on an identity
+  // switch whose sign-in reconcile failed, the entire real account's rows).
+  // Redirect through reconcile — same shape as the monthly redirect above,
+  // including the mid-round deferral.
+  if (uid !== reconciledUid) {
     if (midRound) return { ok: false, reason: "mid-round" };
     return reconcile(store, "first-settle", now);
   }
   if (inFlight) return { ok: false, reason: "busy" };
   inFlight = true;
   try {
-    const s = await getSession();
-    if (!s.ok || !s.session) return { ok: false };
     const local = localSnapshot(store);
-    const built = rowsFromLocal(s.session.user.id, local);
+    const built = rowsFromLocal(uid, local);
     const r = await pushSyncRows(built.progress, built.wallet);
     if (r.ok) settleDirty(store, local, 0);
     return { ok: r.ok };

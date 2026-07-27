@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { MIN_SYNC_GAP_MS, localSnapshot, rowsFromLocal, localFromRows,
-         reconcile, pushDirty, __resetForTests, __setSessionReconciledForTests } from "../src/sync.js";
+         reconcile, pushDirty, __resetForTests, __setReconciledUidForTests } from "../src/sync.js";
 import { __setClientForTests, LEDGER_EPOCH } from "../src/cloud.js";
 import { SYNC_KEYS, streetLayoutPrefsOf } from "../src/merge.js";
 import { defaultCatJourney, normalizeCatJourney } from "../src/cat-journey.js";
@@ -629,7 +629,7 @@ describe("pushDirty", () => {
     const { client, calls } = fakeClient({ session: SESSION });
     __setClientForTests(client);
     const store = memStore({ xp: 42, sync: { dirty: { xp: true }, lastSyncAt: 777 } });
-    __setSessionReconciledForTests();   // a reconcile already ran this session
+    __setReconciledUidForTests(SESSION.user.id);   // a reconcile already ran for this uid
     const r = await pushDirty(store, "hide");
     expect(r.ok).toBe(true);
     expect(calls.upserts.length).toBe(2);
@@ -649,7 +649,7 @@ describe("pushDirty", () => {
       walletRow: { user_id: "u1", coins: 5000, freezes: 0 } });
     __setClientForTests(client);
     const store = memStore({ wallet: 200, sync: { dirty: { xp: true }, lastSyncAt: 777 } });
-    __setSessionReconciledForTests();   // a reconcile already ran this session
+    __setReconciledUidForTests(SESSION.user.id);   // a reconcile already ran for this uid
     const r = await pushDirty(store, "purchase");
     expect(r.ok).toBe(true);
     const pushedWallet = calls.upserts.find(u => u.table === "wallet").row;
@@ -723,7 +723,7 @@ describe("pushDirty", () => {
     const { client, calls } = fakeClient({ session: SESSION });
     __setClientForTests(client);
     const store = memStore({ wallet: 950, sync: { dirty: { wallet: true }, lastSyncAt: 777 } });
-    __setSessionReconciledForTests();   // a reconcile already ran this session
+    __setReconciledUidForTests(SESSION.user.id);   // a reconcile already ran for this uid
     const r = await pushDirty(store, "purchase", undefined, true);   // midRound = true
     expect(r.ok).toBe(true);
     expect(calls.upserts.find(u => u.table === "wallet").row.coins).toBe(950);
@@ -774,5 +774,41 @@ describe("pushDirty", () => {
     expect(r).toEqual({ ok: false, reason: "mid-round" });
     expect(calls.upserts.length).toBe(0);
     expect(store.get("sync", {}).dirty).toEqual({ wallet: true });
+  });
+
+  it("regression (review 2026-07-27 P0): a uid switch invalidates the latch — pushDirty redirects through reconcile instead of blind-upserting guest-era state onto the new account's rows", async () => {
+    // The verified data-loss sequence: (1) boot as guest -> the guest uid's
+    // sign-in reconcile latches; (2) sign into the real account -> THAT uid's
+    // reconcile fails on network, latch untouched; (3) network recovers and a
+    // hide/interval edge reaches pushDirty with guest-era dirty keys. A
+    // session-boolean latch let the blind branch full-row upsert
+    // rowsFromLocal(realUid, guestLocal) over the real account's progress and
+    // wallet — for a reinstall-then-sign-in user the cloud row is the only
+    // copy, so the loss was unrecoverable.
+    __setReconciledUidForTests("guest-uid");   // steps 1-2: latch belongs to the GUEST uid
+    const realSession = { user: { id: "real-uid", is_anonymous: false } };
+    const { client, calls } = fakeClient({ session: realSession,
+      // The real account's only copy of its progress lives in these rows.
+      progressRow: { user_id: "real-uid", xp: 900, mastery: {},
+        daily: { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" },
+        quests: {}, monthly: {}, best: {}, cosmetics: {}, stickers: { earned: {} } },
+      walletRow: { user_id: "real-uid", coins: 5000, freezes: 0 } });
+    __setClientForTests(client);
+    // Guest-era local: small wallet/xp, dirty from guest play, monthly NOT dirty.
+    const store = memStore({ xp: 100, wallet: 200,
+      sync: { dirty: { xp: true, wallet: true }, lastSyncAt: 0 } });
+    const r = await pushDirty(store, "hide");   // step 3
+    expect(r.ok).toBe(true);
+    expect("changed" in r).toBe(true);          // reconcile contract — the blind path never returns `changed`
+    const pushedWallet = calls.upserts.find(u => u.table === "wallet").row;
+    const pushedProgress = calls.upserts.find(u => u.table === "progress").row;
+    expect(pushedWallet).toEqual({ user_id: "real-uid", coins: 5000, freezes: 0 }); // folded, NOT blind 200
+    expect(pushedProgress.xp).toBe(900);        // cloud xp survived, NOT clobbered to 100
+    expect(store.get("wallet", 0)).toBe(5000);  // and local adopted the merged state
+    // The redirect re-keys the latch to the REAL uid: the next push is plain.
+    store.set("sync", { ...store.get("sync", {}), dirty: { wallet: true } });
+    const r2 = await pushDirty(store, "hide");
+    expect(r2.ok).toBe(true);
+    expect("changed" in r2).toBe(false);        // plain push path this time
   });
 });
