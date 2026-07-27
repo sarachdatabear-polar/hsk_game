@@ -2,29 +2,63 @@
 
 **Last updated:** 2026-07-27
 **TL;DR:** **Cat Journey full product is LIVE IN PRODUCTION at service-worker
-`v127`.** `main` == `development` == **`7fa2c721`**; GitHub Pages run
-`30242642301` succeeded 2026-07-27 06:24Z. (A prior revision of this file
-claimed the cut was source-verified only and "does not claim a new live
-deployment" — that was wrong: every push to `main` auto-deploys, and all three
-Cat Journey commits did.) The Cat tab replaces Street by default behind a
-data-safe local rollback flag; legacy Street saves remain untouched. Verified
-gates: **107 test files / 9,708 tests**, **134 validated assets**, ESLint,
-production build, asset budgets, a **659,749-byte** bundle, and focused Cat
-Journey browser passes at 320×568, 390×844, and 844×390.
+`v129`, with cloud sync of Journey state now ENABLED.** `main` ==
+`development` == **`b5ea5ab4`**; GitHub Pages run `30255502093` SUCCESS
+2026-07-27 09:48Z. Verified gates: **109 test files / 9,718 tests**, **134
+validated assets**, ESLint, production build, asset budgets, a
+**659,919-byte** bundle, and Cat Journey browser passes at 320×568, 390×844,
+and 844×390. Live `dist/app.js` is byte-identical to the local build
+(`d37298cf…`).
 
-**Three release gates were NOT met before this shipped — all open:**
+Three cuts landed today, in order:
 
-1. **Code review — now DONE, and it found two live defects.** The four
-   commits in `013a4787..7fa2c721` were auto-deployed unreviewed; the review
-   that should have preceded them is
-   [2026-07-27-cat-journey-v127-review-findings.md](planning/2026-07-27-cat-journey-v127-review-findings.md).
-   Two P0s: a **pre-existing** identity-switch hole in the `sessionReconciled`
-   latch (`src/sync.js:33`) that can blind-push guest state over a real
-   account's cloud row — unrecoverable for reinstall-then-sign-in users — and
-   the **new** orphaning of the daily-quest UI and 1,500-coin monthly claim
-   button, which `show()`'s Street→Cat-Journey rewrite made unreachable for
-   every user. Remediation is sequenced as v128 (live defects) then v129
-   (cloud-sync flip).
+- **v127** (`7fa2c721`) — Cat Journey full product, Codex-built, auto-deployed
+  unreviewed. The Cat tab replaces Street by default behind a data-safe local
+  rollback flag; legacy Street saves untouched.
+- **v128** (`d9374606`) — the two P0s the post-deploy review found: a
+  **pre-existing** identity-switch hole in the reconcile latch, and the
+  **new** orphaning of the daily-quest UI and 1,500-coin monthly claim.
+- **v129** (`b5ea5ab4`) — the cloud flip. See
+  [the plan](planning/2026-07-27-v129-cloud-flip-plan.md).
+
+**v129 — Journey cloud sync is live.** `docs/supabase/migrations/2026-07-27-cat-journey.sql`
+was applied to project `eqsodiufgjecoqgxdisn`; the column re-queried as
+`cat_journey jsonb NOT NULL DEFAULT '{}'::jsonb`, all **8** pre-existing rows
+backfilled, table RLS confirmed on. `CAT_JOURNEY_CLOUD_ENABLED = true`.
+
+The flip also fixed a defect it would otherwise have introduced. Because the
+migration backfills every existing row to `{}`, `mergeAll`'s `!= null` guard
+passed on that empty object and synthesized a full default journey — which
+differs from the null-cloud baseline, so `reconcile` returned `changed: true`
+and `main.js` toasted **"restored your account" at every user who had never
+opened the Cat tab**. `localFromRows` now treats an empty `cat_journey` as
+absent, mirroring the write-side guard in `rowsFromLocal` (which omits the
+column entirely rather than sending `{}`, since PostgREST's subset upsert
+preserves omitted columns but `{}` overwrites them).
+
+**Verified against production, not just in tests.** Two headless-Chromium
+probes drove the live site end to end: a fresh client created an anonymous
+identity, synced, and wrote a real row (client correctly **omitted**
+`cat_journey`, so the column default applied); then a second pass re-entered
+with that same session — whose row already carried the `{}` backfill — and
+confirmed `nbhsk.catJourney` stayed `null`, **zero toasts**, zero JS errors,
+sync settled. Two probe rows (`805e898a…`, `0f607449…`, both `xp: 0`,
+anonymous) remain in `public.progress`; they are test artifacts, safe to
+delete.
+
+**Still open after v129:**
+
+1. **Cross-device acceptance of the cloud flip — OPEN (owner gate C4).** The
+   merge algebra is pinned by unit tests (claims union by day, goal history
+   max-folded, bond tier `Math.max`), and the single-session round-trip is
+   confirmed against production. What is **not** verified is the real
+   two-device round-trip, because it needs two authenticated sessions on one
+   account: anonymous auth mints a distinct uid per browser profile, and the
+   other enabled providers are Google / Apple / magic-link, none drivable
+   headlessly. **v129 is deployed but not accepted.** Do not cut a signed
+   Android artifact until C4 passes — withdrawing a store build costs far more
+   than reverting a web deploy. Steps are in
+   [the plan](planning/2026-07-27-v129-cloud-flip-plan.md) under Track C.
 2. **Native Thai sign-off.** `docs/content/CAT-JOURNEY-EVERGREEN-v1-REVIEW.md`
    declares itself "a production release gate" and its native-review checkbox
    is unchecked, yet **185 machine-drafted Thai strings** are live to Thai users
@@ -36,13 +70,13 @@ Journey browser passes at 320×568, 390×844, and 844×390.
    procedural, not broken text.
 3. **Signed Android artifact.** None exists for v127.
 
-Cloud sync of Journey state is deliberately dark
-(`CAT_JOURNEY_CLOUD_ENABLED = false`, `src/cloud-config.js`): the live Supabase
-`public.progress` table has **no `cat_journey` column** (confirmed by direct
-query 2026-07-27), so
-`docs/supabase/migrations/2026-07-27-cat-journey.sql` must be applied before
-the flag is flipped. Until then Journey claims, Cat Bond tier, and goal history
-are **device-local** — switching devices loses them. Post-MVP direction is the
+Journey claims, Cat Bond tier, and goal history now follow the **account**, not
+the device — as of v129. The rollback flag still works
+(`localStorage.setItem("nbhsk.features.catJourney","false")` restores Street);
+`CAT_JOURNEY_CLOUD_ENABLED` can also be darkened again for **new** clients if
+the column ever has to be rolled back, but note that rollback is **asymmetric**
+— local state already merged against a cloud row is not undone by a flag. The
+pre-flip verification, not revertibility, is the safety net. Post-MVP direction is the
 [Cat Journey Full Product PRD](../../docs/superpowers/specs/2026-07-27-cat-journey-full-product-prd.md)
 and
 [execution plan](../../docs/superpowers/plans/2026-07-27-cat-journey-full-product-execution-plan.md).
@@ -63,12 +97,13 @@ release is complete; signed Android and store/legal work remains in
 
 | Tier | State |
 |---|---|
-| **Live in production** | `main` == `development` == `7fa2c721`; SHELL/runtime **v127**; Pages run `30242642301` SUCCESS 2026-07-27 06:24Z. Cat Journey full product enabled by default (Phases 0–2, Phase 3 authored content, Phase 4 learning/UX). |
-| **Current automated baseline** | 107 files / 9,708 tests; 134 assets; ESLint, production build, and asset budgets pass; `dist/app.js` 659,749 bytes; focused Journey QA at 320×568, 390×844, 844×390. |
-| **Cloud sync of Journey state** | **DARK.** `CAT_JOURNEY_CLOUD_ENABLED = false`; live `public.progress` has no `cat_journey` column. Journey state is device-local until `docs/supabase/migrations/2026-07-27-cat-journey.sql` is applied and the flag flipped (separate cut: rebuild + SHELL v128 + sw-precache pin). |
-| **Code review** | **DONE 2026-07-27, post-deploy** — [findings](planning/2026-07-27-cat-journey-v127-review-findings.md). Core reward loop, rollback flag, and v5→v6 migration all verified sound. Two P0 live defects open: identity-switch latch (pre-existing) and orphaned quest UI (new). |
-| **Native Thai sign-off** | **OUTSTANDING.** Declared release gate in `docs/content/CAT-JOURNEY-EVERGREEN-v1-REVIEW.md`, unchecked; 185 drafted TH strings already live, none `TH-REVIEW`-tagged, none present in `docs/i18n/thai-review-sheet.csv`. |
-| **Latest signed Android artifact on record** | Profile v74 APK. A current Cat Journey APK/AAB still needs Capacitor sync, Windows signing, and emulator/physical-device acceptance. |
+| **Live in production** | `main` == `development` == `b5ea5ab4`; SHELL/runtime **v129**; Pages run `30255502093` SUCCESS 2026-07-27 09:48Z. Cat Journey full product enabled by default (Phases 0–2, Phase 3 authored content, Phase 4 learning/UX), quest loop reachable (v128), Journey cloud sync ON (v129). |
+| **Current automated baseline** | 109 files / 9,718 tests; 134 assets; ESLint, production build, and asset budgets pass; `dist/app.js` 659,919 bytes; `qa:cat-journey` PASS at 320×568, 390×844, 844×390. |
+| **Precache headroom** | **63,942 bytes** (10,946,106 of 11,010,048; 73 of 74 entries). The next ~64 KB of always-loaded anything fails CI. Raising the cap is the wrong fix — move assets to runtime fetch instead. |
+| **Cloud sync of Journey state** | **LIVE (v129).** `CAT_JOURNEY_CLOUD_ENABLED = true`; `cat_journey jsonb NOT NULL DEFAULT '{}'` applied to `eqsodiufgjecoqgxdisn`, 8 pre-existing rows backfilled, RLS on. Single-session round-trip verified against production; **two-device acceptance still OPEN (C4)**. |
+| **Code review** | **DONE 2026-07-27, post-deploy** — [findings](planning/2026-07-27-cat-journey-v127-review-findings.md). Core reward loop, rollback flag, and v5→v6 migration all verified sound. Both P0s **fixed and shipped in v128**. |
+| **Native Thai sign-off** | **OUTSTANDING.** Declared release gate in `docs/content/CAT-JOURNEY-EVERGREEN-v1-REVIEW.md`, unchecked. See Track B of [the v129 plan](planning/2026-07-27-v129-cloud-flip-plan.md) for the pipeline work that makes the queue reviewable. |
+| **Latest signed Android artifact on record** | Profile v74 APK — roughly **55 shell versions** behind the web. Every unreleased version widens the on-device matrix the next signing pass must cover in one go. Gated on C4. |
 
 ## Done
 

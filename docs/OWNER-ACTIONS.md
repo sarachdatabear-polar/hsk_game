@@ -1,35 +1,68 @@
 # Owner actions
 
-The **v127** release is on `main` (`7fa2c721`) and deployed to the web/PWA
-(Pages run `30242642301`, 2026-07-27 06:24Z). It ships **Cat Journey full
-product** — the Cat tab replaces Street by default, behind a data-safe local
-rollback flag; legacy Street saves are untouched. This is a real behavior
-change, not a data-only cut. The remaining gates are the signed Android
+The **v129** release is on `main` (`b5ea5ab4`) and deployed to the web/PWA
+(Pages run `30255502093`, 2026-07-27 09:48Z). Three cuts landed today: **v127**
+Cat Journey full product (the Cat tab replaces Street by default, behind a
+data-safe local rollback flag; legacy Street saves untouched), **v128** the two
+P0s the post-deploy review found, and **v129** the Journey cloud-sync flip. The
+remaining gates are cross-device acceptance of the flip, the signed Android
 artifact, device acceptance, native Thai sign-off, and store/legal work.
 
 ## Current handoff snapshot
 
-- Current committed/deployed source: `main` == `development` == `7fa2c721`;
-  service-worker cache version **`v127`**.
-- Recorded release gates: 107 files / 9,708 tests, ESLint, production build,
-  134 asset checks, and asset budgets all pass; `dist/app.js` 659,749 bytes;
-  focused Cat Journey browser passes at 320×568, 390×844, 844×390.
-- Latest signed artifact remains Profile v74; **no v127 APK/AAB exists yet.**
-- Journey cloud sync is **dark** pending
-  `docs/supabase/migrations/2026-07-27-cat-journey.sql`; see
+- Current committed/deployed source: `main` == `development` == `b5ea5ab4`;
+  service-worker cache version **`v129`**.
+- Recorded release gates: 109 files / 9,718 tests, ESLint, production build,
+  134 asset checks, and asset budgets all pass; `dist/app.js` 659,919 bytes;
+  `qa:cat-journey` passes at 320×568, 390×844, 844×390. Live bundle is
+  byte-identical to the local build.
+- Latest signed artifact remains Profile v74; **no v127/v128/v129 APK/AAB
+  exists yet** — the Android track is ~55 shell versions behind the web.
+- Journey cloud sync is **LIVE** as of v129: the migration is applied to
+  `eqsodiufgjecoqgxdisn` and `CAT_JOURNEY_CLOUD_ENABLED = true`. See
   [STATUS.md](STATUS.md).
 
-Do these in order. The Google/RevenueCat/backend tracks can overlap once the
-accounts exist.
+Do these in order — **§0 first.** The Google/RevenueCat/backend tracks can
+overlap once the accounts exist.
 
-## 1. Build and accept the v127 APK/AAB
+## 0. Accept the v129 cloud flip on two devices (blocks §1)
 
-Use the exact v127 `main` release for Android. It passes 107 test files / 9,708
-tests, ESLint, production build, Capacitor sync, 134 asset checks, and the
-deterministic EN+TH viewport/format/accessibility gates. **It has not been
-signed on Windows.**
+The v129 merge algebra is pinned by unit tests and the single-session round-trip
+is verified against production, but the real two-device round-trip is not — it
+needs two authenticated sessions on **one** account, which cannot be driven
+headlessly (anonymous auth mints a distinct uid per profile; the other providers
+are Google / Apple / magic-link).
 
-Pull `main` v127 onto the Windows release checkout, then open a
+1. Device A: sign in, open Cat Journey, complete a journey. Note the keepsake
+   and Cat Bond tier.
+2. Device B: sign in to **the same account**, foreground the app, open Cat
+   Journey.
+3. **Expect:** A's claim is present on B, the keepsake is granted **exactly
+   once** (re-enter the screen and cold-restart the app — no second grant), and
+   the bond tier matches.
+4. Device B: complete a *different* day's journey. Foreground Device A.
+5. **Expect:** A shows **both** claims — a union, not a replacement. A
+   replacement is a P0: revert `CAT_JOURNEY_CLOUD_ENABLED`, ship immediately,
+   and reopen the merge tests.
+6. On a device that had journey state *before* v129, confirm nothing was lost
+   after the first post-upgrade sync.
+
+**Until this passes, v129 is deployed but not accepted — do not sign an
+Android artifact.** A store build carrying a sync regression is far more
+expensive to withdraw than a web deploy.
+
+Two anonymous probe rows (`805e898a…`, `0f607449…`, both `xp: 0`) sit in
+`public.progress` from the production verification. They are test artifacts and
+safe to delete whenever convenient.
+
+## 1. Build and accept the v129 APK/AAB
+
+**Entry criteria: §0 passed.** Use the exact v129 `main` release for Android. It
+passes 109 test files / 9,718 tests, ESLint, production build, Capacitor sync,
+134 asset checks, and the deterministic EN+TH viewport/format/accessibility
+gates. **It has not been signed on Windows.**
+
+Pull `main` v129 onto the Windows release checkout, then open a
 fresh PowerShell in
 `C:\Users\sarac\Desktop\HSK\game` and run these as separate lines:
 
@@ -66,15 +99,23 @@ portrait and landscape, launcher/splash branding, offline mode, and a final
 empty scan for fatal Android/WebView errors. Real IAP is expected to remain
 hidden because the public RevenueCat key is blank.
 
-**New for v127 — Cat Journey has never run on real hardware.** Add to the
+**New since v127 — Cat Journey has never run on real hardware.** Add to the
 matrix: open the Cat tab, send the cat out, confirm the return vignette and
 keepsake arrive and are granted **once** (re-enter the screen and re-launch the
 app — no second grant); confirm Cat Bond tier progresses; confirm the journey
 notification fires and is cancellable; confirm the rollback flag still restores
 Street with all prior state intact
 (`localStorage.setItem("nbhsk.features.catJourney","false"); location.reload()`).
-Journey state is device-local in v127, so do **not** expect it to follow the
-account across devices.
+
+**New for v128 —** the quest overlay was unreachable on the Cat tab and is now
+top-level `position: fixed`. Open Quests from Cat Journey, confirm the panel is
+in-viewport in portrait and landscape, shows 3 dailies plus the monthly claim,
+and closes on back/Esc.
+
+**New for v129 —** Journey state now follows the **account**, not the device.
+Signing in on the Android build must pull the journey created on another device
+(that is §0's check, done before you get here). Also confirm the reverse: a
+journey completed on Android appears on the web build under the same account.
 
 Once the signed build passes this matrix, it is ready for the store tracks below
 (§3–§7). The signed APK/AAB is uploaded to the Play Console, not committed to
