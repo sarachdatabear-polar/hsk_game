@@ -123,13 +123,21 @@ the repository.
 
 ## 2. Obtain native Thai sign-off
 
-Give the reviewer [the prioritized 377-string queue](i18n/i18n-translation-review.md).
-They must edit `src/i18n.js` or return exact key/value corrections, then supply
-their name, review date, and reviewed commit for the sign-off block. Money,
-account-loss, cloud-backup, and notification copy is P0.
+Give the reviewer **`docs/i18n/thai-review-sheet.csv`** — the machine-readable
+queue, **732 rows** (P0 71 / P1 183 / P2 408 / P3 70), sorted so money, account,
+cloud-backup, and notification copy is first in the file. They fill the
+`corrected_thai` and `notes` columns; engineering applies the result with
+`node docs/i18n/scripts/apply-thai-review-sheet.mjs`. Alternatively they can edit
+`src/i18n.js` directly. Either way they must supply their name, review date, and
+reviewed commit for the sign-off block. Background and per-block guidance is in
+[the review doc](i18n/i18n-translation-review.md).
+
+**Coverage is complete** — all Thai lives in `STRINGS`; `src/cat-memories.js`
+(the 30 stories, 12 keepsakes) holds zero Thai characters, only ids. A reviewer
+working the CSV is not missing the narrative text.
 
 **P0 escalation — Cat Journey Thai is already live and unreviewed.** The v124–v127
-arc added **185 machine-drafted Thai strings** (≈60 memory titles/stories, ≈45
+arc added **174 machine-drafted Thai strings** (≈60 memory titles/stories, ≈45
 journey UI strings, push-notification copy, reworked onboarding, plus `street.*`,
 `scope.*`, `profile.*`, `album.*`, `shop.*`, `howto.*`, `battle.*`, `more.*`
 batches) that shipped to production **without** the native review that
@@ -142,17 +150,28 @@ set takes precedence over the older queue; record the reviewer name, date, and
 commit in that document's sign-off block, and apply corrections to `src/i18n.js`
 in a normal cut (rebuild + SHELL bump).
 
-Two mechanical fixes are needed before the reviewer can even see this copy, and
-they are engineering work, not owner work:
+The mechanical fixes that used to block this — the strings being untagged and
+absent from the sheet — are **DONE** (2026-07-27, engineering). For the record,
+because the numbers in the older text were off:
 
-- **None of the 185 lines carries the `TH-REVIEW` marker**, and none appears in
-  `docs/i18n/thai-review-sheet.csv` (`docs/i18n/` was untouched by the whole arc).
-  Tag them and regenerate the sheet.
-- `docs/i18n/scripts/extract-thai-review-sheet.mjs` has no rule for `cat.*`,
-  `home.cat.*`, or `notify.cat.*`, so on regeneration they all sort to **P3
-  (lowest)** — including the push-notification copy, which the script's own policy
-  puts in P0 next to `notify.streak.*`. Add a `notify.cat.*` → P0 rule and a
-  `cat.`/`home.cat.` rule.
+- **All 174 arc keys now carry the `TH-REVIEW` marker** in `src/i18n.js` (21
+  markers before, 195 after). Scope was computed by diffing the key set against
+  the pre-arc tree rather than guessed by prefix; the tagging commit is
+  comment-only, verified by diffing both sides of the patch with the marker
+  stripped.
+- **The sheet was 349 rows stale**, not 185 — 383 committed against 732
+  generated. It is regenerated and committed.
+- **Three priority rules were missing, not two.** `cat.*` (108 rows) had no rule
+  at all and sat in the unclassified P3 bucket. `quests.*` fell through because
+  the P1 rule tests `quest.`, which `quests.title` does not match. And
+  `notify.cat.*` — the Cat Journey push copy, live since v127 — sat at **P3**
+  while every other notification string was P0, contradicting the script's own
+  stated policy; the per-family `notify.streak.`/`notify.comeback.` rules have
+  been replaced with one prefix-wide `notify.` → P0 rule so the next family
+  added cannot repeat it.
+
+What remains here is **owner work only**: get a native reviewer through the
+queue and record the sign-off.
 
 ## 3. Create Google Play Console
 

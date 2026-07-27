@@ -25,8 +25,12 @@ const RULES = [
   // ---- P0: money, account, notifications ----
   ["P0", (k) => k.startsWith("iap.")],
   ["P0", (k) => k.startsWith("account.")], // includes account.supporterChip
-  ["P0", (k) => k.startsWith("notify.streak.")],
-  ["P0", (k) => k.startsWith("notify.comeback.")],
+  // ALL notification copy, not an enumerated list of families. The previous
+  // per-family rules (notify.streak./notify.comeback.) silently left
+  // notify.cat.* — the Cat Journey push copy, live since v127 — sitting at P3,
+  // contradicting this file's own policy that notification tone is P0. A
+  // prefix-wide rule cannot go stale the next time a family is added.
+  ["P0", (k) => k.startsWith("notify.")],
   ["P0", (k) => k === "shop.getCoins"],
   ["P0", (k) => k.startsWith("shop.supporter")],
   ["P0", (k) => k === "item.supporter"],

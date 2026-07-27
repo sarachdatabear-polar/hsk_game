@@ -3,11 +3,25 @@
 ## Status
 
 **Owner action required before store launch:** no native-Thai approval is
-recorded for `STRINGS.th` in `src/i18n.js`. Treat all 377 Thai values as draft,
-even when they read naturally. A native reviewer should edit the source table,
-then record the reviewer, date, and reviewed commit below.
+recorded for `STRINGS.th` in `src/i18n.js`. Treat all **732** Thai values as
+draft, even when they read naturally. A native reviewer should edit the source
+table, then record the reviewer, date, and reviewed commit below.
 
-Local engineering audit completed 2026-07-16:
+> **The machine-readable queue is `docs/i18n/thai-review-sheet.csv` — start
+> there, not with the tables in this file.** Regenerate it any time with
+> `node docs/i18n/scripts/extract-thai-review-sheet.mjs > docs/i18n/thai-review-sheet.csv`;
+> corrections go back in via `apply-thai-review-sheet.mjs`. It is **732 rows**
+> (P0 69 / P1 183 / P2 408 / P3 72), sorted so the money/account/notification
+> copy is first in the file. The prose tables below predate it and cover the P0
+> block only.
+>
+> **Coverage is complete.** All Thai lives in `STRINGS` — `src/cat-memories.js`
+> (the 30 stories and 12 keepsakes) holds **zero Thai characters**, only ids
+> that resolve through `STRINGS`. A reviewer working the CSV is not missing the
+> narrative text.
+
+Local engineering audit completed 2026-07-16 (counts as of that date; the key
+set has since grown to 732):
 
 - 377/377 English keys have Thai values.
 - Every `{placeholder}` set matches its English source.
@@ -153,6 +167,37 @@ native-Thai review recorded and belongs in this P0 pass.
 | --- | --- | --- | --- | --- |
 | `settings.privacy` | Privacy Policy | นโยบายความเป็นส่วนตัว | | |
 
+### Cat Journey (v127) — already live, so this is CORRECTIVE review
+
+**This block is different from everything else in this document: it is not
+pre-release review, it is a correction of copy that is already in front of Thai
+users.** The Cat Journey full product shipped machine-drafted Thai to
+production in v124–v127 **with no English fallback**, against the standing rule
+that machine Thai is staged, not shipped. `docs/content/CAT-JOURNEY-EVERGREEN-v1-REVIEW.md`
+declares its own native-Thai checkbox a production release gate, and that box
+is unchecked.
+
+Why nothing caught it: the commit used a prose comment
+(`// …native sign-off remains`) instead of the machine-readable `TH-REVIEW`
+marker, so **no string entered the queue**. Both halves are now fixed —
+**174** keys carry `// TH-REVIEW` in `src/i18n.js` (the arc's full key set,
+computed by diffing against the pre-arc tree, not guessed by prefix), and the
+`cat.*` rows sit at **P2** in the CSV rather than the unclassified P3 bucket
+where 108 live strings had been sitting below 180 rows of minor copy.
+
+- **Scope:** the 108 `cat.*` rows plus 9 `journey.*` rows in the P2 block of
+  `docs/i18n/thai-review-sheet.csv`, and every `// TH-REVIEW` line in
+  `src/i18n.js`.
+- **Priority relative to the rest:** the P0 money/account/notification block
+  still goes first. This block is next, ahead of the remaining P2/P3 copy,
+  because it is live and unreviewed rather than merely unreviewed.
+- **Three strings need particular attention** — `account.connect`,
+  `learn.stillLearning`, and `learn.knowIt` were *replaced* by this arc, and
+  the Thai they replaced had already passed the v112–v116 humanization arc.
+  Check whether the new drafts regressed copy that was previously signed off.
+- **Action is correct-and-patch, not revert.** Pulling live strings is the
+  larger and riskier change.
+
 #### How to return this review
 
 Either works — pick whichever is easier:
@@ -172,8 +217,8 @@ clears them when the corresponding row is signed off.
 #### P0 sign-off
 
 Fast-track sign-off for this P0 pass only — separate from the full-doc
-"Sign-off" block at the bottom of this file, which covers all 377 keys
-(P0–P2) once the complete review is done.
+"Sign-off" block at the bottom of this file, which covers all **732** keys
+(P0–P3) once the complete review is done.
 
 - Native reviewer: _pending_
 - Review date: _pending_
