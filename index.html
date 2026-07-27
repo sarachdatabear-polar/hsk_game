@@ -263,6 +263,32 @@
   .profile-avatar.has-initial .profile-avatar-initial{display:block;}
   .profile-avatar.has-initial .profile-avatar-fallback{display:none;}
   .profile-avatar-fallback{width:54px; height:54px; color:var(--lc-green); opacity:.9;}
+  /* Avatar-picker feature (2026-07-27): the hero circle is now a button. */
+  button.profile-avatar{position:relative; padding:0; font:inherit; cursor:pointer;}
+  .profile-avatar-art{position:absolute; inset:0; border-radius:50%; background-repeat:no-repeat; z-index:1;}
+  .profile-avatar-edit{position:absolute; right:-2px; bottom:2px; z-index:2; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:12px;
+    background:var(--panel-wash); border:1px solid var(--panel-border); color:var(--lc-green);}
+  .profile-avatar-initial{position:relative;}
+  /* Avatar picker grid (body of #avatar-overlay, built by avatar-picker.js) */
+  #avatar-panel{display:flex; flex-direction:column; gap:10px;}
+  #avatar-panel .av-grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px;}
+  .av-tile{position:relative; min-width:44px; min-height:64px; display:flex; flex-direction:column;
+    align-items:center; gap:4px; padding:6px 2px; border-radius:12px; border:2px solid transparent;
+    background:var(--panel-wash); font:inherit; cursor:pointer;}
+  .av-tile.selected{border-color:var(--lc-sun-deep);}
+  .av-tile[disabled]{opacity:.55; cursor:default;}
+  .av-art{position:relative; width:44px; height:44px; border-radius:50%; overflow:hidden;
+    background:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-cream)); background-repeat:no-repeat;
+    display:flex; align-items:center; justify-content:center;}
+  .av-initial{font-size:20px; font-weight:900; color:var(--lc-green);}
+  .av-cap{font-size:11px; line-height:1.2; color:var(--ink); text-align:center; overflow-wrap:anywhere;}
+  .av-lock{position:absolute; right:-2px; bottom:-2px; font-size:12px;}
+  .av-photo{overflow:hidden;}
+  .av-file{position:absolute; inset:0; opacity:0; cursor:pointer;}
+  .av-hint{font-size:12px; color:var(--muted); line-height:1.4;}
+  .av-remove{min-height:44px; border-radius:10px; font:inherit; background:var(--panel-wash);
+    border:1px solid var(--panel-border); cursor:pointer;}
   .profile-identity{min-width:0; display:flex; flex-direction:column; gap:8px;}
   /* Needs an explicit [hidden] override for the same reason .street-caption-row
      and .street-layouts-panel do: renderProfileDashboard swaps this row for
@@ -823,7 +849,7 @@
     box-shadow:0 12px 28px rgba(0,0,0,.4);}
   /* These dialogs live outside an individual screen. Bind them to the
      viewport—not the height or scroll position of Profile behind them. */
-  #word-overlay,#friend-overlay,#quest-overlay{position:fixed; inset:0;}
+  #word-overlay,#friend-overlay,#quest-overlay,#avatar-overlay{position:fixed; inset:0;}
   .pause-title{margin:0; text-align:center; font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif;
     font-weight:800; font-size:20px; color:var(--lc-ink);}
   .pause-resume{font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif; font-weight:800; font-size:19px;
@@ -1278,6 +1304,27 @@
   #friend-panel .fr-mine, #friend-panel .fr-theirs{text-align:right; font-variant-numeric:tabular-nums; font-size:14px; color:var(--ink);}
   #friend-panel .fr-row.fr-mine .fr-mine{color:var(--lc-green, #2a8); font-weight:700;}
   #friend-panel .fr-row.fr-theirs .fr-theirs{color:var(--lc-green, #2a8); font-weight:700;}
+  /* Friend invite rework (2026-07-27) */
+  #friend-panel .fr-note{font-size:12px; color:var(--muted); line-height:1.4;}
+  #friend-panel .fr-qr{display:flex; justify-content:center;}
+  /* White always — QR contrast is non-negotiable in any theme. */
+  #friend-panel .fr-qr svg{width:min(220px,70vw); height:auto; background:#fff; border-radius:8px;}
+  #friend-panel .fr-mycard{display:flex; gap:10px; align-items:center;}
+  #friend-panel .fr-mycard-meta{font-weight:700; color:var(--ink); overflow-wrap:anywhere;}
+  #friend-panel .fr-avatar{position:relative; flex:none; width:36px; height:36px; border-radius:50%;
+    overflow:hidden; background:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-cream));
+    display:flex; align-items:center; justify-content:center;}
+  #friend-panel .fr-avatar-me{width:44px; height:44px;}
+  #friend-panel .fr-avatar-art{position:absolute; inset:0; background-repeat:no-repeat;}
+  #friend-panel .fr-avatar-mono{font-weight:900; color:var(--lc-green);}
+  #friend-panel .fr-recent-row{display:flex; gap:10px; align-items:center; min-height:44px; width:100%;
+    padding:4px 6px; border-radius:10px; border:0; background:none; font:inherit; text-align:left; cursor:pointer;}
+  #friend-panel .fr-recent-row:active{background:var(--panel-wash);}
+  #friend-panel .fr-recent-name{flex:1; min-width:0; overflow-wrap:anywhere; color:var(--ink); font-weight:700;}
+  #friend-panel .fr-fresh{font-size:12px; color:var(--muted);}
+  #friend-panel .fr-clear{min-height:44px; border-radius:10px;}
+  #friend-panel .fr-compare-head{display:flex; gap:10px; align-items:center;}
+  #friend-panel .fr-their-name{font-weight:800; color:var(--ink); overflow-wrap:anywhere;}
   .wd-info{position:absolute; top:4px; right:4px; width:44px; height:44px; border:none; background:transparent; font-size:20px; color:var(--muted); cursor:pointer; line-height:1; display:flex; align-items:center; justify-content:center;}
   .quest-row{display:flex; align-items:center; gap:6px; font-size:12.5px; line-height:1.3;
     border:1px solid var(--panel-border); border-radius:10px; padding:8px 22px; color:var(--ink);}
@@ -2426,13 +2473,15 @@
     </div>
     <div class="profile-pane" id="profile-overview-pane" data-profile-pane="overview">
     <section class="profile-hero" aria-labelledby="profile-name">
-      <div class="profile-avatar" id="profile-avatar" role="img" aria-label="Player profile">
+      <button type="button" class="profile-avatar" id="profile-avatar" aria-label="Change profile picture">
+        <span class="profile-avatar-art" id="profile-avatar-art" aria-hidden="true"></span>
         <span class="profile-avatar-initial" id="profile-avatar-initial" aria-hidden="true"></span>
         <svg class="profile-avatar-fallback" viewBox="0 0 64 64" aria-hidden="true">
           <circle cx="32" cy="22" r="12" fill="currentColor"></circle>
           <path d="M10 56c1-14 9-22 22-22s21 8 22 22" fill="currentColor"></path>
         </svg>
-      </div>
+        <span class="profile-avatar-edit" aria-hidden="true">✎</span>
+      </button>
       <div class="profile-identity">
         <div class="profile-name-row" id="profile-name-row">
           <h3 id="profile-name">Lucky Learner</h3>
@@ -2455,6 +2504,7 @@
       <div class="profile-stat"><b id="profile-stickers">0/0</b><span data-i18n="profile.stickers">Stickers earned</span></div>
       <div class="profile-stat"><b id="profile-best">0</b><span data-i18n="profile.bestSession">Best session</span></div>
     </div>
+    <button class="big" id="go-friend" type="button"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="friend.inviteCta">Invite a friend</span></span></button>
     <section class="profile-empty" id="profile-empty" hidden>
       <b data-i18n="profile.emptyTitle">Your learning story starts here</b>
       <p data-i18n="profile.emptyBody">Complete a Word Quest to unlock progress, reviews, and rewards.</p>
@@ -2469,7 +2519,6 @@
       <div class="profile-actions">
         <button class="big" data-go="shop"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#shop"></use></svg><span data-i18n="profile.viewCollection">View Collection</span></span></button>
         <button class="big" data-go="album"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="profile.viewAlbum">Sticker Album</span></span></button>
-        <button class="big" id="go-friend" type="button"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="friend.compareCta">Compare with a friend</span></span></button>
       </div>
     </section>
     </div>
@@ -2651,10 +2700,23 @@
   <div class="pause-overlay" id="friend-overlay" role="dialog" aria-modal="true" aria-labelledby="friend-dialog-title">
     <div class="pause-panel">
       <div class="quest-popup-head">
-        <h3 class="pause-title" id="friend-dialog-title" data-i18n="friend.title">Compare with a friend</h3>
+        <h3 class="pause-title" id="friend-dialog-title" data-i18n="friend.inviteTitle">Invite a friend</h3>
         <button class="overlay-close" id="friend-popup-close" data-i18n-title="common.close" aria-label="Close">×</button>
       </div>
       <div id="friend-panel"></div>
+    </div>
+  </div>
+
+  <!-- Avatar picker: same dialog pattern as #friend-overlay. Body filled by
+       createAvatarPicker() in src/ui/avatar-picker.js. Photo stays on-device. -->
+  <div class="pause-overlay" id="avatar-overlay" role="dialog" aria-modal="true"
+       aria-labelledby="avatar-dialog-title">
+    <div class="pause-panel">
+      <div class="quest-popup-head">
+        <h3 class="pause-title" id="avatar-dialog-title" data-i18n="avatar.title">Profile picture</h3>
+        <button class="overlay-close" id="avatar-popup-close" data-i18n-title="common.close" aria-label="Close">×</button>
+      </div>
+      <div id="avatar-panel"></div>
     </div>
   </div>
 
