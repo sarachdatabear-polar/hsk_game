@@ -1084,3 +1084,82 @@ Tasks 1 and 2 are flag-independent and land before the migration — deliberatel
 - **C4, the two-device check.** v129 is *deployed* at Task 4 and *accepted* only at C4. C1 (the signed store artifact) waits on acceptance, not deployment — withdrawing a store build is far more expensive than reverting a web deploy.
 
 **Agent scope ends at Task 5 and Task 8.** No agent checks the Thai sign-off box, edits a Thai value as if reviewed, or writes "two-device verified" into any doc.
+
+---
+
+# APPENDIX — what actually happened (executed 2026-07-27)
+
+**Tracks A and B are DONE and deployed.** The plan body above is left unedited as
+the pre-execution record; where it predicted a number and reality differed, this
+appendix is authoritative.
+
+| Task | Commit | Outcome |
+|---|---|---|
+| 1 | `b1f958db` | As planned. Both guards; both tests RED first, then green. |
+| 2 | `1f35727e` | As planned, **plus a third red-check probe** (Probe C, the read guard). |
+| 3 | — (no commit) | Gate PASSED. Column `jsonb / NOT NULL / '{}'`, **8** rows backfilled, RLS on, comment applied. Applied from the VPS via the Management API — agent work, confirmed. |
+| 4 | `b5ea5ab4` | **Four** tests broke, not two (see below). SHELL v129, Pages run `30255502093` SUCCESS. |
+| 5 | `41c6f9bf` (+ root `48f3dee`) | Step 3 was executable after all (see below). |
+| 6 | `a1527d87` | **Three** rules missing, not two (see below). |
+| 7 | `633e41c4` | 174 keys tagged, comment-only, verified. |
+| 8 | `0422a364` (+ root `7b23c76`) | As planned, plus the third rule's documentation. |
+
+## Where the plan was wrong
+
+1. **Task 4 Step 2 predicted two failing tests; four failed.** The two extra were
+   a third in `test/sync.test.js` (`localSnapshot reads Cat Journey without
+   making the dark capability a sync key` — its `SYNC_KEYS` negative assertion)
+   and two in `test/merge.test.js` (`SYNC_KEYS lists the 11 synced keys`, and
+   `syncKeysFor(false)).toEqual(SYNC_KEYS)`). All were the same class — flag-OFF
+   assertions leaning on a module default that changed meaning — and all were
+   made explicit or moved, none weakened. `merge.test.js` now pins the
+   always-synced 11 via `syncKeysFor(false)` and asserts `catJourney` as the
+   12th. **Lesson: grep for every `SYNC_KEYS` and `syncKeysFor` assertion before
+   flipping a constant that one of them is frozen from, not just the obvious
+   file.**
+
+2. **Task 6 predicted two missing priority rules; there were three.**
+   `notify.cat.*` — the Cat Journey push copy, live since v127 — sat at **P3**
+   while every other notification string was P0, contradicting the extractor's
+   own stated policy. It was not in the P3-prefix census the plan ran because
+   that census grouped by first segment (`notify` showed only 2 rows and looked
+   minor). The per-family `notify.streak.`/`notify.comeback.` rules are now one
+   prefix-wide `notify.` → P0 rule, so the next family added cannot repeat it.
+   Final sheet: 732 rows, **P0 71 / P1 183 / P2 408 / P3 70**.
+
+3. **Task 5 Step 3 was executable — the plan was too pessimistic.** It assumed
+   only an existing local browser profile could exercise the `{}`-backfill read
+   path. In fact anonymous auth is created by an explicit "Back up my progress"
+   tap (`ensureGuest` in `cloud.js`), so a two-pass headless probe works: pass 1
+   creates the identity and writes the row, then `storageState` is persisted and
+   pass 2 re-enters with that **same session** against a row that now carries the
+   backfill. Result: `nbhsk.catJourney` stayed `null`, **zero toasts**, zero JS
+   errors, sync settled — the toast defect confirmed fixed in production against
+   a real backfilled row. Probe scripts are in the session scratchpad, not the
+   repo.
+
+4. **The branch-discipline paragraph describes a flow that wasn't followed.** The
+   docs commits were made while already on `main`, then merged `main` →
+   `development` rather than the other way. Both branches ended equal at
+   `0422a364`, so nothing is broken, but the `--ff-only` resync advice is still
+   the right instruction for anyone running these tracks genuinely in parallel.
+
+## Verified numbers (supersede the plan body)
+
+- **109 test files / 9,718 tests**, ESLint clean, production build, 134 asset checks.
+- `dist/app.js` 659,853 → **659,919** (+66 B).
+- Precache **10,946,106 / 11,010,048 → 63,942 B headroom** (73 of 74 entries).
+  The plan quoted 65,604 from the prior handoff; the measured figure is ~1.6 KB
+  lower. That is a measurement discrepancy in the earlier record, not a
+  regression from this cut.
+- One console 400 during probe 1 is **pre-existing and expected**:
+  `public.ledger` lacks `event_id`/`order_id` because `2026-07-12-iap-golive.sql`
+  is deliberately unapplied, which hits reconcile's documented `not-migrated`
+  safe-degradation path.
+
+## Left open, by design
+
+**C4 (two-device acceptance) — v129 is deployed but NOT accepted.** It gates the
+signed Android artifact. Also open: the iPhone on-device pass, and native Thai
+sign-off itself (the queue is ready; the reviewer is not engaged). The
+native-review checkboxes were deliberately left unchecked.

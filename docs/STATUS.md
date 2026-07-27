@@ -7,8 +7,9 @@
 2026-07-27 09:48Z. Verified gates: **109 test files / 9,718 tests**, **134
 validated assets**, ESLint, production build, asset budgets, a
 **659,919-byte** bundle, and Cat Journey browser passes at 320×568, 390×844,
-and 844×390. Live `dist/app.js` is byte-identical to the local build
-(`d37298cf…`).
+and 844×390. Live `dist/app.js` was verified byte-identical to the local build
+at `0422a364` (sha `d37298cf…`) — a point-in-time check, not a standing
+property; re-verify after any commit that touches `src/`.
 
 Three cuts landed today, in order:
 

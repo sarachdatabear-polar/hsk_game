@@ -15,7 +15,8 @@ artifact, device acceptance, native Thai sign-off, and store/legal work.
 - Recorded release gates: 109 files / 9,718 tests, ESLint, production build,
   134 asset checks, and asset budgets all pass; `dist/app.js` 659,919 bytes;
   `qa:cat-journey` passes at 320×568, 390×844, 844×390. Live bundle is
-  byte-identical to the local build.
+  verified byte-identical to the local build at `0422a364` (point-in-time check;
+  re-verify after any commit touching `src/`).
 - Latest signed artifact remains Profile v74; **no v127/v128/v129 APK/AAB
   exists yet** — the Android track is ~55 shell versions behind the web.
 - Journey cloud sync is **LIVE** as of v129: the migration is applied to
