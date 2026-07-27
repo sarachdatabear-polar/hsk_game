@@ -1,21 +1,37 @@
 # Lucky Cat HSK — Status
 
 **Last updated:** 2026-07-27
-**TL;DR:** Current source is game `main` at **`df875840`**, with Cat Journey
-introduced at `b0e3a054` and the complete-user-journey UX follow-up on top.
-The Cat tab replaces Street by default behind a data-safe local rollback flag;
-legacy Street saves remain untouched. The recorded pre-full-product baseline is
-service-worker **v126**, **107 test files / 9,666 tests**, **133 validated
-assets**, a **629,337-byte** production bundle, clean ESLint/build, and focused
-Cat Journey browser passes at 320×568, 390×844, and 844×390. This snapshot is
-source/build verified; it does not claim a new live deployment or signed
-Android artifact. Full-product implementation is now through Phases 0–2 and
-Phase 4's learning/UX engineering, with Phase 3's authored content foundation
-in place: the development worktree passes **107 test files / 9,708 tests**,
-**134 validated assets**, ESLint, production build, asset budgets, and the same
-three focused browser journeys. This development release advances the
-service-worker shell/runtime to **v127**. Cloud sync remains deliberately
-disabled until its additive SQL migration is deployed. Post-MVP direction is the
+**TL;DR:** **Cat Journey full product is LIVE IN PRODUCTION at service-worker
+`v127`.** `main` == `development` == **`7fa2c721`**; GitHub Pages run
+`30242642301` succeeded 2026-07-27 06:24Z. (A prior revision of this file
+claimed the cut was source-verified only and "does not claim a new live
+deployment" — that was wrong: every push to `main` auto-deploys, and all three
+Cat Journey commits did.) The Cat tab replaces Street by default behind a
+data-safe local rollback flag; legacy Street saves remain untouched. Verified
+gates: **107 test files / 9,708 tests**, **134 validated assets**, ESLint,
+production build, asset budgets, a **659,749-byte** bundle, and focused Cat
+Journey browser passes at 320×568, 390×844, and 844×390.
+
+**Three release gates were NOT met before this shipped — all open:**
+
+1. **Code review.** The three Cat Journey commits (`b0e3a054`, `df875840`,
+   `7fa2c721`, ≈1,700 lines incl. sync/merge/migration changes) were
+   auto-deployed unreviewed. Review is in progress; green tests are not a
+   review.
+2. **Native Thai sign-off.** `docs/content/CAT-JOURNEY-EVERGREEN-v1-REVIEW.md`
+   declares itself "a production release gate" and its native-review checkbox
+   is unchecked, yet ~370 machine-drafted Thai strings are live to Thai users
+   with no fallback. They were also marked with a prose comment instead of the
+   machine-readable `TH-REVIEW` tag, so nothing entered the review queue.
+3. **Signed Android artifact.** None exists for v127.
+
+Cloud sync of Journey state is deliberately dark
+(`CAT_JOURNEY_CLOUD_ENABLED = false`, `src/cloud-config.js`): the live Supabase
+`public.progress` table has **no `cat_journey` column** (confirmed by direct
+query 2026-07-27), so
+`docs/supabase/migrations/2026-07-27-cat-journey.sql` must be applied before
+the flag is flipped. Until then Journey claims, Cat Bond tier, and goal history
+are **device-local** — switching devices loses them. Post-MVP direction is the
 [Cat Journey Full Product PRD](../../docs/superpowers/specs/2026-07-27-cat-journey-full-product-prd.md)
 and
 [execution plan](../../docs/superpowers/plans/2026-07-27-cat-journey-full-product-execution-plan.md).
@@ -36,9 +52,11 @@ release is complete; signed Android and store/legal work remains in
 
 | Tier | State |
 |---|---|
-| **Current source** | Cat Journey full-product development release cut from baseline `df875840`; Cat Journey enabled by default; SHELL/runtime v127; deployment is performed by the protected `main` Pages workflow. |
-| **Current automated baseline** | 107 files / 9,666 tests; 133 assets; ESLint and production build pass; `dist/app.js` 629,337 bytes. |
-| **Full-product development release** | Phases 0–2 and Phase 4 engineering plus Phase 3 authored-data foundation; 107 files / 9,708 tests; 134 assets; ESLint/build and asset budgets pass; `dist/app.js` 659,749 bytes; focused Journey QA passes at 320×568, 390×844, and 844×390. |
+| **Live in production** | `main` == `development` == `7fa2c721`; SHELL/runtime **v127**; Pages run `30242642301` SUCCESS 2026-07-27 06:24Z. Cat Journey full product enabled by default (Phases 0–2, Phase 3 authored content, Phase 4 learning/UX). |
+| **Current automated baseline** | 107 files / 9,708 tests; 134 assets; ESLint, production build, and asset budgets pass; `dist/app.js` 659,749 bytes; focused Journey QA at 320×568, 390×844, 844×390. |
+| **Cloud sync of Journey state** | **DARK.** `CAT_JOURNEY_CLOUD_ENABLED = false`; live `public.progress` has no `cat_journey` column. Journey state is device-local until `docs/supabase/migrations/2026-07-27-cat-journey.sql` is applied and the flag flipped (separate cut: rebuild + SHELL v128 + sw-precache pin). |
+| **Code review** | **OUTSTANDING.** The three Cat Journey commits deployed unreviewed. |
+| **Native Thai sign-off** | **OUTSTANDING.** Declared release gate in `docs/content/CAT-JOURNEY-EVERGREEN-v1-REVIEW.md`, unchecked; ~370 drafted TH strings already live. |
 | **Latest signed Android artifact on record** | Profile v74 APK. A current Cat Journey APK/AAB still needs Capacitor sync, Windows signing, and emulator/physical-device acceptance. |
 
 ## Done

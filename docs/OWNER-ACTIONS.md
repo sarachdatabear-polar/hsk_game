@@ -1,34 +1,35 @@
 # Owner actions
 
-The v85 release is on `main` (`ead3ff2`) and deployed to the web/PWA. It ships
-the HSK 3.0 (GF0025-2021) compatibility audit and an additive read-only `h3`
-band on word records that is **dormant** (rendered nowhere yet), so it is a
-data-only cut with no behavior change — `dist/app.js` is byte-identical to v84
-and the SHELL bump only busts the PWA cache for the regenerated `data/words.js`.
-The web release is complete since v80's corrective hardening; the remaining
-gates are the signed Android artifact, device acceptance, and store/legal work.
+The **v127** release is on `main` (`7fa2c721`) and deployed to the web/PWA
+(Pages run `30242642301`, 2026-07-27 06:24Z). It ships **Cat Journey full
+product** — the Cat tab replaces Street by default, behind a data-safe local
+rollback flag; legacy Street saves are untouched. This is a real behavior
+change, not a data-only cut. The remaining gates are the signed Android
+artifact, device acceptance, native Thai sign-off, and store/legal work.
 
 ## Current handoff snapshot
 
-- Current committed/deployed source: `main` v85; service-worker cache version
-  `v85`. Live-verified: `sw.js` serves `CACHE_VERSION "v85"`, site HTTP 200.
-- Recorded release gates: 87 files / 5,931 tests, build clean, `dist/app.js`
-  byte-identical to v84 (data-only cut). Prior v80 gates (95 assets, `file://`
-  launch, deterministic EN+TH browser matrices, Capacitor branding sync) remain
-  valid since no `src`/asset/build change has landed since.
-- Latest signed artifact remains Profile v74; no v85 APK/AAB exists yet.
+- Current committed/deployed source: `main` == `development` == `7fa2c721`;
+  service-worker cache version **`v127`**.
+- Recorded release gates: 107 files / 9,708 tests, ESLint, production build,
+  134 asset checks, and asset budgets all pass; `dist/app.js` 659,749 bytes;
+  focused Cat Journey browser passes at 320×568, 390×844, 844×390.
+- Latest signed artifact remains Profile v74; **no v127 APK/AAB exists yet.**
+- Journey cloud sync is **dark** pending
+  `docs/supabase/migrations/2026-07-27-cat-journey.sql`; see
+  [STATUS.md](STATUS.md).
 
 Do these in order. The Google/RevenueCat/backend tracks can overlap once the
 accounts exist.
 
-## 1. Build and accept the v85 APK/AAB
+## 1. Build and accept the v127 APK/AAB
 
-Use the exact v85 `main` release for Android. It passes 87 test files / 5,931
-tests, production build, Capacitor sync, and (from the unchanged v80 baseline)
-95 asset checks, deterministic EN+TH viewport/format/accessibility gates, and
-both npm audits. **It has not been signed on Windows.**
+Use the exact v127 `main` release for Android. It passes 107 test files / 9,708
+tests, ESLint, production build, Capacitor sync, 134 asset checks, and the
+deterministic EN+TH viewport/format/accessibility gates. **It has not been
+signed on Windows.**
 
-Pull `main` v85 onto the Windows release checkout, then open a
+Pull `main` v127 onto the Windows release checkout, then open a
 fresh PowerShell in
 `C:\Users\sarac\Desktop\HSK\game` and run these as separate lines:
 
@@ -65,6 +66,16 @@ portrait and landscape, launcher/splash branding, offline mode, and a final
 empty scan for fatal Android/WebView errors. Real IAP is expected to remain
 hidden because the public RevenueCat key is blank.
 
+**New for v127 — Cat Journey has never run on real hardware.** Add to the
+matrix: open the Cat tab, send the cat out, confirm the return vignette and
+keepsake arrive and are granted **once** (re-enter the screen and re-launch the
+app — no second grant); confirm Cat Bond tier progresses; confirm the journey
+notification fires and is cancellable; confirm the rollback flag still restores
+Street with all prior state intact
+(`localStorage.setItem("nbhsk.features.catJourney","false"); location.reload()`).
+Journey state is device-local in v127, so do **not** expect it to follow the
+account across devices.
+
 Once the signed build passes this matrix, it is ready for the store tracks below
 (§3–§7). The signed APK/AAB is uploaded to the Play Console, not committed to
 the repository.
@@ -75,6 +86,17 @@ Give the reviewer [the prioritized 377-string queue](i18n/i18n-translation-revie
 They must edit `src/i18n.js` or return exact key/value corrections, then supply
 their name, review date, and reviewed commit for the sign-off block. Money,
 account-loss, cloud-backup, and notification copy is P0.
+
+**P0 escalation — Cat Journey Thai is already live and unreviewed.** v127 added
+~370 machine-drafted Thai strings (30 journey stories, 12 keepsakes, journey UI
+and notification copy) that shipped to production **without** the native review
+that [CAT-JOURNEY-EVERGREEN-v1-REVIEW.md](content/CAT-JOURNEY-EVERGREEN-v1-REVIEW.md)
+itself declares "a production release gate". Thai users see these with no
+English fallback. Reviewing them now takes precedence over the older queue;
+record the reviewer name, date, and commit in that document's sign-off block,
+and apply any corrections to `src/i18n.js` in a normal cut (rebuild + SHELL
+bump). Process fix for next time: new Thai must carry the machine-readable
+`TH-REVIEW` marker — a prose comment does not enter the review queue.
 
 ## 3. Create Google Play Console
 
