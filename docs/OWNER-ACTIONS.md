@@ -52,9 +52,11 @@ are Google / Apple / magic-link).
 Android artifact.** A store build carrying a sync regression is far more
 expensive to withdraw than a web deploy.
 
-Two anonymous probe rows (`805e898a…`, `0f607449…`, both `xp: 0`) sit in
-`public.progress` from the production verification. They are test artifacts and
-safe to delete whenever convenient.
+The two anonymous identities created by that production verification have been
+**deleted** (2026-07-27) — nothing to clean up. `public.progress` and
+`public.wallet` are back to **8** rows, `auth.users` to 10, all 8 progress rows
+carrying the `cat_journey = {}` backfill, and no orphaned `profiles` rows. That
+8 is the real baseline for any future backfill check.
 
 ## 1. Build and accept the v129 APK/AAB
 

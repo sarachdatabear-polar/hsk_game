@@ -43,9 +43,10 @@ identity, synced, and wrote a real row (client correctly **omitted**
 `cat_journey`, so the column default applied); then a second pass re-entered
 with that same session — whose row already carried the `{}` backfill — and
 confirmed `nbhsk.catJourney` stayed `null`, **zero toasts**, zero JS errors,
-sync settled. Two probe rows (`805e898a…`, `0f607449…`, both `xp: 0`,
-anonymous) remain in `public.progress`; they are test artifacts, safe to
-delete.
+sync settled — the toast defect confirmed fixed in production against a real
+backfilled row. Both probe identities were **deleted afterwards**:
+`public.progress` and `public.wallet` are back to **8** rows (all 8 carrying the
+`{}` backfill), `auth.users` to 10, no orphaned `profiles`.
 
 **Still open after v129:**
 
