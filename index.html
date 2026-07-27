@@ -399,6 +399,13 @@
   .cat-secondary-actions button{display:flex; align-items:center; justify-content:center; gap:6px; min-height:44px;
     padding:7px 9px; border:1px solid rgba(132,96,67,.35); border-radius:13px;
     background:rgba(251,245,232,.94); color:var(--lc-green-deep); font-size:11px; font-weight:900;}
+  /* #cat-quests-btn reuses the Street .sec-btn/.icon-text markup; the
+     higher-specificity button rule above already restyles it to match its
+     siblings — these lines neutralize the leftover .sec-btn icon/shadow and
+     give the third action its own full-width row in the 2-column grid. */
+  .cat-secondary-actions .sec-btn{grid-column:1/-1; box-shadow:none;}
+  .cat-secondary-actions .sec-btn .icon-text{gap:6px;}
+  .cat-secondary-actions .sec-btn .asset-icon{width:1.15em; height:1.15em; color:currentColor;}
   .cat-drawer{width:calc(100% - 22px); max-width:428px; margin:8px auto 0; padding:10px;
     border:1px solid rgba(132,96,67,.28); border-radius:16px; background:rgba(251,245,232,.96);
     box-shadow:0 5px 14px rgba(46,42,36,.11);}
@@ -695,8 +702,10 @@
     .street-hit.plot-hit.compatible{animation:none; box-shadow:0 0 0 4px rgba(255,214,95,.15);}
     .street-dream-guide{animation:none;}
   }
-  /* Quest popup reuses .pause-overlay/.pause-panel (see #s-battle) — scoped to
-     #s-street (position:relative above) so it doesn't cover the bottom nav. */
+  /* Quest popup reuses .pause-overlay/.pause-panel (see #s-battle). The
+     overlay itself is a top-level viewport-fixed dialog (see the
+     #word-overlay/#friend-overlay/#quest-overlay rule below) so it opens
+     from Cat Journey and the Street rollback surface alike. */
   .quest-popup-head{display:flex; align-items:center; justify-content:space-between; gap:10px;}
   .quest-popup-head .pause-title{margin:0; text-align:left;}
   .overlay-close{width:44px; height:44px; min-height:44px; min-width:44px; padding:0; flex:0 0 auto;
@@ -814,7 +823,7 @@
     box-shadow:0 12px 28px rgba(0,0,0,.4);}
   /* These dialogs live outside an individual screen. Bind them to the
      viewport—not the height or scroll position of Profile behind them. */
-  #word-overlay,#friend-overlay{position:fixed; inset:0;}
+  #word-overlay,#friend-overlay,#quest-overlay{position:fixed; inset:0;}
   .pause-title{margin:0; text-align:center; font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif;
     font-weight:800; font-size:20px; color:var(--lc-ink);}
   .pause-resume{font-family:'LC Latin','LC Thai',"Segoe UI","Noto Sans Thai",sans-serif; font-weight:800; font-size:19px;
@@ -1961,6 +1970,12 @@
         <svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#progress"></use></svg>
         <span data-i18n="cat.profile">My progress</span>
       </button>
+      <!-- Quest entry (v128, review finding 2): same #quest sprite +
+           .sec-btn/.icon-text markup as #street-quests-btn, restyled by the
+           .cat-secondary-actions rules so it sits with its siblings. Opens
+           the top-level #quest-overlay via the openQuests callback wired in
+           src/ui/cat-journey-screen.js. -->
+      <button class="sec-btn" id="cat-quests-btn"><span class="icon-text"><svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#quest"></use></svg><span data-i18n="street.questsBtn">Quests</span></span></button>
     </div>
 
     <section class="cat-drawer" id="cat-background-panel" hidden>
@@ -2105,22 +2120,9 @@
     </div>
     <div class="visually-hidden" id="street-sr-status" aria-live="polite"></div>
 
-    <!-- Quest popup: reuses the pause-overlay/pause-panel convention
-         (#pause-overlay in #s-battle) — #quest-panel is the SAME element
-         renderQuests() already targets, just relocated here so no rendering
-         logic is duplicated. -->
-    <div class="pause-overlay" id="quest-overlay" role="dialog" aria-modal="true" aria-labelledby="quest-dialog-title">
-      <div class="pause-panel">
-        <div class="quest-popup-head">
-          <h3 class="pause-title" id="quest-dialog-title" data-i18n="quests.title">Daily Quests</h3>
-          <button class="overlay-close" id="quest-popup-close" data-i18n-title="common.close" aria-label="Close">×</button>
-        </div>
-        <div id="quest-panel"></div>
-      </div>
-    </div>
-
     <!-- Collection book (Task 9): same pause-overlay/pause-panel convention as
-         #quest-overlay above — read-only view of collectionView() (Task 4);
+         #quest-overlay (now a top-level dialog next to #word-overlay) —
+         read-only view of collectionView() (Task 4);
          tapping an unowned item routes to the existing #street-preview-panel
          flow via openStreetPreview(), never buys directly from here. -->
     <div class="pause-overlay" id="street-collection" role="dialog" aria-modal="true" aria-labelledby="street-collection-title">
@@ -2610,6 +2612,24 @@
     <button class="back" data-go="more" data-i18n="common.backMore">← More</button>
     <h2 data-i18n="account.title">Account</h2>
     <div id="account-panel"></div>
+  </div>
+
+  <!-- Quest popup: reuses the pause-overlay/pause-panel convention
+       (#pause-overlay in #s-battle) — #quest-panel is the SAME element
+       renderQuests() already targets, so no rendering logic is duplicated.
+       Top-level (v128, review finding 2): it used to live inside #s-street,
+       which made the daily-quest loop unreachable once the Street tab was
+       rerouted to Cat Journey — as a sibling of the screens (same convention
+       as #word-overlay/#friend-overlay below) it opens from both the Cat
+       Journey screen and the preserved Street rollback surface. -->
+  <div class="pause-overlay" id="quest-overlay" role="dialog" aria-modal="true" aria-labelledby="quest-dialog-title">
+    <div class="pause-panel">
+      <div class="quest-popup-head">
+        <h3 class="pause-title" id="quest-dialog-title" data-i18n="quests.title">Daily Quests</h3>
+        <button class="overlay-close" id="quest-popup-close" data-i18n-title="common.close" aria-label="Close">×</button>
+      </div>
+      <div id="quest-panel"></div>
+    </div>
   </div>
 
   <!-- Word-detail panel: clones the #quest-overlay dialog pattern (scrim +

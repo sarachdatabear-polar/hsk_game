@@ -702,16 +702,20 @@ function renderQuests(){
     panel.appendChild(row);
   }
 }
-// Street quest popup (2026-07-11 audit F2/F3 revert): #quest-panel itself
-// didn't move logic, only markup — renderQuests() above still targets it
-// unchanged. Open/close just toggles the overlay, same convention as
-// #pause-overlay, plus a backdrop-tap close (safe here — unlike the battle
-// pause overlay, an accidental dismiss costs nothing).
+// Quest popup (2026-07-11 audit F2/F3 revert; top-level since v128 review
+// finding 2): #quest-panel itself didn't move logic, only markup —
+// renderQuests() above still targets it unchanged. Open/close just toggles
+// the overlay, same convention as #pause-overlay, plus a backdrop-tap close
+// (safe here — unlike the battle pause overlay, an accidental dismiss costs
+// nothing). openQuestDialog is shared by the Street rollback surface (below)
+// and the Cat Journey screen (passed into createCatJourneyScreen), so the
+// quest loop stays reachable whichever screen the street tab routes to.
 function closeQuestDialog(){ closeDialog($("#quest-overlay")); }
-$("#street-quests-btn").onclick = ()=>{
+function openQuestDialog(){
   renderQuests();
   openDialog($("#quest-overlay"), $("#quest-popup-close"), closeQuestDialog);
-};
+}
+$("#street-quests-btn").onclick = openQuestDialog;
 $("#quest-popup-close").onclick = closeQuestDialog;
 $("#quest-overlay").addEventListener("click", e=>{
   if(e.target.id === "quest-overlay") closeQuestDialog();
@@ -1326,7 +1330,7 @@ function show(name){
   window.scrollTo(0, 0);
   if(name==="home"){ renderHome(); }
   if(name==="street"){ streetScreen.enter(previousScreen); renderQuests(); }
-  if(name==="cat-journey"){ catJourneyScreen?.enter(previousScreen); }
+  if(name==="cat-journey"){ catJourneyScreen?.enter(previousScreen); renderQuests(); }
 }
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()=>{
   const tab = b.dataset.go;
@@ -4131,6 +4135,7 @@ catJourneyScreen = createCatJourneyScreen({
   getWordByKey: key => BY_HANZI[key] || null,
   getWordMeaning: word => getLocale() === "th" ? (word.t || word.e) : word.e,
   playWord: key => speak(key),
+  openQuests: openQuestDialog,
   syncReturnReminder: plan => syncCatJourneyReminder(
     plan, t("notify.cat.title"), t("notify.cat.body")),
 });

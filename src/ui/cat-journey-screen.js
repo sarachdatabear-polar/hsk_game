@@ -26,6 +26,7 @@ export function createCatJourneyScreen({
   $, store, analytics, show, t, todayStr,
   getXp, getDailyInfo, getMasteredCount, getJourneyWordKey = () => "",
   getWordByKey = () => null, getWordMeaning = () => "", playWord = null,
+  openQuests = () => {},
   syncReturnReminder = () => {},
   now = () => Date.now(),
 }) {
@@ -319,6 +320,10 @@ export function createCatJourneyScreen({
   }
 
   $("#cat-primary").onclick = handlePrimary;
+  // Daily quests (v128, review finding 2): the overlay + renderQuests()
+  // plumbing stays in main.js; this screen only triggers it, so the quest
+  // loop keeps a reachable entry point now that the street tab routes here.
+  $("#cat-quests-btn").onclick = () => openQuests();
   $("#cat-backgrounds-toggle").onclick = () => {
     backgroundsOpen = !backgroundsOpen;
     if (backgroundsOpen) memoriesOpen = false;
