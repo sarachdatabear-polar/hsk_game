@@ -20,9 +20,13 @@ Journey browser passes at 320×568, 390×844, and 844×390.
    review.
 2. **Native Thai sign-off.** `docs/content/CAT-JOURNEY-EVERGREEN-v1-REVIEW.md`
    declares itself "a production release gate" and its native-review checkbox
-   is unchecked, yet ~370 machine-drafted Thai strings are live to Thai users
-   with no fallback. They were also marked with a prose comment instead of the
-   machine-readable `TH-REVIEW` tag, so nothing entered the review queue.
+   is unchecked, yet **185 machine-drafted Thai strings** are live to Thai users
+   with no fallback — and **none** of them carries the `TH-REVIEW` tag, so
+   nothing entered the review queue. Three of them silently replaced Thai that
+   had already passed the v112–v116 humanization arc (`account.connect`,
+   `learn.stillLearning`, `learn.knowIt`). Structural i18n integrity is clean
+   (EN and TH both 732 keys, zero placeholder mismatches) — the defect is
+   procedural, not broken text.
 3. **Signed Android artifact.** None exists for v127.
 
 Cloud sync of Journey state is deliberately dark
@@ -56,7 +60,7 @@ release is complete; signed Android and store/legal work remains in
 | **Current automated baseline** | 107 files / 9,708 tests; 134 assets; ESLint, production build, and asset budgets pass; `dist/app.js` 659,749 bytes; focused Journey QA at 320×568, 390×844, 844×390. |
 | **Cloud sync of Journey state** | **DARK.** `CAT_JOURNEY_CLOUD_ENABLED = false`; live `public.progress` has no `cat_journey` column. Journey state is device-local until `docs/supabase/migrations/2026-07-27-cat-journey.sql` is applied and the flag flipped (separate cut: rebuild + SHELL v128 + sw-precache pin). |
 | **Code review** | **OUTSTANDING.** The three Cat Journey commits deployed unreviewed. |
-| **Native Thai sign-off** | **OUTSTANDING.** Declared release gate in `docs/content/CAT-JOURNEY-EVERGREEN-v1-REVIEW.md`, unchecked; ~370 drafted TH strings already live. |
+| **Native Thai sign-off** | **OUTSTANDING.** Declared release gate in `docs/content/CAT-JOURNEY-EVERGREEN-v1-REVIEW.md`, unchecked; 185 drafted TH strings already live, none `TH-REVIEW`-tagged, none present in `docs/i18n/thai-review-sheet.csv`. |
 | **Latest signed Android artifact on record** | Profile v74 APK. A current Cat Journey APK/AAB still needs Capacitor sync, Windows signing, and emulator/physical-device acceptance. |
 
 ## Done

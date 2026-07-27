@@ -87,16 +87,31 @@ They must edit `src/i18n.js` or return exact key/value corrections, then supply
 their name, review date, and reviewed commit for the sign-off block. Money,
 account-loss, cloud-backup, and notification copy is P0.
 
-**P0 escalation — Cat Journey Thai is already live and unreviewed.** v127 added
-~370 machine-drafted Thai strings (30 journey stories, 12 keepsakes, journey UI
-and notification copy) that shipped to production **without** the native review
-that [CAT-JOURNEY-EVERGREEN-v1-REVIEW.md](content/CAT-JOURNEY-EVERGREEN-v1-REVIEW.md)
-itself declares "a production release gate". Thai users see these with no
-English fallback. Reviewing them now takes precedence over the older queue;
-record the reviewer name, date, and commit in that document's sign-off block,
-and apply any corrections to `src/i18n.js` in a normal cut (rebuild + SHELL
-bump). Process fix for next time: new Thai must carry the machine-readable
-`TH-REVIEW` marker — a prose comment does not enter the review queue.
+**P0 escalation — Cat Journey Thai is already live and unreviewed.** The v124–v127
+arc added **185 machine-drafted Thai strings** (≈60 memory titles/stories, ≈45
+journey UI strings, push-notification copy, reworked onboarding, plus `street.*`,
+`scope.*`, `profile.*`, `album.*`, `shop.*`, `howto.*`, `battle.*`, `more.*`
+batches) that shipped to production **without** the native review that
+[CAT-JOURNEY-EVERGREEN-v1-REVIEW.md](content/CAT-JOURNEY-EVERGREEN-v1-REVIEW.md)
+itself declares "a production release gate". Thai users see these with no English
+fallback. Three of them **silently replaced Thai that had already passed** the
+v112–v116 humanization arc — `account.connect`, `learn.stillLearning`,
+`learn.knowIt` — so reviewed copy was regressed to machine drafts. Reviewing this
+set takes precedence over the older queue; record the reviewer name, date, and
+commit in that document's sign-off block, and apply corrections to `src/i18n.js`
+in a normal cut (rebuild + SHELL bump).
+
+Two mechanical fixes are needed before the reviewer can even see this copy, and
+they are engineering work, not owner work:
+
+- **None of the 185 lines carries the `TH-REVIEW` marker**, and none appears in
+  `docs/i18n/thai-review-sheet.csv` (`docs/i18n/` was untouched by the whole arc).
+  Tag them and regenerate the sheet.
+- `docs/i18n/scripts/extract-thai-review-sheet.mjs` has no rule for `cat.*`,
+  `home.cat.*`, or `notify.cat.*`, so on regeneration they all sort to **P3
+  (lowest)** — including the push-notification copy, which the script's own policy
+  puts in P0 next to `notify.streak.*`. Add a `notify.cat.*` → P0 rule and a
+  `cat.`/`home.cat.` rule.
 
 ## 3. Create Google Play Console
 
