@@ -2,6 +2,7 @@
 import { migrateLegacyStreet, normalizeStreetLayout, BUILDINGS } from "./street.js";
 import { defaultStreetProject } from "./street-project.js";
 import { levelForXp } from "./growth.js";
+import { normalizeCatJourney } from "./cat-journey.js";
 // Save-data schema versioning. main.js calls runMigrations(localStorage) once
 // at boot, BEFORE constructing the store — migrations must see raw
 // pre-migration values, so this module reads/writes storage directly.
@@ -16,7 +17,7 @@ const VERSION_KEY = "nbhsk.schemaVersion";
 // (run the ladder from 0) from a fresh one (just stamp and go).
 const LEGACY_SENTINELS = ["nbhsk.xp", "nbhsk.mastery", "nbhsk.daily", "nbhsk.settings", "nbhsk.scope"];
 
-export const CURRENT_SCHEMA_VERSION = 5;
+export const CURRENT_SCHEMA_VERSION = 6;
 
 export const MIGRATIONS = [
   // v1→v2: street.js's shop-state layout gained a `streetLayout` scene
@@ -133,6 +134,25 @@ export const MIGRATIONS = [
         shop.streetLayout = normalizeStreetLayout({ ...(shop.streetLayout || {}), builtStages }, owned);
       } catch (e) { return; }
       try { storage.setItem("nbhsk.shop", JSON.stringify(shop)); } catch (e) {}
+    },
+  },
+  {
+    to: 6,
+    up(storage) {
+      // v5->v6: Cat Journey moves from the capped device-local MVP shape to
+      // permanent v2 claims. normalizeCatJourney is deliberately the single
+      // migration contract: it accepts v1/v2, preserves every earned memory,
+      // keeps an active journey active, and is idempotent on a retry.
+      let journey;
+      try {
+        const raw = storage.getItem("nbhsk.catJourney");
+        if (raw === null) return;
+        journey = JSON.parse(raw);
+      } catch (e) { return; }
+      if (!journey || typeof journey !== "object") return;
+      try {
+        storage.setItem("nbhsk.catJourney", JSON.stringify(normalizeCatJourney(journey)));
+      } catch (e) {}
     },
   },
 ];

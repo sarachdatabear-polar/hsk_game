@@ -727,11 +727,18 @@ async function runCatJourneyProbe(browser, width, height) {
       last:today, streak:4, today:{date:today,resolved:20}, restWeek:"", restDay:"",
     }));
     localStorage.setItem("nbhsk.xp", "4200");
+    localStorage.setItem("nbhsk.catJourneyWord", JSON.stringify({
+      day:today, wordKey:"妈妈", rank:3,
+    }));
     localStorage.removeItem("nbhsk.catJourney");
   });
   await page.reload({ waitUntil:"load" });
   await page.waitForTimeout(400);
-  await page.locator('[data-tab="street"]').click();
+  const homeStatus = await page.evaluate(() => ({
+    visible:document.querySelector("#home-cat-status")?.offsetParent!==null,
+    text:(document.querySelector("#home-cat-status")?.textContent||"").trim(),
+  }));
+  await page.locator("#home-cat-status").click();
   await page.waitForTimeout(200);
 
   const layout = await page.evaluate(minTap => {
@@ -762,12 +769,13 @@ async function runCatJourneyProbe(browser, width, height) {
   }));
   await page.evaluate(()=>{
     const state=JSON.parse(localStorage.getItem("nbhsk.catJourney"));
-    state.activeJourney.readyAt=Date.now()-1;
+    const active=state.claims?.find(claim=>!claim.returnedAt);
+    if(active) active.readyAt=Date.now()-1;
     localStorage.setItem("nbhsk.catJourney",JSON.stringify(state));
   });
   await page.reload({waitUntil:"load"});
   await page.waitForTimeout(300);
-  await page.locator('[data-tab="street"]').click();
+  await page.locator("#home-cat-status").click();
   await page.waitForTimeout(120);
   const returnedBefore=await page.locator("#s-cat-journey").getAttribute("data-journey-status");
   await page.locator("#cat-primary").click();
@@ -775,7 +783,11 @@ async function runCatJourneyProbe(browser, width, height) {
   const returned=await page.evaluate(()=>({
     status:document.querySelector("#s-cat-journey")?.dataset.journeyStatus,
     memoryCount:document.querySelectorAll(".cat-memory-card").length,
-    persisted:JSON.parse(localStorage.getItem("nbhsk.catJourney")||"{}").memories?.length||0,
+    wordVisible:document.querySelector(".cat-memory-word b")?.textContent==="妈妈",
+    persisted:(JSON.parse(localStorage.getItem("nbhsk.catJourney")||"{}").claims||[])
+      .filter(claim=>claim.returnedAt&&(claim.storyId||claim.keepsakeId)).length,
+    wordKey:(JSON.parse(localStorage.getItem("nbhsk.catJourney")||"{}").claims||[])
+      .find(claim=>claim.returnedAt)?.wordKey,
   }));
   await page.locator("#cat-backgrounds-toggle").click();
   await page.locator('[data-cat-background="bg-cat-garden-v1"]').click();
@@ -796,6 +808,9 @@ async function runCatJourneyProbe(browser, width, height) {
   }));
 
   const failures=[];
+  const homeReady = LOCALE==="th" ? "เจ้าแมวพร้อมออกสำรวจแล้ว" : "Your cat is ready to explore";
+  if(!homeStatus.visible||homeStatus.text!==homeReady)
+    failures.push(`home status=${JSON.stringify(homeStatus)}`);
   if(!layout.active||layout.overflowX||!layout.sceneClear||!layout.ctaClear||
       !layout.catLoaded||layout.small.length)
     failures.push(`layout=${JSON.stringify(layout)}`);
@@ -804,7 +819,8 @@ async function runCatJourneyProbe(browser, width, height) {
   if(exploring.status!=="exploring"||!exploring.catHidden||!exploring.awayVisible)
     failures.push(`exploring=${JSON.stringify(exploring)}`);
   if(returnedBefore!=="returned"||returned.status!=="done"||
-      returned.memoryCount!==1||returned.persisted!==1)
+      returned.memoryCount!==1||returned.persisted!==1||
+      !returned.wordVisible||returned.wordKey!=="妈妈")
     failures.push(`return=${returnedBefore}/${JSON.stringify(returned)}`);
   if(background!=="bg-cat-garden-v1") failures.push(`background=${background}`);
   if(!shop.streetSectionHidden||!shop.streetShelfHidden||shop.visibleDecos)

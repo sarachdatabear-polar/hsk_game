@@ -97,6 +97,30 @@ export async function syncReengageReminder(plan, title, body, now = new Date()) 
   } catch (e) { /* notification failure must never break gameplay */ }
 }
 
+// Cat Journey return notification. Stable id 1003 composes with the streak
+// (1001) and re-engagement (1002) reminders without cancelling either one.
+// Like every background/departure sync, this checks an existing grant only;
+// it never opens a permission prompt from the Journey action.
+export async function syncCatJourneyReminder(plan, title, body) {
+  if (!isNative()) return;
+  const LN = plugins().LocalNotifications;
+  if (!LN) return;
+  try {
+    await LN.cancel({ notifications: [{ id: 1003 }] });
+    if (!plan.schedule || !plan.at) return;
+    const perm = await LN.checkPermissions();
+    if (perm.display !== "granted") return;
+    await LN.schedule({
+      notifications: [{
+        id: 1003,
+        title,
+        body,
+        schedule: { at: new Date(plan.at) },
+      }],
+    });
+  } catch (e) { /* notification failure must never break gameplay */ }
+}
+
 // Foreground POST_NOTIFICATIONS prompt. Call this while the app is visible
 // (during play) so Android 13+ actually shows the dialog. Idempotent: once the
 // user has decided, Capacitor returns the status without re-showing. Returns

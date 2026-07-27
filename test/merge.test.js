@@ -1,12 +1,18 @@
 import { describe, it, expect } from "vitest";
 import { SYNC_KEYS, defaultSyncMeta, slotsOf, mergeXp, mergeWallet, mergeBricks, mergeFreezes,
          mergeBest, mergeStickers, mergeShop, mergeMastery, mergeQuests,
-         mergeMonthly, mergeAll, streetLayoutOf, streetLayoutPrefsOf, streetProjectOf, shopPreferencesOf } from "../src/merge.js";
+         mergeMonthly, mergeAll, mergeCatJourney, syncKeysFor, streetLayoutOf,
+         streetLayoutPrefsOf, streetProjectOf, shopPreferencesOf } from "../src/merge.js";
 import { defaultShop } from "../src/shop.js";
+import { defaultCatJourney, goalDaysCountOf, memoryRecordsOf } from "../src/cat-journey.js";
 
 describe("merge: scalars", () => {
   it("SYNC_KEYS lists the 11 synced keys", () =>
     expect(SYNC_KEYS).toEqual(["mastery","xp","daily","quests","monthly","wallet","bricks","freezes","shop","stickers","best"]));
+  it("Cat Journey sync stays dark until the backend capability is enabled", () => {
+    expect(syncKeysFor(false)).toEqual(SYNC_KEYS);
+    expect(syncKeysFor(true)).toEqual([...SYNC_KEYS, "catJourney"]);
+  });
   it("defaultSyncMeta shape", () =>
     expect(defaultSyncMeta()).toEqual({ dirty: {}, lastSyncAt: 0, lastLedgerAt: "", shopSlots: null, shopPreferences: null }));
   it("xp/wallet take max; nullish sides are 0", () => {
@@ -19,6 +25,144 @@ describe("merge: scalars", () => {
     expect(mergeFreezes(1, 2)).toBe(2);
     expect(mergeFreezes(9, 0)).toBe(2);
     expect(mergeFreezes(undefined, -3)).toBe(0);
+  });
+});
+
+describe("mergeCatJourney", () => {
+  it("unions future goal dates around the shared legacy baseline", () => {
+    const a = {
+      ...defaultCatJourney(),
+      goalHistory: { baselineCount: 4, throughDay: "2026-07-26", days: ["2026-07-27"] },
+    };
+    const b = {
+      ...defaultCatJourney(),
+      goalHistory: { baselineCount: 4, throughDay: "2026-07-26", days: ["2026-07-28"] },
+    };
+    const merged = mergeCatJourney(a, b);
+    expect(merged.goalHistory).toEqual({
+      baselineCount: 4,
+      throughDay: "2026-07-26",
+      days: ["2026-07-27", "2026-07-28"],
+    });
+    expect(goalDaysCountOf(merged)).toBe(6);
+  });
+
+  it("advances the legacy cutoff without double-counting dates already represented by it", () => {
+    const a = {
+      ...defaultCatJourney(),
+      goalHistory: { baselineCount: 4, throughDay: "2026-07-26", days: ["2026-07-27"] },
+    };
+    const b = {
+      ...defaultCatJourney(),
+      goalHistory: { baselineCount: 5, throughDay: "2026-07-27", days: ["2026-07-28"] },
+    };
+    const merged = mergeCatJourney(a, b);
+    expect(merged.goalHistory).toEqual({
+      baselineCount: 5,
+      throughDay: "2026-07-27",
+      days: ["2026-07-28"],
+    });
+    expect(goalDaysCountOf(merged)).toBe(6);
+  });
+
+  it("same-day conflicts converge regardless of merge order and returned wins over active", () => {
+    const a = {
+      ...defaultCatJourney(),
+      claims: [{
+        day: "2026-07-27", departedAt: 100, readyAt: 200, returnedAt: 0,
+        destinationId: "bg-home", storyId: "", keepsakeId: "", wordKey: "妈妈",
+      }],
+    };
+    const b = {
+      ...defaultCatJourney(),
+      claims: [{
+        day: "2026-07-27", departedAt: 110, readyAt: 210, returnedAt: 300,
+        destinationId: "bg-cat-garden-v1", storyId: "tea-steam",
+        keepsakeId: "tea-cup", wordKey: "",
+      }],
+    };
+    const ab = mergeCatJourney(a, b);
+    const ba = mergeCatJourney(b, a);
+    expect(ab).toEqual(ba);
+    expect(ab.claims).toMatchObject([{
+      day: "2026-07-27",
+      departedAt: 100,
+      readyAt: 200,
+      returnedAt: 300,
+      destinationId: "bg-cat-garden-v1",
+      storyId: "tea-steam",
+      keepsakeId: "tea-cup",
+      wordKey: "妈妈",
+    }]);
+  });
+
+  it("background preference uses timestamp, device tie-break, then stable ID", () => {
+    const a = {
+      ...defaultCatJourney(),
+      selectedBackground: "bg-cat-garden-v1",
+      selectedBackgroundAt: 50,
+      selectedBackgroundDevice: "device-a",
+    };
+    const b = {
+      ...defaultCatJourney(),
+      selectedBackground: "bg-cat-market-v1",
+      selectedBackgroundAt: 50,
+      selectedBackgroundDevice: "device-b",
+    };
+    expect(mergeCatJourney(a, b)).toMatchObject({
+      selectedBackground: "bg-cat-market-v1",
+      selectedBackgroundAt: 50,
+      selectedBackgroundDevice: "device-b",
+    });
+    expect(mergeCatJourney(a, b)).toEqual(mergeCatJourney(b, a));
+  });
+
+  it("merges v1 and v2 without losing an active claim, memory, or tier acknowledgement", () => {
+    const legacy = {
+      v: 1,
+      goalDaysCount: 3,
+      lastGoalDay: "2026-07-25",
+      claimedDays: ["2026-07-25"],
+      memories: [{ id: "garden-leaf", day: "2026-07-25" }],
+      lastSeenBondTier: 1,
+    };
+    const current = {
+      ...defaultCatJourney(),
+      lastSeenBondTier: 2,
+      claims: [{
+        day: "2026-07-26", departedAt: 100, readyAt: 200, returnedAt: 0,
+        destinationId: "", storyId: "", keepsakeId: "", wordKey: "",
+      }],
+    };
+    const merged = mergeCatJourney(legacy, current);
+    expect(merged.lastSeenBondTier).toBe(2);
+    expect(memoryRecordsOf(merged)).toMatchObject([{ id: "garden-leaf", day: "2026-07-25" }]);
+    expect(merged.claims.map(claim => claim.day)).toEqual(["2026-07-25", "2026-07-26"]);
+  });
+
+  it("is commutative and idempotent for independent device histories", () => {
+    const a = {
+      ...defaultCatJourney(),
+      claims: [{
+        day: "2026-07-25", returnedAt: 10, storyId: "garden-leaf",
+      }],
+    };
+    const b = {
+      ...defaultCatJourney(),
+      claims: [{
+        day: "2026-07-26", returnedAt: 20, storyId: "tea-steam",
+      }],
+    };
+    const merged = mergeCatJourney(a, b);
+    expect(merged).toEqual(mergeCatJourney(b, a));
+    expect(mergeCatJourney(merged, merged)).toEqual(merged);
+    expect(memoryRecordsOf(merged)).toHaveLength(2);
+  });
+
+  it("mergeAll includes Cat Journey only when either side supplies it", () => {
+    expect(mergeAll({}, {})).not.toHaveProperty("catJourney");
+    expect(mergeAll({ catJourney: defaultCatJourney() }, {}))
+      .toHaveProperty("catJourney.v", 2);
   });
 });
 

@@ -8,6 +8,7 @@ import {
   mergeAll, defaultSyncMeta, slotsOf, streetLayoutPrefsOf, streetProjectOf,
   shopPreferencesOf,
 } from "./merge.js";
+import { CAT_JOURNEY_CLOUD_ENABLED } from "./cloud-config.js";
 
 export const MIN_SYNC_GAP_MS = 30000;
 
@@ -46,12 +47,14 @@ export function localSnapshot(store) {
     stickers: store.get("stickers", null),
     best: store.get("best", {}),
     bricks: store.get("bricks", 0),
+    catJourney: store.get("catJourney", null),
   };
 }
 
-export function rowsFromLocal(userId, l) {
-  return {
-    progress: {
+export function rowsFromLocal(userId, l, {
+  catJourneyCloudEnabled = CAT_JOURNEY_CLOUD_ENABLED,
+} = {}) {
+  const progress = {
       user_id: userId,
       mastery: l.mastery || {},
       xp: Number(l.xp) || 0,
@@ -62,16 +65,23 @@ export function rowsFromLocal(userId, l) {
       best: l.best || {},
       cosmetics: l.shop || {},
       stickers: { earned: (l.stickers && l.stickers.earned) || {} },
-    },
+  };
+  if (catJourneyCloudEnabled) progress.cat_journey = l.catJourney || {};
+  return {
+    progress,
     wallet: { user_id: userId, coins: Number(l.wallet) || 0, freezes: Number(l.freezes) || 0 },
   };
 }
 
-export function localFromRows(progressRow, walletRow) {
+export function localFromRows(progressRow, walletRow, {
+  catJourneyCloudEnabled = CAT_JOURNEY_CLOUD_ENABLED,
+} = {}) {
   const p = progressRow || {}, w = walletRow || {};
-  return { mastery: p.mastery, xp: p.xp, daily: p.daily, quests: p.quests,
-           monthly: p.monthly, best: p.best, shop: p.cosmetics,
-           stickers: p.stickers, wallet: w.coins, freezes: w.freezes };
+  const local = { mastery: p.mastery, xp: p.xp, daily: p.daily, quests: p.quests,
+                  monthly: p.monthly, best: p.best, shop: p.cosmetics,
+                  stickers: p.stickers, wallet: w.coins, freezes: w.freezes };
+  if (catJourneyCloudEnabled) local.catJourney = p.cat_journey;
+  return local;
 }
 
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);

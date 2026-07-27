@@ -1,19 +1,24 @@
 # Lucky Cat HSK — Status
 
-**Last updated:** 2026-07-19
-**TL;DR:** The current web/PWA release is **v92** (`28c789a`, live-verified —
-deploy 29698350501 SUCCESS, served `sw.js` = `CACHE_VERSION "v92"`, `/privacy.html`
-200, `/assets/og-image.png` 200, OG tags live). It ships the **public-launch
-readiness** round for the 26 Jul web launch: social/OG + Twitter meta so shared
-links render preview cards, a 1200×630 `assets/og-image.png`, a hosted
-`privacy.html` (deployed + linked from Settings, EN/TH, offline-precached), and
-the **F2** fix — a landscape two-column layout for the first-run Welcome screen so
-the START LEARNING CTA is above the fold (with a new first-run onboarding probe in
-`scripts/responsive-sweep.mjs`, closing the gap that let F2 ship). Suite 9,193
-green. The prior v85–v91 content/gloss line is superseded for current-state.
-Android/Play production is a **decoupled Aug+ beat** gated on an org D-U-N-S
-(see [OWNER-ACTIONS.md](OWNER-ACTIONS.md); plan in
-[planning/2026-07-26-public-pwa-launch-design.md](planning/2026-07-26-public-pwa-launch-design.md)).
+**Last updated:** 2026-07-27
+**TL;DR:** Current source is game `main` at **`df875840`**, with Cat Journey
+introduced at `b0e3a054` and the complete-user-journey UX follow-up on top.
+The Cat tab replaces Street by default behind a data-safe local rollback flag;
+legacy Street saves remain untouched. The recorded pre-full-product baseline is
+service-worker **v126**, **107 test files / 9,666 tests**, **133 validated
+assets**, a **629,337-byte** production bundle, clean ESLint/build, and focused
+Cat Journey browser passes at 320×568, 390×844, and 844×390. This snapshot is
+source/build verified; it does not claim a new live deployment or signed
+Android artifact. Full-product implementation is now through Phases 0–2 and
+Phase 4's learning/UX engineering, with Phase 3's authored content foundation
+in place: the development worktree passes **107 test files / 9,708 tests**,
+**134 validated assets**, ESLint, production build, asset budgets, and the same
+three focused browser journeys. This development release advances the
+service-worker shell/runtime to **v127**. Cloud sync remains deliberately
+disabled until its additive SQL migration is deployed. Post-MVP direction is the
+[Cat Journey Full Product PRD](../../docs/superpowers/specs/2026-07-27-cat-journey-full-product-prd.md)
+and
+[execution plan](../../docs/superpowers/plans/2026-07-27-cat-journey-full-product-execution-plan.md).
 
 <details><summary>Prior v85 TL;DR (superseded)</summary>
 
@@ -31,9 +36,10 @@ release is complete; signed Android and store/legal work remains in
 
 | Tier | State |
 |---|---|
-| **`main` / GitHub Pages** | **v85 HSK 3.0 audit + dormant `h3` data** (`ead3ff2`): 87 files / 5,931 tests, build clean, `dist/app.js` byte-identical to v84. Live-verified — `sw.js` serves `CACHE_VERSION "v85"`, site HTTP 200, `data/words.js` carries `h3`. |
-| **Previous releases** | v84 word-detail panel (flashcard ⓘ + needs-work rows); v83 #127 Thai fix + HSK6 example sentences; v82 HSK3/4/5 examples + production hardening (v81); v80 corrective release. |
-| **Latest signed Android artifact** | Profile v74 APK. A v85 APK/AAB still needs the Windows signing and emulator/physical-device acceptance matrix. |
+| **Current source** | Cat Journey full-product development release cut from baseline `df875840`; Cat Journey enabled by default; SHELL/runtime v127; deployment is performed by the protected `main` Pages workflow. |
+| **Current automated baseline** | 107 files / 9,666 tests; 133 assets; ESLint and production build pass; `dist/app.js` 629,337 bytes. |
+| **Full-product development release** | Phases 0–2 and Phase 4 engineering plus Phase 3 authored-data foundation; 107 files / 9,708 tests; 134 assets; ESLint/build and asset budgets pass; `dist/app.js` 659,749 bytes; focused Journey QA passes at 320×568, 390×844, and 844×390. |
+| **Latest signed Android artifact on record** | Profile v74 APK. A current Cat Journey APK/AAB still needs Capacitor sync, Windows signing, and emulator/physical-device acceptance. |
 
 ## Done
 
@@ -102,11 +108,22 @@ release is complete; signed Android and store/legal work remains in
 
 ## In progress
 
-- **v85 Android cut:** produce a Windows-signed APK/AAB and repeat the
-  emulator/physical-device matrix. The previously verified v74 APK is recorded
-  in [ANDROID_BUILD.md](build/ANDROID_BUILD.md). The Android cut also owes a
-  device check of re-engagement notification id 1002 firing/canceling and
-  first-gesture word audio/SFX retry behavior.
+- **Cat Journey full product:** Phases 0–2 are implemented locally: authoritative
+  product docs, permanent v2 state/migration, and convergent additive cloud
+  merge are complete. Phase 3 now has 30 authored evergreen memories, 12
+  keepsake identities, complete draft EN/TH keys, content validation, and the
+  first production bitmap keepsake; all three Journey poses are now below their
+  asset budgets. Phase 4 engineering is complete locally: meaningful learned
+  words, destination/word/audio journal rows, incremental permanent history,
+  Home/Results cues, and native return-notification behavior. Remaining Phase
+  3 gates are native Thai sign-off and 11 optional keepsake bitmaps. Cloud sync
+  stays dark until the additive backend migration is deployed and verified.
+  Phases 5–8 remain: measurement/operations, full release QA,
+  observation/tuning, and safe Street retirement.
+- **Current Android cut:** produce a signed Cat Journey APK/AAB and repeat the
+  emulator/physical-device matrix after the full-product release candidate is
+  frozen. The previously verified v74 APK remains recorded in
+  [ANDROID_BUILD.md](build/ANDROID_BUILD.md).
 - **Post-release measurement:** no production analytics pipeline exists, so
   completion, recovery, delayed recall, and D1/D7 return cannot yet be compared
   reliably.
@@ -137,10 +154,12 @@ release is complete; signed Android and store/legal work remains in
 ## Planned / owner queue
 
 The single authoritative human-action checklist is
-[OWNER-ACTIONS.md](OWNER-ACTIONS.md). Engineering defaults to the recommended
-sequence in [the next-roadmap decision](planning/2026-07-16-next-roadmap.md):
-finish release/store readiness, while an HSK 3.0 compatibility audit runs in
-parallel. Public social/leaderboard work remains deferred.
+[OWNER-ACTIONS.md](OWNER-ACTIONS.md). Engineering follows the
+[Cat Journey full-product execution plan](../../docs/superpowers/plans/2026-07-27-cat-journey-full-product-execution-plan.md);
+the locked
+[hosting/billing go-live plan](planning/2026-07-25-golive-hosting-billing-plan.md)
+remains authoritative for external launch operations. Public
+social/leaderboard work remains deferred.
 
 _UX-audit polish complete: tone glyphs (#60) + desktop ambient (#61) shipped; **dark theme decided against** (light-only is fine for this mobile learning game)._
 _All 7 shop preview tiles shipped (2026-07-10): the 4 originals plus regenerated `tile-arcade`/`tile-lion-drum` and the new `tile-streak-freeze` consumable tile (audit-v50 F6 closed). Archive note: the 3 final dark-glow raws were pruned before being committed — git history only holds the old white-bg arcade/lion-drum raws; re-drop the originals to `art-drop/` if full-res archival is wanted._

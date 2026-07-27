@@ -422,7 +422,30 @@
     background:rgba(78,174,138,.16); color:var(--lc-green);}
   .cat-memory-card b{display:block; color:var(--lc-green-deep); font-size:12px;}
   .cat-memory-card p{margin:2px 0 3px; color:var(--lc-brown); font-size:10.5px; line-height:1.35;}
-  .cat-memory-card time{color:var(--lc-gray); font-size:8.5px;}
+  .cat-memory-meta{display:flex; flex-wrap:wrap; justify-content:space-between; gap:4px 10px;
+    color:var(--lc-gray); font-size:8.5px;}
+  .cat-memory-card time{color:inherit;}
+  .cat-memory-word{display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:44px;
+    margin-top:7px; padding:5px 5px 5px 9px; border-radius:11px; background:rgba(78,174,138,.10);}
+  .cat-memory-word>span{min-width:0;}
+  .cat-memory-word b{font-size:17px; line-height:1.1;}
+  .cat-memory-word small{display:block; margin-top:2px; overflow-wrap:anywhere; color:var(--lc-brown);
+    font-size:9px; line-height:1.25;}
+  .cat-memory-audio{display:grid; flex:0 0 44px; width:44px; height:44px; place-items:center;
+    border:0; border-radius:50%; background:rgba(31,77,74,.10); color:var(--lc-green-deep);}
+  .cat-memory-audio .asset-icon{width:20px; height:20px;}
+  .cat-memory-more{width:100%; min-height:44px; margin-top:8px; border:1px solid rgba(132,96,67,.35);
+    border-radius:12px; background:var(--lc-cream); color:var(--lc-green-deep); font-size:11px; font-weight:900;}
+  .cat-memory-more[hidden]{display:none;}
+  .home-cat-status{width:100%; min-height:44px; margin:8px 0 0; padding:8px 12px;
+    border:1px solid rgba(46,102,86,.38); border-radius:13px; background:rgba(168,216,209,.24);
+    color:var(--lc-green-deep); font-size:11px; font-weight:900;}
+  .home-cat-status[hidden]{display:none;}
+  .results-cat-ready{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin:10px 0; padding:10px 12px; border:1px solid rgba(46,102,86,.38); border-radius:14px;
+    background:rgba(168,216,209,.24); color:var(--lc-green-deep); font-size:12px; font-weight:800;}
+  .results-cat-ready[hidden]{display:none;}
+  .results-cat-ready .chip{flex:0 0 auto; min-height:44px;}
   @media (max-height:700px) and (orientation:portrait){
     .cat-scene{aspect-ratio:1/1; max-height:350px;}
     .cat-journey-character{height:67%; bottom:47px;}
@@ -1833,6 +1856,7 @@
         <span class="freeze-count"></span>
       </div>
     </div>
+    <button class="home-cat-status" id="home-cat-status" data-go="street"></button>
 
     <div class="home-cta">
       <button class="start-btn" id="home-start" data-i18n="home.start">START</button>
@@ -1947,6 +1971,7 @@
       <h3 data-i18n="cat.memoriesTitle">Journey memories</h3>
       <p class="cat-memory-empty" id="cat-memory-empty" data-i18n="cat.memoriesEmpty">Complete today's goal and send your cat exploring to make your first memory.</p>
       <div class="cat-memory-list" id="cat-memory-list"></div>
+      <button class="cat-memory-more" id="cat-memory-more" data-i18n="cat.memoriesMore" hidden>Show older memories</button>
     </section>
     <div class="visually-hidden" id="cat-live" aria-live="polite"></div>
   </div>
@@ -2342,6 +2367,10 @@
       </div>
       <button class="chip buy-chip" id="r-project-action"></button>
       <div class="project-meter" id="r-project-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i></i></div>
+    </section>
+    <section class="results-cat-ready" id="r-cat-ready" hidden>
+      <span data-i18n="results.catReady">Daily goal complete — your cat is ready to explore.</span>
+      <button class="chip" data-go="street" data-i18n="results.catReadyAction">Visit Cat</button>
     </section>
     <!-- A4/B2 slots: intro streak pointer (filled by endBattle on the intro
          round) and the sticker toast slot (activates in Phase 4 with stickers.js) -->

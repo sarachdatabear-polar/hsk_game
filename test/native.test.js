@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { isNative, nextBackScreen, hapticKill, hapticWrong, keepAwake,
          syncStreakReminder, syncReengageReminder, reengageFireAt,
+         syncCatJourneyReminder,
          requestNotifPermission, __resetNativeForTests } from "../src/native.js";
 
 beforeEach(() => { delete globalThis.window; __resetNativeForTests(); });
@@ -192,5 +193,35 @@ describe("re-engagement reminder timing", () => {
     expect(calls.schedule[0].notifications[0].id).toBe(1002);
     expect(calls.schedule[0].notifications[0].schedule.at.getTime())
       .toBe(reengageFireAt(now, plan).getTime());
+  });
+});
+
+describe("Cat Journey return reminder", () => {
+  const plan = { schedule:true, cancel:false, at:1_800_000 };
+
+  it("schedules stable id 1003 at the persisted ready time without prompting", async () => {
+    const calls = mockNative("granted");
+    await syncCatJourneyReminder(plan, "title", "body");
+    expect(calls.cancel).toBe(1);
+    expect(calls.request).toBe(0);
+    expect(calls.check).toBe(1);
+    expect(calls.schedule[0].notifications[0]).toMatchObject({ id:1003 });
+    expect(calls.schedule[0].notifications[0].schedule.at.getTime()).toBe(plan.at);
+  });
+
+  it("cancels without checking permission when no reminder should remain", async () => {
+    const calls = mockNative("granted");
+    await syncCatJourneyReminder({ schedule:false, cancel:true, at:0 }, "title", "body");
+    expect(calls.cancel).toBe(1);
+    expect(calls.check).toBe(0);
+    expect(calls.schedule).toHaveLength(0);
+  });
+
+  it("is silent on web and on denied permission", async () => {
+    let calls = mockNative("denied");
+    await expect(syncCatJourneyReminder(plan, "title", "body")).resolves.toBeUndefined();
+    expect(calls.schedule).toHaveLength(0);
+    globalThis.window = {};
+    await expect(syncCatJourneyReminder(plan, "title", "body")).resolves.toBeUndefined();
   });
 });

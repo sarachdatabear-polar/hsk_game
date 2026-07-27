@@ -98,8 +98,8 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
       "nbhsk.mastery": JSON.stringify({ "妈妈|1": 3 }),
     });
     const end = runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
-    expect(end).toBe(5);
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
+    expect(end).toBe(CURRENT_SCHEMA_VERSION);
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe(String(CURRENT_SCHEMA_VERSION));
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
     expect(shop.streetLayout.v).toBe(5);
     expect(shop.streetLayout.welcomeOwned).toBe(true);
@@ -114,7 +114,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
       "nbhsk.mastery": JSON.stringify({}),
     });
     runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe(String(CURRENT_SCHEMA_VERSION));
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
     expect(shop.streetLayout.welcomeOwned).toBe(false);
   });
@@ -125,7 +125,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
       "nbhsk.shop": JSON.stringify({ owned: [] }),
     });
     runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe(String(CURRENT_SCHEMA_VERSION));
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
     expect(shop.streetLayout.welcomeOwned).toBe(false);
   });
@@ -137,7 +137,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
       "nbhsk.mastery": JSON.stringify({ "妈妈|1": 3 }),
     });
     expect(() => runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION)).not.toThrow();
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe(String(CURRENT_SCHEMA_VERSION));
     // corrupt shop payload is left untouched, not rewritten
     expect(s.dump()["nbhsk.shop"]).toBe("{not valid json");
   });
@@ -148,7 +148,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
       "nbhsk.mastery": JSON.stringify({ "妈妈|1": 3 }),
     });
     expect(() => runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION)).not.toThrow();
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe(String(CURRENT_SCHEMA_VERSION));
     expect(s.dump()["nbhsk.shop"]).toBeUndefined();
   });
 
@@ -166,7 +166,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
       "nbhsk.mastery": JSON.stringify({}),
     });
     runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe(String(CURRENT_SCHEMA_VERSION));
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
     expect(shop.streetLayout.placements).toEqual({ "plot-small-01": "red-lantern" });
     expect(shop.streetLayout.v).toBe(5);
@@ -181,7 +181,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
       "nbhsk.mastery": JSON.stringify({}),
     });
     runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe(String(CURRENT_SCHEMA_VERSION));
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
     expect(shop.streetLayout.welcomeOwned).toBe(true);
   });
@@ -225,8 +225,8 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
     });
     expect(readVersion(s)).toBe(0);
     const end = runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
-    expect(end).toBe(5);
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
+    expect(end).toBe(CURRENT_SCHEMA_VERSION);
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe(String(CURRENT_SCHEMA_VERSION));
     const shop = JSON.parse(s.dump()["nbhsk.shop"]);
     expect(shop.streetLayout.v).toBe(5);
     expect(shop.streetLayout.welcomeOwned).toBe(true);
@@ -235,7 +235,7 @@ describe("v1->v2 migration (street layout / streetProject)", () => {
   it("fresh install (no legacy sentinels) is a pure stamp; migration body never runs", () => {
     const s = fakeStorage();
     runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
-    expect(s.dump()["nbhsk.schemaVersion"]).toBe("5");
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe(String(CURRENT_SCHEMA_VERSION));
     expect(s.dump()["nbhsk.shop"]).toBeUndefined();
   });
 });
@@ -258,25 +258,25 @@ describe("v2 → v3 street ownership migration", () => {
     expect(shop.streetLayout.lastVisitDay).toBeNull();
     expect(shop.streetLayout.welcomeOwned).toBe(true);   // preserved
     expect(shop.streetProject.reserve).toBe(false);
-    expect(s.getItem("nbhsk.schemaVersion")).toBe("5");
+    expect(s.getItem("nbhsk.schemaVersion")).toBe(String(CURRENT_SCHEMA_VERSION));
   });
 
   it("no-ops without throwing on corrupt shop JSON", () => {
     const s = fakeStorage({ "nbhsk.schemaVersion": "2", "nbhsk.shop": "{not json" });
     expect(() => runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION)).not.toThrow();
-    expect(s.getItem("nbhsk.schemaVersion")).toBe("5");   // still stamps current
+    expect(s.getItem("nbhsk.schemaVersion")).toBe(String(CURRENT_SCHEMA_VERSION));   // still stamps current
   });
 
   it("stamps a fresh install straight to current without running entries", () => {
     const s = fakeStorage({});
     runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
-    expect(s.getItem("nbhsk.schemaVersion")).toBe("5");
+    expect(s.getItem("nbhsk.schemaVersion")).toBe(String(CURRENT_SCHEMA_VERSION));
     expect(s.getItem("nbhsk.shop")).toBeNull();
   });
 });
 
 describe("v3→v4 migration", () => {
-  it("defaults metNeighbours on a v3 shop layout and stamps v5", () => {
+  it("defaults metNeighbours on a v3 shop layout and stamps current schema", () => {
     const s = fakeStorage({
       "nbhsk.schemaVersion": "3",
       "nbhsk.shop": JSON.stringify({
@@ -285,7 +285,7 @@ describe("v3→v4 migration", () => {
     });
     const v = runMigrations(s);
     expect(v).toBe(CURRENT_SCHEMA_VERSION);
-    expect(CURRENT_SCHEMA_VERSION).toBe(5);
+    expect(CURRENT_SCHEMA_VERSION).toBe(6);
     const shop = JSON.parse(s.getItem("nbhsk.shop"));
     expect(shop.streetLayout.metNeighbours).toEqual([]);
     expect(shop.streetLayout.setsCompleted).toEqual(["market"]);
@@ -298,8 +298,8 @@ describe("v3→v4 migration", () => {
 });
 
 describe("v4->v5 migration (builtStages)", () => {
-  it("bumps CURRENT_SCHEMA_VERSION to 5", () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe(5);
+  it("remains in the ladder after later schema bumps", () => {
+    expect(CURRENT_SCHEMA_VERSION).toBeGreaterThanOrEqual(5);
   });
 
   it("seeds finished landmarks from level, leaves unreached at 0", () => {
@@ -378,5 +378,79 @@ describe("v4->v5 migration (builtStages)", () => {
     expect(shop.streetLayout.name).toBe("Meow Lane");
     expect(shop.streetLayout.keepsakes).toEqual([{ id: "lantern-keepsake", kind: "gift" }]);
     expect(shop.streetLayout.metNeighbours).toEqual(["neighbour-a"]);
+  });
+});
+
+describe("v5->v6 migration (Cat Journey permanent claims)", () => {
+  it("migrates the complete v1 journey shape without losing active or returned data", () => {
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "5",
+      "nbhsk.catJourney": JSON.stringify({
+        v: 1,
+        selectedBackground: "bg-cat-garden-v1",
+        goalDaysCount: 9,
+        lastGoalDay: "2026-07-26",
+        lastSeenBondTier: 1,
+        claimedDays: ["2026-07-25", "2026-07-26"],
+        activeJourney: { day: "2026-07-26", departedAt: 100, readyAt: 200 },
+        memories: [{ id: "garden-leaf", day: "2026-07-25" }],
+      }),
+    });
+    expect(runMigrations(s)).toBe(CURRENT_SCHEMA_VERSION);
+    expect(s.getItem("nbhsk.schemaVersion")).toBe(String(CURRENT_SCHEMA_VERSION));
+    const journey = JSON.parse(s.getItem("nbhsk.catJourney"));
+    expect(journey).toMatchObject({
+      v: 2,
+      selectedBackground: "bg-cat-garden-v1",
+      goalHistory: { baselineCount: 9, throughDay: "2026-07-26", days: [] },
+      lastSeenBondTier: 1,
+    });
+    expect(journey.claims).toHaveLength(2);
+    expect(journey.claims[0]).toMatchObject({
+      day: "2026-07-25",
+      storyId: "garden-leaf",
+    });
+    expect(journey.claims[1]).toMatchObject({
+      day: "2026-07-26",
+      departedAt: 100,
+      readyAt: 200,
+      returnedAt: 0,
+    });
+  });
+
+  it("retains more than 120 v1 memories and is idempotent", () => {
+    const memories = Array.from({ length: 130 }, (_, i) => ({
+      id: `legacy-${i}`,
+      day: new Date(Date.UTC(2025, 0, 1 + i)).toISOString().slice(0, 10),
+    }));
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "5",
+      "nbhsk.catJourney": JSON.stringify({
+        v: 1,
+        claimedDays: memories.map(item => item.day),
+        memories,
+      }),
+    });
+    runMigrations(s);
+    const first = s.getItem("nbhsk.catJourney");
+    expect(JSON.parse(first).claims).toHaveLength(130);
+    runMigrations(s);
+    expect(s.getItem("nbhsk.catJourney")).toBe(first);
+  });
+
+  it("leaves corrupt Cat Journey JSON untouched while still stamping current", () => {
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "5",
+      "nbhsk.catJourney": "{bad json",
+    });
+    expect(() => runMigrations(s)).not.toThrow();
+    expect(s.getItem("nbhsk.catJourney")).toBe("{bad json");
+    expect(s.getItem("nbhsk.schemaVersion")).toBe(String(CURRENT_SCHEMA_VERSION));
+  });
+
+  it("does not create Cat Journey state when the key is absent", () => {
+    const s = fakeStorage({ "nbhsk.schemaVersion": "5" });
+    runMigrations(s);
+    expect(s.getItem("nbhsk.catJourney")).toBeNull();
   });
 });

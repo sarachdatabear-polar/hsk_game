@@ -9,9 +9,15 @@ import { defaultQuestState, defaultMonthly, MONTHLY_TARGET, settleMonthly } from
 import { defaultDaily } from "./daily.js";
 import { normalizeStreetLayout, STREET_LAYOUT_VERSION, BUILDINGS } from "./street.js";
 import { normalizeStreetProject } from "./street-project.js";
+import { normalizeCatJourney } from "./cat-journey.js";
+import { CAT_JOURNEY_CLOUD_ENABLED } from "./cloud-config.js";
 
-export const SYNC_KEYS = ["mastery", "xp", "daily", "quests", "monthly",
+export const BASE_SYNC_KEYS = ["mastery", "xp", "daily", "quests", "monthly",
   "wallet", "bricks", "freezes", "shop", "stickers", "best"];
+export function syncKeysFor(catJourneyCloudEnabled = CAT_JOURNEY_CLOUD_ENABLED) {
+  return catJourneyCloudEnabled ? [...BASE_SYNC_KEYS, "catJourney"] : [...BASE_SYNC_KEYS];
+}
+export const SYNC_KEYS = syncKeysFor();
 
 export function defaultSyncMeta() {
   return { dirty: {}, lastSyncAt: 0, lastLedgerAt: "", shopSlots: null, shopPreferences: null };
@@ -48,6 +54,76 @@ export function mergeStickers(a, b) {
     earned[id] = x && y ? (x < y ? x : y) : (x || y);
   }
   return { earned, queue: Array.isArray(A.queue) ? A.queue.slice() : [] };
+}
+
+function earliestPositive(a, b) {
+  const x = Math.max(0, Math.floor(Number(a) || 0));
+  const y = Math.max(0, Math.floor(Number(b) || 0));
+  if (!x) return y;
+  if (!y) return x;
+  return Math.min(x, y);
+}
+
+function canonicalText(a, b) {
+  const values = [a, b].filter(value => typeof value === "string" && value);
+  return values.sort((x, y) => x.localeCompare(y))[0] || "";
+}
+
+function mergeJourneyGoalHistory(a, b) {
+  const throughDay = a.throughDay > b.throughDay ? a.throughDay : b.throughDay;
+  const countThrough = value => value.baselineCount
+    + value.days.filter(day => throughDay && day <= throughDay).length;
+  return {
+    baselineCount: Math.max(countThrough(a), countThrough(b)),
+    throughDay,
+    days: [...new Set([...a.days, ...b.days])]
+      .filter(day => !throughDay || day > throughDay)
+      .sort(),
+  };
+}
+
+function mergeJourneyClaim(a, b) {
+  return {
+    day: a.day,
+    departedAt: earliestPositive(a.departedAt, b.departedAt),
+    readyAt: earliestPositive(a.readyAt, b.readyAt),
+    // Returned is monotonic. The earliest positive timestamp is the canonical
+    // acknowledgement when both devices completed independently.
+    returnedAt: earliestPositive(a.returnedAt, b.returnedAt),
+    destinationId: canonicalText(a.destinationId, b.destinationId),
+    storyId: canonicalText(a.storyId, b.storyId),
+    keepsakeId: canonicalText(a.keepsakeId, b.keepsakeId),
+    wordKey: canonicalText(a.wordKey, b.wordKey),
+  };
+}
+
+function journeyPreferenceOf(a, b) {
+  if (a.selectedBackgroundAt !== b.selectedBackgroundAt) {
+    return a.selectedBackgroundAt > b.selectedBackgroundAt ? a : b;
+  }
+  const deviceOrder = a.selectedBackgroundDevice.localeCompare(b.selectedBackgroundDevice);
+  if (deviceOrder) return deviceOrder > 0 ? a : b;
+  return a.selectedBackground.localeCompare(b.selectedBackground) <= 0 ? a : b;
+}
+
+export function mergeCatJourney(a, b) {
+  const A = normalizeCatJourney(a);
+  const B = normalizeCatJourney(b);
+  const claims = new Map(A.claims.map(claim => [claim.day, claim]));
+  for (const claim of B.claims) {
+    const prior = claims.get(claim.day);
+    claims.set(claim.day, prior ? mergeJourneyClaim(prior, claim) : claim);
+  }
+  const preference = journeyPreferenceOf(A, B);
+  return normalizeCatJourney({
+    v: 2,
+    selectedBackground: preference.selectedBackground,
+    selectedBackgroundAt: preference.selectedBackgroundAt,
+    selectedBackgroundDevice: preference.selectedBackgroundDevice,
+    goalHistory: mergeJourneyGoalHistory(A.goalHistory, B.goalHistory),
+    lastSeenBondTier: Math.max(A.lastSeenBondTier, B.lastSeenBondTier),
+    claims: [...claims.values()],
+  });
 }
 
 // The four equipped-cosmetic slots, normalized through defaultShop so null/
@@ -283,7 +359,7 @@ export function mergeAll(local, cloud, {
   const lm = today ? settleMonthly(Object.assign(defaultMonthly(), l.monthly || {}), today) : { state: l.monthly, earned: 0 };
   const cm = today ? settleMonthly(Object.assign(defaultMonthly(), c.monthly || {}), today) : { state: c.monthly, earned: 0 };
   const unseen = num(unseenPurchased);
-  return {
+  const merged = {
     mastery: mergeMastery(l.mastery, c.mastery),
     xp: mergeXp(l.xp, c.xp),
     daily: mergeDaily(l.daily, c.daily),
@@ -300,4 +376,8 @@ export function mergeAll(local, cloud, {
     stickers: mergeStickers(l.stickers, c.stickers),
     best: mergeBest(l.best, c.best),
   };
+  if (l.catJourney != null || c.catJourney != null) {
+    merged.catJourney = mergeCatJourney(l.catJourney, c.catJourney);
+  }
+  return merged;
 }

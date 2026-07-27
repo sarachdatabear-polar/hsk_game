@@ -27,7 +27,9 @@ import { reviewChallengePoints, reviewChallengeSpeedFactor } from "./boss.js";
 import { initAudio, speak, speakWhenReady, audioAvailable, hasMp3, setVoiceVolume,
          unlockAudio, prefetchAudio, initRemoteAudio, stopAudio, resetAudioUnlock,
          preferPlaybackAudioSession } from "./audio.js";
-import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder, syncReengageReminder, requestNotifPermission, isNative } from "./native.js";
+import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder,
+         syncReengageReminder, syncCatJourneyReminder, requestNotifPermission,
+         isNative } from "./native.js";
 import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, isAvailable, seasonStatus, unownedDailyStock } from "./shop.js";
 // Street's own draft/preview state, canvas drawing and street.js/street-project.js/
 // street-resident.js imports all moved into createStreetScreen (src/ui/street-screen.js,
@@ -70,6 +72,13 @@ import { createWordDetail } from "./ui/word-detail-screen.js";
 import { createFriendCompare } from "./ui/friend-screen.js";
 import { createStreetScreen } from "./ui/street-screen.js";
 import { createCatJourneyScreen } from "./ui/cat-journey-screen.js";
+import {
+  chooseJourneyWord,
+  journeyStatus as catJourneyStatus,
+  minutesUntilReturn as catMinutesUntilReturn,
+  normalizeCatJourney,
+  journeyReturnNotificationPlan,
+} from "./cat-journey.js";
 import { friendCardFromHash } from "./friend-compare.js";
 
 /* ============================== data & state ============================== */
@@ -311,6 +320,22 @@ const todayStr = () => {
 };
 let daily = Object.assign(defaultDaily(), store.get("daily", {}));
 daily.today = Object.assign({date:"", resolved:0}, daily.today);
+let catGoalCrossed = false;
+// Local candidate staging is intentionally tiny and text-free: one canonical
+// bundled hanzi key plus its selection rank. Departure copies the key into the
+// permanent Journey claim, where it can sync cross-device.
+function noteCatJourneyWord(wordKey, flags = {}){
+  if(!BY_HANZI[wordKey]) return;
+  const day = todayStr();
+  const saved = store.get("catJourneyWord", {});
+  const current = saved && saved.day === day ? saved : {};
+  const chosen = chooseJourneyWord(current, { wordKey, ...flags });
+  store.set("catJourneyWord", { day, ...chosen });
+}
+function catJourneyWordKey(){
+  const saved = store.get("catJourneyWord", {});
+  return saved && saved.day === todayStr() && BY_HANZI[saved.wordKey] ? saved.wordKey : "";
+}
 // #home-streak is the cream streak plaque (M3): fire icon + title, day count +
 // a ✓ that only shows once today's goal is met, and a green→gold bar for
 // today's progress toward that goal. Fill children in place, like updateLevelChip.
@@ -470,6 +495,7 @@ function noteDaily(count){
   // retention pack: once today's goal is first met, cancel any pending
   // streak-saver reminder rather than waiting for the next backgrounding.
   if(!wasGoalMet && info.goalMet){
+    catGoalCrossed = true;
     syncStreakReminder({ schedule: false, hour: REMINDER_HOUR, cancel: true }, "", "");
   }
   // Ask for the Android notification permission HERE, in the foreground, the
@@ -894,7 +920,7 @@ function rehydrateFromStore(){
   const st = Object.assign(defaultStickers(), store.get("stickers", {}) || {});
   stickerState = { earned: Object.assign({}, st.earned), queue: stickerState.queue };
   updateWalletChip();
-  catJourneyScreen?.render();
+  catJourneyScreen?.rehydrate();
 }
 
 // Reconcile edge: never during an active round (design §3 — merged state must
@@ -1000,6 +1026,7 @@ async function onAccountDelete(){
   accountUI.email = "";
   accountUI.lastSentAt = 0;
   accountUI.confirmingDelete = false;
+  syncCatJourneyReminder({ schedule:false, cancel:true, at:0 }, "", "");
   toast(t("account.deleteDone"));
   renderAccount();
 }
@@ -1048,6 +1075,25 @@ function renderHome(){
     next.textContent = smart.length >= 8
       ? t("home.nextReview", { n: smart.length })
       : t("home.nextQuest", { n: normalizeLen(scope.sessionLen) });
+  }
+  const catAction = $("#home-cat-status");
+  if(catAction){
+    const dailyInfo = streakInfo(daily, todayStr(), freezes);
+    const catState = normalizeCatJourney(store.get("catJourney", null));
+    const status = catJourneyStatus(catState, {
+      today: todayStr(), goalMet: dailyInfo.goalMet, now: Date.now(),
+    });
+    catAction.hidden = !CAT_JOURNEY_ENABLED || status === "done";
+    if(status === "ready") catAction.textContent = t("home.cat.ready");
+    else if(status === "exploring") {
+      catAction.textContent = t("home.cat.exploring", {
+        n: catMinutesUntilReturn(catState, Date.now()),
+      });
+    } else if(status === "returned") catAction.textContent = t("home.cat.returned");
+    else catAction.textContent = t("home.cat.progress", {
+      done: Math.min(dailyInfo.todayResolved, dailyInfo.goal),
+      goal: dailyInfo.goal,
+    });
   }
   // v6p3 Tone Trainer: hidden/greyed when the scoped pool has no MP3-backed
   // eligible words (e.g. file:// where audio/index.json can't be fetched) —
@@ -1586,9 +1632,15 @@ $("#fc-spk").onclick = e=>{ e.stopPropagation(); const w=fc.deck[fc.i]; if(w) sp
 function nextCard(keep){
   if(!fc.flipped) return;
   const w = fc.deck[fc.i];
+  const masteredBefore = ((masteryStore[w.h] && masteryStore[w.h].r) || 0) >= 3;
   noteAnswer(w.h, !keep);        // "know it" (keep=false) = correct; "still learning" = incorrect
   if(keep) fc.deck.push(w);      // still learning → resurfaces at the end
-  else { fc.done++; noteDaily(1); questEvent("learn"); addXp(1); }   // "know it" counts toward the daily goal, one tap at a time
+  else {
+    noteCatJourneyWord(w.h, {
+      newlyMastered: !masteredBefore && ((masteryStore[w.h] && masteryStore[w.h].r) || 0) >= 3,
+    });
+    fc.done++; noteDaily(1); questEvent("learn"); addXp(1);
+  }   // "know it" counts toward the daily goal, one tap at a time
   fc.i++; fc.flipped = false;
   persistCardSession();
   if(fc.i >= fc.deck.length){ endLearn(); return; }
@@ -1690,7 +1742,10 @@ function answerTone(picked, btn){
     if(b._correct) b.classList.add("good");
   });
   if(!ok) btn.classList.add("bad");
-  if(ok){ TG.score++; TG.streak++; TG.bestStreak = Math.max(TG.bestStreak, TG.streak); sfx.kill(); }
+  if(ok){
+    noteCatJourneyWord(q.word.h);
+    TG.score++; TG.streak++; TG.bestStreak = Math.max(TG.bestStreak, TG.streak); sfx.kill();
+  }
   else { TG.streak = 0; sfx.wrong(); }
   renderTonesBest();
   const reveal = $("#tones-reveal");
@@ -1940,6 +1995,7 @@ cv.addEventListener("mousemove", e=>{
 function startBattle(mode){
   if(B.on) return;   // re-entrancy guard: a double-tapped start button must not schedule a second rAF loop
   lastMode = mode;
+  catGoalCrossed = false;
   B.on = true; B.mode = mode;
   // Street Projects use the wallet delta shown on the results screen. Coins
   // remain fully spendable; this is a snapshot, never an escrow balance.
@@ -2225,6 +2281,10 @@ document.addEventListener("visibilitychange", ()=>{
     syncReengageReminder(reengagePlan(inf),
       t("notify.comeback.title", { n: inf.streak }),
       t("notify.comeback.body", { n: inf.streak }));
+    syncCatJourneyReminder(
+      journeyReturnNotificationPlan(store.get("catJourney", null), Date.now()),
+      t("notify.cat.title"),
+      t("notify.cat.body"));
     // midRound=B.on: a hide during a (paused) battle must not let a
     // monthly-dirty push redirect into reconcile — see pushDirty/syncEdge.
     pushEdge("hide");
@@ -2265,6 +2325,7 @@ function spawnZombie(){
   const encounter = B.quest.next();
   if(!encounter) return false;
   const w = encounter.word;
+  const masteryAtSpawn = masteryStore[w.h] || {};
   B.reveal = null;   // T6: new word incoming — drop the previous word's reveal-window snapshot
   const learnedAtStart = B.quest.view().learned;
   B.zombie = {
@@ -2274,7 +2335,8 @@ function spawnZombie(){
     // mastery record (recordAnswer always rewrites `ls`, so a due check made
     // later — inside answer()'s correct branch — would always read false).
     // Used to fire analytics' delayed_recall on a successful spaced recall.
-    dueAtSpawn: isDue(masteryStore[w.h], Date.now()),
+    dueAtSpawn: isDue(masteryAtSpawn, Date.now()),
+    weakAtSpawn: ((masteryAtSpawn.r || 0) <= 1) && ((masteryAtSpawn.s || 0) >= 2),
   };
   B.spawned++; B.locked = false;
   if(encounter.reviewChallenge){
@@ -2515,6 +2577,7 @@ function answer(btn, o){
   const boss = z.boss;
   const rewardPolicy = questRewardPolicy(z.encounter?.origin);
   const correct = !!o.correct;
+  const masteredBefore = ((masteryStore[z.w.h] && masteryStore[z.w.h].r) || 0) >= 3;
   if(!boss) noteAnswer(z.w.h, correct);
   if(correct && boss && z.stage === "meaning"){
     // stage 1 passed: no kill yet, advance to the reverse (hanzi) question.
@@ -2561,6 +2624,10 @@ function answer(btn, o){
     B.proj = {x:trailBefore.catX+16*B.S, y:B.h-B.L.ground-30*B.S};
     // (word audio fires once, on spawn — no replay on the answer tap)
     if(boss){ noteAnswer(z.w.h, true); B.bossDefeated = true; }   // both stages passed
+    noteCatJourneyWord(z.w.h, {
+      newlyMastered: !masteredBefore && ((masteryStore[z.w.h] && masteryStore[z.w.h].r) || 0) >= 3,
+      recovered: z.dueAtSpawn || z.weakAtSpawn || z.encounter?.origin === "review",
+    });
     syncQuestOutcome(true, false);
     if(z.encounter?.origin === "review"){
       // analytics (dark): review_recovery — fires when a word that had been
@@ -3337,6 +3404,8 @@ function endBattle(quit){
   if(earnedBricks){ bricks += earnedBricks; store.set("bricks", bricks); }
   if(CAT_JOURNEY_ENABLED) $("#r-project").hidden = true;
   else streetScreen.renderProjectResults(B.walletAtStart, wallet);
+  const journeyReady = $("#r-cat-ready");
+  if(journeyReady) journeyReady.hidden = !CAT_JOURNEY_ENABLED || !catGoalCrossed;
   $("#r-learned").textContent = t("results.learnedTarget", { learned:results.learned, target:results.target });
   $("#r-attempts").textContent = results.attempts;
   $("#r-accuracy").textContent = results.accuracy + "%";
@@ -4058,6 +4127,12 @@ catJourneyScreen = createCatJourneyScreen({
   getXp: () => xp,
   getDailyInfo: () => streakInfo(daily, todayStr(), freezes),
   getMasteredCount: () => masteredCount(masteryStore),
+  getJourneyWordKey: catJourneyWordKey,
+  getWordByKey: key => BY_HANZI[key] || null,
+  getWordMeaning: word => getLocale() === "th" ? (word.t || word.e) : word.e,
+  playWord: key => speak(key),
+  syncReturnReminder: plan => syncCatJourneyReminder(
+    plan, t("notify.cat.title"), t("notify.cat.body")),
 });
 
 /* ============================== profile / progress ============================== */

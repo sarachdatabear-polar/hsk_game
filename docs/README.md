@@ -8,7 +8,7 @@ Finished and superseded docs move to [`archive/`](archive/README.md) (run
 `superpowers/` and intentionally keep their original in-text paths.
 
 ## 📋 `prd/` — Product requirements (what to build)
-- [PRD-street-v2.md](prd/PRD-street-v2.md) — proposed player-authored panoramic Street redesign; plot editor, in-context shop preview, safe inventory, item reactions, migration/sync, and phased rollout
+- [Cat Journey Full Product PRD](../../docs/superpowers/specs/2026-07-27-cat-journey-full-product-prd.md) — authoritative post-MVP product definition; Cat Journey is the production retention direction
 - [PRD-v5-visual-retention.md](prd/PRD-v5-visual-retention.md) — shipped 2026-07-07 (phases 1–5); stays live because §8 is the standing v-next roadmap (question types, HSK 3.0, social)
 - [PRD-monetization-and-production.md](prd/PRD-monetization-and-production.md) — store launch + monetization roadmap; local dark foundations/provider are ready, live operations pending
 
@@ -22,6 +22,7 @@ Finished and superseded docs move to [`archive/`](archive/README.md) (run
 - [ASSET-INVENTORY.md](art/ASSET-INVENTORY.md) — asset audit baseline
 
 ## 📌 `planning/` — Living checklists & status
+- [Cat Journey Full Product Execution Plan](../../docs/superpowers/plans/2026-07-27-cat-journey-full-product-execution-plan.md) — permanent state, cloud sync, authored content, learning integration, measurement, release, and safe Street retirement
 - [2026-07-16-ux-ui-launch-readiness-audit.md](planning/2026-07-16-ux-ui-launch-readiness-audit.md) — v76 findings, fixes, verification evidence, and remaining go-live gates
 - [2026-07-12-coin-purchase-golive.md](planning/2026-07-12-coin-purchase-golive.md) — Phase 1 merged dark; real-provider Phase 2 and owner gates remain pending
 - [2026-07-16-next-roadmap.md](planning/2026-07-16-next-roadmap.md) — ranked next choices and recommended release + HSK 3.0 audit sequence
@@ -40,6 +41,7 @@ Finished and superseded docs move to [`archive/`](archive/README.md) (run
 
 ## 🗄️ `archive/` — Finished & superseded
 - [archive/README.md](archive/README.md) — index of shipped PRDs and superseded art docs
+- [PRD-street-v2.md](prd/PRD-street-v2.md) — superseded Street proposal retained in place for migration/history reference
 
 ## 📚 `superpowers/` — Process reference
 - `plans/`, `specs/` — Superpowers workflow plans & design specs (archival; pending: [responsive-all-devices](superpowers/plans/2026-07-07-responsive-all-devices.md))

@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { MIN_SYNC_GAP_MS, rowsFromLocal, localFromRows,
+import { MIN_SYNC_GAP_MS, localSnapshot, rowsFromLocal, localFromRows,
          reconcile, pushDirty, __resetForTests, __setSessionReconciledForTests } from "../src/sync.js";
 import { __setClientForTests, LEDGER_EPOCH } from "../src/cloud.js";
 import { SYNC_KEYS, streetLayoutPrefsOf } from "../src/merge.js";
+import { defaultCatJourney, normalizeCatJourney } from "../src/cat-journey.js";
 
 // _setOrder (I3): records the ordered sequence of set(key) calls so tests can
 // pin the crash-safety invariant (cursor-advance meta write lands before the
@@ -72,7 +73,21 @@ describe("row mapping", () => {
     expect(r.progress.streak).toBe(4);
     expect(r.progress.cosmetics).toEqual(local.shop);
     expect(r.progress.stickers).toEqual({ earned: { s1: "2026-07-01" } });
+    expect(r.progress).not.toHaveProperty("cat_journey");
     expect(r.wallet).toEqual({ user_id: "u1", coins: 300, freezes: 2 });
+  });
+  it("Cat Journey row mapping is present only when the backend capability is enabled", () => {
+    const catJourney = normalizeCatJourney({
+      ...defaultCatJourney(),
+      claims: [{ day: "2026-07-27", returnedAt: 10, storyId: "garden-leaf" }],
+    });
+    const dark = rowsFromLocal("u1", { catJourney });
+    expect(dark.progress).not.toHaveProperty("cat_journey");
+    const enabled = rowsFromLocal("u1", { catJourney }, { catJourneyCloudEnabled: true });
+    expect(enabled.progress.cat_journey).toEqual(catJourney);
+    expect(localFromRows(enabled.progress, null, { catJourneyCloudEnabled: true }).catJourney)
+      .toEqual(catJourney);
+    expect(localFromRows(enabled.progress, null)).not.toHaveProperty("catJourney");
   });
   it("localFromRows inverts (nulls when rows absent)", () => {
     const l = localFromRows(null, null);
@@ -82,6 +97,11 @@ describe("row mapping", () => {
     expect(l2.shop).toEqual({ owned: ["a"] });
     expect(l2.wallet).toBe(9);
     expect(l2.freezes).toBe(1);
+  });
+  it("localSnapshot reads Cat Journey without making the dark capability a sync key", () => {
+    const catJourney = defaultCatJourney();
+    expect(localSnapshot(memStore({ catJourney })).catJourney).toEqual(catJourney);
+    expect(SYNC_KEYS).not.toContain("catJourney");
   });
 });
 
@@ -126,6 +146,23 @@ describe("reconcile", () => {
     const r = await reconcile(store, "sign-in", 1000000);
     expect(r.ok).toBe(true);
     expect(store.get("bricks", 0)).toBe(40);   // must NOT be zeroed by the fold
+  });
+  it("dark Cat Journey capability preserves local state and omits the unknown cloud column", async () => {
+    const { client, calls } = fakeClient({ session: SESSION,
+      progressRow: { user_id: "u1", xp: 0, mastery: {}, daily: {}, quests: {},
+        monthly: {}, best: {}, cosmetics: {}, stickers: { earned: {} } },
+      walletRow: { user_id: "u1", coins: 0, freezes: 0 } });
+    __setClientForTests(client);
+    const catJourney = normalizeCatJourney({
+      ...defaultCatJourney(),
+      claims: [{ day: "2026-07-27", returnedAt: 10, storyId: "garden-leaf" }],
+    });
+    const store = memStore({ catJourney, sync: { dirty: {}, lastSyncAt: 0 } });
+    const r = await reconcile(store, "sign-in", 1_000_000);
+    expect(r.ok).toBe(true);
+    expect(store.get("catJourney", null)).toEqual(catJourney);
+    const pushed = calls.upserts.find(call => call.table === "progress").row;
+    expect(pushed).not.toHaveProperty("cat_journey");
   });
   it("changed:false when cloud contributes nothing", async () => {
     const { client } = fakeClient({ session: SESSION, progressRow: null, walletRow: null });

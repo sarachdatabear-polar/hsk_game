@@ -1579,8 +1579,8 @@
       "type": "character",
       "status": "approved",
       "priority": "P1",
-      "w": 1254,
-      "h": 1254,
+      "w": 512,
+      "h": 512,
       "anchor": "bottom-center",
       "note": "Cat Journey v1 ready-to-explore state with book satchel"
     },
@@ -1590,8 +1590,8 @@
       "type": "character",
       "status": "approved",
       "priority": "P1",
-      "w": 1254,
-      "h": 1254,
+      "w": 512,
+      "h": 512,
       "anchor": "bottom-center",
       "note": "Cat Journey v1 return state with text-free leaf memory"
     },
@@ -1601,10 +1601,20 @@
       "type": "character",
       "status": "approved",
       "priority": "P1",
-      "w": 1254,
-      "h": 1254,
+      "w": 512,
+      "h": 512,
       "anchor": "bottom-center",
       "note": "Cat Journey v1 safe and content resting state"
+    },
+    {
+      "id": "keepsake-heart-leaf-v1",
+      "file": "keepsake-heart-leaf-v1.png",
+      "type": "decor",
+      "status": "approved",
+      "priority": "P1",
+      "w": 256,
+      "h": 256,
+      "note": "Cat Journey evergreen-v1 heart-leaf memory keepsake"
     }
   ],
   "required_icons": [

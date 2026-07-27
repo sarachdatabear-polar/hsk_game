@@ -3,10 +3,14 @@
 import {
   BOND_TIERS,
   CAT_BACKGROUNDS,
+  activeClaimOf,
   bondPointsOf,
   bondProgressOf,
   completeCatJourney,
+  goalDaysCountOf,
+  journeyReturnNotificationPlan,
   journeyStatus,
+  memoryRecordsOf,
   minutesUntilReturn,
   normalizeCatJourney,
   noteGoalDay,
@@ -14,13 +18,15 @@ import {
   startCatJourney,
   unlockedBackgrounds,
 } from "../cat-journey.js";
-import { memoryById, memoryForJourney } from "../cat-memories.js";
+import { keepsakeById, memoryById, memoryForJourney } from "../cat-memories.js";
 
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 export function createCatJourneyScreen({
   $, store, analytics, show, t, todayStr,
-  getXp, getDailyInfo, getMasteredCount,
+  getXp, getDailyInfo, getMasteredCount, getJourneyWordKey = () => "",
+  getWordByKey = () => null, getWordMeaning = () => "", playWord = null,
+  syncReturnReminder = () => {},
   now = () => Date.now(),
 }) {
   let state = normalizeCatJourney(store.get("catJourney", null));
@@ -28,6 +34,7 @@ export function createCatJourneyScreen({
   let backgroundsOpen = false;
   let highlightedMemoryId = "";
   let refreshTimer = 0;
+  let memoryLimit = 20;
 
   function persist(next) {
     state = normalizeCatJourney(next);
@@ -42,7 +49,7 @@ export function createCatJourneyScreen({
     const points = bondPointsOf({
       masteredWords: getMasteredCount(),
       totalXp: getXp(),
-      dailyGoalDays: state.goalDaysCount,
+      dailyGoalDays: goalDaysCountOf(state),
     });
     const bond = bondProgressOf(points);
     const status = journeyStatus(state, { today, goalMet: daily.goalMet, now: now() });
@@ -102,29 +109,79 @@ export function createCatJourneyScreen({
     const box = $("#cat-memory-list");
     if (!box) return;
     box.innerHTML = "";
-    const items = state.memories.slice().reverse();
-    $("#cat-memory-empty").hidden = items.length > 0;
+    const allItems = memoryRecordsOf(state).slice().reverse();
+    const items = allItems.slice(0, memoryLimit);
+    $("#cat-memory-empty").hidden = allItems.length > 0;
+    const more = $("#cat-memory-more");
+    if (more) more.hidden = items.length >= allItems.length;
     for (const saved of items) {
-      const memory = memoryById(saved.id);
-      if (!memory) continue;
+      const memory = memoryById(saved.storyId || saved.id);
+      const keepsake = keepsakeById(saved.keepsakeId || memory?.keepsakeId);
+      const destination = CAT_BACKGROUNDS.find(item => item.id === saved.destinationId);
+      const word = saved.wordKey ? getWordByKey(saved.wordKey) : null;
       const card = document.createElement("article");
       card.className = "cat-memory-card";
       card.classList.toggle("new", saved.id === highlightedMemoryId);
-      const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      icon.setAttribute("class", "asset-icon");
-      icon.setAttribute("aria-hidden", "true");
-      const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
-      use.setAttribute("href", `assets/ui-icons.svg#${memory.icon}`);
-      icon.appendChild(use);
+      card.tabIndex = 0;
+      let icon;
+      if (keepsake?.asset) {
+        icon = document.createElement("img");
+        icon.className = "asset-icon";
+        icon.src = `assets/${keepsake.asset}`;
+        icon.alt = "";
+      } else {
+        icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        icon.setAttribute("class", "asset-icon");
+        icon.setAttribute("aria-hidden", "true");
+        const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+        use.setAttribute("href", `assets/ui-icons.svg#${keepsake?.icon || "book"}`);
+        icon.appendChild(use);
+      }
       const copy = document.createElement("div");
       const title = document.createElement("b");
-      title.textContent = t(memory.titleKey);
+      title.textContent = t(memory?.titleKey || "cat.memory.archived.title");
       const story = document.createElement("p");
-      story.textContent = t(memory.storyKey);
+      story.textContent = t(memory?.storyKey || "cat.memory.archived.story");
+      const meta = document.createElement("div");
+      meta.className = "cat-memory-meta";
       const day = document.createElement("time");
       day.dateTime = saved.day;
       day.textContent = saved.day;
-      copy.append(title, story, day);
+      if (destination) {
+        const place = document.createElement("span");
+        place.textContent = t("cat.memory.from", { place: t(destination.nameKey) });
+        meta.appendChild(place);
+      }
+      meta.appendChild(day);
+      copy.append(title, story, meta);
+      if (word) {
+        const wordRow = document.createElement("div");
+        wordRow.className = "cat-memory-word";
+        const wordCopy = document.createElement("span");
+        const hanzi = document.createElement("b");
+        hanzi.lang = "zh";
+        hanzi.textContent = word.h;
+        const detail = document.createElement("small");
+        detail.textContent = [word.p, getWordMeaning(word)].filter(Boolean).join(" · ");
+        wordCopy.append(hanzi, detail);
+        wordRow.appendChild(wordCopy);
+        if (playWord) {
+          const play = document.createElement("button");
+          play.type = "button";
+          play.className = "cat-memory-audio";
+          play.setAttribute("aria-label", t("cat.memory.playWord", { word: word.h }));
+          const audioIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          audioIcon.setAttribute("class", "asset-icon");
+          audioIcon.setAttribute("aria-hidden", "true");
+          const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+          use.setAttribute("href", "assets/ui-icons.svg#sound");
+          audioIcon.appendChild(use);
+          play.appendChild(audioIcon);
+          play.onclick = () => playWord(saved.wordKey);
+          wordRow.appendChild(play);
+        }
+        copy.appendChild(wordRow);
+      }
       card.append(icon, copy);
       box.appendChild(card);
     }
@@ -204,7 +261,7 @@ export function createCatJourneyScreen({
     $("#cat-memories-panel").hidden = !memoriesOpen;
     $("#cat-backgrounds-toggle").setAttribute("aria-expanded", String(backgroundsOpen));
     $("#cat-memories-toggle").setAttribute("aria-expanded", String(memoriesOpen));
-    $("#cat-memory-count").textContent = String(state.memories.length);
+    $("#cat-memory-count").textContent = String(memoryRecordsOf(state).length);
     renderBackgrounds(points);
     renderMemories();
     scheduleRefresh(status, root.classList.contains("on"));
@@ -226,15 +283,28 @@ export function createCatJourneyScreen({
   function handlePrimary() {
     const { daily, today, bond, status } = facts();
     if (status === "ready") {
-      persist(startCatJourney(state, { today, goalMet: daily.goalMet, now: now() }));
+      persist(startCatJourney(state, {
+        today,
+        goalMet: daily.goalMet,
+        now: now(),
+        destinationId: state.selectedBackground,
+        wordKey: getJourneyWordKey(),
+      }));
+      syncReturnReminder(journeyReturnNotificationPlan(state, now()));
       analytics.track("cat_journey_started", { bond_tier: bond.current.id });
       $("#cat-live").textContent = t("cat.announce.started");
       render();
       return;
     }
     if (status === "returned") {
-      const memory = memoryForJourney(state.activeJourney.day, state.memories.map(item => item.id));
+      const active = activeClaimOf(state);
+      if (!active) return;
+      const savedMemories = memoryRecordsOf(state);
+      const tierIndex = BOND_TIERS.findIndex(item => item.id === bond.current.id);
+      const memory = memoryForJourney(active.day, savedMemories, { bondTier: tierIndex });
+      if (!memory) return;
       persist(completeCatJourney(state, memory, now()));
+      syncReturnReminder(journeyReturnNotificationPlan(state, now()));
       highlightedMemoryId = memory.id;
       memoriesOpen = true;
       backgroundsOpen = false;
@@ -255,11 +325,15 @@ export function createCatJourneyScreen({
     render();
   };
   $("#cat-memories-toggle").onclick = () => openMemories("button");
+  $("#cat-memory-more").onclick = () => {
+    memoryLimit += 20;
+    render();
+  };
   $("#cat-background-list").onclick = event => {
     const button = event.target.closest("[data-cat-background]");
     if (!button || button.disabled) return;
     const { points } = facts();
-    const next = selectCatBackground(state, button.dataset.catBackground, points);
+    const next = selectCatBackground(state, button.dataset.catBackground, points, { at: now() });
     if (next.selectedBackground !== state.selectedBackground) {
       persist(next);
       analytics.track("cat_background_selected", { background_id: next.selectedBackground });
@@ -271,6 +345,7 @@ export function createCatJourneyScreen({
   function enter(source = "nav") {
     state = normalizeCatJourney(store.get("catJourney", state));
     highlightedMemoryId = "";
+    memoryLimit = 20;
     analytics.track("cat_journey_viewed", {
       source,
       bond_tier: facts().bond.current.id,
@@ -279,5 +354,10 @@ export function createCatJourneyScreen({
     render();
   }
 
-  return { enter, render };
+  function rehydrate() {
+    state = normalizeCatJourney(store.get("catJourney", state));
+    render();
+  }
+
+  return { enter, render, rehydrate };
 }

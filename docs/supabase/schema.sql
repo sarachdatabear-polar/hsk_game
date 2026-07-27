@@ -62,6 +62,7 @@ create table if not exists public.progress (
   best       jsonb   not null default '{}'::jsonb,   -- nbhsk.best     (best-session scores, keyed object)
   cosmetics  jsonb   not null default '{}'::jsonb,   -- nbhsk.shop     (owned/equipped skins, decos, tiers)
   stickers   jsonb   not null default '{}'::jsonb,   -- nbhsk.stickers (earned sticker album)
+  cat_journey jsonb  not null default '{}'::jsonb,   -- nbhsk.catJourney (permanent journey claims)
   updated_at timestamptz not null default now()
 );
 
@@ -164,6 +165,12 @@ alter table public.progress add column if not exists monthly jsonb not null defa
 alter table public.wallet   add column if not exists freezes integer not null default 0;
 alter table public.progress alter column best set default '{}'::jsonb;
 update public.progress set best = '{}'::jsonb where best = '[]'::jsonb;
+
+-- Revision 2026-07-27 (Cat Journey full product Phase 2).
+-- Dedicated additive field: never nest journey claims inside cosmetics, whose
+-- equipment/layout preference merge has a different conflict boundary.
+alter table public.progress
+  add column if not exists cat_journey jsonb not null default '{}'::jsonb;
 
 -- wallet_guard — PRD §3.3 server-side anti-cheat clamp.
 --  * Service-role writers are EXEMPT (revision 2026-07-12): purchased coins
