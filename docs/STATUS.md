@@ -14,10 +14,17 @@ Journey browser passes at 320×568, 390×844, and 844×390.
 
 **Three release gates were NOT met before this shipped — all open:**
 
-1. **Code review.** The three Cat Journey commits (`b0e3a054`, `df875840`,
-   `7fa2c721`, ≈1,700 lines incl. sync/merge/migration changes) were
-   auto-deployed unreviewed. Review is in progress; green tests are not a
-   review.
+1. **Code review — now DONE, and it found two live defects.** The four
+   commits in `013a4787..7fa2c721` were auto-deployed unreviewed; the review
+   that should have preceded them is
+   [2026-07-27-cat-journey-v127-review-findings.md](planning/2026-07-27-cat-journey-v127-review-findings.md).
+   Two P0s: a **pre-existing** identity-switch hole in the `sessionReconciled`
+   latch (`src/sync.js:33`) that can blind-push guest state over a real
+   account's cloud row — unrecoverable for reinstall-then-sign-in users — and
+   the **new** orphaning of the daily-quest UI and 1,500-coin monthly claim
+   button, which `show()`'s Street→Cat-Journey rewrite made unreachable for
+   every user. Remediation is sequenced as v128 (live defects) then v129
+   (cloud-sync flip).
 2. **Native Thai sign-off.** `docs/content/CAT-JOURNEY-EVERGREEN-v1-REVIEW.md`
    declares itself "a production release gate" and its native-review checkbox
    is unchecked, yet **185 machine-drafted Thai strings** are live to Thai users
@@ -59,7 +66,7 @@ release is complete; signed Android and store/legal work remains in
 | **Live in production** | `main` == `development` == `7fa2c721`; SHELL/runtime **v127**; Pages run `30242642301` SUCCESS 2026-07-27 06:24Z. Cat Journey full product enabled by default (Phases 0–2, Phase 3 authored content, Phase 4 learning/UX). |
 | **Current automated baseline** | 107 files / 9,708 tests; 134 assets; ESLint, production build, and asset budgets pass; `dist/app.js` 659,749 bytes; focused Journey QA at 320×568, 390×844, 844×390. |
 | **Cloud sync of Journey state** | **DARK.** `CAT_JOURNEY_CLOUD_ENABLED = false`; live `public.progress` has no `cat_journey` column. Journey state is device-local until `docs/supabase/migrations/2026-07-27-cat-journey.sql` is applied and the flag flipped (separate cut: rebuild + SHELL v128 + sw-precache pin). |
-| **Code review** | **OUTSTANDING.** The three Cat Journey commits deployed unreviewed. |
+| **Code review** | **DONE 2026-07-27, post-deploy** — [findings](planning/2026-07-27-cat-journey-v127-review-findings.md). Core reward loop, rollback flag, and v5→v6 migration all verified sound. Two P0 live defects open: identity-switch latch (pre-existing) and orphaned quest UI (new). |
 | **Native Thai sign-off** | **OUTSTANDING.** Declared release gate in `docs/content/CAT-JOURNEY-EVERGREEN-v1-REVIEW.md`, unchecked; 185 drafted TH strings already live, none `TH-REVIEW`-tagged, none present in `docs/i18n/thai-review-sheet.csv`. |
 | **Latest signed Android artifact on record** | Profile v74 APK. A current Cat Journey APK/AAB still needs Capacitor sync, Windows signing, and emulator/physical-device acceptance. |
 
