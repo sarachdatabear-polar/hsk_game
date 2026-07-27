@@ -350,3 +350,22 @@ export function qrEncode(text, opts = {}) {
   drawFormatBits(modules, func, size, eccLevel, mask);
   return { version, eccLevel, size, modules, mask };
 }
+
+// qrEncode + one SVG path string, one h/v rect per horizontal run of dark
+// modules. No quiet zone — the UI's viewBox provides the mandatory 4 modules.
+export function qrSvgPath(text) {
+  const q = qrEncode(text);
+  if (!q) return null;
+  const { size, modules } = q;
+  let d = "";
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      if (!modules[y * size + x]) continue;
+      let run = 1;
+      while (x + run < size && modules[y * size + x + run]) run++;
+      d += `M${x} ${y}h${run}v1h-${run}z`;
+      x += run - 1;
+    }
+  }
+  return { size, d };
+}
