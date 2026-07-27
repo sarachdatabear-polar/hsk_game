@@ -73,7 +73,12 @@ export function rowsFromLocal(userId, l, {
       cosmetics: l.shop || {},
       stickers: { earned: (l.stickers && l.stickers.earned) || {} },
   };
-  if (catJourneyCloudEnabled) progress.cat_journey = l.catJourney || {};
+  // Omit rather than default to `{}`. The column is `not null`, so absence has
+  // to be expressed as a MISSING KEY — pushSyncRows is a PostgREST column-subset
+  // upsert, so an omitted column keeps its stored value on conflict-update.
+  // Sending `{}` would let a client with no local journey state blank a real
+  // cloud journey on pushDirty's direct (unmerged) push path.
+  if (catJourneyCloudEnabled && l.catJourney != null) progress.cat_journey = l.catJourney;
   return {
     progress,
     wallet: { user_id: userId, coins: Number(l.wallet) || 0, freezes: Number(l.freezes) || 0 },
@@ -87,7 +92,16 @@ export function localFromRows(progressRow, walletRow, {
   const local = { mastery: p.mastery, xp: p.xp, daily: p.daily, quests: p.quests,
                   monthly: p.monthly, best: p.best, shop: p.cosmetics,
                   stickers: p.stickers, wallet: w.coins, freezes: w.freezes };
-  if (catJourneyCloudEnabled) local.catJourney = p.cat_journey;
+  // The mirror of the write guard above, and it is load-bearing at the v129
+  // flip: the migration backfills every pre-existing row to `{}`, and mapping
+  // that to a local value makes mergeAll synthesize a full default journey
+  // object (merge.js's `!= null` guard passes on `{}`). That differs from the
+  // null-cloud baseline, so reconcile returns changed:true and main.js toasts
+  // "account.restored" at every user who has never opened the Cat tab.
+  // Empty on the wire means absent.
+  if (catJourneyCloudEnabled && p.cat_journey && Object.keys(p.cat_journey).length) {
+    local.catJourney = p.cat_journey;
+  }
   return local;
 }
 

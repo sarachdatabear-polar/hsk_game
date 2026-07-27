@@ -89,6 +89,35 @@ describe("row mapping", () => {
       .toEqual(catJourney);
     expect(localFromRows(enabled.progress, null)).not.toHaveProperty("catJourney");
   });
+  it("omits cat_journey entirely when there is no local journey state (never blanks the cloud column)", () => {
+    // The column is `not null default '{}'`, so absence CANNOT be sent as null.
+    // pushSyncRows is a column-subset upsert, so an omitted key preserves
+    // whatever the cloud row already holds. Sending `{}` would instead
+    // overwrite a real journey on pushDirty's direct (unmerged) push path.
+    const missing = rowsFromLocal("u1", {}, { catJourneyCloudEnabled: true });
+    expect(missing.progress).not.toHaveProperty("cat_journey");
+    const nulled = rowsFromLocal("u1", { catJourney: null }, { catJourneyCloudEnabled: true });
+    expect(nulled.progress).not.toHaveProperty("cat_journey");
+    // A real value still rides.
+    const real = normalizeCatJourney({ ...defaultCatJourney(), lastSeenBondTier: 1 });
+    expect(rowsFromLocal("u1", { catJourney: real }, { catJourneyCloudEnabled: true })
+      .progress.cat_journey).toEqual(real);
+  });
+  it("reads the migration's {} backfill as ABSENT, not as an empty journey", () => {
+    // The migration backfills every existing row to `{}`. Mapping that to a
+    // local value makes mergeAll synthesize a full default object, which
+    // differs from the null-cloud baseline — so reconcile reports changed:true
+    // and main.js:939 toasts "account.restored" at every user who has never
+    // opened the Cat tab. Absent on the wire must stay absent locally.
+    expect(localFromRows({ cat_journey: {} }, null, { catJourneyCloudEnabled: true }))
+      .not.toHaveProperty("catJourney");
+    expect(localFromRows({}, null, { catJourneyCloudEnabled: true }))
+      .not.toHaveProperty("catJourney");
+    // A real value still comes through.
+    const real = normalizeCatJourney({ ...defaultCatJourney(), lastSeenBondTier: 1 });
+    expect(localFromRows({ cat_journey: real }, null, { catJourneyCloudEnabled: true }).catJourney)
+      .toEqual(real);
+  });
   it("localFromRows inverts (nulls when rows absent)", () => {
     const l = localFromRows(null, null);
     expect(l.wallet).toBeUndefined();
