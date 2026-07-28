@@ -504,8 +504,6 @@ export const STRINGS = {
     "profile.emptyTitle": "Your journey starts here",
     "profile.emptyBody": "Finish one short Word Quest to begin your progress, streak, and collection.",
     "profile.emptyCta": "Start first quest",
-    "friend.compareCta": "Compare with a friend",
-    "friend.title": "Compare with a friend",
     "friend.yourCode": "Your code — share it",
     "friend.share": "Share my code",
     "friend.shareText": "Compare our Lucky Cat HSK progress!",
@@ -1295,8 +1293,6 @@ export const STRINGS = {
     "profile.emptyTitle": "เส้นทางของคุณเริ่มที่นี่", // TH-REVIEW
     "profile.emptyBody": "เล่นภารกิจคำศัพท์สั้น ๆ หนึ่งรอบ เพื่อเริ่มบันทึกความคืบหน้า การเรียนต่อเนื่อง และของสะสม", // TH-REVIEW
     "profile.emptyCta": "เริ่มภารกิจแรก", // TH-REVIEW
-    "friend.compareCta": "เทียบกับเพื่อน",
-    "friend.title": "เทียบกับเพื่อน",
     "friend.yourCode": "รหัสของคุณ — แชร์เลย",
     "friend.share": "แชร์รหัสของฉัน",
     "friend.shareText": "มาเทียบความคืบหน้า Lucky Cat HSK กัน!",

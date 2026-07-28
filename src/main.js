@@ -45,7 +45,7 @@ import { comboGlowTier, plaqueBounce, countUpValue, trailMoveX } from "./juice.j
 import { isFirstRun, introDeck } from "./firstrun.js";
 import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue } from "./stickers.js";
 import { journeyNodes, currentNodeId } from "./journey.js";
-import { defaultProfile, normalizeDisplayName, profileInitial, profileStats, bestSessionScore, equippedSummary } from "./profile.js";
+import { normalizeProfile, normalizeDisplayName, profileInitial, profileStats, bestSessionScore, equippedSummary } from "./profile.js";
 import { accountState, accountView, canSendCode, codeLooksValid } from "./account.js";
 import { getSession, ensureGuest, sendCode, verifyCode, saveDisplayName, signOut, deleteAccount } from "./cloud.js";
 import { SYNC_KEYS } from "./merge.js";
@@ -70,6 +70,8 @@ import { durationBucket } from "./analytics/events.js";
 import { SUPABASE_URL, SUPABASE_KEY } from "./cloud-config.js";
 import { createWordDetail } from "./ui/word-detail-screen.js";
 import { createFriendCompare } from "./ui/friend-screen.js";
+import { wireAvatarId, avatarPortraitStyle } from "./avatar.js";
+import { createAvatarPicker } from "./ui/avatar-picker.js";
 import { createStreetScreen } from "./ui/street-screen.js";
 import { createCatJourneyScreen } from "./ui/cat-journey-screen.js";
 import {
@@ -79,7 +81,7 @@ import {
   normalizeCatJourney,
   journeyReturnNotificationPlan,
 } from "./cat-journey.js";
-import { friendCardFromHash } from "./friend-compare.js";
+import { friendCardFromHash, epochDay } from "./friend-compare.js";
 
 /* ============================== data & state ============================== */
 const D = window.HSK_DATA;
@@ -182,8 +184,7 @@ let lastMode = "round";
 let introPhase = null;
 let introWords = [];
 let masteryStore = store.get("mastery", {});
-let playerProfile = Object.assign(defaultProfile(), store.get("profile", {}));
-playerProfile.displayName = normalizeDisplayName(playerProfile.displayName);
+let playerProfile = normalizeProfile(store.get("profile", {}));
 function noteAnswer(hanzi, correct){
   recordAnswer(masteryStore, hanzi, correct);
   store.set("mastery", masteryStore);
@@ -450,15 +451,24 @@ const wordDetail = createWordDetail({ $, openDialog, closeDialog, examples: EXAM
 // and compared locally. getMyCard() derives from the same authoritative state
 // the profile dashboard reads.
 async function shareFriendCard(text, link, code){
-  try { if(navigator.share){ await navigator.share({ title: t("friend.title"), text, url: link }); return; } }
+  try { if(navigator.share){ await navigator.share({ title: t("friend.inviteTitle"), text, url: link }); return; } }
   catch { /* user dismissed the share sheet, or unsupported — fall through */ }
   try { if(navigator.clipboard?.writeText){ await navigator.clipboard.writeText(code); toast(t("friend.copied")); return; } }
   catch { /* clipboard blocked (file://, permissions) — fall through */ }
   $("#fr-code")?.select?.();
 }
 const friendCompare = createFriendCompare({
-  $, openDialog, closeDialog, share: shareFriendCard,
+  $, openDialog, closeDialog, share: shareFriendCard, store, toast,
   getOrigin: () => location.origin + location.pathname,
+  getTodayDay: () => epochDay(todayStr()),
+  setMyName: (name) => {
+    // Same persistence trio as the profile rename form (renderProfileDashboard):
+    // spread-update so the avatar survives, store, cloud name, re-render.
+    playerProfile = { ...playerProfile, displayName: normalizeDisplayName(name) };
+    store.set("profile", playerProfile);
+    saveDisplayName(accountUI.session, getLocale(), playerProfile.displayName);
+    renderProfileDashboard();
+  },
   getMyCard: () => {
     const stats = profileStats({
       levels: D.levels, mastery: masteryStore, stickerState, stickerDefs: STICKER_DEFS,
@@ -470,10 +480,21 @@ const friendCompare = createFriendCompare({
       streak: streakInfo(daily, todayStr(), freezes).streak,
       mastered: stats.masteredWords,
       stickers: stats.earnedStickers,
+      avatar: wireAvatarId(playerProfile.avatar, shopState.owned),
+      day: epochDay(todayStr()),
     };
   },
 });
 $("#go-friend").onclick = () => friendCompare.open();
+// Avatar picker — mounts the #avatar-overlay dialog; all decisions live in
+// src/avatar.js, persistence in the store (photo key isolated from profile).
+const avatarPicker = createAvatarPicker({
+  $, openDialog, closeDialog, store, toast,
+  getProfile: () => playerProfile,
+  setProfile: (profile) => { playerProfile = profile; store.set("profile", playerProfile); },
+  getOwned: () => shopState.owned,
+  onChanged: () => renderProfileDashboard(),
+});
 // Deep link: opening a shared `#f=<code>` link lands straight in the compare view.
 const incomingFriendCard = friendCardFromHash(location.hash);
 if(incomingFriendCard) requestAnimationFrame(() => friendCompare.open(incomingFriendCard));
@@ -4169,8 +4190,32 @@ function renderProfileDashboard(){
   const avatar = $("#profile-avatar");
   const initial = profileInitial(playerProfile.displayName);
   $("#profile-avatar-initial").textContent = initial;
+  const art = $("#profile-avatar-art");
+  let hasArt = false;
+  if (playerProfile.avatar.kind === "photo") {
+    // Photo kind + missing/empty pixels -> monogram degrade WITHOUT rewriting
+    // the stored profile (a transient read glitch must not destroy the choice).
+    const dataUrl = store.get("profilePhoto", "");
+    if (typeof dataUrl === "string" && dataUrl.startsWith("data:image/")) {
+      art.style.backgroundImage = `url("${dataUrl}")`;
+      art.style.backgroundSize = "cover";
+      art.style.backgroundPosition = "center";
+      hasArt = true;
+    }
+  } else {
+    const style = avatarPortraitStyle(playerProfile.avatar);
+    if (style) {
+      art.style.backgroundImage = `url("${style.image}")`;
+      art.style.backgroundSize = `${style.sizePct[0]}% ${style.sizePct[1]}%`;
+      art.style.backgroundPosition = `${style.posPct[0]}% ${style.posPct[1]}%`;
+      hasArt = true;
+    }
+  }
+  if (!hasArt) art.style.backgroundImage = "";
+  avatar.classList.toggle("has-art", hasArt);
   avatar.classList.toggle("has-initial", !!initial);
-  avatar.setAttribute("aria-label", t("profile.avatar", { name: displayName }));
+  avatar.setAttribute("aria-label", t("avatar.change"));
+  avatar.onclick = () => avatarPicker.open();
   $("#profile-level").textContent = t("profile.level", { lv: level });
   $("#profile-xp-bar").style.width = pct + "%";
   $("#profile-xp-copy").textContent = t("profile.xp", {
@@ -4216,7 +4261,7 @@ function renderProfileDashboard(){
   $("#profile-cancel-name").onclick = ()=>{ form.hidden = true; nameRow.hidden = false; };
   form.onsubmit = e=>{
     e.preventDefault();
-    playerProfile = { displayName: normalizeDisplayName(input.value) };
+    playerProfile = { ...playerProfile, displayName: normalizeDisplayName(input.value) };
     store.set("profile", playerProfile);
     saveDisplayName(accountUI.session, getLocale(), playerProfile.displayName);
     renderProfileDashboard();
