@@ -2063,7 +2063,7 @@ function startBattle(mode){
   B.levelUps = [];
   const acc0 = accessoriesFor(levelForXp(xp));
   B.hasKitten = acc0.includes("kitten");
-  // higher scopes walk faster (difficulty by level), and speed ramps per word;
+  // higher scopes walk faster (difficulty by level);
   // speedBase is px/s at the 380-wide reference, sizeCanvas() derives the
   // actual B.speed from the measured canvas width so travel time stays
   // device-independent (a wide screen doesn't give more thinking time).
@@ -2438,7 +2438,7 @@ function renderOptionButtons(box, opts){
   }
 }
 // One renderer for every question format. Options come back from the FORMATS
-// registry as plain data; promptKey (boss stage 2 / regular reverse) adds the
+// registry as plain data; promptKey (reverse format) adds the
 // full-width prompt row above the grid, reusing the boss-prompt styling.
 function renderQuestion(word, format, promptKey){
   const deck = B.deck.length >= 8 ? B.deck : pool;
@@ -2899,7 +2899,7 @@ function draw(now){
   const z = B.zombie;
   if(z){
     // word + pinyin + (post-reveal) translation, fixed at the center of the
-    // sky area (not following the raccoon). Boss stage 2 asks "which hanzi?",
+    // sky area (not following the raccoon). The reverse format asks "which hanzi?",
     // so the plate must not give it away while the raccoon is still walking.
     // Format decides what the plaque may reveal while the word is live; any
     // resolution (kill/wrong/timeout) reveals everything, as before.
@@ -3290,9 +3290,8 @@ function drawFeedbackLayer(now){
   if(kind === "critical"){
     // comic-burst lettering (§7.4): scales in fast over the burst's first
     // ~15%, then just rides the layer's overall fade (globalAlpha above).
-    // fb.x is the kill's x (can sit near the canvas edge — e.g. a boss word
-    // resolved right after its stage-2 question renders, before the raccoon
-    // has walked in far) — clamp so the ~9-character label can't run off
+    // fb.x is the kill's x (can sit near the canvas edge — e.g. a word
+    // resolved early in battle, before the raccoon has walked far) — clamp so the ~9-character label can't run off
     // either edge, unlike the compact icon/orb it's stamped over.
     const tx = Math.min(Math.max(fb.x, 74*B.S), B.w - 74*B.S);
     const scale = 0.55 + 0.45 * Math.min(1, p * 6);
