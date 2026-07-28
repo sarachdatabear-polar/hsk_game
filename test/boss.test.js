@@ -6,13 +6,12 @@ import {
 } from "../src/boss.js";
 
 describe("Review Challenge public vocabulary", () => {
-  it("exposes the existing two-stage checkpoint rules without combat language", () => {
+  it("exposes the single-stage checkpoint rules without combat language", () => {
     expect(REVIEW_CHALLENGE_EVERY).toBe(10);
-    expect(REVIEW_CHALLENGE_STAGES).toEqual(["meaning", "hanzi"]);
+    expect(REVIEW_CHALLENGE_STAGES).toEqual(["meaning"]);
     expect(isReviewChallenge(10)).toBe(true);
     expect(isReviewChallenge(9)).toBe(false);
-    expect(nextReviewChallengeStage("meaning")).toBe("hanzi");
-    expect(nextReviewChallengeStage("hanzi")).toBe("complete");
+    expect(nextReviewChallengeStage("meaning")).toBe("complete");
     expect(reviewChallengePoints(13)).toBe(65);
     expect(reviewChallengeSpeedFactor).toBeCloseTo(0.85);
   });
@@ -42,16 +41,16 @@ describe("bossPoints", () => {
   });
 });
 
-describe("boss stage machine", () => {
-  it("meaning -> hanzi -> dead", () => {
-    expect(nextBossStage("meaning")).toBe("hanzi");
-    expect(nextBossStage("hanzi")).toBe("dead");
+describe("boss stage machine (legacy aliases)", () => {
+  it("meaning -> complete: one correct answer finishes the challenge", () => {
+    expect(nextBossStage("meaning")).toBe("complete");
   });
-  it("dead stays dead (idempotent past the end)", () => {
+  it("past-the-end stays dead (idempotent)", () => {
+    expect(nextBossStage("hanzi")).toBe("dead");
     expect(nextBossStage("dead")).toBe("dead");
   });
-  it("BOSS_STAGES lists the two answerable stages, in order", () => {
-    expect(BOSS_STAGES).toEqual(["meaning", "hanzi"]);
+  it("BOSS_STAGES lists the single answerable stage", () => {
+    expect(BOSS_STAGES).toEqual(["meaning"]);
   });
 });
 
