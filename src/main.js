@@ -2054,7 +2054,7 @@ function startBattle(mode){
   B.spawned = 0; B.resolved = 0; B.correct = 0; B.attempts = 0;
   B.masteredAtStart = masteredCount(masteryStore);   // canonical snapshot — earn math in endBattle() is jackpot-proof against a stale/missing value
   B.recent = []; B.misses = []; B.missSet = new Set();
-  B.nextAt = 0; B.lastT = 0; B.locked = false; B.bossStageAt = 0;
+  B.nextAt = 0; B.lastT = 0; B.locked = false;
   setQuestContinue(false);
   B.paused = false; B.pausedAt = 0;
   closeDialog($("#pause-overlay"), false);
@@ -2063,7 +2063,7 @@ function startBattle(mode){
   B.levelUps = [];
   const acc0 = accessoriesFor(levelForXp(xp));
   B.hasKitten = acc0.includes("kitten");
-  // higher scopes walk faster (difficulty by level), and speed ramps per word;
+  // higher scopes walk faster (difficulty by level);
   // speedBase is px/s at the 380-wide reference, sizeCanvas() derives the
   // actual B.speed from the measured canvas width so travel time stays
   // device-independent (a wide screen doesn't give more thinking time).
@@ -2271,7 +2271,6 @@ function resumeBattle(){
   if(B.feedback) B.feedback.until += shift;
   if(B.zombie && B.zombie.wrongUntil) B.zombie.wrongUntil += shift;
   if(B.zombie && B.zombie.happyAt) B.zombie.happyAt += shift;
-  if(B.bossStageAt) B.bossStageAt += shift;
   if(B.hitFlash) B.hitFlash.until += shift;
   if(B.plaqueHitAt) B.plaqueHitAt += shift;
   if(B.trailMove) B.trailMove.at += shift;
@@ -2365,12 +2364,12 @@ function spawnZombie(){
   };
   B.spawned++; B.locked = false;
   if(encounter.reviewChallenge){
-    B.zombie.boss = true; B.zombie.stage = "meaning";
+    B.zombie.boss = true;
     sfx.combo(5);   // boss-arrival sting
   }
   const z = B.zombie;
-  // v6 ladder: per-word format from the mastery streak. Bosses keep their own
-  // two-stage ritual and the A4 intro quest stays meaning-only.
+  // v6 ladder: per-word format from the mastery streak. Review Challenges and
+  // the A4 intro quest stay meaning-only.
   z.format = (z.boss || introPhase === "battle") ? "meaning"
     : formatFor(w, masteryStore[w.h], { audio: audioAvailable(w.h), cloze: x => x.h in CLOZE });
   // v6 soft-intro: the first-ever appearance of a format freezes the walker
@@ -2386,9 +2385,6 @@ function spawnZombie(){
   renderQuestion(w, z.format, z.format === "reverse" ? "battle.reversePrompt" : null);
   showQuestFeedback(encounter.reviewChallenge ? "challenge" : "choose", z.format);
   updateHud();   // round capsule tracks B.spawned — refresh as each word enters
-  // per-word ramp on the unscaled base, then re-derive the screen-scaled
-  // speed (a plain B.speed *= 1.03 would be wiped by the next resize)
-  if(encounter.origin === "fresh") B.speedBase *= 1.03;
   refreshGuideSpeed();
   return true;
 }
@@ -2442,7 +2438,7 @@ function renderOptionButtons(box, opts){
   }
 }
 // One renderer for every question format. Options come back from the FORMATS
-// registry as plain data; promptKey (boss stage 2 / regular reverse) adds the
+// registry as plain data; promptKey (reverse format) adds the
 // full-width prompt row above the grid, reusing the boss-prompt styling.
 function renderQuestion(word, format, promptKey){
   const deck = B.deck.length >= 8 ? B.deck : pool;
@@ -2604,21 +2600,6 @@ function answer(btn, o){
   const correct = !!o.correct;
   const masteredBefore = ((masteryStore[z.w.h] && masteryStore[z.w.h].r) || 0) >= 3;
   if(!boss) noteAnswer(z.w.h, correct);
-  if(correct && boss && z.stage === "meaning"){
-    // stage 1 passed: no kill yet, advance to the reverse (hanzi) question.
-    // Freeze the walk (not the render state, so the sprite keeps animating)
-    // so the brief pause can't cost a free bite.
-    z.frozen = true;
-    btn.classList.add("good");
-    lockOptions();
-    // Deadline checked in loop() rather than a raw setTimeout, so a pause
-    // mid-transition doesn't fire it behind the overlay — resumeBattle()
-    // shifts it forward like every other absolute performance.now() deadline.
-    B.bossStageAt = performance.now() + 500;
-    showQuestFeedback("choose");
-    updateHud();
-    return true;
-  }
   // Every other branch below is a final resolution of this word (correct kill,
   // wrong tap, or — via bite() — a timeout): unmask the plaque's hanzi/pinyin
   // from here on (drawWordPlate reads z.revealed, not the answer state).
@@ -2632,7 +2613,7 @@ function answer(btn, o){
     questEvent("correct");
     if(rewardPolicy.luckyFlow === "change") questEvent("combo", B.combo);
     if(boss) questEvent("boss");
-    const killXp = boss ? 5 : 1;   // boss final kill is worth +5 total, not +1 then +5
+    const killXp = boss ? 5 : 1;   // review-challenge kill is worth +5
     addXp(killXp);
     // farther kill = bigger bonus (replaces the old time bonus)
     const biteX = trailBefore.catX + B.L.catHalf;
@@ -2648,7 +2629,7 @@ function answer(btn, o){
     // guide. The internal projectile field stays until the later cleanup.
     B.proj = {x:trailBefore.catX+16*B.S, y:B.h-B.L.ground-30*B.S};
     // (word audio fires once, on spawn — no replay on the answer tap)
-    if(boss){ noteAnswer(z.w.h, true); B.bossDefeated = true; }   // both stages passed
+    if(boss){ noteAnswer(z.w.h, true); B.bossDefeated = true; }
     noteCatJourneyWord(z.w.h, {
       newlyMastered: !masteredBefore && ((masteryStore[z.w.h] && masteryStore[z.w.h].r) || 0) >= 3,
       recovered: z.dueAtSpawn || z.weakAtSpawn || z.encounter?.origin === "review",
@@ -2764,19 +2745,6 @@ function loop(now){
     return;
   }
   const dt = Math.min(0.05, (now-(B.lastT||now))/1000); B.lastT = now;
-  // boss stage 1 (meaning) -> stage 2 (hanzi) transition, deadline-based so a
-  // pause mid-transition can't fire it behind the overlay (see answer()).
-  if(B.bossStageAt && now >= B.bossStageAt){
-    B.bossStageAt = 0;
-    const bz = B.zombie;
-    if(bz && bz.frozen && bz.stage === "meaning"){
-      bz.stage = "hanzi"; bz.frozen = false;
-      bz.format = "reverse";
-      renderQuestion(bz.w, "reverse", "battle.bossPrompt");
-      showQuestFeedback("challenge");
-      B.locked = false;
-    }
-  }
   // next word (or end of round) once the field is clear
   if(!B.zombie && now >= B.nextAt){
     if(!B.quest.view().complete){
@@ -2931,7 +2899,7 @@ function draw(now){
   const z = B.zombie;
   if(z){
     // word + pinyin + (post-reveal) translation, fixed at the center of the
-    // sky area (not following the raccoon). Boss stage 2 asks "which hanzi?",
+    // sky area (not following the raccoon). The reverse format asks "which hanzi?",
     // so the plate must not give it away while the raccoon is still walking.
     // Format decides what the plaque may reveal while the word is live; any
     // resolution (kill/wrong/timeout) reveals everything, as before.
@@ -3322,9 +3290,8 @@ function drawFeedbackLayer(now){
   if(kind === "critical"){
     // comic-burst lettering (§7.4): scales in fast over the burst's first
     // ~15%, then just rides the layer's overall fade (globalAlpha above).
-    // fb.x is the kill's x (can sit near the canvas edge — e.g. a boss word
-    // resolved right after its stage-2 question renders, before the raccoon
-    // has walked in far) — clamp so the ~9-character label can't run off
+    // fb.x is the kill's x (can sit near the canvas edge — e.g. a word
+    // resolved early in battle, before the raccoon has walked far) — clamp so the ~9-character label can't run off
     // either edge, unlike the compact icon/orb it's stamped over.
     const tx = Math.min(Math.max(fb.x, 74*B.S), B.w - 74*B.S);
     const scale = 0.55 + 0.45 * Math.min(1, p * 6);
