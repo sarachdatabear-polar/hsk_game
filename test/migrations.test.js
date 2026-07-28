@@ -285,7 +285,7 @@ describe("v3→v4 migration", () => {
     });
     const v = runMigrations(s);
     expect(v).toBe(CURRENT_SCHEMA_VERSION);
-    expect(CURRENT_SCHEMA_VERSION).toBe(6);
+    expect(CURRENT_SCHEMA_VERSION).toBeGreaterThanOrEqual(4);
     const shop = JSON.parse(s.getItem("nbhsk.shop"));
     expect(shop.streetLayout.metNeighbours).toEqual([]);
     expect(shop.streetLayout.setsCompleted).toEqual(["market"]);
@@ -452,5 +452,63 @@ describe("v5->v6 migration (Cat Journey permanent claims)", () => {
     const s = fakeStorage({ "nbhsk.schemaVersion": "5" });
     runMigrations(s);
     expect(s.getItem("nbhsk.catJourney")).toBeNull();
+  });
+});
+
+describe("v6->v7 migration (profile avatar)", () => {
+  it("CURRENT_SCHEMA_VERSION is 7 and the ladder stays sorted", () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe(7);
+    expect(() => assertSortedLadder(MIGRATIONS)).not.toThrow();
+  });
+
+  it("absent profile: untouched (defaults supply the field at read time), still stamps 7", () => {
+    const s = fakeStorage({ "nbhsk.schemaVersion": "6", "nbhsk.xp": "100" });
+    runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    expect(s.dump()["nbhsk.profile"]).toBeUndefined();
+    expect(JSON.parse(s.dump()["nbhsk.schemaVersion"])).toBe(7);
+  });
+
+  it("name-only profile gains a monogram avatar, name byte-identical", () => {
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "6",
+      "nbhsk.profile": JSON.stringify({ displayName: "น้องแมว 🐱" }),
+    });
+    runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    expect(JSON.parse(s.dump()["nbhsk.profile"]))
+      .toEqual({ displayName: "น้องแมว 🐱", avatar: { kind: "monogram" } });
+  });
+
+  it("corrupt profile JSON: no-op on the key, version still advances", () => {
+    const s = fakeStorage({ "nbhsk.schemaVersion": "6", "nbhsk.profile": "{not json" });
+    expect(() => runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION)).not.toThrow();
+    expect(s.dump()["nbhsk.profile"]).toBe("{not json");
+    expect(JSON.parse(s.dump()["nbhsk.schemaVersion"])).toBe(7);
+  });
+
+  it("a profile already carrying a cat avatar survives; garbage avatar -> monogram", () => {
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "6",
+      "nbhsk.profile": JSON.stringify({ displayName: "J", avatar: { kind: "cat", id: "panda" } }),
+    });
+    runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    expect(JSON.parse(s.dump()["nbhsk.profile"]).avatar).toEqual({ kind: "cat", id: "panda" });
+
+    const g = fakeStorage({
+      "nbhsk.schemaVersion": "6",
+      "nbhsk.profile": JSON.stringify({ displayName: "J", avatar: "hax" }),
+    });
+    runMigrations(g, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    expect(JSON.parse(g.dump()["nbhsk.profile"]).avatar).toEqual({ kind: "monogram" });
+  });
+
+  it("re-running the v7 entry is idempotent", () => {
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "6",
+      "nbhsk.profile": JSON.stringify({ displayName: "J" }),
+    });
+    runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    const once = s.dump()["nbhsk.profile"];
+    MIGRATIONS.find(m => m.to === 7).up(s);   // simulate a mid-ladder crash retry
+    expect(s.dump()["nbhsk.profile"]).toBe(once);
   });
 });

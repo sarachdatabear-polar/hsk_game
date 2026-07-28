@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { defaultProfile, normalizeDisplayName, profileInitial, profileStats, bestSessionScore, equippedSummary } from "../src/profile.js";
+import { defaultProfile, normalizeProfile, normalizeDisplayName, profileInitial, profileStats, bestSessionScore, equippedSummary } from "../src/profile.js";
 
 describe("profile identity", () => {
   it("returns a fresh empty profile", () => {
     const a = defaultProfile(), b = defaultProfile();
-    expect(a).toEqual({ displayName: "" });
+    expect(a).toEqual({ displayName: "", avatar: { kind: "monogram" } });
     expect(a).not.toBe(b);
   });
 
@@ -112,5 +112,24 @@ describe("equippedSummary", () => {
       effect: null,
       soundpack: null,
     });
+  });
+});
+
+describe("normalizeProfile", () => {
+  it("upgrades a legacy name-only row", () => {
+    expect(normalizeProfile({ displayName: "  Jordan  " }))
+      .toEqual({ displayName: "Jordan", avatar: { kind: "monogram" } });
+  });
+  it("keeps a valid avatar", () => {
+    expect(normalizeProfile({ displayName: "J", avatar: { kind: "cat", id: "panda" } }))
+      .toEqual({ displayName: "J", avatar: { kind: "cat", id: "panda" } });
+    expect(normalizeProfile({ displayName: "J", avatar: { kind: "photo" } }).avatar)
+      .toEqual({ kind: "photo" });
+  });
+  it("clamps garbage in either field", () => {
+    expect(normalizeProfile(null)).toEqual({ displayName: "", avatar: { kind: "monogram" } });
+    expect(normalizeProfile({ avatar: { kind: "cat", id: "nope" } }))
+      .toEqual({ displayName: "", avatar: { kind: "monogram" } });
+    expect(normalizeProfile({ displayName: 42, avatar: "hax" }).avatar).toEqual({ kind: "monogram" });
   });
 });

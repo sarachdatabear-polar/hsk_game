@@ -29,5 +29,12 @@ export function createStore({ storage, syncKeys = [] }) {
         } catch (e) {}
       }
     },
+    // Delete a namespaced key outright (vs set(k, "") which stores an empty
+    // string). Local-only concern — never flips sync dirty flags; the only
+    // caller today is the avatar photo path (nbhsk.profilePhoto, ~96 KB, which
+    // must actually be freed when the avatar stops being a photo).
+    remove(k) {
+      try { storage.removeItem(NS + k); } catch (e) {}
+    },
   };
 }
