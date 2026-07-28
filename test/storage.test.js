@@ -55,4 +55,28 @@ describe("createStore", () => {
     const s = createStore({ storage: backing, syncKeys: ["xp"] });
     expect(() => s.set("xp", 1)).not.toThrow();
   });
+
+  it("remove deletes the namespaced key", () => {
+    const backing = fakeStorage({ "nbhsk.profilePhoto": JSON.stringify("data:image/jpeg;base64,xx") });
+    const s = createStore({ storage: backing, syncKeys: [] });
+    s.remove("profilePhoto");
+    expect(backing.dump()["nbhsk.profilePhoto"]).toBeUndefined();
+  });
+
+  it("remove swallows a throwing storage", () => {
+    const throwing = {
+      getItem() { throw new Error("boom"); },
+      setItem() { throw new Error("boom"); },
+      removeItem() { throw new Error("boom"); },
+    };
+    const s = createStore({ storage: throwing, syncKeys: [] });
+    expect(() => s.remove("profilePhoto")).not.toThrow();
+  });
+
+  it("remove never touches sync meta, even on a sync key", () => {
+    const backing = fakeStorage();
+    const s = createStore({ storage: backing, syncKeys: ["xp"] });
+    s.remove("xp");
+    expect(backing.dump()["nbhsk.sync"]).toBeUndefined();
+  });
 });

@@ -504,8 +504,6 @@ export const STRINGS = {
     "profile.emptyTitle": "Your journey starts here",
     "profile.emptyBody": "Finish one short Word Quest to begin your progress, streak, and collection.",
     "profile.emptyCta": "Start first quest",
-    "friend.compareCta": "Compare with a friend",
-    "friend.title": "Compare with a friend",
     "friend.yourCode": "Your code — share it",
     "friend.share": "Share my code",
     "friend.shareText": "Compare our Lucky Cat HSK progress!",
@@ -524,6 +522,31 @@ export const STRINGS = {
     "friend.metric.streak": "Day streak",
     "friend.metric.mastered": "Words mastered",
     "friend.metric.stickers": "Stickers earned",
+    "friend.inviteCta": "Invite a friend",
+    "friend.inviteTitle": "Invite a friend",
+    "friend.inviteLead": "Learning is better together — send your card!",
+    "friend.privacyNote": "Your code and QR carry only your chosen name, level, and progress numbers — no account, no email, nothing personal.",
+    "friend.qrLabel": "Or have them scan this:",
+    "friend.qrTooLong": "Your name is too long for a QR code — share the link instead.",
+    "friend.recentTitle": "Friends you've compared",
+    "friend.recentEmpty": "No friends here yet — share your card to start!",
+    "friend.recentClear": "Clear list",
+    "friend.recentCleared": "Friend list cleared",
+    "friend.asOfToday": "as of today",
+    "friend.asOfDays": "as of {n} days ago",
+    "friend.namePrompt": "Add your name so friends know it's you:",
+    "friend.namePromptSave": "Save name",
+    "avatar.title": "Profile picture",
+    "avatar.change": "Change profile picture",
+    "avatar.monogram": "Your initial",
+    "avatar.photo": "Use a photo",
+    "avatar.photoHint": "Your photo stays on this device — it is never uploaded.",
+    "avatar.removePhoto": "Remove photo",
+    "avatar.locked": "Unlock in the Shop",
+    "avatar.photoError": "Couldn't read that photo — try another one.",
+    "avatar.photoTooBig": "That photo is too detailed to save — try another one.",
+    "avatar.saveFailed": "Not enough space to save the photo. Your old picture is kept.",
+    "avatar.cat.lucky": "Lucky Cat",
     "profile.learningTitle": "Learning progress",
     "common.backProfile": "← Profile",
     // sticker album (B2 — earn-only, never sold)
@@ -1270,8 +1293,6 @@ export const STRINGS = {
     "profile.emptyTitle": "เส้นทางของคุณเริ่มที่นี่", // TH-REVIEW
     "profile.emptyBody": "เล่นภารกิจคำศัพท์สั้น ๆ หนึ่งรอบ เพื่อเริ่มบันทึกความคืบหน้า การเรียนต่อเนื่อง และของสะสม", // TH-REVIEW
     "profile.emptyCta": "เริ่มภารกิจแรก", // TH-REVIEW
-    "friend.compareCta": "เทียบกับเพื่อน",
-    "friend.title": "เทียบกับเพื่อน",
     "friend.yourCode": "รหัสของคุณ — แชร์เลย",
     "friend.share": "แชร์รหัสของฉัน",
     "friend.shareText": "มาเทียบความคืบหน้า Lucky Cat HSK กัน!",
@@ -1290,6 +1311,31 @@ export const STRINGS = {
     "friend.metric.streak": "เรียนต่อเนื่อง (วัน)",
     "friend.metric.mastered": "คำที่เชี่ยวชาญ",
     "friend.metric.stickers": "สติกเกอร์ที่ได้รับ",
+    "friend.inviteCta": "ชวนเพื่อน", // TH-REVIEW
+    "friend.inviteTitle": "ชวนเพื่อน", // TH-REVIEW
+    "friend.inviteLead": "เรียนด้วยกันสนุกกว่า — ส่งการ์ดของคุณเลย!", // TH-REVIEW
+    "friend.privacyNote": "รหัสและ QR ของคุณมีแค่ชื่อที่คุณตั้ง เลเวล และตัวเลขความคืบหน้า — ไม่มีบัญชี ไม่มีอีเมล ไม่มีข้อมูลส่วนตัว", // TH-REVIEW
+    "friend.qrLabel": "หรือให้เพื่อนสแกนอันนี้:", // TH-REVIEW
+    "friend.qrTooLong": "ชื่อของคุณยาวเกินไปสำหรับ QR — แชร์เป็นลิงก์แทนนะ", // TH-REVIEW
+    "friend.recentTitle": "เพื่อนที่เคยเทียบกัน", // TH-REVIEW
+    "friend.recentEmpty": "ยังไม่มีเพื่อนเลย — แชร์การ์ดของคุณเพื่อเริ่มกันเลย!", // TH-REVIEW
+    "friend.recentClear": "ล้างรายชื่อ", // TH-REVIEW
+    "friend.recentCleared": "ล้างรายชื่อเพื่อนแล้ว", // TH-REVIEW
+    "friend.asOfToday": "ข้อมูลของวันนี้", // TH-REVIEW
+    "friend.asOfDays": "ข้อมูลเมื่อ {n} วันก่อน", // TH-REVIEW
+    "friend.namePrompt": "ใส่ชื่อของคุณให้เพื่อนรู้ว่าเป็นคุณ:", // TH-REVIEW
+    "friend.namePromptSave": "บันทึกชื่อ", // TH-REVIEW
+    "avatar.title": "รูปโปรไฟล์", // TH-REVIEW
+    "avatar.change": "เปลี่ยนรูปโปรไฟล์", // TH-REVIEW
+    "avatar.monogram": "ตัวอักษรย่อของคุณ", // TH-REVIEW
+    "avatar.photo": "ใช้รูปถ่าย", // TH-REVIEW
+    "avatar.photoHint": "รูปของคุณอยู่ในเครื่องนี้เท่านั้น — ไม่มีการอัปโหลดเด็ดขาด", // TH-REVIEW
+    "avatar.removePhoto": "ลบรูปถ่าย", // TH-REVIEW
+    "avatar.locked": "ปลดล็อกได้ในร้านค้า", // TH-REVIEW
+    "avatar.photoError": "อ่านรูปนี้ไม่ได้ — ลองรูปอื่นดูนะ", // TH-REVIEW
+    "avatar.photoTooBig": "รูปนี้มีรายละเอียดมากเกินไปจนบันทึกไม่ได้ — ลองรูปอื่นดูนะ", // TH-REVIEW
+    "avatar.saveFailed": "พื้นที่ไม่พอสำหรับบันทึกรูป รูปเดิมของคุณยังอยู่", // TH-REVIEW
+    "avatar.cat.lucky": "แมวนำโชค", // TH-REVIEW
     "profile.learningTitle": "ความคืบหน้าการเรียน",
     "common.backProfile": "← โปรไฟล์",
     // sticker album (B2 — earn-only, never sold)

@@ -3,6 +3,7 @@ import { migrateLegacyStreet, normalizeStreetLayout, BUILDINGS } from "./street.
 import { defaultStreetProject } from "./street-project.js";
 import { levelForXp } from "./growth.js";
 import { normalizeCatJourney } from "./cat-journey.js";
+import { normalizeAvatar } from "./avatar.js";
 // Save-data schema versioning. main.js calls runMigrations(localStorage) once
 // at boot, BEFORE constructing the store — migrations must see raw
 // pre-migration values, so this module reads/writes storage directly.
@@ -17,7 +18,7 @@ const VERSION_KEY = "nbhsk.schemaVersion";
 // (run the ladder from 0) from a fresh one (just stamp and go).
 const LEGACY_SENTINELS = ["nbhsk.xp", "nbhsk.mastery", "nbhsk.daily", "nbhsk.settings", "nbhsk.scope"];
 
-export const CURRENT_SCHEMA_VERSION = 6;
+export const CURRENT_SCHEMA_VERSION = 7;
 
 export const MIGRATIONS = [
   // v1→v2: street.js's shop-state layout gained a `streetLayout` scene
@@ -153,6 +154,29 @@ export const MIGRATIONS = [
       try {
         storage.setItem("nbhsk.catJourney", JSON.stringify(normalizeCatJourney(journey)));
       } catch (e) {}
+    },
+  },
+  {
+    to: 7,
+    up(storage) {
+      // v6->v7: nbhsk.profile gains `avatar` (Profile avatar feature). Absent
+      // profile = fresh install or player never opened Profile: early-return —
+      // defaultProfile()/normalizeProfile() supply the field at read time.
+      // Idempotent: re-running normalizes an already-v7 profile to itself, and
+      // normalizeAvatar maps any unknown/future id to monogram, so a partially
+      // newer profile is never corrupted. Guarded: corrupt JSON is a no-op.
+      let profile;
+      try {
+        const raw = storage.getItem("nbhsk.profile");
+        if (raw === null) return;
+        profile = JSON.parse(raw);
+      } catch (e) { return; }
+      if (!profile || typeof profile !== "object") return;
+      const next = {
+        displayName: typeof profile.displayName === "string" ? profile.displayName : "",
+        avatar: normalizeAvatar(profile.avatar),
+      };
+      try { storage.setItem("nbhsk.profile", JSON.stringify(next)); } catch (e) {}
     },
   },
 ];

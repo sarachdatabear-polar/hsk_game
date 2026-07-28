@@ -54,6 +54,7 @@ describe("accessibility markup contract", () => {
     expect(html).toContain('id="pause-overlay" role="dialog" aria-modal="true"');
     expect(html).toContain('id="format-intro" role="dialog" aria-modal="true"');
     expect(html).toContain('id="quest-overlay" role="dialog" aria-modal="true"');
+    expect(html).toContain('id="avatar-overlay" role="dialog" aria-modal="true"');
   });
 
   it("maintains current and pressed state in script", () => {
