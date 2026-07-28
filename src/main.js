@@ -2386,9 +2386,6 @@ function spawnZombie(){
   renderQuestion(w, z.format, z.format === "reverse" ? "battle.reversePrompt" : null);
   showQuestFeedback(encounter.reviewChallenge ? "challenge" : "choose", z.format);
   updateHud();   // round capsule tracks B.spawned — refresh as each word enters
-  // per-word ramp on the unscaled base, then re-derive the screen-scaled
-  // speed (a plain B.speed *= 1.03 would be wiped by the next resize)
-  if(encounter.origin === "fresh") B.speedBase *= 1.03;
   refreshGuideSpeed();
   return true;
 }
