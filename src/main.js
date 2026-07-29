@@ -283,7 +283,7 @@ let justBought = null;   // {id, at} — item + moment of the most recent purcha
 let freezes = Math.min(2, Number(store.get("freezes")) || 0);
 
 /* ============================== cat growth (xp/levels/accessories) ============================== */
-let xp = store.get("xp", 0);
+let xp = Number(store.get("xp", 0)) || 0;
 // #home-level is the whole status capsule (avatar + level text + XP bar, M3);
 // fill its children directly rather than replacing them like setPill does.
 function updateLevelChip(){
@@ -2283,6 +2283,17 @@ function resumeBattleWithAudio(){
   // engines); it must not leave the game trapped behind the pause dialog.
   unlockAllAudio();
   resumeBattle();
+  // If backgrounding or an audio interruption (visibilitychange / audioSession
+  // statechange) hit pauseBattle() while #format-intro was still up, openDialog()
+  // bare-closed it to show #pause-overlay — fi-ok never ran, so the walker was
+  // left frozen forever with no way to unfreeze it. Detect that stranded state
+  // (frozen walker whose spawn asked for an intro that never got dismissed) and
+  // re-show it now that resumeBattle() has closed the pause overlay, so
+  // openDialog() has nothing left to displace.
+  const z = B.zombie;
+  if(z && z.frozen && z.introFree && z.state === "walk" && !formatIntros[z.format]){
+    showFormatIntro(FORMATS[z.format].intro);
+  }
 }
 function resumeBattle(){
   if(!B.on || !B.paused) return;

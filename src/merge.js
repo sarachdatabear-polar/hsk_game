@@ -303,7 +303,7 @@ export function mergeDaily(a, b) {
   if (A.last === B.last) {
     const base = A.streak >= B.streak ? A : B;
     return { last: base.last, streak: Math.max(A.streak, B.streak),
-             today, restWeek: base.restWeek, restDay: base.restDay };
+             today, restWeek: base.restWeek, restDay: base.restDay, restNoteDay: base.restNoteDay };
   }
   const N = A.last > B.last ? A : B;
   const O = N === A ? B : A;
@@ -312,7 +312,7 @@ export function mergeDaily(a, b) {
   if (O.last && gap >= 1 && gap <= N.streak) {
     streak = Math.max(N.streak, num(O.streak) + Math.min(N.streak, gap));
   }
-  return { last: N.last, streak, today, restWeek: N.restWeek, restDay: N.restDay };
+  return { last: N.last, streak, today, restWeek: N.restWeek, restDay: N.restDay, restNoteDay: N.restNoteDay };
 }
 
 // A completed-but-unclaimed month is unrealized wallet value (unlike daily

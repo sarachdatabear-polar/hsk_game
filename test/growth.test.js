@@ -66,6 +66,16 @@ describe("growth", () => {
     expect(nextMilestone(100)).toBeNull();
   });
 
+  it("levelForXp degrades non-finite/non-numeric xp to level 1 instead of NaN", () => {
+    expect(levelForXp(NaN)).toBe(1);
+    expect(levelForXp("abc")).toBe(1);
+    expect(levelForXp(undefined)).toBe(1);
+  });
+
+  it("xpToNext degrades NaN xp to level 1 with zeroed progress", () => {
+    expect(xpToNext(NaN)).toEqual({ level: 1, into: 0, need: 25 });
+  });
+
   it("MILESTONES stays in ascending level order", () => {
     for (let i = 1; i < MILESTONES.length; i++) {
       expect(MILESTONES[i].lv).toBeGreaterThan(MILESTONES[i - 1].lv);
