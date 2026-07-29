@@ -72,6 +72,7 @@ import { createWordDetail } from "./ui/word-detail-screen.js";
 import { createFriendCompare } from "./ui/friend-screen.js";
 import { wireAvatarId, avatarPortraitStyle } from "./avatar.js";
 import { createAvatarPicker } from "./ui/avatar-picker.js";
+import { createSupporterMomentRow } from "./ui/supporter-moment-row.js";
 import { createStreetScreen } from "./ui/street-screen.js";
 import { createCatJourneyScreen } from "./ui/cat-journey-screen.js";
 import {
@@ -495,6 +496,25 @@ const avatarPicker = createAvatarPicker({
   getOwned: () => shopState.owned,
   onChanged: () => renderProfileDashboard(),
 });
+// Supporter placement (go-live step 7): quiet line at peak moments on results.
+// supporterOn mirrors the shop's gate, plus the configured-but-chunk-not-yet-
+// loaded web case (ensureWebBilling only runs on shop-open; the CTA routes
+// through the shop, which loads it). Blank key + no provider => always hidden.
+const webSupporterConfigured = () =>
+  !!REVENUECAT_WEB_PUBLIC_KEY.trim() && !isNative()
+  && (typeof location === "undefined" || location.protocol !== "file:");
+const supporterRow = createSupporterMomentRow({
+  $, store,
+  isSupporter: () => isSupporter(ent),
+  supporterOn: () => (iapOn && provider().supports("supporter")) || webSupporterConfigured(),
+  getToday: todayStr,
+  goShopSupporter: () => {
+    const go = document.querySelector('[data-go="shop"]');
+    if (!go) return;
+    go.click();   // reuse the full shop-tab handler (analytics, ensureWebBilling, back-target)
+    requestAnimationFrame(() => $("#shop-supporter")?.scrollIntoView({ block: "center" }));
+  },
+});
 // Deep link: opening a shared `#f=<code>` link lands straight in the compare view.
 const incomingFriendCard = friendCardFromHash(location.hash);
 if(incomingFriendCard) requestAnimationFrame(() => friendCompare.open(incomingFriendCard));
@@ -534,6 +554,7 @@ function noteDaily(count){
       analytics.track("notif_permission", { result: mapped });
     });
   }
+  return { freezesUsed: r.freezesUsed };
 }
 let notifPermAsked = false;
 
@@ -3379,7 +3400,7 @@ function endBattle(quit){
   }
   const results = questResultsSummary(B.quest.view(), { score:B.score });
   if(B.resolved>0) streetScreen.earnWelcome();
-  noteDaily(results.learned);
+  const dailyNote = noteDaily(results.learned) || {};
   const isPerfect = B.mode==="round" && B.resolved>0 && B.misses.length===0 && (!B.customDeck || B.smartRound);
   if(isPerfect) questEvent("perfect");
   wallet += B.score;
@@ -3540,6 +3561,11 @@ function endBattle(quit){
   }else{
     slot.style.display = "none";
   }
+  supporterRow.render({
+    streakSaved: dailyNote.freezesUsed > 0,
+    bossDefeated: !!B.bossDefeated,
+    leveledUp: (B.levelUps || []).length > 0,
+  });
   show("results");
 }
 
