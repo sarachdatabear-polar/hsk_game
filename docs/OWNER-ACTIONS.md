@@ -65,7 +65,12 @@ Engineering steps 3 (URL sweep), 4 (migration bridge), 7 (placement) and
    (safe to commit) and run **one real PromptPay THB test checkout** —
    confirming PromptPay actually surfaces for a THB one-time purchase — before
    the price is advertised. The client code is already merged dark; a blank
-   key is a pure no-op.
+   key is a pure no-op. **At the key flip, also verify the supporter
+   placement path on web:** finish a qualifying round (level up is easiest) →
+   the results line shows → its button lands on a shop where the supporter
+   card actually renders. The line is key-gated but does not wait for the RC
+   SDK — a chunk-load failure would show the line with no card behind it
+   (accepted trade-off, see the placement spec's Implementation deviation).
 5. **Do NOT yet:** repo-private flip (plan step 9 — only after the github.io
    bridge retires), subscriptions, web ads, or new SKUs before placement
    (step 7) ships.
