@@ -303,6 +303,9 @@
      beats `hidden` unless overridden here. Without it both showed at once. */
   .profile-name-row{display:flex; align-items:center; gap:8px; min-width:0;}
   .profile-name-row[hidden]{display:none;}
+  .profile-supporter-chip{flex:none; font-size:12px; font-weight:700; color:#b3474d;
+    background:rgba(179,71,77,.12); border-radius:999px; padding:2px 8px;}
+  .profile-supporter-chip[hidden]{display:none;}
   .profile-name-row h3{margin:0; min-width:0; overflow-wrap:anywhere; color:var(--ink); font-size:21px;}
   .profile-edit{min-width:44px; min-height:44px; padding:8px 10px; margin-left:auto; border-radius:10px;
     border:1px solid var(--panel-border); background:var(--panel-wash); color:var(--lc-green); font:inherit;
@@ -1328,6 +1331,8 @@
   #friend-panel .fr-avatar-me{width:44px; height:44px;}
   #friend-panel .fr-avatar-art{position:absolute; inset:0; background-repeat:no-repeat;}
   #friend-panel .fr-avatar-mono{font-weight:900; color:var(--lc-green);}
+  #friend-panel .fr-avatar-heart{position:absolute; right:-3px; bottom:-3px; font-size:13px;
+    line-height:1; color:#b3474d; text-shadow:0 0 2px #fff, 0 0 2px #fff; pointer-events:none;}
   #friend-panel .fr-recent-row{display:flex; gap:10px; align-items:center; min-height:44px; width:100%;
     padding:4px 6px; border-radius:10px; border:0; background:none; font:inherit; text-align:left; cursor:pointer;}
   #friend-panel .fr-recent-row:active{background:var(--panel-wash);}
@@ -2497,6 +2502,7 @@
       <div class="profile-identity">
         <div class="profile-name-row" id="profile-name-row">
           <h3 id="profile-name">Lucky Learner</h3>
+          <span class="profile-supporter-chip" id="profile-supporter-chip" data-i18n="account.supporterChip" hidden>Supporter ♥</span>
           <button class="profile-edit" id="profile-edit-name" type="button" data-i18n="profile.editName">Edit</button>
         </div>
         <form class="profile-name-form" id="profile-name-form" hidden>

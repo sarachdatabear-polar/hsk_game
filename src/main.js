@@ -483,6 +483,7 @@ const friendCompare = createFriendCompare({
       stickers: stats.earnedStickers,
       avatar: wireAvatarId(playerProfile.avatar, shopState.owned),
       day: epochDay(todayStr()),
+      supporter: isSupporter(ent),
     };
   },
 });
@@ -4180,6 +4181,8 @@ function renderProfileDashboard(){
 
   const displayName = playerProfile.displayName || t("profile.defaultName");
   $("#profile-name").textContent = displayName;
+  const supChip = $("#profile-supporter-chip");
+  if (supChip) supChip.hidden = !isSupporter(ent);
   const avatar = $("#profile-avatar");
   const initial = profileInitial(playerProfile.displayName);
   $("#profile-avatar-initial").textContent = initial;
