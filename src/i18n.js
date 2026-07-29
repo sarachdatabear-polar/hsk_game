@@ -476,7 +476,6 @@ export const STRINGS = {
     "progress.nothing": "Nothing needs work — go play!",
     // profile-first dashboard
     "profile.defaultName": "Lucky Learner",
-    "profile.avatar": "Profile picture for {name}",
     "profile.editName": "Edit",
     "profile.namePh": "Player name",
     "profile.saveName": "Save",
@@ -1264,7 +1263,6 @@ export const STRINGS = {
     "progress.nothing": "ไม่มีคำที่ต้องฝึก — ไปเล่นกันเลย!",
     // profile-first dashboard
     "profile.defaultName": "นักเรียนแมวนำโชค",
-    "profile.avatar": "รูปโปรไฟล์ของ {name}",
     "profile.editName": "แก้ไข",
     "profile.namePh": "ชื่อผู้เล่น",
     "profile.saveName": "บันทึก",

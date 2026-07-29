@@ -110,7 +110,15 @@ function installPageHelpers() {
   const drawImage = CanvasRenderingContext2D.prototype.drawImage;
   CanvasRenderingContext2D.prototype.drawImage = function(image, ...args) {
     const src = image?.currentSrc || image?.src || "";
-    if (src.includes("/assets/bg-street.png") || src.includes("/assets/bg-street-portrait.png"))
+    // Street background: wide time-of-day panorama takes priority once loaded
+    // (src/ui/street-screen.js), falling back to the legacy png sprites while
+    // it loads (src/street-backdrop.js). Count whichever actually paints.
+    if (
+      src.includes("/assets/bg-street.png") ||
+      src.includes("/assets/bg-street-portrait.png") ||
+      src.includes("/assets/bg-street-wide.webp") ||
+      src.includes("/assets/bg-street-market-wide.webp")
+    )
       window.__resp.streetBgDraws++;
     const asset = src.split("/").pop() || "";
     if (asset && !window.__resp.drawnAssets.includes(asset))
@@ -342,6 +350,29 @@ async function preparePage(browser, width, height, { catJourneyEnabled = false }
     // Lv50 makes the permanent sweep exercise every milestone landmark and
     // the kitten path while verifying that no legacy costume overlay returns.
     localStorage.setItem("nbhsk.xp", "30625");
+    // Landmarks are bricks-gated construction stages (src/street-construction.js
+    // landmarkStage); stage 0 draws nothing, so seed all five finished (stage 3)
+    // to exercise the real landmark sprites. lastVisitDay = today suppresses the
+    // street daily-gift coin grant (src/street-daily.js dailyGift) so the
+    // wallet-exact probe assertions stay deterministic. normalizeStreetLayout
+    // (src/street.js) fills any missing fields, so this partial object is fine.
+    // streetLayout lives nested inside the "nbhsk.shop" blob (src/main.js
+    // store.get("shop")), not a standalone "nbhsk.streetLayout" key — merge
+    // it in rather than overwrite, since this initScript re-runs on every
+    // reload and other probes (e.g. runStreetProjectProbe, runResultsProbe)
+    // set their own nbhsk.shop fields (owned/skin/backdrop/streetProject)
+    // via page.evaluate + page.reload() that must survive this seed.
+    const day = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; })();
+    const existingShop = JSON.parse(localStorage.getItem("nbhsk.shop") || "{}");
+    localStorage.setItem("nbhsk.shop", JSON.stringify({
+      ...existingShop,
+      streetLayout: {
+        ...(existingShop.streetLayout || {}),
+        v: 5,
+        builtStages: { "lantern-post": 3, "coin-bank": 3, "tailor": 3, "kitten-cafe": 3, "emperor-gate": 3 },
+        lastVisitDay: day,
+      },
+    }));
   }, { locale:LOCALE, catJourneyEnabled });
   await page.goto(`${BASE_URL}/index.html`, { waitUntil: "load" });
   await page.waitForTimeout(700);
