@@ -4,11 +4,14 @@
 // network, or Supabase. The card carries only derived, non-identifying progress
 // numbers plus the player's chosen display name.
 //
-// Codec: a delimited string, two versions accepted on decode:
-//   LCH1|<name>|<level>|<streak>|<mastered>|<stickers>              (legacy, 6 parts)
-//   LCH2|<name>|<level>|<streak>|<mastered>|<stickers>|<avatar>|<day> (current, 8 parts)
-// encodeFriendCard always emits LCH2; decodeFriendCard accepts either, so
-// codes minted before this module shipped keep working (avatar "", day 0).
+// Codec: a delimited string, three versions accepted on decode:
+//   LCH1|<name>|<level>|<streak>|<mastered>|<stickers>                          (legacy, 6 parts)
+//   LCH2|<name>|<level>|<streak>|<mastered>|<stickers>|<avatar>|<day>           (legacy, 8 parts)
+//   LCH3|<name>|<level>|<streak>|<mastered>|<stickers>|<avatar>|<day>|<supporter> (current, 9 parts)
+// encodeFriendCard always emits LCH3; decodeFriendCard accepts all three, so
+// codes minted before each version shipped keep working (missing fields
+// default: avatar "", day 0, supporter false). <supporter> is "1"/"0";
+// decode is lenient (anything but "1" -> false).
 // The name is percent-encoded; `encodeURIComponent` output never contains `|`
 // (it escapes it to %7C), so `|` is a safe delimiter even for Thai/emoji names.
 // `avatar` is written raw (not percent-encoded) — safe only because it's
@@ -22,6 +25,7 @@ import { AVATAR_CAT_IDS } from "./avatar.js";   // wire-field allowlist only
 
 const PREFIX_V1 = "LCH1";
 const PREFIX_V2 = "LCH2";
+const PREFIX_V3 = "LCH3";
 const SEP = "|";
 const MAX_NAME = 24;
 // Sanity ceiling for the card's mint day (epoch day 100000 ≈ year 2243).
@@ -29,13 +33,13 @@ const MAX_NAME = 24;
 // finite-but-absurd freshness. Exported for the friend-recent tests.
 export const MAX_CARD_DAY = 100000;
 
-// card: { name, level, streak, mastered, stickers, avatar, day }
-// ALWAYS emits LCH2 (8 parts). normalizeFriendCard re-applies the avatar
+// card: { name, level, streak, mastered, stickers, avatar, day, supporter }
+// ALWAYS emits LCH3 (9 parts). normalizeFriendCard re-applies the avatar
 // allowlist, so a hand-built card with a bogus avatar encodes as "".
 export function encodeFriendCard(card = {}) {
   const c = normalizeFriendCard(card);
   return [
-    PREFIX_V2,
+    PREFIX_V3,
     encodeURIComponent(c.name),
     c.level,
     c.streak,
@@ -43,19 +47,22 @@ export function encodeFriendCard(card = {}) {
     c.stickers,
     c.avatar,
     c.day,
+    c.supporter ? 1 : 0,
   ].join(SEP);
 }
 
-// Dual-decode: LCH1 with exactly 6 parts (avatar "", day 0) or LCH2 with
-// exactly 8. Any other count/prefix combination -> null. Stat fields stay
-// STRICT (non-finite -> null); avatar/day are presentational and decode
+// Triple-decode: LCH1 with exactly 6 parts (avatar "", day 0, supporter
+// false), LCH2 with exactly 8 (supporter false), or LCH3 with exactly 9.
+// Any other count/prefix combination -> null. Stat fields stay STRICT
+// (non-finite -> null); avatar/day/supporter are presentational and decode
 // LENIENTLY — a mangled trailing field must not throw away a valid card.
 export function decodeFriendCard(payload) {
   if (typeof payload !== "string") return null;
   const parts = payload.trim().split(SEP);
+  const v3 = parts.length === 9 && parts[0] === PREFIX_V3;
   const v2 = parts.length === 8 && parts[0] === PREFIX_V2;
   const v1 = parts.length === 6 && parts[0] === PREFIX_V1;
-  if (!v1 && !v2) return null;
+  if (!v1 && !v2 && !v3) return null;
   let name;
   try { name = decodeURIComponent(parts[1]); } catch { return null; }
   const nums = parts.slice(2, 6).map(n => Number(n));
@@ -63,8 +70,9 @@ export function decodeFriendCard(payload) {
   return normalizeFriendCard({
     name,
     level: nums[0], streak: nums[1], mastered: nums[2], stickers: nums[3],
-    avatar: v2 ? parts[6] : "",
-    day: v2 ? Number(parts[7]) : 0,
+    avatar: v1 ? "" : parts[6],
+    day: v1 ? 0 : Number(parts[7]),
+    supporter: v3 ? parts[8] === "1" : false,   // LENIENT: anything but "1" -> false
   });
 }
 
@@ -97,6 +105,7 @@ export function buildFriendCompare(mine, theirs, todayDay = 0) {
   return {
     theirName: t.name,
     theirAvatar: t.avatar,          // "" | CatId — already allowlist-validated
+    theirSupporter: t.supporter,    // display attribute, NOT a compared metric
     ageDays: cardAgeDays(t, todayDay),
     rows,
     lead: wins === losses ? "tie" : (wins > losses ? "mine" : "theirs"),
@@ -115,6 +124,7 @@ export function normalizeFriendCard(card) {
     stickers: clampInt(c.stickers),
     avatar: AVATAR_CAT_IDS.includes(c.avatar) ? c.avatar : "",
     day: clampDay(c.day),
+    supporter: c.supporter === true || c.supporter === 1 || c.supporter === "1",
   };
 }
 

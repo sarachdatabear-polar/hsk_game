@@ -145,7 +145,24 @@ Mergeable to `development` dark at any time. User-visible only after the owner's
 billing go-live (RC web key). Release cut = normal ritual: rebuild `dist/`, SHELL
 bump + `sw-precache` pin in the same commit, suite re-run after the bump.
 
+## Implementation deviation (accepted at final review, 2026-07-29)
+
+The row's gate is `(iapOn && provider().supports("supporter")) || webSupporterConfigured()`,
+not solely the shop's async check. Reason: on web, `ensureWebBilling` runs only on
+shop-open, so `iapOn` is false at results time until the user has visited the shop —
+the pure async gate would keep the row dark on web forever, the feature's primary
+audience. The OR is key-gated (blank `REVENUECAT_WEB_PUBLIC_KEY` = inert), so
+dark-ship semantics are preserved exactly. **Known trade-off after the key flip:** if
+the web-billing chunk fails to load, the row can show and its CTA lands on a shop
+without a supporter card, burning that day's impression on a dead end —
+**re-verify chunk-load robustness at billing go-live** (owner checklist, OWNER-ACTIONS §B).
+
 ## Open items
 
 - Native Thai review of the 2 new strings (joins the standing queue via `TH-REVIEW`).
 - Cat Journey badge — explicitly deferred; revisit after this ships.
+- Final-review ride-along minors (fold into future touches): ♥ chip is `title`-only
+  (no aria text for screen readers); web CTA scroll-to-card is usually a no-op until
+  the SDK resolves (lands at shop top); a freeze consumed on a quit/flashcard/tone
+  path never surfaces as a streak-saved moment; stale `describe("LCH2 codec")` name
+  in test/friend-compare.test.js.

@@ -36,7 +36,7 @@ export function createFriendCompare({
 
   // wireId is "" | allowlisted CatId; unknown/photo -> monogram initial as a
   // TEXT NODE (never markup, never an image).
-  function avatarChip(wireId, name, sizeClass) {
+  function avatarChip(wireId, name, sizeClass, supporter) {
     const el = document.createElement("span");
     el.className = "fr-avatar" + (sizeClass ? " " + sizeClass : "");
     const style = avatarPortraitStyle(avatarFromWireId(wireId));
@@ -52,6 +52,14 @@ export function createFriendCompare({
       mono.className = "fr-avatar-mono";
       mono.textContent = profileInitial(name) || "🐱";
       el.appendChild(mono);
+    }
+    if (supporter) {
+      const heart = document.createElement("span");
+      heart.className = "fr-avatar-heart";
+      heart.textContent = "♥";
+      heart.setAttribute("aria-hidden", "true");
+      el.appendChild(heart);
+      el.title = t("account.supporterChip");
     }
     return el;
   }
@@ -108,7 +116,7 @@ export function createFriendCompare({
       const row = document.createElement("button");
       row.type = "button";
       row.className = "fr-recent-row";           // whole 44px row is the tap target
-      row.appendChild(avatarChip(item.card.avatar, item.card.name, "fr-avatar-row"));
+      row.appendChild(avatarChip(item.card.avatar, item.card.name, "fr-avatar-row", item.card.supporter));
       const name = document.createElement("span");
       name.className = "fr-recent-name";
       name.textContent = item.card.name || t("friend.them");
@@ -165,7 +173,7 @@ export function createFriendCompare({
       <div class="fr-section" id="fr-recent"></div>`;
     // My-card preview: my avatar arrives as a wire id (photo -> "" -> monogram).
     const mycard = $("#fr-mycard");
-    mycard.appendChild(avatarChip(myCard.avatar, myCard.name, "fr-avatar-me"));
+    mycard.appendChild(avatarChip(myCard.avatar, myCard.name, "fr-avatar-me", myCard.supporter));
     const meta = document.createElement("span");
     meta.className = "fr-mycard-meta";
     meta.textContent = (myCard.name || t("friend.you")) + " · " + t("friend.metric.level") + " " + myCard.level;
@@ -223,7 +231,7 @@ export function createFriendCompare({
       ${rows}
       <button id="fr-back" class="fr-btn" type="button">${t("friend.compareAnother")}</button>`;
     const head = $("#fr-their-head");
-    head.appendChild(avatarChip(cmp.theirAvatar, cmp.theirName, "fr-avatar-me"));
+    head.appendChild(avatarChip(cmp.theirAvatar, cmp.theirName, "fr-avatar-me", cmp.theirSupporter));
     const headName = document.createElement("span");
     headName.className = "fr-their-name";
     headName.textContent = cmp.theirName || t("friend.them");

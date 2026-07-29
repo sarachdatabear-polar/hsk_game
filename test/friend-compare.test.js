@@ -6,7 +6,7 @@ import {
 import { AVATAR_CAT_IDS } from "../src/avatar.js";
 
 const CARD = { name: "Jordan", level: 12, streak: 7, mastered: 340, stickers: 9 };
-const CARD_V2 = { ...CARD, avatar: "", day: 0 };
+const CARD_V2 = { ...CARD, avatar: "", day: 0, supporter: false };
 
 describe("friend-compare codec", () => {
   it("round-trips a card through encode/decode", () => {
@@ -96,9 +96,9 @@ describe("buildFriendCompare", () => {
 describe("LCH1 back-compat (test-pinned wire contract)", () => {
   it("every legacy LCH1 payload decodes to the same stats with avatar '' and day 0", () => {
     expect(decodeFriendCard("LCH1|Jordan|12|7|340|9"))
-      .toEqual({ name: "Jordan", level: 12, streak: 7, mastered: 340, stickers: 9, avatar: "", day: 0 });
+      .toEqual({ name: "Jordan", level: 12, streak: 7, mastered: 340, stickers: 9, avatar: "", day: 0, supporter: false });
     expect(decodeFriendCard("LCH1|%E0%B8%99%E0%B9%89%E0%B8%AD%E0%B8%87%E0%B9%81%E0%B8%A1%E0%B8%A7|3|1|20|2"))
-      .toEqual({ name: "น้องแมว", level: 3, streak: 1, mastered: 20, stickers: 2, avatar: "", day: 0 });
+      .toEqual({ name: "น้องแมว", level: 3, streak: 1, mastered: 20, stickers: 2, avatar: "", day: 0, supporter: false });
   });
   it("prefix/part-count mismatches are rejected both ways", () => {
     expect(decodeFriendCard("LCH1|x|1|1|1|1|panda|20000")).toBeNull(); // LCH1 with 8 parts
@@ -108,14 +108,14 @@ describe("LCH1 back-compat (test-pinned wire contract)", () => {
 });
 
 describe("LCH2 codec", () => {
-  it("emits exactly 8 pipe-delimited parts with the LCH2 prefix", () => {
+  it("emits exactly 9 pipe-delimited parts with the LCH3 prefix", () => {
     const enc = encodeFriendCard({ ...CARD, avatar: "panda", day: 20000 });
-    expect(enc.split("|").length).toBe(8);
-    expect(enc.startsWith("LCH2|")).toBe(true);
+    expect(enc.split("|").length).toBe(9);
+    expect(enc.startsWith("LCH3|")).toBe(true);
   });
   it("round-trips avatar + day, incl. Thai/emoji names", () => {
     const card = { name: "น้องแมว 🐱", level: 9, streak: 30, mastered: 500, stickers: 12,
-      avatar: "mooncake-rabbit", day: 20661 };
+      avatar: "mooncake-rabbit", day: 20661, supporter: false };
     expect(decodeFriendCard(encodeFriendCard(card))).toEqual(card);
   });
   it("stat garbage still rejects the whole card (strictness unchanged)", () => {
@@ -148,7 +148,7 @@ describe("LCH2 codec", () => {
 describe("normalizeFriendCard (exported)", () => {
   it("applies the codec's exact clamps to a raw object", () => {
     expect(normalizeFriendCard({ name: "  a  b  ", level: "7", streak: -1, avatar: "dragon", day: 3.9 }))
-      .toEqual({ name: "a b", level: 7, streak: 0, mastered: 0, stickers: 0, avatar: "dragon", day: 3 });
+      .toEqual({ name: "a b", level: 7, streak: 0, mastered: 0, stickers: 0, avatar: "dragon", day: 3, supporter: false });
     expect(normalizeFriendCard(null).avatar).toBe("");
   });
 });
@@ -184,5 +184,43 @@ describe("buildFriendCompare v2 surface", () => {
     const cmp = buildFriendCompare(CARD, { ...CARD, day: 19995 });
     expect(cmp.ageDays).toBeNull();
     expect(cmp.rows.length).toBe(4);
+  });
+});
+
+describe("LCH3 supporter flag", () => {
+  it("encode emits LCH3 with 9 parts and a 0/1 supporter tail", () => {
+    const code = encodeFriendCard({ ...CARD_V2, supporter: true });
+    const parts = code.split("|");
+    expect(parts[0]).toBe("LCH3");
+    expect(parts.length).toBe(9);
+    expect(parts[8]).toBe("1");
+    expect(encodeFriendCard(CARD_V2).split("|")[8]).toBe("0");
+  });
+  it("round-trips supporter through encode/decode", () => {
+    expect(decodeFriendCard(encodeFriendCard({ ...CARD_V2, supporter: true })).supporter).toBe(true);
+    expect(decodeFriendCard(encodeFriendCard(CARD_V2)).supporter).toBe(false);
+  });
+  it("legacy LCH1/LCH2 codes still decode, with supporter false", () => {
+    const lch2 = ["LCH2", "Jo", 3, 1, 10, 2, "", 20000].join("|");
+    const lch1 = ["LCH1", "Jo", 3, 1, 10, 2].join("|");
+    expect(decodeFriendCard(lch2)).toMatchObject({ level: 3, supporter: false });
+    expect(decodeFriendCard(lch1)).toMatchObject({ level: 3, supporter: false });
+  });
+  it("hostile supporter field values clamp to false, never throw", () => {
+    for (const v of ["banana", "", "2", "true", "01"]) {
+      const code = ["LCH3", "Jo", 3, 1, 10, 2, "", 20000, v].join("|");
+      expect(decodeFriendCard(code).supporter).toBe(false);
+    }
+  });
+  it("normalizeFriendCard defaults supporter to false and is lenient on truthy forms", () => {
+    expect(normalizeFriendCard({}).supporter).toBe(false);
+    expect(normalizeFriendCard({ supporter: true }).supporter).toBe(true);
+    expect(normalizeFriendCard({ supporter: "1" }).supporter).toBe(true);
+    expect(normalizeFriendCard({ supporter: "yes" }).supporter).toBe(false);
+  });
+  it("buildFriendCompare exposes theirSupporter and keeps exactly 4 compare rows", () => {
+    const cmp = buildFriendCompare(CARD_V2, { ...CARD_V2, supporter: true }, 20001);
+    expect(cmp.theirSupporter).toBe(true);
+    expect(cmp.rows.map(r => r.key)).toEqual(["level", "streak", "mastered", "stickers"]);
   });
 });
