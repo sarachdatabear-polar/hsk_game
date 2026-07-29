@@ -1,6 +1,11 @@
 export function buildPool(levels, scope) {
   const map = new Map();
-  for (const lv of scope.levels) {
+  // Iterate a sorted copy (never mutate scope.levels — main.js holds that
+  // object): the merge below relies on ascending order so the first hanzi
+  // seen is always its lowest level's record, keeping "lowest level wins"
+  // (lv/p/n/e/t and f/ta/tt ties) order-independent regardless of how
+  // scope.levels was passed in.
+  for (const lv of [...scope.levels].sort((a, b) => a - b)) {
     for (const w of levels[String(lv)]) {
       const prev = map.get(w.h);
       if (!prev) { map.set(w.h, { ...w, fs: w.f }); }

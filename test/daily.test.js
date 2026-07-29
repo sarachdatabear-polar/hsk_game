@@ -6,7 +6,7 @@ describe("daily: defaults", () => {
     expect(GOAL).toBe(20);
   });
   it("defaultDaily shape", () => {
-    expect(defaultDaily()).toEqual({ last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" });
+    expect(defaultDaily()).toEqual({ last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "", restNoteDay: "" });
   });
 });
 
@@ -264,6 +264,60 @@ describe("daily: kind streak (B1 rest days)", () => {
     d = noteActivity(d, "2026-07-10", GOAL);                   // rest spent on Thu 07-09
     // same-week double-miss read: last=07-10, check 07-12 (missed 07-11, same week, rest spent)
     expect(streakInfo(d, "2026-07-12").streak).toBe(0);
+  });
+});
+
+describe("daily: restNote (🍵 rest day used acknowledgment)", () => {
+  // helper: complete the goal on each date in order
+  const run = dates => dates.reduce((d, ds) => noteActivity(d, ds, GOAL), defaultDaily());
+
+  it("1-day gap covered by rest day: restNote fires true on the return day, false the day after", () => {
+    let d = run(["2026-07-04", "2026-07-05", "2026-07-06"]); // streak 3
+    d = noteActivity(d, "2026-07-08", GOAL);                 // miss 07-07, rest day covers it
+    expect(d.restDay).toBe("2026-07-07");
+    const info = streakInfo(d, "2026-07-08");
+    expect(info.streak).toBe(4);
+    expect(info.restNote).toBe(true);                        // return day
+    expect(streakInfo(d, "2026-07-09").restNote).toBe(false); // gone the next day
+  });
+
+  it("2-day gap covered by rest day + freeze: restNote fires true on the return day, false the day after", () => {
+    let d = run(["2026-07-03", "2026-07-04", "2026-07-05", "2026-07-06"]); // streak 4
+    d = noteActivity(d, "2026-07-09", GOAL, 1);              // miss 07-07 (rest) + 07-08 (freeze)
+    expect(d.restDay).toBe("2026-07-07");
+    expect(d.freezesUsed).toBe(1);
+    const info = streakInfo(d, "2026-07-09", 1);
+    expect(info.streak).toBe(5);
+    // Regression: restDay ("2026-07-07") is the EARLIEST missed day, not the
+    // return day ("2026-07-09") — a naive isYesterday(restDay, effectiveDate)
+    // check is 2 days off and never fires for a 2-day gap.
+    expect(info.restNote).toBe(true);                        // return day
+    expect(streakInfo(d, "2026-07-10", 1).restNote).toBe(false); // gone the next day
+  });
+
+  it("does not re-fire the day after a 1-day-gap return (naive-fix trap: restDay+1 == that day)", () => {
+    let d = run(["2026-07-04", "2026-07-05", "2026-07-06"]); // streak 3
+    d = noteActivity(d, "2026-07-08", GOAL);                 // miss 07-07, rest day covers it; restDay = 07-07
+    // A naive `isYesterday(restDay,eff) || isYesterday(addDays(restDay,1),eff)`
+    // widening would wrongly re-fire here, since restDay+1 (07-08) again
+    // equals "yesterday" relative to 07-09.
+    d = noteActivity(d, "2026-07-09", GOAL);                 // normal next day, no new gap
+    expect(streakInfo(d, "2026-07-09").restNote).toBe(false);
+  });
+
+  it("never fires when the gap was not coverable (streak reset)", () => {
+    let d = run(["2026-07-04", "2026-07-05", "2026-07-06"]); // streak 3
+    d = noteActivity(d, "2026-07-10", GOAL);                 // miss 07-07,08,09: 3 missed days, never coverable
+    expect(d.streak).toBe(1);
+    expect(streakInfo(d, "2026-07-10").restNote).toBe(false);
+  });
+
+  it("never fires when coverage used freezes only (rest day already spent this week)", () => {
+    const before = { ...defaultDaily(), last: "2026-07-06", streak: 5, restWeek: "2026-07-06" };
+    const d = noteActivity(before, "2026-07-08", GOAL, 1);   // miss 07-07; rest already spent this week
+    expect(d.freezesUsed).toBe(1);
+    expect(d.restDay).toBe("");                              // rest not (re-)spent
+    expect(streakInfo(d, "2026-07-08", 1).restNote).toBe(false);
   });
 });
 

@@ -4,7 +4,7 @@ export const GOAL = 20;          // words resolved per day to keep the streak al
 const DAY_MS = 86400000;
 
 export function defaultDaily() {
-  return { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" };
+  return { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "", restNoteDay: "" };
 }
 
 // a is exactly one calendar day before b. UTC-safe: parses "YYYY-MM-DD" as
@@ -53,6 +53,7 @@ export function noteActivity(daily, dateStr, count, freezes = 0) {
   let { last, streak } = daily;
   let restWeek = daily.restWeek || "";
   let restDay = daily.restDay || "";
+  let restNoteDay = daily.restNoteDay || "";
   let freezesUsed = 0;
   const crossedNow = before < GOAL && resolved >= GOAL;
   if (crossedNow && last !== effectiveDate) {
@@ -77,7 +78,12 @@ export function noteActivity(daily, dateStr, count, freezes = 0) {
       }
       const coverable = last !== "" && missed.length >= 1 && missed.length <= 2 && uncovered <= freezes;
       if (coverable) {
-        if (restUsedDay) { restWeek = weekStart(restUsedDay); restDay = restUsedDay; }
+        // restDay marks WHICH day the rest day covered (earliest missed day —
+        // needed to tell same-week reuse apart); restNoteDay marks WHEN to
+        // acknowledge it (the return day, i.e. effectiveDate) — these are two
+        // different dates once the gap is 2 missed days, so they can't share
+        // one field (see the "🍵 rest day used" restNote bug this guards).
+        if (restUsedDay) { restWeek = weekStart(restUsedDay); restDay = restUsedDay; restNoteDay = effectiveDate; }
         freezesUsed = uncovered;
         streak += 1;                     // the return day counts; covered days never do
       } else {
@@ -86,7 +92,7 @@ export function noteActivity(daily, dateStr, count, freezes = 0) {
     }
     last = effectiveDate;
   }
-  return { last, streak, today, restWeek, restDay, freezesUsed };
+  return { last, streak, today, restWeek, restDay, restNoteDay, freezesUsed };
 }
 
 // {streak, todayResolved, goal, goalMet, restNote} for display. The chain
@@ -101,7 +107,7 @@ export function streakInfo(daily, dateStr, freezes = 0) {
   const effectiveDate = daily.last && dateStr < daily.last ? daily.last : dateStr;
   const todayResolved = daily.today.date === effectiveDate ? daily.today.resolved : 0;
   const restWeek = daily.restWeek || "";
-  const restDay = daily.restDay || "";
+  const restNoteDay = daily.restNoteDay || "";
   // (a consumed rest day always advances `last` past restDay, so the only
   //  question is whether the missed days' coverage — rest first, then owned
   //  freezes — spans the whole gap; mirrors noteActivity's kindest-first walk)
@@ -122,6 +128,11 @@ export function streakInfo(daily, dateStr, freezes = 0) {
     todayResolved,
     goal: GOAL,
     goalMet: todayResolved >= GOAL,
-    restNote: restDay !== "" && isYesterday(restDay, effectiveDate),
+    // restNoteDay is stamped with the return day itself (not derived via
+    // isYesterday off restDay — restDay is the EARLIEST missed day, which is
+    // 2 days before the return day on a 2-day gap, so that check never
+    // fired). An exact-date match also can't re-fire the day after, unlike a
+    // widened `isYesterday(restDay,eff) || isYesterday(restDay+1,eff)` would.
+    restNote: restNoteDay !== "" && restNoteDay === effectiveDate,
   };
 }

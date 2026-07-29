@@ -95,6 +95,27 @@ describe("scopeSummary", () => {
   });
 });
 
+describe("buildPool merge is order-independent regardless of scope.levels order", () => {
+  // Same hanzi at two levels, both with different non-empty pinyin/gloss —
+  // unlike the empty-field-fill case below, here every field is contested.
+  // Merging must land on lv1's record (lv/p/e/t) no matter which order
+  // scope.levels is iterated in.
+  const LV = {
+    "1": [{ h: "书", p: "shū", e: "book",  t: "หนังสือ1", lv: 1, f: 20, ta: 2, tt: 5, c: 1, n: 1 }],
+    "2": [{ h: "书", p: "shu", e: "book2", t: "หนังสือ2", lv: 2, f: 10, ta: 1, tt: 6, c: 0, n: 0 }]
+  };
+  it("descending scope.levels yields the same merged record as ascending", () => {
+    const ascending = buildPool(LV, { levels: [1, 2], core: false, newOnly: false, topN: 0 });
+    const descending = buildPool(LV, { levels: [2, 1], core: false, newOnly: false, topN: 0 });
+    expect(descending).toEqual(ascending);
+    const [w] = descending;
+    expect(w.lv).toBe(1);
+    expect(w.p).toBe("shū");
+    expect(w.e).toBe("book");
+    expect(w.t).toBe("หนังสือ1");
+  });
+});
+
 describe("buildPool merge fills empty fields from a later level", () => {
   // Same hanzi at two levels: lv1 has empty Thai, lv2 supplies it. The merged
   // record must keep lv1 as first-seen level but adopt lv2's non-empty Thai.

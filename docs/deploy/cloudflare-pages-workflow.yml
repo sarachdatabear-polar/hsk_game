@@ -1,0 +1,71 @@
+# STAGED WORKFLOW — go-live plan step 2 (Cloudflare Pages on luckycathsk.com).
+#
+# This file lives in docs/deploy/ because the VPS gh token lacks the `workflow`
+# scope and cannot push anything under .github/workflows/. To activate:
+#
+#   1. (Owner, one-time) Cloudflare dashboard: create the Pages project
+#      `lucky-cat-hsk` (Direct Upload, NOT git-connected — CI stays the gate),
+#      attach the custom domain luckycathsk.com.
+#   2. (Owner, one-time) GitHub repo secrets (Settings → Secrets → Actions):
+#        CLOUDFLARE_API_TOKEN   — API token with "Cloudflare Pages — Edit"
+#        CLOUDFLARE_ACCOUNT_ID  — from any Cloudflare dashboard URL
+#   3. Move this file: git mv docs/deploy/cloudflare-pages-workflow.yml \
+#        .github/workflows/deploy-cloudflare.yml
+#      and push from a machine/token with workflow scope (or run
+#      `gh auth refresh -s workflow` interactively on the VPS first).
+#   4. Both Pages deployments (GitHub + Cloudflare) then run on every push to
+#      main — both sites stay live during the migration window (plan step 2),
+#      github.io retires at plan step 9.
+#
+# Notes:
+# - Mirrors deploy-pages.yml exactly through the stage step: same npm test
+#   gate, same www/ staging. Only the upload target differs.
+# - www/ is ~14,076 files (~132 MB, mostly mp3s) — under the 20,000-file
+#   Pages limit; audio moves to R2 if that ever binds (plan watch-item).
+# - wrangler is pinned via npx to avoid a new package.json dependency.
+
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build bundle
+        run: npm run build
+
+      - name: Stage www
+        run: node scripts/stage-www.js
+
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler@3 pages deploy www --project-name=lucky-cat-hsk
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

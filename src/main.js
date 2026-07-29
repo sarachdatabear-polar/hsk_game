@@ -72,6 +72,7 @@ import { createWordDetail } from "./ui/word-detail-screen.js";
 import { createFriendCompare } from "./ui/friend-screen.js";
 import { wireAvatarId, avatarPortraitStyle } from "./avatar.js";
 import { createAvatarPicker } from "./ui/avatar-picker.js";
+import { createSupporterMomentRow } from "./ui/supporter-moment-row.js";
 import { createStreetScreen } from "./ui/street-screen.js";
 import { createCatJourneyScreen } from "./ui/cat-journey-screen.js";
 import {
@@ -282,7 +283,7 @@ let justBought = null;   // {id, at} — item + moment of the most recent purcha
 let freezes = Math.min(2, Number(store.get("freezes")) || 0);
 
 /* ============================== cat growth (xp/levels/accessories) ============================== */
-let xp = store.get("xp", 0);
+let xp = Number(store.get("xp", 0)) || 0;
 // #home-level is the whole status capsule (avatar + level text + XP bar, M3);
 // fill its children directly rather than replacing them like setPill does.
 function updateLevelChip(){
@@ -482,6 +483,7 @@ const friendCompare = createFriendCompare({
       stickers: stats.earnedStickers,
       avatar: wireAvatarId(playerProfile.avatar, shopState.owned),
       day: epochDay(todayStr()),
+      supporter: isSupporter(ent),
     };
   },
 });
@@ -494,6 +496,25 @@ const avatarPicker = createAvatarPicker({
   setProfile: (profile) => { playerProfile = profile; store.set("profile", playerProfile); },
   getOwned: () => shopState.owned,
   onChanged: () => renderProfileDashboard(),
+});
+// Supporter placement (go-live step 7): quiet line at peak moments on results.
+// supporterOn mirrors the shop's gate, plus the configured-but-chunk-not-yet-
+// loaded web case (ensureWebBilling only runs on shop-open; the CTA routes
+// through the shop, which loads it). Blank key + no provider => always hidden.
+const webSupporterConfigured = () =>
+  !!REVENUECAT_WEB_PUBLIC_KEY.trim() && !isNative()
+  && (typeof location === "undefined" || location.protocol !== "file:");
+const supporterRow = createSupporterMomentRow({
+  $, store,
+  isSupporter: () => isSupporter(ent),
+  supporterOn: () => (iapOn && provider().supports("supporter")) || webSupporterConfigured(),
+  getToday: todayStr,
+  goShopSupporter: () => {
+    const go = document.querySelector('[data-go="shop"]');
+    if (!go) return;
+    go.click();   // reuse the full shop-tab handler (analytics, ensureWebBilling, back-target)
+    requestAnimationFrame(() => $("#shop-supporter")?.scrollIntoView({ block: "center" }));
+  },
 });
 // Deep link: opening a shared `#f=<code>` link lands straight in the compare view.
 const incomingFriendCard = friendCardFromHash(location.hash);
@@ -534,6 +555,7 @@ function noteDaily(count){
       analytics.track("notif_permission", { result: mapped });
     });
   }
+  return { freezesUsed: r.freezesUsed };
 }
 let notifPermAsked = false;
 
@@ -2261,6 +2283,17 @@ function resumeBattleWithAudio(){
   // engines); it must not leave the game trapped behind the pause dialog.
   unlockAllAudio();
   resumeBattle();
+  // If backgrounding or an audio interruption (visibilitychange / audioSession
+  // statechange) hit pauseBattle() while #format-intro was still up, openDialog()
+  // bare-closed it to show #pause-overlay — fi-ok never ran, so the walker was
+  // left frozen forever with no way to unfreeze it. Detect that stranded state
+  // (frozen walker whose spawn asked for an intro that never got dismissed) and
+  // re-show it now that resumeBattle() has closed the pause overlay, so
+  // openDialog() has nothing left to displace.
+  const z = B.zombie;
+  if(z && z.frozen && z.introFree && z.state === "walk" && !formatIntros[z.format]){
+    showFormatIntro(FORMATS[z.format].intro);
+  }
 }
 function resumeBattle(){
   if(!B.on || !B.paused) return;
@@ -3379,7 +3412,7 @@ function endBattle(quit){
   }
   const results = questResultsSummary(B.quest.view(), { score:B.score });
   if(B.resolved>0) streetScreen.earnWelcome();
-  noteDaily(results.learned);
+  const dailyNote = noteDaily(results.learned) || {};
   const isPerfect = B.mode==="round" && B.resolved>0 && B.misses.length===0 && (!B.customDeck || B.smartRound);
   if(isPerfect) questEvent("perfect");
   wallet += B.score;
@@ -3540,6 +3573,11 @@ function endBattle(quit){
   }else{
     slot.style.display = "none";
   }
+  supporterRow.render({
+    streakSaved: dailyNote.freezesUsed > 0,
+    bossDefeated: !!B.bossDefeated,
+    leveledUp: (B.levelUps || []).length > 0,
+  });
   show("results");
 }
 
@@ -4154,6 +4192,8 @@ function renderProfileDashboard(){
 
   const displayName = playerProfile.displayName || t("profile.defaultName");
   $("#profile-name").textContent = displayName;
+  const supChip = $("#profile-supporter-chip");
+  if (supChip) supChip.hidden = !isSupporter(ent);
   const avatar = $("#profile-avatar");
   const initial = profileInitial(playerProfile.displayName);
   $("#profile-avatar-initial").textContent = initial;

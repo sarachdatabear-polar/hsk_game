@@ -28,7 +28,7 @@ the vocabulary without the sibling `product/` directory.
 
 ```sh
 npm ci            # install
-npm test          # vitest, ~2,000 tests
+npm test          # vitest, ~9,800 tests
 npm run build     # esbuild src/main.js → dist/app.js (IIFE bundle)
 npm run serve     # python http.server at :8000
 npm run cap:sync  # build + stage www/ + npx cap sync android
@@ -51,7 +51,7 @@ npm run apk:release  # signed release APK (scripts/build_apk.ps1) — Windows de
 - Monetization: `src/monetization/` (`purchases.js`, `purchase-poll.js`; server side in
   `supabase/functions/rc-webhook/`). Ships **dark** until a real provider is wired.
 
-Tests in `test/*.test.js` (~2,000) cover every pure module plus asset/precache validation;
+Tests in `test/*.test.js` (~9,800) cover every pure module plus asset/precache validation;
 `main.js` wiring is untested by design.
 
 ## Data build scripts

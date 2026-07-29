@@ -427,6 +427,8 @@ export const STRINGS = {
     "results.rewardTitle": "Lucky rewards",
     "results.nextReviewPractice": "Next: revisit your extra-practice words",
     "results.nextReviewTomorrow": "Your Lantern Trail continues tomorrow",
+    "results.supporterLine": "Lucky Cat is free thanks to supporters — join them 🐾",
+    "results.supporterCta": "Become a Supporter",
     "results.lanternAlt": "Lit lantern",
     "results.missed": "Needed extra practice",
     "results.reviewWords": "Review Words",
@@ -1214,6 +1216,8 @@ export const STRINGS = {
     "results.rewardTitle": "รางวัลนำโชค",
     "results.nextReviewPractice": "ต่อไป: ทบทวนคำที่ต้องฝึกเพิ่ม",
     "results.nextReviewTomorrow": "เส้นทางโคมไฟไปต่อพรุ่งนี้นะ",
+    "results.supporterLine": "Lucky Cat ฟรีได้เพราะผู้สนับสนุน — มาร่วมเป็นหนึ่งในนั้นนะ 🐾", // TH-REVIEW: machine-drafted, queued for native spot-check
+    "results.supporterCta": "ร่วมเป็นผู้สนับสนุน", // TH-REVIEW: machine-drafted, queued for native spot-check
     "results.lanternAlt": "โคมไฟที่จุดแล้ว",
     "results.missed": "คำที่ต้องฝึกเพิ่ม",
     "results.reviewWords": "ทบทวนคำ",

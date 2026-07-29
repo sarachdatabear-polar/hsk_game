@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { mergeDaily, mergeAll } from "../src/merge.js";
 
-const d = (last, streak, today = { date: "", resolved: 0 }, restWeek = "", restDay = "") =>
-  ({ last, streak, today, restWeek, restDay });
+const d = (last, streak, today = { date: "", resolved: 0 }, restWeek = "", restDay = "", restNoteDay = "") =>
+  ({ last, streak, today, restWeek, restDay, restNoteDay });
 
 describe("mergeDaily", () => {
   it("fresh device joining a live chain extends it", () => {
@@ -45,8 +45,8 @@ describe("mergeDaily", () => {
   });
   it("empty sides normalize", () => {
     expect(mergeDaily(null, null)).toEqual(
-      { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" });
-    const only = d("2026-07-10", 3, { date: "2026-07-10", resolved: 21 }, "2026-07-06", "2026-07-07");
+      { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "", restNoteDay: "" });
+    const only = d("2026-07-10", 3, { date: "2026-07-10", resolved: 21 }, "2026-07-06", "2026-07-07", "2026-07-10");
     expect(mergeDaily(only, undefined)).toEqual(only);
     expect(mergeDaily(undefined, only)).toEqual(only);
   });
