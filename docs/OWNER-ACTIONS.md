@@ -1,30 +1,74 @@
 # Owner actions
 
-The **v129** release is on `main` (`b5ea5ab4`) and deployed to the web/PWA
-(Pages run `30255502093`, 2026-07-27 09:48Z). Three cuts landed today: **v127**
-Cat Journey full product (the Cat tab replaces Street by default, behind a
-data-safe local rollback flag; legacy Street saves untouched), **v128** the two
-P0s the post-deploy review found, and **v129** the Journey cloud-sync flip. The
-remaining gates are cross-device acceptance of the flip, the signed Android
-artifact, device acceptance, native Thai sign-off, and store/legal work.
+The **v132** release is on `main` (`9d8c30ed`) and deployed to the web/PWA
+(Pages run `30446749729`, 2026-07-29). Since the last revision of this doc:
+**v130** profile avatar + friend invite, **v131** static answer timer +
+single-stage Review Challenge, **v132** responsive-sweep/QA fixes + i18n
+cleanup (no user-visible change). The remaining gates are the quick on-device
+checks (§A), the web go-live track (§B), cross-device acceptance of the v129
+cloud flip (§0), the signed Android artifact, native Thai sign-off, and
+store/legal work.
+
+**TARGET: owner-side ready by 1 August 2026** (Jordan, 2026-07-29). That
+covers §A, §B, §0 and the Thai reviewer engagement (§2). The Play store track
+(§3–§7) is exempt by arithmetic: Google's closed-testing rule for new personal
+accounts (12 testers / 14 days) cannot complete by then.
 
 ## Current handoff snapshot
 
-- Current committed/deployed source: `main` == `development` == `b5ea5ab4`;
-  service-worker cache version **`v129`**.
-- Recorded release gates: 109 files / 9,718 tests, ESLint, production build,
-  134 asset checks, and asset budgets all pass; `dist/app.js` 659,919 bytes;
-  `qa:cat-journey` passes at 320×568, 390×844, 844×390. Live bundle is
-  verified byte-identical to the local build at `0422a364` (point-in-time check;
-  re-verify after any commit touching `src/`).
-- Latest signed artifact remains Profile v74; **no v127/v128/v129 APK/AAB
-  exists yet** — the Android track is ~55 shell versions behind the web.
+- Current committed/deployed source: `main` == `development` == `9d8c30ed`;
+  service-worker cache version **`v132`**.
+- Recorded release gates at the v132 cut: 112 files / 9,808 tests, ESLint,
+  production build, responsive sweep EN+TH 10/10 all pass; live `dist/app.js`
+  verified byte-identical to the committed build (sha256 `6e1dfdf6…` —
+  point-in-time check; re-verify after any commit touching `src/`).
+- Precache headroom is **thin**: 10,973,841 of the 11,010,048 B cap (~36 KB
+  free) as of v130 — the next asset-bearing feature needs a budget check first.
+- Latest signed artifact remains Profile v74; **no v127–v132 APK/AAB exists
+  yet** — the Android track is ~58 shell versions behind the web.
 - Journey cloud sync is **LIVE** as of v129: the migration is applied to
   `eqsodiufgjecoqgxdisn` and `CAT_JOURNEY_CLOUD_ENABLED = true`. See
   [STATUS.md](STATUS.md).
 
-Do these in order — **§0 first.** The Google/RevenueCat/backend tracks can
-overlap once the accounts exist.
+Order: **§A and §B can run in parallel with §0**; §0 blocks §1 (the APK). The
+Google/RevenueCat/backend store tracks can overlap once the accounts exist.
+
+## A. Quick on-device checks owed (minutes each — do first)
+
+1. **v131 feel check (post-release verification):** play a round past the
+   10th word — the golden raccoon (boss) must die in **one** correct answer
+   (single-stage collapse), and the answer timer should feel constant past
+   word 30 (no per-word compounding speed-up). If it feels wrong, rollback =
+   revert the release merge on `main` + SHELL bump.
+2. **v130 QR scan check:** scan one v7/v8-M friend card and one v13-L Thai
+   card with iOS Camera and Android Lens (friend-invite spec §3 QA gate).
+
+## B. Web go-live track — target 1 Aug
+
+Owner steps from the locked
+[go-live plan](planning/2026-07-25-golive-hosting-billing-plan.md).
+Engineering steps 3 (URL sweep), 4 (migration bridge), 7 (placement) and
+8 (web coin packs) are built or unblocked and wait only on these:
+
+1. **Buy `luckycathsk.com`** on Cloudflare Registrar (plan step 1). The first
+   domino — unblocks Cloudflare Pages, the URL sweep, and the migration bridge.
+2. **Stand up Cloudflare Pages** with engineering (plan step 2). The GitHub
+   Actions workflow push needs `gh auth refresh -s workflow` run interactively
+   on the VPS, or a push from your own machine — the VPS token lacks the
+   workflow scope.
+3. **Upgrade Supabase to Pro** ($25/mo) — before billing goes live (plan
+   step 5).
+4. **RevenueCat Web Billing go-live** (plan step 6): in the RC dashboard,
+   enable Web Billing + Stripe with **PromptPay**; create the 79฿ `supporter`
+   web price and attach the entitlement to the current offering; register the
+   Stripe webhook → `rc-webhook`; then hand engineering the **web public key**
+   (safe to commit) and run **one real PromptPay THB test checkout** —
+   confirming PromptPay actually surfaces for a THB one-time purchase — before
+   the price is advertised. The client code is already merged dark; a blank
+   key is a pure no-op.
+5. **Do NOT yet:** repo-private flip (plan step 9 — only after the github.io
+   bridge retires), subscriptions, web ads, or new SKUs before placement
+   (step 7) ships.
 
 ## 0. Accept the v129 cloud flip on two devices (blocks §1)
 
@@ -58,14 +102,14 @@ The two anonymous identities created by that production verification have been
 carrying the `cat_journey = {}` backfill, and no orphaned `profiles` rows. That
 8 is the real baseline for any future backfill check.
 
-## 1. Build and accept the v129 APK/AAB
+## 1. Build and accept the current (v132) APK/AAB
 
-**Entry criteria: §0 passed.** Use the exact v129 `main` release for Android. It
-passes 109 test files / 9,718 tests, ESLint, production build, Capacitor sync,
-134 asset checks, and the deterministic EN+TH viewport/format/accessibility
+**Entry criteria: §0 passed.** Use the current `main` release (**v132**,
+`9d8c30ed`) for Android. It passes 112 test files / 9,808 tests, ESLint,
+production build, and the deterministic EN+TH viewport/format/accessibility
 gates. **It has not been signed on Windows.**
 
-Pull `main` v129 onto the Windows release checkout, then open a
+Pull `main` v132 onto the Windows release checkout, then open a
 fresh PowerShell in
 `C:\Users\sarac\Desktop\HSK\game` and run these as separate lines:
 
@@ -120,6 +164,15 @@ Signing in on the Android build must pull the journey created on another device
 (that is §0's check, done before you get here). Also confirm the reverse: a
 journey completed on Android appears on the web build under the same account.
 
+**New for v130 —** avatar + friend invite: pick a cat avatar and a gallery
+photo avatar (**no camera-permission prompt should appear** — the picker is
+gallery-only by design), rename the profile and confirm the avatar survives
+the rename, open the friend screen, share a card (empty-name share must prompt
+for a name), and scan a received card.
+
+**New for v131 —** repeat §A.1 (single-hit golden raccoon, static timer) on
+the signed build.
+
 Once the signed build passes this matrix, it is ready for the store tracks below
 (§3–§7). The signed APK/AAB is uploaded to the Play Console, not committed to
 the repository.
@@ -127,8 +180,9 @@ the repository.
 ## 2. Obtain native Thai sign-off
 
 Give the reviewer **`docs/i18n/thai-review-sheet.csv`** — the machine-readable
-queue, **732 rows** (P0 71 / P1 183 / P2 408 / P3 70), sorted so money, account,
-cloud-backup, and notification copy is first in the file. They fill the
+queue, **753 rows** (P0 unchanged at 71; regenerated 2026-07-29 — the 25 v130
+friend/avatar strings joined at P3 and 3 dead rows were dropped), sorted so
+money, account, cloud-backup, and notification copy is first in the file. They fill the
 `corrected_thai` and `notes` columns; engineering applies the result with
 `node docs/i18n/scripts/apply-thai-review-sheet.mjs`. Alternatively they can edit
 `src/i18n.js` directly. Either way they must supply their name, review date, and
