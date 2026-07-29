@@ -1248,6 +1248,10 @@
   .results-project .project-meter{grid-area:meter;}
   .results-next-review{margin:10px 0 0; padding:9px 12px; text-align:center; color:var(--lc-green-deep);
     background:rgba(168,216,209,.42); border:1px solid var(--lc-teal); border-radius:12px; font-weight:800;}
+  .results-supporter{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin-top:12px; padding:10px 12px; border-radius:12px; background:rgba(179,71,77,.08);}
+  .results-supporter[hidden]{display:none;}
+  .results-supporter .supporter-line{font-size:14px; color:var(--ink); min-width:0;}
   .sub{text-align:center; color:var(--muted); margin:0 0 14px;}
   @media (max-width:390px){
     .street-project{grid-template-columns:1fr;}
@@ -2444,6 +2448,7 @@
       <button class="big primary" id="r-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span data-i18n="results.playAgain">Play again</span></span></button>
     </div>
     <p class="results-next-review" id="r-next-review"></p>
+    <div class="results-supporter" id="r-supporter" hidden></div>
     <button class="big" style="margin-top:10px" data-go="home" data-i18n="results.home">Home</button>
   </div>
 
