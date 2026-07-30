@@ -40,7 +40,7 @@ payment fees. Break-even ≈ 12 Supporter sales/month.
 | # | Step | Who |
 |---|------|-----|
 | 1 | Buy `luckycathsk.com` on Cloudflare Registrar (at-cost). | **Jordan** |
-| 2 | Stand up Cloudflare Pages on that domain; deploy via `wrangler pages deploy www/` from GitHub Actions (keeps the `npm test` gate). Both sites live during migration. | Claude + Jordan (workflow push needs `gh auth refresh -s workflow` — VPS token lacks it) |
+| 2 | Stand up Cloudflare Pages on that domain; deploy via `wrangler pages deploy www/` from GitHub Actions (keeps the `npm test` gate). Both sites live during migration. **Workflow DONE 2026-07-30** (`deploy-cloudflare.yml`, `cf5e0f33`) — remaining work is dashboard-side: register domain, create the `lucky-cat-hsk` project via **direct upload**, add `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` secrets, attach the domain after the first green deploy. | Claude (done) + Jordan (dashboard) — *the old "VPS token lacks workflow scope" caveat is resolved; the scope was granted 2026-07-30* |
 | 3 | One URL-sweep commit — see checklist below. Tests green. | Claude |
 | 4 | Turn `github.io` into a migration bridge: banner/redirect prompting existing users to email-OTP sign-in so progress follows. Do within days. | Claude (build) + Jordan (deploy) |
 | 5 | Upgrade Supabase to **Pro ($25/mo)** — before billing. | **Jordan** |
@@ -51,9 +51,17 @@ payment fees. Break-even ≈ 12 Supporter sales/month.
 | 10 | Apply analytics `events.sql` only *with* a 90-day retention job + insert-size cap. | Claude + Jordan |
 
 ## Step 3 — URL-sweep checklist (all → `https://luckycathsk.com/…`)
-- [ ] `src/main.js:1057` — `REMOTE_AUDIO_BASE` native audio origin → `https://luckycathsk.com/audio/` *(critical: strands installed APKs if Pages is torn down before this ships in a new APK)*
-- [ ] `src/main.js:3964` — privacy link href
-- [ ] `index.html` — `canonical`, `og:url`, `og:image`, `twitter:image`
+
+> **Line numbers re-verified against `main` @ `a524cd24` (v135), 2026-07-30.**
+> The two `src/main.js` numbers originally written here (1057, 3964) had drifted
+> and are corrected below. There are **exactly 7 occurrences of
+> `sarachdatabear-polar.github.io` across 3 files** — the list below is complete.
+> Re-grep before executing, since v136+ will move them again:
+> `grep -rn "sarachdatabear-polar.github.io" src/ index.html test/`
+
+- [ ] `src/main.js:1192-1193` (was 1057) — `REMOTE_AUDIO_BASE` native audio origin → `https://luckycathsk.com/audio/`. The value is `isNative() ? "https://…github.io/hsk_game/audio/" : "audio/"`, so **only the native build bakes it in** — *critical: strands installed APKs if Pages is torn down before this ships in a new APK.*
+- [ ] `src/main.js:4257` (was 3964) — privacy link href, set on native so the link doesn't leave the WebView
+- [ ] `index.html` — 4 tags: `canonical` (:12), `og:url` (:16), `og:image` (:17), `twitter:image` (:23)
 - [ ] `test/social-meta.test.js:21` — update asserted URL (build gates on `npm test`)
 - [ ] `sw.js` — bump `SHELL` cache version (PWA cache-bust)
 
