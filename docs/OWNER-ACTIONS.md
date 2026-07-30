@@ -103,20 +103,32 @@ while you do steps 1–2.
 
 1. **Buy `luckycathsk.com`** on Cloudflare Registrar (plan step 1). The first
    domino — unblocks Cloudflare Pages, the URL sweep, and the migration bridge.
-2. **Stand up Cloudflare Pages** with engineering (plan step 2).
-   **The workflow itself is DONE** — `.github/workflows/deploy-cloudflare.yml`
-   is on `development` (`cf5e0f33`), gated on the full test suite, with a
-   file-count guard against Cloudflare's 20,000-file cap. *(The old note here
-   about needing `gh auth refresh -s workflow` or a push from your own machine
-   is obsolete: the scope was granted on the VPS 2026-07-30 and that push has
-   already landed.)* What remains is owner-side dashboard work:
-   - Cloudflare account + register `luckycathsk.com` on Cloudflare Registrar
-   - Workers & Pages → Create → Pages → **Use direct upload**, project named
-     exactly `lucky-cat-hsk` (**not** "Connect to Git" — that builds on
-     Cloudflare's runners and would bypass `npm test`)
-   - API token (Account → Cloudflare Pages → Edit) and the Account ID
-   - Add both to the repo as `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`
-   - After the first green deploy, attach the custom domain
+2. ~~**Stand up Cloudflare hosting**~~ **— DONE 2026-07-30. LIVE at
+   https://lucky-cat-hsk.sarach-northbear.workers.dev**
+   Deployed by `.github/workflows/deploy-cloudflare.yml` on merge `462ba8eb`,
+   run **30564171730 SUCCESS** (1m12s; 13,324 assets uploaded in 19s).
+   **Target is Cloudflare WORKERS STATIC ASSETS, not Pages** — Cloudflare's docs
+   now steer new projects to Workers and the dashboard no longer offers a Pages
+   creation path. Same host, same unmetered-bandwidth guarantee ("requests to
+   static assets are free and unlimited", no storage cost), same 20,000-file
+   free-tier cap, and a 100,000-file ceiling on Workers Paid — 5× what Pages
+   could offer, which is a better long-run answer for the audio set than the
+   deferred R2 move. See `wrangler.jsonc`.
+   **VERIFIED against the live origin:** index 200, `dist/app.js` 200 and
+   sha256 `9060ca44…` **byte-identical to both the committed bundle and the
+   github.io copy**, `data/words.js` 200 (3,177,401 B), `sw.js` serves
+   `CACHE_VERSION "v135"`, `pwa/manifest.webmanifest` 200, `privacy.html` 200,
+   audio 200 (`audio/的.mp3` 6,336 B, matching github.io byte-for-byte), and the
+   retired `assets/bg-street.png` correctly **404s**. Both hosts are live, as
+   the migration window requires.
+   *(Owner steps now closed: Cloudflare account, Account ID, and an
+   `Edit Cloudflare Workers` API token, stored as the repo secrets
+   `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID`.)*
+   **STILL OPEN under this step:** register `luckycathsk.com` on Cloudflare
+   Registrar and attach it as a custom domain to the `lucky-cat-hsk` Worker.
+   Until then the site answers on `*.workers.dev`, which the locked plan
+   forbids as a public URL — so the domain is now the last thing between us and
+   a real public host.
 3. **Upgrade Supabase to Pro** ($25/mo) — plan step 5, immediately **before**
    the billing key flip (step 6), **not before that**. Nothing in steps 1–4
    needs it; buying early just starts the meter. The free tier is fine until
