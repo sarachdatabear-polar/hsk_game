@@ -141,6 +141,21 @@ are Google / Apple / magic-link).
 **"Two devices" means two authenticated sessions, not two phones.** A Windows
 browser and a Mac browser signed into the same account satisfy this check — the
 whole point is that journey state follows the *account*. No phone required.
+Sign-in is **email OTP** (`signInWithOtp`, `src/cloud.js:75`): same email
+address on both machines, one code each.
+
+> **⚠ THIS CHECK SPANS TWO CALENDAR DAYS — IT CANNOT BE COMPRESSED, AND IT
+> BLOCKS THE APK.** Two hard timings are baked into the feature:
+> 1. A journey takes **20 real minutes** (`JOURNEY_DURATION_MS`,
+>    `src/cat-journey.js:4`) between sending the cat out and the return vignette.
+> 2. There is **one journey per calendar day**. `journeyStatus` returns `"done"`
+>    when `today <= latestClaimDay(state)` (`src/cat-journey.js:301`), and once
+>    Device A's claim syncs to Device B, B is "done" for today too.
+>
+> So steps 1–3 (propagation + granted-exactly-once) run **today**; steps 4–5 —
+> the union check, which is the half that detects the P0 — cannot run until
+> **tomorrow**. Start day one immediately; the 20-minute journey timer is dead
+> time you can spend on §B.
 
 **Rollback if this fails:** `CAT_JOURNEY_CLOUD_ENABLED` in `src/cloud-config.js`
 is a **source constant, not a runtime flag** — reverting it means editing the
