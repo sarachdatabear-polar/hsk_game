@@ -101,8 +101,13 @@ that is far cheaper to learn before paying for Supabase Pro than after. If it
 does, start the Stripe verification immediately and let it run in the background
 while you do steps 1–2.
 
-1. **Buy `luckycathsk.com`** on Cloudflare Registrar (plan step 1). The first
-   domino — unblocks Cloudflare Pages, the URL sweep, and the migration bridge.
+1. ~~**Buy `luckycathsk.com`**~~ **— DONE 2026-07-30.** Registered at Cloudflare
+   Registrar, `2026-07-30T17:14:22Z`, expires `2027-07-30`, NS
+   `cameron/chan.ns.cloudflare.com`, status `clientTransferProhibited`.
+   **⚠ AUTO-RENEW IS LOAD-BEARING:** once the URL sweep ships,
+   `https://luckycathsk.com/audio/` is baked into every signed APK, so a lapsed
+   domain silently breaks audio on every installed Android app — not just the
+   website.
 2. ~~**Stand up Cloudflare hosting**~~ **— DONE 2026-07-30. LIVE at
    https://lucky-cat-hsk.sarach-northbear.workers.dev**
    Deployed by `.github/workflows/deploy-cloudflare.yml` on merge `462ba8eb`,
@@ -124,11 +129,25 @@ while you do steps 1–2.
    *(Owner steps now closed: Cloudflare account, Account ID, and an
    `Edit Cloudflare Workers` API token, stored as the repo secrets
    `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID`.)*
-   **STILL OPEN under this step:** register `luckycathsk.com` on Cloudflare
-   Registrar and attach it as a custom domain to the `lucky-cat-hsk` Worker.
-   Until then the site answers on `*.workers.dev`, which the locked plan
-   forbids as a public URL — so the domain is now the last thing between us and
-   a real public host.
+   **CUSTOM DOMAIN ATTACHED AND VERIFIED — `https://luckycathsk.com` IS LIVE
+   (2026-07-30).** Apex resolves to Cloudflare anycast (`172.67.164.5`,
+   `104.21.82.217`). Verified against the live domain: index 200 (154,672 B),
+   `dist/app.js` 200 with sha256 `9060ca44…` **byte-identical to the committed
+   bundle**, `data/words.js` 200, `sw.js` `CACHE_VERSION "v135"`, manifest 200,
+   `assets/ui-icons.svg` 200, audio 200 (`audio/的.mp3` 6,336 B), `privacy.html`
+   307 → `/privacy` 200 (Cloudflare's `html_handling` drops the extension —
+   harmless extra hop), retired `assets/bg-street.png` **404**, TLS
+   `ssl_verify_result=0` over HTTP/2.
+
+   **TWO GAPS FOUND DURING VERIFICATION — owner-side, both quick:**
+   - **`www.luckycathsk.com` does not resolve** (NXDOMAIN — only the apex was
+     attached). Add it as a second custom domain on the same Worker, or a
+     redirect rule to the apex. Anyone typing `www.` currently gets nothing.
+   - **Plain `http://luckycathsk.com` serves content instead of redirecting to
+     HTTPS** (returns 200 on port 80, no 301). Turn on **SSL/TLS → Edge
+     Certificates → Always Use HTTPS.** This matters more than usual here: the
+     PWA's service worker requires a secure context, and an HTTP surface on the
+     canonical domain is exactly the thing the store/legal review will ask about.
 3. **Upgrade Supabase to Pro** ($25/mo) — plan step 5, immediately **before**
    the billing key flip (step 6), **not before that**. Nothing in steps 1–4
    needs it; buying early just starts the meter. The free tier is fine until

@@ -1190,7 +1190,7 @@ fetch("audio/index.json").then(r=>r.json()).then(ix=>initAudio(ix)).catch(()=>in
 // rest from the deployed origin. file:// / offline: both fetches fail
 // silently and the TTS fallback stands, per the file:// constraint.
 const REMOTE_AUDIO_BASE = isNative()
-  ? "https://sarachdatabear-polar.github.io/hsk_game/audio/" : "audio/";
+  ? "https://luckycathsk.com/audio/" : "audio/";
 fetch("audio/index-full.json").then(r=>r.json())
   .then(ix=>initRemoteAudio(ix, REMOTE_AUDIO_BASE)).catch(()=>initRemoteAudio([], null));
 
@@ -4254,7 +4254,7 @@ initNative({ getScreen: ()=>currentScreen, goHome: ()=>{ if(B.on){ endBattle(tru
 // ACTION_VIEW intent, which is the correct behavior here. Web/file:// keep the relative href.
 if(isNative()){
   const privacyLink = document.querySelector('a[data-i18n="settings.privacy"]');
-  if(privacyLink) privacyLink.href = "https://sarachdatabear-polar.github.io/hsk_game/privacy.html";
+  if(privacyLink) privacyLink.href = "https://luckycathsk.com/privacy.html";
 }
 // SW is at the app root so its scope covers the whole app; http(s) only (no-op on file://).
 // Never on localhost: the cache-first SW would keep serving a stale shell across dev
