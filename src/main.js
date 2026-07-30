@@ -3384,8 +3384,13 @@ function endBattle(quit){
     // one round's gain. Fall back to the CURRENT count so a missing snapshot yields zero.
     const startMasteredQ = (typeof B.masteredAtStart === "number") ? B.masteredAtStart : masteredCount(masteryStore);
     const gainedQ = Math.max(0, masteredCount(masteryStore) - startMasteredQ);
+    // Bricks are earnable only while the Street surface is reachable. Both the
+    // counter (#street-bricks) and the only sink (advanceLandmark) live inside
+    // #s-street, which show() retargets to Cat Journey — so crediting under Cat
+    // Journey banked a number no player could see or spend, and `bricks` is a
+    // SYNC_KEYS field, so every round also pushed it to Supabase.
     const earnedBricksQ = bricksForRound({ mastered: gainedQ, completed: false });
-    if(earnedBricksQ){ bricks += earnedBricksQ; store.set("bricks", bricks); }
+    if(!CAT_JOURNEY_ENABLED && earnedBricksQ){ bricks += earnedBricksQ; store.set("bricks", bricks); }
     if(introPhase){ introPhase = null; store.set("introDone", true); }
     // B2: evaluate awards on quit too (a streak-7 crossing must not be lost),
     // but silently — the sticker-slot toast queue waits for the next real
@@ -3426,8 +3431,9 @@ function endBattle(quit){
   // one round's gain. Fall back to the CURRENT count so a missing snapshot yields zero.
   const startMastered = (typeof B.masteredAtStart === "number") ? B.masteredAtStart : masteredCount(masteryStore);
   const gained = Math.max(0, masteredCount(masteryStore) - startMastered);
+  // Street-reachable only — see the quit path above.
   const earnedBricks = bricksForRound({ mastered: gained, completed: true });
-  if(earnedBricks){ bricks += earnedBricks; store.set("bricks", bricks); }
+  if(!CAT_JOURNEY_ENABLED && earnedBricks){ bricks += earnedBricks; store.set("bricks", bricks); }
   if(CAT_JOURNEY_ENABLED) $("#r-project").hidden = true;
   else streetScreen.renderProjectResults(B.walletAtStart, wallet);
   const journeyReady = $("#r-cat-ready");
