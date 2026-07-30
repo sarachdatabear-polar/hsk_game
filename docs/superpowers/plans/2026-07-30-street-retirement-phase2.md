@@ -1,6 +1,7 @@
 # Street Retirement — Phase 2
 
-**Status:** in progress (2026-07-30)
+**Status:** ✅ DONE — `a7f198a1` on `origin/development`, CI 30546780564 SUCCESS (2026-07-30).
+Not released; `main` untouched, prod still v134. **The next release cut MUST bump SHELL.**
 **Branch:** `development`
 **Phase 1** (`70913644`) already removed 3 dead precached assets. This is the code retirement.
 
@@ -86,3 +87,42 @@ still drives the legacy Street screen for part of its matrix and will need retar
 ## Not in scope
 
 `SHELL` bump and the `development → main` release cut — both owner-gated.
+
+---
+
+## Outcome notes (post-build)
+
+**Deliberate behaviour change — the daily pool.** Removing the 4 deco pool items left
+`lion-drum` + `star-shower` alone, and `dailyStock` maps 3 slots over the pool, so both
+became permanently featured and `pool: "daily"` stopped meaning anything. Rather than let a
+test suite encode that degenerate state as correct, `pool` was dropped from both items and
+`dailyStock`/`unownedDailyStock`/`nextFeaturedIn` deleted (no callers outside `shop.js`).
+This also removes a `% pool.length` divide-by-zero footgun on the next catalog edit.
+
+**One near-miss worth remembering.** `#cat-quests-btn` (Cat Journey) reuses the retired
+Street quest button's markup and its `data-i18n="street.questsBtn"`. Bulk-deleting `street.*`
+broke a LIVE Cat Journey label; `test/i18n-usage.test.js` caught it. Key renamed to
+`quests.button`. Lesson: a `street.*` key was not automatically Street-only.
+
+**TH responsive sweep is intermittently marginal — do NOT dismiss this a third time.** Across
+three runs: run 1 failed `fold-344` (`profile small-taps:[แก้ไข(54x44)]` — exactly at the
+`MIN_TAP = 44` floor), run 2 failed `welcome 640x360` (`scrollHeight=368 > innerHeight=360`,
+8 px over) but passed 10/10 viewports, run 3 was fully clean. EN was clean every run. Neither
+surface is touched by this change, so it is not a Phase-2 regression — but the 2026-07-29
+entry already recorded one TH flake of exactly this shape. **That is now two independent
+sightings; the next occurrence should be investigated as a real Thai tap-floor / landscape
+overflow issue, not written off.**
+
+**Process warning for future multi-agent rounds.** `git stash` was run twice in this shared
+working tree while background agents were mid-edit — once by the lead, once by a worker. It
+reverted the whole tree under them and a `stash pop` was blocked by a concurrent write.
+Nothing was lost, but the recovery was avoidable. **Never `git stash` in this repo while
+agents are running** — use a `git worktree` for before/after comparisons instead (that is how
+the test-count reconciliation was ultimately done).
+
+## Left behind deliberately
+
+- `hiddenCatalogTypes` in `src/profile.js` is now a caller-less parameter (its only two call
+  sites passed `["deco"]`). It is a generic filter with its own passing tests; removing it is
+  cosmetic and was left out of scope.
+- `asset.canvasImage` in `src/assets.js` is live code no shipped manifest row now sets.
