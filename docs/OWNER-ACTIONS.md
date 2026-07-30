@@ -103,11 +103,20 @@ while you do steps 1–2.
 
 1. **Buy `luckycathsk.com`** on Cloudflare Registrar (plan step 1). The first
    domino — unblocks Cloudflare Pages, the URL sweep, and the migration bridge.
-2. **Stand up Cloudflare Pages** with engineering (plan step 2). The GitHub
-   Actions workflow push needs `gh auth refresh -s workflow` run interactively
-   on the VPS, **or simply a push from your own PC/Mac** — the VPS token lacks
-   the workflow scope, your local one does not. Pushing from your machine is the
-   path of least resistance.
+2. **Stand up Cloudflare Pages** with engineering (plan step 2).
+   **The workflow itself is DONE** — `.github/workflows/deploy-cloudflare.yml`
+   is on `development` (`cf5e0f33`), gated on the full test suite, with a
+   file-count guard against Cloudflare's 20,000-file cap. *(The old note here
+   about needing `gh auth refresh -s workflow` or a push from your own machine
+   is obsolete: the scope was granted on the VPS 2026-07-30 and that push has
+   already landed.)* What remains is owner-side dashboard work:
+   - Cloudflare account + register `luckycathsk.com` on Cloudflare Registrar
+   - Workers & Pages → Create → Pages → **Use direct upload**, project named
+     exactly `lucky-cat-hsk` (**not** "Connect to Git" — that builds on
+     Cloudflare's runners and would bypass `npm test`)
+   - API token (Account → Cloudflare Pages → Edit) and the Account ID
+   - Add both to the repo as `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`
+   - After the first green deploy, attach the custom domain
 3. **Upgrade Supabase to Pro** ($25/mo) — plan step 5, immediately **before**
    the billing key flip (step 6), **not before that**. Nothing in steps 1–4
    needs it; buying early just starts the meter. The free tier is fine until

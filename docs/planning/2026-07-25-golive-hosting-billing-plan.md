@@ -40,7 +40,7 @@ payment fees. Break-even ≈ 12 Supporter sales/month.
 | # | Step | Who |
 |---|------|-----|
 | 1 | Buy `luckycathsk.com` on Cloudflare Registrar (at-cost). | **Jordan** |
-| 2 | Stand up Cloudflare Pages on that domain; deploy via `wrangler pages deploy www/` from GitHub Actions (keeps the `npm test` gate). Both sites live during migration. | Claude + Jordan (workflow push needs `gh auth refresh -s workflow` — VPS token lacks it) |
+| 2 | Stand up Cloudflare Pages on that domain; deploy via `wrangler pages deploy www/` from GitHub Actions (keeps the `npm test` gate). Both sites live during migration. **Workflow DONE 2026-07-30** (`deploy-cloudflare.yml`, `cf5e0f33`) — remaining work is dashboard-side: register domain, create the `lucky-cat-hsk` project via **direct upload**, add `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` secrets, attach the domain after the first green deploy. | Claude (done) + Jordan (dashboard) — *the old "VPS token lacks workflow scope" caveat is resolved; the scope was granted 2026-07-30* |
 | 3 | One URL-sweep commit — see checklist below. Tests green. | Claude |
 | 4 | Turn `github.io` into a migration bridge: banner/redirect prompting existing users to email-OTP sign-in so progress follows. Do within days. | Claude (build) + Jordan (deploy) |
 | 5 | Upgrade Supabase to **Pro ($25/mo)** — before billing. | **Jordan** |
