@@ -1,14 +1,16 @@
 # Owner actions
 
-The **v134** release is on `main` and deployed to the web/PWA. Since the last
-revision of this doc: **v133** fixed the pre-launch intro/rest-day issues, and
-**v134** repaired the Cat Journey Shop/Profile path. Today's Picks now shows
-three obtainable Word Quest cosmetics, Profile counts 20 reusable cosmetics
-instead of 15 inaccessible Street decorations, Cat Journey links directly to
-customization, and new-sticker Results feedback opens the Album. The remaining
-gates are the quick on-device checks (§A), the web go-live track (§B),
-cross-device acceptance of the v129 cloud flip (§0), the signed Android
-artifact, native Thai sign-off, and store/legal work.
+The **v135** release is on `main` and deployed to the web/PWA. Since the last
+revision of this doc: **v133** fixed the pre-launch intro/rest-day issues,
+**v134** repaired the Cat Journey Shop/Profile path, and **v135 retired the
+Street surface entirely** (11 modules / ~2,700 LOC, 44 assets, 159 i18n keys ×
+2 locales, and the 15 decoration catalog entries deleted; `features.catJourney`
+collapsed — Cat Journey is now the only screen). Today's Picks shows three
+obtainable Word Quest cosmetics, Profile counts 20 reusable cosmetics, Cat
+Journey links directly to customization, and new-sticker Results feedback opens
+the Album. The remaining gates are the quick on-device checks (§A), the web
+go-live track (§B), cross-device acceptance of the v129 cloud flip (§0), the
+signed Android artifact, native Thai sign-off, and store/legal work.
 
 **TARGET: owner-side ready by 1 August 2026** (Jordan, 2026-07-29). That
 covers §A, §B, §0 and the Thai reviewer engagement (§2). The Play store track
@@ -17,16 +19,33 @@ accounts (12 testers / 14 days) cannot complete by then.
 
 ## Current handoff snapshot
 
-- Current committed/deployed source: `main` == `development`; service-worker
-  cache version **`v134`**.
-- Recorded release gates at the v134 cut: 113 files / 9,825 tests, ESLint,
-  production build, 134 validated assets, responsive sweep EN+TH 10/10 plus
+- Current committed/deployed source: `main` == `development` == `a524cd24`;
+  service-worker cache version **`v135`**.
+- Recorded release gates at the v135 cut: 103 files / 9,484 tests, ESLint,
+  production build, 131 validated assets, responsive sweep EN+TH 10/10 plus
   all Cat Journey, Results, onboarding, Cards-resume, format, and accessibility
-  probes.
-- Precache headroom is **thin**: 10,973,841 of the 11,010,048 B cap (~36 KB
-  free) as of v130 — the next asset-bearing feature needs a budget check first.
-- Latest signed artifact remains Profile v74; **no v127–v134 APK/AAB exists
-  yet** — the Android track is ~58 shell versions behind the web.
+  probes. (Test count fell 9,820 → 9,484 because the Street test files were
+  deleted with the feature; the delta is reconciled per-file in `../HANDOFF.md`.)
+- Precache headroom is **no longer thin**: 10,056,341 of the 11,010,048 B cap —
+  **931 KB free**, up from ~36 KB, because the Street retirement shrank
+  `dist/app.js` and dropped 3 dead precached assets. This is what unblocks the
+  11 pending keepsake bitmaps.
+- **⚠ THERE IS NO ROLLBACK FLAG FOR CAT JOURNEY ANY MORE.** `features.catJourney`
+  was deleted in v135. If Cat Journey is wrong on a device, the rollback is
+  **revert the release merge on `main` + a SHELL v136 bump** — not a
+  `localStorage` toggle. The old
+  `localStorage.setItem("nbhsk.features.catJourney","false")` recipe is dead;
+  it will do nothing.
+- **The cloud-sync flag is a different flag and it survived.**
+  `CAT_JOURNEY_CLOUD_ENABLED` lives in `src/cloud-config.js` (still `true`) and
+  gates only whether `catJourney` is a synced key — see §0.
+- Latest signed artifact remains Profile v74; **no v127–v135 APK/AAB exists
+  yet** — the Android track is ~59 shell versions behind the web.
+- **Post-release browser verification of v135 is done** (2026-07-30): the
+  legacy-install migration ladder (15/15, idempotent), fresh install, Cat
+  Journey + all five of its sub-surfaces in EN and TH (36/36), and the
+  browser-checkable half of §A.3. Details in `../HANDOFF.md`. None of it
+  replaces a real device.
 - Journey cloud sync is **LIVE** as of v129: the migration is applied to
   `eqsodiufgjecoqgxdisn` and `CAT_JOURNEY_CLOUD_ENABLED = true`. See
   [STATUS.md](STATUS.md).
@@ -36,6 +55,9 @@ Google/RevenueCat/backend store tracks can overlap once the accounts exist.
 
 ## A. Quick on-device checks owed (minutes each — do first)
 
+These need a **real device or an emulator**; the headless browser passes
+recorded above do not discharge them.
+
 1. **v131 feel check (post-release verification):** play a round past the
    10th word — the golden raccoon (boss) must die in **one** correct answer
    (single-stage collapse), and the answer timer should feel constant past
@@ -43,10 +65,24 @@ Google/RevenueCat/backend store tracks can overlap once the accounts exist.
    revert the release merge on `main` + SHELL bump.
 2. **v130 QR scan check:** scan one v7/v8-M friend card and one v13-L Thai
    card with iOS Camera and Android Lens (friend-invite spec §3 QA gate).
-3. **v134 journey check:** from Cat Journey, open Customize Word Quest; confirm
-   three Today's Picks appear and no Street decoration appears. Open Profile
-   and confirm a fresh collection target of 20. Earn a new sticker and confirm
-   its Results plaque opens the Album.
+   *iOS half is doable with an iPhone today. The Android Lens half is the one
+   check an emulator handles badly* — the emulated camera renders a virtual
+   scene, so scanning a QR off a second screen is fiddly. Defer it to real
+   Android hardware rather than fighting the emulator.
+3. **v134 journey check — PARTLY DISCHARGED (2026-07-30, headless Chromium on
+   prod).** Verified in-browser: Customize Word Quest shows exactly **three**
+   Today's Picks across three categories (Panda / Temple Dawn / Star Shower)
+   with **no** Street decoration in the markup, and Profile → Collection reads
+   **0/20 cosmetics** — matching the 20 non-consumable items derived from the
+   live `CATALOG`, so the target survived the deletion of the 15 decos.
+   **Still owed on a device:** earn a new sticker and confirm its Results
+   plaque opens the Album (needs real play).
+4. **v135 Cat Journey look (new).** Cat Journey is now the only screen and has
+   **no rollback flag**, so give it a real look: Cat tab renders, the four
+   buttons (Backgrounds / My progress / Customize Word Quest / Quests) all open
+   their surfaces, the Quests modal is in-viewport in portrait *and* landscape
+   and closes on back/Esc, and nothing anywhere says "Street". Verified in
+   desktop Chromium in both locales; unverified on a phone.
 
 ## B. Web go-live track — target 1 Aug
 
@@ -55,14 +91,28 @@ Owner steps from the locked
 Engineering steps 3 (URL sweep), 4 (migration bridge), 7 (placement) and
 8 (web coin packs) are built or unblocked and wait only on these:
 
+**Start the payment-rails check on day one, out of order.** Everything else here
+is under our control; the Stripe/RevenueCat path is the only item with an
+**external approval clock** (Stripe account verification) and an unconfirmed
+assumption. Before committing further to the 79฿ price: in the RevenueCat
+dashboard, confirm Web Billing actually exposes **PromptPay for a THB one-time
+purchase**. If it does not surface, the price and steps 5–6 need rethinking, and
+that is far cheaper to learn before paying for Supabase Pro than after. If it
+does, start the Stripe verification immediately and let it run in the background
+while you do steps 1–2.
+
 1. **Buy `luckycathsk.com`** on Cloudflare Registrar (plan step 1). The first
    domino — unblocks Cloudflare Pages, the URL sweep, and the migration bridge.
 2. **Stand up Cloudflare Pages** with engineering (plan step 2). The GitHub
    Actions workflow push needs `gh auth refresh -s workflow` run interactively
-   on the VPS, or a push from your own machine — the VPS token lacks the
-   workflow scope.
-3. **Upgrade Supabase to Pro** ($25/mo) — before billing goes live (plan
-   step 5).
+   on the VPS, **or simply a push from your own PC/Mac** — the VPS token lacks
+   the workflow scope, your local one does not. Pushing from your machine is the
+   path of least resistance.
+3. **Upgrade Supabase to Pro** ($25/mo) — plan step 5, immediately **before**
+   the billing key flip (step 6), **not before that**. Nothing in steps 1–4
+   needs it; buying early just starts the meter. The free tier is fine until
+   real money is in play (it lacks backups and auto-pauses, which is only
+   unacceptable once paid users exist).
 4. **RevenueCat Web Billing go-live** (plan step 6): in the RC dashboard,
    enable Web Billing + Stripe with **PromptPay**; create the 79฿ `supporter`
    web price and attach the entitlement to the current offering; register the
@@ -88,6 +138,18 @@ needs two authenticated sessions on **one** account, which cannot be driven
 headlessly (anonymous auth mints a distinct uid per profile; the other providers
 are Google / Apple / magic-link).
 
+**"Two devices" means two authenticated sessions, not two phones.** A Windows
+browser and a Mac browser signed into the same account satisfy this check — the
+whole point is that journey state follows the *account*. No phone required.
+
+**Rollback if this fails:** `CAT_JOURNEY_CLOUD_ENABLED` in `src/cloud-config.js`
+is a **source constant, not a runtime flag** — reverting it means editing the
+file, rebuilding, bumping SHELL and shipping, not toggling `localStorage`. It
+survived the v135 Street retirement unchanged (the flag that was deleted is the
+unrelated `features.catJourney`). Setting it `false` drops `catJourney` from
+`syncKeysFor()`, so journey state goes back to device-local; already-synced rows
+stay in Supabase harmlessly.
+
 1. Device A: sign in, open Cat Journey, complete a journey. Note the keepsake
    and Cat Bond tier.
 2. Device B: sign in to **the same account**, foreground the app, open Cat
@@ -112,14 +174,29 @@ The two anonymous identities created by that production verification have been
 carrying the `cat_journey = {}` backfill, and no orphaned `profiles` rows. That
 8 is the real baseline for any future backfill check.
 
-## 1. Build and accept the current (v134) APK/AAB
+## 1. Build and accept the current (v135) APK/AAB
 
-**Entry criteria: §0 passed.** Use the current `main` release (**v134**) for
-Android. It passes 113 test files / 9,825 tests, ESLint, production build, 134
+**Entry criteria: §0 passed.** Use the current `main` release (**v135**) for
+Android. It passes 103 test files / 9,484 tests, ESLint, production build, 131
 asset checks, and the deterministic EN+TH viewport/format/accessibility gates.
 **It has not been signed on Windows.**
 
-Pull `main` v134 onto the Windows release checkout, then open a
+> **⚠ THIS IS AN ACCEPTANCE ARTIFACT, NOT THE STORE ARTIFACT.** The go-live URL
+> sweep (plan step 3) rewrites `REMOTE_AUDIO_BASE` (`src/main.js:1057`) to
+> `https://luckycathsk.com/audio/`. That origin is **baked into the APK** — an
+> artifact signed before the sweep points at the old host forever and would be
+> stranded if that host is torn down. So: sign v135 now to run the emulator
+> matrix and unblock the Play Console work, but expect to **re-sign after the
+> URL sweep lands** for anything that goes to the store. Don't treat the first
+> signing as final.
+
+**Emulator vs real hardware.** A Google-Play-image emulator runs the signed APK
+and covers nearly all of the matrix below. Four things are physically
+hardware-bound and must wait for a real phone (see §8): **vibration feel, audio
+routing/volume, real notification delivery, and battery/mid-range performance.**
+The Android Lens QR scan (§A.2) is also impractical on an emulator.
+
+Pull `main` v135 onto the Windows release checkout, then open a
 fresh PowerShell in
 `C:\Users\sarac\Desktop\HSK\game` and run these as separate lines:
 
@@ -160,9 +237,18 @@ hidden because the public RevenueCat key is blank.
 matrix: open the Cat tab, send the cat out, confirm the return vignette and
 keepsake arrive and are granted **once** (re-enter the screen and re-launch the
 app — no second grant); confirm Cat Bond tier progresses; confirm the journey
-notification fires and is cancellable; confirm the rollback flag still restores
-Street with all prior state intact
-(`localStorage.setItem("nbhsk.features.catJourney","false"); location.reload()`).
+notification fires and is cancellable.
+
+**REMOVED FROM THE MATRIX (v135):** the old line "confirm the rollback flag
+still restores Street" is obsolete —
+`localStorage.setItem("nbhsk.features.catJourney","false")` is now a no-op and
+Street no longer exists to restore. Do not spend time on it.
+
+**New for v135 —** on first launch of an install that carried pre-v135 data,
+confirm nothing was lost: coins, mastery, streak, owned cosmetics and equipped
+skin/backdrop all survive the schema-8 migration, and the app does not show a
+brick counter anywhere. (Verified in desktop Chromium against prod; unverified
+on Android WebView, which is the point of checking here.)
 
 **New for v128 —** the quest overlay was unreachable on the Cat tab and is now
 top-level `position: fixed`. Open Quests from Cat Journey, confirm the panel is
@@ -182,6 +268,10 @@ for a name), and scan a received card.
 
 **New for v131 —** repeat §A.1 (single-hit golden raccoon, static timer) on
 the signed build.
+
+**Also confirm the Street is gone from the native build:** no "Street" tab,
+label, or screen anywhere; Cat Journey's four buttons all work; the Quests modal
+opens in portrait and landscape and closes on back.
 
 Once the signed build passes this matrix, it is ready for the store tracks below
 (§3–§7). The signed APK/AAB is uploaded to the Play Console, not committed to
