@@ -1,0 +1,23 @@
+{
+  // Cloudflare Workers Static Assets — the web/PWA host (go-live plan step 2).
+  //
+  // WHY WORKERS AND NOT PAGES: the plan originally said Cloudflare Pages. On
+  // 2026-07-30 Cloudflare's own docs steer new projects to Workers — "Pages will
+  // continue to be supported, but going forward, all investment, optimizations,
+  // and feature work will be dedicated to improving Workers" — and the dashboard
+  // no longer offers a Pages creation path. The decision that mattered (Cloudflare,
+  // for unmetered bandwidth over Netlify's 100 GB cap) is unchanged: requests to
+  // static assets are free and unlimited with no storage cost. The file ceiling is
+  // the same 20,000 on free and rises to 100,000 on Workers Paid, which is a better
+  // long-run answer for the audio set than Pages could give.
+  //
+  // No `main` entry point on purpose: this is a PURELY static site, so requests are
+  // served straight from assets and never invoke a Worker. That keeps every request
+  // in the free-and-unlimited static-asset class rather than counting against Worker
+  // invocations.
+  "name": "lucky-cat-hsk",
+  "compatibility_date": "2026-07-30",
+  "assets": {
+    "directory": "./www"
+  }
+}
