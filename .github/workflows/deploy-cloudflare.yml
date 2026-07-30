@@ -1,0 +1,79 @@
+name: Deploy to Cloudflare Pages
+
+# Go-live plan step 2 (docs/planning/2026-07-25-golive-hosting-billing-plan.md).
+#
+# This deploys the SAME staged www/ as deploy-pages.yml, to a second host. Both
+# run on every push to main and both stay live during the migration window —
+# github.io keeps serving existing users (whose nbhsk.* localStorage and
+# anonymous Supabase sessions are tied to that origin) until the migration
+# bridge has moved them. Do not delete deploy-pages.yml until plan step 9.
+#
+# Deliberately NOT using Cloudflare's "Connect to Git" build integration:
+# that builds on Cloudflare's runners and would bypass `npm test` entirely.
+# Deploying from Actions with wrangler keeps the full suite in front of every
+# production deploy — the same gate deploy-pages.yml enforces.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build bundle
+        run: npm run build
+
+      - name: Stage www
+        run: node scripts/stage-www.js
+
+      # Cloudflare Pages refuses a deployment over 20,000 files. www/ was 14,068
+      # at v135 and audio is the growth axis (13,949 of those are mp3s), so fail
+      # loudly with headroom rather than discovering the cap mid-deploy. The fix
+      # when this trips is the deferred R2 move for audio/, not a bigger number.
+      - name: Guard the Cloudflare Pages 20,000-file cap
+        run: |
+          count=$(find www -type f | wc -l)
+          echo "www/ contains $count files (Cloudflare Pages hard limit: 20000)"
+          if [ "$count" -ge 20000 ]; then
+            echo "::error::www/ has $count files, at or over the 20,000-file Cloudflare Pages limit — deploy would be rejected. Move audio/ to R2."
+            exit 1
+          fi
+          if [ "$count" -ge 18000 ]; then
+            echo "::warning::www/ has $count files, within 2,000 of the Cloudflare Pages limit — plan the R2 migration for audio/."
+          fi
+
+      # wrangler major pinned on purpose (4.x current as of 2026-07-30). Bump it
+      # as a deliberate change, not implicitly via @latest.
+      - name: Deploy to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: >-
+          npx --yes wrangler@4 pages deploy www
+          --project-name=lucky-cat-hsk
+          --branch=main
