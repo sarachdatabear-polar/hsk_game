@@ -30,7 +30,7 @@ import { initAudio, speak, speakWhenReady, audioAvailable, hasMp3, setVoiceVolum
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder,
          syncReengageReminder, syncCatJourneyReminder, requestNotifPermission,
          isNative } from "./native.js";
-import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, isAvailable, seasonStatus, unownedDailyStock } from "./shop.js";
+import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, isAvailable, seasonStatus, unownedDailyStock, catJourneyStock } from "./shop.js";
 // Street's own draft/preview state, canvas drawing and street.js/street-project.js/
 // street-resident.js imports all moved into createStreetScreen (src/ui/street-screen.js,
 // 2026-07-23 main.js-scope remediation) — migrateLegacyStreet is the one street.js export
@@ -474,6 +474,7 @@ const friendCompare = createFriendCompare({
     const stats = profileStats({
       levels: D.levels, mastery: masteryStore, stickerState, stickerDefs: STICKER_DEFS,
       shop: shopState, catalog: CATALOG,
+      hiddenCatalogTypes: CAT_JOURNEY_ENABLED ? ["deco"] : [],
     });
     return {
       name: playerProfile.displayName,
@@ -3562,12 +3563,14 @@ function endBattle(quit){
     store.set("stickers", stickerState);
     const def = STICKER_DEFS.find(d => d.id === popped.id);
     slot.innerHTML = "";
-    const toastEl = document.createElement("div");
+    const toastEl = document.createElement("button");
+    toastEl.type = "button";
     toastEl.className = "sticker-toast";
     toastEl.appendChild(iconSvg(stickerIcon(def)));
     const label = document.createElement("span");
     label.textContent = t("results.newSticker", { name: stickerLabel(def) });
     toastEl.appendChild(label);
+    toastEl.onclick = ()=>{ renderAlbum(); show("album"); };
     slot.appendChild(toastEl);
     slot.style.display = "block";
   }else{
@@ -3659,8 +3662,9 @@ function renderShop(){
   }
 
   // Today's Stock — the 3 featured pool items; once owned they live in their type section
-  const stock = unownedDailyStock(today, shopState).filter(id =>
-    !CAT_JOURNEY_ENABLED || CATALOG.find(item => item.id === id)?.type !== "deco");
+  const stock = CAT_JOURNEY_ENABLED
+    ? catJourneyStock(today, shopState)
+    : unownedDailyStock(today, shopState);
   for(const id of stock){
     const item = CATALOG.find(i => i.id === id);
     if(item) dailyBox.appendChild(makeShopRow(item, today));
@@ -3677,6 +3681,7 @@ function renderShop(){
   const seasonNote = $("#shop-season-note");
   if(st.active){
     for(const item of CATALOG.filter(i => i.season === st.active.id
+      && !stock.includes(i.id)
       && !shopState.owned.includes(i.id) && (!CAT_JOURNEY_ENABLED || i.type !== "deco"))){
       seasonBox.appendChild(makeShopRow(item, today));
     }
@@ -4235,6 +4240,7 @@ function renderProfileDashboard(){
   const stats = profileStats({
     levels: D.levels, mastery: masteryStore, stickerState, stickerDefs: STICKER_DEFS,
     shop: shopState, catalog: CATALOG,
+    hiddenCatalogTypes: CAT_JOURNEY_ENABLED ? ["deco"] : [],
   });
   $("#profile-mastered").textContent = stats.masteredWords.toLocaleString();
   $("#profile-seen").textContent = stats.seenWords.toLocaleString();

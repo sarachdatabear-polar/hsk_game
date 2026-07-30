@@ -74,6 +74,33 @@ describe("profileStats", () => {
     profileStats({ levels, mastery, stickerState, stickerDefs, shop, catalog });
     expect(JSON.stringify({ levels, mastery, stickerState, stickerDefs, shop, catalog })).toBe(before);
   });
+
+  it("hides unobtainable catalog types but keeps legacy items already owned", () => {
+    const legacyCatalog = [
+      { id: "panda", type: "skin" },
+      { id: "market", type: "backdrop" },
+      { id: "lantern", type: "deco" },
+      { id: "stall", type: "deco" },
+      { id: "freeze", type: "consumable" },
+    ];
+    const fresh = profileStats({
+      levels, mastery, stickerState, stickerDefs,
+      shop: { owned: [] },
+      catalog: legacyCatalog,
+      hiddenCatalogTypes: ["deco"],
+    });
+    expect(fresh.totalCosmetics).toBe(2);
+    expect(fresh.ownedCosmetics).toBe(0);
+
+    const returning = profileStats({
+      levels, mastery, stickerState, stickerDefs,
+      shop: { owned: ["panda", "lantern"] },
+      catalog: legacyCatalog,
+      hiddenCatalogTypes: ["deco"],
+    });
+    expect(returning.totalCosmetics).toBe(3);
+    expect(returning.ownedCosmetics).toBe(2);
+  });
 });
 
 describe("bestSessionScore", () => {

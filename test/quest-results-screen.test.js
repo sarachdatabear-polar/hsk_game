@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { setLocale, t } from "../src/i18n.js";
 
 const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+const main = readFileSync(new URL("../src/main.js", import.meta.url), "utf8");
 const resultsScreen = html.match(/<div class="screen festive" id="s-results">([\s\S]*?)<!-- TONE TRAINER/)?.[1] ?? "";
 
 describe("Lantern Trail results screen contract", () => {
@@ -28,5 +29,10 @@ describe("Lantern Trail results screen contract", () => {
     ]) {
       expect(t(key)).not.toBe(key);
     }
+  });
+
+  it("turns a newly earned sticker into a direct Album action", () => {
+    expect(main).toContain('const toastEl = document.createElement("button")');
+    expect(main).toContain('toastEl.onclick = ()=>{ renderAlbum(); show("album"); };');
   });
 });
