@@ -1,7 +1,6 @@
 // Offline core + lazy cosmetic cache. The install is atomic for the files that
-// must boot and play; optional costumes, seasonal scenes, shop tiles, and
-// street decorations enter RUNTIME only after the player actually requests
-// them. This keeps first install substantially smaller without losing offline
+// must boot and play; optional costumes, seasonal scenes, and shop tiles
+// enter RUNTIME only after the player actually requests them. This keeps first install substantially smaller without losing offline
 // access to previously viewed cosmetics.
 // Shell + runtime advance together each release: both are cache-first, so a
 // release must invalidate them for updated bundles/art to reach installed

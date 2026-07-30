@@ -5,7 +5,7 @@
 // `store` is injected ({get,set}) so node probes/tests can shim localStorage.
 import { getSession, fetchSyncRows, pushSyncRows, fetchLedgerSince, fetchLedgerOrder } from "./cloud.js";
 import {
-  mergeAll, defaultSyncMeta, slotsOf, streetLayoutPrefsOf, streetProjectOf,
+  mergeAll, defaultSyncMeta, slotsOf,
   shopPreferencesOf,
 } from "./merge.js";
 import { CAT_JOURNEY_CLOUD_ENABLED } from "./cloud-config.js";
@@ -53,7 +53,6 @@ export function localSnapshot(store) {
     shop: store.get("shop", null),
     stickers: store.get("stickers", null),
     best: store.get("best", {}),
-    bricks: store.get("bricks", 0),
     catJourney: store.get("catJourney", null),
   };
 }
@@ -217,33 +216,16 @@ export async function reconcile(store, reason, now = Date.now(), expectedOrderId
     // already returned above.
     const local = localSnapshot(store);
     // Slot-level dirtiness (review 2026-07-19): the per-key dirty bit marks
-    // the WHOLE shop key dirty on any owned/tier mutation, so a device that
-    // only bought a deco would LWW its stale equips over a newer cloud
+    // the WHOLE shop key dirty on any ownership mutation, so a device that
+    // only bought an item would LWW its stale equips over a newer cloud
     // outfit. Only a real local re-dress — slots differing from the
     // last-synced baseline stamped by settleDirty — wins the slot fold. A
     // missing baseline (legacy meta / never synced) keeps the old plain
     // dirty-bit behavior, which also preserves "an unsynced re-dress isn't
     // undone by an old cloud row" for fresh installs.
     const slotsBaseline = meta.shopPreferences?.slots || meta.shopSlots || null;
-    const layoutBaseline = meta.shopPreferences?.streetLayout || null;
-    const projectBaseline = meta.shopPreferences?.streetProject || null;
     const shopDirty = !!(meta.dirty && meta.dirty.shop) &&
       (!slotsBaseline || !eq(slotsOf(local.shop), slotsBaseline));
-    // Diff ONLY the LWW-relevant layout fields (name/savedLayouts/placements/
-    // equip flags) against the baseline. The additively folded fields
-    // (keepsakes/setsCompleted/lastVisitDay) change on ordinary daily/set
-    // activity; diffing the full layout here would falsely flip layoutDirty
-    // and, via mergeShop's chosenLayout, clobber a newer cloud name/layout.
-    // This narrows shopLayoutDirty only — shopDirty (below/above) is untouched,
-    // so keepsake/lastVisitDay/coin writes still propagate via meta.dirty.shop.
-    const shopLayoutDirty = !!(meta.dirty && meta.dirty.shop) &&
-      (!layoutBaseline || !eq(streetLayoutPrefsOf(local.shop), layoutBaseline));
-    // A missing project baseline is legacy metadata. Preserve a newly chosen
-    // active local goal, but do not make an empty default masquerade as a
-    // preference change and override a newer cloud choice.
-    const localProject = streetProjectOf(local.shop);
-    const shopProjectDirty = !!(meta.dirty && meta.dirty.shop) &&
-      (projectBaseline ? !eq(localProject, projectBaseline) : !!localProject.itemId);
     const today = localDateStr(now);
     // Both calls get `today` (not just the cloud-merged one): mergeAll's
     // stale-monthly settle is symmetric in local/cloud, so the baseline must
@@ -267,8 +249,8 @@ export async function reconcile(store, reason, now = Date.now(), expectedOrderId
       : freshCursor ? (expectedCredit ? expectedCredit.delta : 0)
       : unseen;
     const merged = mergeAll(local, localFromRows(rows.progress, rows.wallet),
-      { shopDirty, shopLayoutDirty, shopProjectDirty, today, unseenPurchased: foldUnseen });
-    const baseline = mergeAll(local, null, { shopDirty, shopLayoutDirty, shopProjectDirty, today });
+      { shopDirty, today, unseenPurchased: foldUnseen });
+    const baseline = mergeAll(local, null, { shopDirty, today });
     const changed = !eq(merged, baseline);
     // CURSOR ORDERING (THE FOLD): advance + persist meta.lastLedgerAt BEFORE
     // writing the merged keys to the store below. This file already has a

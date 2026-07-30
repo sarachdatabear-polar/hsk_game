@@ -96,15 +96,6 @@
   body.nav-on .screen.on{
     padding-bottom:calc(16px + var(--bottom-nav-clearance) + env(safe-area-inset-bottom, 0px));
   }
-  /* Street holds the merged Daily Quests panel (audit F3, 0b1ee1e) and reads
-     full now — top-align it like every other content-heavy screen: a header
-     pinned to the top reads as intentional, whereas vertical centering
-     floated the header to mid-screen on tall phones and desktop (a void
-     *above* the title that looked half-loaded). More is the one screen left
-     genuinely sparse (three buttons + a language row, no back button to
-     misplace), so it gets true vertical centering instead (audit F3
-     remainder) — see #s-more below. */
-  #s-street.on{justify-content:flex-start;}
   /* More: only a few controls, nothing to scroll to — center them as a
      single composed block instead of pinning to the top and leaving a bare
      void beneath (audit F3). Full `justify-content:center` (not used on
@@ -502,244 +493,8 @@
     .cat-journey-character,.cat-away .asset-icon{animation:none;}
     .cat-scene,.cat-meter i{transition:none;}
   }
-  /* Lucky Cat Street v2 — a compact player-authored diorama. Canvas paints
-     one complete scene; the DOM layer supplies accessible item/plot controls. */
-  #s-street{position:relative; justify-content:flex-start;}
-  .street-title-row{position:relative; z-index:2; width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px;}
-  .street-title-row h2{position:relative; margin:0; padding:3px 7px; border-radius:10px;
-    background:rgba(251,245,232,.82); box-shadow:0 2px 10px rgba(46,42,36,.08);}
-  .street-chips{display:inline-flex; align-items:center; gap:6px;}
-  .street-wallet{display:inline-flex; align-items:center; justify-content:center; min-height:36px; padding:6px 11px;
-    border:1px solid var(--panel-border); border-radius:999px; background:var(--panel-wash); color:var(--lc-green-deep);
-    font-size:13px; font-weight:800; white-space:nowrap;}
-  .street-chips .chip#street-bricks{min-height:36px; padding:6px 11px; border-radius:999px; font-size:13px; font-weight:800; white-space:nowrap;}
-  .street-stage{position:relative; width:100%; max-width:430px; margin:8px auto 0; isolation:isolate;}
-  .street-stage::before{content:""; position:absolute; z-index:-1; inset:-5px; border-radius:27px;
-    background:linear-gradient(145deg,rgba(255,226,135,.86),rgba(46,102,86,.52) 48%,rgba(132,96,67,.78));
-    box-shadow:0 14px 30px rgba(46,42,36,.22),0 3px 8px rgba(46,42,36,.18);}
-  .street-scroll{position:relative; width:100%; overflow:hidden; border:1px solid rgba(255,249,234,.88); border-radius:22px;
-    box-shadow:inset 0 0 0 2px rgba(132,96,67,.65),inset 0 1px 0 rgba(255,255,255,.8); background:var(--lc-cream);}
-  /* Street's default scene is authored for a true portrait 3:4 window. It
-     gives the mascot and landmarks enough room to read as a composed place
-     instead of a thin strip floating over an empty screen. */
-  .street-world{position:relative; height:auto; min-height:0; aspect-ratio:3/4;}
-  /* Tall phones: let the diorama absorb the otherwise-empty band above the
-     tab bar. h/w stays >= .95 so the portrait art keeps being selected and
-     the cover-crop trims only ~13% off the sides. Edit mode is excluded —
-     there the scene shrinks instead so the inventory surfaces (below). */
-  @media (min-height:780px) and (orientation:portrait){
-    #s-street:not(.street-editing) .street-world{aspect-ratio:13/20;}
-  }
-  /* Edit mode on normal/tall portrait: a shorter scene keeps the toolbar and
-     the first inventory row on screen without scrolling. Short viewports
-     (<=700px) already have their own 2/1 override further down. */
-  @media (min-height:701px) and (orientation:portrait){
-    #s-street.street-editing .street-world{aspect-ratio:1/1;}
-  }
-  #street-cv{display:block; width:100%; height:100%;}
-  #street-resident-cv{position:absolute; z-index:1; inset:0; display:block; width:100%; height:100%; pointer-events:none;}
-  #street-hit-layer{position:absolute; inset:0; pointer-events:none;}
-  .street-scene-hud{position:absolute; z-index:3; top:10px; left:10px; right:10px; display:flex;
-    align-items:flex-start; justify-content:space-between; gap:8px; pointer-events:none;}
-  .street-charm-card,.street-collection-chip{border:1px solid rgba(255,249,234,.86);
-    background:linear-gradient(145deg,rgba(46,102,86,.91),rgba(28,82,72,.84)); color:#fff9ea;
-    box-shadow:0 5px 14px rgba(46,42,36,.24),inset 0 1px 0 rgba(255,255,255,.18);
-    -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);}
-  .street-charm-card{min-width:132px; padding:7px 10px 8px; border-radius:14px;}
-  .street-charm-label{display:flex; align-items:center; justify-content:space-between; gap:8px;
-    font-size:8px; font-weight:900; letter-spacing:.09em; text-transform:uppercase; opacity:.86;}
-  .street-charm-card b{display:block; margin-top:1px; font-size:13px; line-height:1.15;}
-  .street-charm-meter{height:4px; margin-top:5px; overflow:hidden; border-radius:999px; background:rgba(255,249,234,.2);}
-  .street-charm-meter i{display:block; width:0; height:100%; border-radius:inherit;
-    background:linear-gradient(90deg,#FFD65F,#fff0ad); box-shadow:0 0 8px rgba(255,214,95,.9);
-    transition:width .55s cubic-bezier(.2,.8,.2,1);}
-  .street-collection-chip{display:flex; align-items:center; gap:5px; padding:7px 9px; border-radius:999px;
-    font-size:10px; font-weight:900; white-space:nowrap;}
-  .street-collection-chip .asset-icon{width:14px; height:14px; color:#FFD65F;}
-  .street-dream-guide{position:absolute; z-index:3; top:18%; left:50%; transform:translateX(-50%);
-    width:max-content; max-width:78%; padding:6px 11px; border:1px solid rgba(255,249,234,.88); border-radius:999px;
-    background:rgba(251,245,232,.78); color:var(--lc-green-deep); box-shadow:0 4px 14px rgba(46,42,36,.14);
-    -webkit-backdrop-filter:blur(7px); backdrop-filter:blur(7px); font-size:10px; font-weight:900;
-    pointer-events:none; animation:street-dream-float 2.6s ease-in-out infinite;}
-  .street-dream-guide[hidden]{display:none;}
-  @keyframes street-dream-float{50%{transform:translate(-50%,-3px); box-shadow:0 7px 18px rgba(46,42,36,.17);}}
-  .street-hit{position:absolute; z-index:2; min-width:44px; min-height:44px; padding:0; border-radius:50%;
-    transform:translate(-50%,-50%); pointer-events:auto; color:transparent; background:transparent; border:2px solid transparent;}
-  .street-hit:focus-visible{outline:3px solid var(--lc-sky); outline-offset:2px; background:rgba(255,255,255,.22);}
-  .street-hit.plot-hit{border:2px dashed rgba(46,102,86,.52); background:rgba(251,245,232,.26); color:var(--lc-ink);}
-  .street-hit.plot-hit.compatible{border-color:var(--lc-green); background:rgba(255,214,95,.30); animation:street-plot-pulse 1.1s ease-in-out infinite;}
-  .street-hit.plot-hit.incompatible{border-color:rgba(132,96,67,.32); background:rgba(46,42,36,.08);}
-  .street-hit.item-hit.selected{border-color:var(--lc-green); background:rgba(255,214,95,.22);}
-  .street-hit.dream-hit{border:1.5px dashed rgba(255,214,95,.76); background:rgba(255,249,234,.06);
-    box-shadow:0 0 0 4px rgba(255,214,95,.09); cursor:pointer;}
-  .street-hit.dream-hit:focus-visible{outline-color:#FFD65F; background:rgba(255,214,95,.16);}
-  /* Task 9: build pill — unlike the invisible circular item/plot hit targets
-     above, this one must actually read as a tappable "Build · N brick" call
-     to action, so it overrides the base .street-hit's transparent/circular
-     defaults with a small visible pill. */
-  .street-hit.build-hit{display:flex; align-items:center; justify-content:center;
-    border-radius:999px; min-width:40px; padding:2px 5px; white-space:nowrap;
-    background:rgba(46,102,86,.92); color:#FFF9EA; border:1.5px solid rgba(255,214,95,.92);
-    font-size:9px; font-weight:800; box-shadow:0 2px 6px rgba(46,42,36,.25);}
-  .street-hit.build-hit:active{background:rgba(46,102,86,1);}
-  /* Inert "Opens at level N" label for the next locked landmark — not a
-     .street-hit (not interactive), so it opts out of the hit-layer's
-     pointer-events:auto explicitly. */
-  .street-lock-hint{position:absolute; z-index:2; transform:translate(-50%,-50%);
-    pointer-events:none; text-align:center; white-space:nowrap;
-    padding:4px 8px; border-radius:999px; background:rgba(46,42,36,.55);
-    color:#FBF5E8; font-size:10px; font-weight:700;}
-  @keyframes street-plot-pulse{50%{box-shadow:0 0 0 7px rgba(255,214,95,.16);}}
-  .street-caption-row{width:100%; max-width:430px; display:flex; align-items:stretch; gap:6px; margin:7px auto 0;}
-  .street-caption-row[hidden]{display:none;}
-  #street-caption{flex:1 1 auto; width:auto; min-height:36px; margin:0; padding:7px 10px;
-    border:1px solid var(--panel-border); border-radius:11px; background:var(--panel-wash);
-    color:var(--lc-brown); font-size:12px; line-height:1.35; text-align:center;}
-  .street-name-edit-btn{flex:0 0 auto; min-width:36px; min-height:36px; padding:6px; border-radius:10px;
-    border:1px solid var(--panel-border); background:var(--panel-wash); color:var(--lc-green);
-    display:inline-flex; align-items:center; justify-content:center; cursor:pointer;}
-  .street-caption-row + .profile-name-form{max-width:430px; margin:6px auto 0;}
-  .street-actions{width:100%; display:grid; grid-template-columns:minmax(70px,1.15fr) minmax(70px,1.1fr) repeat(3,44px);
-    gap:7px; margin-top:6px; align-items:stretch;}
-  .street-actions[hidden]{display:none;}
-  .street-actions .sec-btn{min-width:0; min-height:44px; margin:0; padding:6px 5px; border-radius:13px; font-size:11px;}
-  .street-actions .icon-text{gap:4px;}
-  .street-actions .asset-icon{width:17px; height:17px;}
-  .street-action-secondary .icon-text{justify-content:center;}
-  .street-action-secondary .action-label{position:absolute; width:1px; height:1px; padding:0; margin:-1px;
-    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;}
-  @media (min-width:520px){
-    .street-actions{grid-template-columns:repeat(5,minmax(0,1fr));}
-    .street-action-secondary .action-label{position:static; width:auto; height:auto; margin:0; overflow:visible; clip:auto; white-space:normal;}
-  }
-  /* Collection book (Task 9): reuses the .pause-overlay/.pause-panel dialog
-     convention (see #quest-overlay just below) — read-only, so its own panel
-     just needs a scroll cap since it can list up to 3 full sets at once. */
-  .street-collection-panel{max-height:60vh; overflow-y:auto; padding-right:2px;}
-  .street-collection-set{margin-top:10px;}
-  .street-collection-set:first-child{margin-top:0;}
-  .street-collection-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;}
-  .street-collection-head b{color:var(--lc-green-deep); font-size:14px;}
-  .street-collection-complete{color:var(--lc-green-deep); font-weight:800; font-size:12px; white-space:nowrap;}
-  .street-collection-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(76px,1fr)); gap:7px;}
-  .street-collection-item{display:flex; flex-direction:column; align-items:center; gap:2px; padding:5px;
-    border:2px solid transparent; border-radius:12px; background:var(--lc-cream); color:var(--ink); text-align:center;}
-  .street-collection-item img{display:block; width:44px; height:44px; object-fit:contain;}
-  .street-collection-item span{display:block; max-width:100%; font-size:10px; line-height:1.15;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .street-collection-item small{display:block; color:var(--muted); font-size:9px;}
-  /* Locked = the SAME owned sprite, just faded — no new art per the brief. */
-  .street-collection-item.locked img{opacity:.4;}
-  .street-collection-item.locked{cursor:pointer;}
-  /* Keepsake shelf (Task 12): same .pause-overlay/.pause-panel dialog
-     convention as #street-collection above — read-only, append-only list,
-     newest-first. `word` (when present) is plain display text, never
-     interactive — no click handlers are ever attached to a keepsake row. */
-  .street-keepsakes-panel{max-height:60vh; overflow-y:auto; padding-right:2px; display:flex; flex-direction:column; gap:8px;}
-  .street-keepsake-item{display:flex; align-items:center; gap:9px; padding:8px 10px;
-    border-radius:12px; background:var(--lc-cream); color:var(--ink);}
-  .street-keepsake-item .asset-icon{width:20px; height:20px; color:var(--lc-green); flex:0 0 auto;}
-  .street-keepsake-item span{font-size:12px; line-height:1.3;}
-  #street-decorate-btn{background-color:var(--lc-sun);
-    background-image:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun) 55%,var(--lc-sun-deep));
-    color:var(--lc-teal); border:2px solid var(--lc-sun-deep); font-weight:900;
-    box-shadow:0 3px 0 var(--lc-sun-deep),0 5px 10px rgba(46,42,36,.16);}
-  /* Short portrait phones keep a square crop so all controls and the sticky
-     nav remain in-fold; standard/tall phones use the native 3:4 artwork. */
-  @media (max-height:700px) and (orientation:portrait){
-    #s-street .street-world{aspect-ratio:1/1;}
-  }
-  /* Desktop and roomy landscape screens use a compact 4:3 scene so translated
-     status copy cannot meet the sticky nav. Short landscape gets its tighter
-     2:1 rule in the final media block below. */
-  @media (orientation:landscape) and (min-height:501px){
-    #s-street .street-world{aspect-ratio:4/3;}
-  }
-  .street-info{width:100%; margin-top:7px; padding:9px 12px; border:1px solid var(--panel-border); border-radius:12px;
-    background:var(--panel-wash); color:var(--ink); font-size:13px; line-height:1.35;}
-  .street-info b{color:var(--lc-green-deep);}
-  .street-project{width:100%; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px 12px; align-items:center;
-    margin-top:7px; padding:10px 12px; border:2px solid var(--lc-teal); border-radius:14px;
-    background:linear-gradient(135deg,rgba(168,216,209,.36),rgba(251,245,232,.94));
-    box-shadow:0 3px 10px rgba(46,42,36,.12);}
-  .street-project[hidden]{display:none;}
-  .street-project-copy{min-width:0;}
-  .street-project-eyebrow{display:block; margin-bottom:1px; color:var(--lc-brown); font-size:10px; font-weight:900;
-    letter-spacing:.07em; text-transform:uppercase;}
-  .street-project-name{display:block; overflow:hidden; color:var(--lc-green-deep); font-size:16px; line-height:1.25;
-    text-overflow:ellipsis; white-space:nowrap;}
-  .street-project-status{display:block; margin-top:2px; color:var(--muted); font-size:12px; line-height:1.3;}
-  .street-project-actions{display:flex; gap:6px; align-items:center;}
-  .street-project-actions .chip{min-height:44px; padding:7px 10px;}
-  .project-meter{position:relative; grid-column:1/-1; width:100%; height:9px; overflow:hidden;
-    border:1px solid rgba(46,102,86,.34); border-radius:999px; background:rgba(46,42,36,.10);}
-  .project-meter > i{display:block; width:0; height:100%; border-radius:inherit;
-    background:linear-gradient(90deg,var(--lc-teal),var(--lc-green)); transition:width .45s ease-out;}
-  .project-meter.ready > i{background:linear-gradient(90deg,var(--lc-sun),#f2bc57);}
-  /* Task 14: opt-in escrow toggle — reuses the .settings-row-label checkbox
-     convention (see analytics-consent), spanning the project card's grid. */
-  .street-project-reserve{grid-column:1/-1; display:flex; align-items:center; gap:8px; cursor:pointer;
-    font-size:12px; font-weight:800; color:var(--lc-brown);}
-  .street-project-reserve input[type=checkbox]{width:18px; height:18px; min-width:18px; flex:0 0 auto;
-    accent-color:var(--lc-teal); cursor:pointer;}
-  .street-project-reserve-hint{grid-column:1/-1; margin:0; font-size:11px; color:var(--muted); line-height:1.3;}
-  .street-editor{width:100%; margin-top:8px; padding:9px; border:1px solid var(--panel-border); border-radius:14px;
-    background:var(--panel-wash); box-shadow:0 2px 8px rgba(46,42,36,.10);}
-  .street-coach{margin:0 0 7px; padding:8px 10px; border-radius:10px; background:rgba(255,214,95,.25);
-    color:var(--lc-brown); font-size:13px; font-weight:700;}
-  .street-editor-tools{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px;}
-  .street-editor-tools .chip{padding:7px 5px; font-size:12px; min-height:44px;}
-  /* Task 11: saved layouts (x3) — compact inline slot list inside the edit
-     toolbar, toggled by #street-layouts-btn. Needs an explicit [hidden]
-     override: .street-layouts-panel itself declares display:flex, and per
-     Task 10's lesson an author display rule beats the `hidden` attribute
-     unless overridden here. */
-  .street-layouts-panel{width:100%; display:flex; flex-direction:column; gap:6px; margin-top:8px;
-    padding:8px 9px; border:1px solid var(--panel-border); border-radius:12px; background:var(--lc-cream);}
-  .street-layouts-panel[hidden]{display:none;}
-  .street-layout-slot{display:flex; align-items:center; gap:6px;}
-  .street-layout-slot-label{flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis;
-    white-space:nowrap; font-size:12px; color:var(--ink);}
-  .street-layout-slot button{flex:0 0 auto; min-height:40px; padding:6px 10px; font-size:11px;}
-  .street-inventory-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:9px;}
-  .street-inventory-head .sect{margin:0;}
-  .street-filters{display:flex; gap:4px;}
-  .street-filters .chip{min-height:36px; min-width:36px; padding:5px 8px; font-size:11px;}
-  .street-inventory{display:flex; gap:7px; overflow-x:auto; padding:7px 1px 3px; scroll-snap-type:x proximity;}
-  .street-inventory-item{position:relative; flex:0 0 92px; min-height:92px; padding:5px; border:2px solid transparent;
-    border-radius:12px; background:var(--lc-cream); color:var(--ink); scroll-snap-align:start;}
-  .street-inventory-item img{display:block; width:58px; height:58px; object-fit:contain; margin:0 auto;}
-  .street-inventory-item span{display:block; font-size:10px; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .street-inventory-item small{display:block; color:var(--muted); font-size:9px;}
-  .street-inventory-item.on{border-color:var(--lc-green); background:rgba(255,214,95,.20);}
-  .street-inventory-empty{padding:14px 6px; color:var(--muted); font-size:12px;}
-  .street-preview-panel{width:100%; margin-top:8px; padding:10px 12px; border:2px solid var(--lc-green); border-radius:14px;
-    background:var(--panel-wash); box-shadow:0 3px 10px rgba(46,42,36,.14);}
-  .street-preview-top{display:flex; align-items:flex-start; justify-content:space-between; gap:8px;}
-  .street-preview-copy{min-width:0;}
-  .street-preview-copy b{display:block; color:var(--lc-green-deep); font-size:16px;}
-  .street-preview-copy span{display:block; color:var(--muted); font-size:12px; line-height:1.35;}
-  .street-preview-close{width:44px; height:44px; min-width:44px; padding:0; border-radius:50%;}
-  .street-preview-tiers{display:flex; gap:6px; margin-top:8px;}
-  .street-preview-tiers .chip{flex:1; padding:6px; min-height:40px; font-size:12px;}
-  .street-preview-actions{display:grid; grid-template-columns:1fr 1.35fr; gap:7px; margin-top:8px;}
-  .street-preview-actions button{min-height:44px;}
-  #street-preview-project{grid-column:1/-1;}
-  .shop-street-focus{display:grid; gap:5px; margin:10px 0 4px; padding:10px 12px; border:2px solid var(--lc-green);
-    border-radius:14px; background:var(--panel-wash); color:var(--lc-green-deep);}
-  .shop-street-focus[hidden]{display:none;}
-  .shop-street-focus span{color:var(--muted); font-size:12px; line-height:1.35;}
-  .shop-street-focus .chip{justify-self:start; margin-top:3px;}
-  #s-shop.street-focus [data-shop-general]{display:none!important;}
-  @media (orientation:landscape) and (max-height:520px){
-    .street-editor,.street-preview-panel{margin-top:6px;}
-  }
   .visually-hidden{position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important;
     overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important;}
-  @media (prefers-reduced-motion:reduce){
-    .street-hit.plot-hit.compatible{animation:none; box-shadow:0 0 0 4px rgba(255,214,95,.15);}
-    .street-dream-guide{animation:none;}
-  }
   /* Quest popup reuses .pause-overlay/.pause-panel (see #s-battle). The
      overlay itself is a top-level viewport-fixed dialog (see the
      #word-overlay/#friend-overlay/#quest-overlay rule below) so it opens
@@ -1235,22 +990,6 @@
     border-radius:14px; box-shadow:0 3px 8px rgba(46,42,36,.16);}
   .results-reward .bignum{font-size:34px; margin:0; color:var(--lc-brown);}
   .results-reward #r-wallet{width:100%; margin:-4px 0 0; font-size:12.5px;}
-  .results-project{display:grid; grid-template-columns:52px minmax(0,1fr) auto; grid-template-areas:
-    "icon copy action" "meter meter meter"; align-items:center; gap:8px 10px; margin:0 0 10px; padding:10px 12px;
-    border:2px solid var(--lc-teal); border-radius:14px;
-    background:linear-gradient(135deg,rgba(168,216,209,.42),rgba(251,245,232,.96));
-    box-shadow:0 3px 9px rgba(46,42,36,.12);}
-  .results-project[hidden]{display:none;}
-  .results-project-icon{grid-area:icon; width:52px; height:52px; object-fit:contain;
-    filter:drop-shadow(0 3px 4px rgba(46,42,36,.18));}
-  .results-project-copy{grid-area:copy; min-width:0;}
-  .results-project-copy small{display:block; color:var(--lc-brown); font-size:10px; font-weight:900;
-    letter-spacing:.06em; text-transform:uppercase;}
-  .results-project-copy b{display:block; overflow:hidden; color:var(--lc-green-deep); font-size:15px;
-    text-overflow:ellipsis; white-space:nowrap;}
-  .results-project-copy span{display:block; color:var(--muted); font-size:12px; line-height:1.3;}
-  .results-project .chip{grid-area:action; min-height:44px; padding:7px 10px;}
-  .results-project .project-meter{grid-area:meter;}
   .results-next-review{margin:10px 0 0; padding:9px 12px; text-align:center; color:var(--lc-green-deep);
     background:rgba(168,216,209,.42); border:1px solid var(--lc-teal); border-radius:12px; font-weight:800;}
   .results-supporter{display:flex; align-items:center; justify-content:space-between; gap:10px;
@@ -1258,15 +997,6 @@
   .results-supporter[hidden]{display:none;}
   .results-supporter .supporter-line{font-size:14px; color:var(--ink); min-width:0;}
   .sub{text-align:center; color:var(--muted); margin:0 0 14px;}
-  @media (max-width:390px){
-    .street-project{grid-template-columns:1fr;}
-    .street-project-actions{justify-content:stretch;}
-    .street-project-actions .chip{flex:1;}
-    .results-project{grid-template-columns:44px minmax(0,1fr); grid-template-areas:
-      "icon copy" "meter meter" "action action";}
-    .results-project-icon{width:44px; height:44px;}
-    .results-project .chip{width:100%;}
-  }
   .misslist{flex:1; overflow-y:auto; background-color:var(--panel-wash); border-radius:12px;
     border:1px solid var(--panel-border); padding:6px 12px; margin:10px 0; max-height:38vh;}
   .missrow{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid rgba(132,96,67,.22);}
@@ -1874,20 +1604,6 @@
     .cat-drawer{grid-column:2; grid-row:5; width:100%; max-height:calc(100dvh - 205px); margin:8px 0 0; overflow-y:auto;}
     .cat-background-list{grid-template-columns:repeat(3,minmax(0,1fr));}
     .cat-memory-list{max-height:none;}
-
-    /* ---- Lucky Cat Street ----
-       Keep the scene above the sticky nav on short landscape phones while
-       retaining a deliberate 2:1 cinematic crop for the limited height. */
-    #s-street{padding:4px 12px 3px;}
-    #s-street .street-title-row h2{padding:2px 8px; font-size:18px;}
-    #s-street .street-wallet{min-height:32px; padding:4px 9px; font-size:11px;}
-    #s-street .street-chips .chip#street-bricks{min-height:32px; padding:4px 9px; font-size:11px;}
-    #s-street .street-actions{margin-top:4px;}
-    #s-street .street-stage{max-width:340px; margin-top:5px;}
-    #s-street .street-world{min-height:0; aspect-ratio:2/1;}
-    #s-street .street-caption-row{max-width:340px; margin-top:4px;}
-    #s-street .street-caption-row + .profile-name-form{max-width:340px;}
-    #s-street #street-caption{min-height:26px; padding:4px 8px; font-size:10.5px; line-height:1.2;}
   }
 </style>
 </head>
@@ -1931,7 +1647,7 @@
         <span class="freeze-count"></span>
       </div>
     </div>
-    <button class="home-cat-status" id="home-cat-status" data-go="street"></button>
+    <button class="home-cat-status" id="home-cat-status" data-go="cat-journey"></button>
 
     <div class="home-cta">
       <button class="start-btn" id="home-start" data-i18n="home.start">START</button>
@@ -2045,7 +1761,7 @@
            .cat-secondary-actions rules so it sits with its siblings. Opens
            the top-level #quest-overlay via the openQuests callback wired in
            src/ui/cat-journey-screen.js. -->
-      <button class="sec-btn" id="cat-quests-btn"><span class="icon-text"><svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#quest"></use></svg><span data-i18n="street.questsBtn">Quests</span></span></button>
+      <button class="sec-btn" id="cat-quests-btn"><span class="icon-text"><svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#quest"></use></svg><span data-i18n="quests.button">Quests</span></span></button>
     </div>
 
     <section class="cat-drawer" id="cat-background-panel" hidden>
@@ -2059,177 +1775,6 @@
       <button class="cat-memory-more" id="cat-memory-more" data-i18n="cat.memoriesMore" hidden>Show older memories</button>
     </section>
     <div class="visually-hidden" id="cat-live" aria-live="polite"></div>
-  </div>
-
-  <!-- STREET — quests reverted back out (2026-07-11 audit F2/F3, supersedes the
-       0b1ee1e merge): quests live behind a popup. Keep the primary action row
-       above the scene so it remains tappable before scrolling on short
-       landscape phones instead of sitting beneath the sticky bottom nav. -->
-  <div class="screen festive" id="s-street">
-    <div class="street-title-row">
-      <h2 data-i18n="street.title">Lucky Cat Street</h2>
-      <div class="street-chips">
-        <span class="street-wallet" id="street-wallet">0 coins</span>
-        <span class="chip" id="street-bricks">0 🧱</span>
-      </div>
-    </div>
-    <div class="street-actions" id="street-actions">
-      <button class="sec-btn street-action-primary" id="street-decorate-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#pencil"></use></svg><span data-i18n="street.decorate">Decorate</span></span></button>
-      <button class="sec-btn street-action-primary" id="street-shop-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#shop"></use></svg><span data-i18n="street.shop">Street Shop</span></span></button>
-      <button class="sec-btn street-action-secondary" id="street-quests-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span class="action-label" data-i18n="street.questsBtn">Quests</span></span></button>
-      <button class="sec-btn street-action-secondary" id="street-collection-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#collection"></use></svg><span class="action-label" data-i18n="street.collection">Collection</span></span></button>
-      <button class="sec-btn street-action-secondary" id="street-keepsakes-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#book"></use></svg><span class="action-label" data-i18n="street.keepsakes">Keepsakes</span></span></button>
-    </div>
-    <div class="street-stage" id="street-stage">
-      <div class="street-scroll" id="street-scroll" tabindex="0" data-i18n-aria="street.sceneLabel" aria-label="Your Lucky Cat Street">
-        <div class="street-world" id="street-world">
-          <canvas id="street-cv"></canvas>
-          <canvas id="street-resident-cv" aria-hidden="true"></canvas>
-          <div class="street-scene-hud">
-            <div class="street-charm-card">
-              <span class="street-charm-label"><span data-i18n="street.charm">Street Charm</span><span id="street-charm-score">0</span></span>
-              <b id="street-charm-rank"></b>
-              <span class="street-charm-meter" aria-hidden="true"><i id="street-charm-fill"></i></span>
-            </div>
-            <div class="street-collection-chip">
-              <svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg>
-              <span id="street-collected">0 / 16</span>
-            </div>
-          </div>
-          <div class="street-dream-guide" id="street-dream-guide" data-i18n="street.dreamGuide" hidden>Tap a dream to preview it</div>
-          <div id="street-hit-layer"></div>
-        </div>
-      </div>
-    </div>
-    <div class="street-caption-row" id="street-caption-row">
-      <div id="street-caption" aria-live="polite"></div>
-      <button class="street-name-edit-btn" id="street-name-edit" type="button" data-i18n-aria="street.nameEdit" data-i18n-title="street.nameEdit" aria-label="Name your street"><svg class="asset-icon"><use href="assets/ui-icons.svg#pencil"></use></svg></button>
-    </div>
-    <form class="profile-name-form" id="street-name-form" hidden>
-      <input class="account-input" id="street-name-input" data-i18n-ph="street.namePlaceholder" data-i18n-title="street.namePlaceholder" aria-label="Street name" placeholder="e.g. Sunny Lane">
-      <button class="big" type="submit" data-i18n="profile.saveName">Save</button>
-      <button class="big" id="street-name-cancel" type="button" data-i18n="profile.cancelName">Cancel</button>
-    </form>
-    <div class="street-info" id="street-info" hidden></div>
-    <section class="street-project" id="street-project" aria-labelledby="street-project-name" hidden>
-      <div class="street-project-copy">
-        <small class="street-project-eyebrow" data-i18n="street.projectEyebrow">Next street build</small>
-        <b class="street-project-name" id="street-project-name"></b>
-        <span class="street-project-status" id="street-project-status"></span>
-      </div>
-      <div class="street-project-actions">
-        <button class="chip" id="street-project-change" data-i18n="street.changeProject">Change</button>
-        <button class="chip buy-chip" id="street-project-build" data-i18n="street.buildNow">Build now</button>
-      </div>
-      <div class="project-meter" id="street-project-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i></i></div>
-      <label class="street-project-reserve" for="street-project-reserve">
-        <input type="checkbox" id="street-project-reserve">
-        <span data-i18n="street.reserveToggle">Reserve coins for this build</span>
-      </label>
-      <p class="street-project-reserve-hint" data-i18n="street.reserveHint">Reserved coins stay set aside for your next build.</p>
-    </section>
-
-    <div class="street-editor" id="street-editor" hidden>
-      <p class="street-coach" id="street-coach" hidden></p>
-      <div class="street-editor-tools">
-        <button class="chip" id="street-undo" data-i18n="street.undo">Undo</button>
-        <button class="chip" id="street-store" data-i18n="street.storeItem">Store</button>
-        <button class="chip" id="street-auto" data-i18n="street.autoArrange">Auto</button>
-        <button class="chip" id="street-layouts-btn" aria-expanded="false" aria-controls="street-layouts-panel" data-i18n="street.layouts">Layouts</button>
-        <button class="chip" id="street-cancel" data-i18n="common.cancel">Cancel</button>
-        <button class="chip buy-chip" id="street-done" data-i18n="common.done">Done</button>
-      </div>
-      <!-- Task 11: saved layouts (x3). Slots are just the first N entries of
-           streetLayout.savedLayouts (street.js caps/compacts at 3 in
-           normalizeStreetLayout) — no separate slot-identity field, so the
-           row markup is static and street-screen.js only fills in the label
-           text + enabled state per render. -->
-      <div class="street-layouts-panel" id="street-layouts-panel" hidden>
-        <div class="street-layout-slot" data-layout-slot="0">
-          <span class="street-layout-slot-label"></span>
-          <button class="chip" data-layout-save="0" data-i18n="street.layoutSave">Save here</button>
-          <button class="chip" data-layout-load="0" data-i18n="street.layoutLoad">Load</button>
-        </div>
-        <div class="street-layout-slot" data-layout-slot="1">
-          <span class="street-layout-slot-label"></span>
-          <button class="chip" data-layout-save="1" data-i18n="street.layoutSave">Save here</button>
-          <button class="chip" data-layout-load="1" data-i18n="street.layoutLoad">Load</button>
-        </div>
-        <div class="street-layout-slot" data-layout-slot="2">
-          <span class="street-layout-slot-label"></span>
-          <button class="chip" data-layout-save="2" data-i18n="street.layoutSave">Save here</button>
-          <button class="chip" data-layout-load="2" data-i18n="street.layoutLoad">Load</button>
-        </div>
-      </div>
-      <div class="street-inventory-head">
-        <div class="sect" data-i18n="street.inventory">Inventory</div>
-        <div class="street-filters" id="street-filters">
-          <button class="chip on" data-street-filter="all" data-i18n="street.filterAll">All</button>
-          <button class="chip" data-street-filter="unplaced" data-i18n="street.filterStored">Stored</button>
-          <button class="chip" data-street-filter="placed" data-i18n="street.filterPlaced">Placed</button>
-        </div>
-      </div>
-      <div class="street-inventory" id="street-inventory" role="list"></div>
-    </div>
-
-    <div class="street-preview-panel" id="street-preview-panel" hidden>
-      <div class="street-preview-top">
-        <div class="street-preview-copy"><b id="street-preview-name"></b><span id="street-preview-desc"></span><span id="street-preview-meta"></span><span id="street-preview-hint" hidden></span></div>
-        <button class="chip street-preview-close" id="street-preview-close" data-i18n-title="common.close" aria-label="Close">×</button>
-      </div>
-      <div class="street-preview-tiers" id="street-preview-tiers" aria-label="Preview tier">
-        <button class="chip on" data-preview-tier="1">★</button>
-        <button class="chip" data-preview-tier="2">★★</button>
-        <button class="chip" data-preview-tier="3">★★★</button>
-      </div>
-      <div class="street-preview-actions">
-        <button class="chip" id="street-preview-project" data-i18n="street.makeProject">Set as my next build</button>
-        <button class="chip" id="street-preview-back" data-i18n="street.backToShop">Back to shop</button>
-        <button class="chip buy-chip" id="street-preview-buy"></button>
-      </div>
-    </div>
-    <div class="visually-hidden" id="street-sr-status" aria-live="polite"></div>
-
-    <!-- Collection book (Task 9): same pause-overlay/pause-panel convention as
-         #quest-overlay (now a top-level dialog next to #word-overlay) —
-         read-only view of collectionView() (Task 4);
-         tapping an unowned item routes to the existing #street-preview-panel
-         flow via openStreetPreview(), never buys directly from here. -->
-    <div class="pause-overlay" id="street-collection" role="dialog" aria-modal="true" aria-labelledby="street-collection-title">
-      <div class="pause-panel">
-        <div class="quest-popup-head">
-          <h3 class="pause-title" id="street-collection-title" data-i18n="street.collection">Collection</h3>
-          <button class="overlay-close" id="street-collection-close" data-i18n-title="common.close" aria-label="Close">×</button>
-        </div>
-        <div class="street-collection-panel" id="street-collection-panel"></div>
-      </div>
-    </div>
-
-    <!-- Keepsake shelf (Task 12): same .pause-overlay/.pause-panel dialog
-         convention as #street-collection above — read-only, append-only view
-         of streetLayout.keepsakes (Task 1), rendered newest-first. A
-         keepsake's optional `word` is a frozen display string only: it is
-         never wired to a click/review/SRS interaction here. -->
-    <div class="pause-overlay" id="street-keepsakes" role="dialog" aria-modal="true" aria-labelledby="street-keepsakes-title">
-      <div class="pause-panel">
-        <div class="quest-popup-head">
-          <h3 class="pause-title" id="street-keepsakes-title" data-i18n="street.keepsakes">Keepsakes</h3>
-          <button class="overlay-close" id="street-keepsakes-close" data-i18n-title="common.close" aria-label="Close">×</button>
-        </div>
-        <div class="street-keepsakes-panel" id="street-keepsakes-panel"></div>
-      </div>
-    </div>
-
-    <!-- Task 11: overwrite confirm for saved layouts — same .pause-overlay/
-         .pause-panel convention as #quest-overlay/#street-collection above,
-         opened/closed via the shared openDialog/closeDialog (deps). -->
-    <div class="pause-overlay" id="street-layout-confirm" role="dialog" aria-modal="true" aria-labelledby="street-layout-confirm-title">
-      <div class="pause-panel">
-        <h3 class="pause-title" id="street-layout-confirm-title" data-i18n="street.layoutOverwrite">Replace this saved layout?</h3>
-        <button class="pause-resume" id="street-layout-confirm-yes" data-i18n="street.layoutOverwriteYes">Replace</button>
-        <button class="pause-quit" id="street-layout-confirm-cancel" data-i18n="common.cancel">Cancel</button>
-      </div>
-    </div>
   </div>
 
   <!-- MORE -->
@@ -2430,19 +1975,9 @@
       <div class="bignum" id="r-score"></div>
       <p class="sub" id="r-wallet" style="color:var(--lc-brown)"></p>
     </div>
-    <section class="results-project" id="r-project" aria-labelledby="r-project-name" hidden>
-      <img class="results-project-icon" id="r-project-icon" alt="">
-      <div class="results-project-copy">
-        <small id="r-project-title">Next street build</small>
-        <b id="r-project-name"></b>
-        <span id="r-project-status"></span>
-      </div>
-      <button class="chip buy-chip" id="r-project-action"></button>
-      <div class="project-meter" id="r-project-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i></i></div>
-    </section>
     <section class="results-cat-ready" id="r-cat-ready" hidden>
       <span data-i18n="results.catReady">Daily goal complete — your cat is ready to explore.</span>
-      <button class="chip" data-go="street" data-i18n="results.catReadyAction">Visit Cat</button>
+      <button class="chip" data-go="cat-journey" data-i18n="results.catReadyAction">Visit Cat</button>
     </section>
     <!-- A4/B2 slots: intro streak pointer (filled by endBattle on the intro
          round) and the sticker toast slot (activates in Phase 4 with stickers.js) -->
@@ -2602,11 +2137,6 @@
         <button class="chip" data-shop-category-tab="supplies" data-i18n="shop.categorySupplies">Supplies</button>
       </div>
     </div>
-    <div class="shop-street-focus" id="shop-street-focus" hidden>
-      <b data-i18n="shop.streetFocusTitle">Build your street</b>
-      <span data-i18n="shop.streetFocusNote">Preview every decoration in your own street before spending coins.</span>
-      <button class="chip" id="shop-view-street" data-i18n="shop.viewStreet">View my street</button>
-    </div>
     <div class="shop-category-panel" data-shop-category-panel="featured">
     <!-- IAP (mock-provider v1): ships dark — unhidden by renderIapSections()
          only when the nbhsk.dev.iap flag is set. -->
@@ -2644,10 +2174,6 @@
     <div class="shop-category-panel" data-shop-category-panel="supplies" hidden>
     <div class="sect" data-shop-general data-i18n="shop.supplies">Supplies</div>
     <div class="scorelist" id="shop-supplies" data-shop-general></div>
-    </div>
-    <div class="shop-category-panel" data-shop-category-panel="street" hidden>
-    <div class="sect" id="shop-street-sect" data-i18n="shop.street">Street decorations</div>
-    <div class="scorelist" id="shop-street"></div>
     </div>
   </div>
 
@@ -2752,7 +2278,7 @@
   <!-- BOTTOM NAV -->
   <nav id="bottom-nav" aria-label="Primary">
     <button class="nav-btn" data-go="home" data-tab="home"><svg class="asset-icon"><use href="assets/ui-icons.svg#home"></use></svg><span data-i18n="nav.home">Home</span></button>
-    <button class="nav-btn" data-go="street" data-tab="street"><svg class="asset-icon"><use href="assets/ui-icons.svg#paw"></use></svg><span data-i18n="nav.cat">Cat</span></button>
+    <button class="nav-btn" data-go="cat-journey" data-tab="cat-journey"><svg class="asset-icon"><use href="assets/ui-icons.svg#paw"></use></svg><span data-i18n="nav.cat">Cat</span></button>
     <button class="nav-btn" data-go="progress" data-tab="progress"><svg class="asset-icon"><use href="assets/ui-icons.svg#progress"></use></svg><span data-i18n="nav.progress">Profile</span></button>
     <button class="nav-btn" data-go="more" data-tab="more"><svg class="asset-icon"><use href="assets/ui-icons.svg#more"></use></svg><span data-i18n="nav.more">More</span></button>
   </nav>

@@ -1,9 +1,6 @@
 "use strict";
 // Lucky Shop — pure module, no DOM/localStorage. Caller owns persistence.
 
-import { addDays } from "./daily.js";
-import { defaultStreetLayout } from "./street.js";
-import { defaultStreetProject } from "./street-project.js";
 
 export const CATALOG = [
   { id: "market",   name: "Night Market", price: 1000, type: "backdrop" },
@@ -13,11 +10,6 @@ export const CATALOG = [
   { id: "firecracker-fx", name: "Firecrackers",  price: 3500, type: "effect" },
   { id: "bells",  name: "Temple Bells", price: 2500, type: "soundpack" },
   { id: "arcade", name: "Arcade",       price: 4000, type: "soundpack" },
-  { id: "red-lantern",  name: "Red Lantern",  price: 800,  type: "deco", maxTier: 3 },
-  { id: "noodle-stall", name: "Noodle Stall",  price: 1500, type: "deco", maxTier: 3 },
-  { id: "tea-sign",     name: "Tea Sign",      price: 2200, type: "deco", maxTier: 3 },
-  { id: "foo-dog",      name: "Foo Dog",       price: 3000, type: "deco", maxTier: 3 },
-  { id: "golden-arch",  name: "Golden Arch",   price: 5000, type: "deco", maxTier: 3 },
   { id: "streak-freeze", name: "Streak Freeze", price: 600, type: "consumable", cap: 2 },
   // ---- v7 permanent prestige band (PRD v7 F1) ----
   { id: "panda",     name: "Panda",     price: 8000,  type: "skin" },
@@ -25,26 +17,15 @@ export const CATALOG = [
   { id: "astronaut", name: "Astronaut", price: 20000, type: "skin" },
   { id: "harbor-night",  name: "Harbor Night",  price: 6000, type: "backdrop" },
   { id: "snow-festival", name: "Snow Festival", price: 8000, type: "backdrop" },
-  { id: "mahjong-table", name: "Mahjong Table", price: 4000, type: "deco", maxTier: 3 },
-  { id: "koi-pond",      name: "Koi Pond",      price: 6000, type: "deco", maxTier: 3 },
-  { id: "drum-tower",    name: "Drum Tower",    price: 9000, type: "deco", maxTier: 3 },
-  // ---- v7 Today's Stock daily pool (F2) — buyable only while featured ----
-  { id: "bubble-tea",      name: "Bubble Tea Stand", price: 2500, type: "deco", pool: "daily", maxTier: 3 },
-  { id: "paper-umbrella",  name: "Paper Umbrella",   price: 1800, type: "deco", pool: "daily", maxTier: 3 },
-  { id: "goldfish-banner", name: "Goldfish Banner",  price: 2200, type: "deco", pool: "daily", maxTier: 3 },
-  { id: "neon-cat-sign",   name: "Neon Cat Sign",    price: 3500, type: "deco", pool: "daily", maxTier: 3 },
-  { id: "lion-drum",       name: "Lion Dance Drum",  price: 4500, type: "soundpack", pool: "daily" },
-  { id: "star-shower",     name: "Star Shower",      price: 3000, type: "effect",    pool: "daily" },
+  { id: "lion-drum",       name: "Lion Dance Drum",  price: 4500, type: "soundpack" },
+  { id: "star-shower",     name: "Star Shower",      price: 3000, type: "effect" },
   // ---- v7 Season Corner (F3) — buyable only inside the season window ----
   { id: "beach",            name: "Beach Cat",        price: 12000, type: "skin",     season: "summer" },
   { id: "island-sunset",    name: "Island Sunset",    price: 8000,  type: "backdrop", season: "summer" },
-  { id: "shaved-ice-cart",  name: "Shaved-Ice Cart",  price: 4500,  type: "deco",     season: "summer", maxTier: 3 },
   { id: "mooncake-rabbit",  name: "Mooncake Rabbit",  price: 15000, type: "skin",     season: "midautumn" },
   { id: "lantern-festival", name: "Lantern Festival", price: 9000,  type: "backdrop", season: "midautumn" },
-  { id: "mooncake-stall",   name: "Mooncake Stall",   price: 5000,  type: "deco",     season: "midautumn", maxTier: 3 },
   { id: "dragon",           name: "Dragon",           price: 25000, type: "skin",     season: "cny" },
   { id: "dragon-gate",      name: "Dragon Gate",      price: 10000, type: "backdrop", season: "cny" },
-  { id: "firecracker-arch", name: "Firecracker Arch", price: 6000,  type: "deco",     season: "cny", maxTier: 3 },
 ];
 
 // `filter` recolors the real cat sprite (ctx.filter); the hex palette is only
@@ -75,31 +56,16 @@ export const SEASONS = [
 
 const dayIndex = dateStr => Math.floor(Date.parse(dateStr + "T00:00:00Z") / 86400000);
 
-// Pure rotation, no RNG: slot i on day d = pool[(d*3 + i) % pool.length].
-export function dailyStock(dateStr) {
-  const pool = CATALOG.filter(i => i.pool === "daily");
-  const d = dayIndex(dateStr);
-  return [0, 1, 2].map(i => pool[(((d * 3 + i) % pool.length) + pool.length) % pool.length].id);
-}
 
-// Today's featured ids the player doesn't own yet — exactly what the
-// Today's Stock shelf shows ([] = show the all-stocked-up empty state).
-export function unownedDailyStock(dateStr, shop) {
-  return dailyStock(dateStr).filter(id => !shop.owned.includes(id));
-}
-
-// Cat Journey is the default product, so its featured shelf must not inherit
-// Street-only decorations from the original six-item daily pool. Walk a
-// deterministic date-based rotation over every currently obtainable
-// non-Street cosmetic, skipping owned items until three real choices are
-// found. The legacy dailyStock() contract stays untouched for Street rollback
-// availability and old saves.
+// The "Today's Picks" shelf: a deterministic date-based rotation over every
+// currently obtainable cosmetic, skipping owned items until three real choices
+// are found. Consumables are excluded — they are counted, not owned, and have
+// their own buy path.
 export function catJourneyStock(dateStr, shop) {
   if (!dateStr || !Number.isFinite(dayIndex(dateStr))) return [];
   const owned = new Set(Array.isArray(shop?.owned) ? shop.owned : []);
   const eligible = CATALOG.filter(item =>
-    item.type !== "deco"
-    && item.type !== "consumable"
+    item.type !== "consumable"
     && isAvailable(item, dateStr));
   if (!eligible.length) return [];
   const day = dayIndex(dateStr);
@@ -131,17 +97,6 @@ export function catJourneyStock(dateStr, shop) {
   return stock;
 }
 
-// Days until `id` is next featured (0 = today). null for non-pool ids.
-export function nextFeaturedIn(id, dateStr) {
-  const item = CATALOG.find(i => i.id === id);
-  if (!item || item.pool !== "daily") return null;
-  const cycle = Math.ceil(CATALOG.filter(i => i.pool === "daily").length / 3);
-  for (let n = 0; n <= cycle; n++) {
-    if (dailyStock(addDays(dateStr, n)).includes(id)) return n;
-  }
-  return null; // unreachable while the pool is non-empty
-}
-
 // [month,day] window containment; supports windows that wrap the new year.
 function inWindow(dateStr, from, to) {
   const [, m, d] = dateStr.split("-").map(Number);
@@ -151,7 +106,6 @@ function inWindow(dateStr, from, to) {
 
 export function isAvailable(item, dateStr) {
   if (!item) return false;
-  if (item.pool === "daily") return !!dateStr && dailyStock(dateStr).includes(item.id);
   if (item.season) {
     if (!dateStr) return false;
     const s = SEASONS.find(s => s.id === item.season);
@@ -185,8 +139,7 @@ export function seasonStatus(dateStr) {
 function byId(id) { return CATALOG.find(it => it.id === id); }
 
 export function defaultShop() {
-  return { owned: [], skin: "", backdrop: "", effect: "", soundpack: "", tiers: {},
-           streetLayout: defaultStreetLayout(), streetProject: defaultStreetProject() };
+  return { owned: [], skin: "", backdrop: "", effect: "", soundpack: "" };
 }
 
 export function canAfford(wallet, id) {
@@ -194,48 +147,24 @@ export function canAfford(wallet, id) {
   return !!item && wallet >= item.price;
 }
 
-// Next-tier price for a tierable item, or null when maxed / not tierable.
-// tier 1 -> 2 costs 1.5x base; tier 2 -> 3 costs 2.5x base (PRD v7 F4).
-export function upgradePrice(item, currentTier) {
-  if (!item || !item.maxTier || currentTier >= item.maxTier) return null;
-  return Math.round(item.price * (currentTier === 1 ? 1.5 : 2.5));
-}
-
 export function buy(wallet, shop, id, dateStr) {
   const item = byId(id);
   if (!item) return { ok: false, wallet, shop };
-  if (shop.owned.includes(id)) {
-    // Owned tierable deco -> tier upgrade. Availability is not re-checked:
-    // once owned, seasonal/pool decos upgrade year-round (PRD v7 F4).
-    if (item.type !== "deco" || !item.maxTier) return { ok: false, wallet, shop };
-    const cur = (shop.tiers && shop.tiers[id]) || 1;
-    const price = upgradePrice(item, cur);
-    if (price === null || wallet < price) return { ok: false, wallet, shop };
-    return {
-      ok: true,
-      wallet: wallet - price,
-      shop: { ...shop, tiers: { ...(shop.tiers || {}), [id]: cur + 1 } },
-    };
-  }
-  // One active Street Project acts as a kind reservation: a daily/seasonal
-  // deco selected while available remains achievable after its shelf rotates.
-  const reserved = item.type === "deco" && shop.streetProject?.itemId === id;
-  if (!reserved && !isAvailable(item, dateStr)) return { ok: false, wallet, shop };
+  // Tiering died with the Street decorations — `maxTier` was only ever set on
+  // `type: "deco"` items, so every remaining catalog entry is a one-time buy.
+  if (shop.owned.includes(id)) return { ok: false, wallet, shop };
+  if (!isAvailable(item, dateStr)) return { ok: false, wallet, shop };
   if (wallet < item.price) return { ok: false, wallet, shop };
   return {
     ok: true,
     wallet: wallet - item.price,
-    shop: {
-      ...shop,
-      owned: [...shop.owned, id],
-      streetProject: reserved ? defaultStreetProject() : shop.streetProject,
-    },
+    shop: { ...shop, owned: [...shop.owned, id] },
   };
 }
 
 // Consumables are counted, not owned: repurchase allowed below the item cap.
 // buy()'s owned-check would permanently block a repurchase after the first
-// (it treats any owned non-deco id as a one-time purchase), so a capped
+// (it treats any owned id as a one-time purchase), so a capped
 // consumable needs its own pure path — never routed through buy()/owned/
 // equipItem(). Caller owns persistence of the count (e.g. nbhsk.freezes).
 export function buyConsumable(item, wallet, count) {
@@ -251,6 +180,5 @@ export function equipItem(shop, id, type) {
   if (!id) return type === "skin" || type === "backdrop" || type === "effect" || type === "soundpack" ? { ...shop, [type]: "" } : shop;
   const item = byId(id);
   if (!item || !shop.owned.includes(id)) return shop;
-  if (item.type === "deco") return shop;   // decos have no slot — owning one displays it
   return { ...shop, [item.type]: id };
 }

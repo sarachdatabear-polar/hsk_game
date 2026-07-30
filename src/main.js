@@ -15,8 +15,7 @@ import { uiScale, layout, lanternTrailLayout, lanternTrailBackdrop, lanternAppro
 import { sprite } from "./sprites.js";
 import { nineSliceRects } from "./nineslice.js";
 import { preload as preloadAssets } from "./assets.js";
-import { recordAnswer, levelMastery, pickKeepsakeWord, masteredCount } from "./mastery.js";
-import { bricksForRound } from "./bricks.js";
+import { recordAnswer, levelMastery, masteredCount } from "./mastery.js";
 import { levelForXp, xpToNext, accessoriesFor, MILESTONES } from "./growth.js";
 import { smartDeck, weakWords, isDue } from "./srs.js";
 import { defaultDaily, noteActivity, streakInfo } from "./daily.js";
@@ -30,12 +29,7 @@ import { initAudio, speak, speakWhenReady, audioAvailable, hasMp3, setVoiceVolum
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder,
          syncReengageReminder, syncCatJourneyReminder, requestNotifPermission,
          isNative } from "./native.js";
-import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, isAvailable, seasonStatus, unownedDailyStock, catJourneyStock } from "./shop.js";
-// Street's own draft/preview state, canvas drawing and street.js/street-project.js/
-// street-resident.js imports all moved into createStreetScreen (src/ui/street-screen.js,
-// 2026-07-23 main.js-scope remediation) — migrateLegacyStreet is the one street.js export
-// this file still calls directly, in the pre-cloud-reconciliation boot migration below.
-import { migrateLegacyStreet } from "./street.js";
+import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, catJourneyStock } from "./shop.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
@@ -73,7 +67,6 @@ import { createFriendCompare } from "./ui/friend-screen.js";
 import { wireAvatarId, avatarPortraitStyle } from "./avatar.js";
 import { createAvatarPicker } from "./ui/avatar-picker.js";
 import { createSupporterMomentRow } from "./ui/supporter-moment-row.js";
-import { createStreetScreen } from "./ui/street-screen.js";
 import { createCatJourneyScreen } from "./ui/cat-journey-screen.js";
 import {
   chooseJourneyWord,
@@ -123,7 +116,6 @@ const store = createStore({ storage: localStorage, syncKeys: SYNC_KEYS });
 // Cat Journey replaces the visible Street tab by default. This local escape
 // hatch preserves an immediate, data-safe rollback:
 // localStorage.setItem("nbhsk.features.catJourney", "false"); location.reload()
-const CAT_JOURNEY_ENABLED = store.get("features.catJourney", true) !== false;
 // Crash visibility: persist uncaught errors/rejections to a local-only ring
 // buffer (nbhsk.errlog). Inspect via devtools: JSON.parse(localStorage["nbhsk.errlog"]).
 function logGlobalError(ev){
@@ -191,7 +183,6 @@ function noteAnswer(hanzi, correct){
   store.set("mastery", masteryStore);
 }
 let wallet = store.get("wallet", 0);
-let bricks = store.get("bricks", 0);
 // IAP (mock-provider v1). ent is local-only on purpose — NOT in SYNC_KEYS;
 // entitlements become server-authoritative in the RevenueCat slice.
 let ent = Object.assign(defaultEnt(), store.get("ent", {}));
@@ -265,15 +256,8 @@ async function ensureWebBilling(){
 let iapOn = false;
 const storedShopState = store.get("shop", {});
 let shopState = Object.assign(defaultShop(), storedShopState);
-// Migrate before cloud reconciliation gets a chance to normalize the missing
-// field into an empty layout. Existing owned decorations therefore retain an
-// authored home instead of all appearing in storage after the upgrade.
-if(!Object.prototype.hasOwnProperty.call(storedShopState, "streetLayout")){
-  shopState.streetLayout=migrateLegacyStreet(shopState.owned,{welcomeOwned:Object.keys(masteryStore||{}).length>0});
-  store.set("shop",shopState);
-}
 function updateWalletChip(){ setPill($("#home-wallet"), "secondary-coin", wallet.toLocaleString()); }
-// Re-arm window (ms): a deco buy synchronously re-renders its row as an
+// Re-arm window (ms): a buy synchronously re-renders its row as an
 // "Upgrade" button at the same coordinates, so a double-tap's second tap
 // can land on it and charge the upgrade too — see makeShopRow.
 const SHOP_REARM_MS = 400;
@@ -307,7 +291,6 @@ function addXp(n){
     const acc = accessoriesFor(after);
     B.hasKitten = acc.includes("kitten");
   }
-  if(after > before) streetScreen.render();
   if(after > before) catJourneyScreen?.render();
   updateLevelChip();
 }
@@ -474,7 +457,6 @@ const friendCompare = createFriendCompare({
     const stats = profileStats({
       levels: D.levels, mastery: masteryStore, stickerState, stickerDefs: STICKER_DEFS,
       shop: shopState, catalog: CATALOG,
-      hiddenCatalogTypes: CAT_JOURNEY_ENABLED ? ["deco"] : [],
     });
     return {
       name: playerProfile.displayName,
@@ -751,15 +733,13 @@ function renderQuests(){
 // renderQuests() above still targets it unchanged. Open/close just toggles
 // the overlay, same convention as #pause-overlay, plus a backdrop-tap close
 // (safe here — unlike the battle pause overlay, an accidental dismiss costs
-// nothing). openQuestDialog is shared by the Street rollback surface (below)
-// and the Cat Journey screen (passed into createCatJourneyScreen), so the
-// quest loop stays reachable whichever screen the street tab routes to.
+// nothing). openQuestDialog is passed into createCatJourneyScreen so the
+// quest loop stays reachable from the Cat Journey screen.
 function closeQuestDialog(){ closeDialog($("#quest-overlay")); }
 function openQuestDialog(){
   renderQuests();
   openDialog($("#quest-overlay"), $("#quest-popup-close"), closeQuestDialog);
 }
-$("#street-quests-btn").onclick = openQuestDialog;
 $("#quest-popup-close").onclick = closeQuestDialog;
 $("#quest-overlay").addEventListener("click", e=>{
   if(e.target.id === "quest-overlay") closeQuestDialog();
@@ -957,7 +937,6 @@ async function refreshAccountSession(){
 function rehydrateFromStore(){
   masteryStore = store.get("mastery", {});
   wallet = store.get("wallet", 0);
-  bricks = store.get("bricks", 0);
   shopState = Object.assign(defaultShop(), store.get("shop", {}));
   freezes = Math.min(2, Number(store.get("freezes")) || 0);
   xp = store.get("xp", 0);
@@ -1131,7 +1110,7 @@ function renderHome(){
     const status = catJourneyStatus(catState, {
       today: todayStr(), goalMet: dailyInfo.goalMet, now: Date.now(),
     });
-    catAction.hidden = !CAT_JOURNEY_ENABLED || status === "done";
+    catAction.hidden = status === "done";
     if(status === "ready") catAction.textContent = t("home.cat.ready");
     else if(status === "exploring") {
       catAction.textContent = t("home.cat.exploring", {
@@ -1301,18 +1280,18 @@ function applyStaticI18n(root = document){
   });
   root.querySelectorAll("[data-i18n-ph]").forEach(el => { el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph"))); });
   root.querySelectorAll("[data-i18n-aria]").forEach(el => { el.setAttribute("aria-label", t(el.getAttribute("data-i18n-aria"))); });
-  const companionTab = document.querySelector('.nav-btn[data-tab="street"]');
+  const companionTab = document.querySelector('.nav-btn[data-tab="cat-journey"]');
   if(companionTab){
     const label = companionTab.querySelector("span");
     const use = companionTab.querySelector("use");
-    const key = CAT_JOURNEY_ENABLED ? "nav.cat" : "nav.street";
+    const key = "nav.cat";
     if(label){ label.setAttribute("data-i18n", key); label.textContent = t(key); }
-    if(use) use.setAttribute("href", `assets/ui-icons.svg#${CAT_JOURNEY_ENABLED ? "paw" : "street"}`);
+    if(use) use.setAttribute("href", "assets/ui-icons.svg#paw");
   }
   document.documentElement.lang = getLocale();
   catJourneyScreen?.render();
 }
-// Localized display name for a shop/street id (t("item."+id) / t("building."+id)),
+// Localized display name for a shop item id (t("item."+id)),
 // falling back to the English name when the key is missing — t() returns the
 // key string itself when unresolved (see i18n.js), so compare against that.
 function tOr(key, fallback){
@@ -1322,16 +1301,6 @@ function tOr(key, fallback){
 
 /* ============================== screens ============================== */
 let currentScreen = "home";
-let streetSpriteRefresh = 0;
-window.addEventListener("nbhsk:sprite-ready", ()=>{
-  // Battle and Shop repaint continuously. Street is a static canvas, so its
-  // initial vector fallback needs one coalesced redraw when lazy PNGs arrive.
-  if(currentScreen !== "street" || streetSpriteRefresh) return;
-  streetSpriteRefresh = requestAnimationFrame(()=>{
-    streetSpriteRefresh = 0;
-    if(currentScreen === "street") streetScreen.render();
-  });
-});
 function updateNav(name){
   const nav = $("#bottom-nav");
   if(!nav) return;
@@ -1347,7 +1316,6 @@ function updateNav(name){
   });
 }
 function show(name){
-  if(name === "street" && CAT_JOURNEY_ENABLED) name = "cat-journey";
   const previousScreen=currentScreen;
   if(activeDialog && !activeDialog.dialog.closest("#s-"+name)){
     closeDialog(activeDialog.dialog, false);
@@ -1373,7 +1341,6 @@ function show(name){
   // screen never leaks its position into the next one.
   window.scrollTo(0, 0);
   if(name==="home"){ renderHome(); }
-  if(name==="street"){ streetScreen.enter(previousScreen); renderQuests(); }
   if(name==="cat-journey"){ catJourneyScreen?.enter(previousScreen); renderQuests(); }
 }
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()=>{
@@ -1392,7 +1359,6 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
     // configured + off-native + not file://). Fire-and-forget: it re-renders
     // the IAP sections itself once the sdk-backed provider is ready.
     ensureWebBilling();
-    streetScreen.setShopFocusMode(false);
     const fromProfile = currentScreen === "progress";
     const back = $("#shop-back");
     back.dataset.go = fromProfile ? "progress" : "home";
@@ -1634,7 +1600,6 @@ function startLearn(returnTo = "home"){
 }
 function endLearn(){
   if(fc.persist) store.set("flashcards", null);
-  if(fc.done>0) streetScreen.earnWelcome();
   if(introPhase === "learn"){
     // A4: warm-up done — straight into a short battle over the same 6 words
     // (normal rules, standard distractors; no fake difficulty).
@@ -3382,15 +3347,6 @@ function endBattle(quit){
     // jackpot-proof: never fall back the start snapshot to 0 — a missing masteredAtStart
     // with a `|| 0` fallback would credit the player's entire lifetime mastered count as
     // one round's gain. Fall back to the CURRENT count so a missing snapshot yields zero.
-    const startMasteredQ = (typeof B.masteredAtStart === "number") ? B.masteredAtStart : masteredCount(masteryStore);
-    const gainedQ = Math.max(0, masteredCount(masteryStore) - startMasteredQ);
-    // Bricks are earnable only while the Street surface is reachable. Both the
-    // counter (#street-bricks) and the only sink (advanceLandmark) live inside
-    // #s-street, which show() retargets to Cat Journey — so crediting under Cat
-    // Journey banked a number no player could see or spend, and `bricks` is a
-    // SYNC_KEYS field, so every round also pushed it to Supabase.
-    const earnedBricksQ = bricksForRound({ mastered: gainedQ, completed: false });
-    if(!CAT_JOURNEY_ENABLED && earnedBricksQ){ bricks += earnedBricksQ; store.set("bricks", bricks); }
     if(introPhase){ introPhase = null; store.set("introDone", true); }
     // B2: evaluate awards on quit too (a streak-7 crossing must not be lost),
     // but silently — the sticker-slot toast queue waits for the next real
@@ -3417,7 +3373,6 @@ function endBattle(quit){
     show("home"); return;
   }
   const results = questResultsSummary(B.quest.view(), { score:B.score });
-  if(B.resolved>0) streetScreen.earnWelcome();
   const dailyNote = noteDaily(results.learned) || {};
   const isPerfect = B.mode==="round" && B.resolved>0 && B.misses.length===0 && (!B.customDeck || B.smartRound);
   if(isPerfect) questEvent("perfect");
@@ -3429,15 +3384,9 @@ function endBattle(quit){
   // jackpot-proof: never fall back the start snapshot to 0 — a missing masteredAtStart
   // with a `|| 0` fallback would credit the player's entire lifetime mastered count as
   // one round's gain. Fall back to the CURRENT count so a missing snapshot yields zero.
-  const startMastered = (typeof B.masteredAtStart === "number") ? B.masteredAtStart : masteredCount(masteryStore);
-  const gained = Math.max(0, masteredCount(masteryStore) - startMastered);
   // Street-reachable only — see the quit path above.
-  const earnedBricks = bricksForRound({ mastered: gained, completed: true });
-  if(!CAT_JOURNEY_ENABLED && earnedBricks){ bricks += earnedBricks; store.set("bricks", bricks); }
-  if(CAT_JOURNEY_ENABLED) $("#r-project").hidden = true;
-  else streetScreen.renderProjectResults(B.walletAtStart, wallet);
   const journeyReady = $("#r-cat-ready");
-  if(journeyReady) journeyReady.hidden = !CAT_JOURNEY_ENABLED || !catGoalCrossed;
+  if(journeyReady) journeyReady.hidden = !catGoalCrossed;
   $("#r-learned").textContent = t("results.learnedTarget", { learned:results.learned, target:results.target });
   $("#r-attempts").textContent = results.attempts;
   $("#r-accuracy").textContent = results.accuracy + "%";
@@ -3622,12 +3571,12 @@ function renderScores(){
 
 /* ============================== shop ============================== */
 let shopCategory = String(store.get("shopCategory", "featured"));
-function applyShopCategory(streetFocus=false){
+function applyShopCategory(){
   const available = ["featured","skins","backdrops","effects","sounds","supplies"];
   if(!available.includes(shopCategory)) shopCategory = "featured";
-  const active = streetFocus ? "street" : shopCategory;
+  const active = shopCategory;
   const tabs = $("#shop-category-tabs");
-  if(tabs) tabs.style.display = streetFocus ? "none" : "flex";
+  if(tabs) tabs.style.display = "flex";
   document.querySelectorAll("[data-shop-category-tab]").forEach(button =>
     setPressed(button, button.dataset.shopCategoryTab === active));
   document.querySelectorAll("[data-shop-category-panel]").forEach(panel =>
@@ -3637,49 +3586,26 @@ document.querySelectorAll("[data-shop-category-tab]").forEach(button =>
   button.addEventListener("click", ()=>{
     shopCategory = button.dataset.shopCategoryTab;
     store.set("shopCategory", shopCategory);
-    applyShopCategory(false);
+    applyShopCategory();
     $("#shop-category-tabs").scrollIntoView({ block:"nearest" });
   }));
 function renderShop(){
   sfx.pack = shopState.soundpack || "default";  // keep sfx in sync with the equipped slot
   $("#shop-wallet").innerHTML = t("shop.wallet", { coins: wallet.toLocaleString() });
   const today = todayStr();
-  const shopScreen = $("#s-shop");
-  const streetFocus = !CAT_JOURNEY_ENABLED && streetScreen.isShopFocusMode();
-  shopScreen.classList.toggle("street-focus", streetFocus);
-  $("#shop-street-focus").hidden = !streetFocus;
-  $("#shop-street-sect").hidden = CAT_JOURNEY_ENABLED;
-  $("#shop-street").hidden = CAT_JOURNEY_ENABLED;
-  $("#shop-street-sect").textContent = t(streetFocus ? "shop.streetAvailable" : "shop.street");
   const dailyBox = $("#shop-daily"), seasonBox = $("#shop-season");
-  const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), supBox = $("#shop-supplies"), decoBox = $("#shop-street");
-  for(const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, supBox, decoBox]) b.innerHTML = "";
-
-  // Street Shop is an intent-focused shelf: show only decorations the player
-  // can buy today (plus everything already owned for tier previews). The
-  // actual spend still happens from the in-scene preview below.
-  if(streetFocus){
-    for(const item of CATALOG.filter(i => i.type === "deco" && (shopState.owned.includes(i.id) || isAvailable(i, today)))){
-      decoBox.appendChild(makeShopRow(item, today));
-    }
-    applyShopCategory(true);
-    startShopPreviewLoop();
-    return;
-  }
+  const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), supBox = $("#shop-supplies");
+  for(const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, supBox]) b.innerHTML = "";
 
   // Today's Stock — the 3 featured pool items; once owned they live in their type section
-  const stock = CAT_JOURNEY_ENABLED
-    ? catJourneyStock(today, shopState)
-    : unownedDailyStock(today, shopState);
+  const stock = catJourneyStock(today, shopState);
   for(const id of stock){
     const item = CATALOG.find(i => i.id === id);
     if(item) dailyBox.appendChild(makeShopRow(item, today));
   }
   if(!stock.length){
     // all featured items owned — cosmetic empty state instead of a bare shelf
-    dailyBox.innerHTML = `<div class="scorerow" style="color:var(--muted)">${t(
-      CAT_JOURNEY_ENABLED ? "shop.dailyCatEmpty" : "shop.dailyAllOwned"
-    )}</div>`;
+    dailyBox.innerHTML = `<div class="scorerow" style="color:var(--muted)">${t("shop.dailyCatEmpty")}</div>`;
   }
 
   // Season Corner — active set is buyable; off-season shows the next set's teaser
@@ -3688,7 +3614,7 @@ function renderShop(){
   if(st.active){
     for(const item of CATALOG.filter(i => i.season === st.active.id
       && !stock.includes(i.id)
-      && !shopState.owned.includes(i.id) && (!CAT_JOURNEY_ENABLED || i.type !== "deco"))){
+      && !shopState.owned.includes(i.id))){
       seasonBox.appendChild(makeShopRow(item, today));
     }
     seasonNote.textContent = t("shop.seasonUntil", { date: fmtMonthDay(st.active.to) });
@@ -3698,14 +3624,13 @@ function renderShop(){
 
   // Permanent sections — pool/season items appear here only once owned
   for(const item of CATALOG){
-    if(CAT_JOURNEY_ENABLED && item.type === "deco") continue;
     if((item.pool || item.season) && !shopState.owned.includes(item.id)) continue;
-    const box = item.type==="skin" ? skinBox : item.type==="backdrop" ? bdBox : item.type==="effect" ? fxBox : item.type==="soundpack" ? sndBox : item.type==="consumable" ? supBox : decoBox;
+    const box = item.type==="skin" ? skinBox : item.type==="backdrop" ? bdBox : item.type==="effect" ? fxBox : item.type==="soundpack" ? sndBox : supBox;
     box.appendChild(makeShopRow(item, today));
   }
   startShopPreviewLoop();
   renderIapSections();
-  applyShopCategory(false);
+  applyShopCategory();
 }
 
 // "Jul 1" / "1 ก.ค." for a [month, day] pair, in the active locale.
@@ -3722,7 +3647,6 @@ function consumableCount(item){ return item.id === "streak-freeze" ? freezes : 0
 function makeShopRow(item, today){
   const owned = shopState.owned.includes(item.id);
   const equipped = shopState[item.type] === item.id;
-  const tier = (shopState.tiers && shopState.tiers[item.id]) || 1;
   const row = document.createElement("div");
   row.className = "scorerow shoprow";
   row.dataset.itemId = item.id;
@@ -3734,12 +3658,11 @@ function makeShopRow(item, today){
   preview._shopItem = item;
   const copy = document.createElement("span");
   copy.className = "shop-copy";
-  const stars = item.type === "deco" && owned ? " " + "★".repeat(tier) : "";
   const ownedCount = item.type === "consumable" ? `<small>${t("shop.owned-count", { n: consumableCount(item), cap: item.cap })}</small>` : "";
-  const desc = item.type === "consumable" || item.type === "deco" ? tOr("item." + item.id + ".desc", "") : "";
+  const desc = item.type === "consumable" ? tOr("item." + item.id + ".desc", "") : "";
   const descHtml = desc ? `<small class="item-desc">${desc}</small>` : "";
-  copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}${stars}</b>${descHtml}<small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
-  if(!owned && wallet < item.price && item.type !== "deco"){
+  copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}</b>${descHtml}<small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
+  if(!owned && wallet < item.price){
     const shortage = document.createElement("small");
     shortage.className = "shop-shortage";
     shortage.textContent = t("shop.needMore", { n:(item.price - wallet).toLocaleString() });
@@ -3754,10 +3677,6 @@ function makeShopRow(item, today){
     store.set("wallet", wallet); store.set("shop", shopState);
     pushEdge("purchase");
     justBought = { id: item.id, at: performance.now() };
-    if(item.type === "deco") streetScreen.markPurchaseReveal(item.id);
-    // no renderStreet() here: the street canvas is display:none while the
-    // shop screen is up (renderStreet would no-op) and show("street") always
-    // re-renders on entry, so a bought deco appears the moment it can be seen.
     updateWalletChip(); renderShop();
   };
   if(item.type === "consumable"){
@@ -3788,15 +3707,6 @@ function makeShopRow(item, today){
         setTimeout(()=>{ btn.disabled = wasDisabled; }, SHOP_REARM_MS - elapsed);
       }
     }
-  }else if(item.type === "deco"){
-    btn.className = "chip buy-chip";
-    btn.textContent = t("shop.preview");
-    btn.onclick = () => streetScreen.openPreview(item.id);
-    left.setAttribute("role", "button");
-    left.tabIndex = 0;
-    left.setAttribute("aria-label", t("shop.previewItem", { name: tOr("item." + item.id, item.name) }));
-    left.onclick = btn.onclick;
-    left.onkeydown = e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); btn.onclick(); } };
   }else{
     btn.className = "chip" + (equipped ? " on" : "");
     if(equipped){
@@ -4121,26 +4031,10 @@ function renderShopPreview(canvas, item, now=0){
     c.lineWidth = 1.5;
     c.stroke(new Path2D("M12 7l-2.2 1.3M12 7l2.2 1.3M12 17l-2.2-1.3M12 17l2.2-1.3M7.5 9.7L6 8.8M7.5 9.7l-.6 2.3M16.5 9.7l.6 2.3M16.5 9.7l1.5-.9M7.5 14.3l-1.5.9M7.5 14.3l-.6-2.3M16.5 14.3l.6-2.3M16.5 14.3l1.5.9"));
     c.restore();
-  }else{
-    // deco: fit the painted sprite inside the tile with padding. drawStreetDeco's
-    // street scale (DECO_SPRITE_SCALE 1.5) is sized for the street ground and
-    // overflows/clips in this small 96x64 preview tile. Vector fallback (no PNG
-    // yet) keeps the street draw until real art lands.
-    const dimg = sprite("deco-" + item.id);
-    if(dimg){
-      const s = Math.min((h-10)/dimg.height, (w-18)/dimg.width);
-      const dw = dimg.width*s, dh = dimg.height*s;
-      c.drawImage(dimg, (w-dw)/2, h-5-dh, dw, dh);
-    }else{
-      streetScreen.drawDeco(c, item.id, w*.5, h-5, h);
-    }
   }
 }
 
-/* ============================== Lucky Cat Street (home) ============================== */
-// Small 4-point star (shop previews + star-shower particles). Stays here (not
-// moved into street-screen.js) because renderShopPreview below uses it for
-// every item type, not just decorations.
+// Small 4-point star (shop previews + star-shower particles).
 function drawStarMark(c, x, y, r){
   c.beginPath();
   c.moveTo(x, y - r); c.quadraticCurveTo(x, y, x + r, y);
@@ -4150,19 +4044,6 @@ function drawStarMark(c, x, y, r){
 // Constructed here (not lifted next to createFriendCompare/createWordDetail
 // above) so its internal DOM/resize listener registrations fire in the same
 // relative order as the original inline street wiring did.
-const streetScreen = createStreetScreen({
-  $, store, analytics, show, renderShop, pushEdge, updateWalletChip, todayStr, tOr,
-  shopViewedProducts, REDUCED_MOTION, openDialog, closeDialog,
-  getWallet: () => wallet, setWallet: v => { wallet = v; },
-  getBricks: () => bricks, setBricks: v => { bricks = v; },
-  getXp: () => xp,
-  getCurrentScreen: () => currentScreen,
-  getShopState: () => shopState, setShopState: v => { shopState = v; },
-  roundRectOn, drawCoverImage, drawStarMark,
-  // Read-only view of mastery for keepsake DISPLAY only: the Street never
-  // writes mastery and never re-reads a keepsake's word after creation.
-  masteredWord: used => pickKeepsakeWord(masteryStore, used),
-});
 catJourneyScreen = createCatJourneyScreen({
   $, store, analytics, show, t, todayStr,
   getXp: () => xp,
@@ -4246,7 +4127,6 @@ function renderProfileDashboard(){
   const stats = profileStats({
     levels: D.levels, mastery: masteryStore, stickerState, stickerDefs: STICKER_DEFS,
     shop: shopState, catalog: CATALOG,
-    hiddenCatalogTypes: CAT_JOURNEY_ENABLED ? ["deco"] : [],
   });
   $("#profile-mastered").textContent = stats.masteredWords.toLocaleString();
   $("#profile-seen").textContent = stats.seenWords.toLocaleString();

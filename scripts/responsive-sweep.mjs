@@ -10,7 +10,6 @@
 //   node scripts/responsive-sweep.mjs           # full 10-viewport multi-screen sweep (EN)
 //   node scripts/responsive-sweep.mjs --locale=th    # same permanent gate in Thai
 //   node scripts/responsive-sweep.mjs --battle 390x844   # single-shot battle probe
-//   node scripts/responsive-sweep.mjs --street-project   # focused project loop probe
 //
 // Requires: npm i --no-save playwright-core, and Microsoft Edge installed
 // (uses channel:"msedge" so it doesn't need a separate browser download).
@@ -59,7 +58,6 @@ const VIEWPORTS = [
 function installPageHelpers() {
   window.__resp = {
     spriteReady: [],
-    streetBgDraws: 0,
     drawnAssets: [],
     // Intersect an element's own rect with the clipping rect of every
     // ancestor whose computed overflow actually clips (hidden/clip/scroll/
@@ -110,16 +108,6 @@ function installPageHelpers() {
   const drawImage = CanvasRenderingContext2D.prototype.drawImage;
   CanvasRenderingContext2D.prototype.drawImage = function(image, ...args) {
     const src = image?.currentSrc || image?.src || "";
-    // Street background: wide time-of-day panorama takes priority once loaded
-    // (src/ui/street-screen.js), falling back to the legacy png sprites while
-    // it loads (src/street-backdrop.js). Count whichever actually paints.
-    if (
-      src.includes("/assets/bg-street.png") ||
-      src.includes("/assets/bg-street-portrait.png") ||
-      src.includes("/assets/bg-street-wide.webp") ||
-      src.includes("/assets/bg-street-market-wide.webp")
-    )
-      window.__resp.streetBgDraws++;
     const asset = src.split("/").pop() || "";
     if (asset && !window.__resp.drawnAssets.includes(asset))
       window.__resp.drawnAssets.push(asset);
@@ -182,45 +170,10 @@ function probeNavReachable(tol) {
     : `out(top=${Math.round(r.top)},bottom=${Math.round(r.bottom)},ih=${window.innerHeight})`;
 }
 
-// Street action reachability: snapshot all three primary controls, including
-// their center-point hit target and 44px floor. runFullSweep then drives real
-// pointer clicks through Decorate, focused Street Shop, and the Quests popup.
-function probeStreetScene() {
-  const screen = document.querySelector("#s-street");
-  const cv = document.querySelector("#street-cv");
-  const r = cv?.getBoundingClientRect();
-  const captionRect = document.querySelector("#street-caption")?.getBoundingClientRect();
-  const navRect = document.querySelector("#bottom-nav")?.getBoundingClientRect();
-  const landmarkAssets = [
-    "landmark-lantern-post.png", "landmark-coin-bank.png", "landmark-tailor.png",
-    "landmark-kitten-cafe.png", "landmark-emperor-gate.png",
-  ];
-  const actions = ["street-decorate-btn", "street-shop-btn", "street-quests-btn"]
-    .map(id => document.getElementById(id))
-    .map(button => {
-      if (!button) return { present: false, hit: false, width: 0, height: 0 };
-      const rect = button.getBoundingClientRect();
-      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
-      return {
-        present: true,
-        hit: hit === button || button.contains(hit),
-        width: Math.round(rect.width),
-        height: Math.round(rect.height),
-      };
-    });
-  return {
-    active: screen?.classList.contains("on") ?? false,
-    cvWidth: r ? Math.round(r.width) : 0,
-    cvHeight: r ? Math.round(r.height) : 0,
-    actions,
-    overlayOpenBeforeClick: document.querySelector("#quest-overlay")?.classList.contains("on") ?? false,
-    paintedBgReady: window.__resp.spriteReady.includes("bg-street") ||
-      window.__resp.spriteReady.includes("bg-street-portrait"),
-    paintedBgDraws: window.__resp.streetBgDraws,
-    landmarksDrawn: landmarkAssets.filter(asset => window.__resp.drawnAssets.includes(asset)),
-    navOverlap: captionRect && navRect ? Math.max(0, Math.round(captionRect.bottom-navRect.top)) : null,
-  };
-}
+// runFullSweep drives a real pointer click through the Quests popup, now
+// reached from Cat Journey's #cat-quests-btn, which reuses the retired
+// Street button's markup and opens the same top-level #quest-overlay (see
+// index.html).
 // Scoped to #quest-overlay specifically (not a bare #quest-panel lookup):
 // renderQuests() runs at boot, so #quest-panel is populated from startup and
 // stays populated even if it isn't actually nested inside the popup — a bare
@@ -328,7 +281,7 @@ async function selectFlashcardWord(page, hanzi) {
 // ---------------------------------------------------------------------------
 // Navigation helpers shared by the full sweep and the --battle single-shot.
 // ---------------------------------------------------------------------------
-async function preparePage(browser, width, height, { catJourneyEnabled = false } = {}) {
+async function preparePage(browser, width, height) {
   const page = await browser.newPage({ viewport: { width, height } });
   const errs = [];
   page.on("pageerror", e => errs.push(e.message));
@@ -340,40 +293,14 @@ async function preparePage(browser, width, height, { catJourneyEnabled = false }
     let state = seed >>> 0;
     Math.random = () => ((state = (Math.imul(state, 1664525) + 1013904223) >>> 0) / 4294967296);
   }, 9);
-  await page.addInitScript(({ locale, catJourneyEnabled }) => {
+  await page.addInitScript(locale => {
     localStorage.setItem("nbhsk.introDone", "true");
     localStorage.setItem("nbhsk.locale", JSON.stringify(locale));
     localStorage.setItem("nbhsk.wallet", "5000");
-    // The main matrix still regression-tests the preserved Street rollback
-    // surface. Cat Journey has its own dedicated flow/viewport probe below.
-    localStorage.setItem("nbhsk.features.catJourney", JSON.stringify(catJourneyEnabled));
     // Lv50 makes the permanent sweep exercise every milestone landmark and
     // the kitten path while verifying that no legacy costume overlay returns.
     localStorage.setItem("nbhsk.xp", "30625");
-    // Landmarks are bricks-gated construction stages (src/street-construction.js
-    // landmarkStage); stage 0 draws nothing, so seed all five finished (stage 3)
-    // to exercise the real landmark sprites. lastVisitDay = today suppresses the
-    // street daily-gift coin grant (src/street-daily.js dailyGift) so the
-    // wallet-exact probe assertions stay deterministic. normalizeStreetLayout
-    // (src/street.js) fills any missing fields, so this partial object is fine.
-    // streetLayout lives nested inside the "nbhsk.shop" blob (src/main.js
-    // store.get("shop")), not a standalone "nbhsk.streetLayout" key — merge
-    // it in rather than overwrite, since this initScript re-runs on every
-    // reload and other probes (e.g. runStreetProjectProbe, runResultsProbe)
-    // set their own nbhsk.shop fields (owned/skin/backdrop/streetProject)
-    // via page.evaluate + page.reload() that must survive this seed.
-    const day = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; })();
-    const existingShop = JSON.parse(localStorage.getItem("nbhsk.shop") || "{}");
-    localStorage.setItem("nbhsk.shop", JSON.stringify({
-      ...existingShop,
-      streetLayout: {
-        ...(existingShop.streetLayout || {}),
-        v: 5,
-        builtStages: { "lantern-post": 3, "coin-bank": 3, "tailor": 3, "kitten-cafe": 3, "emperor-gate": 3 },
-        lastVisitDay: day,
-      },
-    }));
-  }, { locale:LOCALE, catJourneyEnabled });
+  }, LOCALE);
   await page.goto(`${BASE_URL}/index.html`, { waitUntil: "load" });
   await page.waitForTimeout(700);
   return { page, errs };
@@ -382,19 +309,6 @@ async function preparePage(browser, width, height, { catJourneyEnabled = false }
 async function goToShop(page) {
   await page.evaluate(() => document.querySelector('[data-go="shop"]')?.click());
   await page.waitForTimeout(250);
-}
-
-async function goToStreet(page) {
-  await page.evaluate(() => document.querySelector('[data-go="street"]')?.click());
-  await page.waitForTimeout(250);
-  await page.waitForFunction(() =>
-    (window.__resp.spriteReady.includes("bg-street") ||
-      window.__resp.spriteReady.includes("bg-street-portrait")) &&
-    ["landmark-lantern-post", "landmark-coin-bank", "landmark-tailor",
-      "landmark-kitten-cafe", "landmark-emperor-gate"]
-      .every(name => window.__resp.spriteReady.includes(name)), null, { timeout:3000 })
-    .catch(() => {});
-  await page.waitForTimeout(50);
 }
 
 async function goToProfile(page) {
@@ -549,9 +463,6 @@ async function runResultsProbe(browser, width, height) {
     localStorage.setItem("nbhsk.scope", JSON.stringify({
       levels:[3], core:false, newOnly:false, topN:0, lang:"both", sessionLen:5,
     }));
-    localStorage.setItem("nbhsk.shop", JSON.stringify({
-      streetProject:{ v:1, itemId:"koi-pond", plotId:"plot-medium-01" },
-    }));
   });
   await page.reload({ waitUntil:"load" });
   await page.waitForTimeout(300);
@@ -598,10 +509,6 @@ async function runResultsProbe(browser, width, height) {
       learned:document.querySelector("#r-learned")?.textContent || "",
       nextVisible:document.querySelector("#r-next-review")?.offsetParent !== null,
       missedRows:document.querySelectorAll("#r-miss .missrow").length,
-      projectVisible:document.querySelector("#r-project")?.offsetParent !== null,
-      projectName:(document.querySelector("#r-project-name")?.textContent || "").trim(),
-      projectProgress:Number(document.querySelector("#r-project-meter")?.getAttribute("aria-valuenow") || 0),
-      projectAction:(document.querySelector("#r-project-action")?.textContent || "").trim(),
       stickerActionVisible:document.querySelector("#r-sticker-slot .sticker-toast")?.offsetParent !== null,
       small,
     };
@@ -620,10 +527,6 @@ async function runResultsProbe(browser, width, height) {
   if(!/5\s*\/\s*5/.test(info.learned)) failures.push(`results learned=${info.learned}`);
   if(!info.nextVisible) failures.push("results next-review hidden");
   if(info.missedRows < 1) failures.push("results missed-word recap absent");
-  if(!info.projectVisible) failures.push("results Street Project hidden");
-  if(!info.projectName) failures.push("results Street Project name empty");
-  if(info.projectProgress < 83) failures.push(`results Street Project progress=${info.projectProgress}`);
-  if(!info.projectAction) failures.push("results Street Project action empty");
   if(!info.stickerActionVisible) failures.push("results sticker action hidden");
   if(!stickerOpenedAlbum) failures.push("results sticker action did not open Album");
   if(info.small.length) failures.push(`results small-taps:[${info.small}]`);
@@ -636,128 +539,11 @@ async function runResultsProbe(browser, width, height) {
   return { line, failed:failures.length > 0 };
 }
 
-// Street Project retention loop: use real pointer clicks from focused shop
-// preview -> choose goal -> see progress card -> change goal.
-async function runStreetProjectProbe(browser) {
-  const { page, errs } = await preparePage(browser, 390, 844);
-  await page.evaluate(() => {
-    localStorage.setItem("nbhsk.shop", JSON.stringify({
-      owned:["panda","market"], skin:"panda", backdrop:"market",
-    }));
-  });
-  await page.reload({ waitUntil:"load" });
-  await page.waitForTimeout(350);
-  await goToStreet(page);
-  await page.waitForFunction(() =>
-    window.__resp.spriteReady.includes("bg-market") &&
-    (window.__resp.spriteReady.includes("cat-panda-walk") ||
-      window.__resp.spriteReady.includes("cat-panda-happy")), null, { timeout:3000 })
-    .catch(() => {});
-  const resident = await page.evaluate(() => {
-    const canvas=document.querySelector("#street-resident-cv");
-    const scroll=document.querySelector("#street-scroll");
-    const world=document.querySelector("#street-world");
-    return {
-      canvasSized:!!canvas?.width && !!canvas?.height,
-      themeDrawn:window.__resp.drawnAssets.includes("bg-market.png"),
-      catDrawn:window.__resp.drawnAssets.some(name=>
-        name==="cat-panda-walk.png" || name==="cat-panda-happy.png"),
-      oneScreen:!!scroll && !!world &&
-        scroll.scrollWidth<=scroll.clientWidth+1 &&
-        world.clientWidth<=scroll.clientWidth+1,
-      pagerRemoved:!document.querySelector("#street-prev, #street-next, #street-pager"),
-    };
-  });
-  await page.locator("#street-shop-btn").click();
-  await page.waitForTimeout(100);
-  await page.locator('.shoprow[data-item-id="koi-pond"] button').click();
-  await page.waitForTimeout(180);
-  const preview = await page.evaluate(() => ({
-    active:document.querySelector("#s-street")?.classList.contains("on") ?? false,
-    visible:document.querySelector("#street-preview-panel")?.offsetParent !== null,
-    projectButton:document.querySelector("#street-preview-project")?.offsetParent !== null,
-  }));
-  await page.locator("#street-preview-project").click();
-  await page.waitForTimeout(180);
-  const selected = await page.evaluate(() => {
-    const project=JSON.parse(localStorage.getItem("nbhsk.shop") || "{}").streetProject;
-    return {
-      project,
-      cardVisible:document.querySelector("#street-project")?.offsetParent !== null,
-      previewHidden:document.querySelector("#street-preview-panel")?.hidden ?? false,
-      name:(document.querySelector("#street-project-name")?.textContent || "").trim(),
-      pct:Number(document.querySelector("#street-project-meter")?.getAttribute("aria-valuenow") || 0),
-      buildDisabled:document.querySelector("#street-project-build")?.disabled ?? false,
-    };
-  });
-  await page.locator("#street-project-change").click();
-  await page.waitForTimeout(120);
-  const changeOpenedShop = await page.evaluate(() =>
-    document.querySelector("#s-shop")?.classList.contains("on") &&
-    document.querySelector("#s-shop")?.classList.contains("street-focus"));
-  // Exact-price ready path: replace the goal, enter Build Now, verify Back
-  // stays on Street, then complete the real Buy & Place flow.
-  await page.locator('.shoprow[data-item-id="golden-arch"] button').click();
-  await page.waitForTimeout(120);
-  await page.locator("#street-preview-project").click();
-  await page.waitForTimeout(120);
-  const ready = await page.evaluate(() => ({
-    pct:Number(document.querySelector("#street-project-meter")?.getAttribute("aria-valuenow") || 0),
-    buildDisabled:document.querySelector("#street-project-build")?.disabled ?? true,
-  }));
-  await page.locator("#street-project-build").click();
-  await page.waitForTimeout(120);
-  await page.locator("#street-preview-back").click();
-  await page.waitForTimeout(120);
-  const backStayedOnStreet = await page.evaluate(() =>
-    document.querySelector("#s-street")?.classList.contains("on") &&
-    document.querySelector("#street-project")?.offsetParent !== null &&
-    document.querySelector("#street-preview-panel")?.hidden);
-  await page.locator("#street-project-build").click();
-  await page.waitForTimeout(120);
-  await page.locator("#street-preview-buy").click();
-  await page.waitForTimeout(180);
-  const completed = await page.evaluate(() => {
-    const shop=JSON.parse(localStorage.getItem("nbhsk.shop") || "{}");
-    return {
-      owned:shop.owned?.includes("golden-arch") ?? false,
-      projectCleared:!shop.streetProject?.itemId,
-      editorVisible:document.querySelector("#street-editor")?.offsetParent !== null,
-      wallet:Number(localStorage.getItem("nbhsk.wallet") || -1),
-    };
-  });
-
-  const failures = [];
-  if(!resident.canvasSized || !resident.themeDrawn || !resident.catDrawn ||
-      !resident.oneScreen || !resident.pagerRemoved)
-    failures.push(`Street resident/theme unavailable=${JSON.stringify(resident)}`);
-  if(!preview.active || !preview.visible || !preview.projectButton)
-    failures.push(`project preview unavailable=${JSON.stringify(preview)}`);
-  if(selected.project?.itemId !== "koi-pond" || !selected.project?.plotId)
-    failures.push(`project not persisted=${JSON.stringify(selected.project)}`);
-  if(!selected.cardVisible || !selected.previewHidden)
-    failures.push(`project card state=${JSON.stringify(selected)}`);
-  if(!selected.name || selected.pct !== 83 || !selected.buildDisabled)
-    failures.push(`project progress state=${JSON.stringify(selected)}`);
-  if(!changeOpenedShop) failures.push("project Change did not open focused shop");
-  if(ready.pct !== 100 || ready.buildDisabled)
-    failures.push(`ready project state=${JSON.stringify(ready)}`);
-  if(!backStayedOnStreet) failures.push("project preview Back did not stay on Street");
-  if(!completed.owned || !completed.projectCleared || !completed.editorVisible || completed.wallet !== 0)
-    failures.push(`project completion state=${JSON.stringify(completed)}`);
-  if(errs.length) failures.push(`JSERR:${errs[0]}`);
-  const line=`[${failures.length?"FAIL":"PASS"}] Street Project 390x844: `+
-    `item=${selected.project?.itemId||"missing"} progress=${selected.pct}% complete=${completed.owned}`+
-    (failures.length?` | FAILURES: ${failures.join("; ")}`:"");
-  await page.close();
-  return {line,failed:failures.length>0};
-}
-
 // Cat Journey replacement gate: verify the default route, the highest-value
 // interaction states, tap floors, nav clearance, persistence, and a background
 // unlock across the three most failure-prone viewport shapes.
 async function runCatJourneyProbe(browser, width, height) {
-  const { page, errs } = await preparePage(browser, width, height, { catJourneyEnabled:true });
+  const { page, errs } = await preparePage(browser, width, height);
   await page.evaluate(() => {
     const d = new Date();
     const mm = String(d.getMonth()+1).padStart(2,"0");
@@ -842,11 +628,12 @@ async function runCatJourneyProbe(browser, width, height) {
   await page.locator('#s-cat-journey [data-go="shop"]').click();
   await page.waitForTimeout(100);
   const shop=await page.evaluate(()=>({
-    streetSectionHidden:document.querySelector("#shop-street-sect")?.hidden,
-    streetShelfHidden:document.querySelector("#shop-street")?.hidden,
+    // #shop-street-sect/#shop-street were DELETED with Street, so asserting
+    // they are hidden is vacuous. The live guard is visibleDecos below: it
+    // fails if any retired decoration id ever renders in the shop again.
     dailyItems:[...document.querySelectorAll("#shop-daily .shoprow")]
       .map(row=>row.dataset.itemId),
-    visibleDecos:[...document.querySelectorAll("#s-shop .shoprow")]
+    retiredDecoRows:[...document.querySelectorAll("#s-shop .shoprow")]
       .filter(row=>row.offsetParent!==null)
       .filter(row=>["red-lantern","noodle-stall","tea-sign","foo-dog","golden-arch",
         "mahjong-table","koi-pond","drum-tower","bubble-tea","paper-umbrella",
@@ -873,8 +660,7 @@ async function runCatJourneyProbe(browser, width, height) {
       !returned.wordVisible||returned.wordKey!=="妈妈")
     failures.push(`return=${returnedBefore}/${JSON.stringify(returned)}`);
   if(background!=="bg-cat-garden-v1") failures.push(`background=${background}`);
-  if(!shop.streetSectionHidden||!shop.streetShelfHidden||shop.visibleDecos||
-      shop.dailyItems.length!==3)
+  if(shop.retiredDecoRows||shop.dailyItems.length!==3)
     failures.push(`shop=${JSON.stringify(shop)}`);
   if(!String(collection||"").includes("20"))
     failures.push(`collection=${collection}`);
@@ -1096,31 +882,20 @@ async function runFullSweep() {
       () => getComputedStyle(document.documentElement).overscrollBehaviorY
     );
 
-    // Street's three primary actions are exercised with Playwright pointer
-    // clicks (not HTMLElement.click()), so an overlay or stale bundle that
-    // leaves the controls visible-but-dead fails the release sweep.
-    await goToStreet(page);
-    const streetScene = await page.evaluate(probeStreetScene);
-    await page.locator("#street-decorate-btn").click();
-    await page.waitForTimeout(100);
-    const streetDecorate = await page.evaluate(() => ({
-      editorVisible: !document.querySelector("#street-editor")?.hidden,
-      actionsHidden: !!document.querySelector("#street-actions")?.hidden,
-    }));
-    await page.locator("#street-cancel").click();
-    await page.waitForTimeout(100);
-    await page.locator("#street-shop-btn").click();
-    await page.waitForTimeout(100);
-    const streetShop = await page.evaluate(() => ({
-      active: document.querySelector("#s-shop")?.classList.contains("on") ?? false,
-      focused: document.querySelector("#s-shop")?.classList.contains("street-focus") ?? false,
-    }));
-    await page.locator("#shop-back").click();
-    await page.waitForTimeout(100);
-    await page.locator("#street-quests-btn").click();
+    // Cat Journey's Quests popup is exercised with a real Playwright pointer
+    // click (not HTMLElement.click()), so an overlay or stale bundle that
+    // leaves the control visible-but-dead fails the release sweep.
+    // #cat-quests-btn reuses the retired Street button's markup and opens
+    // the same top-level #quest-overlay (see index.html).
+    await page.evaluate(() => document.querySelector('[data-go="cat-journey"]')?.click());
+    await page.waitForTimeout(250);
+    const questOverlayBeforeClick = await page.evaluate(
+      () => document.querySelector("#quest-overlay")?.classList.contains("on") ?? false
+    );
+    await page.locator("#cat-quests-btn").click();
     await page.waitForTimeout(150);
     const questPopup = await page.evaluate(probeQuestPopup);
-    const streetNav = await page.evaluate(probeNavReachable, TOL);
+    const catJourneyNav = await page.evaluate(probeNavReachable, TOL);
     await page.locator("#quest-popup-close").click();
     await page.waitForTimeout(150);
     const questPopupClosed = await page.evaluate(
@@ -1274,32 +1049,12 @@ async function runFullSweep() {
     if (height <= 500 && learnAfter.scrollNeeded) failures.push("learn landscape scroll needed");
     if (battle.clippedBelow > 0) failures.push(`battle clipped-below=${battle.clippedBelow}`);
     if (overscrollY !== "none") failures.push(`overscroll-behavior-y=${overscrollY}`);
-    if (!streetScene.active) failures.push("street: #s-street not active");
-    // Sanity floor, not a "big enough" assertion — the smallest measured tier
-    // (land-640, 640x360) sits at 187px under the new min(52vh,400px) cap;
-    // this just catches an actual regression (e.g. cv collapsing to 0).
-    if (streetScene.cvHeight < 150) failures.push(`street: cv height=${streetScene.cvHeight}<150`);
-    if (streetScene.navOverlap > 0) failures.push(`street: nav overlap=${streetScene.navOverlap}px`);
-    if (streetScene.landmarksDrawn.length !== 5)
-      failures.push(`street: landmarks drawn=${JSON.stringify(streetScene.landmarksDrawn)}`);
-    if (streetScene.actions.some(action => !action.present))
-      failures.push(`street-actions: missing=${JSON.stringify(streetScene.actions)}`);
-    if (streetScene.actions.some(action => !action.hit))
-      failures.push(`street-actions: blocked-hit=${JSON.stringify(streetScene.actions)}`);
-    if (streetScene.actions.some(action => action.width < MIN_TAP || action.height < MIN_TAP))
-      failures.push(`street-actions: small-hit=${JSON.stringify(streetScene.actions)}`);
-    if (!streetDecorate.editorVisible || !streetDecorate.actionsHidden)
-      failures.push(`street-decorate: did not open editor=${JSON.stringify(streetDecorate)}`);
-    if (!streetShop.active || !streetShop.focused)
-      failures.push(`street-shop: did not open focused shop=${JSON.stringify(streetShop)}`);
-    if (!streetScene.paintedBgReady || streetScene.paintedBgDraws < 1)
-      failures.push(`street: lazy painted background did not redraw (ready=${streetScene.paintedBgReady}, draws=${streetScene.paintedBgDraws})`);
-    if (streetScene.overlayOpenBeforeClick) failures.push("street-quests: popup open before click");
-    if (!questPopup.open) failures.push("street-quests: popup did not open on button click");
+    if (questOverlayBeforeClick) failures.push("cat-journey-quests: popup open before click");
+    if (!questPopup.open) failures.push("cat-journey-quests: popup did not open on button click");
     if (questPopup.questPanelChildren < 1)
-      failures.push(`street-quests: #quest-panel empty (children=${questPopup.questPanelChildren})`);
-    if (!questPopupClosed) failures.push("street-quests: popup did not close on X");
-    if (streetNav !== "in-view") failures.push(`street-quests: nav-unreachable:${streetNav}`);
+      failures.push(`cat-journey-quests: #quest-panel empty (children=${questPopup.questPanelChildren})`);
+    if (!questPopupClosed) failures.push("cat-journey-quests: popup did not close on X");
+    if (catJourneyNav !== "in-view") failures.push(`cat-journey-quests: nav-unreachable:${catJourneyNav}`);
     if (navAtTop !== "in-view") failures.push(`shop nav-unreachable@top:${navAtTop}`);
     if (navAtMid !== "in-view") failures.push(`shop nav-unreachable@mid:${navAtMid}`);
     if (staleScrollY !== null && staleScrollY > 1)
@@ -1388,10 +1143,6 @@ async function runFullSweep() {
 
   await browser.close();
   browser = await chromium.launch(launchOpts());
-
-  const streetProject = await runStreetProjectProbe(browser);
-  console.log("\n" + streetProject.line);
-  if(streetProject.failed) anyFail = true;
 
   const catJourneyTiers = [[320,568], [390,844], [844,390]];
   const catJourneyLines = [];
@@ -1497,15 +1248,6 @@ async function runBattleSingleShot(spec) {
   process.exit(failures.length ? 1 : 0);
 }
 
-async function runStreetProjectSingleShot() {
-  await assertServerReachable();
-  const browser = await chromium.launch(launchOpts());
-  const result = await runStreetProjectProbe(browser);
-  console.log(result.line);
-  await browser.close();
-  process.exit(result.failed ? 1 : 0);
-}
-
 async function runCatJourneySingleShot() {
   await assertServerReachable();
   const browser = await chromium.launch(launchOpts());
@@ -1521,8 +1263,6 @@ async function runCatJourneySingleShot() {
 const battleArgIdx = process.argv.indexOf("--battle");
 if (battleArgIdx !== -1) {
   await runBattleSingleShot(process.argv[battleArgIdx + 1]);
-} else if (process.argv.includes("--street-project")) {
-  await runStreetProjectSingleShot();
 } else if (process.argv.includes("--cat-journey")) {
   await runCatJourneySingleShot();
 } else {
