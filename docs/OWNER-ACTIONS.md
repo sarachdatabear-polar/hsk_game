@@ -1,6 +1,6 @@
 # Owner actions
 
-The **v135** release is on `main` and deployed to the web/PWA. Since the last
+The **v136** release is on `main` and deployed to the web/PWA at **https://luckycathsk.com** (and still at github.io during the migration). Since the last
 revision of this doc: **v133** fixed the pre-launch intro/rest-day issues,
 **v134** repaired the Cat Journey Shop/Profile path, and **v135 retired the
 Street surface entirely** (11 modules / ~2,700 LOC, 44 assets, 159 i18n keys ×
@@ -12,16 +12,27 @@ the Album. The remaining gates are the quick on-device checks (§A), the web
 go-live track (§B), cross-device acceptance of the v129 cloud flip (§0), the
 signed Android artifact, native Thai sign-off, and store/legal work.
 
-**TARGET: owner-side ready by 1 August 2026** (Jordan, 2026-07-29). That
-covers §A, §B, §0 and the Thai reviewer engagement (§2). The Play store track
-(§3–§7) is exempt by arithmetic: Google's closed-testing rule for new personal
-accounts (12 testers / 14 days) cannot complete by then.
+**TARGET: owner-side ready by 1 August 2026, WITH A SANCTIONED SLIP TO
+6 AUGUST** (Jordan, 2026-07-29; slip granted 2026-07-31: *"the deploy date can
+be shift to 6 August if everything is not ready"*). That covers §A, §B, §0 and
+the Thai reviewer engagement (§2). The Play store track (§3–§7) is exempt by
+arithmetic: Google's closed-testing rule for new personal accounts (12 testers /
+14 days) cannot complete by then.
+
+**What the slip buys, concretely:** §0's union check cannot happen before
+1 August (see §0 — one journey per calendar day, and the 31 Jul journey was
+already started), and §0 gates the signed APK. Against a hard 1 Aug that left
+zero slack; against 6 Aug there is room to run §0 properly, sign, and work the
+emulator matrix without rushing. **Billing is explicitly NOT in this window** —
+Stripe/RevenueCat do not exist yet and the web billing code ships dark, so
+launch does not wait on it.
 
 ## Current handoff snapshot
 
-- Current committed/deployed source: `main` == `development` == `a524cd24`;
-  service-worker cache version **`v135`**.
-- Recorded release gates at the v135 cut: 103 files / 9,484 tests, ESLint,
+- Current committed/deployed source: `main` == **`335f24c2`** (v136, the URL
+  sweep — see §B3); service-worker cache version **`v136`**, live on
+  **both** `luckycathsk.com` and `github.io`.
+- Recorded release gates at the v135/v136 cuts: 103 files / 9,484 tests, ESLint,
   production build, 131 validated assets, responsive sweep EN+TH 10/10 plus
   all Cat Journey, Results, onboarding, Cards-resume, format, and accessibility
   probes. (Test count fell 9,820 → 9,484 because the Street test files were
@@ -32,15 +43,15 @@ accounts (12 testers / 14 days) cannot complete by then.
   11 pending keepsake bitmaps.
 - **⚠ THERE IS NO ROLLBACK FLAG FOR CAT JOURNEY ANY MORE.** `features.catJourney`
   was deleted in v135. If Cat Journey is wrong on a device, the rollback is
-  **revert the release merge on `main` + a SHELL v136 bump** — not a
+  **revert the release merge on `main` + a SHELL v137 bump** — not a
   `localStorage` toggle. The old
   `localStorage.setItem("nbhsk.features.catJourney","false")` recipe is dead;
   it will do nothing.
 - **The cloud-sync flag is a different flag and it survived.**
   `CAT_JOURNEY_CLOUD_ENABLED` lives in `src/cloud-config.js` (still `true`) and
   gates only whether `catJourney` is a synced key — see §0.
-- Latest signed artifact remains Profile v74; **no v127–v135 APK/AAB exists
-  yet** — the Android track is ~59 shell versions behind the web.
+- Latest signed artifact remains Profile v74; **no v127–v136 APK/AAB exists
+  yet** — the Android track is ~60 shell versions behind the web.
 - **Post-release browser verification of v135 is done** (2026-07-30): the
   legacy-install migration ladder (15/15, idempotent), fresh install, Cat
   Journey + all five of its sub-surfaces in EN and TH (36/36), and the
@@ -52,6 +63,32 @@ accounts (12 testers / 14 days) cannot complete by then.
 
 Order: **§A and §B can run in parallel with §0**; §0 blocks §1 (the APK). The
 Google/RevenueCat/backend store tracks can overlap once the accounts exist.
+
+## B3. URL sweep — SHIPPED (plan step 3)
+
+**v136 is live on both hosts (2026-07-31).** Merge `335f24c2` on `main`; runs
+**30567020748** (Cloudflare) and **30567021056** (Pages) both SUCCESS. All 7
+occurrences of the `github.io` origin in shipped code now point at
+`luckycathsk.com`: `REMOTE_AUDIO_BASE` (`src/main.js:1193`), the native privacy
+link (`:4257`), `index.html`'s canonical/`og:url`/`og:image`/`twitter:image`,
+and the asserted URL in `test/social-meta.test.js`. SHELL v135 → v136 with the
+coupled `sw-precache.test.js` pin in the same commit; suite re-run after the
+bump (103 files / **9,484 exit 0**, lint 0, build 0, zero dist drift).
+
+**Live-verified on BOTH origins:** each serves `CACHE_VERSION "v136"`, a
+`dist/app.js` with sha256 `4e0c5892…` **identical to the committed bundle**, a
+canonical of `https://luckycathsk.com/`, and working audio (6,336 B).
+
+**The bridge is intact** — `github.io` still fully works, because only the
+*native* branch of `REMOTE_AUDIO_BASE` is absolute; web keeps the relative
+`"audio/"` path, so each host serves its own audio. No existing user is
+orphaned. Both canonicals pointing at the new domain is intended: it tells
+search engines which origin is authoritative while both are up.
+
+**⚠ CONSEQUENCE FOR THE ANDROID TRACK:** any APK signed from `main` at or after
+`335f24c2` carries `https://luckycathsk.com/audio/` baked in. That is now the
+store-artifact-safe origin — but it also means the domain's auto-renew is
+load-bearing for every installed app, not just the website.
 
 ## A. Quick on-device checks owed (minutes each — do first)
 
@@ -84,7 +121,7 @@ recorded above do not discharge them.
    and closes on back/Esc, and nothing anywhere says "Street". Verified in
    desktop Chromium in both locales; unverified on a phone.
 
-## B. Web go-live track — target 1 Aug
+## B. Web go-live track — target 1 Aug (slip to 6 Aug sanctioned)
 
 Owner steps from the locked
 [go-live plan](planning/2026-07-25-golive-hosting-billing-plan.md).
@@ -229,21 +266,20 @@ The two anonymous identities created by that production verification have been
 carrying the `cat_journey = {}` backfill, and no orphaned `profiles` rows. That
 8 is the real baseline for any future backfill check.
 
-## 1. Build and accept the current (v135) APK/AAB
+## 1. Build and accept the current (v136) APK/AAB
 
-**Entry criteria: §0 passed.** Use the current `main` release (**v135**) for
+**Entry criteria: §0 passed.** Use the current `main` release (**v136**) for
 Android. It passes 103 test files / 9,484 tests, ESLint, production build, 131
 asset checks, and the deterministic EN+TH viewport/format/accessibility gates.
 **It has not been signed on Windows.**
 
-> **⚠ THIS IS AN ACCEPTANCE ARTIFACT, NOT THE STORE ARTIFACT.** The go-live URL
-> sweep (plan step 3) rewrites `REMOTE_AUDIO_BASE` (`src/main.js:1057`) to
-> `https://luckycathsk.com/audio/`. That origin is **baked into the APK** — an
-> artifact signed before the sweep points at the old host forever and would be
-> stranded if that host is torn down. So: sign v135 now to run the emulator
-> matrix and unblock the Play Console work, but expect to **re-sign after the
-> URL sweep lands** for anything that goes to the store. Don't treat the first
-> signing as final.
+> **⚠ USE v136 OR LATER — NOT v135.** The go-live URL sweep has now SHIPPED
+> (§B3, merge `335f24c2`), so `REMOTE_AUDIO_BASE` (`src/main.js:1193`) is
+> `https://luckycathsk.com/audio/` and that origin is **baked into the APK**.
+> An artifact signed from v135 or earlier points at `github.io` forever and
+> would be stranded when that host retires at plan step 9. Pull `main` again
+> before signing — the earlier plan to sign v135 as a throwaway acceptance
+> artifact and re-sign later is now unnecessary: sign once, from v136+.
 
 **Emulator vs real hardware.** A Google-Play-image emulator runs the signed APK
 and covers nearly all of the matrix below. Four things are physically
@@ -251,7 +287,7 @@ hardware-bound and must wait for a real phone (see §8): **vibration feel, audio
 routing/volume, real notification delivery, and battery/mid-range performance.**
 The Android Lens QR scan (§A.2) is also impractical on an emulator.
 
-Pull `main` v135 onto the Windows release checkout, then open a
+Pull `main` v136 onto the Windows release checkout, then open a
 fresh PowerShell in
 `C:\Users\sarac\Desktop\HSK\game` and run these as separate lines:
 
