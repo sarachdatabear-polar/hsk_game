@@ -1,54 +1,23 @@
 # Lucky Cat HSK — Status
 
-**Last updated:** 2026-07-27
-**TL;DR:** **Cat Journey full product is LIVE IN PRODUCTION at service-worker
-`v129`, with cloud sync of Journey state now ENABLED.** `main` ==
-`development` == **`b5ea5ab4`**; GitHub Pages run `30255502093` SUCCESS
-2026-07-27 09:48Z. Verified gates: **109 test files / 9,718 tests**, **134
-validated assets**, ESLint, production build, asset budgets, a
-**659,919-byte** bundle, and Cat Journey browser passes at 320×568, 390×844,
-and 844×390. Live `dist/app.js` was verified byte-identical to the local build
-at `0422a364` (sha `d37298cf…`) — a point-in-time check, not a standing
-property; re-verify after any commit that touches `src/`.
+**Last updated:** 2026-07-30
+**TL;DR:** **v134 is the current web/PWA release.** It repairs the Cat Journey
+Shop and Profile journey without deleting the data-safe Street rollback:
+Today's Picks now contains three obtainable, category-diverse Word Quest
+cosmetics; fresh Collection completion is an honest 20 reusable cosmetics;
+Streak Freeze remains the separate 21st active shop item; and Results stickers
+open the Album. Shop/Profile copy now explains where cosmetics apply.
 
-Three cuts landed today, in order:
+Release gates: **113 test files / 9,825 tests**, **134 validated assets**,
+ESLint, production build, full English and Thai responsive suites, focused Cat
+Journey probes at 320×568, 390×844, and 844×390, and Results-to-Album probes at
+360×640, 390×844, and 640×360.
 
-- **v127** (`7fa2c721`) — Cat Journey full product, Codex-built, auto-deployed
-  unreviewed. The Cat tab replaces Street by default behind a data-safe local
-  rollback flag; legacy Street saves untouched.
-- **v128** (`d9374606`) — the two P0s the post-deploy review found: a
-  **pre-existing** identity-switch hole in the reconcile latch, and the
-  **new** orphaning of the daily-quest UI and 1,500-coin monthly claim.
-- **v129** (`b5ea5ab4`) — the cloud flip. See
-  [the plan](planning/2026-07-27-v129-cloud-flip-plan.md).
+The full evidence and remaining boundaries are in the
+[v134 audit](audits/2026-07-30-full-feature-test-report.md) and
+[implementation plan](superpowers/plans/2026-07-30-user-journey-shop-coherence.md).
 
-**v129 — Journey cloud sync is live.** `docs/supabase/migrations/2026-07-27-cat-journey.sql`
-was applied to project `eqsodiufgjecoqgxdisn`; the column re-queried as
-`cat_journey jsonb NOT NULL DEFAULT '{}'::jsonb`, all **8** pre-existing rows
-backfilled, table RLS confirmed on. `CAT_JOURNEY_CLOUD_ENABLED = true`.
-
-The flip also fixed a defect it would otherwise have introduced. Because the
-migration backfills every existing row to `{}`, `mergeAll`'s `!= null` guard
-passed on that empty object and synthesized a full default journey — which
-differs from the null-cloud baseline, so `reconcile` returned `changed: true`
-and `main.js` toasted **"restored your account" at every user who had never
-opened the Cat tab**. `localFromRows` now treats an empty `cat_journey` as
-absent, mirroring the write-side guard in `rowsFromLocal` (which omits the
-column entirely rather than sending `{}`, since PostgREST's subset upsert
-preserves omitted columns but `{}` overwrites them).
-
-**Verified against production, not just in tests.** Two headless-Chromium
-probes drove the live site end to end: a fresh client created an anonymous
-identity, synced, and wrote a real row (client correctly **omitted**
-`cat_journey`, so the column default applied); then a second pass re-entered
-with that same session — whose row already carried the `{}` backfill — and
-confirmed `nbhsk.catJourney` stayed `null`, **zero toasts**, zero JS errors,
-sync settled — the toast defect confirmed fixed in production against a real
-backfilled row. Both probe identities were **deleted afterwards**:
-`public.progress` and `public.wallet` are back to **8** rows (all 8 carrying the
-`{}` backfill), `auth.users` to 10, no orphaned `profiles`.
-
-**Still open after v129:**
+**Still open after v134:**
 
 1. **Cross-device acceptance of the cloud flip — OPEN (owner gate C4).** The
    merge algebra is pinned by unit tests (claims union by day, goal history
@@ -70,7 +39,7 @@ backfilled row. Both probe identities were **deleted afterwards**:
    `learn.stillLearning`, `learn.knowIt`). Structural i18n integrity is clean
    (EN and TH both 732 keys, zero placeholder mismatches) — the defect is
    procedural, not broken text.
-3. **Signed Android artifact.** None exists for v127.
+3. **Signed Android artifact.** None exists for v134.
 
 Journey claims, Cat Bond tier, and goal history now follow the **account**, not
 the device — as of v129. The rollback flag still works
@@ -99,8 +68,8 @@ release is complete; signed Android and store/legal work remains in
 
 | Tier | State |
 |---|---|
-| **Live in production** | `main` == `development` == `b5ea5ab4`; SHELL/runtime **v129**; Pages run `30255502093` SUCCESS 2026-07-27 09:48Z. Cat Journey full product enabled by default (Phases 0–2, Phase 3 authored content, Phase 4 learning/UX), quest loop reachable (v128), Journey cloud sync ON (v129). |
-| **Current automated baseline** | 109 files / 9,718 tests; 134 assets; ESLint, production build, and asset budgets pass; `dist/app.js` 659,919 bytes; `qa:cat-journey` PASS at 320×568, 390×844, 844×390. |
+| **Live in production** | `main`/`development`; SHELL/runtime **v134**. Cat Journey is enabled by default, its Shop/Profile journey is coherent, Street remains a data-safe rollback, and Journey cloud sync remains ON. |
+| **Current automated baseline** | 113 files / 9,825 tests; 134 assets; ESLint, production build, EN/TH responsive QA, Cat Journey, Results, cards-resume, and accessibility probes pass. |
 | **Precache headroom** | **63,942 bytes** (10,946,106 of 11,010,048; 73 of 74 entries). The next ~64 KB of always-loaded anything fails CI. Raising the cap is the wrong fix — move assets to runtime fetch instead. |
 | **Cloud sync of Journey state** | **LIVE (v129).** `CAT_JOURNEY_CLOUD_ENABLED = true`; `cat_journey jsonb NOT NULL DEFAULT '{}'` applied to `eqsodiufgjecoqgxdisn`, 8 pre-existing rows backfilled, RLS on. Single-session round-trip verified against production; **two-device acceptance still OPEN (C4)**. |
 | **Code review** | **DONE 2026-07-27, post-deploy** — [findings](planning/2026-07-27-cat-journey-v127-review-findings.md). Core reward loop, rollback flag, and v5→v6 migration all verified sound. Both P0s **fixed and shipped in v128**. |

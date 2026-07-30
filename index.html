@@ -432,14 +432,16 @@
     color:var(--lc-cream); box-shadow:0 3px 0 var(--lc-green-deep); cursor:default;}
   .cat-secondary-actions{display:grid; grid-template-columns:1fr 1fr; gap:8px; width:calc(100% - 22px);
     max-width:428px; margin:9px auto 0;}
-  .cat-secondary-actions button{display:flex; align-items:center; justify-content:center; gap:6px; min-height:44px;
+  /* 45px avoids fractional CSS-pixel rounding below the 44px accessibility
+     floor on 320px Thai layouts (43.98px has occurred under font-load timing). */
+  .cat-secondary-actions button{display:flex; align-items:center; justify-content:center; gap:6px; min-height:45px;
     padding:7px 9px; border:1px solid rgba(132,96,67,.35); border-radius:13px;
     background:rgba(251,245,232,.94); color:var(--lc-green-deep); font-size:11px; font-weight:900;}
   /* #cat-quests-btn reuses the Street .sec-btn/.icon-text markup; the
      higher-specificity button rule above already restyles it to match its
-     siblings — these lines neutralize the leftover .sec-btn icon/shadow and
-     give the third action its own full-width row in the 2-column grid. */
-  .cat-secondary-actions .sec-btn{grid-column:1/-1; box-shadow:none;}
+     siblings. Neutralize the leftover .sec-btn icon/shadow so the four
+     actions form a balanced two-by-two grid. */
+  .cat-secondary-actions .sec-btn{box-shadow:none;}
   .cat-secondary-actions .sec-btn .icon-text{gap:6px;}
   .cat-secondary-actions .sec-btn .asset-icon{width:1.15em; height:1.15em; color:currentColor;}
   .cat-drawer{width:calc(100% - 22px); max-width:428px; margin:8px auto 0; padding:10px;
@@ -1522,6 +1524,7 @@
 
   /* B2 new-sticker toast on results: calm sun plaque, one per session */
   .sticker-toast{display:flex; align-items:center; justify-content:center; gap:8px;
+    width:100%; min-height:44px; cursor:pointer; font:inherit;
     background-color:var(--lc-sun); background-image:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun));
     border:2px solid var(--lc-brown); border-radius:12px; color:var(--lc-brown);
     font-weight:800; font-size:14px; padding:8px 10px; margin:0 0 10px;
@@ -2032,6 +2035,10 @@
       <button data-go="progress">
         <svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#progress"></use></svg>
         <span data-i18n="cat.profile">My progress</span>
+      </button>
+      <button data-go="shop">
+        <svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#shop"></use></svg>
+        <span data-i18n="cat.customizeQuests">Customize Word Quest</span>
       </button>
       <!-- Quest entry (v128, review finding 2): same #quest sprite +
            .sec-btn/.icon-text markup as #street-quests-btn, restyled by the
@@ -2607,27 +2614,31 @@
     <div class="scorelist" id="shop-coins" data-shop-general hidden></div>
     <div class="sect" id="shop-supporter-sect" data-shop-general data-i18n="shop.supporterTitle" hidden>Supporter</div>
     <div class="scorelist" id="shop-supporter" data-shop-general hidden></div>
-    <div class="sect" data-shop-general data-i18n="shop.daily">Today's Stock</div>
+    <div class="sect" data-shop-general data-i18n="shop.daily">Today's Picks</div>
     <div class="scorelist" id="shop-daily" data-shop-general></div>
-    <p class="shop-note" id="shop-daily-note" data-shop-general data-i18n="shop.dailyNote">New stock at midnight</p>
+    <p class="shop-note" id="shop-daily-note" data-shop-general data-i18n="shop.dailyNote">New picks at midnight</p>
     <div class="sect" data-shop-general data-i18n="shop.season">Season Corner</div>
     <div class="scorelist" id="shop-season" data-shop-general></div>
     <p class="shop-note" id="shop-season-note" data-shop-general></p>
     </div>
     <div class="shop-category-panel" data-shop-category-panel="skins" hidden>
-    <div class="sect" data-shop-general data-i18n="shop.skins">Cat skins</div>
+    <div class="sect" data-shop-general data-i18n="shop.skins">Word Quest cats</div>
+    <p class="shop-note" data-shop-general data-i18n="shop.catsNote">Changes the cat and kitten you see during Word Quest.</p>
     <div class="scorelist" id="shop-skins" data-shop-general></div>
     </div>
     <div class="shop-category-panel" data-shop-category-panel="backdrops" hidden>
     <div class="sect" data-shop-general data-i18n="shop.backdrops">Quest backdrops</div>
+    <p class="shop-note" data-shop-general data-i18n="shop.backdropsNote">Changes the scene behind your Word Quest.</p>
     <div class="scorelist" id="shop-backdrops" data-shop-general></div>
     </div>
     <div class="shop-category-panel" data-shop-category-panel="effects" hidden>
     <div class="sect" data-shop-general data-i18n="shop.effects">Effects</div>
+    <p class="shop-note" data-shop-general data-i18n="shop.effectsNote">Changes the celebration burst after a correct answer.</p>
     <div class="scorelist" id="shop-effects" data-shop-general></div>
     </div>
     <div class="shop-category-panel" data-shop-category-panel="sounds" hidden>
     <div class="sect" data-shop-general data-i18n="shop.sounds">Sounds</div>
+    <p class="shop-note" data-shop-general data-i18n="shop.soundsNote">Changes game sound effects, not Chinese pronunciation.</p>
     <div class="scorelist" id="shop-sounds" data-shop-general></div>
     </div>
     <div class="shop-category-panel" data-shop-category-panel="supplies" hidden>

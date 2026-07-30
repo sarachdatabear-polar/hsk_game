@@ -45,7 +45,9 @@ export function normalizeProfile(raw) {
   };
 }
 
-export function profileStats({ levels, mastery, stickerState, stickerDefs, shop, catalog } = {}) {
+export function profileStats({
+  levels, mastery, stickerState, stickerDefs, shop, catalog, hiddenCatalogTypes,
+} = {}) {
   const words = new Map();
   for (const levelWords of Object.values(levels || {})) {
     for (const word of levelWords || []) {
@@ -66,9 +68,16 @@ export function profileStats({ levels, mastery, stickerState, stickerDefs, shop,
   let earnedStickers = 0;
   for (const id of stickerIds) if (earnedIds.has(id)) earnedStickers++;
 
-  const collectibles = (catalog || []).filter(item => item && item.type !== "consumable");
-  const collectibleIds = new Set(collectibles.map(item => item.id));
+  const hiddenTypes = new Set(hiddenCatalogTypes || []);
   const ownedIds = new Set((shop && shop.owned) || []);
+  // Default Cat Journey hides Street decorations. Do not make those
+  // unobtainable rows part of a fresh player's completion target, but retain
+  // any one a returning player already owns so old progress is never erased.
+  const collectibles = (catalog || []).filter(item =>
+    item
+    && item.type !== "consumable"
+    && (!hiddenTypes.has(item.type) || ownedIds.has(item.id)));
+  const collectibleIds = new Set(collectibles.map(item => item.id));
   let ownedCosmetics = 0;
   for (const id of collectibleIds) if (ownedIds.has(id)) ownedCosmetics++;
 

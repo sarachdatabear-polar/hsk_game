@@ -602,9 +602,16 @@ async function runResultsProbe(browser, width, height) {
       projectName:(document.querySelector("#r-project-name")?.textContent || "").trim(),
       projectProgress:Number(document.querySelector("#r-project-meter")?.getAttribute("aria-valuenow") || 0),
       projectAction:(document.querySelector("#r-project-action")?.textContent || "").trim(),
+      stickerActionVisible:document.querySelector("#r-sticker-slot .sticker-toast")?.offsetParent !== null,
       small,
     };
   }, [TOL, MIN_TAP]);
+  let stickerOpenedAlbum = false;
+  if(info.stickerActionVisible){
+    await page.locator("#r-sticker-slot .sticker-toast").click();
+    stickerOpenedAlbum = await page.evaluate(() =>
+      document.querySelector("#s-album")?.classList.contains("on") ?? false);
+  }
 
   const failures = [];
   if(info.overflowX) failures.push("results overflow-x");
@@ -617,6 +624,8 @@ async function runResultsProbe(browser, width, height) {
   if(!info.projectName) failures.push("results Street Project name empty");
   if(info.projectProgress < 83) failures.push(`results Street Project progress=${info.projectProgress}`);
   if(!info.projectAction) failures.push("results Street Project action empty");
+  if(!info.stickerActionVisible) failures.push("results sticker action hidden");
+  if(!stickerOpenedAlbum) failures.push("results sticker action did not open Album");
   if(info.small.length) failures.push(`results small-taps:[${info.small}]`);
   if(errs.length) failures.push(`JSERR:${errs[0]}`);
 
@@ -780,7 +789,10 @@ async function runCatJourneyProbe(browser, width, height) {
     const small=[...screen.querySelectorAll("button")]
       .filter(b=>b.offsetParent!==null)
       .filter(b=>{const r=b.getBoundingClientRect();return r.width<minTap||r.height<minTap;})
-      .map(b=>b.textContent.trim().slice(0,16));
+      .map(b=>{
+        const r=b.getBoundingClientRect();
+        return `${b.textContent.trim().slice(0,16)}(${Math.round(r.width)}x${Math.round(r.height)})`;
+      });
     return {
       active:screen?.classList.contains("on")??false,
       overflowX:document.documentElement.scrollWidth>innerWidth+1,
@@ -824,12 +836,16 @@ async function runCatJourneyProbe(browser, width, height) {
   await page.locator('[data-cat-background="bg-cat-garden-v1"]').click();
   const background=await page.evaluate(()=>
     JSON.parse(localStorage.getItem("nbhsk.catJourney")||"{}").selectedBackground);
-  await page.locator('[data-tab="home"]').click();
-  await page.locator('#s-home [data-go="shop"]').click();
+  // The Cat screen owns a direct Word Quest customization path. Use that
+  // route here so the permanent gate covers the product connection rather
+  // than reaching Shop through Home.
+  await page.locator('#s-cat-journey [data-go="shop"]').click();
   await page.waitForTimeout(100);
   const shop=await page.evaluate(()=>({
     streetSectionHidden:document.querySelector("#shop-street-sect")?.hidden,
     streetShelfHidden:document.querySelector("#shop-street")?.hidden,
+    dailyItems:[...document.querySelectorAll("#shop-daily .shoprow")]
+      .map(row=>row.dataset.itemId),
     visibleDecos:[...document.querySelectorAll("#s-shop .shoprow")]
       .filter(row=>row.offsetParent!==null)
       .filter(row=>["red-lantern","noodle-stall","tea-sign","foo-dog","golden-arch",
@@ -837,6 +853,9 @@ async function runCatJourneyProbe(browser, width, height) {
         "goldfish-banner","neon-cat-sign","shaved-ice-cart","mooncake-stall",
         "firecracker-arch"].includes(row.dataset.itemId)).length,
   }));
+  await page.locator('#bottom-nav [data-go="progress"]').click();
+  await page.waitForTimeout(100);
+  const collection=await page.locator("#profile-collection-count").textContent();
 
   const failures=[];
   const homeReady = LOCALE==="th" ? "เจ้าแมวพร้อมออกสำรวจแล้ว" : "Your cat is ready to explore";
@@ -854,8 +873,11 @@ async function runCatJourneyProbe(browser, width, height) {
       !returned.wordVisible||returned.wordKey!=="妈妈")
     failures.push(`return=${returnedBefore}/${JSON.stringify(returned)}`);
   if(background!=="bg-cat-garden-v1") failures.push(`background=${background}`);
-  if(!shop.streetSectionHidden||!shop.streetShelfHidden||shop.visibleDecos)
+  if(!shop.streetSectionHidden||!shop.streetShelfHidden||shop.visibleDecos||
+      shop.dailyItems.length!==3)
     failures.push(`shop=${JSON.stringify(shop)}`);
+  if(!String(collection||"").includes("20"))
+    failures.push(`collection=${collection}`);
   if(errs.length) failures.push(`JSERR:${errs[0]}`);
   const line=`[${failures.length?"FAIL":"PASS"}] Cat Journey ${width}x${height}: `+
     `flow=${exploring.status}->${returned.status} memory=${returned.persisted}`+
