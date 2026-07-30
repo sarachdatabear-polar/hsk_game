@@ -21,11 +21,11 @@ state, and the `features.catJourney` rollback flag. Cat Journey becomes the only
 **The pre-build claim "zero additional precache" was wrong.** It was right about *assets*:
 Street's 44 remaining assets (~5.96 MB) are runtime-cached, and Phase 1 already took the only
 two precached ones. What it missed is that `dist/app.js` is itself precached, and removing
-~2,700 LOC shrank it by roughly 143 KB.
+~2,700 LOC shrank it from **687,216 → 577,332 B (−109,884)**.
 
-Measured headroom: **809,448 B after Phase 1 → 952,929 B after Phase 2.** Repo/deploy weight
-also drops by the full ~5.96 MB of deleted assets. The dead-code removal and the end of
-dual-surface branching are still the main point.
+Final measured headroom: **809,448 B after Phase 1 → 953,707 B (931 KB) after Phase 2.**
+Repo/deploy weight also drops by the full ~5.96 MB of deleted assets. The dead-code removal
+and the end of dual-surface branching are still the main point.
 
 ## The three constraints and how they are resolved
 
