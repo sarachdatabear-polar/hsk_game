@@ -78,7 +78,6 @@ describe("sw.js precache list", () => {
     for (const entry of [
       "data/words.js", "assets/cat-walk.png", "assets/raccoon-walk.png",
       "assets/bg-battle.png", "assets/ui-word-plaque.svg", "assets/bg-home.webp",
-      "assets/bg-street-portrait.png",
     ]) expect(precacheSet.has(entry), entry).toBe(true);
   });
 

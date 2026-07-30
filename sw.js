@@ -42,8 +42,7 @@ const PRECACHE = [
   "assets/raccoon-happy.png", "assets/raccoon-wrong.png",
   "assets/cat-boss-walk.png", "assets/cat-boss-happy.png",
   "assets/bg-market.png", "assets/bg-temple.png", "assets/bg-bamboo.png",
-  "assets/bg-street.png", "assets/bg-street-portrait.png",
-  "assets/maneki.png", "assets/coin.png", "assets/lantern.png",
+  "assets/coin.png", "assets/lantern.png",
 
   // Small UI surfaces/effects used throughout the core loop.
   "assets/ui-icons.svg", "assets/ui-tab.svg", "assets/ui-button-primary.svg",

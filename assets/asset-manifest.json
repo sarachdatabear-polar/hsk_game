@@ -107,17 +107,6 @@
       "fallback": "canvas:drawCat"
     },
     {
-      "id": "maneki",
-      "file": "maneki.png",
-      "type": "character",
-      "status": "integrated",
-      "priority": "P1",
-      "w": 512,
-      "h": 512,
-      "anchor": "bottom-center",
-      "fallback": "canvas:maneki-vector"
-    },
-    {
       "id": "bg-home",
       "file": "bg-home.webp",
       "type": "background",
@@ -659,28 +648,6 @@
       "h": 512,
       "fallback": "css:#cv gradient",
       "note": "vector placeholder — regenerate per GENERATION-PROMPTS-v5"
-    },
-    {
-      "id": "bg-street",
-      "file": "bg-street.png",
-      "type": "background",
-      "status": "integrated",
-      "priority": "P0",
-      "w": 1024,
-      "h": 512,
-      "fallback": "canvas:paintStreetBase",
-      "note": "warm-daylight village street — see GENERATION-PROMPTS-P0-copypaste.md"
-    },
-    {
-      "id": "bg-street-portrait",
-      "file": "bg-street-portrait.png",
-      "type": "background",
-      "status": "integrated",
-      "priority": "P0",
-      "w": 768,
-      "h": 1024,
-      "fallback": "canvas:paintStreetBase",
-      "note": "true portrait 3:4 default Street composition; generated from bg-street visual language"
     },
     {
       "id": "lantern",
