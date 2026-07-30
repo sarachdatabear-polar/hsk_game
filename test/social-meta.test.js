@@ -18,7 +18,7 @@ describe("social / Open Graph meta", () => {
     it(`includes ${frag}`, () => expect(html).toContain(frag));
   }
   it("og:url is the canonical Pages URL", () =>
-    expect(html).toContain("https://sarachdatabear-polar.github.io/hsk_game/"));
+    expect(html).toContain("https://luckycathsk.com/"));
   it("og-image asset exists and is non-trivial", () => {
     const p = new URL("../assets/og-image.png", import.meta.url);
     expect(existsSync(p)).toBe(true);
