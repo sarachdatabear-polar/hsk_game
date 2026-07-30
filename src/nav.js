@@ -3,8 +3,9 @@
 // actual <nav id="bottom-nav"> bar and to show(). Kept pure/tested so the
 // tab list and screen->tab mapping can change without touching wiring code.
 
-// The 4 bottom-nav tabs, left to right.
-export const TABS = ["home", "street", "progress", "more"];
+// The 4 bottom-nav tabs, left to right. The second slot was "street" until the
+// Street surface was retired; it is now the Cat Journey screen directly.
+export const TABS = ["home", "cat-journey", "progress", "more"];
 
 // Screens that ride "under" the More tab: reachable from More, not tabs
 // themselves, but the nav stays visible (with More highlighted) while on them.
@@ -15,7 +16,7 @@ const PROGRESS_SUBSCREENS = ["album"];
 
 // Every screen where the bottom nav is shown at all: the 4 tabs, the More
 // sub-screens, plus shop (reachable from home's icon row this milestone).
-const NAV_VISIBLE = new Set([...TABS, ...MORE_SUBSCREENS, ...PROGRESS_SUBSCREENS, "shop", "cat-journey"]);
+const NAV_VISIBLE = new Set([...TABS, ...MORE_SUBSCREENS, ...PROGRESS_SUBSCREENS, "shop"]);
 
 export function navVisibleOn(screen) {
   return NAV_VISIBLE.has(screen);
@@ -29,6 +30,5 @@ export function activeTabFor(screen) {
   if (MORE_SUBSCREENS.includes(screen)) return "more";
   if (PROGRESS_SUBSCREENS.includes(screen)) return "progress";
   if (screen === "shop") return "home";
-  if (screen === "cat-journey") return "street";
   return null;
 }

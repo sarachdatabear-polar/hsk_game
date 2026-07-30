@@ -1,7 +1,6 @@
 // Offline core + lazy cosmetic cache. The install is atomic for the files that
-// must boot and play; optional costumes, seasonal scenes, shop tiles, and
-// street decorations enter RUNTIME only after the player actually requests
-// them. This keeps first install substantially smaller without losing offline
+// must boot and play; optional costumes, seasonal scenes, and shop tiles
+// enter RUNTIME only after the player actually requests them. This keeps first install substantially smaller without losing offline
 // access to previously viewed cosmetics.
 // Shell + runtime advance together each release: both are cache-first, so a
 // release must invalidate them for updated bundles/art to reach installed
@@ -10,7 +9,7 @@
 // audio name each release (v80..v105) wiped every cached mp3 on every
 // update, leaving installed PWAs silent offline until words re-fetched.
 // Bump AUDIO_VERSION only when build_audio.py regenerates the mp3 set.
-const CACHE_VERSION = "v134";
+const CACHE_VERSION = "v135";
 const AUDIO_VERSION = "v1";
 const SHELL = `nbhsk-shell-${CACHE_VERSION}`;
 const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`;
@@ -42,8 +41,7 @@ const PRECACHE = [
   "assets/raccoon-happy.png", "assets/raccoon-wrong.png",
   "assets/cat-boss-walk.png", "assets/cat-boss-happy.png",
   "assets/bg-market.png", "assets/bg-temple.png", "assets/bg-bamboo.png",
-  "assets/bg-street.png", "assets/bg-street-portrait.png",
-  "assets/maneki.png", "assets/coin.png", "assets/lantern.png",
+  "assets/coin.png", "assets/lantern.png",
 
   // Small UI surfaces/effects used throughout the core loop.
   "assets/ui-icons.svg", "assets/ui-tab.svg", "assets/ui-button-primary.svg",

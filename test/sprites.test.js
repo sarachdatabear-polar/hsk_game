@@ -47,9 +47,9 @@ describe("lazy sprite registry", () => {
     const fake = fakeImages();
     const ready = [];
     const registry = createSpriteRegistry({ makeImage: fake.makeImage, onReady:name => ready.push(name) });
-    registry.sprite("bg-street");
+    registry.sprite("bg-market");
     expect(ready).toEqual([]);
     fake.created[0].onload();
-    expect(ready).toEqual(["bg-street"]);
+    expect(ready).toEqual(["bg-market"]);
   });
 });

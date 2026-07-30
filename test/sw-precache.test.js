@@ -78,7 +78,6 @@ describe("sw.js precache list", () => {
     for (const entry of [
       "data/words.js", "assets/cat-walk.png", "assets/raccoon-walk.png",
       "assets/bg-battle.png", "assets/ui-word-plaque.svg", "assets/bg-home.webp",
-      "assets/bg-street-portrait.png",
     ]) expect(precacheSet.has(entry), entry).toBe(true);
   });
 
@@ -90,7 +89,7 @@ describe("sw.js precache list", () => {
       "assets/bg-cat-garden-v1.webp", "assets/bg-cat-market-v1.webp",
       "assets/bg-cat-lantern-v1.webp", "assets/bg-cat-scholar-gate-v1.webp",
     ]) expect(precacheSet.has(entry), entry).toBe(false);
-    expect(swSrc).toContain('const CACHE_VERSION = "v134"');
+    expect(swSrc).toContain('const CACHE_VERSION = "v135"');
     expect(swSrc).toContain("const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`");
     expect(swSrc).toContain("cacheAfterFetch(RUNTIME, request)");
   });

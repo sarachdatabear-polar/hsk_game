@@ -3,7 +3,7 @@
 // rapid successive enqueues never clobber each other — each message gets its
 // full on-screen window before the next appears. DOM-free by design (the
 // scheduler and show/hide are injected) so it can be unit-tested with a fake
-// clock. See src/ui/street-screen.js for the DOM wiring.
+// clock. The caller owns the DOM wiring.
 export function createToastQueue({ show, hide, schedule, holdMs = 2600, gapMs = 180 }) {
   const queue = [];
   let active = false;

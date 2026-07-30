@@ -69,7 +69,7 @@ describe("mergeAll", () => {
     expect(m.wallet).toBe(700);
     expect(m.daily.streak).toBe(1);
     expect(Object.keys(m).sort()).toEqual(
-      ["best","bricks","daily","freezes","mastery","monthly","quests","shop","stickers","wallet","xp"]);
+      ["best","daily","freezes","mastery","monthly","quests","shop","stickers","wallet","xp"]);
   });
   it("cloud contributions fold in", () => {
     const cloud = { ...local, xp: 900, wallet: 100,

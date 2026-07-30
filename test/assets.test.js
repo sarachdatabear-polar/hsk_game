@@ -192,24 +192,32 @@ describe("createAssets", () => {
     expect(assets.frameCSS("ui-badge-mastery")).toBe("none");
   });
 
-  it("JS-loads webp backdrops flagged canvasImage but not plain CSS webps", () => {
+  it("JS-loads a webp asset flagged canvasImage but not a plain CSS webp", () => {
+    // No shipped manifest row currently carries canvasImage:true (the only
+    // ones that did, the Street wide backdrops, are gone) — the flag itself
+    // is still live code (assets.js's load() special-cases asset.canvasImage
+    // alongside the .png/.svg regex), so exercise it via a synthetic fixture
+    // rather than pinning the test to a real asset that no longer exists.
     const { created, makeImage } = fakeImages();
-    const { load, img } = createAssets(manifest, { makeImage });
-    // canvasImage webp → an Image is created
-    load("bg-street-wide");
-    const wideImage = created.find(i => i._src === "assets/bg-street-wide.webp");
+    const canvasWebpFixture = { assets: [
+      { id: "test-canvas-webp", file: "test-canvas-webp.webp", type: "background",
+        status: "approved", priority: "P1", canvasImage: true, fallback: "css:.none" },
+    ] };
+    const { load, img } = createAssets(canvasWebpFixture, { makeImage });
+    load("test-canvas-webp");
+    const wideImage = created.find(i => i._src === "assets/test-canvas-webp.webp");
     expect(wideImage, "canvasImage webp should create an Image request").toBeTruthy();
-    if (wideImage) {
-      wideImage.complete = true;
-      wideImage.naturalWidth = 2048;
-      expect(img("bg-street-wide")).not.toBeNull();
-    }
-    // a plain webp CSS background (no canvasImage) stays unloaded
+    wideImage.complete = true;
+    wideImage.naturalWidth = 2048;
+    expect(img("test-canvas-webp")).not.toBeNull();
+
+    // a plain webp CSS background (no canvasImage) stays unloaded — bound to
+    // the real manifest, which still asserts this fact about shipped data.
     const cssWebp = manifest.assets.find(a => a.file.endsWith(".webp") && !a.canvasImage);
-    if (cssWebp) {
-      load(cssWebp.id);
-      expect(img(cssWebp.id)).toBeNull();
-    }
+    expect(cssWebp, "expected at least one plain CSS webp in the real manifest").toBeTruthy();
+    const real = createAssets(manifest, { makeImage });
+    real.load(cssWebp.id);
+    expect(real.img(cssWebp.id)).toBeNull();
   });
 });
 

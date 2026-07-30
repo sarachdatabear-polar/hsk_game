@@ -1,23 +1,23 @@
 import { describe, it, expect } from "vitest";
-import { SYNC_KEYS, defaultSyncMeta, slotsOf, mergeXp, mergeWallet, mergeBricks, mergeFreezes,
+import { SYNC_KEYS, defaultSyncMeta, slotsOf, mergeXp, mergeWallet, mergeFreezes,
          mergeBest, mergeStickers, mergeShop, mergeMastery, mergeQuests,
-         mergeMonthly, mergeAll, mergeCatJourney, syncKeysFor, streetLayoutOf,
-         streetLayoutPrefsOf, streetProjectOf, shopPreferencesOf } from "../src/merge.js";
+         mergeMonthly, mergeAll, mergeCatJourney, syncKeysFor } from "../src/merge.js";
 import { defaultShop } from "../src/shop.js";
 import { defaultCatJourney, goalDaysCountOf, memoryRecordsOf } from "../src/cat-journey.js";
 
 describe("merge: scalars", () => {
-  // The 11 keys that sync regardless of any capability flag. Pinned via
+  // The 10 keys that sync regardless of any capability flag. Pinned via
   // syncKeysFor(false) rather than SYNC_KEYS: since v129 the module default is
-  // capability-ON, so SYNC_KEYS itself is 12 keys (below).
-  const BASE_11 = ["mastery","xp","daily","quests","monthly","wallet","bricks","freezes","shop","stickers","best"];
-  it("syncKeysFor(false) lists the 11 always-synced keys", () =>
-    expect(syncKeysFor(false)).toEqual(BASE_11));
-  it("Cat Journey is the 12th synced key, and only when the capability is on", () => {
-    expect(syncKeysFor(true)).toEqual([...BASE_11, "catJourney"]);
+  // capability-ON, so SYNC_KEYS itself is 11 keys (below). ("bricks" dropped
+  // out of this list with the Street retirement.)
+  const BASE_10 = ["mastery","xp","daily","quests","monthly","wallet","freezes","shop","stickers","best"];
+  it("syncKeysFor(false) lists the 10 always-synced keys", () =>
+    expect(syncKeysFor(false)).toEqual(BASE_10));
+  it("Cat Journey is the 11th synced key, and only when the capability is on", () => {
+    expect(syncKeysFor(true)).toEqual([...BASE_10, "catJourney"]);
     // SYNC_KEYS is frozen at import from the module default, which v129 flipped
-    // on — so the live export is the 12-key list.
-    expect(SYNC_KEYS).toEqual([...BASE_11, "catJourney"]);
+    // on — so the live export is the 11-key list.
+    expect(SYNC_KEYS).toEqual([...BASE_10, "catJourney"]);
   });
   it("defaultSyncMeta shape", () =>
     expect(defaultSyncMeta()).toEqual({ dirty: {}, lastSyncAt: 0, lastLedgerAt: "", shopSlots: null, shopPreferences: null }));
@@ -204,14 +204,13 @@ describe("mergeStickers", () => {
 });
 
 describe("mergeShop", () => {
-  const emptyLayout = { v: 5, placements: {}, welcomeOwned: false, coachDone: false, name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null, metNeighbours: [], builtStages: {} };
-  const emptyProject = { v: 1, itemId: "", plotId: "", reserve: false };
-  const local = { owned: ["skin-a", "deco-1"], skin: "skin-a", backdrop: "", effect: "", soundpack: "", tiers: { "deco-1": 2 }, streetLayout: emptyLayout, streetProject: emptyProject };
-  const cloud = { owned: ["skin-b", "deco-1"], skin: "skin-b", backdrop: "bd-1", effect: "", soundpack: "", tiers: { "deco-1": 3 }, streetLayout: emptyLayout, streetProject: emptyProject };
-  it("owned unions, tiers per-id max", () => {
+  // Street retirement stripped mergeShop down to owned + the 4 equipped
+  // slots — no more tiers/streetLayout/streetProject to fold.
+  const local = { owned: ["skin-a", "deco-1"], skin: "skin-a", backdrop: "", effect: "", soundpack: "" };
+  const cloud = { owned: ["skin-b", "deco-1"], skin: "skin-b", backdrop: "bd-1", effect: "", soundpack: "" };
+  it("owned unions ids from both sides", () => {
     const m = mergeShop(local, cloud, false);
     expect(m.owned.sort()).toEqual(["deco-1", "skin-a", "skin-b"]);
-    expect(m.tiers).toEqual({ "deco-1": 3 });
   });
   it("slots: cloud wins when local not dirty", () => {
     const m = mergeShop(local, cloud, false);
@@ -226,108 +225,6 @@ describe("mergeShop", () => {
     const m = mergeShop(local, null, false);
     expect(m).toEqual(local);
     expect(m.owned).not.toBe(local.owned);
-    expect(m.tiers).not.toBe(local.tiers);
-    expect(m.streetLayout).not.toBe(local.streetLayout);
-  });
-
-  it("layout preference independently follows its own dirty flag", () => {
-    const a = { ...local, owned: ["red-lantern"], streetLayout: {
-      ...emptyLayout, placements: { "plot-small-02": "red-lantern" }, coachDone: true,
-    } };
-    const b = { ...cloud, owned: ["red-lantern"], streetLayout: {
-      ...emptyLayout, placements: { "plot-small-03": "red-lantern" },
-    } };
-    expect(mergeShop(a, b, { slotsDirty: false, layoutDirty: true }).streetLayout.placements)
-      .toEqual({ "plot-small-02": "red-lantern" });
-    expect(mergeShop(a, b, { slotsDirty: true, layoutDirty: false }).streetLayout.placements)
-      .toEqual({ "plot-small-03": "red-lantern" });
-  });
-
-  it("legacy cloud without a layout cannot erase a local arrangement", () => {
-    const a = { ...local, owned: ["red-lantern"], streetLayout: {
-      ...emptyLayout, placements: { "plot-small-02": "red-lantern" },
-    } };
-    const legacyCloud = { owned: [], skin: "", backdrop: "", effect: "", soundpack: "", tiers: {} };
-    expect(mergeShop(a, legacyCloud, false).streetLayout.placements)
-      .toEqual({ "plot-small-02": "red-lantern" });
-  });
-
-  it("normalizes layout after additive ownership merge; new items stay inventory", () => {
-    const a = { ...local, owned: ["red-lantern"], streetLayout: {
-      ...emptyLayout, placements: { "plot-small-02": "red-lantern" },
-    } };
-    const b = { ...cloud, owned: ["tea-sign"], streetLayout: emptyLayout };
-    const m = mergeShop(a, b, { layoutDirty: true });
-    expect(m.owned.sort()).toEqual(["red-lantern", "tea-sign"]);
-    expect(m.streetLayout.placements).toEqual({ "plot-small-02": "red-lantern" });
-  });
-
-  it("exposes canonical layout-only and combined preference baselines", () => {
-    const s = { ...local, owned: ["red-lantern"], streetLayout: {
-      ...emptyLayout, placements: { "plot-small-02": "red-lantern", unknown: "x" },
-    } };
-    expect(streetLayoutOf(s).placements).toEqual({ "plot-small-02": "red-lantern" });
-    // The preference baseline uses the LWW projection (not the full layout), so
-    // additive daily/keepsake writes can't flip shopLayoutDirty (Finding 1).
-    expect(shopPreferencesOf(s)).toEqual({
-      slots: slotsOf(s),
-      streetLayout: streetLayoutPrefsOf(s),
-      streetProject: streetProjectOf(s),
-    });
-  });
-
-  it("streetLayoutPrefsOf projects to LWW fields only (excludes additive keepsakes/setsCompleted/lastVisitDay)", () => {
-    const s = { ...local, owned: ["red-lantern"], streetLayout: {
-      ...emptyLayout,
-      placements: { "plot-small-02": "red-lantern", unknown: "x" },
-      name: "My Street", savedLayouts: [{ name: "L", placements: {} }],
-      welcomeOwned: true, coachDone: true,
-      keepsakes: [{ id: "k1", kind: "welcome", day: "2026-07-20" }],
-      setsCompleted: ["market"], lastVisitDay: "2026-07-23",
-    } };
-    const prefs = streetLayoutPrefsOf(s);
-    // LWW fields kept (placements canonicalized like streetLayoutOf)
-    expect(prefs.placements).toEqual({ "plot-small-02": "red-lantern" });
-    expect(prefs.name).toBe("My Street");
-    expect(prefs.savedLayouts).toEqual([{ name: "L", placements: {} }]);
-    expect(prefs.welcomeOwned).toBe(true);
-    expect(prefs.coachDone).toBe(true);
-    expect(prefs.v).toBe(5);
-    // additive fields excluded entirely
-    expect(prefs).not.toHaveProperty("keepsakes");
-    expect(prefs).not.toHaveProperty("setsCompleted");
-    expect(prefs).not.toHaveProperty("lastVisitDay");
-    expect(Object.keys(prefs).sort())
-      .toEqual(["coachDone", "name", "placements", "savedLayouts", "v", "welcomeOwned"]);
-  });
-
-  it("shopPreferencesOf.streetLayout uses the LWW projection (additive fields don't enter the baseline)", () => {
-    const s = { ...local, owned: ["red-lantern"], streetLayout: {
-      ...emptyLayout, name: "N", lastVisitDay: "2026-07-23",
-      keepsakes: [{ id: "k1", kind: "welcome" }], setsCompleted: ["market"],
-    } };
-    expect(shopPreferencesOf(s).streetLayout).toEqual(streetLayoutPrefsOf(s));
-    expect(shopPreferencesOf(s).streetLayout).not.toHaveProperty("lastVisitDay");
-  });
-
-  it("project preference follows its own dirty flag independently", () => {
-    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01", reserve: false } };
-    const b = { ...cloud, streetProject: { v: 1, itemId: "tea-sign", plotId: "plot-medium-02", reserve: false } };
-    expect(mergeShop(a, b, { projectDirty: true }).streetProject).toEqual(a.streetProject);
-    expect(mergeShop(a, b, { layoutDirty: true, projectDirty: false }).streetProject).toEqual(b.streetProject);
-  });
-
-  it("a merged purchase clears the active project on every device", () => {
-    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01", reserve: false } };
-    const b = { ...cloud, owned: [...cloud.owned, "koi-pond"] };
-    expect(mergeShop(a, b, { projectDirty: true }).streetProject).toEqual(emptyProject);
-  });
-
-  it("legacy cloud without a project cannot erase an active local goal", () => {
-    const a = { ...local, streetProject: { v: 1, itemId: "koi-pond", plotId: "plot-medium-01", reserve: false } };
-    const legacyCloud = { ...cloud };
-    delete legacyCloud.streetProject;
-    expect(mergeShop(a, legacyCloud).streetProject).toEqual(a.streetProject);
   });
 });
 
@@ -521,38 +418,6 @@ describe("merge: ledger-cursor purchase fold (THE FOLD, coin-purchase go-live)",
   });
 });
 
-describe("mergeShop folds v3 ownership fields", () => {
-  const base = () => ({ owned: [], tiers: {},
-    streetLayout: { v: 5, placements: {}, welcomeOwned: false, coachDone: false,
-      name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null, metNeighbours: [], builtStages: {} } });
-
-  it("unions keepsakes by id and setsCompleted, and takes the max lastVisitDay", () => {
-    const a = base(); a.streetLayout.keepsakes = [{ id: "k1", kind: "welcome", day: "2026-07-20" }];
-    a.streetLayout.setsCompleted = ["market"]; a.streetLayout.lastVisitDay = "2026-07-20";
-    const b = base(); b.streetLayout.keepsakes = [{ id: "k1", kind: "welcome", day: "2026-07-20" },
-      { id: "k2", kind: "set", day: "2026-07-22" }];
-    b.streetLayout.setsCompleted = ["garden"]; b.streetLayout.lastVisitDay = "2026-07-22";
-    const out = mergeShop(a, b, { slotsDirty: false, layoutDirty: false, projectDirty: false });
-    expect(out.streetLayout.keepsakes.map(k => k.id).sort()).toEqual(["k1", "k2"]);
-    expect(out.streetLayout.setsCompleted.sort()).toEqual(["garden", "market"]);
-    expect(out.streetLayout.lastVisitDay).toBe("2026-07-22");
-  });
-
-  it("name/savedLayouts follow the layoutDirty bit (local wins when dirty)", () => {
-    const a = base(); a.streetLayout.name = "Local"; a.streetLayout.savedLayouts = [{ name: "L", placements: {} }];
-    const b = base(); b.streetLayout.name = "Cloud"; b.streetLayout.savedLayouts = [];
-    expect(mergeShop(a, b, { layoutDirty: true }).streetLayout.name).toBe("Local");
-    expect(mergeShop(a, b, { layoutDirty: false }).streetLayout.name).toBe("Cloud");
-  });
-
-  it("unions metNeighbours across devices", () => {
-    const A = { owned: [], streetLayout: { v: 5, placements: {}, metNeighbours: ["tiao"] } };
-    const B = { owned: [], streetLayout: { v: 5, placements: {}, metNeighbours: ["pang"] } };
-    const merged = mergeShop(A, B, false);   // signature: mergeShop(A, B, flags), as used elsewhere in this file
-    expect([...merged.streetLayout.metNeighbours].sort()).toEqual(["pang", "tiao"]);
-  });
-});
-
 describe("slotsOf", () => {
   it("extracts exactly the four equip slots", () => {
     const s = slotsOf({ owned: ["a"], skin: "skin-red", backdrop: "market",
@@ -572,26 +437,3 @@ describe("defaultSyncMeta shopSlots", () => {
   });
 });
 
-describe("bricks sync", () => {
-  it("bricks is a synced key and folds by max", () => {
-    expect(SYNC_KEYS).toContain("bricks");
-    expect(mergeBricks(30, 12)).toBe(30);
-    expect(mergeBricks(undefined, 7)).toBe(7);
-    expect(mergeBricks(-5, 0)).toBe(0);
-    expect(mergeAll({ bricks: 5 }, { bricks: 40 }).bricks).toBe(40);
-  });
-});
-
-describe("builtStages merge (per-landmark max)", () => {
-  it("takes the higher stage per landmark across devices", () => {
-    const a = { owned: [], streetLayout: { v: 5, builtStages: { "coin-bank": 3, "tailor": 1 } } };
-    const b = { owned: [], streetLayout: { v: 5, builtStages: { "coin-bank": 1, "tailor": 2 } } };
-    const out = mergeShop(a, b);
-    expect(out.streetLayout.builtStages).toEqual({ "coin-bank": 3, "tailor": 2 });
-  });
-  it("tolerates a legacy cloud row with no builtStages", () => {
-    const a = { owned: [], streetLayout: { v: 5, builtStages: { "tailor": 2 } } };
-    const b = { owned: [], streetLayout: { v: 4 } };
-    expect(mergeShop(a, b).streetLayout.builtStages).toEqual({ "tailor": 2 });
-  });
-});

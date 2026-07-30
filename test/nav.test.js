@@ -3,7 +3,7 @@ import { TABS, navVisibleOn, activeTabFor } from "../src/nav.js";
 
 describe("nav", () => {
   it("has the 4 tabs in nav order", () => {
-    expect(TABS).toEqual(["home", "street", "progress", "more"]);
+    expect(TABS).toEqual(["home", "cat-journey", "progress", "more"]);
   });
 
   describe("navVisibleOn", () => {
@@ -39,9 +39,6 @@ describe("nav", () => {
     });
     it("is 'home' for shop", () => {
       expect(activeTabFor("shop")).toBe("home");
-    });
-    it("keeps the Cat Journey replacement under the former Street tab", () => {
-      expect(activeTabFor("cat-journey")).toBe("street");
     });
     it("is null when the nav is hidden", () => {
       expect(activeTabFor("battle")).toBe(null);

@@ -4,20 +4,19 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { STRINGS } from "../src/i18n.js";
 import { CATALOG } from "../src/shop.js";
-import { BUILDINGS } from "../src/street.js";
 import { MILESTONES } from "../src/growth.js";
 import { PRODUCTS } from "../src/monetization/products.js";
 
 // Static-usage guard (i18n pass 2, Task 1): closes the "key referenced but
 // missing" gap in both directions — every key a template/source file points
-// at must resolve in both locales, and every catalog/building id must have
-// a display-name key ready for Task 2's wiring.
+// at must resolve in both locales, and every catalog id must have a
+// display-name key ready for Task 2's wiring.
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const html = readFileSync(join(ROOT, "index.html"), "utf8");
 // Recursive: feature wiring lives in subdirectories too (src/ui/,
-// src/monetization/, src/analytics/) — a flat readdir silently dropped their
-// t() keys from this guard when street wiring moved to src/ui/street-screen.js.
+// src/monetization/, src/analytics/) — a flat readdir silently drops their
+// t() keys from this guard.
 const walkJs = dir => readdirSync(join(ROOT, dir), { withFileTypes: true })
   .flatMap(e => e.isDirectory() ? walkJs(`${dir}/${e.name}`)
     : e.name.endsWith(".js") ? [`${dir}/${e.name}`] : []);
@@ -51,7 +50,7 @@ describe("t(\"...\") literal keys in src/*.js exist in both locales", () => {
   // first argument (immediately followed by "," or ")"). Excludes computed
   // keys built by concatenation, e.g. t("quest."+q.id) or t("season."+id) —
   // those resolve at runtime and can't be statically enumerated here; the
-  // shop/street coverage block below checks their id-space instead.
+  // shop coverage block below checks their id-space instead.
   const re = /\bt\(\s*(["'])((?:(?!\1)[^\\]|\\.)*)\1\s*[,)]/g;
   const keys = new Set();
   for (const [file, text] of Object.entries(srcText)) {
@@ -75,18 +74,11 @@ describe("t(\"...\") literal keys in src/*.js exist in both locales", () => {
   }
 });
 
-describe("shop/street display-name key coverage", () => {
+describe("shop display-name key coverage", () => {
   for (const item of CATALOG) {
     it(`item.${item.id} exists in EN and TH`, () => {
       expect(`item.${item.id}` in STRINGS.en, `item.${item.id} missing from STRINGS.en`).toBe(true);
       expect(`item.${item.id}` in STRINGS.th, `item.${item.id} missing from STRINGS.th`).toBe(true);
-    });
-  }
-
-  for (const b of BUILDINGS) {
-    it(`building.${b.id} exists in EN and TH`, () => {
-      expect(`building.${b.id}` in STRINGS.en, `building.${b.id} missing from STRINGS.en`).toBe(true);
-      expect(`building.${b.id}` in STRINGS.th, `building.${b.id} missing from STRINGS.th`).toBe(true);
     });
   }
 

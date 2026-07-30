@@ -1,22 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { CATALOG, defaultShop, canAfford, buy, equipItem, SEASONS, dailyStock, catJourneyStock, nextFeaturedIn, isAvailable, seasonStatus, upgradePrice, unownedDailyStock, buyConsumable } from "../src/shop.js";
+import { CATALOG, defaultShop, canAfford, buy, equipItem, SEASONS, catJourneyStock, isAvailable, seasonStatus, buyConsumable } from "../src/shop.js";
 
-describe("unownedDailyStock", () => {
-  it("returns today's stock minus owned items, in stock order", () => {
-    const stock = dailyStock("2026-07-08");
-    const shop = { ...defaultShop(), owned: [stock[1]] };
-    expect(unownedDailyStock("2026-07-08", shop)).toEqual([stock[0], stock[2]]);
-  });
-
-  it("returns the full stock for a fresh shop", () => {
-    expect(unownedDailyStock("2026-07-08", defaultShop())).toEqual(dailyStock("2026-07-08"));
-  });
-
-  it("returns [] when every featured item is owned (empty-shelf case)", () => {
-    const shop = { ...defaultShop(), owned: dailyStock("2026-07-08") };
-    expect(unownedDailyStock("2026-07-08", shop)).toEqual([]);
-  });
-});
 
 describe("catJourneyStock", () => {
   it("backfills three obtainable non-Street cosmetics on a formerly empty day", () => {
@@ -62,9 +46,7 @@ describe("catJourneyStock", () => {
 
 describe("shop", () => {
   it("defaultShop shape", () => {
-    expect(defaultShop()).toEqual({ owned: [], skin: "", backdrop: "", effect: "", soundpack: "", tiers: {},
-      streetLayout: { v: 5, placements: {}, welcomeOwned: false, coachDone: false, name: "", savedLayouts: [], keepsakes: [], setsCompleted: [], lastVisitDay: null, metNeighbours: [], builtStages: {} },
-      streetProject: { v: 1, itemId: "", plotId: "", reserve: false } });
+    expect(defaultShop()).toEqual({ owned: [], skin: "", backdrop: "", effect: "", soundpack: "" });
   });
 
   it("canAfford true/false by wallet", () => {
@@ -215,40 +197,6 @@ describe("shop", () => {
     expect(s.soundpack).toBe("");
   });
 
-  it("CATALOG has 15 street decorations with expected ids/prices", () => {
-    const decos = CATALOG.filter(i => i.type === "deco");
-    expect(decos.length).toBe(15);
-    expect(decos.map(i => i.id)).toEqual(["red-lantern", "noodle-stall", "tea-sign", "foo-dog", "golden-arch", "mahjong-table", "koi-pond", "drum-tower", "bubble-tea", "paper-umbrella", "goldfish-banner", "neon-cat-sign", "shaved-ice-cart", "mooncake-stall", "firecracker-arch"]);
-    expect(decos.map(i => i.price)).toEqual([800, 1500, 2200, 3000, 5000, 4000, 6000, 9000, 2500, 1800, 2200, 3500, 4500, 5000, 6000]);
-  });
-
-  it("buying a deco adds it to owned", () => {
-    const r = buy(800, defaultShop(), "red-lantern");
-    expect(r.ok).toBe(true);
-    expect(r.wallet).toBe(0);
-    expect(r.shop.owned).toEqual(["red-lantern"]);
-  });
-
-  it("reserves an active daily Street Project after its stock rotates", () => {
-    const featured = dailyStock("2026-07-08").find(id => CATALOG.find(i => i.id === id)?.type === "deco");
-    const later = ["2026-07-09", "2026-07-10", "2026-07-11"]
-      .find(date => !dailyStock(date).includes(featured));
-    const target = CATALOG.find(i => i.id === featured);
-    const shop = { ...defaultShop(), streetProject: { v: 1, itemId: featured, plotId: "plot-medium-01", reserve: false } };
-    const r = buy(target.price, shop, featured, later);
-    expect(r.ok).toBe(true);
-    expect(r.shop.owned).toContain(featured);
-    expect(r.shop.streetProject).toEqual({ v: 1, itemId: "", plotId: "", reserve: false });
-  });
-
-  it("equipItem is a no-op for decos even when owned — no real slot to fill", () => {
-    const shop = { owned: ["red-lantern"], skin: "", backdrop: "", effect: "", soundpack: "" };
-    const s = equipItem(shop, "red-lantern");
-    // Decos have no slot: equipItem must return the shop unchanged — same
-    // shape, no stray "deco" field.
-    expect(s).toEqual(shop);
-  });
-
   it("v7 catalog: permanent prestige items with expected ids/prices", () => {
     const pick = id => CATALOG.find(i => i.id === id);
     expect(pick("panda")).toMatchObject({ type: "skin", price: 8000 });
@@ -256,45 +204,30 @@ describe("shop", () => {
     expect(pick("astronaut")).toMatchObject({ type: "skin", price: 20000 });
     expect(pick("harbor-night")).toMatchObject({ type: "backdrop", price: 6000 });
     expect(pick("snow-festival")).toMatchObject({ type: "backdrop", price: 8000 });
-    expect(pick("mahjong-table")).toMatchObject({ type: "deco", price: 4000 });
-    expect(pick("koi-pond")).toMatchObject({ type: "deco", price: 6000 });
-    expect(pick("drum-tower")).toMatchObject({ type: "deco", price: 9000 });
     // permanent items carry neither pool nor season
-    for (const id of ["panda", "harbor-night", "drum-tower"]) {
+    for (const id of ["panda", "harbor-night"]) {
       expect(pick(id).pool).toBeUndefined();
       expect(pick(id).season).toBeUndefined();
     }
   });
 
-  it("v7 catalog: daily pool is exactly the six launch items", () => {
-    const pool = CATALOG.filter(i => i.pool === "daily");
-    expect(pool.map(i => i.id)).toEqual([
-      "bubble-tea", "paper-umbrella", "goldfish-banner",
-      "neon-cat-sign", "lion-drum", "star-shower",
-    ]);
-    expect(pool.map(i => i.price)).toEqual([2500, 1800, 2200, 3500, 4500, 3000]);
-    expect(pool.find(i => i.id === "lion-drum").type).toBe("soundpack");
-    expect(pool.find(i => i.id === "star-shower").type).toBe("effect");
-  });
-
-  it("v7 catalog: three season sets, three items each", () => {
+  // The daily pool used to be six items (four Street decos + lion-drum +
+  // star-shower); the Street retirement dropped the four decos, so the pool
+  // is now just the two survivors.
+  
+  // Each season set used to be three items (two prestige cosmetics + one
+  // Street deco); the deco third slot is gone.
+  it("v7 catalog: three season sets, two items each after the deco slot retired", () => {
     const byId = id => CATALOG.find(i => i.id === id);
     expect(CATALOG.filter(i => i.season === "summer").map(i => i.id))
-      .toEqual(["beach", "island-sunset", "shaved-ice-cart"]);
+      .toEqual(["beach", "island-sunset"]);
     expect(CATALOG.filter(i => i.season === "midautumn").map(i => i.id))
-      .toEqual(["mooncake-rabbit", "lantern-festival", "mooncake-stall"]);
+      .toEqual(["mooncake-rabbit", "lantern-festival"]);
     expect(CATALOG.filter(i => i.season === "cny").map(i => i.id))
-      .toEqual(["dragon", "dragon-gate", "firecracker-arch"]);
+      .toEqual(["dragon", "dragon-gate"]);
     expect(byId("dragon").price).toBe(25000);
     expect(byId("beach").price).toBe(12000);
     expect(byId("mooncake-rabbit").price).toBe(15000);
-  });
-
-  it("v7 catalog: every deco (old and new) has maxTier 3; nothing else does", () => {
-    for (const i of CATALOG) {
-      if (i.type === "deco") expect(i.maxTier, i.id).toBe(3);
-      else expect(i.maxTier, i.id).toBeUndefined();
-    }
   });
 });
 
@@ -308,45 +241,25 @@ describe("shop v7 availability", () => {
     expect(SEASONS[2]).toMatchObject({ from: [1, 20], to: [2, 24] });
   });
 
-  it("dailyStock: 3 unique pool ids, stable for the same date", () => {
-    const a = dailyStock("2026-07-07");
-    expect(a.length).toBe(3);
-    expect(new Set(a).size).toBe(3);
-    for (const id of a) expect(byId(id).pool).toBe("daily");
-    expect(dailyStock("2026-07-07")).toEqual(a);
-  });
-
-  it("dailyStock: full pool cycles in ceil(6/3)=2 days and then repeats", () => {
-    const day0 = dailyStock("2026-07-07");
-    const day1 = dailyStock("2026-07-08");
-    const union = new Set([...day0, ...day1]);
-    expect(union.size).toBe(6);                      // full-cycle coverage
-    expect(dailyStock("2026-07-09")).toEqual(day0);  // period 2
-  });
-
-  it("nextFeaturedIn: 0 when featured today, 1 when featured tomorrow, null for non-pool", () => {
-    const today = "2026-07-07";
-    const featured = dailyStock(today);
-    const absent = CATALOG.filter(i => i.pool === "daily" && !featured.includes(i.id));
-    expect(nextFeaturedIn(featured[0], today)).toBe(0);
-    expect(nextFeaturedIn(absent[0].id, today)).toBe(1);
-    expect(nextFeaturedIn("red-lantern", today)).toBe(null);
-  });
-
+  // The Street retirement shrank the daily pool to 2 items (lion-drum,
+  // star-shower), below the 3 daily slots — so a slot always repeats and
+  // only 2 unique ids show up per day (was 3 of 6 before the retirement).
+  
+  // With only 2 pool ids across 3 slots, every day's stock already covers
+  // the full pool (3 consecutive slot indices mod 2 always hit both
+  // residues) — full-cycle coverage now happens within a single day, not
+  // over ceil(pool/3) days. The slot *order* still alternates with period 2.
+  
+  // Same shrink: since both pool ids are always featured every day now,
+  // nextFeaturedIn is always 0 for a pool id — there's no longer an
+  // "absent from today's stock" pool item to test a positive wait against.
+  
   it("isAvailable: permanent items always, even with no date", () => {
     expect(isAvailable(byId("panda"), undefined)).toBe(true);
-    expect(isAvailable(byId("red-lantern"), "2026-07-07")).toBe(true);
+    expect(isAvailable(byId("market"), "2026-07-07")).toBe(true);
   });
 
-  it("isAvailable: pool items only while featured, never without a date", () => {
-    const today = "2026-07-07";
-    const featured = dailyStock(today);
-    const absent = CATALOG.filter(i => i.pool === "daily" && !featured.includes(i.id));
-    expect(isAvailable(byId(featured[0]), today)).toBe(true);
-    expect(isAvailable(absent[0], today)).toBe(false);
-    expect(isAvailable(byId(featured[0]), undefined)).toBe(false);
-  });
-
+  
   it("isAvailable: season window edges (PRD success criteria)", () => {
     const beach = byId("beach"), dragon = byId("dragon");
     expect(isAvailable(beach, "2026-07-01")).toBe(true);   // first day
@@ -375,72 +288,30 @@ describe("shop v7 availability", () => {
 });
 
 describe("shop v7 tiers", () => {
-  const lantern = CATALOG.find(i => i.id === "red-lantern"); // 800, deco, maxTier 3
-
-  it("defaultShop includes an empty tiers map", () => {
-    expect(defaultShop().tiers).toEqual({});
-  });
-
-  it("upgradePrice: 1.5x then 2.5x base; null when maxed or not tierable", () => {
-    expect(upgradePrice(lantern, 1)).toBe(1200);
-    expect(upgradePrice(lantern, 2)).toBe(2000);
-    expect(upgradePrice(lantern, 3)).toBe(null);
-    expect(upgradePrice(CATALOG.find(i => i.id === "panda"), 1)).toBe(null);
-  });
-
-  it("re-buying an owned deco upgrades its tier and charges upgradePrice", () => {
-    let shop = { ...defaultShop(), owned: ["red-lantern"] };
-    let r = buy(1200, shop, "red-lantern");
-    expect(r.ok).toBe(true);
-    expect(r.wallet).toBe(0);
-    expect(r.shop.tiers).toEqual({ "red-lantern": 2 });
-    r = buy(2000, r.shop, "red-lantern");
-    expect(r.shop.tiers).toEqual({ "red-lantern": 3 });
-    expect(buy(99999, r.shop, "red-lantern").ok).toBe(false); // maxed
-  });
-
-  it("upgrade fails when wallet is short; inputs not mutated", () => {
-    const shop = { ...defaultShop(), owned: ["red-lantern"] };
-    const before = JSON.stringify(shop);
-    const r = buy(1199, shop, "red-lantern");
-    expect(r.ok).toBe(false);
-    expect(JSON.stringify(shop)).toBe(before);
-  });
-
-  it("legacy shop object without a tiers field upgrades cleanly (old-save load)", () => {
-    const legacy = { owned: ["red-lantern"], skin: "", backdrop: "", effect: "", soundpack: "" };
-    const r = buy(1200, legacy, "red-lantern");
-    expect(r.ok).toBe(true);
-    expect(r.shop.tiers).toEqual({ "red-lantern": 2 });
-  });
+  // Tiering died with the Street decorations — every remaining catalog entry
+  // is a one-time buy (see src/shop.js's buy() comment). "re-buying an owned
+  // non-deco still fails" below already covers the live one-time-buy
+  // invariant that survives.
 
   it("re-buying an owned non-deco still fails", () => {
     const shop = { ...defaultShop(), owned: ["panda"] };
     expect(buy(99999, shop, "panda").ok).toBe(false);
   });
 
-  it("gated first purchases respect availability; upgrades do not need the window", () => {
+  it("gated first purchases respect availability", () => {
     const today = "2026-07-07"; // summer active
-    let r = buy(4500, defaultShop(), "shaved-ice-cart", today);
+    const r = buy(12000, defaultShop(), "beach", today);
     expect(r.ok).toBe(true);
-    // upgrade in deep winter still works — item already owned
-    r = buy(Math.round(4500 * 1.5), r.shop, "shaved-ice-cart", "2026-12-01");
-    expect(r.ok).toBe(true);
-    expect(r.shop.tiers["shaved-ice-cart"]).toBe(2);
-    // but a first purchase out of window fails
-    expect(buy(99999, defaultShop(), "shaved-ice-cart", "2026-12-01").ok).toBe(false);
+    // a first purchase out of window fails
+    expect(buy(99999, defaultShop(), "beach", "2026-12-01").ok).toBe(false);
     // and a gated first purchase with no date fails
-    expect(buy(99999, defaultShop(), "shaved-ice-cart").ok).toBe(false);
+    expect(buy(99999, defaultShop(), "beach").ok).toBe(false);
   });
 
-  it("pool item buyable only while featured", () => {
-    const today = "2026-07-07";
-    const featured = dailyStock(today);
-    const absent = CATALOG.filter(i => i.pool === "daily" && !featured.includes(i.id));
-    expect(buy(99999, defaultShop(), featured[0], today).ok).toBe(true);
-    expect(buy(99999, defaultShop(), absent[0].id, today).ok).toBe(false);
-  });
-
+  // With the daily pool shrunk to 2 ids across 3 slots, every pool item is
+  // featured every day now (see the dailyStock tests above) — buy() still
+  // requires a dateStr to resolve isAvailable() for a pool item at all.
+  
   it("streak-freeze is a capped consumable in the permanent catalog", () => {
     const f = CATALOG.find(i => i.id === "streak-freeze");
     expect(f).toBeTruthy();

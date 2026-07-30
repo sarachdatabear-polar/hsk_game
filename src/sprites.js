@@ -2,7 +2,7 @@
 /* Lazy image registry. A canvas draw asks for the sprite it needs; the first
    request starts a fire-and-forget load and returns null so the existing
    vector fallback draws that frame. This avoids downloading every costume,
-   season, shop tile, and street decoration on the Home screen. */
+   season, and shop tile on the Home screen. */
 
 // bg-home is CSS-only (ships as WebP) — not a canvas sprite.
 export const SPRITE_NAMES = [
@@ -15,31 +15,11 @@ export const SPRITE_NAMES = [
   "cat-dragon-walk", "cat-dragon-happy",
   "cat-boss-walk", "cat-boss-happy",
   "raccoon-walk", "raccoon-happy", "raccoon-wrong",
-  "maneki", "coin", "lantern",
-  "bg-quest", "bg-battle", "bg-market", "bg-street", "bg-street-portrait",
+  "coin", "lantern",
+  "bg-quest", "bg-battle", "bg-market",
   "bg-temple", "bg-bamboo",
   "bg-harbor-night", "bg-snow-festival", "bg-island-sunset",
   "bg-lantern-festival", "bg-dragon-gate",
-  // milestone landmarks — authored transparent cutouts, never canvas boxes
-  "landmark-lantern-post", "landmark-coin-bank", "landmark-tailor",
-  "landmark-kitten-cafe", "landmark-emperor-gate",
-  // construction stages (scaffold/half-built) for the milestone landmarks
-  "landmark-lantern-post-stage1", "landmark-lantern-post-stage2",
-  "landmark-coin-bank-stage1", "landmark-coin-bank-stage2",
-  "landmark-tailor-stage1", "landmark-tailor-stage2",
-  "landmark-kitten-cafe-stage1", "landmark-kitten-cafe-stage2",
-  "landmark-emperor-gate-stage1", "landmark-emperor-gate-stage2",
-  // named neighbour residents (walk-a/walk-b passing cycle, idle, portrait)
-  "neighbour-tiao-walk-a", "neighbour-tiao-walk-b", "neighbour-tiao-idle", "neighbour-tiao-portrait",
-  "neighbour-pang-walk-a", "neighbour-pang-walk-b", "neighbour-pang-idle", "neighbour-pang-portrait",
-  "neighbour-wen-walk-a", "neighbour-wen-walk-b", "neighbour-wen-idle", "neighbour-wen-portrait",
-  // street decos — PNG art with a canvas (drawStreetDeco) vector fallback
-  "deco-red-lantern", "deco-noodle-stall", "deco-tea-sign",
-  "deco-foo-dog", "deco-golden-arch",
-  "deco-mahjong-table", "deco-koi-pond", "deco-drum-tower",
-  "deco-bubble-tea", "deco-paper-umbrella", "deco-goldfish-banner",
-  "deco-neon-cat-sign", "deco-shaved-ice-cart", "deco-mooncake-stall",
-  "deco-firecracker-arch",
   // shop effect/soundpack preview tiles (full-bleed painted art)
   "tile-sakura-fx", "tile-firecracker-fx", "tile-star-shower", "tile-bells",
   "tile-arcade", "tile-lion-drum", "tile-streak-freeze",
