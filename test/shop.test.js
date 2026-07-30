@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { CATALOG, defaultShop, canAfford, buy, equipItem, SEASONS, dailyStock, nextFeaturedIn, isAvailable, seasonStatus, upgradePrice, unownedDailyStock, buyConsumable } from "../src/shop.js";
+import { CATALOG, defaultShop, canAfford, buy, equipItem, SEASONS, dailyStock, catJourneyStock, nextFeaturedIn, isAvailable, seasonStatus, upgradePrice, unownedDailyStock, buyConsumable } from "../src/shop.js";
 
 describe("unownedDailyStock", () => {
   it("returns today's stock minus owned items, in stock order", () => {
@@ -15,6 +15,48 @@ describe("unownedDailyStock", () => {
   it("returns [] when every featured item is owned (empty-shelf case)", () => {
     const shop = { ...defaultShop(), owned: dailyStock("2026-07-08") };
     expect(unownedDailyStock("2026-07-08", shop)).toEqual([]);
+  });
+});
+
+describe("catJourneyStock", () => {
+  it("backfills three obtainable non-Street cosmetics on a formerly empty day", () => {
+    const stock = catJourneyStock("2026-07-30", defaultShop());
+    expect(stock).toHaveLength(3);
+    const types = new Set();
+    for (const id of stock) {
+      const item = CATALOG.find(entry => entry.id === id);
+      expect(item.type).not.toBe("deco");
+      expect(item.type).not.toBe("consumable");
+      expect(isAvailable(item, "2026-07-30")).toBe(true);
+      types.add(item.type);
+    }
+    expect(types.size).toBe(3);
+  });
+
+  it("is stable for a date and contains unique ids", () => {
+    const a = catJourneyStock("2026-07-31", defaultShop());
+    expect(catJourneyStock("2026-07-31", defaultShop())).toEqual(a);
+    expect(new Set(a).size).toBe(a.length);
+  });
+
+  it("skips owned picks and backfills from the remaining eligible catalog", () => {
+    const first = catJourneyStock("2026-07-30", defaultShop());
+    const shop = { ...defaultShop(), owned: [first[0]] };
+    const next = catJourneyStock("2026-07-30", shop);
+    expect(next).toHaveLength(3);
+    expect(next).not.toContain(first[0]);
+  });
+
+  it("returns [] when every eligible Cat Journey cosmetic is owned", () => {
+    const owned = CATALOG
+      .filter(item => item.type !== "deco" && item.type !== "consumable"
+        && isAvailable(item, "2026-07-30"))
+      .map(item => item.id);
+    expect(catJourneyStock("2026-07-30", { ...defaultShop(), owned })).toEqual([]);
+  });
+
+  it("returns [] without a valid date instead of leaking gated items", () => {
+    expect(catJourneyStock("", defaultShop())).toEqual([]);
   });
 });
 

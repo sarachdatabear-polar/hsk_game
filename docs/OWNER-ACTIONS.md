@@ -1,13 +1,14 @@
 # Owner actions
 
-The **v132** release is on `main` (`9d8c30ed`) and deployed to the web/PWA
-(Pages run `30446749729`, 2026-07-29). Since the last revision of this doc:
-**v130** profile avatar + friend invite, **v131** static answer timer +
-single-stage Review Challenge, **v132** responsive-sweep/QA fixes + i18n
-cleanup (no user-visible change). The remaining gates are the quick on-device
-checks (§A), the web go-live track (§B), cross-device acceptance of the v129
-cloud flip (§0), the signed Android artifact, native Thai sign-off, and
-store/legal work.
+The **v134** release is on `main` and deployed to the web/PWA. Since the last
+revision of this doc: **v133** fixed the pre-launch intro/rest-day issues, and
+**v134** repaired the Cat Journey Shop/Profile path. Today's Picks now shows
+three obtainable Word Quest cosmetics, Profile counts 20 reusable cosmetics
+instead of 15 inaccessible Street decorations, Cat Journey links directly to
+customization, and new-sticker Results feedback opens the Album. The remaining
+gates are the quick on-device checks (§A), the web go-live track (§B),
+cross-device acceptance of the v129 cloud flip (§0), the signed Android
+artifact, native Thai sign-off, and store/legal work.
 
 **TARGET: owner-side ready by 1 August 2026** (Jordan, 2026-07-29). That
 covers §A, §B, §0 and the Thai reviewer engagement (§2). The Play store track
@@ -16,15 +17,15 @@ accounts (12 testers / 14 days) cannot complete by then.
 
 ## Current handoff snapshot
 
-- Current committed/deployed source: `main` == `development` == `9d8c30ed`;
-  service-worker cache version **`v132`**.
-- Recorded release gates at the v132 cut: 112 files / 9,808 tests, ESLint,
-  production build, responsive sweep EN+TH 10/10 all pass; live `dist/app.js`
-  verified byte-identical to the committed build (sha256 `6e1dfdf6…` —
-  point-in-time check; re-verify after any commit touching `src/`).
+- Current committed/deployed source: `main` == `development`; service-worker
+  cache version **`v134`**.
+- Recorded release gates at the v134 cut: 113 files / 9,825 tests, ESLint,
+  production build, 134 validated assets, responsive sweep EN+TH 10/10 plus
+  all Cat Journey, Results, onboarding, Cards-resume, format, and accessibility
+  probes.
 - Precache headroom is **thin**: 10,973,841 of the 11,010,048 B cap (~36 KB
   free) as of v130 — the next asset-bearing feature needs a budget check first.
-- Latest signed artifact remains Profile v74; **no v127–v132 APK/AAB exists
+- Latest signed artifact remains Profile v74; **no v127–v134 APK/AAB exists
   yet** — the Android track is ~58 shell versions behind the web.
 - Journey cloud sync is **LIVE** as of v129: the migration is applied to
   `eqsodiufgjecoqgxdisn` and `CAT_JOURNEY_CLOUD_ENABLED = true`. See
@@ -42,6 +43,10 @@ Google/RevenueCat/backend store tracks can overlap once the accounts exist.
    revert the release merge on `main` + SHELL bump.
 2. **v130 QR scan check:** scan one v7/v8-M friend card and one v13-L Thai
    card with iOS Camera and Android Lens (friend-invite spec §3 QA gate).
+3. **v134 journey check:** from Cat Journey, open Customize Word Quest; confirm
+   three Today's Picks appear and no Street decoration appears. Open Profile
+   and confirm a fresh collection target of 20. Earn a new sticker and confirm
+   its Results plaque opens the Album.
 
 ## B. Web go-live track — target 1 Aug
 
@@ -107,14 +112,14 @@ The two anonymous identities created by that production verification have been
 carrying the `cat_journey = {}` backfill, and no orphaned `profiles` rows. That
 8 is the real baseline for any future backfill check.
 
-## 1. Build and accept the current (v132) APK/AAB
+## 1. Build and accept the current (v134) APK/AAB
 
-**Entry criteria: §0 passed.** Use the current `main` release (**v132**,
-`9d8c30ed`) for Android. It passes 112 test files / 9,808 tests, ESLint,
-production build, and the deterministic EN+TH viewport/format/accessibility
-gates. **It has not been signed on Windows.**
+**Entry criteria: §0 passed.** Use the current `main` release (**v134**) for
+Android. It passes 113 test files / 9,825 tests, ESLint, production build, 134
+asset checks, and the deterministic EN+TH viewport/format/accessibility gates.
+**It has not been signed on Windows.**
 
-Pull `main` v132 onto the Windows release checkout, then open a
+Pull `main` v134 onto the Windows release checkout, then open a
 fresh PowerShell in
 `C:\Users\sarac\Desktop\HSK\game` and run these as separate lines:
 

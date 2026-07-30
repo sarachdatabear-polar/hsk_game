@@ -88,6 +88,49 @@ export function unownedDailyStock(dateStr, shop) {
   return dailyStock(dateStr).filter(id => !shop.owned.includes(id));
 }
 
+// Cat Journey is the default product, so its featured shelf must not inherit
+// Street-only decorations from the original six-item daily pool. Walk a
+// deterministic date-based rotation over every currently obtainable
+// non-Street cosmetic, skipping owned items until three real choices are
+// found. The legacy dailyStock() contract stays untouched for Street rollback
+// availability and old saves.
+export function catJourneyStock(dateStr, shop) {
+  if (!dateStr || !Number.isFinite(dayIndex(dateStr))) return [];
+  const owned = new Set(Array.isArray(shop?.owned) ? shop.owned : []);
+  const eligible = CATALOG.filter(item =>
+    item.type !== "deco"
+    && item.type !== "consumable"
+    && isAvailable(item, dateStr));
+  if (!eligible.length) return [];
+  const day = dayIndex(dateStr);
+  const types = ["skin", "backdrop", "effect", "soundpack"];
+  const stock = [];
+  // Lead with different categories so "Today's Picks" feels curated instead
+  // of showing three adjacent backdrops/skins from catalog order.
+  const typeStart = ((day % types.length) + types.length) % types.length;
+  for (let typeOffset = 0; typeOffset < types.length && stock.length < 3; typeOffset++) {
+    const type = types[(typeStart + typeOffset) % types.length];
+    const group = eligible.filter(item => item.type === type);
+    if (!group.length) continue;
+    const itemStart = (((day + typeOffset) % group.length) + group.length) % group.length;
+    for (let itemOffset = 0; itemOffset < group.length; itemOffset++) {
+      const item = group[(itemStart + itemOffset) % group.length];
+      if (!owned.has(item.id)) {
+        stock.push(item.id);
+        break;
+      }
+    }
+  }
+  // A collector may have exhausted one or more categories. Backfill from any
+  // remaining eligible cosmetic so three choices still appear when possible.
+  const start = (((day * 3) % eligible.length) + eligible.length) % eligible.length;
+  for (let offset = 0; offset < eligible.length && stock.length < 3; offset++) {
+    const item = eligible[(start + offset) % eligible.length];
+    if (!owned.has(item.id) && !stock.includes(item.id)) stock.push(item.id);
+  }
+  return stock;
+}
+
 // Days until `id` is next featured (0 = today). null for non-pool ids.
 export function nextFeaturedIn(id, dateStr) {
   const item = CATALOG.find(i => i.id === id);

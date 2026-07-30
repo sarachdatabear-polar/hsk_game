@@ -123,6 +123,7 @@ export const STRINGS = {
     "cat.memoriesMore": "Show older memories",
     "cat.backgrounds": "Backgrounds",
     "cat.profile": "My progress",
+    "cat.customizeQuests": "Customize Word Quest",
     "cat.away": "Exploring nearby…",
     "cat.characterAlt": "Your Lucky Cat learning companion",
     "cat.bond": "Cat Bond",
@@ -227,7 +228,7 @@ export const STRINGS = {
     "cat.announce.started": "Your cat has set off on today's journey.",
     "cat.announce.returned": "New memory earned: {name}.",
     "cat.announce.background": "Journey background changed.",
-    "shop.dailyCatEmpty": "New cat rewards arrive in a future rotation.",
+    "shop.dailyCatEmpty": "You own every pick available today. Fresh picks arrive at midnight.",
     "more.tagline": "Lucky Cat HSK — learn the words that actually appear on the test",
     "more.learnHelp": "Play & help",
     "more.settings": "Settings",
@@ -493,8 +494,8 @@ export const STRINGS = {
     "profile.collectionTitle": "Your collection",
     "profile.collectionCount": "{owned}/{total} cosmetics",
     "profile.stickerCount": "{earned}/{total} stickers",
-    "profile.skin": "Cat: {name}",
-    "profile.backdrop": "Backdrop: {name}",
+    "profile.skin": "Word Quest cat: {name}",
+    "profile.backdrop": "Word Quest backdrop: {name}",
     "profile.defaultCat": "Default Cat",
     "profile.defaultBackdrop": "Default",
     "profile.viewCollection": "View Collection",
@@ -579,10 +580,14 @@ export const STRINGS = {
     "results.newSticker": "New sticker: {name}",
     // shop / collection
     "shop.title": "Shop",
-    "shop.skins": "Cat skins",
-    "shop.backdrops": "Quest backdrops",
+    "shop.skins": "Word Quest cats",
+    "shop.backdrops": "Word Quest backdrops",
     "shop.effects": "Effects",
     "shop.sounds": "Sounds",
+    "shop.catsNote": "Changes the cat and kitten you see during Word Quest.",
+    "shop.backdropsNote": "Changes the scene behind your Word Quest.",
+    "shop.effectsNote": "Changes the celebration burst after a correct answer.",
+    "shop.soundsNote": "Changes game sound effects, not Chinese pronunciation.",
     "shop.supplies": "Supplies",
     "shop.street": "Street decorations",
     "shop.categoryFeatured": "Featured",
@@ -603,8 +608,8 @@ export const STRINGS = {
     "shop.equip": "Equip",
     "shop.equipped": "Equipped",
     "shop.coins": "{coins} coins",
-    "shop.daily": "Today's Stock",
-    "shop.dailyNote": "New stock at midnight",
+    "shop.daily": "Today's Picks",
+    "shop.dailyNote": "New picks at midnight",
     "shop.dailyAllOwned": "All stocked up! Fresh finds at midnight 🌙",
     "shop.season": "Season Corner",
     "shop.seasonUntil": "Available until {date}",
@@ -917,6 +922,7 @@ export const STRINGS = {
     "cat.memoriesMore": "แสดงความทรงจำที่เก่ากว่า", // TH-REVIEW
     "cat.backgrounds": "ฉากหลัง", // TH-REVIEW
     "cat.profile": "ความคืบหน้าของฉัน", // TH-REVIEW
+    "cat.customizeQuests": "แต่งภารกิจคำศัพท์", // TH-REVIEW
     "cat.away": "กำลังสำรวจแถวนี้…", // TH-REVIEW
     "cat.characterAlt": "เจ้าแมวนำโชค เพื่อนคู่ใจในการเรียนของคุณ", // TH-REVIEW
     "cat.bond": "สายสัมพันธ์กับเจ้าแมว", // TH-REVIEW
@@ -1023,7 +1029,7 @@ export const STRINGS = {
     "cat.announce.started": "เจ้าแมวออกเดินทางของวันนี้แล้ว", // TH-REVIEW
     "cat.announce.returned": "ได้รับความทรงจำใหม่: {name}", // TH-REVIEW
     "cat.announce.background": "เปลี่ยนฉากการเดินทางแล้ว", // TH-REVIEW
-    "shop.dailyCatEmpty": "รางวัลใหม่สำหรับเจ้าแมวจะมาในการหมุนเวียนครั้งถัดไป",
+    "shop.dailyCatEmpty": "คุณมีของแนะนำวันนี้ครบแล้ว ของใหม่มาตอนเที่ยงคืน", // TH-REVIEW
     "more.tagline": "Lucky Cat HSK — เรียนคำศัพท์ที่ออกข้อสอบจริง",
     "more.learnHelp": "เล่นและความช่วยเหลือ", // TH-REVIEW
     "more.settings": "ตั้งค่า", // TH-REVIEW
@@ -1282,8 +1288,8 @@ export const STRINGS = {
     "profile.collectionTitle": "ของสะสมของคุณ",
     "profile.collectionCount": "ของตกแต่ง {owned}/{total}",
     "profile.stickerCount": "สติกเกอร์ {earned}/{total}",
-    "profile.skin": "แมว: {name}",
-    "profile.backdrop": "ฉากหลัง: {name}",
+    "profile.skin": "แมวในภารกิจคำศัพท์: {name}", // TH-REVIEW
+    "profile.backdrop": "ฉากหลังภารกิจคำศัพท์: {name}", // TH-REVIEW
     "profile.defaultCat": "แมวเริ่มต้น",
     "profile.defaultBackdrop": "ค่าเริ่มต้น",
     "profile.viewCollection": "ดูของสะสม",
@@ -1368,10 +1374,14 @@ export const STRINGS = {
     "results.newSticker": "สติกเกอร์ใหม่: {name}",
     // shop / collection
     "shop.title": "ร้านค้า",
-    "shop.skins": "สกินแมว",
-    "shop.backdrops": "ฉากหลัง",
+    "shop.skins": "แมวในภารกิจคำศัพท์", // TH-REVIEW
+    "shop.backdrops": "ฉากหลังภารกิจคำศัพท์", // TH-REVIEW
     "shop.effects": "เอฟเฟกต์",
     "shop.sounds": "เสียง",
+    "shop.catsNote": "เปลี่ยนแมวและลูกแมวที่เห็นในภารกิจคำศัพท์", // TH-REVIEW
+    "shop.backdropsNote": "เปลี่ยนฉากหลังของภารกิจคำศัพท์", // TH-REVIEW
+    "shop.effectsNote": "เปลี่ยนเอฟเฟกต์ฉลองหลังตอบถูก", // TH-REVIEW
+    "shop.soundsNote": "เปลี่ยนเสียงเอฟเฟกต์ของเกม แต่ไม่เปลี่ยนเสียงอ่านภาษาจีน", // TH-REVIEW
     "shop.supplies": "ของใช้",
     "shop.street": "ของตกแต่งถนน",
     "shop.categoryFeatured": "แนะนำ", // TH-REVIEW
@@ -1392,8 +1402,8 @@ export const STRINGS = {
     "shop.equip": "ใช้งาน",
     "shop.equipped": "ใช้งานอยู่",
     "shop.coins": "{coins} เหรียญ",
-    "shop.daily": "สินค้าวันนี้",
-    "shop.dailyNote": "อัปเดตสินค้าใหม่ตอนเที่ยงคืน",
+    "shop.daily": "ของแนะนำวันนี้", // TH-REVIEW
+    "shop.dailyNote": "เปลี่ยนของแนะนำใหม่ตอนเที่ยงคืน", // TH-REVIEW
     "shop.dailyAllOwned": "มีครบทุกชิ้นแล้ว! ของใหม่มาตอนเที่ยงคืน 🌙",
     "shop.season": "มุมเทศกาล",
     "shop.seasonUntil": "มีถึง {date}",
