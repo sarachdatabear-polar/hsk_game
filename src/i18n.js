@@ -467,6 +467,7 @@ export const STRINGS = {
     "avatar.photoHint": "Your photo stays on this device — it is never uploaded.",
     "avatar.removePhoto": "Remove photo",
     "avatar.locked": "Unlock in the Shop",
+    "avatar.seasonal": "Seasonal — see Shop",
     "avatar.photoError": "Couldn't read that photo — try another one.",
     "avatar.photoTooBig": "That photo is too detailed to save — try another one.",
     "avatar.saveFailed": "Not enough space to save the photo. Your old picture is kept.",
@@ -530,6 +531,8 @@ export const STRINGS = {
     "shop.season": "Season Corner",
     "shop.seasonUntil": "Available until {date}",
     "shop.seasonReturns": "🏮 {name} set returns {date}",
+    "shop.seasonal": "Seasonal",
+    "shop.seasonalReturns": "Returns {date}",
     "shop.upgrade": "Upgrade {stars} ({coins})",
     "shop.owned-count": "Owned: {n}/{cap}",
     // iap (IAP purchase flow v1 — mock provider; spec 2026-07-11)
@@ -1164,6 +1167,7 @@ export const STRINGS = {
     "avatar.photoHint": "รูปของคุณอยู่ในเครื่องนี้เท่านั้น — ไม่มีการอัปโหลดเด็ดขาด", // TH-REVIEW
     "avatar.removePhoto": "ลบรูปถ่าย", // TH-REVIEW
     "avatar.locked": "ปลดล็อกได้ในร้านค้า", // TH-REVIEW
+    "avatar.seasonal": "แมวตามฤดูกาล — ดูในร้านค้า", // TH-REVIEW
     "avatar.photoError": "อ่านรูปนี้ไม่ได้ — ลองรูปอื่นดูนะ", // TH-REVIEW
     "avatar.photoTooBig": "รูปนี้มีรายละเอียดมากเกินไปจนบันทึกไม่ได้ — ลองรูปอื่นดูนะ", // TH-REVIEW
     "avatar.saveFailed": "พื้นที่ไม่พอสำหรับบันทึกรูป รูปเดิมของคุณยังอยู่", // TH-REVIEW
@@ -1227,6 +1231,8 @@ export const STRINGS = {
     "shop.season": "มุมเทศกาล",
     "shop.seasonUntil": "มีถึง {date}",
     "shop.seasonReturns": "🏮 ชุด {name} จะกลับมา {date}",
+    "shop.seasonal": "ตามฤดูกาล", // TH-REVIEW
+    "shop.seasonalReturns": "กลับมา {date}", // TH-REVIEW
     "shop.upgrade": "อัปเกรด {stars} ({coins})",
     "shop.owned-count": "มีอยู่: {n}/{cap}",
     // iap (IAP purchase flow v1 — mock provider; spec 2026-07-11)

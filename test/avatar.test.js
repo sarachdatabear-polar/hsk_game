@@ -46,25 +46,27 @@ describe("ownsCatAvatar / catAvatarChoices", () => {
     expect(ownsCatAvatar("panda", null)).toBe(false);
     expect(ownsCatAvatar("not-a-cat", ["not-a-cat"])).toBe(false);
   });
-  it("choices carry lock flags for all 7 ids in display order", () => {
+  it("always shows all seven cat models in display order", () => {
     const choices = catAvatarChoices(["panda", "dragon"], "2026-07-31");
-    expect(choices.map(c => c.id)).toEqual(["lucky", "panda", "ninja", "astronaut", "beach", "dragon"]);
+    expect(choices.map(c => c.id)).toEqual(AVATAR_CAT_IDS);
     expect(choices.find(c => c.id === "lucky").locked).toBe(false);
     expect(choices.find(c => c.id === "panda").locked).toBe(false);
     expect(choices.find(c => c.id === "dragon").locked).toBe(false);
     expect(choices.find(c => c.id === "ninja").locked).toBe(true);
   });
-  it("hides unowned seasonal cats while they are absent from the Shop", () => {
-    expect(catAvatarChoices([], "2026-07-31").map(c => c.id))
-      .toEqual(["lucky", "panda", "ninja", "astronaut", "beach"]);
-    expect(catAvatarChoices([], "2026-11-01").map(c => c.id))
-      .toEqual(["lucky", "panda", "ninja", "astronaut"]);
+  it("marks unavailable unowned seasonal cats without hiding them", () => {
+    const july = catAvatarChoices([], "2026-07-31");
+    expect(july.find(c => c.id === "beach").seasonal).toBe(false);
+    expect(july.find(c => c.id === "mooncake-rabbit").seasonal).toBe(true);
+    expect(july.find(c => c.id === "dragon").seasonal).toBe(true);
+    const ownedDragon = catAvatarChoices(["dragon"], "2026-07-31").find(c => c.id === "dragon");
+    expect(ownedDragon).toMatchObject({ locked:false, seasonal:false });
   });
 });
 
 describe("avatarSheetFor", () => {
-  it("resolves lucky to its full-size front-facing portrait and skins through SKIN_PALETTES", () => {
-    expect(avatarSheetFor({ kind: "cat", id: "lucky" })).toBe("cat-boss-happy");
+  it("keeps Lucky Cat on its dedicated portrait and resolves costumes through SKIN_PALETTES", () => {
+    expect(avatarSheetFor({ kind: "cat", id: "lucky" })).toBeNull();
     expect(avatarSheetFor({ kind: "cat", id: "mooncake-rabbit" })).toBe("cat-mooncake-happy");
     expect(avatarSheetFor({ kind: "cat", id: "panda" })).toBe("cat-panda-happy");
   });
@@ -77,14 +79,13 @@ describe("avatarSheetFor", () => {
 });
 
 describe("avatarPortraitStyle", () => {
-  // cat-boss-happy bbox: l13 t13 r243 b243 -> square side 230 at (13,13).
-  it("computes the square content crop for the full-size default cat", () => {
+  it("uses the new dedicated square portrait for Lucky Cat", () => {
     const s = avatarPortraitStyle({ kind: "cat", id: "lucky" });
-    expect(s.image).toBe("assets/cat-boss-happy.png");
-    expect(s.sizePct[0]).toBeCloseTo(102400 / 230, 6);
-    expect(s.sizePct[1]).toBeCloseTo(25600 / 230, 6);
-    expect(s.posPct[0]).toBeCloseTo((100 * 13) / (1024 - 230), 6);
-    expect(s.posPct[1]).toBeCloseTo((100 * 13) / (256 - 230), 6);
+    expect(s).toEqual({
+      image: "assets/cat-lucky-profile-v2.png",
+      sizePct: [112, 112],
+      posPct: [50, 50],
+    });
   });
   // beach bbox: l9 t12 r246 b244 -> bw 237, bh 232, side 237, cl=9, ct=9.5.
   it("computes the crop for a near-full-frame skin", () => {
@@ -95,7 +96,7 @@ describe("avatarPortraitStyle", () => {
     expect(s.posPct[1]).toBeCloseTo((100 * 9.5) / (256 - 237), 6);
   });
   it("keeps sizePct at an exact 4:1 ratio for every cat id (uniform scale)", () => {
-    for (const id of AVATAR_CAT_IDS) {
+    for (const id of AVATAR_CAT_IDS.filter(id => id !== "lucky")) {
       const s = avatarPortraitStyle({ kind: "cat", id });
       expect(s.sizePct[0] / s.sizePct[1]).toBeCloseTo(4, 9);
       expect(s.posPct[0]).toBeGreaterThanOrEqual(0);

@@ -89,11 +89,11 @@ export function createAvatarPicker({
       },
       onPick: () => pick({ kind: "monogram" }),
     }));
-    for (const { id, locked } of catAvatarChoices(getOwned(), getToday())) {
+    for (const { id, locked, seasonal } of catAvatarChoices(getOwned(), getToday())) {
       const style = avatarPortraitStyle({ kind: "cat", id });
       grid.appendChild(makeTile({
         label: catLabel(id),
-        status: locked ? t("avatar.locked") : "",
+        status: locked ? t(seasonal ? "avatar.seasonal" : "avatar.locked") : "",
         selected: current.kind === "cat" && current.id === id,
         disabled: locked,
         fill: art => {

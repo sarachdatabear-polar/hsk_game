@@ -29,7 +29,7 @@ import { initAudio, speak, speakWhenReady, audioAvailable, hasMp3, setVoiceVolum
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder,
          syncReengageReminder, syncCatJourneyReminder, requestNotifPermission,
          isNative } from "./native.js";
-import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, seasonStatus, catJourneyStock } from "./shop.js";
+import { CATALOG, SKIN_PALETTES, SEASONS, defaultShop, canAfford, buy, buyConsumable, equipItem, isAvailable, seasonStatus, catJourneyStock } from "./shop.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
@@ -3801,9 +3801,12 @@ function renderShop(){
     seasonNote.textContent = t("shop.seasonReturns", { name: t("season." + st.next.id), date: fmtMonthDay(st.next.from) });
   }
 
-  // Permanent sections — pool/season items appear here only once owned
+  // Category shelves are the complete catalog for their category. Every cat
+  // stays visible in Cats even outside its season; unavailable seasonal cats
+  // render as previews rather than misleading Buy actions.
   for(const item of CATALOG){
-    if((item.pool || item.season) && !shopState.owned.includes(item.id)) continue;
+    if(item.pool && !shopState.owned.includes(item.id)) continue;
+    if(item.season && item.type !== "skin" && !shopState.owned.includes(item.id)) continue;
     const box = item.type==="skin" ? skinBox : item.type==="backdrop" ? bdBox : item.type==="effect" ? fxBox : item.type==="soundpack" ? sndBox : supBox;
     box.appendChild(makeShopRow(item, today));
   }
@@ -3826,6 +3829,7 @@ function consumableCount(item){ return item.id === "streak-freeze" ? freezes : 0
 function makeShopRow(item, today){
   const owned = shopState.owned.includes(item.id);
   const equipped = shopState[item.type] === item.id;
+  const available = isAvailable(item, today);
   const row = document.createElement("div");
   row.className = "scorerow shoprow";
   row.dataset.itemId = item.id;
@@ -3839,9 +3843,13 @@ function makeShopRow(item, today){
   copy.className = "shop-copy";
   const ownedCount = item.type === "consumable" ? `<small>${t("shop.owned-count", { n: consumableCount(item), cap: item.cap })}</small>` : "";
   const desc = item.type === "consumable" ? tOr("item." + item.id + ".desc", "") : "";
+  const season = item.season ? SEASONS.find(entry => entry.id === item.season) : null;
+  const seasonalNote = !owned && !available && season
+    ? t("shop.seasonalReturns", { date:fmtMonthDay(season.from) }) : "";
   const descHtml = desc ? `<small class="item-desc">${desc}</small>` : "";
-  copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}</b>${descHtml}<small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
-  if(!owned && wallet < item.price){
+  const seasonHtml = seasonalNote ? `<small class="item-desc">${seasonalNote}</small>` : "";
+  copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}</b>${descHtml}${seasonHtml}<small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
+  if(!owned && available && wallet < item.price){
     const shortage = document.createElement("small");
     shortage.className = "shop-shortage";
     shortage.textContent = t("shop.needMore", { n:(item.price - wallet).toLocaleString() });
@@ -3893,6 +3901,9 @@ function makeShopRow(item, today){
     }else if(owned){
       btn.textContent = t("shop.equip");
       btn.onclick = ()=>{ shopState = equipItem(shopState, item.id); store.set("shop", shopState); renderShop(); };
+    }else if(!available){
+      btn.textContent = t("shop.seasonal");
+      btn.disabled = true;
     }else{
       btn.className = "chip buy-chip";
       btn.textContent = t("shop.buy");

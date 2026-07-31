@@ -9,7 +9,7 @@
 // audio name each release (v80..v105) wiped every cached mp3 on every
 // update, leaving installed PWAs silent offline until words re-fetched.
 // Bump AUDIO_VERSION only when build_audio.py regenerates the mp3 set.
-const CACHE_VERSION = "v139";
+const CACHE_VERSION = "v140";
 const AUDIO_VERSION = "v1";
 const SHELL = `nbhsk-shell-${CACHE_VERSION}`;
 const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`;
@@ -31,6 +31,7 @@ const PRECACHE = [
   "assets/bg-flashcards.webp", "assets/bg-battle.png", "assets/bg-progress.webp",
   "assets/bg-collection.webp", "assets/bg-results.webp", "assets/cloud.png",
   "assets/cat-study.png", "assets/cat-portrait.png", "assets/cat-guide.png",
+  "assets/cat-lucky-profile-v2.png",
   "assets/cat-celebrate.png", "assets/cat-thinking.png",
   // Cat Journey's large generated poses/backgrounds are runtime-cached after
   // first view to preserve atomic-install size. The screen falls back to the
