@@ -1633,18 +1633,32 @@ async function resumeCheckout(){
     // reconcile(reason, orderId), so the store and `now` are bound here.
     reconcile: (reason, orderId) => reconcile(store, reason, undefined, orderId),
     sleep: ms => new Promise(res => setTimeout(res, ms)),
-    onCredited: () => {
+    // TELL THE BUYER SOMETHING HAPPENED. Every other successful-purchase path
+    // in this file toasts (iapBuy's credited branch, and both restoreFrom call
+    // sites). Without this a buyer completes a 79฿ PromptPay payment, returns,
+    // and the only sign of it is a number quietly changing in the header chip —
+    // indistinguishable from having done nothing at all.
+    onCredited: (delta) => {
       // Same rehydrate syncEdge relies on: reconcile wrote ALL merged
       // SYNC_KEYS back to the store, not just wallet (main.js:3879-3881).
       rehydrateFromStore();
       updateWalletChip();
       renderIapSections();
+      // The shop's own balance line is a different element from the header
+      // chip; if the buyer is sitting on the shop screen it would otherwise
+      // stay stale until the next render.
+      if (currentScreen === "shop") renderShop();
+      if (delta > 0) toast(t("iap.success", { coins: Number(delta).toLocaleString() }));
     },
     onEntitlement: (owned) => {
+      const wasSupporter = isSupporter(ent);
       ent = restoreFrom(ent, owned);
       store.set("ent", ent);
       renderAccount();
       renderIapSections();
+      // Only on the transition, so a boot-time re-check of an already-granted
+      // entitlement doesn't re-thank someone who bought last week.
+      if (!wasSupporter && isSupporter(ent)) toast(t("iap.supporterThanks"));
     },
     track: (name, props) => analytics.track(name, props),
   });
