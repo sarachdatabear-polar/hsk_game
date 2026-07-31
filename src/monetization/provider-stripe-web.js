@@ -1,6 +1,6 @@
 "use strict";
 import { productById } from "./products.js";
-import { writePending } from "./checkout-pending.js";
+import { writePending, readPending } from "./checkout-pending.js";
 
 // Stripe implementation of the provider seam (contract documented in
 // provider.js). Every dependency is injected so all branches are covered in
@@ -38,10 +38,12 @@ export function stripeWebProvider(opts = {}) {
 
     supports(productId) { return productIds.includes(productId); },
 
-    // True unconditionally: entitlements live server-side and are readable by
-    // the owner under RLS, so Restore always has something to ask. This also
-    // lights the account-screen Restore button, which is a NEW DEVICE's only
-    // route to an entitlement it never saw bought.
+    // True whenever this provider sells at least one entitlement-bearing
+    // product (today: supporter). Entitlements live server-side and are
+    // owner-readable under RLS, so Restore has something to ask. This lights
+    // the account-screen Restore button, which is a NEW DEVICE's only route to
+    // an entitlement it never saw bought. NOTE: if web ever sells coin-only,
+    // this goes false and a returning Supporter loses Restore on this surface.
     supportsRestore() { return productIds.some(id => !!(productById(id) || {}).entitlement); },
 
     // Stripe exposes no client-side price API here, so the catalog's
@@ -60,7 +62,9 @@ export function stripeWebProvider(opts = {}) {
         const token = await getAccessToken();
         if (!token) return { ok: false, reason: "needs-account" };
 
-        const prior = store ? (store.get("checkout", null) || {}).sessionId || "" : "";
+        // readPending, not a raw store.get: it applies the TTL and shape validation,
+        // so a stale record can never be sent as a prior session id to expire.
+        const prior = store ? (readPending(store, now()) || {}).sessionId || "" : "";
         const res = await fetchImpl(checkoutUrl, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },

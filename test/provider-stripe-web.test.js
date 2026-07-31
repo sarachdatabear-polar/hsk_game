@@ -91,6 +91,47 @@ describe("stripeWebProvider", () => {
     expect(await make().restore()).toEqual({ ok: true, ownedProductIds: ["supporter"] });
   });
 
+  // The supporter product's id and entitlement name are the SAME string, so the
+  // test above passes under a correct mapping AND under an inverted one. This
+  // case discriminates: coins_s has no `entitlement`, so a correct
+  // held.has(product.entitlement) yields [], while an inverted held.has(id)
+  // would wrongly yield ["coins_s"].
+  it("does not treat a product id as an entitlement name", async () => {
+    const p = make({ productIds: ["coins_s"], fetchEntitlements: async () => ["coins_s"] });
+    expect(await p.restore()).toEqual({ ok: true, ownedProductIds: [] });
+  });
+
+  it("supportsRestore is false when no configured product carries an entitlement", () => {
+    expect(make({ productIds: ["coins_s"] }).supportsRestore()).toBe(false);
+  });
+
+  it("maps the server's already-owned refusal to unavailable", async () => {
+    const p = make({ fetchImpl: async () => ({ ok: false, status: 409, json: async () => ({ error: "already-owned" }) }) });
+    expect(await p.purchase("supporter")).toEqual({ ok: false, reason: "unavailable" });
+  });
+
+  it("returns failed on a malformed success payload", async () => {
+    const p = make({ fetchImpl: async () => ({ ok: true, json: async () => ({ url: "https://stripe/pay" }) }) });
+    expect(await p.purchase("supporter")).toEqual({ ok: false, reason: "failed" });
+  });
+
+  it("sends the prior session id so the server can expire it", async () => {
+    const store = fakeStore();
+    store.set("checkout", { sessionId: "cs_prev", productId: "supporter", startedAt: Date.now() });
+    let sentBody = null;
+    const p = make({ store, fetchImpl: async (_url, opts) => {
+      sentBody = JSON.parse(opts.body);
+      return { ok: true, json: async () => ({ url: "https://stripe/pay", sessionId: "cs_new" }) };
+    } });
+    await p.purchase("supporter");
+    expect(sentBody).toEqual({ productId: "supporter", priorSessionId: "cs_prev" });
+  });
+
+  it("available() resolves false rather than throwing when a guard throws", async () => {
+    const p = make({ isNative: () => { throw new Error("x"); } });
+    await expect(p.available()).resolves.toBe(false);
+  });
+
   it("restore reports unavailable when the user cannot be resolved", async () => {
     const p = make({ ensureUserId: async () => null });
     expect(await p.restore()).toEqual({ ok: false, reason: "unavailable" });
