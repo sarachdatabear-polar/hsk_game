@@ -185,6 +185,17 @@ export async function fetchLedgerOrder(userId, orderId) {
   } catch (e) { return { ok: false, reason: "network" }; }
 }
 
+// Entitlements are service_role-write / owner-read (schema.sql:149-152). This
+// is how a device that never saw the purchase happen learns it owns Supporter.
+export async function listEntitlements() {
+  try {
+    const { data, error } = await getClient()
+      .from("entitlements").select("product_id");
+    if (error || !Array.isArray(data)) return [];
+    return data.map(row => row.product_id).filter(id => typeof id === "string");
+  } catch (e) { return []; }
+}
+
 export async function signOut() {
   // Local-scope sign-out; local gameplay state is untouched by design.
   try { await getClient().auth.signOut({ scope: "local" }); } catch (e) { /* ignore */ }

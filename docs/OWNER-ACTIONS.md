@@ -128,15 +128,16 @@ Owner steps from the locked
 Engineering steps 3 (URL sweep), 4 (migration bridge), 7 (placement) and
 8 (web coin packs) are built or unblocked and wait only on these:
 
-**Start the payment-rails check on day one, out of order.** Everything else here
-is under our control; the Stripe/RevenueCat path is the only item with an
-**external approval clock** (Stripe account verification) and an unconfirmed
-assumption. Before committing further to the 79฿ price: in the RevenueCat
-dashboard, confirm Web Billing actually exposes **PromptPay for a THB one-time
-purchase**. If it does not surface, the price and steps 5–6 need rethinking, and
-that is far cheaper to learn before paying for Supabase Pro than after. If it
-does, start the Stripe verification immediately and let it run in the background
-while you do steps 1–2.
+**Start the payment-rails setup on day one, out of order.** Everything else here
+is under our control; Stripe account verification is the only item with an
+**external approval clock**. **RC Web Billing PromptPay was checked and ruled
+out:** RevenueCat Web Billing exposes only card / Apple Pay / Google Pay, and
+RevenueCat — not us — controls that list; PromptPay is not on it and cannot be
+added merchant-side. Step 6 below no longer routes through RC Web Billing at
+all — it goes straight to Stripe Checkout via two Supabase edge functions
+(`stripe-checkout`, `stripe-webhook`; see `docs/supabase/README.md` §Stripe
+deployment prerequisites). Start Stripe account verification immediately and
+let it run in the background while you do steps 1–2.
 
 1. ~~**Buy `luckycathsk.com`**~~ **— DONE 2026-07-30.** Registered at Cloudflare
    Registrar, `2026-07-30T17:14:22Z`, expires `2027-07-30`, NS
@@ -190,19 +191,100 @@ while you do steps 1–2.
    needs it; buying early just starts the meter. The free tier is fine until
    real money is in play (it lacks backups and auto-pauses, which is only
    unacceptable once paid users exist).
-4. **RevenueCat Web Billing go-live** (plan step 6): in the RC dashboard,
-   enable Web Billing + Stripe with **PromptPay**; create the 79฿ `supporter`
-   web price and attach the entitlement to the current offering; register the
-   Stripe webhook → `rc-webhook`; then hand engineering the **web public key**
-   (safe to commit) and run **one real PromptPay THB test checkout** —
-   confirming PromptPay actually surfaces for a THB one-time purchase — before
-   the price is advertised. The client code is already merged dark; a blank
-   key is a pure no-op. **At the key flip, also verify the supporter
-   placement path on web:** finish a qualifying round (level up is easiest) →
-   the results line shows → its button lands on a shop where the supporter
-   card actually renders. The line is key-gated but does not wait for the RC
-   SDK — a chunk-load failure would show the line with no card behind it
-   (accepted trade-off, see the placement spec's Implementation deviation).
+4. **Direct Stripe PromptPay go-live** (plan step 6 — replaces the RC Web
+   Billing approach above; RC Web Billing cannot carry PromptPay, see the
+   preamble):
+   0. **Confirm `grant_purchase` is already applied — before anything else
+      in this list.** Both edge functions grant by calling
+      `supabase.rpc("grant_purchase", …)`; that function comes from
+      `docs/supabase/migrations/2026-07-12-iap-golive.sql`, which does not
+      apply itself. Skip this and the failure is silent and after the fact:
+      the RPC errors, the function 500s, Stripe retries and gives up, the
+      buyer's money is already gone, and nothing was ever granted — the only
+      trace is Stripe's own delivery log. Confirm it, don't assume it: in the
+      Supabase SQL editor, `select 1 from pg_proc where proname =
+      'grant_purchase';` should return a row (or Dashboard → Database →
+      Functions → look for `grant_purchase`). If it doesn't, apply the
+      migration first and re-check before moving on to step 1.
+   1. Create a **Thailand-based Stripe account** and complete its
+      verification (this is the external clock — start it early).
+   2. In the Stripe Dashboard → **Payment methods**, enable **PromptPay**.
+   3. Create the **webhook endpoint** — Stripe Dashboard → **Developers →
+      Webhooks → Add endpoint** — pointed at
+      `https://<project>.supabase.co/functions/v1/stripe-webhook`, subscribed
+      to `checkout.session.completed`,
+      `checkout.session.async_payment_succeeded`, and
+      `checkout.session.async_payment_failed`; copy its `whsec_…` signing
+      secret.
+   4. Set both Supabase function secrets — `STRIPE_SECRET_KEY` and
+      `STRIPE_WEBHOOK_SECRET` — and deploy the two functions with the
+      **opposite JWT settings** documented in `docs/supabase/README.md`
+      §Stripe deployment prerequisites: `stripe-webhook` deploys
+      **`--no-verify-jwt`** (Stripe sends no Supabase JWT — skipping this
+      flag means every real delivery 401s, silently, after the buyer's money
+      has already left their account), `stripe-checkout` deploys **normally**
+      (it authenticates the caller itself).
+   5. Fill `STRIPE_CHECKOUT_URL` and `STRIPE_PUBLISHABLE_KEY` in
+      `src/monetization/stripe-config.js` (the publishable key is safe to
+      commit; never the secret key) and ship. The client code is already
+      merged dark; a blank `STRIPE_CHECKOUT_URL` is a pure no-op.
+   6. **Live gate — do all four checks below before advertising the 79฿
+      price** (the fifth bullet is a diagnosis hint, not a fifth check),
+      because
+      neither edge function can be unit-tested (Deno TS does not run under
+      vitest and `eslint.config.mjs` ignores `supabase/`) — this is the only
+      verification they get before real money moves through them.
+      **Run this entire gate from `https://luckycathsk.com` only — not the
+      `github.io` bridge, not `workers.dev`.** `stripe-checkout`'s
+      `SITE_ORIGIN` is hard-coded to the canonical domain (see
+      `docs/supabase/README.md` §Stripe deployment prerequisites), so a
+      purchase started from either other host still gets charged and
+      granted correctly, but returns the buyer to a *different* origin with
+      no local pending record — no toast, no visible entitlement, looking
+      broken even though nothing was lost. Starting the test from the wrong
+      origin will make a working feature look broken.
+      - **One real PromptPay checkout** — confirm PromptPay actually
+        surfaces at Stripe Checkout for a THB one-time purchase.
+        **PromptPay settles ASYNCHRONOUSLY, so expect TWO webhook
+        deliveries and do not read the success page as a pass.** The first,
+        `checkout.session.completed`, normally arrives with
+        `payment_status: "unpaid"` — the QR has been shown, the money has
+        not arrived — and is correctly IGNORED with
+        `{"ignored":"not-paid"}`. The grant rides the *later*
+        `checkout.session.async_payment_succeeded` delivery.
+        **PASS = that second delivery returns `{"ok":true}` in the Stripe
+        delivery log AND the in-game wallet balance actually increases AND
+        Supporter status appears.** A rendered Stripe success page proves
+        only that the buyer paid, not that anything was granted — and
+        "paid but not granted" is the one failure that costs real money.
+      - **One real card checkout** — confirm the card path also grants.
+      - **One abandoned checkout** — start and walk away; confirm no
+        entitlement is granted and no coins move.
+      - **One replayed webhook delivery**, via `stripe listen` or
+        `stripe events resend`, to prove the session-id dedupe holds: the
+        same event delivered twice must grant exactly once, not twice.
+        **PASS:** the replay's response body is `{"duplicate":true}` (visible
+        in the Stripe delivery log) and the wallet balance is unchanged from
+        after the first delivery. **FAIL:** a second `{"ok":true}` grant and
+        the balance **doubled** — the `supporter` product alone is worth
+        2,000 coins (`src/monetization/products.js:11`), so a failed dedupe
+        is not subtle, it is a visibly doubled balance.
+      - **If the first checkout's POST never fires at all** (no network
+        request, immediate failure before Stripe is ever reached): suspect
+        the CORS preflight through the JWT-verification-ON gateway before
+        suspecting the function body. `stripe-checkout` deploys with JWT
+        verification ON, and the browser's preflight `OPTIONS` carries no
+        `Authorization` header; `delete-account` is live precedent that
+        Supabase's gateway passes `OPTIONS` through regardless, so this is
+        expected to work, but it has not been exercised by a real checkout
+        until this gate runs.
+   7. **At the key flip, also verify the supporter placement path on web:**
+      finish a qualifying round (level up is easiest) → the results line
+      shows → its button lands on a shop where the supporter card actually
+      renders. The line is key-gated but does not wait for the RC SDK — a
+      chunk-load failure would show the line with no card behind it
+      (accepted trade-off, see the placement spec's Implementation
+      deviation).
 5. **Do NOT yet:** repo-private flip (plan step 9 — only after the github.io
    bridge retires), subscriptions, web ads, or new SKUs before placement
    (step 7) ships.

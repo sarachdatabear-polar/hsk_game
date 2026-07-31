@@ -378,7 +378,7 @@ Create `test/stripe-checkout.test.js`:
 
 ```js
 import { describe, it, expect } from "vitest";
-import { buildSessionParams, encodeForm } from "../supabase/functions/stripe-checkout/core.js";
+import { buildSessionParams, encodeForm, parseCheckoutRequest } from "../supabase/functions/stripe-checkout/core.js";
 import { productById } from "../src/monetization/products.js";
 
 const supporter = productById("supporter");
@@ -416,6 +416,23 @@ describe("buildSessionParams", () => {
   it("returns null for a missing product or user", () => {
     expect(buildSessionParams({ ...base, product: null })).toBeNull();
     expect(buildSessionParams({ ...base, userId: "" })).toBeNull();
+  });
+});
+
+describe("parseCheckoutRequest", () => {
+  it("defaults to supporter with no prior session on an empty body", () => {
+    expect(parseCheckoutRequest({})).toEqual({ productId: "supporter", priorSessionId: "" });
+    expect(parseCheckoutRequest(null)).toEqual({ productId: "supporter", priorSessionId: "" });
+  });
+
+  it("reads BOTH fields from ONE object — index.ts may only read the body once", () => {
+    expect(parseCheckoutRequest({ productId: "coins_s", priorSessionId: "cs_prev" }))
+      .toEqual({ productId: "coins_s", priorSessionId: "cs_prev" });
+  });
+
+  it("ignores non-string values", () => {
+    expect(parseCheckoutRequest({ productId: 7, priorSessionId: {} }))
+      .toEqual({ productId: "supporter", priorSessionId: "" });
   });
 });
 
@@ -482,12 +499,24 @@ export function encodeForm(params) {
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
     .join("&");
 }
+
+// Request-body parsing lives here, not in index.ts, so it is unit-testable.
+// index.ts reads the body EXACTLY ONCE and hands the object here — a second
+// read via req.clone() throws TypeError "unusable" per WHATWG Fetch, and a
+// try/catch around it swallows the throw silently.
+export function parseCheckoutRequest(body) {
+  const b = body && typeof body === "object" ? body : {};
+  return {
+    productId: typeof b.productId === "string" && b.productId ? b.productId : "supporter",
+    priorSessionId: typeof b.priorSessionId === "string" ? b.priorSessionId : "",
+  };
+}
 ```
 
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run test/stripe-checkout.test.js`
-Expected: PASS, 8 tests.
+Expected: PASS, 11 tests.
 
 - [ ] **Step 5: Write the Deno wrapper**
 
@@ -502,7 +531,7 @@ Create `supabase/functions/stripe-checkout/index.ts`:
 // function must answer or the real POST never fires. Modelled on
 // delete-account/index.ts, NOT rc-webhook (which Stripe's server calls).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { buildSessionParams, encodeForm } from "./core.js";
+import { buildSessionParams, encodeForm, parseCheckoutRequest } from "./core.js";
 import { productById } from "../../../src/monetization/products.js";
 
 // Pin the API version — the account default drifts under you otherwise.
@@ -546,12 +575,14 @@ Deno.serve(async (req) => {
   // support handle, so refuse explicitly (spec decision 2).
   if (user.is_anonymous || !user.email) return reply({ error: "needs-account" }, 403);
 
-  let productId = "supporter";
-  try {
-    const body = await req.json();
-    if (body && typeof body.productId === "string") productId = body.productId;
-  } catch { /* empty body is fine — defaults to supporter */ }
-  const product = productById(productId);
+  // ONE read of the body. Request.clone() throws TypeError "unusable" once the
+  // body has been consumed (WHATWG Fetch, which Deno implements), so a second
+  // `await req.clone().json()` inside a try/catch would silently swallow the
+  // throw and leave the field permanently empty. Parsing is delegated to
+  // core.js so it is unit-testable and this hazard cannot reappear.
+  let parsed = { productId: "supporter", priorSessionId: "" };
+  try { parsed = parseCheckoutRequest(await req.json()); } catch { /* empty body is fine */ }
+  const product = productById(parsed.productId);
   if (!product || !product.entitlement) return reply({ error: "unknown-product" }, 400);
 
   // Already a Supporter: refuse rather than charge twice. entitlements is
@@ -563,13 +594,14 @@ Deno.serve(async (req) => {
 
   // Expire any session this device left open. Two live sessions have
   // DIFFERENT ids, so the ledger dedupe cannot stop them both charging.
-  let priorSessionId = "";
-  try {
-    const body = await req.clone().json();
-    if (body && typeof body.priorSessionId === "string") priorSessionId = body.priorSessionId;
-  } catch { /* no prior session */ }
-  if (priorSessionId) {
-    await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(priorSessionId)}/expire`, {
+  //
+  // ⚠ THIS NARROWS THE HOLE, IT DOES NOT CLOSE IT. It depends on the client
+  // voluntarily reporting its own prior session id, so two independent tabs or
+  // two devices with no shared client state still produce two live sessions.
+  // Real protection lives in the webhook's idempotent grant; this is a
+  // courtesy that stops the common single-device retry from double-charging.
+  if (parsed.priorSessionId) {
+    await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(parsed.priorSessionId)}/expire`, {
       method: "POST",
       headers: { Authorization: `Bearer ${stripeKey}`, "Stripe-Version": STRIPE_API_VERSION },
     }).catch(() => {});   // best-effort: an already-expired session 400s harmlessly
@@ -613,9 +645,14 @@ git commit -m "feat(billing): stripe-checkout edge function
 Creates a hosted Checkout Session with PromptPay first and card as fallback.
 Derives the user id from the caller's own verified JWT and refuses anonymous
 sessions explicitly -- a Supabase anon JWT is still a valid JWT. Refuses when
-the entitlement is already held and expires any prior session, since two live
-sessions have different ids and would both charge. CORS shell follows
-delete-account, not rc-webhook. Stripe API version pinned."
+the entitlement is already held, and expires the session this device last
+recorded, which NARROWS the concurrent double-charge window without closing
+it: it relies on the client reporting its own prior session id, so two tabs
+or two devices still create two live sessions. Real protection is the
+webhook's idempotent grant. The body is read EXACTLY ONCE and parsed by
+core.js's parseCheckoutRequest -- req.clone() throws once the body is
+consumed, and a try/catch around it swallows the throw silently. CORS shell
+follows delete-account, not rc-webhook. Stripe API version pinned."
 ```
 
 ---
@@ -636,7 +673,7 @@ Create `test/checkout-pending.test.js`:
 
 ```js
 import { describe, it, expect } from "vitest";
-import { PENDING_TTL_MS, writePending, readPending, clearPending } from "../src/monetization/checkout-pending.js";
+import { PENDING_TTL_MS, writePending, readPending, clearPending, markAnnounced } from "../src/monetization/checkout-pending.js";
 
 function fakeStore() {
   const map = new Map();
@@ -675,6 +712,23 @@ describe("checkout-pending", () => {
     writePending(s, { sessionId: "cs_1", productId: "supporter", now: T0 });
     readPending(s, T0 + PENDING_TTL_MS + 1);
     expect(s.map.has("checkout")).toBe(false);
+  });
+
+  it("markAnnounced sets the flag and readPending surfaces it", () => {
+    const s = fakeStore();
+    writePending(s, { sessionId: "cs_1", productId: "supporter", now: T0 });
+    expect(readPending(s, T0).announced).toBe(false);
+    markAnnounced(s);
+    expect(readPending(s, T0).announced).toBe(true);
+    // must not disturb the rest of the record
+    expect(readPending(s, T0).sessionId).toBe("cs_1");
+    expect(readPending(s, T0).startedAt).toBe(T0);
+  });
+
+  it("markAnnounced is a no-op with no pending record", () => {
+    const s = fakeStore();
+    markAnnounced(s);
+    expect(readPending(s, T0)).toBeNull();
   });
 
   it("clears on demand", () => {
@@ -741,19 +795,34 @@ export function readPending(store, now = Date.now()) {
   const startedAt = Number(raw.startedAt) || 0;
   // Drop it rather than leave a tombstone we re-read on every boot.
   if (now - startedAt > PENDING_TTL_MS) { clearPending(store); return null; }
-  return { sessionId: raw.sessionId, productId: raw.productId, startedAt };
+  return { sessionId: raw.sessionId, productId: raw.productId, startedAt, announced: !!raw.announced };
 }
 
 export function clearPending(store) {
   if (typeof store.remove === "function") store.remove(KEY);
   else store.set(KEY, null);
 }
+
+// "Have we already told the buyer about this purchase?" — durable, because the
+// answer must survive the process dying between announcing and clearing.
+//
+// Neither of the obvious alternatives works. Toasting pollForCredit's reported
+// delta re-announces on a later boot, because sync.js's expectedOrderId lookup
+// deliberately re-confirms an already-folded row. Toasting the observed wallet
+// change instead goes SILENT when a concurrent syncEdge("foreground") folds the
+// credit first — which is precisely the installed-PWA suspend/resume path this
+// whole flow exists to handle. Only a record of having announced is correct in
+// both cases.
+export function markAnnounced(store) {
+  const raw = store.get(KEY, null);
+  if (raw && typeof raw === "object") store.set(KEY, { ...raw, announced: true });
+}
 ```
 
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run test/checkout-pending.test.js`
-Expected: PASS, 7 tests.
+Expected: PASS, 12 tests.
 
 - [ ] **Step 5: Confirm the key is NOT synced**
 
@@ -886,17 +955,91 @@ describe("stripeWebProvider", () => {
     expect(await make().restore()).toEqual({ ok: true, ownedProductIds: ["supporter"] });
   });
 
+  // The supporter product's id and entitlement name are the SAME string, so the
+  // test above passes under a correct mapping AND under an inverted one. This
+  // case discriminates: coins_s has no `entitlement`, so a correct
+  // held.has(product.entitlement) yields [], while an inverted held.has(id)
+  // would wrongly yield ["coins_s"].
+  it("does not treat a product id as an entitlement name", async () => {
+    const p = make({ productIds: ["coins_s"], fetchEntitlements: async () => ["coins_s"] });
+    expect(await p.restore()).toEqual({ ok: true, ownedProductIds: [] });
+  });
+
+  it("supportsRestore is false when no configured product carries an entitlement", () => {
+    expect(make({ productIds: ["coins_s"] }).supportsRestore()).toBe(false);
+  });
+
+  it("maps the server's already-owned refusal to unavailable", async () => {
+    const p = make({ fetchImpl: async () => ({ ok: false, status: 409, json: async () => ({ error: "already-owned" }) }) });
+    expect(await p.purchase("supporter")).toEqual({ ok: false, reason: "unavailable" });
+  });
+
+  it("returns failed on a malformed success payload", async () => {
+    const p = make({ fetchImpl: async () => ({ ok: true, json: async () => ({ url: "https://stripe/pay" }) }) });
+    expect(await p.purchase("supporter")).toEqual({ ok: false, reason: "failed" });
+  });
+
+  it("sends the prior session id so the server can expire it", async () => {
+    const store = fakeStore();
+    store.set("checkout", { sessionId: "cs_prev", productId: "supporter", startedAt: Date.now() });
+    let sentBody = null;
+    const p = make({ store, fetchImpl: async (_url, opts) => {
+      sentBody = JSON.parse(opts.body);
+      return { ok: true, json: async () => ({ url: "https://stripe/pay", sessionId: "cs_new" }) };
+    } });
+    await p.purchase("supporter");
+    expect(sentBody).toEqual({ productId: "supporter", priorSessionId: "cs_prev" });
+  });
+
+  it("available() resolves false rather than throwing when a guard throws", async () => {
+    const p = make({ isNative: () => { throw new Error("x"); } });
+    await expect(p.available()).resolves.toBe(false);
+  });
+
   it("restore reports unavailable when the user cannot be resolved", async () => {
     const p = make({ ensureUserId: async () => null });
     expect(await p.restore()).toEqual({ ok: false, reason: "unavailable" });
   });
 
-  it("never throws from any method", async () => {
-    const boom = () => { throw new Error("x"); };
-    const p = make({ ensureUserId: boom, fetchEntitlements: boom, getAccessToken: boom });
-    await expect(p.available()).resolves.toBeDefined();
-    await expect(p.purchase("supporter")).resolves.toBeDefined();
-    await expect(p.restore()).resolves.toBeDefined();
+  // ONE THROW SITE PER TEST, and assert the DOCUMENTED SHAPE, not definedness.
+  // A single test that booms every dependency at once is worthless here: with
+  // ensureUserId also throwing it fires FIRST inside both purchase() and
+  // restore(), so getAccessToken's and fetchEntitlements' catches are never
+  // reached and stay dead. And `.resolves.toBeDefined()` passes for any resolved
+  // value — it proves "did not reject", not "returned the contract's shape".
+  it("purchase resolves {failed} when ensureUserId throws", async () => {
+    const p = make({ ensureUserId: () => { throw new Error("x"); } });
+    expect(await p.purchase("supporter")).toEqual({ ok: false, reason: "failed" });
+  });
+
+  it("purchase resolves {failed} when getAccessToken throws", async () => {
+    const p = make({ getAccessToken: () => { throw new Error("x"); } });
+    expect(await p.purchase("supporter")).toEqual({ ok: false, reason: "failed" });
+  });
+
+  it("restore resolves {unavailable} when ensureUserId throws", async () => {
+    const p = make({ ensureUserId: () => { throw new Error("x"); } });
+    expect(await p.restore()).toEqual({ ok: false, reason: "unavailable" });
+  });
+
+  it("restore resolves {unavailable} when fetchEntitlements throws", async () => {
+    const p = make({ fetchEntitlements: () => { throw new Error("x"); } });
+    expect(await p.restore()).toEqual({ ok: false, reason: "unavailable" });
+  });
+
+  // Discriminates readPending from a raw store.get: an ancient startedAt is past
+  // the TTL, so readPending returns null and the prior id must be empty. A raw
+  // store.get would send "cs_stale".
+  it("ignores an EXPIRED pending record rather than sending a stale prior id", async () => {
+    const store = fakeStore();
+    store.set("checkout", { sessionId: "cs_stale", productId: "supporter", startedAt: 1 });
+    let sentBody = null;
+    const p = make({ store, fetchImpl: async (_url, opts) => {
+      sentBody = JSON.parse(opts.body);
+      return { ok: true, json: async () => ({ url: "https://stripe/pay", sessionId: "cs_new" }) };
+    } });
+    await p.purchase("supporter");
+    expect(sentBody.priorSessionId).toBe("");
   });
 });
 ```
@@ -939,7 +1082,7 @@ Create `src/monetization/provider-stripe-web.js`:
 ```js
 "use strict";
 import { productById } from "./products.js";
-import { writePending } from "./checkout-pending.js";
+import { writePending, readPending } from "./checkout-pending.js";
 
 // Stripe implementation of the provider seam (contract documented in
 // provider.js). Every dependency is injected so all branches are covered in
@@ -977,10 +1120,12 @@ export function stripeWebProvider(opts = {}) {
 
     supports(productId) { return productIds.includes(productId); },
 
-    // True unconditionally: entitlements live server-side and are readable by
-    // the owner under RLS, so Restore always has something to ask. This also
-    // lights the account-screen Restore button, which is a NEW DEVICE's only
-    // route to an entitlement it never saw bought.
+    // True whenever this provider sells at least one entitlement-bearing
+    // product (today: supporter). Entitlements live server-side and are
+    // owner-readable under RLS, so Restore has something to ask. This lights
+    // the account-screen Restore button, which is a NEW DEVICE's only route to
+    // an entitlement it never saw bought. NOTE: if web ever sells coin-only,
+    // this goes false and a returning Supporter loses Restore on this surface.
     supportsRestore() { return productIds.some(id => !!(productById(id) || {}).entitlement); },
 
     // Stripe exposes no client-side price API here, so the catalog's
@@ -999,7 +1144,9 @@ export function stripeWebProvider(opts = {}) {
         const token = await getAccessToken();
         if (!token) return { ok: false, reason: "needs-account" };
 
-        const prior = store ? (store.get("checkout", null) || {}).sessionId || "" : "";
+        // readPending, not a raw store.get: it applies the TTL and shape validation,
+        // so a stale record can never be sent as a prior session id to expire.
+        const prior = store ? (readPending(store, now()) || {}).sessionId || "" : "";
         const res = await fetchImpl(checkoutUrl, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -1043,7 +1190,7 @@ export function stripeWebProvider(opts = {}) {
 - [ ] **Step 5: Run tests to verify they pass**
 
 Run: `npx vitest run test/provider-stripe-web.test.js`
-Expected: PASS, 14 tests.
+Expected: PASS, 24 tests.
 
 - [ ] **Step 6: Run the full suite and lint**
 
@@ -1106,6 +1253,25 @@ describe("provider selection — stripe web", () => {
     expect(p.kind).not.toBe("stripe-web");
   });
 
+  // The test above overrides stripe.isNative, so it only exercises Stripe's OWN
+  // guard and passes under any branch order. This one pins the ORDER: RC is
+  // native-configured while Stripe uses the real shared isNative (false under
+  // vitest), so if the Stripe branch were moved above the native RC branch,
+  // Stripe would win and this fails.
+  it("pins branch ORDER: a native-configured RevenueCat beats a configured Stripe", () => {
+    const p = getProvider({
+      revenuecat: { apiKey: "goog_real_key", isNative: () => true },
+      stripe: { checkoutUrl: "https://fn/x" },
+    });
+    expect(p.kind).toBe("revenuecat");
+  });
+
+  it("tolerates a null store — purchase resolves rather than throwing", async () => {
+    const p = getProvider({ stripe: { checkoutUrl: "https://fn/x", isNative: () => false, isFileProtocol: () => false } });
+    expect(p.kind).toBe("stripe-web");
+    await expect(p.purchase("supporter")).resolves.toEqual({ ok: false, reason: "needs-account" });
+  });
+
   it("never selects stripe-web on file://", () => {
     const p = getProvider({ stripe: { checkoutUrl: "https://fn/x", isNative: () => false, isFileProtocol: () => true } });
     expect(p.kind).not.toBe("stripe-web");
@@ -1133,8 +1299,15 @@ Insert this block **after** the native RevenueCat branch and **before** the `rev
   // PRECEDENCE: on web, Stripe beats RevenueCat Web Billing. RC Web Billing
   // cannot surface PromptPay (it offers card/Apple Pay/Google Pay only, and
   // RevenueCat — not the merchant — controls that list), and PromptPay is the
-  // primary method for Thai buyers. Native is untouched: RevenueCat still owns
-  // Android above.
+  // primary method for Thai buyers. THIS ordering is load-bearing: both
+  // branches share the same web/non-native/non-file gates, so whichever comes
+  // first wins.
+  //
+  // Native safety, however, does NOT come from sitting below the RevenueCat
+  // branch — it comes from this branch's own `!stripeIsNative()` gate. Both
+  // default to the same `isNative` import, so Android is protected even if the
+  // order were reversed. Don't remove that gate on the belief that position
+  // alone protects native.
   const stripe = opts.stripe || {};
   const checkoutUrl = stripe.checkoutUrl == null ? STRIPE_CHECKOUT_URL : stripe.checkoutUrl;
   const stripeIsNative = stripe.isNative || isNative;
@@ -1187,7 +1360,7 @@ checkout URL still falls through to mock, so this ships dark."
 - Test: `test/checkout-return.test.js`
 
 **Interfaces:**
-- Consumes: `readPending`, `clearPending` from `checkout-pending.js`; `pollForCredit` from `purchase-poll.js`; `restoreFrom` from `purchases.js`.
+- Consumes: `readPending`, `clearPending` from `checkout-pending.js`; `pollForCredit` from `purchase-poll.js`. (NOT `restoreFrom` — entitlement composition stays with the caller via `onEntitlement`, which is what keeps this module pure. Task 7 applies `restoreFrom`.)
 - Produces: `resolvePendingCheckout({ store, provider, reconcile, sleep, now, onCredited, onEntitlement, track }) -> Promise<{resolved:boolean, credited:boolean, delta:number}>`.
 
 **Why this exists:** `pollForCredit` delivers the **coins only**. Supporter *status* rides `ent`, which is local-only and never touched by reconcile; the native flow sets it via `prov.restore()` at `main.js:3910-3917`, and that code is unreachable in a redirect flow. Without this module the buyer pays 79฿, gets 2,000 coins, and never gets ad removal or the badge.
@@ -1273,9 +1446,72 @@ describe("resolvePendingCheckout", () => {
     expect(readPending(s.store, T0 + 1000)).toBeNull();
   });
 
-  it("never throws when the provider or reconcile explodes", async () => {
+  // The regression this closes: round 1 toasted the reported delta and
+  // re-announced on a later boot; round 2 diffed the wallet and went SILENT
+  // when a concurrent syncEdge folded the credit first. Only the marker is
+  // correct in both directions.
+  it("announces exactly once — a re-run on an already-announced record is silent", async () => {
+    const s = setup();
+    await resolvePendingCheckout(s);
+    expect(s.onCredited).toHaveBeenCalledTimes(1);
+    expect(s.track).toHaveBeenCalledTimes(1);
+
+    // Simulate dying after the announcement but before clearPending.
+    const again = setup({ store: s.store });
+    again.store.set("checkout", { sessionId: "cs_1", productId: "supporter", startedAt: T0, announced: true });
+    await resolvePendingCheckout(again);
+    expect(again.onCredited).not.toHaveBeenCalled();
+    expect(again.track).not.toHaveBeenCalled();
+    // but the entitlement half still runs, and the record is still cleared
+    expect(again.provider.restore).toHaveBeenCalled();
+    expect(readPending(again.store, T0 + 1000)).toBeNull();
+  });
+
+  it("marks announced BEFORE invoking onCredited, so a crash cannot re-announce", async () => {
+    const s = setup({ onCredited: () => { throw new Error("died mid-toast"); } });
+    await resolvePendingCheckout(s).catch(() => {});
+    expect(s.store.get("checkout", null)).toBeTruthy();
+    expect(s.store.get("checkout", null).announced).toBe(true);
+  });
+
+  it("never throws when RECONCILE explodes", async () => {
     const s = setup({ reconcile: async () => { throw new Error("offline"); } });
     await expect(resolvePendingCheckout(s)).resolves.toEqual({ resolved: true, credited: false, delta: 0 });
+  });
+
+  // Separate from the reconcile case on purpose: a single test named "provider or
+  // reconcile" only ever exploded reconcile, so the try/catch around restore()
+  // could be deleted with the suite still green. This module runs early in boot,
+  // so an uncaught throw here is a boot crash, not a failed purchase.
+  it("never throws when provider.restore() THROWS — coins still land, record still clears", async () => {
+    const s = setup({ provider: { restore: async () => { throw new Error("boom"); } } });
+    await expect(resolvePendingCheckout(s)).resolves.toEqual({ resolved: true, credited: true, delta: 2000 });
+    expect(s.onEntitlement).not.toHaveBeenCalled();
+    expect(readPending(s.store, T0 + 1000)).toBeNull();
+  });
+
+  // Pins the SEQUENCE, not just the individual effects. Every effect can fire and
+  // still be wrong: clearing the pending record BEFORE restore() destroys the
+  // crash-resilience property (a tab killed mid-restore must retry on next boot),
+  // and firing analytics before the credit is confirmed reports revenue that may
+  // never land. Both mutations passed all seven original tests.
+  it("pins the ORDER: poll -> credited -> restore -> entitlement -> clear -> track", async () => {
+    const calls = [];
+    const store = fakeStore();
+    writePending(store, { sessionId: "cs_1", productId: "supporter", now: T0 });
+    const remove = store.remove;
+    store.remove = (k) => { calls.push("clear"); return remove(k); };
+    await resolvePendingCheckout({
+      store,
+      provider: { restore: async () => { calls.push("restore"); return { ok: true, ownedProductIds: ["supporter"] }; } },
+      reconcile: async () => { calls.push("poll"); return { ok: true, credits: [{ orderId: "cs_1", delta: 2000 }] }; },
+      sleep: async () => {},
+      now: () => T0 + 1000,
+      onCredited: () => calls.push("credited"),
+      onEntitlement: () => calls.push("entitlement"),
+      track: () => calls.push("track"),
+    });
+    expect(calls).toEqual(["poll", "credited", "restore", "entitlement", "clear", "track"]);
   });
 });
 ```
@@ -1301,7 +1537,7 @@ Create `src/ui/checkout-return.js`:
 // purchase (main.js:3910-3917) — unreachable here, because purchase() returns
 // "pending" and iapBuy exits before the page navigates away. Deliver both, or
 // the buyer pays 79฿, receives 2,000 coins, and is never a Supporter.
-import { readPending, clearPending } from "../monetization/checkout-pending.js";
+import { readPending, clearPending, markAnnounced } from "../monetization/checkout-pending.js";
 import { pollForCredit } from "../monetization/purchase-poll.js";
 
 export async function resolvePendingCheckout({
@@ -1328,7 +1564,14 @@ export async function resolvePendingCheckout({
   // Not yet paid, or a PromptPay QR still unconfirmed. Keep the record.
   if (!credited) return { resolved: true, credited: false, delta: 0 };
 
-  if (typeof onCredited === "function") onCredited(delta);
+  // Persist BEFORE the user-visible effect: if we die between the toast and
+  // clearPending, the next boot must NOT re-announce. Ordering matters —
+  // marking after the toast would leave the same window this closes.
+  const alreadyAnnounced = !!pending.announced;
+  if (!alreadyAnnounced) {
+    try { markAnnounced(store); } catch { /* best effort */ }
+    if (typeof onCredited === "function") onCredited(delta);
+  }
 
   // Entitlement half. A restore failure must NOT hold the coins hostage or
   // resurrect the pending record — the money landed either way, and the
@@ -1344,7 +1587,7 @@ export async function resolvePendingCheckout({
   // The funnel breaks across the redirect otherwise: purchase_start fires in
   // iapBuy (main.js:3821) but purchase_success (main.js:3895) sits in the
   // branch a redirect never reaches.
-  if (typeof track === "function") track("purchase_success", { product: pending.productId });
+  if (!alreadyAnnounced && typeof track === "function") track("purchase_success", { product: pending.productId });
   return { resolved: true, credited: true, delta };
 }
 ```
@@ -1352,7 +1595,7 @@ export async function resolvePendingCheckout({
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run test/checkout-return.test.js`
-Expected: PASS, 7 tests.
+Expected: PASS, 11 tests.
 
 - [ ] **Step 5: Run the full suite and lint**
 
@@ -1457,18 +1700,43 @@ async function resumeCheckout(){
     // reconcile(reason, orderId), so the store and `now` are bound here.
     reconcile: (reason, orderId) => reconcile(store, reason, undefined, orderId),
     sleep: ms => new Promise(res => setTimeout(res, ms)),
-    onCredited: () => {
+    // TELL THE BUYER SOMETHING HAPPENED. Every other successful-purchase path
+    // in this file toasts (iapBuy's credited branch, and both restoreFrom call
+    // sites). Without this a buyer completes a 79฿ PromptPay payment, returns,
+    // and the only sign of it is a number quietly changing in the header chip —
+    // indistinguishable from having done nothing at all.
+    onCredited: (delta) => {
+      // Uses the reported delta, NOT an observed wallet diff. Dedup is owned by
+      // checkout-return's `announced` marker, so this fires exactly once per
+      // purchase. Diffing the wallet here would go silent whenever a concurrent
+      // syncEdge("foreground") folded the credit first — the installed-PWA
+      // suspend/resume path this whole flow exists to handle.
       // Same rehydrate syncEdge relies on: reconcile wrote ALL merged
       // SYNC_KEYS back to the store, not just wallet (main.js:3879-3881).
       rehydrateFromStore();
-      updateWalletChip();
       renderIapSections();
+      // The shop's own balance line is a different element from the header
+      // chip; if the buyer is sitting on the shop screen it would otherwise
+      // stay stale until the next render.
+      if (currentScreen === "shop") renderShop();
+      if (delta > 0) toast(t("iap.success", { coins: Number(delta).toLocaleString() }));
     },
     onEntitlement: (owned) => {
+      const wasSupporter = isSupporter(ent);
       ent = restoreFrom(ent, owned);
       store.set("ent", ent);
       renderAccount();
       renderIapSections();
+      // Only on the transition. Two reasons, and the second is the sharper one:
+      // (a) a pending record can survive to a later boot (24h TTL), and (b)
+      // onEntitlement receives restore()'s FULL owned list, not just the item
+      // just bought — so an existing Supporter buying anything else would get
+      // re-thanked for becoming a Supporter on every purchase without this.
+      // NOTE: toast() has no queue (main.js:375-377) — on a Supporter purchase
+      // this replaces the coins toast a moment later. Accepted: the more
+      // important message wins, matching iapBuy, which likewise shows only the
+      // supporter toast for an entitlement product.
+      if (!wasSupporter && isSupporter(ent)) toast(t("iap.supporterThanks"));
     },
     track: (name, props) => analytics.track(name, props),
   });

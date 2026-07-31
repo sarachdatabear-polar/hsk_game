@@ -56,3 +56,51 @@ describe("getProvider web selection", () => {
     expect(getProvider().kind).toBe("mock");
   });
 });
+
+describe("provider selection — stripe web", () => {
+  const stripeOpts = {
+    stripe: { checkoutUrl: "https://fn/stripe-checkout", isNative: () => false, isFileProtocol: () => false },
+  };
+
+  it("selects stripe-web on web when a checkout url is configured", () => {
+    expect(getProvider(stripeOpts).kind).toBe("stripe-web");
+  });
+
+  it("prefers stripe-web over revenuecat-web when both are configured", () => {
+    const p = getProvider({ ...stripeOpts, revenuecatWeb: { apiKey: "rcb_x", sdk: {}, isNative: () => false } });
+    expect(p.kind).toBe("stripe-web");
+  });
+
+  it("falls back to mock when the stripe checkout url is blank (shipped dark)", () => {
+    expect(getProvider({ stripe: { checkoutUrl: "", isNative: () => false } }).kind).toBe("mock");
+  });
+
+  it("never selects stripe-web on native — RevenueCat owns Android", () => {
+    const p = getProvider({ stripe: { checkoutUrl: "https://fn/x", isNative: () => true } });
+    expect(p.kind).not.toBe("stripe-web");
+  });
+
+  // The test above overrides stripe.isNative, so it only exercises Stripe's OWN
+  // guard and passes under any branch order. This one pins the ORDER: RC is
+  // native-configured while Stripe uses the real shared isNative (false under
+  // vitest), so if the Stripe branch were moved above the native RC branch,
+  // Stripe would win and this fails.
+  it("pins branch ORDER: a native-configured RevenueCat beats a configured Stripe", () => {
+    const p = getProvider({
+      revenuecat: { apiKey: "goog_real_key", isNative: () => true },
+      stripe: { checkoutUrl: "https://fn/x" },
+    });
+    expect(p.kind).toBe("revenuecat");
+  });
+
+  it("tolerates a null store — purchase resolves rather than throwing", async () => {
+    const p = getProvider({ stripe: { checkoutUrl: "https://fn/x", isNative: () => false, isFileProtocol: () => false } });
+    expect(p.kind).toBe("stripe-web");
+    await expect(p.purchase("supporter")).resolves.toEqual({ ok: false, reason: "needs-account" });
+  });
+
+  it("never selects stripe-web on file://", () => {
+    const p = getProvider({ stripe: { checkoutUrl: "https://fn/x", isNative: () => false, isFileProtocol: () => true } });
+    expect(p.kind).not.toBe("stripe-web");
+  });
+});

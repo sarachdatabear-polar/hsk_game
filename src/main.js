@@ -41,7 +41,7 @@ import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dro
 import { journeyNodes, currentNodeId } from "./journey.js";
 import { normalizeProfile, normalizeDisplayName, profileInitial, profileStats, bestSessionScore, equippedSummary } from "./profile.js";
 import { accountState, accountView, canSendCode, codeLooksValid } from "./account.js";
-import { getSession, ensureGuest, sendCode, verifyCode, saveDisplayName, signOut, deleteAccount } from "./cloud.js";
+import { getSession, ensureGuest, sendCode, verifyCode, saveDisplayName, signOut, deleteAccount, listEntitlements } from "./cloud.js";
 import { SYNC_KEYS } from "./merge.js";
 import { createStore } from "./storage.js";
 import { runMigrations } from "./migrations.js";
@@ -52,8 +52,10 @@ import { defaultEnt, isSupporter, applyPurchase, restoreFrom } from "./monetizat
 import { getProvider } from "./monetization/provider.js";
 import { REVENUECAT_WEB_PUBLIC_KEY } from "./monetization/revenuecat-config.js";
 import { loadWebBillingSdk } from "./monetization/revenuecat-web-sdk.js";
+import { STRIPE_CHECKOUT_URL } from "./monetization/stripe-config.js";
 import { iapVisible } from "./monetization/gating.js";
 import { pollForCredit } from "./monetization/purchase-poll.js";
+import { resolvePendingCheckout } from "./ui/checkout-return.js";
 import { createQuestSession } from "./quest-session.js";
 import { questFeedbackFor } from "./quest-feedback.js";
 import { questResultsSummary } from "./quest-results.js";
@@ -217,7 +219,25 @@ function provider(){
   if(!iapProvider) iapProvider = getProvider({
     get: (k,d)=>store.get(k,d),
     set: (k,v)=>store.set(k,v),
+    remove: (k)=>store.remove(k),
     ensureUserId: ensureIapUserId,
+    stripe: {
+      store: { get:(k,d)=>store.get(k,d), set:(k,v)=>store.set(k,v), remove:(k)=>store.remove(k) },
+      getAccessToken: async () => {
+        const s = accountUI.session;
+        return (s && s.access_token) || null;
+      },
+      // A Supabase anonymous session is a valid session — treat "no email" as
+      // anonymous, matching the server-side check in stripe-checkout.
+      isAnonymous: async () => {
+        const u = accountUI.session && accountUI.session.user;
+        return !u || !!u.is_anonymous || !u.email;
+      },
+      fetchEntitlements: async () => {
+        const rows = await listEntitlements();      // see cloud.js
+        return rows;
+      },
+    },
   });
   return iapProvider;
 }
@@ -228,6 +248,10 @@ let webBillingLoaded = false;
 // Blank key (shipped-dark) => early return, chunk never fetched, provider stays mock.
 async function ensureWebBilling(){
   if(webBillingLoaded) return;
+  // Stripe owns web billing now (it is the only path that can surface
+  // PromptPay). If a Stripe provider is already selected, never swap it out
+  // from under the shop — this is the landmine the design called out.
+  if(iapProvider && iapProvider.kind === "stripe-web") return;
   const eligible = REVENUECAT_WEB_PUBLIC_KEY.trim() && !isNative()
     && (typeof location === "undefined" || location.protocol !== "file:");
   if(!eligible) return;
@@ -483,9 +507,12 @@ const avatarPicker = createAvatarPicker({
 // Supporter placement (go-live step 7): quiet line at peak moments on results.
 // supporterOn mirrors the shop's gate, plus the configured-but-chunk-not-yet-
 // loaded web case (ensureWebBilling only runs on shop-open; the CTA routes
-// through the shop, which loads it). Blank key + no provider => always hidden.
+// through the shop, which loads it). Follows whichever web billing path is
+// configured: Stripe is the live one, RC-web stays checked until that path
+// is deleted. Both blank => always hidden.
 const webSupporterConfigured = () =>
-  !!REVENUECAT_WEB_PUBLIC_KEY.trim() && !isNative()
+  (!!STRIPE_CHECKOUT_URL.trim() || !!REVENUECAT_WEB_PUBLIC_KEY.trim())
+  && !isNative()
   && (typeof location === "undefined" || location.protocol !== "file:");
 const supporterRow = createSupporterMomentRow({
   $, store,
@@ -1359,6 +1386,7 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()
     // configured + off-native + not file://). Fire-and-forget: it re-renders
     // the IAP sections itself once the sdk-backed provider is ready.
     ensureWebBilling();
+    resumeCheckout();
     const fromProfile = currentScreen === "progress";
     const back = $("#shop-back");
     back.dataset.go = fromProfile ? "progress" : "home";
@@ -3866,6 +3894,12 @@ async function iapBuy(p, btn){
     // is not a failure (the store transaction may still resolve), so it does
     // not fire an event here.
     if(r.reason === "pending") toast(t("iap.processing"));
+    else if(r.reason === "needs-account"){
+      analytics.track("purchase_fail", { product: p.id, reason: "needs-account" });
+      toast(t("iap.needsAccountBody"));
+      show("account");
+      return;
+    }
     else if(r.reason !== "cancelled"){ toast(t("iap.failed")); analytics.track("purchase_fail", { product: p.id, reason: "provider_error" }); }
     else analytics.track("purchase_fail", { product: p.id, reason: "cancelled" });
     return;
@@ -4242,6 +4276,78 @@ updateNav(currentScreen);
 // loop) even before the shop screen has ever been rendered — the elements
 // it touches are static markup, always present in the DOM.
 iapVisible(provider(), iapEnabled()).then(v => { iapOn = v; renderIapSections(); });
+// Stripe checkout return. Runs at boot (not only on the success URL) because
+// an installed iOS PWA can lose the redirect to Safari and never come back,
+// and because PromptPay can confirm long after the tab closed. Also called on
+// shop-open (below), which can land mid-poll of the boot call (pollForCredit
+// is up to 3 tries x 2s) — resumingCheckout serialises the two calls.
+// checkout-return's `announced` marker already stops a re-announce ACROSS
+// boots, but it can't stop two concurrent in-session calls that both read
+// the pending record before either has written the marker; this guard
+// closes that same-session race and avoids a redundant concurrent reconcile.
+let resumingCheckout = false;
+async function resumeCheckout(){
+  if(resumingCheckout) return;
+  resumingCheckout = true;
+  try{
+    const url = new URL(location.href);
+    if(url.searchParams.has("session_id")){
+      url.searchParams.delete("session_id");
+      history.replaceState({}, "", url.toString());   // don't leave it in the address bar
+    }
+    await resolvePendingCheckout({
+      store,
+      provider: provider(),
+      // EXACT adapter shape already used at main.js:3874 — sync.js's signature is
+      // reconcile(store, reason, now, expectedOrderId), but pollForCredit calls
+      // reconcile(reason, orderId), so the store and `now` are bound here.
+      reconcile: (reason, orderId) => reconcile(store, reason, undefined, orderId),
+      sleep: ms => new Promise(res => setTimeout(res, ms)),
+      // TELL THE BUYER SOMETHING HAPPENED. Every other successful-purchase path
+      // in this file toasts (iapBuy's credited branch, and both restoreFrom call
+      // sites). Without this a buyer completes a 79฿ PromptPay payment, returns,
+      // and the only sign of it is a number quietly changing in the header chip —
+      // indistinguishable from having done nothing at all.
+      onCredited: (delta) => {
+        // Uses the reported delta, NOT an observed wallet diff. Dedup is owned by
+        // checkout-return's `announced` marker, so this fires exactly once per
+        // purchase. Diffing the wallet here would go silent whenever a concurrent
+        // syncEdge("foreground") folded the credit first — the installed-PWA
+        // suspend/resume path this whole flow exists to handle.
+        // Same rehydrate syncEdge relies on: reconcile wrote ALL merged
+        // SYNC_KEYS back to the store, not just wallet (main.js:3879-3881).
+        rehydrateFromStore();
+        renderIapSections();
+        // The shop's own balance line is a different element from the header
+        // chip; if the buyer is sitting on the shop screen it would otherwise
+        // stay stale until the next render.
+        if (currentScreen === "shop") renderShop();
+        if (delta > 0) toast(t("iap.success", { coins: Number(delta).toLocaleString() }));
+      },
+      onEntitlement: (owned) => {
+        const wasSupporter = isSupporter(ent);
+        ent = restoreFrom(ent, owned);
+        store.set("ent", ent);
+        renderAccount();
+        renderIapSections();
+        // Only on the transition. Two reasons, and the second is the sharper one:
+        // (a) a pending record can survive to a later boot (24h TTL), and (b)
+        // onEntitlement receives restore()'s FULL owned list, not just the item
+        // just bought — so an existing Supporter buying anything else would get
+        // re-thanked for becoming a Supporter on every purchase without this.
+        // NOTE: toast() has no queue (main.js:375-377) — on a Supporter purchase
+        // this replaces the coins toast a moment later. Accepted: the more
+        // important message wins, matching iapBuy, which likewise shows only the
+        // supporter toast for an entitlement product.
+        if (!wasSupporter && isSupporter(ent)) toast(t("iap.supporterThanks"));
+      },
+      track: (name, props) => analytics.track(name, props),
+    });
+  } finally {
+    resumingCheckout = false;
+  }
+}
+resumeCheckout();
 if(location.hash === "#debug"){
   window.__debugTarget = ()=> B.zombie && B.zombie.w.h;
   window.__grantXp = n => { addXp(n); };
