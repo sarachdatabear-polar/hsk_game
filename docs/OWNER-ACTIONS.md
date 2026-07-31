@@ -228,7 +228,9 @@ let it run in the background while you do steps 1–2.
       `src/monetization/stripe-config.js` (the publishable key is safe to
       commit; never the secret key) and ship. The client code is already
       merged dark; a blank `STRIPE_CHECKOUT_URL` is a pure no-op.
-   6. **Live gate — do all four before advertising the 79฿ price**, because
+   6. **Live gate — do all four checks below before advertising the 79฿
+      price** (the fifth bullet is a diagnosis hint, not a fifth check),
+      because
       neither edge function can be unit-tested (Deno TS does not run under
       vitest and `eslint.config.mjs` ignores `supabase/`) — this is the only
       verification they get before real money moves through them.
@@ -242,8 +244,19 @@ let it run in the background while you do steps 1–2.
       broken even though nothing was lost. Starting the test from the wrong
       origin will make a working feature look broken.
       - **One real PromptPay checkout** — confirm PromptPay actually
-        surfaces at Stripe Checkout for a THB one-time purchase, and that the
-        entitlement lands after payment confirms.
+        surfaces at Stripe Checkout for a THB one-time purchase.
+        **PromptPay settles ASYNCHRONOUSLY, so expect TWO webhook
+        deliveries and do not read the success page as a pass.** The first,
+        `checkout.session.completed`, normally arrives with
+        `payment_status: "unpaid"` — the QR has been shown, the money has
+        not arrived — and is correctly IGNORED with
+        `{"ignored":"not-paid"}`. The grant rides the *later*
+        `checkout.session.async_payment_succeeded` delivery.
+        **PASS = that second delivery returns `{"ok":true}` in the Stripe
+        delivery log AND the in-game wallet balance actually increases AND
+        Supporter status appears.** A rendered Stripe success page proves
+        only that the buyer paid, not that anything was granted — and
+        "paid but not granted" is the one failure that costs real money.
       - **One real card checkout** — confirm the card path also grants.
       - **One abandoned checkout** — start and walk away; confirm no
         entitlement is granted and no coins move.
