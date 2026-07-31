@@ -48,6 +48,12 @@
     /* PRD v5 core palette (docs/art/STYLE-TOKENS.md §1 — enforced by test/style-tokens.test.js) */
     --lc-green:#32775E; --lc-sky:#5DAADD; --lc-sun:#F2BC57; --lc-coral:#E69777;
     --lc-brown:#846043; --lc-gray:#B2AEA9; --lc-cream:#FBF5E8; --lc-teal:#1F4D4A;
+    /* Idle bottom-nav label. Separate from --lc-gray on purpose: it sits on the
+       teal bar and must clear WCAG AA 4.5:1 there (#B2AEA9 measured 4.29:1),
+       whereas --lc-gray's other uses sit on cream and are DELIBERATELY faint
+       (locked stickers, empty stars, the dimmed combo flame). Lightening the
+       shared token would have fixed the nav and washed those out. */
+    --lc-nav-idle:#B8B4AF;
     --lc-success:#28723B; --lc-error:#C95A41; --lc-sand:#EAC796; --lc-ink:#2E2A24;
     /* derived shades (STYLE-TOKENS.md §2): gradients, borders, 3D press shadows */
     --lc-sun-hi:#FFE59B; --lc-sun-deep:#D99A2E; --lc-sun-shadow:#B97A1E;
@@ -516,7 +522,7 @@
     background-color:var(--lc-teal); border-radius:18px;
     box-shadow:0 -2px 10px rgba(0,0,0,.2); z-index:18;}
   .nav-btn{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:2px; min-height:48px; padding:5px 2px; background:none; color:var(--lc-gray);
+    gap:2px; min-height:48px; padding:5px 2px; background:none; color:var(--lc-nav-idle);
     font-size:11px; font-weight:600; border-radius:14px;}
   .nav-btn .asset-icon{width:21px; height:21px;}
   .nav-btn.active{background-color:var(--lc-sun); color:var(--lc-teal);}

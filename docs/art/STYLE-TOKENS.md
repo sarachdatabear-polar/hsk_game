@@ -18,6 +18,7 @@ shadows/washes built from ink `rgba(46,42,36,α)` or cream `rgba(251,245,232,α)
 | `--lc-coral` | `#E69777` | Warm accents, "still learning", gentle wrong-family |
 | `--lc-brown` | `#846043` | Wood, outlines, muted/accent text on cream |
 | `--lc-gray` | `#B2AEA9` | Disabled controls, empty states (never body text) |
+| `--lc-nav-idle` | `#B8B4AF` | Idle bottom-nav label ONLY. Deliberately separate from `--lc-gray`: it sits on `--lc-teal` and must clear WCAG AA 4.5:1 there (`--lc-gray` measured 4.29:1), while `--lc-gray`'s other uses sit on cream and are intentionally faint. |
 | `--lc-cream` | `#FBF5E8` | Global background, paper cards, plaque surfaces, text on dark fills |
 | `--lc-teal` | `#1F4D4A` | Bottom nav, dark UI bars, icon accents, links |
 | `--lc-success` | `#28723B` | Correct answer, success plaques |
