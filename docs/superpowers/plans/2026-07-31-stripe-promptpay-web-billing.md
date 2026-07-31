@@ -516,7 +516,7 @@ export function parseCheckoutRequest(body) {
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run test/stripe-checkout.test.js`
-Expected: PASS, 8 tests.
+Expected: PASS, 11 tests.
 
 - [ ] **Step 5: Write the Deno wrapper**
 
@@ -645,9 +645,14 @@ git commit -m "feat(billing): stripe-checkout edge function
 Creates a hosted Checkout Session with PromptPay first and card as fallback.
 Derives the user id from the caller's own verified JWT and refuses anonymous
 sessions explicitly -- a Supabase anon JWT is still a valid JWT. Refuses when
-the entitlement is already held and expires any prior session, since two live
-sessions have different ids and would both charge. CORS shell follows
-delete-account, not rc-webhook. Stripe API version pinned."
+the entitlement is already held, and expires the session this device last
+recorded, which NARROWS the concurrent double-charge window without closing
+it: it relies on the client reporting its own prior session id, so two tabs
+or two devices still create two live sessions. Real protection is the
+webhook's idempotent grant. The body is read EXACTLY ONCE and parsed by
+core.js's parseCheckoutRequest -- req.clone() throws once the body is
+consumed, and a try/catch around it swallows the throw silently. CORS shell
+follows delete-account, not rc-webhook. Stripe API version pinned."
 ```
 
 ---
