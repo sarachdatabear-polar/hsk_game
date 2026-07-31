@@ -180,8 +180,15 @@ provider is available (`main.js:4244`, `gating.js`). Server-side refusal alone w
 surface as a generic `iap.failed` toast.
 
 - **Client:** `purchase()` detects the anonymous state and returns a distinct reason
-  (`"needs-account"`); the card renders a *sign in to buy* state that routes to the
-  sign-in sheet rather than to checkout.
+  (`"needs-account"`), and `iapBuy` routes to the account screen with an explanatory
+  toast rather than the generic failure toast. **SHIPPED.**
+- **DEFERRED to a follow-up task, not built here:** rendering a *sign in to buy* STATE on
+  the shop card itself, before the tap. The tap-time routing above covers the flow; the
+  card state is polish. When it is built, use the **synchronous**
+  `accountState(accountUI.session)` already used elsewhere in `main.js` — NOT
+  `provider.isAnonymous()`, which is async. An earlier draft of this spec deferred the
+  card state on the grounds that it would need an async check at render time; that
+  reasoning was wrong and should not be recycled as a reason to keep deferring it.
 - **Server:** a Supabase anonymous JWT is a **valid** JWT. `index.ts` must check the
   `is_anonymous` claim / email presence explicitly — verifying the signature is not
   enough.
