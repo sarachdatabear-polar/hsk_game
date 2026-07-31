@@ -507,7 +507,6 @@ export const STRINGS = {
     // Web Supporter offer + account save-unlock copy (Task 5, web IAP billing)
     "iap.supporter.web.title": "Become a Supporter",
     "iap.supporter.web.blurb": "Support the project — a thank-you cosmetic, a Supporter badge, 2,000 coins, and ad-free on the mobile app. One payment, yours everywhere.",
-    "iap.needsAccount": "Sign in to buy",
     "iap.needsAccountBody": "Create a free account so your purchase follows you to any device.",
     "account.supporterChip": "Supporter ♥",
     "item.supporter": "Supporter Pack",
@@ -1136,7 +1135,6 @@ export const STRINGS = {
     // Web Supporter offer + account save-unlock copy (Task 5, web IAP billing) — TH-REVIEW: queued for native spot-check
     "iap.supporter.web.title": "เป็นผู้สนับสนุน",
     "iap.supporter.web.blurb": "สนับสนุนโปรเจกต์ — รับไอเทมขอบคุณ ตราผู้สนับสนุน เหรียญ 2,000 และไม่มีโฆษณาบนแอปมือถือ จ่ายครั้งเดียว ใช้ได้ทุกเครื่อง",
-    "iap.needsAccount": "เข้าสู่ระบบเพื่อซื้อ",                      // TH-REVIEW
     "iap.needsAccountBody": "สร้างบัญชีฟรี เพื่อให้การซื้อของคุณติดตามไปได้ทุกอุปกรณ์",   // TH-REVIEW
     "account.supporterChip": "ผู้สนับสนุน ♥",
     "item.supporter": "แพ็กผู้สนับสนุน",
