@@ -969,12 +969,45 @@ describe("stripeWebProvider", () => {
     expect(await p.restore()).toEqual({ ok: false, reason: "unavailable" });
   });
 
-  it("never throws from any method", async () => {
-    const boom = () => { throw new Error("x"); };
-    const p = make({ ensureUserId: boom, fetchEntitlements: boom, getAccessToken: boom });
-    await expect(p.available()).resolves.toBeDefined();
-    await expect(p.purchase("supporter")).resolves.toBeDefined();
-    await expect(p.restore()).resolves.toBeDefined();
+  // ONE THROW SITE PER TEST, and assert the DOCUMENTED SHAPE, not definedness.
+  // A single test that booms every dependency at once is worthless here: with
+  // ensureUserId also throwing it fires FIRST inside both purchase() and
+  // restore(), so getAccessToken's and fetchEntitlements' catches are never
+  // reached and stay dead. And `.resolves.toBeDefined()` passes for any resolved
+  // value — it proves "did not reject", not "returned the contract's shape".
+  it("purchase resolves {failed} when ensureUserId throws", async () => {
+    const p = make({ ensureUserId: () => { throw new Error("x"); } });
+    expect(await p.purchase("supporter")).toEqual({ ok: false, reason: "failed" });
+  });
+
+  it("purchase resolves {failed} when getAccessToken throws", async () => {
+    const p = make({ getAccessToken: () => { throw new Error("x"); } });
+    expect(await p.purchase("supporter")).toEqual({ ok: false, reason: "failed" });
+  });
+
+  it("restore resolves {unavailable} when ensureUserId throws", async () => {
+    const p = make({ ensureUserId: () => { throw new Error("x"); } });
+    expect(await p.restore()).toEqual({ ok: false, reason: "unavailable" });
+  });
+
+  it("restore resolves {unavailable} when fetchEntitlements throws", async () => {
+    const p = make({ fetchEntitlements: () => { throw new Error("x"); } });
+    expect(await p.restore()).toEqual({ ok: false, reason: "unavailable" });
+  });
+
+  // Discriminates readPending from a raw store.get: an ancient startedAt is past
+  // the TTL, so readPending returns null and the prior id must be empty. A raw
+  // store.get would send "cs_stale".
+  it("ignores an EXPIRED pending record rather than sending a stale prior id", async () => {
+    const store = fakeStore();
+    store.set("checkout", { sessionId: "cs_stale", productId: "supporter", startedAt: 1 });
+    let sentBody = null;
+    const p = make({ store, fetchImpl: async (_url, opts) => {
+      sentBody = JSON.parse(opts.body);
+      return { ok: true, json: async () => ({ url: "https://stripe/pay", sessionId: "cs_new" }) };
+    } });
+    await p.purchase("supporter");
+    expect(sentBody.priorSessionId).toBe("");
   });
 });
 ```
@@ -1125,7 +1158,7 @@ export function stripeWebProvider(opts = {}) {
 - [ ] **Step 5: Run tests to verify they pass**
 
 Run: `npx vitest run test/provider-stripe-web.test.js`
-Expected: PASS, 20 tests.
+Expected: PASS, 24 tests.
 
 - [ ] **Step 6: Run the full suite and lint**
 
