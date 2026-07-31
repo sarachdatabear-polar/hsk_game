@@ -99,8 +99,8 @@ Deploy normally (JWT verification ON — it authenticates the caller):
 
 Secret: `STRIPE_SECRET_KEY` (`sk_live_…`). Never commit it.
 
-Same requirement as `rc-webhook` above: verify the deployed JWT setting with
-`supabase functions list` (or the Dashboard → Edge Functions → function →
-Details) after deploying both — the CLI does not prompt or warn if you deploy
-`stripe-webhook` without `--no-verify-jwt`, it just silently ships a function
-that will 401 every real Stripe delivery.
+Same requirement as `rc-webhook` above: after deploying both, verify the
+setting in the Dashboard → **Edge Functions → function → Details** — the CLI
+does not prompt or warn if you deploy `stripe-webhook` without
+`--no-verify-jwt`, it just silently ships a function that will 401 every real
+Stripe delivery.
