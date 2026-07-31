@@ -4274,8 +4274,11 @@ iapVisible(provider(), iapEnabled()).then(v => { iapOn = v; renderIapSections();
 // an installed iOS PWA can lose the redirect to Safari and never come back,
 // and because PromptPay can confirm long after the tab closed. Also called on
 // shop-open (below), which can land mid-poll of the boot call (pollForCredit
-// is up to 3 tries x 2s) — resumingCheckout guards against a double
-// readPending()/reconcile()/track("purchase_success") for one checkout.
+// is up to 3 tries x 2s) — resumingCheckout serialises the two calls.
+// checkout-return's `announced` marker already stops a re-announce ACROSS
+// boots, but it can't stop two concurrent in-session calls that both read
+// the pending record before either has written the marker; this guard
+// closes that same-session race and avoids a redundant concurrent reconcile.
 let resumingCheckout = false;
 async function resumeCheckout(){
   if(resumingCheckout) return;
@@ -4299,29 +4302,21 @@ async function resumeCheckout(){
       // sites). Without this a buyer completes a 79฿ PromptPay payment, returns,
       // and the only sign of it is a number quietly changing in the header chip —
       // indistinguishable from having done nothing at all.
-      onCredited: () => {
-        // Toast the ACTUAL wallet change, not pollForCredit's reported delta.
-        // They differ on a re-check: a pending record can survive to a later boot
-        // (24h TTL, or a tab killed during the restore() await), and sync.js's
-        // expectedOrderId lookup then re-confirms the SAME ledger row with its
-        // original non-zero delta — deliberately, for confirmation — while
-        // explicitly NOT folding it into the wallet, since it is older than the
-        // cursor (sync.js:184-196, "never add it to `unseen`"). Toasting the
-        // reported delta would announce "+2,000 coins added!" with no matching
-        // balance change. Reading the wallet across the rehydrate says what
-        // actually happened.
-        const before = wallet;
+      onCredited: (delta) => {
+        // Uses the reported delta, NOT an observed wallet diff. Dedup is owned by
+        // checkout-return's `announced` marker, so this fires exactly once per
+        // purchase. Diffing the wallet here would go silent whenever a concurrent
+        // syncEdge("foreground") folded the credit first — the installed-PWA
+        // suspend/resume path this whole flow exists to handle.
         // Same rehydrate syncEdge relies on: reconcile wrote ALL merged
         // SYNC_KEYS back to the store, not just wallet (main.js:3879-3881).
         rehydrateFromStore();
-        updateWalletChip();
         renderIapSections();
         // The shop's own balance line is a different element from the header
         // chip; if the buyer is sitting on the shop screen it would otherwise
         // stay stale until the next render.
         if (currentScreen === "shop") renderShop();
-        const gained = wallet - before;
-        if (gained > 0) toast(t("iap.success", { coins: gained.toLocaleString() }));
+        if (delta > 0) toast(t("iap.success", { coins: Number(delta).toLocaleString() }));
       },
       onEntitlement: (owned) => {
         const wasSupporter = isSupporter(ent);

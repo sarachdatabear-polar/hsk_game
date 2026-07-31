@@ -74,6 +74,34 @@ describe("resolvePendingCheckout", () => {
     expect(readPending(s.store, T0 + 1000)).toBeNull();
   });
 
+  // The regression this closes: round 1 toasted the reported delta and
+  // re-announced on a later boot; round 2 diffed the wallet and went SILENT
+  // when a concurrent syncEdge folded the credit first. Only the marker is
+  // correct in both directions.
+  it("announces exactly once — a re-run on an already-announced record is silent", async () => {
+    const s = setup();
+    await resolvePendingCheckout(s);
+    expect(s.onCredited).toHaveBeenCalledTimes(1);
+    expect(s.track).toHaveBeenCalledTimes(1);
+
+    // Simulate dying after the announcement but before clearPending.
+    const again = setup({ store: s.store });
+    again.store.set("checkout", { sessionId: "cs_1", productId: "supporter", startedAt: T0, announced: true });
+    await resolvePendingCheckout(again);
+    expect(again.onCredited).not.toHaveBeenCalled();
+    expect(again.track).not.toHaveBeenCalled();
+    // but the entitlement half still runs, and the record is still cleared
+    expect(again.provider.restore).toHaveBeenCalled();
+    expect(readPending(again.store, T0 + 1000)).toBeNull();
+  });
+
+  it("marks announced BEFORE invoking onCredited, so a crash cannot re-announce", async () => {
+    const s = setup({ onCredited: () => { throw new Error("died mid-toast"); } });
+    await resolvePendingCheckout(s).catch(() => {});
+    expect(s.store.get("checkout", null)).toBeTruthy();
+    expect(s.store.get("checkout", null).announced).toBe(true);
+  });
+
   it("never throws when RECONCILE explodes", async () => {
     const s = setup({ reconcile: async () => { throw new Error("offline"); } });
     await expect(resolvePendingCheckout(s)).resolves.toEqual({ resolved: true, credited: false, delta: 0 });

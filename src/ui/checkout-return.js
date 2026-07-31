@@ -9,7 +9,7 @@
 // purchase (main.js:3910-3917) — unreachable here, because purchase() returns
 // "pending" and iapBuy exits before the page navigates away. Deliver both, or
 // the buyer pays 79฿, receives 2,000 coins, and is never a Supporter.
-import { readPending, clearPending } from "../monetization/checkout-pending.js";
+import { readPending, clearPending, markAnnounced } from "../monetization/checkout-pending.js";
 import { pollForCredit } from "../monetization/purchase-poll.js";
 
 export async function resolvePendingCheckout({
@@ -36,7 +36,14 @@ export async function resolvePendingCheckout({
   // Not yet paid, or a PromptPay QR still unconfirmed. Keep the record.
   if (!credited) return { resolved: true, credited: false, delta: 0 };
 
-  if (typeof onCredited === "function") onCredited(delta);
+  // Persist BEFORE the user-visible effect: if we die between the toast and
+  // clearPending, the next boot must NOT re-announce. Ordering matters —
+  // marking after the toast would leave the same window this closes.
+  const alreadyAnnounced = !!pending.announced;
+  if (!alreadyAnnounced) {
+    try { markAnnounced(store); } catch { /* best effort */ }
+    if (typeof onCredited === "function") onCredited(delta);
+  }
 
   // Entitlement half. A restore failure must NOT hold the coins hostage or
   // resurrect the pending record — the money landed either way, and the
@@ -52,6 +59,6 @@ export async function resolvePendingCheckout({
   // The funnel breaks across the redirect otherwise: purchase_start fires in
   // iapBuy (main.js:3821) but purchase_success (main.js:3895) sits in the
   // branch a redirect never reaches.
-  if (typeof track === "function") track("purchase_success", { product: pending.productId });
+  if (!alreadyAnnounced && typeof track === "function") track("purchase_success", { product: pending.productId });
   return { resolved: true, credited: true, delta };
 }

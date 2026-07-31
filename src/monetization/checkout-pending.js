@@ -28,10 +28,25 @@ export function readPending(store, now = Date.now()) {
   const startedAt = Number(raw.startedAt) || 0;
   // Drop it rather than leave a tombstone we re-read on every boot.
   if (now - startedAt > PENDING_TTL_MS) { clearPending(store); return null; }
-  return { sessionId: raw.sessionId, productId: raw.productId, startedAt };
+  return { sessionId: raw.sessionId, productId: raw.productId, startedAt, announced: !!raw.announced };
 }
 
 export function clearPending(store) {
   if (typeof store.remove === "function") store.remove(KEY);
   else store.set(KEY, null);
+}
+
+// "Have we already told the buyer about this purchase?" — durable, because the
+// answer must survive the process dying between announcing and clearing.
+//
+// Neither of the obvious alternatives works. Toasting pollForCredit's reported
+// delta re-announces on a later boot, because sync.js's expectedOrderId lookup
+// deliberately re-confirms an already-folded row. Toasting the observed wallet
+// change instead goes SILENT when a concurrent syncEdge("foreground") folds the
+// credit first — which is precisely the installed-PWA suspend/resume path this
+// whole flow exists to handle. Only a record of having announced is correct in
+// both cases.
+export function markAnnounced(store) {
+  const raw = store.get(KEY, null);
+  if (raw && typeof raw === "object") store.set(KEY, { ...raw, announced: true });
 }
