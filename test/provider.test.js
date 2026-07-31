@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getProvider } from "../src/monetization/provider.js";
+import { STRIPE_SITE_ORIGIN } from "../src/monetization/stripe-config.js";
 
 // Injected RevenueCat opts so no test touches the real SDK or Capacitor.
 const rcOpts = (over) => ({ revenuecat: { apiKey: "rc_test_key", isNative: () => true, sdk: {}, ...over } });
@@ -94,9 +95,24 @@ describe("provider selection — stripe web", () => {
   });
 
   it("tolerates a null store — purchase resolves rather than throwing", async () => {
-    const p = getProvider({ stripe: { checkoutUrl: "https://fn/x", isNative: () => false, isFileProtocol: () => false } });
+    // getOrigin is injected because there is no `location` under vitest: the
+    // real default reads location.origin, and the origin gate correctly
+    // refuses an empty one. Stand in for the browser so this keeps testing the
+    // null-store path it was written for.
+    const p = getProvider({ stripe: {
+      checkoutUrl: "https://fn/x", isNative: () => false, isFileProtocol: () => false,
+      getOrigin: () => STRIPE_SITE_ORIGIN,
+    } });
     expect(p.kind).toBe("stripe-web");
     await expect(p.purchase("supporter")).resolves.toEqual({ ok: false, reason: "needs-account" });
+  });
+
+  it("defaults the origin pin to the shipped canonical origin, so a bridge purchase is refused", async () => {
+    const p = getProvider({ stripe: {
+      checkoutUrl: "https://fn/x", isNative: () => false, isFileProtocol: () => false,
+      getOrigin: () => "https://sarachdatabear-polar.github.io",
+    } });
+    await expect(p.purchase("supporter")).resolves.toEqual({ ok: false, reason: "wrong-origin" });
   });
 
   it("never selects stripe-web on file://", () => {

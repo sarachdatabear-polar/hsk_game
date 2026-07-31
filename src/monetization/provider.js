@@ -32,7 +32,7 @@ import {
   REVENUECAT_WEB_PRODUCT_IDS,
   REVENUECAT_WEB_RESTORABLE_PRODUCT_IDS,
 } from "./revenuecat-config.js";
-import { STRIPE_CHECKOUT_URL, STRIPE_WEB_PRODUCT_IDS } from "./stripe-config.js";
+import { STRIPE_CHECKOUT_URL, STRIPE_SITE_ORIGIN, STRIPE_WEB_PRODUCT_IDS } from "./stripe-config.js";
 
 export function getProvider(opts = {}) {
   const rc = opts.revenuecat || {};
@@ -76,6 +76,8 @@ export function getProvider(opts = {}) {
       getAccessToken: stripe.getAccessToken,
       isAnonymous: stripe.isAnonymous,
       fetchEntitlements: stripe.fetchEntitlements,
+      canonicalOrigin: stripe.canonicalOrigin == null ? STRIPE_SITE_ORIGIN : stripe.canonicalOrigin,
+      getOrigin: stripe.getOrigin,
     });
   }
   const rcw = opts.revenuecatWeb || {};

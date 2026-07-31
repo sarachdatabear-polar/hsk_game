@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { stripeWebProvider } from "../src/monetization/provider-stripe-web.js";
+import { isReturnableOrigin, stripeWebProvider } from "../src/monetization/provider-stripe-web.js";
 
 function fakeStore() {
   const map = new Map();
@@ -176,5 +176,82 @@ describe("stripeWebProvider", () => {
     } });
     await p.purchase("supporter");
     expect(sentBody.priorSessionId).toBe("");
+  });
+});
+
+// P0-4: the checkout's return leg is pinned to ONE origin server-side, so a
+// purchase started anywhere else strands the buyer on a host that cannot see
+// the grant. Refuse before any money moves.
+const CANON = "https://luckycathsk.com";
+
+describe("isReturnableOrigin", () => {
+  it("accepts the canonical origin and ignores a trailing slash on either side", () => {
+    expect(isReturnableOrigin(CANON, CANON)).toBe(true);
+    expect(isReturnableOrigin(`${CANON}/`, CANON)).toBe(true);
+    expect(isReturnableOrigin(CANON, `${CANON}/`)).toBe(true);
+  });
+
+  it("rejects the hosts that serve this same bundle from another origin", () => {
+    expect(isReturnableOrigin("https://sarachdatabear-polar.github.io", CANON)).toBe(false);
+    expect(isReturnableOrigin("https://lucky-cat-hsk.sarach-northbear.workers.dev", CANON)).toBe(false);
+  });
+
+  it("rejects a lookalike host rather than matching on a substring", () => {
+    expect(isReturnableOrigin("https://luckycathsk.com.evil.test", CANON)).toBe(false);
+    expect(isReturnableOrigin("https://www.luckycathsk.com", CANON)).toBe(false);
+    // Same host, wrong scheme — the return leg is https-only.
+    expect(isReturnableOrigin("http://luckycathsk.com", CANON)).toBe(false);
+  });
+
+  it("allows localhost so the live gate can be rehearsed against Stripe test mode", () => {
+    expect(isReturnableOrigin("http://localhost:8000", CANON)).toBe(true);
+    expect(isReturnableOrigin("http://127.0.0.1:8000", CANON)).toBe(true);
+  });
+
+  it("allows everything when no canonical origin is configured", () => {
+    expect(isReturnableOrigin("https://anywhere.test", "")).toBe(true);
+    expect(isReturnableOrigin("https://anywhere.test", null)).toBe(true);
+  });
+
+  it("rejects an unusable current origin when a pin IS configured", () => {
+    expect(isReturnableOrigin("", CANON)).toBe(false);
+    expect(isReturnableOrigin("not a url", CANON)).toBe(false);
+  });
+});
+
+describe("stripeWebProvider origin gate", () => {
+  it("refuses to start a purchase from a non-canonical origin, before any fetch", async () => {
+    const fetchImpl = vi.fn();
+    const redirect = vi.fn();
+    const store = fakeStore();
+    const p = make({
+      canonicalOrigin: CANON,
+      getOrigin: () => "https://sarachdatabear-polar.github.io",
+      fetchImpl, redirect, store,
+    });
+    const r = await p.purchase("supporter");
+    expect(r).toEqual({ ok: false, reason: "wrong-origin" });
+    // No checkout session created, no navigation, no pending record left behind.
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(redirect).not.toHaveBeenCalled();
+    expect(store.map.size).toBe(0);
+  });
+
+  it("still starts a purchase from the canonical origin", async () => {
+    const redirect = vi.fn();
+    const p = make({ canonicalOrigin: CANON, getOrigin: () => CANON, redirect });
+    const r = await p.purchase("supporter");
+    expect(r).toEqual({ ok: false, reason: "pending" });
+    expect(redirect).toHaveBeenCalledWith("https://stripe/pay");
+  });
+
+  it("keeps restore working on a non-canonical origin — a returning Supporter's only recovery route", async () => {
+    const p = make({
+      canonicalOrigin: CANON,
+      getOrigin: () => "https://sarachdatabear-polar.github.io",
+    });
+    await expect(p.available()).resolves.toBe(true);
+    expect(p.supports("supporter")).toBe(true);
+    await expect(p.restore()).resolves.toEqual({ ok: true, ownedProductIds: ["supporter"] });
   });
 });
