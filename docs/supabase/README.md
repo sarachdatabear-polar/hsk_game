@@ -122,6 +122,39 @@ Deploy normally (JWT verification ON — it authenticates the caller):
 
 Secret: `STRIPE_SECRET_KEY` (`sk_live_…`). Never commit it.
 
+**The return leg is pinned to one origin.** `SITE_ORIGIN` in
+`stripe-checkout/index.ts` is hard-coded to `https://luckycathsk.com`, and
+every Checkout Session's `successUrl`/`cancelUrl` is built from it. That is
+fine for a buyer who started checkout on `luckycathsk.com` — but the
+`github.io` migration bridge and the `workers.dev` host also serve the same
+bundle (see `docs/OWNER-ACTIONS.md` §B3), so a buyer who starts a purchase
+from either of those is paid on Stripe and then returned to
+`https://luckycathsk.com/?session_id=…` — a **different origin**, with its
+own separate `localStorage`. That origin has no pending-purchase record for
+this checkout, so there is no toast and no immediate entitlement restore;
+the buyer may even look signed out there. Nothing is lost server-side — the
+grant lands against their `uid`, and the pending record still sits at the
+origin they actually bought from — so it self-heals silently on their next
+visit **to the origin they started the purchase on**. But the buyer's
+*immediate* experience on the canonical domain is silence, and a live-gate
+tester who starts a test purchase from the bridge will wrongly conclude the
+feature is broken. See the live-gate note in `docs/OWNER-ACTIONS.md` §B item
+4 — run the gate from `luckycathsk.com` only.
+
+**Deploy `stripe-webhook` before or together with any catalog change.** The
+webhook acks an event with `product_id` not present in its own copy of the
+catalog as `{"ignored":"unknown-product"}`, HTTP 200 (`core.js`'s
+`processStripeEvent` → `index.ts`'s `!result.ok` branch) — a 200 tells
+Stripe delivery succeeded, so it will **not** retry. Today this is
+unreachable (both functions import the same `src/monetization/products.js`
+catalog), but once web coin packs land (go-live step 8) a stale
+`stripe-webhook` deploy running alongside a newer `stripe-checkout` would
+turn a purchase of a just-added product into a **permanent, silent** loss —
+Stripe took the money, the checkout succeeded, and the ack tells Stripe
+never to try again. A 500 here would at least let Stripe's retry window
+bridge the redeploy gap; the current 200-on-unknown design does not, so the
+deploy order is the only thing that closes it.
+
 Same requirement as `rc-webhook` above: after deploying both, verify the
 setting in the Dashboard → **Edge Functions → function → Details** — the CLI
 does not prompt or warn if you deploy `stripe-webhook` without

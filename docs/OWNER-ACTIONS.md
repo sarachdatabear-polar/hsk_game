@@ -231,7 +231,16 @@ let it run in the background while you do steps 1–2.
    6. **Live gate — do all four before advertising the 79฿ price**, because
       neither edge function can be unit-tested (Deno TS does not run under
       vitest and `eslint.config.mjs` ignores `supabase/`) — this is the only
-      verification they get before real money moves through them:
+      verification they get before real money moves through them.
+      **Run this entire gate from `https://luckycathsk.com` only — not the
+      `github.io` bridge, not `workers.dev`.** `stripe-checkout`'s
+      `SITE_ORIGIN` is hard-coded to the canonical domain (see
+      `docs/supabase/README.md` §Stripe deployment prerequisites), so a
+      purchase started from either other host still gets charged and
+      granted correctly, but returns the buyer to a *different* origin with
+      no local pending record — no toast, no visible entitlement, looking
+      broken even though nothing was lost. Starting the test from the wrong
+      origin will make a working feature look broken.
       - **One real PromptPay checkout** — confirm PromptPay actually
         surfaces at Stripe Checkout for a THB one-time purchase, and that the
         entitlement lands after payment confirms.
@@ -247,6 +256,15 @@ let it run in the background while you do steps 1–2.
         the balance **doubled** — the `supporter` product alone is worth
         2,000 coins (`src/monetization/products.js:11`), so a failed dedupe
         is not subtle, it is a visibly doubled balance.
+      - **If the first checkout's POST never fires at all** (no network
+        request, immediate failure before Stripe is ever reached): suspect
+        the CORS preflight through the JWT-verification-ON gateway before
+        suspecting the function body. `stripe-checkout` deploys with JWT
+        verification ON, and the browser's preflight `OPTIONS` carries no
+        `Authorization` header; `delete-account` is live precedent that
+        Supabase's gateway passes `OPTIONS` through regardless, so this is
+        expected to work, but it has not been exercised by a real checkout
+        until this gate runs.
    7. **At the key flip, also verify the supporter placement path on web:**
       finish a qualifying round (level up is easiest) → the results line
       shows → its button lands on a shop where the supporter card actually
