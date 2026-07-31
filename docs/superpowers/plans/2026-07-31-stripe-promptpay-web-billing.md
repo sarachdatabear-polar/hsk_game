@@ -1221,6 +1221,25 @@ describe("provider selection — stripe web", () => {
     expect(p.kind).not.toBe("stripe-web");
   });
 
+  // The test above overrides stripe.isNative, so it only exercises Stripe's OWN
+  // guard and passes under any branch order. This one pins the ORDER: RC is
+  // native-configured while Stripe uses the real shared isNative (false under
+  // vitest), so if the Stripe branch were moved above the native RC branch,
+  // Stripe would win and this fails.
+  it("pins branch ORDER: a native-configured RevenueCat beats a configured Stripe", () => {
+    const p = getProvider({
+      revenuecat: { apiKey: "goog_real_key", isNative: () => true },
+      stripe: { checkoutUrl: "https://fn/x" },
+    });
+    expect(p.kind).toBe("revenuecat");
+  });
+
+  it("tolerates a null store — purchase resolves rather than throwing", async () => {
+    const p = getProvider({ stripe: { checkoutUrl: "https://fn/x", isNative: () => false, isFileProtocol: () => false } });
+    expect(p.kind).toBe("stripe-web");
+    await expect(p.purchase("supporter")).resolves.toEqual({ ok: false, reason: "needs-account" });
+  });
+
   it("never selects stripe-web on file://", () => {
     const p = getProvider({ stripe: { checkoutUrl: "https://fn/x", isNative: () => false, isFileProtocol: () => true } });
     expect(p.kind).not.toBe("stripe-web");
@@ -1248,8 +1267,15 @@ Insert this block **after** the native RevenueCat branch and **before** the `rev
   // PRECEDENCE: on web, Stripe beats RevenueCat Web Billing. RC Web Billing
   // cannot surface PromptPay (it offers card/Apple Pay/Google Pay only, and
   // RevenueCat — not the merchant — controls that list), and PromptPay is the
-  // primary method for Thai buyers. Native is untouched: RevenueCat still owns
-  // Android above.
+  // primary method for Thai buyers. THIS ordering is load-bearing: both
+  // branches share the same web/non-native/non-file gates, so whichever comes
+  // first wins.
+  //
+  // Native safety, however, does NOT come from sitting below the RevenueCat
+  // branch — it comes from this branch's own `!stripeIsNative()` gate. Both
+  // default to the same `isNative` import, so Android is protected even if the
+  // order were reversed. Don't remove that gate on the belief that position
+  // alone protects native.
   const stripe = opts.stripe || {};
   const checkoutUrl = stripe.checkoutUrl == null ? STRIPE_CHECKOUT_URL : stripe.checkoutUrl;
   const stripeIsNative = stripe.isNative || isNative;
