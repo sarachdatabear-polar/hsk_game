@@ -56,3 +56,32 @@ describe("getProvider web selection", () => {
     expect(getProvider().kind).toBe("mock");
   });
 });
+
+describe("provider selection — stripe web", () => {
+  const stripeOpts = {
+    stripe: { checkoutUrl: "https://fn/stripe-checkout", isNative: () => false, isFileProtocol: () => false },
+  };
+
+  it("selects stripe-web on web when a checkout url is configured", () => {
+    expect(getProvider(stripeOpts).kind).toBe("stripe-web");
+  });
+
+  it("prefers stripe-web over revenuecat-web when both are configured", () => {
+    const p = getProvider({ ...stripeOpts, revenuecatWeb: { apiKey: "rcb_x", sdk: {}, isNative: () => false } });
+    expect(p.kind).toBe("stripe-web");
+  });
+
+  it("falls back to mock when the stripe checkout url is blank (shipped dark)", () => {
+    expect(getProvider({ stripe: { checkoutUrl: "", isNative: () => false } }).kind).toBe("mock");
+  });
+
+  it("never selects stripe-web on native — RevenueCat owns Android", () => {
+    const p = getProvider({ stripe: { checkoutUrl: "https://fn/x", isNative: () => true } });
+    expect(p.kind).not.toBe("stripe-web");
+  });
+
+  it("never selects stripe-web on file://", () => {
+    const p = getProvider({ stripe: { checkoutUrl: "https://fn/x", isNative: () => false, isFileProtocol: () => true } });
+    expect(p.kind).not.toBe("stripe-web");
+  });
+});
