@@ -923,6 +923,47 @@ describe("stripeWebProvider", () => {
     expect(await make().restore()).toEqual({ ok: true, ownedProductIds: ["supporter"] });
   });
 
+  // The supporter product's id and entitlement name are the SAME string, so the
+  // test above passes under a correct mapping AND under an inverted one. This
+  // case discriminates: coins_s has no `entitlement`, so a correct
+  // held.has(product.entitlement) yields [], while an inverted held.has(id)
+  // would wrongly yield ["coins_s"].
+  it("does not treat a product id as an entitlement name", async () => {
+    const p = make({ productIds: ["coins_s"], fetchEntitlements: async () => ["coins_s"] });
+    expect(await p.restore()).toEqual({ ok: true, ownedProductIds: [] });
+  });
+
+  it("supportsRestore is false when no configured product carries an entitlement", () => {
+    expect(make({ productIds: ["coins_s"] }).supportsRestore()).toBe(false);
+  });
+
+  it("maps the server's already-owned refusal to unavailable", async () => {
+    const p = make({ fetchImpl: async () => ({ ok: false, status: 409, json: async () => ({ error: "already-owned" }) }) });
+    expect(await p.purchase("supporter")).toEqual({ ok: false, reason: "unavailable" });
+  });
+
+  it("returns failed on a malformed success payload", async () => {
+    const p = make({ fetchImpl: async () => ({ ok: true, json: async () => ({ url: "https://stripe/pay" }) }) });
+    expect(await p.purchase("supporter")).toEqual({ ok: false, reason: "failed" });
+  });
+
+  it("sends the prior session id so the server can expire it", async () => {
+    const store = fakeStore();
+    store.set("checkout", { sessionId: "cs_prev", productId: "supporter", startedAt: Date.now() });
+    let sentBody = null;
+    const p = make({ store, fetchImpl: async (_url, opts) => {
+      sentBody = JSON.parse(opts.body);
+      return { ok: true, json: async () => ({ url: "https://stripe/pay", sessionId: "cs_new" }) };
+    } });
+    await p.purchase("supporter");
+    expect(sentBody).toEqual({ productId: "supporter", priorSessionId: "cs_prev" });
+  });
+
+  it("available() resolves false rather than throwing when a guard throws", async () => {
+    const p = make({ isNative: () => { throw new Error("x"); } });
+    await expect(p.available()).resolves.toBe(false);
+  });
+
   it("restore reports unavailable when the user cannot be resolved", async () => {
     const p = make({ ensureUserId: async () => null });
     expect(await p.restore()).toEqual({ ok: false, reason: "unavailable" });
@@ -976,7 +1017,7 @@ Create `src/monetization/provider-stripe-web.js`:
 ```js
 "use strict";
 import { productById } from "./products.js";
-import { writePending } from "./checkout-pending.js";
+import { writePending, readPending } from "./checkout-pending.js";
 
 // Stripe implementation of the provider seam (contract documented in
 // provider.js). Every dependency is injected so all branches are covered in
@@ -1014,10 +1055,12 @@ export function stripeWebProvider(opts = {}) {
 
     supports(productId) { return productIds.includes(productId); },
 
-    // True unconditionally: entitlements live server-side and are readable by
-    // the owner under RLS, so Restore always has something to ask. This also
-    // lights the account-screen Restore button, which is a NEW DEVICE's only
-    // route to an entitlement it never saw bought.
+    // True whenever this provider sells at least one entitlement-bearing
+    // product (today: supporter). Entitlements live server-side and are
+    // owner-readable under RLS, so Restore has something to ask. This lights
+    // the account-screen Restore button, which is a NEW DEVICE's only route to
+    // an entitlement it never saw bought. NOTE: if web ever sells coin-only,
+    // this goes false and a returning Supporter loses Restore on this surface.
     supportsRestore() { return productIds.some(id => !!(productById(id) || {}).entitlement); },
 
     // Stripe exposes no client-side price API here, so the catalog's
@@ -1036,7 +1079,9 @@ export function stripeWebProvider(opts = {}) {
         const token = await getAccessToken();
         if (!token) return { ok: false, reason: "needs-account" };
 
-        const prior = store ? (store.get("checkout", null) || {}).sessionId || "" : "";
+        // readPending, not a raw store.get: it applies the TTL and shape validation,
+        // so a stale record can never be sent as a prior session id to expire.
+        const prior = store ? (readPending(store, now()) || {}).sessionId || "" : "";
         const res = await fetchImpl(checkoutUrl, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -1080,7 +1125,7 @@ export function stripeWebProvider(opts = {}) {
 - [ ] **Step 5: Run tests to verify they pass**
 
 Run: `npx vitest run test/provider-stripe-web.test.js`
-Expected: PASS, 14 tests.
+Expected: PASS, 21 tests.
 
 - [ ] **Step 6: Run the full suite and lint**
 
