@@ -37,3 +37,15 @@ export function encodeForm(params) {
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
     .join("&");
 }
+
+// Request-body parsing lives here, not in index.ts, so it is unit-testable.
+// index.ts reads the body EXACTLY ONCE and hands the object here — a second
+// read via req.clone() throws TypeError "unusable" per WHATWG Fetch, and a
+// try/catch around it swallows the throw silently.
+export function parseCheckoutRequest(body) {
+  const b = body && typeof body === "object" ? body : {};
+  return {
+    productId: typeof b.productId === "string" && b.productId ? b.productId : "supporter",
+    priorSessionId: typeof b.priorSessionId === "string" ? b.priorSessionId : "",
+  };
+}

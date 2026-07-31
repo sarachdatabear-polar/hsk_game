@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildSessionParams, encodeForm } from "../supabase/functions/stripe-checkout/core.js";
+import { buildSessionParams, encodeForm, parseCheckoutRequest } from "../supabase/functions/stripe-checkout/core.js";
 import { productById } from "../src/monetization/products.js";
 
 const supporter = productById("supporter");
@@ -37,6 +37,23 @@ describe("buildSessionParams", () => {
   it("returns null for a missing product or user", () => {
     expect(buildSessionParams({ ...base, product: null })).toBeNull();
     expect(buildSessionParams({ ...base, userId: "" })).toBeNull();
+  });
+});
+
+describe("parseCheckoutRequest", () => {
+  it("defaults to supporter with no prior session on an empty body", () => {
+    expect(parseCheckoutRequest({})).toEqual({ productId: "supporter", priorSessionId: "" });
+    expect(parseCheckoutRequest(null)).toEqual({ productId: "supporter", priorSessionId: "" });
+  });
+
+  it("reads BOTH fields from ONE object — index.ts may only read the body once", () => {
+    expect(parseCheckoutRequest({ productId: "coins_s", priorSessionId: "cs_prev" }))
+      .toEqual({ productId: "coins_s", priorSessionId: "cs_prev" });
+  });
+
+  it("ignores non-string values", () => {
+    expect(parseCheckoutRequest({ productId: 7, priorSessionId: {} }))
+      .toEqual({ productId: "supporter", priorSessionId: "" });
   });
 });
 
