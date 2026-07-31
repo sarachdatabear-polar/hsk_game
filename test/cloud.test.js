@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { getSession, ensureGuest, sendCode, verifyCode, signOut,
          upsertProfile, saveDisplayName, fetchSyncRows, pushSyncRows, fetchLedgerSince, fetchLedgerOrder,
-         LEDGER_EPOCH, __setClientForTests } from "../src/cloud.js";
+         LEDGER_EPOCH, listEntitlements, __setClientForTests } from "../src/cloud.js";
 
 // House pattern (see test/native.test.js): no vi.mock — a hand-rolled fake
 // client + globalThis stubs, reset in beforeEach.
@@ -370,6 +370,45 @@ describe("fetchLedgerOrder", () => {
   });
   it("fails closed for an empty order id", async () => {
     expect(await fetchLedgerOrder("u1", "")).toEqual({ ok: false, reason: "missing-order" });
+  });
+});
+
+// entitlements: owner-read only, no .eq — the RLS policy scopes rows to the
+// caller's own token, so the client-side query is a bare select.
+function fakeEntitlementsClient({ rows = [], fetchError = null } = {}) {
+  const calls = { selects: [] };
+  const client = {
+    from: (table) => ({
+      select: async (cols) => {
+        calls.selects.push({ table, cols });
+        return fetchError ? { data: null, error: fetchError } : { data: rows, error: null };
+      },
+    }),
+  };
+  return { client, calls };
+}
+
+describe("listEntitlements", () => {
+  it("maps rows to their product_id strings", async () => {
+    const { client, calls } = fakeEntitlementsClient({
+      rows: [{ product_id: "supporter" }, { product_id: "coins_500" }],
+    });
+    __setClientForTests(client);
+    expect(await listEntitlements()).toEqual(["supporter", "coins_500"]);
+    expect(calls.selects).toEqual([{ table: "entitlements", cols: "product_id" }]);
+  });
+  it("query error resolves []", async () => {
+    const { client } = fakeEntitlementsClient({ fetchError: { message: "boom" } });
+    __setClientForTests(client);
+    expect(await listEntitlements()).toEqual([]);
+  });
+  it("non-array data resolves []", async () => {
+    __setClientForTests({ from: () => ({ select: async () => ({ data: null, error: null }) }) });
+    expect(await listEntitlements()).toEqual([]);
+  });
+  it("a thrown error resolves [] — never throws", async () => {
+    __setClientForTests({ from: () => ({ select: async () => { throw new Error("x"); } }) });
+    expect(await listEntitlements()).toEqual([]);
   });
 });
 

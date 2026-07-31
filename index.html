@@ -48,6 +48,12 @@
     /* PRD v5 core palette (docs/art/STYLE-TOKENS.md §1 — enforced by test/style-tokens.test.js) */
     --lc-green:#32775E; --lc-sky:#5DAADD; --lc-sun:#F2BC57; --lc-coral:#E69777;
     --lc-brown:#846043; --lc-gray:#B2AEA9; --lc-cream:#FBF5E8; --lc-teal:#1F4D4A;
+    /* Idle bottom-nav label. Separate from --lc-gray on purpose: it sits on the
+       teal bar and must clear WCAG AA 4.5:1 there (#B2AEA9 measured 4.29:1),
+       whereas --lc-gray's other uses sit on cream and are DELIBERATELY faint
+       (locked stickers, empty stars, the dimmed combo flame). Lightening the
+       shared token would have fixed the nav and washed those out. */
+    --lc-nav-idle:#B8B4AF;
     --lc-success:#28723B; --lc-error:#C95A41; --lc-sand:#EAC796; --lc-ink:#2E2A24;
     /* derived shades (STYLE-TOKENS.md §2): gradients, borders, 3D press shadows */
     --lc-sun-hi:#FFE59B; --lc-sun-deep:#D99A2E; --lc-sun-shadow:#B97A1E;
@@ -516,7 +522,7 @@
     background-color:var(--lc-teal); border-radius:18px;
     box-shadow:0 -2px 10px rgba(0,0,0,.2); z-index:18;}
   .nav-btn{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:2px; min-height:48px; padding:5px 2px; background:none; color:var(--lc-gray);
+    gap:2px; min-height:48px; padding:5px 2px; background:none; color:var(--lc-nav-idle);
     font-size:11px; font-weight:600; border-radius:14px;}
   .nav-btn .asset-icon{width:21px; height:21px;}
   .nav-btn.active{background-color:var(--lc-sun); color:var(--lc-teal);}
@@ -586,6 +592,13 @@
   /* T3: slim session-progress bar + "n/20" caption, center of the HUD */
   .hud-progress{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; flex:1 1 auto; min-width:0;}
   .hud-progress-track{width:100%; max-width:140px; height:6px; border-radius:3px; background:var(--lc-sand); overflow:hidden;}
+  /* Still animates WIDTH, deliberately. The composited alternatives each cost
+     more than they save on a 140x6px bar that updates once per answered
+     question (not per frame): translateX puts a full-width fill off to the
+     left, which responsive-sweep.mjs correctly flags as out-of-viewport
+     (its `r.left < -tol` rule), and scaleX squashes the 3px cap horizontally
+     as the bar grows. Revisit only with a real measurement showing this
+     matters on mid-range hardware. */
   .hud-progress-fill{display:block; height:100%; border-radius:3px; background:var(--lc-green); transition:width .25s ease; width:0%;}
   .hud-progress-count{font-size:12px; font-weight:700; color:var(--lc-brown); white-space:nowrap;}
   /* Narrow-portrait squeeze: on ≤360px phones the base HUD row (route name +
@@ -1503,10 +1516,17 @@
     .scope-chip-btn{padding:2px 6px; min-height:44px; font-size:9.5px;}
     .start-hint{margin:1px 0 2px; font-size:9.5px;}
     .home-secondary-row{margin-top:3px; gap:6px;}
-    .sec-btn{min-height:44px; padding:3px 4px; font-size:9.5px;}
+    .sec-btn{min-height:44px; padding:3px 4px; font-size:11px;}
     .sec-btn .asset-icon{width:14px; height:14px;}
     #bottom-nav{margin-top:3px; padding:2px 3px;}
-    .nav-btn{min-height:44px; padding:1px 2px; gap:1px; font-size:9px;}
+    /* The hint line is the lowest-value thing on this screen — informational,
+       not an action — and it was the content forcing everything else to
+       shrink. Dropping it here frees the vertical room to keep labels
+       legible, rather than squeezing 9px type to fit a nudge. It also
+       fixes the clipped sentence: it was being cut mid-phrase behind the
+       START row, which is worse than not showing it at all. */
+    #home-next-action{display:none;}
+    .nav-btn{min-height:44px; padding:1px 2px; gap:1px; font-size:11px;}
     .nav-btn .asset-icon{width:16px; height:16px;}
     /* Flashcards are a no-scroll drill in landscape: card left, verdicts
        right. Previously the card consumed the fold and hid every action. */

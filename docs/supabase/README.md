@@ -14,6 +14,12 @@ remain operational owner actions.
   atomic `grant_purchase`, and service-role privileges required before IAP.
 - **`../../supabase/functions/rc-webhook/`** — bearer + HMAC authenticated
   RevenueCat webhook that grants through `grant_purchase`.
+- **`../../supabase/functions/stripe-webhook/`** — signature-verified Stripe
+  webhook that grants through `grant_purchase`. See §Stripe deployment
+  prerequisites below.
+- **`../../supabase/functions/stripe-checkout/`** — authenticated Checkout
+  Session creator called by the browser client. See §Stripe deployment
+  prerequisites below.
 
 ## Apply to a project
 
@@ -60,3 +66,97 @@ schema by design: `nbhsk.settings`, `nbhsk.sfx`, `nbhsk.scope`,
 5. Run the grant replay, ledger RLS, and closed-track purchase smokes in
    `docs/planning/2026-07-12-coin-purchase-golive.md` before adding the public
    Android SDK key to the client config.
+
+## Stripe deployment prerequisites
+
+Two functions, two opposite JWT settings — get this backwards in either
+direction and it is a production incident. Stripe never sends a Supabase JWT,
+so `stripe-webhook` must disable gateway JWT verification or every delivery
+401s before the function runs: the purchase succeeds at Stripe, money leaves
+the buyer's account, and no entitlement is ever granted — silently.
+`stripe-checkout` is the opposite — it authenticates the caller itself (the
+Supabase session `Authorization` header), so it deploys normally, with JWT
+verification ON.
+
+**Prerequisite — `grant_purchase` must already exist.** Both functions grant
+by calling `supabase.rpc("grant_purchase", …)`
+(`supabase/functions/stripe-webhook/index.ts:43`); that RPC is created by
+`docs/supabase/migrations/2026-07-12-iap-golive.sql`, which does **not**
+apply itself — it ships as a plain SQL file, same as `schema.sql`. If it has
+not been run against the target project when the first purchase lands: the
+RPC call errors, the function returns HTTP 500, Stripe retries a few times
+and then gives up — the buyer's money is gone, no entitlement or coins are
+ever granted, and the only trace is Stripe's webhook delivery log (nothing
+in Supabase, because the RPC never got that far). This is the same
+silent-failure shape as the JWT misconfiguration above, reached by a
+different route, and it is just as easy to ship without noticing. Apply the
+migration (SQL editor or `supabase db push`) **before** deploying either
+function, and confirm it took — `select 1 from pg_proc where proname =
+'grant_purchase';` in the SQL editor (or Dashboard → Database → Functions →
+look for `grant_purchase`) — do not just assume a past `db push` covered it.
+
+### stripe-webhook
+
+Deploy with **JWT verification disabled** — Stripe sends no Supabase JWT and
+the gateway would 401 before the function runs:
+
+    supabase functions deploy stripe-webhook --no-verify-jwt
+
+Secret: `STRIPE_WEBHOOK_SECRET` (the `whsec_…` signing secret from the Stripe
+webhook endpoint). Never commit it. In the Stripe Dashboard: **Developers →
+Webhooks → Add endpoint**, URL
+`https://<project>.supabase.co/functions/v1/stripe-webhook`, and subscribe to
+exactly `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+and `checkout.session.async_payment_failed`. The third has no dedicated grant
+handler — `processStripeEvent` falls through to `"ignored-event-type"` and a
+plain 200 ack (`core.js:12-15`, matched in `index.ts`) — but it is subscribed
+deliberately, so a failed PromptPay payment shows up in the Stripe delivery
+log instead of vanishing with no record on either side. Do not "clean up" this
+subscription; it is load-bearing for observability, not dead weight.
+
+### stripe-checkout
+
+Deploy normally (JWT verification ON — it authenticates the caller):
+
+    supabase functions deploy stripe-checkout
+
+Secret: `STRIPE_SECRET_KEY` (`sk_live_…`). Never commit it.
+
+**The return leg is pinned to one origin.** `SITE_ORIGIN` in
+`stripe-checkout/index.ts` is hard-coded to `https://luckycathsk.com`, and
+every Checkout Session's `successUrl`/`cancelUrl` is built from it. That is
+fine for a buyer who started checkout on `luckycathsk.com` — but the
+`github.io` migration bridge and the `workers.dev` host also serve the same
+bundle (see `docs/OWNER-ACTIONS.md` §B3), so a buyer who starts a purchase
+from either of those is paid on Stripe and then returned to
+`https://luckycathsk.com/?session_id=…` — a **different origin**, with its
+own separate `localStorage`. That origin has no pending-purchase record for
+this checkout, so there is no toast and no immediate entitlement restore;
+the buyer may even look signed out there. Nothing is lost server-side — the
+grant lands against their `uid`, and the pending record still sits at the
+origin they actually bought from — so it self-heals silently on their next
+visit **to the origin they started the purchase on**. But the buyer's
+*immediate* experience on the canonical domain is silence, and a live-gate
+tester who starts a test purchase from the bridge will wrongly conclude the
+feature is broken. See the live-gate note in `docs/OWNER-ACTIONS.md` §B item
+4 — run the gate from `luckycathsk.com` only.
+
+**Deploy `stripe-webhook` before or together with any catalog change.** The
+webhook acks an event with `product_id` not present in its own copy of the
+catalog as `{"ignored":"unknown-product"}`, HTTP 200 (`core.js`'s
+`processStripeEvent` → `index.ts`'s `!result.ok` branch) — a 200 tells
+Stripe delivery succeeded, so it will **not** retry. Today this is
+unreachable (both functions import the same `src/monetization/products.js`
+catalog), but once web coin packs land (go-live step 8) a stale
+`stripe-webhook` deploy running alongside a newer `stripe-checkout` would
+turn a purchase of a just-added product into a **permanent, silent** loss —
+Stripe took the money, the checkout succeeded, and the ack tells Stripe
+never to try again. A 500 here would at least let Stripe's retry window
+bridge the redeploy gap; the current 200-on-unknown design does not, so the
+deploy order is the only thing that closes it.
+
+Same requirement as `rc-webhook` above: after deploying both, verify the
+setting in the Dashboard → **Edge Functions → function → Details** — the CLI
+does not prompt or warn if you deploy `stripe-webhook` without
+`--no-verify-jwt`, it just silently ships a function that will 401 every real
+Stripe delivery.

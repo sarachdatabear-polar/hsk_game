@@ -65,6 +65,43 @@ payment fees. Break-even ≈ 12 Supporter sales/month.
 - [ ] `test/social-meta.test.js:21` — update asserted URL (build gates on `npm test`)
 - [ ] `sw.js` — bump `SHELL` cache version (PWA cache-bust)
 
+## ⚠ STEP 6 IS INVALIDATED — PromptPay does not work with RevenueCat (2026-07-31)
+
+The plan's own watch-item was *"confirm RC Web Billing surfaces PromptPay for a THB
+one-time purchase before advertising 79฿."* **Confirmed: it does not.** Checked against
+vendor docs before Jordan created any account:
+
+- **RC Web Billing supports only credit card, Apple Pay, and Google Pay** (all via
+  Stripe), and **RevenueCat — not the merchant — controls which payment methods are
+  shown**. PromptPay is not on the list.
+- **RC + your own Stripe** (external purchase import) explicitly excludes
+  *"asynchronous payment methods that settle off-session — bank debits, bank transfers,
+  and cash vouchers."* PromptPay's QR flow sits in or adjacent to that class. Also
+  limits you to recurring/one-off package pricing and pushes subscription management
+  into the Stripe Customer Portal.
+
+**Second constraint, independent of RevenueCat:** Stripe requires the **account to be
+Thailand-based** *and* the **customer to be in Thailand**, **THB only**
+(`docs.stripe.com/payments/promptpay`). So PromptPay was never going to serve
+international buyers — it is a Thai convenience layer on top of cards, not a
+replacement. Statement descriptor is fixed at "STRIPE PAYMENTS (THAILAND) LTD" and
+refunds require the customer to supply their bank account number.
+
+**Options (Jordan's call, not yet decided):**
+1. **Ship cards + Apple Pay + Google Pay via RC Web Billing.** Works today, works
+   internationally, no extra engineering — the merged dark code already targets RC.
+   Drops PromptPay. Cards are widely usable in Thailand.
+2. **Own Stripe Checkout with PromptPay, bypassing RevenueCat for web.** Gives the
+   Thai QR flow, but we own entitlement granting. Not from scratch —
+   `supabase/functions/rc-webhook/` already grants server-side and could take a Stripe
+   webhook instead — but it is real work and a second billing path to maintain.
+3. **Ask RevenueCat support directly** whether PromptPay can be enabled on Web Billing.
+   Cheap, and worth doing before committing to option 2.
+
+**Recommendation: option 1 now, option 3 in parallel, option 2 only if Thai conversion
+data later justifies it.** Billing is not gating launch (the code ships dark with a
+blank key), so this does not need resolving this week.
+
 ## Watch-items
 - **Cloudflare Pages 20,000-file limit:** `www/` is ~14,076 today (132 MB / ~14k mp3s).
   Under, but audio is the growth axis — migrate audio to R2 behind the same
