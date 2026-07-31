@@ -14,6 +14,12 @@ remain operational owner actions.
   atomic `grant_purchase`, and service-role privileges required before IAP.
 - **`../../supabase/functions/rc-webhook/`** — bearer + HMAC authenticated
   RevenueCat webhook that grants through `grant_purchase`.
+- **`../../supabase/functions/stripe-webhook/`** — signature-verified Stripe
+  webhook that grants through `grant_purchase`. See §Stripe deployment
+  prerequisites below.
+- **`../../supabase/functions/stripe-checkout/`** — authenticated Checkout
+  Session creator called by the browser client. See §Stripe deployment
+  prerequisites below.
 
 ## Apply to a project
 
@@ -60,3 +66,41 @@ schema by design: `nbhsk.settings`, `nbhsk.sfx`, `nbhsk.scope`,
 5. Run the grant replay, ledger RLS, and closed-track purchase smokes in
    `docs/planning/2026-07-12-coin-purchase-golive.md` before adding the public
    Android SDK key to the client config.
+
+## Stripe deployment prerequisites
+
+Two functions, two opposite JWT settings — get this backwards in either
+direction and it is a production incident. Stripe never sends a Supabase JWT,
+so `stripe-webhook` must disable gateway JWT verification or every delivery
+401s before the function runs: the purchase succeeds at Stripe, money leaves
+the buyer's account, and no entitlement is ever granted — silently.
+`stripe-checkout` is the opposite — it authenticates the caller itself (the
+Supabase session `Authorization` header), so it deploys normally, with JWT
+verification ON.
+
+### stripe-webhook
+
+Deploy with **JWT verification disabled** — Stripe sends no Supabase JWT and
+the gateway would 401 before the function runs:
+
+    supabase functions deploy stripe-webhook --no-verify-jwt
+
+Secret: `STRIPE_WEBHOOK_SECRET` (the `whsec_…` signing secret from the Stripe
+webhook endpoint). Point the Stripe endpoint at
+`https://<project>.supabase.co/functions/v1/stripe-webhook` and subscribe to
+exactly `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+and `checkout.session.async_payment_failed`.
+
+### stripe-checkout
+
+Deploy normally (JWT verification ON — it authenticates the caller):
+
+    supabase functions deploy stripe-checkout
+
+Secret: `STRIPE_SECRET_KEY` (`sk_live_…`). Never commit it.
+
+Same requirement as `rc-webhook` above: verify the deployed JWT setting with
+`supabase functions list` (or the Dashboard → Edge Functions → function →
+Details) after deploying both — the CLI does not prompt or warn if you deploy
+`stripe-webhook` without `--no-verify-jwt`, it just silently ships a function
+that will 401 every real Stripe delivery.
