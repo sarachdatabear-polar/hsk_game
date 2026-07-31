@@ -9,6 +9,31 @@ import { writePending, readPending } from "./checkout-pending.js";
 // PURCHASE IS A REDIRECT, so purchase() can never resolve {ok:true}: the page
 // is navigating away. It resolves {ok:false, reason:"pending"} and the return
 // leg (src/ui/checkout-return.js) completes the transaction.
+// A Checkout Session's success_url/cancel_url are built server-side from ONE
+// pinned origin. Starting a purchase anywhere else means the buyer is returned
+// to a page that cannot see the pending record, the session, or the grant.
+//
+// Localhost passes on purpose: the live gate and any local smoke test against
+// Stripe test mode run from `npm run serve`, and gating those out would make
+// this path untestable exactly when it most needs testing.
+//
+// A BLANK canonical origin allows everything — an unconfigured pin must not be
+// read as "refuse all purchases".
+const DEV_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
+
+export function isReturnableOrigin(origin, canonicalOrigin) {
+  const canonical = String(canonicalOrigin || "").trim().replace(/\/+$/, "");
+  if (!canonical) return true;
+  const current = String(origin || "").trim().replace(/\/+$/, "");
+  if (!current) return false;
+  if (current === canonical) return true;
+  try {
+    return DEV_HOSTS.has(new URL(current).hostname);
+  } catch {
+    return false;
+  }
+}
+
 export function stripeWebProvider(opts = {}) {
   const checkoutUrl = String(opts.checkoutUrl || "").trim();
   const productIds = [...new Set(opts.productIds || [])].filter(id => productById(id));
@@ -24,6 +49,10 @@ export function stripeWebProvider(opts = {}) {
     : (url) => { if (typeof location !== "undefined") location.assign(url); };
   const fetchImpl = opts.fetchImpl || (typeof fetch === "function" ? fetch.bind(globalThis) : null);
   const now = typeof opts.now === "function" ? opts.now : () => Date.now();
+  const canonicalOrigin = opts.canonicalOrigin == null ? "" : String(opts.canonicalOrigin);
+  const getOrigin = typeof opts.getOrigin === "function"
+    ? opts.getOrigin
+    : () => (typeof location !== "undefined" ? location.origin : "");
 
   function usable() {
     return !!checkoutUrl && !!fetchImpl && !isNative() && !isFileProtocol();
@@ -53,6 +82,12 @@ export function stripeWebProvider(opts = {}) {
     async purchase(productId) {
       try {
         if (!usable() || !productIds.includes(productId)) return { ok: false, reason: "unavailable" };
+        // Deliberately gated HERE and not in usable(): available(), supports()
+        // and restore() must keep working on the bridge. Restore is a returning
+        // Supporter's ONLY route to an entitlement this device never saw bought
+        // (see supportsRestore below) — refusing it on a non-canonical origin
+        // would be a worse bug than the stranded return this check prevents.
+        if (!isReturnableOrigin(getOrigin(), canonicalOrigin)) return { ok: false, reason: "wrong-origin" };
         // Refuse anonymous buyers CLIENT-side too. The server refuses as well,
         // but a server-only refusal surfaces as a generic failure toast; this
         // reason lets the UI route to the sign-in sheet instead.

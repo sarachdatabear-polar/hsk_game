@@ -63,7 +63,7 @@ import { defaultEnt, isSupporter, applyPurchase, restoreFrom } from "./monetizat
 import { getProvider } from "./monetization/provider.js";
 import { REVENUECAT_WEB_PUBLIC_KEY } from "./monetization/revenuecat-config.js";
 import { loadWebBillingSdk } from "./monetization/revenuecat-web-sdk.js";
-import { STRIPE_CHECKOUT_URL } from "./monetization/stripe-config.js";
+import { STRIPE_CHECKOUT_URL, STRIPE_SITE_ORIGIN } from "./monetization/stripe-config.js";
 import { iapVisible } from "./monetization/gating.js";
 import { pollForCredit } from "./monetization/purchase-poll.js";
 import { resolvePendingCheckout } from "./ui/checkout-return.js";
@@ -4063,6 +4063,14 @@ async function iapBuy(p, btn){
       toast(t("iap.needsAccountBody"));
       if(p.id === "supporter" && !isNative()) supporterOfferSheet.open();
       else show("account");
+      return;
+    }
+    else if(r.reason === "wrong-origin"){
+      // Not an outage — this host cannot receive the checkout's return leg, so
+      // the purchase was refused before any money moved. Send them somewhere it
+      // works rather than showing a generic failure.
+      analytics.track("purchase_fail", { product: p.id, reason: "wrong-origin" });
+      toast(t("iap.wrongOrigin", { site: STRIPE_SITE_ORIGIN.replace(/^https?:\/\//, "") }));
       return;
     }
     else if(r.reason !== "cancelled"){ toast(t("iap.failed")); analytics.track("purchase_fail", { product: p.id, reason: "provider_error" }); }

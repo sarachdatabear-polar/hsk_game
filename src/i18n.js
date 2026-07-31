@@ -543,6 +543,7 @@ export const STRINGS = {
     "iap.amount": "{coins} coins",
     "iap.pending": "Processing…",
     "iap.failed": "Purchase failed — nothing was charged. Try again.",
+    "iap.wrongOrigin": "Purchases only work at {site}. Open the game there to become a Supporter — nothing was charged.",
     "iap.success": "+{coins} coins added!",
     "iap.supporterThanks": "You're a Supporter now — thank you! ♥",
     "iap.supporterThanksSave": "You're a Supporter now ♥ — add your email to keep it on every device.",
@@ -1243,6 +1244,9 @@ export const STRINGS = {
     "iap.amount": "{coins} เหรียญ",
     "iap.pending": "กำลังดำเนินการ…",
     "iap.failed": "การซื้อไม่สำเร็จ — ยังไม่มีการเรียกเก็บเงิน ลองใหม่อีกครั้ง",
+    // ⚠ MACHINE-DRAFTED, NOT NATIVE-REVIEWED. Payment-critical Thai — belongs in
+    // the Phase 0 item 4 sign-off pass before billing activates.
+    "iap.wrongOrigin": "การซื้อใช้ได้ที่ {site} เท่านั้น เปิดเกมที่นั่นเพื่อเป็นผู้สนับสนุน — ยังไม่มีการเรียกเก็บเงิน",
     "iap.success": "ได้รับ +{coins} เหรียญแล้ว!",
     "iap.supporterThanks": "คุณเป็นผู้สนับสนุนแล้ว — ขอบคุณ! ♥",
     "iap.supporterThanksSave": "คุณเป็นผู้สนับสนุนแล้ว ♥ — เพิ่มอีเมลเพื่อใช้ได้ทุกเครื่อง", // TH-REVIEW: machine-drafted, queued for native spot-check
