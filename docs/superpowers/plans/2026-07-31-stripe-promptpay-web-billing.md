@@ -673,7 +673,7 @@ Create `test/checkout-pending.test.js`:
 
 ```js
 import { describe, it, expect } from "vitest";
-import { PENDING_TTL_MS, writePending, readPending, clearPending } from "../src/monetization/checkout-pending.js";
+import { PENDING_TTL_MS, writePending, readPending, clearPending, markAnnounced } from "../src/monetization/checkout-pending.js";
 
 function fakeStore() {
   const map = new Map();
@@ -712,6 +712,23 @@ describe("checkout-pending", () => {
     writePending(s, { sessionId: "cs_1", productId: "supporter", now: T0 });
     readPending(s, T0 + PENDING_TTL_MS + 1);
     expect(s.map.has("checkout")).toBe(false);
+  });
+
+  it("markAnnounced sets the flag and readPending surfaces it", () => {
+    const s = fakeStore();
+    writePending(s, { sessionId: "cs_1", productId: "supporter", now: T0 });
+    expect(readPending(s, T0).announced).toBe(false);
+    markAnnounced(s);
+    expect(readPending(s, T0).announced).toBe(true);
+    // must not disturb the rest of the record
+    expect(readPending(s, T0).sessionId).toBe("cs_1");
+    expect(readPending(s, T0).startedAt).toBe(T0);
+  });
+
+  it("markAnnounced is a no-op with no pending record", () => {
+    const s = fakeStore();
+    markAnnounced(s);
+    expect(readPending(s, T0)).toBeNull();
   });
 
   it("clears on demand", () => {
@@ -778,19 +795,34 @@ export function readPending(store, now = Date.now()) {
   const startedAt = Number(raw.startedAt) || 0;
   // Drop it rather than leave a tombstone we re-read on every boot.
   if (now - startedAt > PENDING_TTL_MS) { clearPending(store); return null; }
-  return { sessionId: raw.sessionId, productId: raw.productId, startedAt };
+  return { sessionId: raw.sessionId, productId: raw.productId, startedAt, announced: !!raw.announced };
 }
 
 export function clearPending(store) {
   if (typeof store.remove === "function") store.remove(KEY);
   else store.set(KEY, null);
 }
+
+// "Have we already told the buyer about this purchase?" — durable, because the
+// answer must survive the process dying between announcing and clearing.
+//
+// Neither of the obvious alternatives works. Toasting pollForCredit's reported
+// delta re-announces on a later boot, because sync.js's expectedOrderId lookup
+// deliberately re-confirms an already-folded row. Toasting the observed wallet
+// change instead goes SILENT when a concurrent syncEdge("foreground") folds the
+// credit first — which is precisely the installed-PWA suspend/resume path this
+// whole flow exists to handle. Only a record of having announced is correct in
+// both cases.
+export function markAnnounced(store) {
+  const raw = store.get(KEY, null);
+  if (raw && typeof raw === "object") store.set(KEY, { ...raw, announced: true });
+}
 ```
 
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run test/checkout-pending.test.js`
-Expected: PASS, 10 tests.
+Expected: PASS, 12 tests.
 
 - [ ] **Step 5: Confirm the key is NOT synced**
 
@@ -1414,6 +1446,34 @@ describe("resolvePendingCheckout", () => {
     expect(readPending(s.store, T0 + 1000)).toBeNull();
   });
 
+  // The regression this closes: round 1 toasted the reported delta and
+  // re-announced on a later boot; round 2 diffed the wallet and went SILENT
+  // when a concurrent syncEdge folded the credit first. Only the marker is
+  // correct in both directions.
+  it("announces exactly once — a re-run on an already-announced record is silent", async () => {
+    const s = setup();
+    await resolvePendingCheckout(s);
+    expect(s.onCredited).toHaveBeenCalledTimes(1);
+    expect(s.track).toHaveBeenCalledTimes(1);
+
+    // Simulate dying after the announcement but before clearPending.
+    const again = setup({ store: s.store });
+    again.store.set("checkout", { sessionId: "cs_1", productId: "supporter", startedAt: T0, announced: true });
+    await resolvePendingCheckout(again);
+    expect(again.onCredited).not.toHaveBeenCalled();
+    expect(again.track).not.toHaveBeenCalled();
+    // but the entitlement half still runs, and the record is still cleared
+    expect(again.provider.restore).toHaveBeenCalled();
+    expect(readPending(again.store, T0 + 1000)).toBeNull();
+  });
+
+  it("marks announced BEFORE invoking onCredited, so a crash cannot re-announce", async () => {
+    const s = setup({ onCredited: () => { throw new Error("died mid-toast"); } });
+    await resolvePendingCheckout(s).catch(() => {});
+    expect(s.store.get("checkout", null)).toBeTruthy();
+    expect(s.store.get("checkout", null).announced).toBe(true);
+  });
+
   it("never throws when RECONCILE explodes", async () => {
     const s = setup({ reconcile: async () => { throw new Error("offline"); } });
     await expect(resolvePendingCheckout(s)).resolves.toEqual({ resolved: true, credited: false, delta: 0 });
@@ -1477,7 +1537,7 @@ Create `src/ui/checkout-return.js`:
 // purchase (main.js:3910-3917) — unreachable here, because purchase() returns
 // "pending" and iapBuy exits before the page navigates away. Deliver both, or
 // the buyer pays 79฿, receives 2,000 coins, and is never a Supporter.
-import { readPending, clearPending } from "../monetization/checkout-pending.js";
+import { readPending, clearPending, markAnnounced } from "../monetization/checkout-pending.js";
 import { pollForCredit } from "../monetization/purchase-poll.js";
 
 export async function resolvePendingCheckout({
@@ -1504,7 +1564,14 @@ export async function resolvePendingCheckout({
   // Not yet paid, or a PromptPay QR still unconfirmed. Keep the record.
   if (!credited) return { resolved: true, credited: false, delta: 0 };
 
-  if (typeof onCredited === "function") onCredited(delta);
+  // Persist BEFORE the user-visible effect: if we die between the toast and
+  // clearPending, the next boot must NOT re-announce. Ordering matters —
+  // marking after the toast would leave the same window this closes.
+  const alreadyAnnounced = !!pending.announced;
+  if (!alreadyAnnounced) {
+    try { markAnnounced(store); } catch { /* best effort */ }
+    if (typeof onCredited === "function") onCredited(delta);
+  }
 
   // Entitlement half. A restore failure must NOT hold the coins hostage or
   // resurrect the pending record — the money landed either way, and the
@@ -1520,7 +1587,7 @@ export async function resolvePendingCheckout({
   // The funnel breaks across the redirect otherwise: purchase_start fires in
   // iapBuy (main.js:3821) but purchase_success (main.js:3895) sits in the
   // branch a redirect never reaches.
-  if (typeof track === "function") track("purchase_success", { product: pending.productId });
+  if (!alreadyAnnounced && typeof track === "function") track("purchase_success", { product: pending.productId });
   return { resolved: true, credited: true, delta };
 }
 ```
@@ -1528,7 +1595,7 @@ export async function resolvePendingCheckout({
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run test/checkout-return.test.js`
-Expected: PASS, 9 tests.
+Expected: PASS, 11 tests.
 
 - [ ] **Step 5: Run the full suite and lint**
 
@@ -1638,29 +1705,21 @@ async function resumeCheckout(){
     // sites). Without this a buyer completes a 79฿ PromptPay payment, returns,
     // and the only sign of it is a number quietly changing in the header chip —
     // indistinguishable from having done nothing at all.
-    onCredited: () => {
-      // Toast the ACTUAL wallet change, not pollForCredit's reported delta.
-      // They differ on a re-check: a pending record can survive to a later boot
-      // (24h TTL, or a tab killed during the restore() await), and sync.js's
-      // expectedOrderId lookup then re-confirms the SAME ledger row with its
-      // original non-zero delta — deliberately, for confirmation — while
-      // explicitly NOT folding it into the wallet, since it is older than the
-      // cursor (sync.js:184-196, "never add it to `unseen`"). Toasting the
-      // reported delta would announce "+2,000 coins added!" with no matching
-      // balance change. Reading the wallet across the rehydrate says what
-      // actually happened.
-      const before = wallet;
+    onCredited: (delta) => {
+      // Uses the reported delta, NOT an observed wallet diff. Dedup is owned by
+      // checkout-return's `announced` marker, so this fires exactly once per
+      // purchase. Diffing the wallet here would go silent whenever a concurrent
+      // syncEdge("foreground") folded the credit first — the installed-PWA
+      // suspend/resume path this whole flow exists to handle.
       // Same rehydrate syncEdge relies on: reconcile wrote ALL merged
       // SYNC_KEYS back to the store, not just wallet (main.js:3879-3881).
       rehydrateFromStore();
-      updateWalletChip();
       renderIapSections();
       // The shop's own balance line is a different element from the header
       // chip; if the buyer is sitting on the shop screen it would otherwise
       // stay stale until the next render.
       if (currentScreen === "shop") renderShop();
-      const gained = wallet - before;
-      if (gained > 0) toast(t("iap.success", { coins: gained.toLocaleString() }));
+      if (delta > 0) toast(t("iap.success", { coins: Number(delta).toLocaleString() }));
     },
     onEntitlement: (owned) => {
       const wasSupporter = isSupporter(ent);
