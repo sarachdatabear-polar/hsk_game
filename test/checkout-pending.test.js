@@ -61,4 +61,28 @@ describe("checkout-pending", () => {
     writePending(s, { sessionId: "", productId: "supporter", now: T0 });
     expect(readPending(s, T0)).toBeNull();
   });
+
+  it("returns valid record at exact TTL boundary", () => {
+    const s = fakeStore();
+    writePending(s, { sessionId: "cs_1", productId: "supporter", now: T0 });
+    expect(readPending(s, T0 + PENDING_TTL_MS)).not.toBeNull();
+  });
+
+  it("clears via set(null) fallback when store lacks remove()", () => {
+    const map = new Map();
+    const s = {
+      map,
+      get: (k, d) => (map.has(k) ? map.get(k) : d),
+      set: (k, v) => map.set(k, v),
+    };
+    writePending(s, { sessionId: "cs_1", productId: "supporter", now: T0 });
+    clearPending(s);
+    expect(readPending(s, T0)).toBeNull();
+  });
+
+  it("handles non-numeric startedAt by treating it as expired", () => {
+    const s = fakeStore();
+    s.set("checkout", { sessionId: "cs_1", startedAt: "not-a-number" });
+    expect(readPending(s, T0)).toBeNull();
+  });
 });
