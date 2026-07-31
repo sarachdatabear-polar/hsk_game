@@ -194,10 +194,23 @@ let it run in the background while you do steps 1–2.
 4. **Direct Stripe PromptPay go-live** (plan step 6 — replaces the RC Web
    Billing approach above; RC Web Billing cannot carry PromptPay, see the
    preamble):
+   0. **Confirm `grant_purchase` is already applied — before anything else
+      in this list.** Both edge functions grant by calling
+      `supabase.rpc("grant_purchase", …)`; that function comes from
+      `docs/supabase/migrations/2026-07-12-iap-golive.sql`, which does not
+      apply itself. Skip this and the failure is silent and after the fact:
+      the RPC errors, the function 500s, Stripe retries and gives up, the
+      buyer's money is already gone, and nothing was ever granted — the only
+      trace is Stripe's own delivery log. Confirm it, don't assume it: in the
+      Supabase SQL editor, `select 1 from pg_proc where proname =
+      'grant_purchase';` should return a row (or Dashboard → Database →
+      Functions → look for `grant_purchase`). If it doesn't, apply the
+      migration first and re-check before moving on to step 1.
    1. Create a **Thailand-based Stripe account** and complete its
       verification (this is the external clock — start it early).
    2. In the Stripe Dashboard → **Payment methods**, enable **PromptPay**.
-   3. Create the **webhook endpoint** pointed at
+   3. Create the **webhook endpoint** — Stripe Dashboard → **Developers →
+      Webhooks → Add endpoint** — pointed at
       `https://<project>.supabase.co/functions/v1/stripe-webhook`, subscribed
       to `checkout.session.completed`,
       `checkout.session.async_payment_succeeded`, and
@@ -228,6 +241,12 @@ let it run in the background while you do steps 1–2.
       - **One replayed webhook delivery**, via `stripe listen` or
         `stripe events resend`, to prove the session-id dedupe holds: the
         same event delivered twice must grant exactly once, not twice.
+        **PASS:** the replay's response body is `{"duplicate":true}` (visible
+        in the Stripe delivery log) and the wallet balance is unchanged from
+        after the first delivery. **FAIL:** a second `{"ok":true}` grant and
+        the balance **doubled** — the `supporter` product alone is worth
+        2,000 coins (`src/monetization/products.js:11`), so a failed dedupe
+        is not subtle, it is a visibly doubled balance.
    7. **At the key flip, also verify the supporter placement path on web:**
       finish a qualifying round (level up is easiest) → the results line
       shows → its button lands on a shop where the supporter card actually

@@ -78,6 +78,23 @@ the buyer's account, and no entitlement is ever granted — silently.
 Supabase session `Authorization` header), so it deploys normally, with JWT
 verification ON.
 
+**Prerequisite — `grant_purchase` must already exist.** Both functions grant
+by calling `supabase.rpc("grant_purchase", …)`
+(`supabase/functions/stripe-webhook/index.ts:43`); that RPC is created by
+`docs/supabase/migrations/2026-07-12-iap-golive.sql`, which does **not**
+apply itself — it ships as a plain SQL file, same as `schema.sql`. If it has
+not been run against the target project when the first purchase lands: the
+RPC call errors, the function returns HTTP 500, Stripe retries a few times
+and then gives up — the buyer's money is gone, no entitlement or coins are
+ever granted, and the only trace is Stripe's webhook delivery log (nothing
+in Supabase, because the RPC never got that far). This is the same
+silent-failure shape as the JWT misconfiguration above, reached by a
+different route, and it is just as easy to ship without noticing. Apply the
+migration (SQL editor or `supabase db push`) **before** deploying either
+function, and confirm it took — `select 1 from pg_proc where proname =
+'grant_purchase';` in the SQL editor (or Dashboard → Database → Functions →
+look for `grant_purchase`) — do not just assume a past `db push` covered it.
+
 ### stripe-webhook
 
 Deploy with **JWT verification disabled** — Stripe sends no Supabase JWT and
@@ -86,10 +103,16 @@ the gateway would 401 before the function runs:
     supabase functions deploy stripe-webhook --no-verify-jwt
 
 Secret: `STRIPE_WEBHOOK_SECRET` (the `whsec_…` signing secret from the Stripe
-webhook endpoint). Point the Stripe endpoint at
-`https://<project>.supabase.co/functions/v1/stripe-webhook` and subscribe to
+webhook endpoint). Never commit it. In the Stripe Dashboard: **Developers →
+Webhooks → Add endpoint**, URL
+`https://<project>.supabase.co/functions/v1/stripe-webhook`, and subscribe to
 exactly `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
-and `checkout.session.async_payment_failed`.
+and `checkout.session.async_payment_failed`. The third has no dedicated grant
+handler — `processStripeEvent` falls through to `"ignored-event-type"` and a
+plain 200 ack (`core.js:12-15`, matched in `index.ts`) — but it is subscribed
+deliberately, so a failed PromptPay payment shows up in the Stripe delivery
+log instead of vanishing with no record on either side. Do not "clean up" this
+subscription; it is load-bearing for observability, not dead weight.
 
 ### stripe-checkout
 
