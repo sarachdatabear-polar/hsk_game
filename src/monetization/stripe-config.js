@@ -8,6 +8,16 @@
 // The publishable key is safe to commit (it is public by design). The SECRET
 // key and the webhook signing secret are Supabase function secrets and must
 // never appear in this repo.
+// ⚠ CURRENTLY READ BY NOTHING — verified: this file is its only mention in
+// src/ and test/. It is not the go-live switch and filling it alone turns
+// nothing on. That is correct for redirect-to-hosted-Checkout: the session URL
+// is created server-side by the stripe-checkout function using the SECRET key,
+// so the browser never talks to Stripe's API directly and needs no publishable
+// key. Kept because Stripe.js (embedded/element flows, or a future
+// client-confirmed payment) would need it, and because its absence would look
+// like an oversight to the next reader.
+//
+// THE SINGLE GO-LIVE SWITCH IS STRIPE_CHECKOUT_URL BELOW.
 export const STRIPE_PUBLISHABLE_KEY = "";
 
 // Supabase edge function endpoint, e.g.

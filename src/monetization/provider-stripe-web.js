@@ -19,6 +19,19 @@ import { writePending, readPending } from "./checkout-pending.js";
 //
 // A BLANK canonical origin allows everything — an unconfigured pin must not be
 // read as "refuse all purchases".
+//
+// ⚠ WHAT THIS DELIBERATELY DOES NOT DO: it does not hide the offer. Visibility
+// runs through webSupporterConfigured() (main.js), which checks the checkout
+// URL, native and file: — NOT the origin. So once the key is filled, a visitor
+// on the github.io bridge still sees the supporter moment, the results line,
+// the offer sheet and the ฿79 price, and can complete the sheet's whole
+// email/OTP flow; the refusal lands at the checkout tap. That satisfies the
+// audit's criterion 5 ("a purchase cannot START on an origin that cannot
+// receive its authenticated return") and keeps the fix in one pure module
+// instead of spreading origin-awareness through the render path. It is a
+// RECORDED TRADE, not an oversight: acceptable because there are no users yet
+// and the bridge retires at go-live plan step 9. If the bridge outlives that,
+// hide the offer there instead of refusing at the tap.
 const DEV_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
 
 export function isReturnableOrigin(origin, canonicalOrigin) {

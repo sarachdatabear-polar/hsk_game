@@ -285,10 +285,19 @@ let it run in the background while you do steps 1–2.
       does NOT block this rehearsal** — run the card leg and get everything
       else proven; PromptPay's async double-delivery is then the only thing
       left for the live gate.
-   5. Fill `STRIPE_CHECKOUT_URL` and `STRIPE_PUBLISHABLE_KEY` in
-      `src/monetization/stripe-config.js` (the publishable key is safe to
-      commit; never the secret key) and ship. The client code is already
-      merged dark; a blank `STRIPE_CHECKOUT_URL` is a pure no-op.
+   5. Fill **`STRIPE_CHECKOUT_URL`** in `src/monetization/stripe-config.js`
+      and ship. The client code is already merged dark; a blank
+      `STRIPE_CHECKOUT_URL` is a pure no-op.
+      **`STRIPE_CHECKOUT_URL` is the ONLY go-live switch** (verified
+      2026-07-31). `STRIPE_PUBLISHABLE_KEY` sits in the same file but is
+      **read by nothing** — that file is its only mention in `src/` and
+      `test/`. Correct for redirect-to-hosted-Checkout: the session is
+      created server-side with the SECRET key, so the browser never calls
+      Stripe's API. Consequences worth knowing before you touch either:
+      filling **only the publishable key turns nothing on**, and filling
+      **only the checkout URL turns billing fully on**. Set the publishable
+      key if you like (it is safe to commit) but do not read it as a second
+      safety catch. Never commit the secret key.
    6. **Live gate — do all four checks below before advertising the 79฿
       price** (the fifth bullet is a diagnosis hint, not a fifth check),
       because
