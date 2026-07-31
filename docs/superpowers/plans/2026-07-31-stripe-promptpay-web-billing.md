@@ -790,7 +790,7 @@ export function clearPending(store) {
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run test/checkout-pending.test.js`
-Expected: PASS, 9 tests.
+Expected: PASS, 10 tests.
 
 - [ ] **Step 5: Confirm the key is NOT synced**
 
