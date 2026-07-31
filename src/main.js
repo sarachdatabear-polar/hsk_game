@@ -3894,6 +3894,12 @@ async function iapBuy(p, btn){
     // is not a failure (the store transaction may still resolve), so it does
     // not fire an event here.
     if(r.reason === "pending") toast(t("iap.processing"));
+    else if(r.reason === "needs-account"){
+      analytics.track("purchase_fail", { product: p.id, reason: "needs-account" });
+      toast(t("iap.needsAccountBody"));
+      show("account");
+      return;
+    }
     else if(r.reason !== "cancelled"){ toast(t("iap.failed")); analytics.track("purchase_fail", { product: p.id, reason: "provider_error" }); }
     else analytics.track("purchase_fail", { product: p.id, reason: "cancelled" });
     return;
