@@ -790,7 +790,7 @@ export function clearPending(store) {
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run test/checkout-pending.test.js`
-Expected: PASS, 7 tests.
+Expected: PASS, 9 tests.
 
 - [ ] **Step 5: Confirm the key is NOT synced**
 
@@ -1328,7 +1328,7 @@ checkout URL still falls through to mock, so this ships dark."
 - Test: `test/checkout-return.test.js`
 
 **Interfaces:**
-- Consumes: `readPending`, `clearPending` from `checkout-pending.js`; `pollForCredit` from `purchase-poll.js`; `restoreFrom` from `purchases.js`.
+- Consumes: `readPending`, `clearPending` from `checkout-pending.js`; `pollForCredit` from `purchase-poll.js`. (NOT `restoreFrom` — entitlement composition stays with the caller via `onEntitlement`, which is what keeps this module pure. Task 7 applies `restoreFrom`.)
 - Produces: `resolvePendingCheckout({ store, provider, reconcile, sleep, now, onCredited, onEntitlement, track }) -> Promise<{resolved:boolean, credited:boolean, delta:number}>`.
 
 **Why this exists:** `pollForCredit` delivers the **coins only**. Supporter *status* rides `ent`, which is local-only and never touched by reconcile; the native flow sets it via `prov.restore()` at `main.js:3910-3917`, and that code is unreachable in a redirect flow. Without this module the buyer pays 79฿, gets 2,000 coins, and never gets ad removal or the badge.
@@ -1414,9 +1414,44 @@ describe("resolvePendingCheckout", () => {
     expect(readPending(s.store, T0 + 1000)).toBeNull();
   });
 
-  it("never throws when the provider or reconcile explodes", async () => {
+  it("never throws when RECONCILE explodes", async () => {
     const s = setup({ reconcile: async () => { throw new Error("offline"); } });
     await expect(resolvePendingCheckout(s)).resolves.toEqual({ resolved: true, credited: false, delta: 0 });
+  });
+
+  // Separate from the reconcile case on purpose: a single test named "provider or
+  // reconcile" only ever exploded reconcile, so the try/catch around restore()
+  // could be deleted with the suite still green. This module runs early in boot,
+  // so an uncaught throw here is a boot crash, not a failed purchase.
+  it("never throws when provider.restore() THROWS — coins still land, record still clears", async () => {
+    const s = setup({ provider: { restore: async () => { throw new Error("boom"); } } });
+    await expect(resolvePendingCheckout(s)).resolves.toEqual({ resolved: true, credited: true, delta: 2000 });
+    expect(s.onEntitlement).not.toHaveBeenCalled();
+    expect(readPending(s.store, T0 + 1000)).toBeNull();
+  });
+
+  // Pins the SEQUENCE, not just the individual effects. Every effect can fire and
+  // still be wrong: clearing the pending record BEFORE restore() destroys the
+  // crash-resilience property (a tab killed mid-restore must retry on next boot),
+  // and firing analytics before the credit is confirmed reports revenue that may
+  // never land. Both mutations passed all seven original tests.
+  it("pins the ORDER: poll -> credited -> restore -> entitlement -> clear -> track", async () => {
+    const calls = [];
+    const store = fakeStore();
+    writePending(store, { sessionId: "cs_1", productId: "supporter", now: T0 });
+    const remove = store.remove;
+    store.remove = (k) => { calls.push("clear"); return remove(k); };
+    await resolvePendingCheckout({
+      store,
+      provider: { restore: async () => { calls.push("restore"); return { ok: true, ownedProductIds: ["supporter"] }; } },
+      reconcile: async () => { calls.push("poll"); return { ok: true, credits: [{ orderId: "cs_1", delta: 2000 }] }; },
+      sleep: async () => {},
+      now: () => T0 + 1000,
+      onCredited: () => calls.push("credited"),
+      onEntitlement: () => calls.push("entitlement"),
+      track: () => calls.push("track"),
+    });
+    expect(calls).toEqual(["poll", "credited", "restore", "entitlement", "clear", "track"]);
   });
 });
 ```
@@ -1493,7 +1528,7 @@ export async function resolvePendingCheckout({
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run test/checkout-return.test.js`
-Expected: PASS, 7 tests.
+Expected: PASS, 9 tests.
 
 - [ ] **Step 5: Run the full suite and lint**
 
