@@ -242,7 +242,24 @@ let it run in the background while you do steps 1–2.
       `checkout.session.async_payment_succeeded`, and
       `checkout.session.async_payment_failed`; copy its `whsec_…` signing
       secret.
-   4. Set both Supabase function secrets — `STRIPE_SECRET_KEY` and
+   4. **The two functions are ALREADY DEPLOYED with the correct JWT
+      asymmetry (2026-07-31) — `stripe-checkout` `verify_jwt=true`,
+      `stripe-webhook` `verify_jwt=false`, both `ACTIVE`, confirmed from
+      the Management API rather than from the deploy output.** They are
+      inert: no secrets, so both fail closed, and nothing can reach them
+      while `STRIPE_CHECKOUT_URL` is blank. Smoke-tested live — a JWT-less
+      POST to the webhook returns the *function's own* 503, proving
+      `--no-verify-jwt` took, and the checkout's CORS preflight returns
+      200 through the JWT-ON gateway. Details in
+      `docs/supabase/README.md` §Stripe deployment prerequisites.
+      **So what is left here is only the secrets** — set
+      `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`, then **re-deploy**
+      (function secrets are picked up at deploy/restart). Keep the same
+      flags on the re-deploy; the asymmetry is not sticky if you deploy
+      the webhook without `--no-verify-jwt` later.
+      *Original instructions, kept because they are how you re-check the
+      asymmetry after any re-deploy:* set both Supabase function secrets —
+      `STRIPE_SECRET_KEY` and
       `STRIPE_WEBHOOK_SECRET` — and deploy the two functions with the
       **opposite JWT settings** documented in `docs/supabase/README.md`
       §Stripe deployment prerequisites: `stripe-webhook` deploys

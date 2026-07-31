@@ -69,27 +69,47 @@ schema by design: `nbhsk.settings`, `nbhsk.sfx`, `nbhsk.scope`,
 
 ## Stripe deployment prerequisites
 
-> **⚠ UNPROVEN STEP — expect the FIRST deploy of either Stripe function to be
-> where you find out (noted 2026-07-31).** Both `stripe-checkout/index.ts` and
-> `stripe-webhook/index.ts` import
-> `../../../src/monetization/products.js` — a relative path that reaches
-> **outside `supabase/`** to share the one price catalog with the client.
-> Sharing it is deliberate: a vendored copy could drift from the client's
-> prices, and a price that disagrees between the app and the Checkout Session
-> is a money bug.
-> **But no function using that pattern has ever been deployed.** The only
-> function live on the project is `delete-account`, which imports solely from
-> `https://esm.sh/...` and its own directory. `rc-webhook` — the existing
-> precedent for the cross-directory import — was **never deployed either**.
-> There is also no `supabase/config.toml` and no import map in this repo.
-> So whether the CLI bundler follows that parent-directory import is an open
-> question, and it is answered at deploy time, not at the live gate.
-> **If the deploy fails at bundle time**, the fix is a `deno.json` import map
-> or moving the catalog to a path inside `supabase/` that the client also
-> imports — **not** a vendored copy of the prices.
-> Run the two deploys and confirm both report success *before* creating the
-> Stripe webhook endpoint; a failed bundle discovered later looks exactly like
-> a webhook misconfiguration.
+> **✅ BOTH FUNCTIONS ARE DEPLOYED AND SMOKE-TESTED (2026-07-31).** Live on
+> `eqsodiufgjecoqgxdisn`, both `ACTIVE` at v1, and the JWT asymmetry is
+> confirmed **from the API, not from the deploy command**:
+> `stripe-checkout` `verify_jwt=true`, `stripe-webhook` `verify_jwt=false`.
+> They are **inert**: no secrets are set, so both fail closed, and no client
+> can reach them while `STRIPE_CHECKOUT_URL` is blank.
+>
+> Four things that were previously unverified are now settled:
+>
+> 1. **The parent-directory import bundles fine.** Both functions import
+>    `../../../src/monetization/products.js`, reaching outside `supabase/` to
+>    share ONE price catalog with the client (deliberate — a vendored copy
+>    could drift, and a price that disagrees between the app and the Checkout
+>    Session is a money bug). No function using that pattern had ever been
+>    deployed: the only live function was `delete-account`, which imports
+>    nothing outside its own directory, and `rc-webhook` — the assumed
+>    precedent — was never deployed either. The CLI bundled it without a
+>    `config.toml` or an import map; script sizes 64 kB / 63 kB.
+> 2. **`--no-verify-jwt` really took.** A JWT-less `POST` to `stripe-webhook`
+>    returns **503 `service unavailable`** — the *function's own* fail-closed
+>    response for unset secrets (`index.ts:20`), not a gateway 401. So Stripe's
+>    unauthenticated deliveries reach the function body. This is the failure
+>    that would otherwise 401 every delivery *after* the buyer had paid.
+> 3. **The CORS preflight survives the JWT-ON gateway.** `OPTIONS` on
+>    `stripe-checkout` returns **200** with `access-control-allow-origin: *`
+>    and the expected allow-headers/methods. The runbook flagged this as
+>    expected-but-never-exercised; it is now exercised.
+> 4. **A rejected JWT still carries CORS headers**, so an expired session
+>    surfaces in the browser as a readable 401 rather than an opaque CORS
+>    error. Note the shape though: the *gateway* answers
+>    `{"code":"UNAUTHORIZED_NO_AUTH_HEADER","message":…}`, not the function's
+>    `{"error":"unauthorized"}` — so `provider-stripe-web.js` finds no
+>    recognised `payload.error` and falls through to `reason:"failed"`, i.e.
+>    the generic failure toast rather than a route to sign-in. Acceptable (a
+>    stale token IS a failure) but worth knowing when reading a support report.
+>
+> **What is still NOT proven:** anything involving a real Stripe key or real
+> money — session creation, signature verification against a real `whsec_`,
+> the `unpaid` ignore branch, the replay dedupe, and `grant_purchase`'s
+> `granted`/`duplicate` branches. See `docs/OWNER-ACTIONS.md` §B.4.4.5 for the
+> test-mode rehearsal that can prove most of it before verification completes.
 
 Two functions, two opposite JWT settings — get this backwards in either
 direction and it is a production incident. Stripe never sends a Supabase JWT,
