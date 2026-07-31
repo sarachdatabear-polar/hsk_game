@@ -1125,7 +1125,7 @@ export function stripeWebProvider(opts = {}) {
 - [ ] **Step 5: Run tests to verify they pass**
 
 Run: `npx vitest run test/provider-stripe-web.test.js`
-Expected: PASS, 21 tests.
+Expected: PASS, 20 tests.
 
 - [ ] **Step 6: Run the full suite and lint**
 
