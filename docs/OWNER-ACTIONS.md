@@ -282,7 +282,42 @@ let it run in the background while you do steps 1–2.
       flag means every real delivery 401s, silently, after the buyer's money
       has already left their account), `stripe-checkout` deploys **normally**
       (it authenticates the caller itself).
-   4.5 **STRONGLY RECOMMENDED — rehearse the whole gate in Stripe TEST
+   4.5 ✅ **DONE 2026-07-31 — THE TEST-MODE REHEARSAL WAS RUN AND IT PAID
+      FOR ITSELF.** Executed from `http://localhost:8000` over an SSH
+      tunnel, against Stripe test mode, with a real PromptPay checkout.
+      **PASSED:** session creation with `amount_total 7900` / `currency
+      thb` / `payment_method_types ["promptpay","card"]` /
+      `client_reference_id` / `metadata.product_id` all correct at
+      Stripe; signature verification accepting a real signature AND
+      rejecting unsigned + bad-signed bodies; `grant_purchase`'s
+      `granted` branch writing ledger + wallet + entitlement atomically;
+      and the **replay dedupe** — the same event resent granted exactly
+      once (1 ledger row, +2000, 1 entitlement).
+      **⚠ STILL NOT EXERCISED, do NOT read the green run as covering
+      it:** test-mode PromptPay settled **synchronously** — the grant
+      rode a `checkout.session.completed` that already carried
+      `payment_status: "paid"`. So the `{"ignored":"not-paid"}` branch
+      and the whole `async_payment_succeeded` path **never ran**, and
+      those are exactly what a real Thai buyer scanning a QR will hit.
+      Also unexercised: the card leg, an abandoned checkout, and the
+      client-side return leg (`SITE_ORIGIN` is pinned to the canonical
+      domain, so a localhost rehearsal cannot receive its own return).
+      **IT CAUGHT A LAUNCH-BLOCKING BUG.** The supporter sheet's checkout
+      button could never start a purchase — the sheet disabled the button
+      before awaiting its handler and `iapBuy` refused already-disabled
+      buttons. Silent: no fetch, no toast, no console error. It was live
+      on prod in v140 and unreachable only because billing ships dark, so
+      it would have surfaced for the first time at the key flip. Fixed in
+      `56b31558` with a regression pin.
+      **Test-mode teardown, if you re-run this:** the grant lands in the
+      LIVE project on whatever account you sign in with. Use a `+alias`
+      email. Cleaning up needs BOTH halves — server (entitlement, ledger
+      row, wallet) and the browser's `localStorage`, because the wallet
+      merge takes `max(local, cloud)` and the device will otherwise push
+      the coins straight back.
+
+      *Original guidance, kept because it is how you re-run this:*
+      **rehearse the whole gate in Stripe TEST
       MODE first, while verification is still pending.** Stripe issues
       `sk_test_…` keys the moment the account exists, before verification
       completes, and test mode has its own webhook endpoints and its own
