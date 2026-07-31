@@ -107,6 +107,48 @@ export const STRINGS = {
     "welcome.levelHint": "New to HSK? Start with HSK1 — you can change this any time.",
     "welcome.start": "START LEARNING",
     "welcome.promise": "First, learn 6 words. Then play a short Word Quest.",
+    "onboarding.language": "Your language",
+    "onboarding.createAccount": "Create my free account",
+    "onboarding.tryFirst": "Try one quest first",
+    "onboarding.playOffline": "Play offline",
+    "onboarding.freePromise": "The full game is free. An account only saves your progress across devices.",
+    "onboarding.accountTitle": "Save your adventure",
+    "onboarding.accountBlurb": "Enter your email and we’ll send a sign-in code. No password needed.",
+    "onboarding.emailLabel": "Email address",
+    "onboarding.noPassword": "Free account · no password · no payment",
+    "onboarding.verifyTitle": "Check your email",
+    "onboarding.codeLabel": "Sign-in code",
+    "onboarding.levelTitle": "Choose your starting level",
+    "onboarding.levelBlurb": "Your first guided quest uses six real words from this level.",
+    "onboarding.levelHint": "Not sure? HSK1 is the best place to begin. You can change it later.",
+    "onboarding.startQuest": "Start my first Word Quest",
+    "onboarding.questPromise": "Six words · about two minutes · guidance included",
+    "onboarding.quest.guide": "First quest guide",
+    "onboarding.quest.wordTitle": "Meet {word}",
+    "onboarding.quest.wordBody": "This is the Chinese word. Its pronunciation is {pinyin}. You can tap the word card to hear it again.",
+    "onboarding.quest.answersTitle": "Choose the meaning",
+    "onboarding.quest.answersBody": "Tap the answer that matches the Chinese word. The timer starts after this guide closes.",
+    "onboarding.quest.letsPlay": "Let’s play",
+    "onboarding.quest.correctTip": "Nice! Correct answers light the path and earn Lucky Coins.",
+    "onboarding.quest.reviewTip": "No problem—missed words return later in this quest for another try.",
+    "onboarding.quest.progressTip": "Path progress: {learned}/{target} words learned. Finish all six to complete the quest.",
+    "onboarding.results.saveTitle": "Keep your first quest",
+    "onboarding.results.saveBody": "Create your free account to back up these words, coins and future progress. No payment is needed.",
+    "onboarding.results.readyTitle": "Your progress is saved",
+    "onboarding.results.readyBody": "One quick tour will show you where to play, visit your cat and check progress.",
+    "onboarding.results.save": "Save my progress",
+    "onboarding.results.continueFree": "Continue without an account",
+    "onboarding.results.tour": "Show me around",
+    "onboarding.tour.homeTitle": "Home starts your next quest",
+    "onboarding.tour.homeBody": "The large Word Quest button chooses a useful session for you. Flashcards and Tone Trainer are optional practice tools.",
+    "onboarding.tour.catTitle": "Your cat grows with your learning",
+    "onboarding.tour.catBody": "Complete today’s word goal, then send Lucky Cat exploring to bring back a memory.",
+    "onboarding.tour.profileTitle": "Profile keeps the big picture",
+    "onboarding.tour.profileBody": "See mastery, streaks, stickers and account sync here. Supporter payment is optional and never unlocks gameplay.",
+    "onboarding.tour.count": "Tour {current} of {total}",
+    "onboarding.tour.skip": "Skip tour",
+    "onboarding.tour.finish": "Finish tour",
+    "onboarding.tour.replay": "Replay app tour",
     "results.introHint": "Great first session! Come back tomorrow to start your streak 🍵",
     // bottom nav (M2)
     "nav.home": "Home",
@@ -504,10 +546,29 @@ export const STRINGS = {
     // webhook's idempotent grant guarantees eventual delivery, so this is
     // reassurance, not an error — the next ordinary sync credits it.
     "iap.processing": "Purchase is processing — your coins will arrive shortly.",
+    "iap.supporterProcessing": "Supporter is processing — it will activate automatically when payment completes.",
     // Web Supporter offer + account save-unlock copy (Task 5, web IAP billing)
     "iap.supporter.web.title": "Become a Supporter",
     "iap.supporter.web.blurb": "Support the project — a thank-you cosmetic, a Supporter badge, 2,000 coins, and ad-free on the mobile app. One payment, yours everywhere.",
     "iap.needsAccountBody": "Create a free account so your purchase follows you to any device.",
+    "supporter.sheet.eyebrow": "Optional support",
+    "supporter.sheet.title": "Support Lucky Cat — once",
+    "supporter.sheet.lead": "Lucky Cat stays free for everyone. Support the project and receive a permanent thank-you pack.",
+    "supporter.sheet.benefitCoins": "2,000 Lucky Coins now",
+    "supporter.sheet.benefitBadge": "Permanent Supporter badge and thank-you cosmetic",
+    "supporter.sheet.benefitAds": "Ad-free in the Android app",
+    "supporter.sheet.benefitRestore": "Restores on devices linked to your email",
+    "supporter.sheet.price": "{price} one time · no subscription",
+    "supporter.sheet.secure": "Pay securely with PromptPay or card in Stripe Checkout.",
+    "supporter.sheet.checkout": "Continue to secure checkout · {price}",
+    "supporter.sheet.email": "Continue with email",
+    "supporter.sheet.notNow": "Not now — keep playing free",
+    "supporter.sheet.help": "Purchase help",
+    "supporter.sheet.saveTitle": "Save your Supporter purchase",
+    "supporter.sheet.saveBody": "Enter your email so your badge and purchase can be restored on another device. No password required.",
+    "supporter.sheet.accountReady": "Account ready — you can continue to secure checkout",
+    "supporter.sheet.active": "Supporter active ✓",
+    "supporter.sheet.activeBody": "Thank you! Your permanent Supporter benefits are active on this account.",
     "account.supporterChip": "Supporter ♥",
     "item.supporter": "Supporter Pack",
     "item.coins_s": "Coin Pouch",
@@ -739,6 +800,48 @@ export const STRINGS = {
     "welcome.levelHint": "เพิ่งเริ่ม HSK ใช่ไหม? เริ่มที่ HSK1 และเปลี่ยนได้ทุกเมื่อ",
     "welcome.start": "เริ่มเรียนเลย",
     "welcome.promise": "เริ่มจากเรียน 6 คำ แล้วเล่นภารกิจคำศัพท์สั้น ๆ", // TH-REVIEW
+    "onboarding.language": "ภาษาของคุณ", // TH-REVIEW
+    "onboarding.createAccount": "สร้างบัญชีฟรี", // TH-REVIEW
+    "onboarding.tryFirst": "ลองเล่นหนึ่งภารกิจก่อน", // TH-REVIEW
+    "onboarding.playOffline": "เล่นแบบออฟไลน์", // TH-REVIEW
+    "onboarding.freePromise": "เกมเต็มเล่นฟรี บัญชีมีไว้บันทึกความก้าวหน้าข้ามอุปกรณ์เท่านั้น", // TH-REVIEW
+    "onboarding.accountTitle": "บันทึกการผจญภัยของคุณ", // TH-REVIEW
+    "onboarding.accountBlurb": "กรอกอีเมล แล้วเราจะส่งรหัสเข้าสู่ระบบให้ ไม่ต้องใช้รหัสผ่าน", // TH-REVIEW
+    "onboarding.emailLabel": "อีเมล", // TH-REVIEW
+    "onboarding.noPassword": "บัญชีฟรี · ไม่ต้องใช้รหัสผ่าน · ไม่ต้องจ่ายเงิน", // TH-REVIEW
+    "onboarding.verifyTitle": "ตรวจสอบอีเมลของคุณ", // TH-REVIEW
+    "onboarding.codeLabel": "รหัสเข้าสู่ระบบ", // TH-REVIEW
+    "onboarding.levelTitle": "เลือกระดับเริ่มต้น", // TH-REVIEW
+    "onboarding.levelBlurb": "ภารกิจแนะนำครั้งแรกใช้คำจริง 6 คำจากระดับนี้", // TH-REVIEW
+    "onboarding.levelHint": "ยังไม่แน่ใจใช่ไหม? เริ่มที่ HSK1 ได้เลย และเปลี่ยนภายหลังได้", // TH-REVIEW
+    "onboarding.startQuest": "เริ่มภารกิจคำศัพท์แรก", // TH-REVIEW
+    "onboarding.questPromise": "6 คำ · ประมาณ 2 นาที · มีคำแนะนำระหว่างเล่น", // TH-REVIEW
+    "onboarding.quest.guide": "คู่มือภารกิจแรก", // TH-REVIEW
+    "onboarding.quest.wordTitle": "มารู้จัก {word}", // TH-REVIEW
+    "onboarding.quest.wordBody": "นี่คือคำภาษาจีน ออกเสียงว่า {pinyin} แตะการ์ดคำเพื่อฟังซ้ำได้", // TH-REVIEW
+    "onboarding.quest.answersTitle": "เลือกความหมาย", // TH-REVIEW
+    "onboarding.quest.answersBody": "แตะคำตอบที่ตรงกับคำภาษาจีน ตัวจับเวลาจะเริ่มหลังจากปิดคำแนะนำนี้", // TH-REVIEW
+    "onboarding.quest.letsPlay": "เริ่มเล่น", // TH-REVIEW
+    "onboarding.quest.correctTip": "เยี่ยม! คำตอบที่ถูกจะส่องทางและให้เหรียญนำโชค", // TH-REVIEW
+    "onboarding.quest.reviewTip": "ไม่เป็นไร คำที่ตอบพลาดจะกลับมาให้ลองอีกครั้งในภารกิจนี้", // TH-REVIEW
+    "onboarding.quest.progressTip": "ความก้าวหน้า: เรียนแล้ว {learned}/{target} คำ ทำครบหกคำเพื่อจบภารกิจ", // TH-REVIEW
+    "onboarding.results.saveTitle": "เก็บภารกิจแรกของคุณไว้", // TH-REVIEW
+    "onboarding.results.saveBody": "สร้างบัญชีฟรีเพื่อสำรองคำศัพท์ เหรียญ และความก้าวหน้าต่อไป ไม่ต้องจ่ายเงิน", // TH-REVIEW
+    "onboarding.results.readyTitle": "บันทึกความก้าวหน้าแล้ว", // TH-REVIEW
+    "onboarding.results.readyBody": "ชมทัวร์สั้น ๆ เพื่อดูจุดเริ่มเล่น เยี่ยมเจ้าแมว และตรวจสอบความก้าวหน้า", // TH-REVIEW
+    "onboarding.results.save": "บันทึกความก้าวหน้า", // TH-REVIEW
+    "onboarding.results.continueFree": "เล่นต่อโดยไม่สร้างบัญชี", // TH-REVIEW
+    "onboarding.results.tour": "พาชมแอป", // TH-REVIEW
+    "onboarding.tour.homeTitle": "หน้าหลักเริ่มภารกิจถัดไป", // TH-REVIEW
+    "onboarding.tour.homeBody": "ปุ่มภารกิจคำศัพท์ขนาดใหญ่จะเลือกเซสชันที่เหมาะให้คุณ ส่วนแฟลชการ์ดและฝึกโทนเสียงเป็นตัวเลือกเสริม", // TH-REVIEW
+    "onboarding.tour.catTitle": "เจ้าแมวเติบโตไปกับการเรียน", // TH-REVIEW
+    "onboarding.tour.catBody": "ทำเป้าหมายคำศัพท์วันนี้ให้ครบ แล้วส่งแมวนำโชคออกสำรวจเพื่อนำความทรงจำกลับมา", // TH-REVIEW
+    "onboarding.tour.profileTitle": "โปรไฟล์แสดงภาพรวม", // TH-REVIEW
+    "onboarding.tour.profileBody": "ดูคำที่เชี่ยวชาญ สถิติ สติกเกอร์ และการซิงก์บัญชีได้ที่นี่ การสนับสนุนแบบชำระเงินเป็นทางเลือกและไม่ปลดล็อกเกม", // TH-REVIEW
+    "onboarding.tour.count": "ทัวร์ {current} จาก {total}", // TH-REVIEW
+    "onboarding.tour.skip": "ข้ามทัวร์", // TH-REVIEW
+    "onboarding.tour.finish": "จบทัวร์", // TH-REVIEW
+    "onboarding.tour.replay": "ดูทัวร์แอปอีกครั้ง", // TH-REVIEW
     "results.introHint": "ครั้งแรกเยี่ยมไปเลย! พรุ่งนี้กลับมาเริ่มเรียนต่อเนื่องกันนะ 🍵",
     // bottom nav (M2)
     "nav.home": "หน้าหลัก",
@@ -1132,10 +1235,29 @@ export const STRINGS = {
     "iap.nothingToRestore": "ไม่มีรายการให้กู้คืน",
     "iap.restoreFailed": "กู้คืนไม่สำเร็จ — ตรวจสอบการเชื่อมต่อแล้วลองใหม่",
     "iap.processing": "การซื้อกำลังดำเนินการ — เหรียญของคุณจะเข้าบัญชีในไม่ช้า", // TH-REVIEW 2026-07-12: machine-translated, needs native review
+    "iap.supporterProcessing": "กำลังดำเนินการ Supporter — ระบบจะเปิดใช้งานอัตโนมัติเมื่อชำระเงินเสร็จ", // TH-REVIEW
     // Web Supporter offer + account save-unlock copy (Task 5, web IAP billing) — TH-REVIEW: queued for native spot-check
     "iap.supporter.web.title": "เป็นผู้สนับสนุน",
     "iap.supporter.web.blurb": "สนับสนุนโปรเจกต์ — รับไอเทมขอบคุณ ตราผู้สนับสนุน เหรียญ 2,000 และไม่มีโฆษณาบนแอปมือถือ จ่ายครั้งเดียว ใช้ได้ทุกเครื่อง",
     "iap.needsAccountBody": "สร้างบัญชีฟรี เพื่อให้การซื้อของคุณติดตามไปได้ทุกอุปกรณ์",   // TH-REVIEW
+    "supporter.sheet.eyebrow": "การสนับสนุนแบบเลือกได้", // TH-REVIEW
+    "supporter.sheet.title": "สนับสนุน Lucky Cat ครั้งเดียว", // TH-REVIEW
+    "supporter.sheet.lead": "Lucky Cat ยังเล่นฟรีสำหรับทุกคน สนับสนุนโปรเจกต์และรับแพ็กขอบคุณแบบถาวร", // TH-REVIEW
+    "supporter.sheet.benefitCoins": "รับ 2,000 เหรียญนำโชคทันที", // TH-REVIEW
+    "supporter.sheet.benefitBadge": "ตราผู้สนับสนุนและไอเทมขอบคุณแบบถาวร", // TH-REVIEW
+    "supporter.sheet.benefitAds": "ไม่มีโฆษณาในแอป Android", // TH-REVIEW
+    "supporter.sheet.benefitRestore": "กู้คืนได้บนอุปกรณ์ที่เชื่อมกับอีเมลของคุณ", // TH-REVIEW
+    "supporter.sheet.price": "{price} จ่ายครั้งเดียว · ไม่มีสมาชิกแบบรายเดือน", // TH-REVIEW
+    "supporter.sheet.secure": "ชำระอย่างปลอดภัยด้วยพร้อมเพย์หรือบัตรผ่าน Stripe Checkout", // TH-REVIEW
+    "supporter.sheet.checkout": "ไปยังหน้าชำระเงินที่ปลอดภัย · {price}", // TH-REVIEW
+    "supporter.sheet.email": "ดำเนินการต่อด้วยอีเมล", // TH-REVIEW
+    "supporter.sheet.notNow": "ไว้ทีหลัง — เล่นฟรีต่อ", // TH-REVIEW
+    "supporter.sheet.help": "ความช่วยเหลือเรื่องการซื้อ", // TH-REVIEW
+    "supporter.sheet.saveTitle": "บันทึกการซื้อ Supporter", // TH-REVIEW
+    "supporter.sheet.saveBody": "กรอกอีเมลเพื่อกู้คืนตราและการซื้อบนอุปกรณ์อื่นได้ ไม่ต้องใช้รหัสผ่าน", // TH-REVIEW
+    "supporter.sheet.accountReady": "บัญชีพร้อมแล้ว — ไปยังหน้าชำระเงินที่ปลอดภัยได้เลย", // TH-REVIEW
+    "supporter.sheet.active": "Supporter เปิดใช้งานแล้ว ✓", // TH-REVIEW
+    "supporter.sheet.activeBody": "ขอบคุณ! สิทธิ์ Supporter แบบถาวรเปิดใช้งานในบัญชีนี้แล้ว", // TH-REVIEW
     "account.supporterChip": "ผู้สนับสนุน ♥",
     "item.supporter": "แพ็กผู้สนับสนุน",
     "item.coins_s": "ถุงเหรียญ",

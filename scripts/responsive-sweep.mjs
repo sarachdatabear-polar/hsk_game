@@ -744,6 +744,23 @@ async function prepareWelcomePage(browser, width, height) {
 async function runWelcomeProbe(browser, width, height) {
   const { page, errs } = await prepareWelcomePage(browser, width, height);
 
+  const welcomeInfo = await page.evaluate(tol => {
+    const inView = selector => {
+      const el = document.querySelector(selector);
+      if(!el) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && r.top >= -tol && r.bottom <= innerHeight + tol;
+    };
+    return {
+      active: document.querySelector("#s-welcome")?.classList.contains("on") ?? false,
+      createInView: inView("#onboarding-create-account"),
+      tryInView: inView("#onboarding-try-first"),
+      scrollNeeded: document.documentElement.scrollHeight > innerHeight + tol,
+    };
+  }, TOL);
+  await page.locator("#onboarding-try-first").click();
+  await page.waitForTimeout(100);
+
   const info = await page.evaluate(tol => {
     const rectIn = el => {
       if (!el) return null;
@@ -766,7 +783,10 @@ async function runWelcomeProbe(browser, width, height) {
   }, TOL);
 
   const failures = [];
-  if (!info.active) failures.push("welcome: #s-welcome not active (first-run state not reached)");
+  if (!welcomeInfo.active || !info.active) failures.push("welcome: #s-welcome not active (first-run state not reached)");
+  if (!welcomeInfo.createInView) failures.push("welcome: account CTA missing or below fold");
+  if (!welcomeInfo.tryInView) failures.push("welcome: try-first CTA missing or below fold");
+  if (welcomeInfo.scrollNeeded) failures.push("welcome: initial choice needs scrolling");
   if (!info.startBtn) failures.push("welcome: #welcome-start missing");
   else if (!info.startBtn.inView)
     failures.push(`welcome: #welcome-start below fold (bottom=${Math.round(info.startBtn.bottom)}>innerHeight=${info.innerHeight})`);

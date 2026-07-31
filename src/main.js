@@ -36,7 +36,18 @@ import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
 import { navVisibleOn, activeTabFor } from "./nav.js";
 import { comboMultiplier, comboFires, roundProgress } from "./hud.js";
 import { comboGlowTier, plaqueBounce, countUpValue, trailMoveX } from "./juice.js";
-import { isFirstRun, introDeck } from "./firstrun.js";
+import { introDeck } from "./firstrun.js";
+import {
+  normalizeOnboarding,
+  onboardingActive,
+  noteQuestTip,
+  finishOnboardingQuest,
+  shouldOfferProgressSave,
+  continueFree,
+  beginAppTour,
+  setAppTourStep,
+  completeOnboarding,
+} from "./onboarding.js";
 import { defaultStickers, stickerDefs, scopeFacts, evaluateAwards, popToast, dropFromQueue } from "./stickers.js";
 import { journeyNodes, currentNodeId } from "./journey.js";
 import { normalizeProfile, normalizeDisplayName, profileInitial, profileStats, bestSessionScore, equippedSummary } from "./profile.js";
@@ -70,6 +81,11 @@ import { wireAvatarId, avatarPortraitStyle } from "./avatar.js";
 import { createAvatarPicker } from "./ui/avatar-picker.js";
 import { createSupporterMomentRow } from "./ui/supporter-moment-row.js";
 import { createCatJourneyScreen } from "./ui/cat-journey-screen.js";
+import { createOnboardingScreen } from "./ui/onboarding-screen.js";
+import { createOnboardingQuestGuide } from "./ui/onboarding-quest-guide.js";
+import { createOnboardingResults } from "./ui/onboarding-results.js";
+import { createAppTour } from "./ui/app-tour.js";
+import { createSupporterOfferSheet } from "./ui/supporter-offer-sheet.js";
 import {
   chooseJourneyWord,
   journeyStatus as catJourneyStatus,
@@ -174,11 +190,20 @@ let lenCustomOpen = false;  // "Custom" chip tapped; input visible even if value
 let battleDeckOverride = null;  // when set, next battle draws only these words (e.g. "fight misses")
 let smartDeckNext = false;   // next battle's override is a smart-review deck (earns the perfect bonus)
 let lastMode = "round";
-// A4 first-run intro: null when not in the intro, else "learn" -> "battle".
-// introWords carries the same 6 words from warm-up into the battle.
+// The guided first quest is a real six-word battle, never a Flashcards detour.
+// introPhase stays as the battle-side compatibility flag until the battle
+// guide/results slice below takes over all of its remaining responsibilities.
 let introPhase = null;
 let introWords = [];
 let masteryStore = store.get("mastery", {});
+let onboardingState = normalizeOnboarding(store.get("onboarding", null), {
+  introDone: store.get("introDone", false),
+  mastery: masteryStore,
+});
+function saveOnboarding(next){
+  onboardingState = normalizeOnboarding(next);
+  store.set("onboarding", onboardingState);
+}
 let playerProfile = normalizeProfile(store.get("profile", {}));
 function noteAnswer(hanzi, correct){
   recordAnswer(masteryStore, hanzi, correct);
@@ -519,12 +544,7 @@ const supporterRow = createSupporterMomentRow({
   isSupporter: () => isSupporter(ent),
   supporterOn: () => (iapOn && provider().supports("supporter")) || webSupporterConfigured(),
   getToday: todayStr,
-  goShopSupporter: () => {
-    const go = document.querySelector('[data-go="shop"]');
-    if (!go) return;
-    go.click();   // reuse the full shop-tab handler (analytics, ensureWebBilling, back-target)
-    requestAnimationFrame(() => $("#shop-supporter")?.scrollIntoView({ block: "center" }));
-  },
+  goShopSupporter: () => openSupporterOffer(),
 });
 // Deep link: opening a shared `#f=<code>` link lands straight in the compare view.
 const incomingFriendCard = friendCardFromHash(location.hash);
@@ -1087,11 +1107,43 @@ async function onAccountDelete(){
 
 async function onRestorePurchases(){
   const r = await provider().restore();
-  if(!r.ok){ toast(t("iap.restoreFailed")); return; }
+  if(!r.ok){ toast(t("iap.restoreFailed")); return r; }
   ent = restoreFrom(ent, r.ownedProductIds);
   store.set("ent", ent);
   toast(isSupporter(ent) ? t("iap.restored") : t("iap.nothingToRestore"));
   renderAccount();
+  return r;
+}
+
+function supporterDisplayPrice(){
+  if(provider().kind === "stripe-web") return "฿79";
+  return provider().price("supporter") || displayPrice(productById("supporter"), getLocale());
+}
+
+const supporterOfferSheet = createSupporterOfferSheet({
+  root: $("#supporter-sheet"),
+  t, openDialog, closeDialog,
+  isOwned: () => isSupporter(ent),
+  isSignedIn: () => accountState(accountUI.session) === "signedIn",
+  getPrice: supporterDisplayPrice,
+  sendCode,
+  verifyCode,
+  getLocale,
+  getDisplayName: () => playerProfile.displayName,
+  onSignedIn: async session => {
+    accountUI.session = session;
+    accountUI.phase = "idle";
+    renderAccount();
+    await syncEdge("sign-in");
+  },
+  onCheckout: button => iapBuy(productById("supporter"), button),
+  onRestore: onRestorePurchases,
+  notify: toast,
+});
+
+async function openSupporterOffer(){
+  await ensureWebBilling();
+  supporterOfferSheet.open();
 }
 
 /* ============================== home screen (M3) ============================== */
@@ -1174,31 +1226,87 @@ $("#home-start").onclick = ()=>{
   startBattle("round");
 };
 
-/* ============================== first run (A4) ============================== */
-function renderWelcome(){
-  const lang = getLocale();
-  document.querySelectorAll("#welcome-lang-chips .chip").forEach(b=>
-    setPressed(b, b.dataset.wlang === lang));
-  const lv = scope.levels[0] || 1;
-  document.querySelectorAll("#welcome-level-chips .chip").forEach(b=>
-    setPressed(b, Number(b.dataset.wlv) === lv));
-}
-document.querySelectorAll("#welcome-lang-chips .chip").forEach(b=>
-  b.addEventListener("click", ()=>{ setUiLocale(b.dataset.wlang); renderWelcome(); }));
-document.querySelectorAll("#welcome-level-chips .chip").forEach(b=>
-  b.addEventListener("click", ()=>{
-    scope.levels = [Number(b.dataset.wlv)];
+/* ============================== guided first run ============================== */
+const onboardingScreen = createOnboardingScreen({
+  root: $("#welcome-controls"),
+  t,
+  getState: () => onboardingState,
+  saveState: saveOnboarding,
+  getLocale,
+  setLocale: setUiLocale,
+  getLevel: () => scope.levels[0] || 1,
+  setLevel: level => {
+    scope.levels = [level];
     store.set("scope", scope);
     pool = buildPool(D.levels, scope);
-    renderWelcome();
-  }));
-$("#welcome-start").onclick = ()=>{
-  introWords = introDeck(pool, 6);
-  if(introWords.length < 2){ store.set("introDone", true); show("home"); return; }
-  introPhase = "learn";
-  learnDeck = introWords.slice();
-  startLearn();
-};
+  },
+  isOnline: accountOnline,
+  sendCode,
+  verifyCode,
+  getDisplayName: () => playerProfile.displayName,
+  onSignedIn: async session => {
+    accountUI.session = session;
+    accountUI.phase = "idle";
+    renderAccount();
+    await syncEdge("sign-in");
+    requestAnimationFrame(() => {
+      if(onboardingState.stage === "app-tour") appTour.start();
+    });
+  },
+  onStartQuest: () => {
+    introWords = introDeck(pool, 6);
+    if(introWords.length < 2){
+      saveOnboarding(completeOnboarding(onboardingState));
+      show("home");
+      return;
+    }
+    introPhase = "battle";
+    battleDeckOverride = introWords.slice();
+    startBattle("round");
+  },
+  notify: toast,
+});
+const onboardingQuestGuide = createOnboardingQuestGuide({
+  root: $("#onboarding-quest-guide"),
+  t,
+  openDialog,
+  closeDialog,
+});
+const onboardingResults = createOnboardingResults({
+  root: $("#r-onboarding"),
+  t,
+  onSave: () => {
+    saveOnboarding({ ...onboardingState, stage:"account" });
+    onboardingScreen.render();
+    show("welcome");
+  },
+  onContinue: () => {
+    if(onboardingState.stage === "results"){
+      saveOnboarding(shouldOfferProgressSave(onboardingState)
+        ? continueFree(onboardingState)
+        : beginAppTour(onboardingState));
+    }
+    appTour.start();
+  },
+});
+const appTour = createAppTour({
+  root: $("#app-tour"),
+  t,
+  onNavigate: screen => {
+    if(screen === "progress") renderProgress();
+    show(screen);
+  },
+  onStep: step => {
+    if(onboardingState.stage === "app-tour") saveOnboarding(setAppTourStep(onboardingState, step));
+  },
+  onComplete: ({ replay }) => {
+    if(!replay){
+      saveOnboarding(completeOnboarding(onboardingState));
+      store.set("introDone", true);
+    }
+    show("home");
+  },
+});
 
 /* ============================== audio (pre-recorded mp3 first, Web Speech fallback) ============================== */
 // iOS's ringer/silent switch must not mute the game (it did under "ambient").
@@ -1605,6 +1713,7 @@ $("#howto-try").onclick = ()=>{
   pool = buildPool(D.levels, scope);
   startBattle("round");
 };
+$("#howto-tour").onclick = ()=> appTour.start({ isReplay:true });
 
 /* ============================== flashcards ============================== */
 const fc = {deck:[], i:0, flipped:false, done:0, total:0, persist:false, key:""};
@@ -2098,6 +2207,7 @@ function stopBattle(){
   setQuestContinue(false);
   closeDialog($("#pause-overlay"), false);
   closeDialog($("#format-intro"), false);
+  onboardingQuestGuide.hide();
   stopAudio();
 }
 /* More-screen sound toggle mirrors the old hud-sfx (dims when muted); both stay
@@ -2369,6 +2479,15 @@ function syncQuestOutcome(correct, timedOut=false){
   B.reviewed = q.reviewed;
   B.misses = q.missedWords.slice();
   B.missSet = new Set(B.misses.map(w => w.h));
+  if(introPhase === "battle" && onboardingState.stage === "quest"){
+    if(onboardingState.questTip < 3){
+      saveOnboarding(noteQuestTip(onboardingState, 3));
+      onboardingQuestGuide.showOutcome(correct && !timedOut);
+    }else if(onboardingState.questTip < 4 && q.learned >= Math.min(3, q.target)){
+      saveOnboarding(noteQuestTip(onboardingState, 4));
+      onboardingQuestGuide.showProgress(q.learned, q.target);
+    }
+  }
   return result;
 }
 function spawnZombie(){
@@ -2401,8 +2520,12 @@ function spawnZombie(){
     : formatFor(w, masteryStore[w.h], { audio: audioAvailable(w.h), cloze: x => x.h in CLOZE });
   // v6 soft-intro: the first-ever appearance of a format freezes the walker
   // while the guide explains it in one line.
+  const guidedFirstPrompt = introPhase === "battle"
+    && onboardingState.stage === "quest" && onboardingState.questTip < 2;
   const introKey = FORMATS[z.format].intro;
-  if(introKey && !formatIntros[z.format]){
+  if(guidedFirstPrompt){
+    z.frozen = true; z.introFree = true;
+  }else if(introKey && !formatIntros[z.format]){
     z.frozen = true; z.introFree = true;
     showFormatIntro(introKey);
   }
@@ -2410,6 +2533,20 @@ function spawnZombie(){
   // during an intro the audio waits for dismiss (played in showFormatIntro's OK)
   if(!z.frozen && (pol === "always" || (pol === "setting" && settings.autoSpeak))) speakWhenReady(w.h);
   renderQuestion(w, z.format, z.format === "reverse" ? "battle.reversePrompt" : null);
+  if(guidedFirstPrompt){
+    onboardingQuestGuide.showFirstWord(w,
+      tip => saveOnboarding(noteQuestTip(onboardingState, tip)),
+      () => {
+        const current = B.zombie;
+        if(!current || current !== z || current.state !== "walk") return;
+        current.x = B.w + 30;
+        current.frozen = false;
+        if(FORMATS[current.format].audio === "always"
+          || (FORMATS[current.format].audio === "setting" && settings.autoSpeak)){
+          speakWhenReady(current.w.h);
+        }
+      });
+  }
   showQuestFeedback(encounter.reviewChallenge ? "challenge" : "choose", z.format);
   updateHud();   // round capsule tracks B.spawned — refresh as each word enters
   refreshGuideSpeed();
@@ -3375,7 +3512,9 @@ function endBattle(quit){
     // jackpot-proof: never fall back the start snapshot to 0 — a missing masteredAtStart
     // with a `|| 0` fallback would credit the player's entire lifetime mastered count as
     // one round's gain. Fall back to the CURRENT count so a missing snapshot yields zero.
-    if(introPhase){ introPhase = null; store.set("introDone", true); }
+    const abandonedOnboarding = introPhase === "battle" && onboardingState.stage === "quest";
+    if(introPhase) introPhase = null;
+    if(abandonedOnboarding) saveOnboarding({ ...onboardingState, stage:"level", questTip:0 });
     // B2: evaluate awards on quit too (a streak-7 crossing must not be lost),
     // but silently — the sticker-slot toast queue waits for the next real
     // results screen. The monthly badge's floating toast() is a separate,
@@ -3398,7 +3537,9 @@ function endBattle(quit){
       stickerState = dropFromQueue(stickerState, "ev:monthly-40");
     }
     store.set("stickers", stickerState);
-    show("home"); return;
+    if(abandonedOnboarding){ onboardingScreen.render(); show("welcome"); }
+    else show("home");
+    return;
   }
   const results = questResultsSummary(B.quest.view(), { score:B.score });
   const dailyNote = noteDaily(results.learned) || {};
@@ -3512,12 +3653,20 @@ function endBattle(quit){
   const hintEl = $("#r-intro-hint");
   if(introPhase === "battle"){
     introPhase = null;
-    store.set("introDone", true);
+    saveOnboarding(finishOnboardingQuest(noteQuestTip(onboardingState, 5)));
     hintEl.textContent = t("results.introHint");
     hintEl.style.display = "block";
   }else{
     hintEl.style.display = "none";
   }
+  const guidedResults = onboardingState.stage === "results";
+  onboardingResults.render({
+    visible: guidedResults,
+    offerSave: guidedResults && shouldOfferProgressSave(onboardingState),
+  });
+  $("#r-standard-actions").hidden = guidedResults;
+  $("#r-next-review").hidden = guidedResults;
+  $("#r-home").hidden = guidedResults;
   // B2 sticker awards: evaluate every unearned sticker against fresh facts.
   // Persist immediately (a sticker earned mid-session survives reload); show
   // at most ONE toast per results screen — the rest stay queued.
@@ -3564,6 +3713,7 @@ function endBattle(quit){
     bossDefeated: !!B.bossDefeated,
     leveledUp: (B.levelUps || []).length > 0,
   });
+  if(guidedResults) $("#r-supporter").hidden = true;
   show("results");
 }
 
@@ -3807,7 +3957,7 @@ function makeSupporterCard(){
   copy.className = "shop-copy";
   // On web the "remove ads" pitch is dishonest (no web ads) — show the web-honest
   // framing (spec §4) when the web billing provider is the active one.
-  const webPitch = provider().kind === "revenuecat-web";
+  const webPitch = ["revenuecat-web", "stripe-web"].includes(provider().kind);
   copy.innerHTML = owned
     ? `<b>${t("shop.supporterTitle")} ♥</b><small>${t("shop.supporterOwned")}</small>`
     : `<b>${webPitch ? t("iap.supporter.web.title") : t("shop.supporterTitle")}</b><small>${webPitch ? t("iap.supporter.web.blurb") : t("shop.supporterDesc")}</small>`;
@@ -3822,8 +3972,10 @@ function makeSupporterCard(){
     }
     const btn = document.createElement("button");
     btn.className = "chip buy-chip";
-    btn.textContent = provider().price("supporter") || displayPrice(productById("supporter"), getLocale());
-    btn.onclick = () => iapBuy(productById("supporter"), btn);
+    btn.textContent = supporterDisplayPrice();
+    btn.onclick = () => isNative()
+      ? iapBuy(productById("supporter"), btn)
+      : openSupporterOffer();
     if(iapPending){
       btn.disabled = true;
       if(iapPending === "supporter") btn.textContent = t("iap.pending");
@@ -3893,11 +4045,12 @@ async function iapBuy(p, btn){
     // analytics (dark): purchase_fail — only for terminal outcomes; "pending"
     // is not a failure (the store transaction may still resolve), so it does
     // not fire an event here.
-    if(r.reason === "pending") toast(t("iap.processing"));
+    if(r.reason === "pending") toast(t(p.entitlement ? "iap.supporterProcessing" : "iap.processing"));
     else if(r.reason === "needs-account"){
       analytics.track("purchase_fail", { product: p.id, reason: "needs-account" });
       toast(t("iap.needsAccountBody"));
-      show("account");
+      if(p.id === "supporter" && !isNative()) supporterOfferSheet.open();
+      else show("account");
       return;
     }
     else if(r.reason !== "cancelled"){ toast(t("iap.failed")); analytics.track("purchase_fail", { product: p.id, reason: "provider_error" }); }
@@ -3931,7 +4084,7 @@ async function iapBuy(p, btn){
     // Exhausted the poll with no visible credit yet. The webhook's grant is
     // idempotent and guaranteed eventually — the next ordinary sync (or the
     // next reconcile edge) will fold the ledger row in. Not an error.
-    toast(t("iap.processing"));
+    toast(t(p.entitlement ? "iap.supporterProcessing" : "iap.processing"));
   }
   // Supporter entitlement rides `ent`, which is local-only and NOT in
   // SYNC_KEYS (see `ent`'s declaration comment) — the coin poll's reconcile
@@ -4262,9 +4415,19 @@ pool = buildPool(D.levels, scope);
 applyStaticI18n();
 syncUiLangChips();
 sfx.pack = shopState.soundpack || "default";
-if(isFirstRun(store.get("introDone", false), masteryStore)){
-  renderWelcome();
-  show("welcome");
+if(onboardingActive(onboardingState)){
+  // A code destination is intentionally not persisted. A reload during the
+  // OTP step safely returns to the account form; a reload during the quest
+  // returns to level choice instead of inventing a partial battle resume.
+  if(onboardingState.stage === "verify") saveOnboarding({ ...onboardingState, stage:"account" });
+  if(onboardingState.stage === "quest") saveOnboarding({ ...onboardingState, stage:"level", questTip:0 });
+  if(onboardingState.stage === "results") saveOnboarding(beginAppTour(onboardingState));
+  if(onboardingState.stage === "app-tour"){
+    appTour.start({ initialStep:onboardingState.appTourStep });
+  }else{
+    onboardingScreen.render();
+    show("welcome");
+  }
 }
 renderHome();
 analytics.track("session_start");

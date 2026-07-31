@@ -339,6 +339,7 @@
     .profile-equipped,.profile-actions{grid-template-columns:1fr;}
   }
   .startrow{display:flex; gap:10px; margin-top:14px;}
+  .startrow[hidden]{display:none;}
   .startrow .big{flex:1; padding:14px 6px; font-size:16px;}
   /* Scope has one primary decision and two secondary modes. A full-width
      first row preserves the Word Quest length instead of ellipsizing it. */
@@ -658,6 +659,19 @@
   /* #6: the Typed intro is a multi-line numbered how-to — honor the line breaks
      in the copy (harmless for the single-line intros). */
   #format-intro #fi-text{white-space:pre-line; line-height:1.5;}
+  #onboarding-quest-guide{position:absolute; inset:0; display:none; align-items:center;
+    justify-content:center; padding:18px; background:rgba(35,29,22,.62); z-index:30;}
+  #onboarding-quest-guide.on{display:flex;}
+  #onboarding-quest-guide .onboarding-quest-card{max-width:330px; width:100%; text-align:center;}
+  .oq-eyebrow{color:var(--lc-green); font-size:12px; font-weight:900; text-transform:uppercase;
+    letter-spacing:.08em;}
+  .oq-title{margin:4px 0 6px;}
+  .oq-body{white-space:pre-line; line-height:1.45; margin:0 0 14px; font-weight:700;}
+  #onboarding-quest-status{position:absolute; z-index:20; left:50%; top:74px; transform:translateX(-50%);
+    width:min(330px,calc(100% - 28px)); padding:9px 12px; border:2px solid var(--lc-brown);
+    border-radius:12px; background:var(--lc-cream); color:var(--ink); text-align:center;
+    font-size:13px; font-weight:800; box-shadow:0 5px 18px rgba(46,42,36,.24);}
+  #onboarding-quest-status[hidden]{display:none;}
   .pause-toggle .pt-state{font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
     padding:3px 9px; border-radius:999px; background-color:var(--lc-gray); color:var(--lc-ink); flex:0 0 auto;}
   .pause-toggle.on .pt-state{background-color:var(--lc-success); color:var(--lc-cream);}
@@ -1112,6 +1126,48 @@
     background-image:linear-gradient(180deg,var(--lc-success-hi),var(--lc-success)); border:2px solid var(--lc-success-deep);
     border-radius:12px; font-weight:800; font-size:15px; text-align:center; padding:7px 10px; margin:0 0 10px;
     box-shadow:0 2px 6px rgba(46,42,36,.18);}
+  .onboarding-results{margin:10px 0; padding:14px; border:2px solid var(--lc-green);
+    border-radius:14px; background:var(--panel-wash); text-align:center; box-shadow:0 4px 12px rgba(46,42,36,.14);}
+  .onboarding-results[hidden]{display:none;}
+  .onboarding-results h3{margin:0 0 5px;}
+  .onboarding-results p{margin:0 0 12px; color:var(--muted); line-height:1.45;}
+  .onboarding-result-actions{display:flex; flex-direction:column; gap:8px;}
+  .app-tour{position:fixed; z-index:100; left:50%; bottom:calc(74px + env(safe-area-inset-bottom));
+    transform:translateX(-50%); width:min(420px,calc(100% - 24px)); padding:15px;
+    border:2px solid var(--lc-brown); border-radius:16px; background:var(--lc-cream);
+    color:var(--ink); box-shadow:0 12px 36px rgba(35,29,22,.34);}
+  .app-tour[hidden]{display:none;}
+  .app-tour-count{font-size:11px; font-weight:900; color:var(--lc-green); text-transform:uppercase;
+    letter-spacing:.08em;}
+  .app-tour-title{margin:4px 0;}
+  .app-tour-body{margin:0 0 12px; color:var(--muted); line-height:1.45;}
+  .app-tour-actions{display:flex; justify-content:flex-end; align-items:center; gap:8px;}
+  .app-tour-skip{border:0; background:transparent; color:var(--muted); text-decoration:underline;}
+  .supporter-sheet{position:fixed; inset:0; z-index:120; display:none; align-items:flex-end;
+    justify-content:center; padding:12px; background:rgba(35,29,22,.62);}
+  .supporter-sheet.on{display:flex;}
+  .supporter-sheet-panel{position:relative; width:min(480px,100%); max-height:calc(100dvh - 24px);
+    overflow:auto; padding:20px; border:2px solid var(--lc-brown); border-radius:20px 20px 14px 14px;
+    background:var(--lc-cream); color:var(--ink); box-shadow:0 16px 42px rgba(35,29,22,.4);}
+  .supporter-sheet-panel h2{margin:5px 34px 6px 0;}
+  .supporter-sheet-close{position:absolute; top:8px; right:8px; min-width:44px; min-height:44px;
+    border:0; background:transparent; color:var(--muted); font-size:0;}
+  .supporter-sheet-close::after{content:"×"; font-size:28px;}
+  .supporter-sheet-eyebrow{font-size:12px; font-weight:900; color:var(--lc-green);
+    text-transform:uppercase; letter-spacing:.08em;}
+  .supporter-sheet-lead{color:var(--muted); line-height:1.5;}
+  .supporter-benefits{padding-left:22px; line-height:1.55;}
+  .supporter-sheet-price{font-size:19px; font-weight:900; margin-bottom:4px;}
+  .supporter-sheet-trust{font-size:13px; color:var(--muted); margin-top:0;}
+  .supporter-sheet-primary{width:100%;}
+  .supporter-sheet-link,.supporter-sheet-not-now{display:block; width:100%; min-height:42px;
+    border:0; background:transparent; color:var(--lc-green); text-decoration:underline;}
+  .supporter-sheet-not-now{color:var(--muted);}
+  .supporter-sheet-links{display:flex; justify-content:center; gap:18px; margin-top:5px; font-size:13px;}
+  .supporter-sheet-summary{display:flex; justify-content:space-between; gap:10px; margin-right:34px;
+    padding:8px 0; border-bottom:1px solid var(--line);}
+  .supporter-sheet-field{display:flex; flex-direction:column; gap:6px; font-size:13px;
+    font-weight:800; margin:12px 0;}
   .howto{line-height:1.55; font-size:15.5px; color:var(--ink);}
   .howto b{color:var(--lc-green);}
   .howto-steps{display:grid; gap:10px; margin:4px 0 12px;}
@@ -1404,6 +1460,16 @@
      stay column-stacked, just one nesting level deeper) renders identically
      to before this split. */
   .welcome-intro,.welcome-controls{display:flex; flex-direction:column; gap:4px;}
+  .onboarding-block,.onboarding-actions{display:flex; flex-direction:column; gap:8px;}
+  .onboarding-actions{margin-top:8px;}
+  .onboarding-secondary{background:var(--panel-wash);}
+  .onboarding-free{text-align:center; max-width:none;}
+  .onboarding-heading{text-align:center; margin:4px 0 0;}
+  .onboarding-copy{margin-bottom:8px;}
+  .onboarding-field{display:flex; flex-direction:column; gap:6px; margin-top:4px;}
+  .onboarding-label{font-size:13px; font-weight:800; color:var(--ink);}
+  .onboarding-back{align-self:flex-start; margin:0 0 4px;}
+  .onboarding-levels{justify-content:center; margin:6px 0;}
 
   /* festive decor — swaying lantern.png corners + a soft cloud.png behind the
      title. Applied to the bare screens (Results/Scores/Progress/How-to) only;
@@ -1692,25 +1758,7 @@
         <h2 class="welcome-title" data-i18n="welcome.title">Welcome!</h2>
         <p class="welcome-blurb" data-i18n="welcome.blurb">Learn Chinese words by playing — a couple of minutes a day.</p>
       </div>
-      <div class="welcome-controls">
-        <div class="sect" data-i18n="welcome.language">Your language</div>
-        <div class="chips" id="welcome-lang-chips">
-          <button class="chip" data-wlang="en">English</button>
-          <button class="chip" data-wlang="th">ไทย</button>
-        </div>
-        <div class="sect" data-i18n="welcome.level">Start at</div>
-        <div class="chips" id="welcome-level-chips">
-          <button class="chip" data-wlv="1">HSK1</button>
-          <button class="chip" data-wlv="2">HSK2</button>
-          <button class="chip" data-wlv="3">HSK3</button>
-          <button class="chip" data-wlv="4">HSK4</button>
-          <button class="chip" data-wlv="5">HSK5</button>
-          <button class="chip" data-wlv="6">HSK6</button>
-        </div>
-        <p class="welcome-hint" data-i18n="welcome.levelHint">New to HSK? Start with HSK1 — you can change this any time.</p>
-        <button class="start-btn welcome-start" id="welcome-start" data-i18n="welcome.start">START LEARNING</button>
-        <p class="welcome-hint welcome-promise" data-i18n="welcome.promise">First, learn 6 words. Then play a short Word Quest.</p>
-      </div>
+      <div class="welcome-controls" id="welcome-controls"></div>
     </div>
   </div>
 
@@ -1885,7 +1933,7 @@
       <input id="len-custom" type="number" inputmode="numeric" min="5" max="500" placeholder="5–500" data-i18n-ph="scope.customPh" hidden>
     </div>
     <div class="readout" id="readout"></div>
-    <div class="startrow">
+    <div class="startrow" id="r-standard-actions">
       <button class="big primary" id="go-battle"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#quest"></use></svg><span>Word Quest · 20</span></span></button>
       <button class="big" id="go-endless"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#infinity"></use></svg><span data-i18n="scope.endless">Endless</span></span></button>
       <button class="big" id="go-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#cards"></use></svg><span data-i18n="scope.cards">Cards</span></span></button>
@@ -1971,6 +2019,16 @@
         <button id="fi-ok" class="pause-resume"></button>
       </div>
     </div>
+    <div id="onboarding-quest-guide" role="dialog" aria-modal="true" aria-labelledby="oq-title">
+      <div class="fi-card onboarding-quest-card">
+        <img src="assets/cat-guide.png" alt="" width="96" loading="lazy" decoding="async">
+        <div class="oq-eyebrow"></div>
+        <h3 class="oq-title" id="oq-title"></h3>
+        <p class="oq-body"></p>
+        <button class="pause-resume oq-next" type="button"></button>
+      </div>
+    </div>
+    <div id="onboarding-quest-status" role="status" aria-live="polite" hidden></div>
   </div>
 
   <!-- RESULTS -->
@@ -2002,6 +2060,7 @@
     <!-- A4/B2 slots: intro streak pointer (filled by endBattle on the intro
          round) and the sticker toast slot (activates in Phase 4 with stickers.js) -->
     <p class="sub" id="r-intro-hint" style="display:none"></p>
+    <section class="onboarding-results" id="r-onboarding" hidden></section>
     <div id="r-sticker-slot" style="display:none"></div>
     <p class="sub" id="r-sub"></p>
     <div id="r-perfect" style="display:none"></div>
@@ -2016,7 +2075,21 @@
     </div>
     <p class="results-next-review" id="r-next-review"></p>
     <div class="results-supporter" id="r-supporter" hidden></div>
-    <button class="big" style="margin-top:10px" data-go="home" data-i18n="results.home">Home</button>
+    <button class="big" id="r-home" style="margin-top:10px" data-go="home" data-i18n="results.home">Home</button>
+  </div>
+
+  <aside class="app-tour" id="app-tour" role="dialog" aria-labelledby="app-tour-title" hidden>
+    <div class="app-tour-count"></div>
+    <h3 class="app-tour-title" id="app-tour-title"></h3>
+    <p class="app-tour-body"></p>
+    <div class="app-tour-actions">
+      <button class="app-tour-skip" type="button"></button>
+      <button class="big primary app-tour-next" type="button"></button>
+    </div>
+  </aside>
+
+  <div class="supporter-sheet" id="supporter-sheet" role="dialog" aria-modal="true" aria-label="Supporter">
+    <section class="supporter-sheet-panel"></section>
   </div>
 
   <!-- TONE TRAINER (v6 phase 3 — standalone tone-discrimination minigame;
@@ -2229,6 +2302,7 @@
       <div class="howto-details-body"><p class="howto" data-i18n="howto.attribution">Some example sentences from Tatoeba.</p></div>
     </details>
     <button class="big primary howto-try" id="howto-try" data-i18n="howto.try">Try a 5-word practice quest</button>
+    <button class="big" id="howto-tour" data-i18n="onboarding.tour.replay">Replay app tour</button>
   </div>
 
   <!-- ACCOUNT -->

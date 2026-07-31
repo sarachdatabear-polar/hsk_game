@@ -218,8 +218,8 @@ describe("v6->v7 migration (profile avatar)", () => {
 });
 
 describe("v7->v8 migration (Street retirement)", () => {
-  it("CURRENT_SCHEMA_VERSION is 8 and the ladder stays sorted", () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe(8);
+  it("CURRENT_SCHEMA_VERSION is 9 and the ladder stays sorted", () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe(9);
     expect(() => assertSortedLadder(MIGRATIONS)).not.toThrow();
   });
 
@@ -274,5 +274,56 @@ describe("v7->v8 migration (Street retirement)", () => {
     const once = s.dump()["nbhsk.shop"];
     MIGRATIONS.find(m => m.to === 8).up(s);
     expect(s.dump()["nbhsk.shop"]).toBe(once);
+  });
+});
+
+describe("v8->v9 migration (guided onboarding)", () => {
+  it("marks the old completed intro as complete without changing old keys", () => {
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "8",
+      "nbhsk.introDone": "true",
+      "nbhsk.mastery": "{}",
+    });
+    runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    expect(JSON.parse(s.dump()["nbhsk.onboarding"])).toMatchObject({
+      version: 1, stage: "complete", appTourStep: 3,
+    });
+    expect(s.dump()["nbhsk.introDone"]).toBe("true");
+    expect(s.dump()["nbhsk.mastery"]).toBe("{}");
+  });
+
+  it("marks a pre-tour player with mastery as complete", () => {
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "8",
+      "nbhsk.mastery": JSON.stringify({ "你": { r: 1 } }),
+    });
+    runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    expect(JSON.parse(s.dump()["nbhsk.onboarding"]).stage).toBe("complete");
+  });
+
+  it("leaves a genuinely fresh profile without onboarding data", () => {
+    const s = fakeStorage({ "nbhsk.schemaVersion": "8" });
+    runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    expect(s.dump()["nbhsk.onboarding"]).toBeUndefined();
+    expect(s.dump()["nbhsk.schemaVersion"]).toBe(String(CURRENT_SCHEMA_VERSION));
+  });
+
+  it("preserves a partially completed new onboarding record byte-for-byte", () => {
+    const raw = JSON.stringify({ version: 1, stage: "quest", accountChoice: "try-first", questTip: 2 });
+    const s = fakeStorage({
+      "nbhsk.schemaVersion": "8",
+      "nbhsk.introDone": "true",
+      "nbhsk.onboarding": raw,
+    });
+    runMigrations(s, MIGRATIONS, CURRENT_SCHEMA_VERSION);
+    expect(s.dump()["nbhsk.onboarding"]).toBe(raw);
+  });
+
+  it("the v9 entry is idempotent", () => {
+    const s = fakeStorage({ "nbhsk.introDone": "true" });
+    MIGRATIONS.find(m => m.to === 9).up(s);
+    const once = s.dump()["nbhsk.onboarding"];
+    MIGRATIONS.find(m => m.to === 9).up(s);
+    expect(s.dump()["nbhsk.onboarding"]).toBe(once);
   });
 });

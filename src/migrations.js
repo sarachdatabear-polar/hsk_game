@@ -26,7 +26,7 @@ const VERSION_KEY = "nbhsk.schemaVersion";
 // (run the ladder from 0) from a fresh one (just stamp and go).
 const LEGACY_SENTINELS = ["nbhsk.xp", "nbhsk.mastery", "nbhsk.daily", "nbhsk.settings", "nbhsk.scope"];
 
-export const CURRENT_SCHEMA_VERSION = 8;
+export const CURRENT_SCHEMA_VERSION = 9;
 
 export const MIGRATIONS = [
   {
@@ -104,6 +104,41 @@ export const MIGRATIONS = [
       delete shop.tiers;
       if (Array.isArray(shop.owned)) shop.owned = shop.owned.filter((id) => !RETIRED_DECOS.has(id));
       try { storage.setItem("nbhsk.shop", JSON.stringify(shop)); } catch (e) {}
+    },
+  },
+  {
+    to: 9,
+    up(storage) {
+      // v8->v9: the guided, game-first onboarding replaces the old boolean
+      // intro marker. Existing players must never see a retroactive tour, so
+      // either introDone=true OR any recorded mastery becomes stage:complete.
+      // A genuinely fresh profile is left without a key; onboarding.js supplies
+      // the Welcome default at read time. Historical input stays untouched.
+      try {
+        if (storage.getItem("nbhsk.onboarding") !== null) return;
+      } catch (e) { return; }
+      let introDone = false;
+      let mastery = {};
+      try {
+        const raw = storage.getItem("nbhsk.introDone");
+        introDone = raw !== null && JSON.parse(raw) === true;
+      } catch (e) {}
+      try {
+        const raw = storage.getItem("nbhsk.mastery");
+        mastery = raw === null ? {} : JSON.parse(raw);
+      } catch (e) { mastery = {}; }
+      const existing = introDone || (!!mastery && typeof mastery === "object"
+        && !Array.isArray(mastery) && Object.keys(mastery).length > 0);
+      if (!existing) return;
+      const completed = {
+        version: 1,
+        accountChoice: "continue-free",
+        stage: "complete",
+        questTip: 0,
+        appTourStep: 3,
+        contextualTips: {},
+      };
+      try { storage.setItem("nbhsk.onboarding", JSON.stringify(completed)); } catch (e) {}
     },
   },
 ];
