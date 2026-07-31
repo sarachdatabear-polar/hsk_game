@@ -19,7 +19,7 @@ export const PHOTO_DATA_URL_MAX = 98304;
 const JPEG_QUALITY_LADDER = [0.82, 0.66, 0.5];
 
 export function createAvatarPicker({
-  $, openDialog, closeDialog, store, toast, getProfile, setProfile, getOwned, onChanged,
+  $, openDialog, closeDialog, store, toast, getProfile, setProfile, getOwned, getToday, onChanged,
 }) {
   const overlay = $("#avatar-overlay");
   const panel = $("#avatar-panel");
@@ -42,7 +42,7 @@ export function createAvatarPicker({
     art.style.backgroundPosition = `${style.posPct[0]}% ${style.posPct[1]}%`;
   }
 
-  function makeTile({ label, selected, disabled, onPick, fill }) {
+  function makeTile({ label, status = "", selected, disabled, onPick, fill }) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "av-tile" + (selected ? " selected" : "");
@@ -55,6 +55,12 @@ export function createAvatarPicker({
     cap.textContent = label;
     btn.appendChild(art);
     btn.appendChild(cap);
+    if (status) {
+      const note = document.createElement("span");
+      note.className = "av-status";
+      note.textContent = status;
+      btn.appendChild(note);
+    }
     if (onPick && !disabled) btn.onclick = onPick;
     return btn;
   }
@@ -83,10 +89,11 @@ export function createAvatarPicker({
       },
       onPick: () => pick({ kind: "monogram" }),
     }));
-    for (const { id, locked } of catAvatarChoices(getOwned())) {
+    for (const { id, locked } of catAvatarChoices(getOwned(), getToday())) {
       const style = avatarPortraitStyle({ kind: "cat", id });
       grid.appendChild(makeTile({
-        label: locked ? t("avatar.locked") : catLabel(id),
+        label: catLabel(id),
+        status: locked ? t("avatar.locked") : "",
         selected: current.kind === "cat" && current.id === id,
         disabled: locked,
         fill: art => {

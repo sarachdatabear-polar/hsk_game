@@ -10,12 +10,13 @@
 // shop.owned were transiently missing the id (ownership never lapses; the
 // avatar must not flicker to monogram on an unloaded shop state). A *removed*
 // id falls out via the allowlist in normalizeAvatar -> monogram.
-import { SKIN_PALETTES } from "./shop.js";
+import { CATALOG, SKIN_PALETTES, isAvailable } from "./shop.js";
 import { SPRITE_METRICS } from "./sprite-metrics.js";
 
 export const AVATAR_DEFAULT_CAT_ID = "lucky";
-// "lucky" is a reserved id for the default cat (no SKIN_PALETTES entry); it
-// resolves to the already-precached "cat-happy" sheet, never via the palette.
+// "lucky" is a reserved id for the default cat (no SKIN_PALETTES entry). Its
+// profile portrait uses the full-size, front-facing Lucky Cat sheet so its
+// posture and scale match the costume portraits in the picker.
 export const AVATAR_CAT_IDS = [AVATAR_DEFAULT_CAT_ID, ...Object.keys(SKIN_PALETTES)];
 
 const SHEET_W = 1024;   // 4 frames of FRAME px
@@ -37,15 +38,21 @@ export function ownsCatAvatar(id, ownedIds) {
   return Array.isArray(ownedIds) && ownedIds.includes(id);
 }
 
-export function catAvatarChoices(ownedIds) {
-  return AVATAR_CAT_IDS.map(id => ({ id, locked: !ownsCatAvatar(id, ownedIds) }));
+export function catAvatarChoices(ownedIds, dateStr = "") {
+  return AVATAR_CAT_IDS
+    .filter(id => {
+      if (ownsCatAvatar(id, ownedIds)) return true;
+      const item = CATALOG.find(entry => entry.id === id);
+      return !!item && isAvailable(item, dateStr);
+    })
+    .map(id => ({ id, locked: !ownsCatAvatar(id, ownedIds) }));
 }
 
 // THE id -> asset-sheet resolution. Never string-munges the id itself.
 export function avatarSheetFor(avatar) {
   const a = normalizeAvatar(avatar);
   if (a.kind !== "cat") return null;
-  if (a.id === AVATAR_DEFAULT_CAT_ID) return "cat-happy";
+  if (a.id === AVATAR_DEFAULT_CAT_ID) return "cat-boss-happy";
   return SKIN_PALETTES[a.id].sprite + "-happy";
 }
 

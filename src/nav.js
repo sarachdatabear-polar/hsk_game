@@ -9,10 +9,10 @@ export const TABS = ["home", "cat-journey", "progress", "more"];
 
 // Screens that ride "under" the More tab: reachable from More, not tabs
 // themselves, but the nav stays visible (with More highlighted) while on them.
-const MORE_SUBSCREENS = ["scores", "howto", "account"];
+const MORE_SUBSCREENS = ["scores", "howto"];
 
-// Sub-screens that ride under the Progress tab (B2 sticker album).
-const PROGRESS_SUBSCREENS = ["album"];
+// Sub-screens that ride under the Profile/Progress tab.
+const PROGRESS_SUBSCREENS = ["album", "account"];
 
 // Every screen where the bottom nav is shown at all: the 4 tabs, the More
 // sub-screens, plus shop (reachable from home's icon row this milestone).

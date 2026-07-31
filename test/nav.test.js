@@ -11,7 +11,7 @@ describe("nav", () => {
       for (const s of TABS) expect(navVisibleOn(s), s).toBe(true);
       expect(navVisibleOn("cat-journey")).toBe(true);
     });
-    it("shows the nav on More sub-screens and shop", () => {
+    it("shows the nav on sub-screens and shop", () => {
       expect(navVisibleOn("scores")).toBe(true);
       expect(navVisibleOn("howto")).toBe(true);
       expect(navVisibleOn("account")).toBe(true);
@@ -32,10 +32,13 @@ describe("nav", () => {
     it("is the screen itself for each tab", () => {
       for (const s of TABS) expect(activeTabFor(s), s).toBe(s);
     });
-    it("is 'more' for scores/howto/account", () => {
+    it("is 'more' for scores/howto", () => {
       expect(activeTabFor("scores")).toBe("more");
       expect(activeTabFor("howto")).toBe("more");
-      expect(activeTabFor("account")).toBe("more");
+    });
+    it("is 'progress' for profile sub-screens", () => {
+      expect(activeTabFor("account")).toBe("progress");
+      expect(activeTabFor("album")).toBe("progress");
     });
     it("is 'home' for shop", () => {
       expect(activeTabFor("shop")).toBe("home");
@@ -45,9 +48,6 @@ describe("nav", () => {
       expect(activeTabFor("learn")).toBe(null);
       expect(activeTabFor("scope")).toBe(null);
       expect(activeTabFor("results")).toBe(null);
-    });
-    it("is 'progress' for the album", () => {
-      expect(activeTabFor("album")).toBe("progress");
     });
   });
 });

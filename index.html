@@ -260,19 +260,14 @@
   .profile-avatar.has-initial .profile-avatar-initial{display:block;}
   .profile-avatar.has-initial .profile-avatar-fallback{display:none;}
   .profile-avatar-fallback{width:54px; height:54px; color:var(--lc-green); opacity:.9;}
-  /* Avatar-picker feature (2026-07-27): the hero circle is now a button. */
-  /* overflow:visible (not the inherited overflow:hidden from .profile-avatar):
-     the edit-pencil badge (.profile-avatar-edit) is deliberately positioned
-     half outside the 112px/88px circle via negative right/positive bottom —
-     that overhang is the whole point of a corner badge. .profile-avatar-art
-     carries its own border-radius:50%, so the portrait/skin layer stays
-     circular on its own without the parent mask; the initial/fallback icon
-     are small and flex-centered well inside the circle either way. */
-  button.profile-avatar{position:relative; padding:0; font:inherit; cursor:pointer; overflow:visible;}
+  /* Avatar-picker feature: keep every portrait layer and the edit badge inside
+     the circular button so neither can overlap the Profile card background. */
+  button.profile-avatar{position:relative; padding:0; font:inherit; cursor:pointer; overflow:hidden;}
   .profile-avatar-art{position:absolute; inset:0; border-radius:50%; background-repeat:no-repeat; z-index:1;}
-  .profile-avatar-edit{position:absolute; right:-2px; bottom:2px; z-index:2; width:22px; height:22px;
+  .profile-avatar-edit{position:absolute; right:4px; bottom:4px; z-index:2; width:24px; height:24px;
     display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:12px;
-    background:var(--panel-wash); border:1px solid var(--panel-border); color:var(--lc-green);}
+    background:var(--lc-cream); border:1px solid var(--lc-brown); color:var(--lc-green);
+    box-shadow:0 1px 4px rgba(46,42,36,.2);}
   .profile-avatar-initial{position:relative;}
   /* Avatar picker grid (body of #avatar-overlay, built by avatar-picker.js) */
   #avatar-panel{display:flex; flex-direction:column; gap:10px;}
@@ -287,7 +282,8 @@
     display:flex; align-items:center; justify-content:center;}
   .av-initial{font-size:20px; font-weight:900; color:var(--lc-green);}
   .av-cap{font-size:11px; line-height:1.2; color:var(--ink); text-align:center; overflow-wrap:anywhere;}
-  .av-lock{position:absolute; right:-2px; bottom:-2px; font-size:12px;}
+  .av-status{font-size:9px; line-height:1.15; color:var(--muted); text-align:center;}
+  .av-lock{position:absolute; right:2px; bottom:2px; font-size:12px;}
   .av-photo{overflow:hidden;}
   .av-file{position:absolute; inset:0; opacity:0; cursor:pointer;}
   .av-hint{font-size:12px; color:var(--muted); line-height:1.4;}
@@ -321,6 +317,13 @@
     border:1px solid var(--panel-border); border-radius:13px; background:var(--panel-wash); border-image:var(--f-ui-card-soft, none);}
   .profile-stat b{font-size:21px; color:var(--lc-green); line-height:1.1;}
   .profile-stat span{font-size:12px; color:var(--muted); line-height:1.25;}
+  .profile-tools{display:grid; gap:9px; margin-bottom:12px;}
+  .profile-feature-card{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center;
+    padding:13px; border:1px solid var(--panel-border); border-radius:14px; background:var(--panel-wash);
+    border-image:var(--f-ui-card-soft, none);}
+  .profile-feature-card b{display:block; color:var(--ink); margin-bottom:3px;}
+  .profile-feature-card p{margin:0; color:var(--muted); font-size:12px; line-height:1.4;}
+  .profile-feature-card .big{min-height:44px; padding:9px 12px; font-size:13px; white-space:nowrap;}
   .profile-collection{padding:13px; margin-bottom:12px; border:1px solid var(--panel-border); border-radius:14px;
     background:var(--panel-wash); border-image:var(--f-ui-card-soft, none);}
   .profile-collection-main{display:flex; justify-content:space-between; gap:10px; align-items:baseline; margin-bottom:8px;}
@@ -336,6 +339,8 @@
     .profile-avatar-initial{font-size:38px;}
     .profile-avatar-fallback{width:46px; height:46px;}
     .profile-name-row h3{font-size:18px;}
+    .profile-feature-card{grid-template-columns:1fr;}
+    .profile-feature-card .big{width:100%;}
     .profile-equipped,.profile-actions{grid-template-columns:1fr;}
   }
   .startrow{display:flex; gap:10px; margin-top:14px;}
@@ -662,11 +667,15 @@
   #onboarding-quest-guide{position:absolute; inset:0; display:none; align-items:center;
     justify-content:center; padding:18px; background:rgba(35,29,22,.62); z-index:30;}
   #onboarding-quest-guide.on{display:flex;}
-  #onboarding-quest-guide .onboarding-quest-card{max-width:330px; width:100%; text-align:center;}
+  #onboarding-quest-guide .onboarding-quest-card{max-width:330px; width:100%; text-align:center;
+    padding:18px 20px; border:2px solid var(--lc-brown); border-radius:16px;
+    background:var(--lc-cream); color:var(--lc-ink);
+    box-shadow:0 10px 28px rgba(35,29,22,.34);}
   .oq-eyebrow{color:var(--lc-green); font-size:12px; font-weight:900; text-transform:uppercase;
     letter-spacing:.08em;}
-  .oq-title{margin:4px 0 6px;}
-  .oq-body{white-space:pre-line; line-height:1.45; margin:0 0 14px; font-weight:700;}
+  .oq-title{margin:4px 0 6px; color:var(--lc-ink);}
+  .oq-body{white-space:pre-line; line-height:1.45; margin:0 0 14px; font-weight:700;
+    color:var(--lc-ink);}
   #onboarding-quest-status{position:absolute; z-index:20; left:50%; top:74px; transform:translateX(-50%);
     width:min(330px,calc(100% - 28px)); padding:9px 12px; border:2px solid var(--lc-brown);
     border-radius:12px; background:var(--lc-cream); color:var(--ink); text-align:center;
@@ -1869,10 +1878,6 @@
       <button class="chip" data-uilang="en">English</button>
       <button class="chip" data-uilang="th">ไทย</button>
     </div>
-    <div class="sect" data-i18n="more.accountPrivacy">Account &amp; privacy</div>
-    <div class="menu">
-      <button class="big" data-go="account"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="account.row">Account</span></span></button>
-    </div>
     <p class="more-meta"><a href="privacy.html" target="_blank" rel="noopener" data-i18n="settings.privacy">Privacy Policy</a><br><span data-i18n="more.version">Lucky Cat HSK · Version 0.2.0</span></p>
     <div class="more-foot">
       <img src="assets/more-cat-icon.png" alt="" width="72" height="72" loading="lazy" decoding="async">
@@ -1906,7 +1911,7 @@
       <div class="scope-advanced-body">
         <div class="sect" data-i18n="scope.filters">Filters</div>
         <div class="chips">
-          <button class="chip" id="f-core" data-i18n="scope.highYield">High-yield only</button>
+          <button class="chip" id="f-core" data-i18n="scope.highYield">Frequently tested words only</button>
           <button class="chip" id="f-new" data-i18n="scope.newOnly">New words only</button>
         </div>
         <div class="sect" data-i18n="scope.topN">Top-N by frequency</div>
@@ -2157,7 +2162,22 @@
       <div class="profile-stat"><b id="profile-stickers">0/0</b><span data-i18n="profile.stickers">Stickers earned</span></div>
       <div class="profile-stat"><b id="profile-best">0</b><span data-i18n="profile.bestSession">Best session</span></div>
     </div>
-    <button class="big" id="go-friend" type="button"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="friend.inviteCta">Invite a friend</span></span></button>
+    <div class="profile-tools">
+      <section class="profile-feature-card" aria-labelledby="profile-friend-title">
+        <div>
+          <b id="profile-friend-title" data-i18n="friend.progressTitle">Compare progress with friends</b>
+          <p data-i18n="friend.progressSummary">Compare level, streak, mastered words, and stickers with a friend.</p>
+        </div>
+        <button class="big" id="go-friend" type="button"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#progress"></use></svg><span data-i18n="friend.compareCta">Compare progress</span></span></button>
+      </section>
+      <section class="profile-feature-card" aria-labelledby="profile-account-title">
+        <div>
+          <b id="profile-account-title" data-i18n="profile.accountTitle">Account &amp; backup</b>
+          <p data-i18n="profile.accountSummary">Back up your progress or manage your connected email.</p>
+        </div>
+        <button class="big" data-go="account"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="account.row">Account</span></span></button>
+      </section>
+    </div>
     <section class="profile-empty" id="profile-empty" hidden>
       <b data-i18n="profile.emptyTitle">Your learning story starts here</b>
       <p data-i18n="profile.emptyBody">Complete a Word Quest to unlock progress, reviews, and rewards.</p>
@@ -2307,7 +2327,7 @@
 
   <!-- ACCOUNT -->
   <div class="screen festive" id="s-account">
-    <button class="back" data-go="more" data-i18n="common.backMore">← More</button>
+    <button class="back" data-go="progress" data-i18n="common.backProfile">← Profile</button>
     <h2 data-i18n="account.title">Account</h2>
     <div id="account-panel"></div>
   </div>
@@ -2349,7 +2369,7 @@
   <div class="pause-overlay" id="friend-overlay" role="dialog" aria-modal="true" aria-labelledby="friend-dialog-title">
     <div class="pause-panel">
       <div class="quest-popup-head">
-        <h3 class="pause-title" id="friend-dialog-title" data-i18n="friend.inviteTitle">Invite a friend</h3>
+        <h3 class="pause-title" id="friend-dialog-title" data-i18n="friend.progressTitle">Compare progress with friends</h3>
         <button class="overlay-close" id="friend-popup-close" data-i18n-title="common.close" aria-label="Close">×</button>
       </div>
       <div id="friend-panel"></div>

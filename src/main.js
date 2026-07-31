@@ -527,6 +527,7 @@ const avatarPicker = createAvatarPicker({
   getProfile: () => playerProfile,
   setProfile: (profile) => { playerProfile = profile; store.set("profile", playerProfile); },
   getOwned: () => shopState.owned,
+  getToday: () => todayStr(),
   onChanged: () => renderProfileDashboard(),
 });
 // Supporter placement (go-live step 7): quiet line at peak moments on results.

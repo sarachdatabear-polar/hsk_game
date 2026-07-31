@@ -284,7 +284,7 @@ export const STRINGS = {
     "scope.title": "Choose your words",
     "scope.levels": "Levels",
     "scope.filters": "Filters",
-    "scope.highYield": "High-yield only",
+    "scope.highYield": "Frequently tested words only",
     "scope.newOnly": "New words only",
     "scope.topN": "Top-N by frequency",
     "scope.all": "All",
@@ -423,6 +423,8 @@ export const STRINGS = {
     "profile.emptyTitle": "Your journey starts here",
     "profile.emptyBody": "Finish one short Word Quest to begin your progress, streak, and collection.",
     "profile.emptyCta": "Start first quest",
+    "profile.accountTitle": "Account & backup",
+    "profile.accountSummary": "Back up your progress or manage your connected email.",
     "friend.yourCode": "Your code — share it",
     "friend.share": "Share my code",
     "friend.shareText": "Compare our Lucky Cat HSK progress!",
@@ -443,6 +445,9 @@ export const STRINGS = {
     "friend.metric.stickers": "Stickers earned",
     "friend.inviteCta": "Invite a friend",
     "friend.inviteTitle": "Invite a friend",
+    "friend.progressTitle": "Compare progress with friends",
+    "friend.progressSummary": "Compare level, streak, mastered words, and stickers with a friend.",
+    "friend.compareCta": "Compare progress",
     "friend.inviteLead": "Learning is better together — send your card!",
     "friend.privacyNote": "Your code and QR carry only your chosen name, level, and progress numbers — no account, no email, nothing personal.",
     "friend.qrLabel": "Or have them scan this:",
@@ -976,7 +981,7 @@ export const STRINGS = {
     "scope.title": "เลือกคำศัพท์",
     "scope.levels": "ระดับ",
     "scope.filters": "ตัวกรอง",
-    "scope.highYield": "เฉพาะคำออกบ่อย",
+    "scope.highYield": "เฉพาะคำที่ออกข้อสอบบ่อย",
     "scope.newOnly": "เฉพาะคำใหม่",
     "scope.topN": "จัดอันดับตามความถี่",
     "scope.all": "ทั้งหมด",
@@ -1115,6 +1120,8 @@ export const STRINGS = {
     "profile.emptyTitle": "เส้นทางของคุณเริ่มที่นี่", // TH-REVIEW
     "profile.emptyBody": "เล่นภารกิจคำศัพท์สั้น ๆ หนึ่งรอบ เพื่อเริ่มบันทึกความคืบหน้า การเรียนต่อเนื่อง และของสะสม", // TH-REVIEW
     "profile.emptyCta": "เริ่มภารกิจแรก", // TH-REVIEW
+    "profile.accountTitle": "บัญชีและการสำรองข้อมูล", // TH-REVIEW
+    "profile.accountSummary": "สำรองความคืบหน้า หรือจัดการอีเมลที่เชื่อมต่อไว้", // TH-REVIEW
     "friend.yourCode": "รหัสของคุณ — แชร์เลย",
     "friend.share": "แชร์รหัสของฉัน",
     "friend.shareText": "มาเทียบความคืบหน้า Lucky Cat HSK กัน!",
@@ -1135,6 +1142,9 @@ export const STRINGS = {
     "friend.metric.stickers": "สติกเกอร์ที่ได้รับ",
     "friend.inviteCta": "ชวนเพื่อน", // TH-REVIEW
     "friend.inviteTitle": "ชวนเพื่อน", // TH-REVIEW
+    "friend.progressTitle": "เทียบความคืบหน้ากับเพื่อน", // TH-REVIEW
+    "friend.progressSummary": "เทียบเลเวล การเรียนต่อเนื่อง คำที่เชี่ยวชาญ และสติกเกอร์กับเพื่อน", // TH-REVIEW
+    "friend.compareCta": "เทียบความคืบหน้า", // TH-REVIEW
     "friend.inviteLead": "เรียนด้วยกันสนุกกว่า — ส่งการ์ดของคุณเลย!", // TH-REVIEW
     "friend.privacyNote": "รหัสและ QR ของคุณมีแค่ชื่อที่คุณตั้ง เลเวล และตัวเลขความคืบหน้า — ไม่มีบัญชี ไม่มีอีเมล ไม่มีข้อมูลส่วนตัว", // TH-REVIEW
     "friend.qrLabel": "หรือให้เพื่อนสแกนอันนี้:", // TH-REVIEW

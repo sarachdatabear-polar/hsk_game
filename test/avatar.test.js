@@ -47,18 +47,24 @@ describe("ownsCatAvatar / catAvatarChoices", () => {
     expect(ownsCatAvatar("not-a-cat", ["not-a-cat"])).toBe(false);
   });
   it("choices carry lock flags for all 7 ids in display order", () => {
-    const choices = catAvatarChoices(["panda", "dragon"]);
-    expect(choices.map(c => c.id)).toEqual(AVATAR_CAT_IDS);
+    const choices = catAvatarChoices(["panda", "dragon"], "2026-07-31");
+    expect(choices.map(c => c.id)).toEqual(["lucky", "panda", "ninja", "astronaut", "beach", "dragon"]);
     expect(choices.find(c => c.id === "lucky").locked).toBe(false);
     expect(choices.find(c => c.id === "panda").locked).toBe(false);
     expect(choices.find(c => c.id === "dragon").locked).toBe(false);
     expect(choices.find(c => c.id === "ninja").locked).toBe(true);
   });
+  it("hides unowned seasonal cats while they are absent from the Shop", () => {
+    expect(catAvatarChoices([], "2026-07-31").map(c => c.id))
+      .toEqual(["lucky", "panda", "ninja", "astronaut", "beach"]);
+    expect(catAvatarChoices([], "2026-11-01").map(c => c.id))
+      .toEqual(["lucky", "panda", "ninja", "astronaut"]);
+  });
 });
 
 describe("avatarSheetFor", () => {
-  it("resolves lucky to cat-happy and skins through SKIN_PALETTES (id never munged)", () => {
-    expect(avatarSheetFor({ kind: "cat", id: "lucky" })).toBe("cat-happy");
+  it("resolves lucky to its full-size front-facing portrait and skins through SKIN_PALETTES", () => {
+    expect(avatarSheetFor({ kind: "cat", id: "lucky" })).toBe("cat-boss-happy");
     expect(avatarSheetFor({ kind: "cat", id: "mooncake-rabbit" })).toBe("cat-mooncake-happy");
     expect(avatarSheetFor({ kind: "cat", id: "panda" })).toBe("cat-panda-happy");
   });
@@ -71,15 +77,14 @@ describe("avatarSheetFor", () => {
 });
 
 describe("avatarPortraitStyle", () => {
-  // cat-happy bbox: l78 t62 r177 b189 -> bw 99, bh 127, side 127,
-  // square origin cl=64, ct=62 (clamped to [0, 129]).
-  it("computes the square content crop for the small default cat", () => {
+  // cat-boss-happy bbox: l13 t13 r243 b243 -> square side 230 at (13,13).
+  it("computes the square content crop for the full-size default cat", () => {
     const s = avatarPortraitStyle({ kind: "cat", id: "lucky" });
-    expect(s.image).toBe("assets/cat-happy.png");
-    expect(s.sizePct[0]).toBeCloseTo(102400 / 127, 6);
-    expect(s.sizePct[1]).toBeCloseTo(25600 / 127, 6);
-    expect(s.posPct[0]).toBeCloseTo((100 * 64) / (1024 - 127), 6);
-    expect(s.posPct[1]).toBeCloseTo((100 * 62) / (256 - 127), 6);
+    expect(s.image).toBe("assets/cat-boss-happy.png");
+    expect(s.sizePct[0]).toBeCloseTo(102400 / 230, 6);
+    expect(s.sizePct[1]).toBeCloseTo(25600 / 230, 6);
+    expect(s.posPct[0]).toBeCloseTo((100 * 13) / (1024 - 230), 6);
+    expect(s.posPct[1]).toBeCloseTo((100 * 13) / (256 - 230), 6);
   });
   // beach bbox: l9 t12 r246 b244 -> bw 237, bh 232, side 237, cl=9, ct=9.5.
   it("computes the crop for a near-full-frame skin", () => {
