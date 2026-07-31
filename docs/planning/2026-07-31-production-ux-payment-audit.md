@@ -361,12 +361,36 @@ criteria are in
 
 ### Phase 0 — required before activating billing
 
-1. Fix Stripe web Supporter copy.
-2. Display one currency and exact total: `฿79` / `79 THB`.
-3. Prevent checkout from non-canonical origins.
-4. Human-review all Thai payment and account strings.
+> **STATUS 2026-07-31 (verified by reading the shipped code, not by assumption):**
+> **1, 2, 3 are DONE. 4 and 5 are still owed and both are owner-side.**
+
+1. ~~Fix Stripe web Supporter copy.~~ **DONE.** `main.js:3972` — the web-pitch
+   branch is `["revenuecat-web", "stripe-web"].includes(provider().kind)`, so a
+   Stripe buyer no longer gets "Remove ads forever" on an app with no ads.
+2. ~~Display one currency and exact total: `฿79` / `79 THB`.~~ **DONE.**
+   `supporterDisplayPrice()` (`main.js:1119`) short-circuits to `"฿79"` whenever
+   the provider is `stripe-web`, so the `$2.99` locale fallback in
+   `displayPrice()` cannot reach a Stripe buyer in either language. **Checked at
+   every surface, not just the sheet:** the shop card (`main.js:3987`), the
+   offer sheet (`getPrice`, `main.js:1129`) and the results-screen supporter row
+   all resolve through that one function — the row renders no price of its own
+   and routes to `openSupporterOffer()`. No price string is hardcoded anywhere
+   in `i18n.js` in either locale.
+3. ~~Prevent checkout from non-canonical origins.~~ **DONE** —
+   `fix/stripe-canonical-origin-gate`. `purchase()` returns
+   `{ok:false, reason:"wrong-origin"}` before any fetch, navigation, or pending
+   write. Gated in `purchase()` and deliberately **not** in `usable()`, so
+   `restore()` keeps working on the bridge — that is a returning Supporter's
+   only recovery route on a device that never saw the purchase. Localhost passes
+   so the test-mode rehearsal (owner-actions §B.4.4.5) is possible.
+   **⚠ `STRIPE_SITE_ORIGIN` and `stripe-checkout/index.ts`'s `SITE_ORIGIN` must
+   change together or purchases silently stop.**
+4. Human-review all Thai payment and account strings. **STILL OWED.**
+   **One string was ADDED by item 3 and is machine-drafted:**
+   `iap.wrongOrigin`. It is flagged in place in `src/i18n.js`.
 5. Complete the documented live PromptPay, card, abandon, webhook replay, entitlement,
-   and restore gate.
+   and restore gate. **STILL OWED** — but see owner-actions §B.4.4.5: most of it
+   can be rehearsed in Stripe **test mode** before verification completes.
 
 ### Phase 1 — smooth purchase path
 

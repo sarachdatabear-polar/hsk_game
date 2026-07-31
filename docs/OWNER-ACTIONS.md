@@ -194,8 +194,34 @@ let it run in the background while you do steps 1–2.
 4. **Direct Stripe PromptPay go-live** (plan step 6 — replaces the RC Web
    Billing approach above; RC Web Billing cannot carry PromptPay, see the
    preamble):
-   0. **Confirm `grant_purchase` is already applied — before anything else
-      in this list.** Both edge functions grant by calling
+   0. ~~**Confirm `grant_purchase` is already applied**~~ **— DONE
+      2026-07-31. The migration is APPLIED to the live project
+      (`eqsodiufgjecoqgxdisn`) and verified, not assumed.**
+      `docs/supabase/migrations/2026-07-12-iap-golive.sql` was run via the
+      Supabase Management API. Post-apply verification, each queried
+      directly:
+      - `grant_purchase(p_user_id uuid, p_delta integer, p_reason text,
+        p_event_id text, p_order_id text, p_entitlement text)` — exists.
+      - `increment_wallet` (the superseded two-write design) — absent.
+      - `ledger.event_id` and `ledger.order_id` — both present, type text.
+      - `ledger_event_id_uidx` / `ledger_order_id_uidx` — both present.
+        These are what make the webhook replay return `{"duplicate":true}`.
+      - EXECUTE granted to `service_role` only; `public`/`anon`/
+        `authenticated` revoked. Clients cannot call it.
+      - `wallet_guard` — replaced, so a service-role purchase grant now
+        bypasses the 25,000/day earn clamp.
+      **Also smoke-tested against the live DB, zero residue:**
+      `grant_purchase` with a non-existent user id returned `unknown-user`
+      (the `foreign_key_violation` branch) and wrote no ledger row — so the
+      function body really executes and its deleted-account path is real,
+      not just declared.
+      **NOT yet exercised live:** the `granted` and `duplicate` branches, a
+      real wallet increment, and the entitlement upsert. Those need a real
+      user row and are covered by the live gate below.
+
+      *Original instructions, kept because they are how you re-check this
+      against any other project or after any DB restore:*
+      Both edge functions grant by calling
       `supabase.rpc("grant_purchase", …)`; that function comes from
       `docs/supabase/migrations/2026-07-12-iap-golive.sql`, which does not
       apply itself. Skip this and the failure is silent and after the fact:
@@ -224,6 +250,41 @@ let it run in the background while you do steps 1–2.
       flag means every real delivery 401s, silently, after the buyer's money
       has already left their account), `stripe-checkout` deploys **normally**
       (it authenticates the caller itself).
+   4.5 **STRONGLY RECOMMENDED — rehearse the whole gate in Stripe TEST
+      MODE first, while verification is still pending.** Stripe issues
+      `sk_test_…` keys the moment the account exists, before verification
+      completes, and test mode has its own webhook endpoints and its own
+      `whsec_…`. So the entire money path can be exercised with fake money
+      *now*, on the external clock's own time.
+      **This is the single biggest de-risk available**, because the two edge
+      functions have never run anywhere: Deno TS does not run under vitest
+      and `eslint.config.mjs` ignores `supabase/`. Their `core.js` halves are
+      well tested; their `index.ts` wrappers, the Supabase gateway's JWT
+      behaviour, the CORS preflight, the bundler's parent-directory import,
+      and the real `grant_purchase` round-trip are not.
+      **Run it against a LOCAL build (`npm run serve`, `http://localhost:8000`)
+      — not the live site.** `isReturnableOrigin` allows localhost precisely
+      so this rehearsal is possible. Set the test keys as the function
+      secrets, point a test-mode webhook endpoint at the same function URL,
+      and fill the two config keys **in your working tree only**.
+      **⚠ DO NOT COMMIT TEST-MODE KEYS.** Committing them ships a live
+      purchase surface on a public domain that takes fake money — strictly
+      worse than shipping dark.
+      **What a test-mode pass actually buys you:** the card leg, the replay
+      dedupe (`{"duplicate":true}`), the abandoned-checkout leg, the
+      signature verification, the `unpaid` ignore branch, and a real
+      `granted` return from `grant_purchase` with a real wallet increment
+      and entitlement upsert. That is the bulk of the untested surface.
+      **What it does not buy you:** proof that PromptPay works. Check
+      Stripe test mode → **Payment methods** and confirm PromptPay reads
+      **enabled**, not pending — PromptPay capability can stay inactive
+      until the account is verified, and `buildSessionParams` hardcodes
+      `payment_method_types[0]=promptpay`, so an inactive capability makes
+      session creation fail and `stripe-checkout` return a 502
+      `stripe-error`. **If PromptPay is not yet available in test mode that
+      does NOT block this rehearsal** — run the card leg and get everything
+      else proven; PromptPay's async double-delivery is then the only thing
+      left for the live gate.
    5. Fill `STRIPE_CHECKOUT_URL` and `STRIPE_PUBLISHABLE_KEY` in
       `src/monetization/stripe-config.js` (the publishable key is safe to
       commit; never the secret key) and ship. The client code is already

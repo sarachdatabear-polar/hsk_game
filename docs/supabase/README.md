@@ -69,6 +69,28 @@ schema by design: `nbhsk.settings`, `nbhsk.sfx`, `nbhsk.scope`,
 
 ## Stripe deployment prerequisites
 
+> **⚠ UNPROVEN STEP — expect the FIRST deploy of either Stripe function to be
+> where you find out (noted 2026-07-31).** Both `stripe-checkout/index.ts` and
+> `stripe-webhook/index.ts` import
+> `../../../src/monetization/products.js` — a relative path that reaches
+> **outside `supabase/`** to share the one price catalog with the client.
+> Sharing it is deliberate: a vendored copy could drift from the client's
+> prices, and a price that disagrees between the app and the Checkout Session
+> is a money bug.
+> **But no function using that pattern has ever been deployed.** The only
+> function live on the project is `delete-account`, which imports solely from
+> `https://esm.sh/...` and its own directory. `rc-webhook` — the existing
+> precedent for the cross-directory import — was **never deployed either**.
+> There is also no `supabase/config.toml` and no import map in this repo.
+> So whether the CLI bundler follows that parent-directory import is an open
+> question, and it is answered at deploy time, not at the live gate.
+> **If the deploy fails at bundle time**, the fix is a `deno.json` import map
+> or moving the catalog to a path inside `supabase/` that the client also
+> imports — **not** a vendored copy of the prices.
+> Run the two deploys and confirm both report success *before* creating the
+> Stripe webhook endpoint; a failed bundle discovered later looks exactly like
+> a webhook misconfiguration.
+
 Two functions, two opposite JWT settings — get this backwards in either
 direction and it is a production incident. Stripe never sends a Supabase JWT,
 so `stripe-webhook` must disable gateway JWT verification or every delivery
