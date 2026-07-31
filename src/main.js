@@ -4004,7 +4004,14 @@ function makeSupporterCard(){
 // user a fresh enabled button for the same product. Cancelled is silent
 // (user changed their mind); failed/unavailable gets a toast.
 async function iapBuy(p, btn){
-  if(iapPending || btn.disabled) return;
+  // Guard on iapPending ONLY. Do NOT re-add `|| btn.disabled`: the supporter
+  // offer sheet's action() wrapper disables the button BEFORE awaiting its
+  // handler (src/ui/supporter-offer-sheet.js), so a disabled-check here made
+  // every sheet checkout return silently — no fetch, no toast, no console
+  // error, a dead buy button. It was invisible only because billing ships
+  // dark. iapPending already covers the double-tap case this was meant for,
+  // and browsers do not dispatch click on a disabled button anyway.
+  if(iapPending) return;
   iapPending = p.id;
   btn.disabled = true;
   btn.textContent = t("iap.pending");
