@@ -92,6 +92,16 @@ schema by design: `nbhsk.settings`, `nbhsk.sfx`, `nbhsk.scope`,
 >    response for unset secrets (`index.ts:20`), not a gateway 401. So Stripe's
 >    unauthenticated deliveries reach the function body. This is the failure
 >    that would otherwise 401 every delivery *after* the buyer had paid.
+>    **⚠ READ THE SCOPE OF THIS EXACTLY.** The 503 comes from the
+>    missing-secrets guard at `index.ts:19-21`, which sits **before**
+>    `verifyStripeSignature`. It proves the *gateway* forwards a JWT-less POST.
+>    It proves **nothing** about signature verification, because that code never
+>    ran. Once `STRIPE_WEBHOOK_SECRET` is set the 503 branch disappears and the
+>    same probe should return **401 `unauthorized`** — the function rejecting an
+>    unsigned body. **Re-run the probe after setting secrets**: 503 means a
+>    secret did not take; a JSON `{"code":…,"message":…}` 401 (rather than the
+>    function's plain-text `unauthorized`) means `verify_jwt` got flipped back
+>    on by a re-deploy that dropped the flag.
 > 3. **The CORS preflight survives the JWT-ON gateway.** `OPTIONS` on
 >    `stripe-checkout` returns **200** with `access-control-allow-origin: *`
 >    and the expected allow-headers/methods. The runbook flagged this as

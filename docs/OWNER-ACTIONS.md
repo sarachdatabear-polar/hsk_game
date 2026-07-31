@@ -253,10 +253,25 @@ let it run in the background while you do steps 1–2.
       200 through the JWT-ON gateway. Details in
       `docs/supabase/README.md` §Stripe deployment prerequisites.
       **So what is left here is only the secrets** — set
-      `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`, then **re-deploy**
-      (function secrets are picked up at deploy/restart). Keep the same
-      flags on the re-deploy; the asymmetry is not sticky if you deploy
-      the webhook without `--no-verify-jwt` later.
+      `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`
+      (`supabase secrets set …`, or Dashboard → Edge Functions → Secrets).
+      **Setting a secret is expected to be enough on its own** — the
+      functions read them through `Deno.env.get()` per request, so no
+      re-deploy should be needed. **This was NOT tested**, so treat it as
+      expected rather than known.
+      **⚠ IF YOU DO RE-DEPLOY, THE WEBHOOK MUST KEEP `--no-verify-jwt`.**
+      The flag is per-deploy, not sticky. A re-deploy that omits it
+      silently flips `verify_jwt` back to true and every real Stripe
+      delivery 401s *after* the buyer has paid. Prefer setting the secret
+      and NOT re-deploying; if you must, re-check with the API
+      (`GET /v1/projects/<ref>/functions`) rather than trusting the deploy
+      output.
+      **After the secrets are set, re-run the fail-closed probe** — a
+      JWT-less `POST` to `stripe-webhook` with a junk body. It should now
+      return **401** (the function's own signature rejection), **not** 503.
+      A 503 means a secret did not take; a **gateway** 401 (a JSON
+      `{"code":…,"message":…}` body rather than the function's plain
+      `unauthorized`) means `verify_jwt` got flipped back on.
       *Original instructions, kept because they are how you re-check the
       asymmetry after any re-deploy:* set both Supabase function secrets —
       `STRIPE_SECRET_KEY` and
