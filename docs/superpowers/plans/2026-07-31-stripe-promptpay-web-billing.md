@@ -378,7 +378,7 @@ Create `test/stripe-checkout.test.js`:
 
 ```js
 import { describe, it, expect } from "vitest";
-import { buildSessionParams, encodeForm } from "../supabase/functions/stripe-checkout/core.js";
+import { buildSessionParams, encodeForm, parseCheckoutRequest } from "../supabase/functions/stripe-checkout/core.js";
 import { productById } from "../src/monetization/products.js";
 
 const supporter = productById("supporter");
@@ -416,6 +416,23 @@ describe("buildSessionParams", () => {
   it("returns null for a missing product or user", () => {
     expect(buildSessionParams({ ...base, product: null })).toBeNull();
     expect(buildSessionParams({ ...base, userId: "" })).toBeNull();
+  });
+});
+
+describe("parseCheckoutRequest", () => {
+  it("defaults to supporter with no prior session on an empty body", () => {
+    expect(parseCheckoutRequest({})).toEqual({ productId: "supporter", priorSessionId: "" });
+    expect(parseCheckoutRequest(null)).toEqual({ productId: "supporter", priorSessionId: "" });
+  });
+
+  it("reads BOTH fields from ONE object — index.ts may only read the body once", () => {
+    expect(parseCheckoutRequest({ productId: "coins_s", priorSessionId: "cs_prev" }))
+      .toEqual({ productId: "coins_s", priorSessionId: "cs_prev" });
+  });
+
+  it("ignores non-string values", () => {
+    expect(parseCheckoutRequest({ productId: 7, priorSessionId: {} }))
+      .toEqual({ productId: "supporter", priorSessionId: "" });
   });
 });
 
@@ -482,6 +499,18 @@ export function encodeForm(params) {
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
     .join("&");
 }
+
+// Request-body parsing lives here, not in index.ts, so it is unit-testable.
+// index.ts reads the body EXACTLY ONCE and hands the object here — a second
+// read via req.clone() throws TypeError "unusable" per WHATWG Fetch, and a
+// try/catch around it swallows the throw silently.
+export function parseCheckoutRequest(body) {
+  const b = body && typeof body === "object" ? body : {};
+  return {
+    productId: typeof b.productId === "string" && b.productId ? b.productId : "supporter",
+    priorSessionId: typeof b.priorSessionId === "string" ? b.priorSessionId : "",
+  };
+}
 ```
 
 - [ ] **Step 4: Run tests to verify they pass**
@@ -502,7 +531,7 @@ Create `supabase/functions/stripe-checkout/index.ts`:
 // function must answer or the real POST never fires. Modelled on
 // delete-account/index.ts, NOT rc-webhook (which Stripe's server calls).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { buildSessionParams, encodeForm } from "./core.js";
+import { buildSessionParams, encodeForm, parseCheckoutRequest } from "./core.js";
 import { productById } from "../../../src/monetization/products.js";
 
 // Pin the API version — the account default drifts under you otherwise.
@@ -546,12 +575,14 @@ Deno.serve(async (req) => {
   // support handle, so refuse explicitly (spec decision 2).
   if (user.is_anonymous || !user.email) return reply({ error: "needs-account" }, 403);
 
-  let productId = "supporter";
-  try {
-    const body = await req.json();
-    if (body && typeof body.productId === "string") productId = body.productId;
-  } catch { /* empty body is fine — defaults to supporter */ }
-  const product = productById(productId);
+  // ONE read of the body. Request.clone() throws TypeError "unusable" once the
+  // body has been consumed (WHATWG Fetch, which Deno implements), so a second
+  // `await req.clone().json()` inside a try/catch would silently swallow the
+  // throw and leave the field permanently empty. Parsing is delegated to
+  // core.js so it is unit-testable and this hazard cannot reappear.
+  let parsed = { productId: "supporter", priorSessionId: "" };
+  try { parsed = parseCheckoutRequest(await req.json()); } catch { /* empty body is fine */ }
+  const product = productById(parsed.productId);
   if (!product || !product.entitlement) return reply({ error: "unknown-product" }, 400);
 
   // Already a Supporter: refuse rather than charge twice. entitlements is
@@ -563,13 +594,14 @@ Deno.serve(async (req) => {
 
   // Expire any session this device left open. Two live sessions have
   // DIFFERENT ids, so the ledger dedupe cannot stop them both charging.
-  let priorSessionId = "";
-  try {
-    const body = await req.clone().json();
-    if (body && typeof body.priorSessionId === "string") priorSessionId = body.priorSessionId;
-  } catch { /* no prior session */ }
-  if (priorSessionId) {
-    await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(priorSessionId)}/expire`, {
+  //
+  // ⚠ THIS NARROWS THE HOLE, IT DOES NOT CLOSE IT. It depends on the client
+  // voluntarily reporting its own prior session id, so two independent tabs or
+  // two devices with no shared client state still produce two live sessions.
+  // Real protection lives in the webhook's idempotent grant; this is a
+  // courtesy that stops the common single-device retry from double-charging.
+  if (parsed.priorSessionId) {
+    await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(parsed.priorSessionId)}/expire`, {
       method: "POST",
       headers: { Authorization: `Bearer ${stripeKey}`, "Stripe-Version": STRIPE_API_VERSION },
     }).catch(() => {});   // best-effort: an already-expired session 400s harmlessly
