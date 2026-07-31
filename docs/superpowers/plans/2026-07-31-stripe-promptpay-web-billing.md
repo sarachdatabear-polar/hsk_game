@@ -1638,7 +1638,18 @@ async function resumeCheckout(){
     // sites). Without this a buyer completes a 79฿ PromptPay payment, returns,
     // and the only sign of it is a number quietly changing in the header chip —
     // indistinguishable from having done nothing at all.
-    onCredited: (delta) => {
+    onCredited: () => {
+      // Toast the ACTUAL wallet change, not pollForCredit's reported delta.
+      // They differ on a re-check: a pending record can survive to a later boot
+      // (24h TTL, or a tab killed during the restore() await), and sync.js's
+      // expectedOrderId lookup then re-confirms the SAME ledger row with its
+      // original non-zero delta — deliberately, for confirmation — while
+      // explicitly NOT folding it into the wallet, since it is older than the
+      // cursor (sync.js:184-196, "never add it to `unseen`"). Toasting the
+      // reported delta would announce "+2,000 coins added!" with no matching
+      // balance change. Reading the wallet across the rehydrate says what
+      // actually happened.
+      const before = wallet;
       // Same rehydrate syncEdge relies on: reconcile wrote ALL merged
       // SYNC_KEYS back to the store, not just wallet (main.js:3879-3881).
       rehydrateFromStore();
@@ -1648,7 +1659,8 @@ async function resumeCheckout(){
       // chip; if the buyer is sitting on the shop screen it would otherwise
       // stay stale until the next render.
       if (currentScreen === "shop") renderShop();
-      if (delta > 0) toast(t("iap.success", { coins: Number(delta).toLocaleString() }));
+      const gained = wallet - before;
+      if (gained > 0) toast(t("iap.success", { coins: gained.toLocaleString() }));
     },
     onEntitlement: (owned) => {
       const wasSupporter = isSupporter(ent);
@@ -1656,8 +1668,15 @@ async function resumeCheckout(){
       store.set("ent", ent);
       renderAccount();
       renderIapSections();
-      // Only on the transition, so a boot-time re-check of an already-granted
-      // entitlement doesn't re-thank someone who bought last week.
+      // Only on the transition. Two reasons, and the second is the sharper one:
+      // (a) a pending record can survive to a later boot (24h TTL), and (b)
+      // onEntitlement receives restore()'s FULL owned list, not just the item
+      // just bought — so an existing Supporter buying anything else would get
+      // re-thanked for becoming a Supporter on every purchase without this.
+      // NOTE: toast() has no queue (main.js:375-377) — on a Supporter purchase
+      // this replaces the coins toast a moment later. Accepted: the more
+      // important message wins, matching iapBuy, which likewise shows only the
+      // supporter toast for an entitlement product.
       if (!wasSupporter && isSupporter(ent)) toast(t("iap.supporterThanks"));
     },
     track: (name, props) => analytics.track(name, props),
