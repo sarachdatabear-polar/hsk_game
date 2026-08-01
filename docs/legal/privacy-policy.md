@@ -1,16 +1,9 @@
-# Lucky Cat HSK — Privacy Policy (DRAFT)
+# Lucky Cat HSK — Privacy Policy
 
-> **DRAFT — not legal advice.** Developer-authored working draft. All identity
-> and policy placeholders are now filled; before publishing it still MUST be
-> reviewed by a qualified privacy professional (Thailand PDPA + EU GDPR). It
-> reflects the *intended* data practices per the Monetization & Production PRD
-> (§6.4, §9); confirm each claim against the shipped build (the §2e analytics
-> and §6 sign-out claims were checked against the current code).
-
-**Effective date:** 2026-07-17
+**Effective date:** 2026-08-01
 **App:** Lucky Cat HSK
 **Provider / data controller:** Sarach Sriklab, Bangkok 10400, Thailand
-**Contact:** sarach.northbear@gmail.com
+**Contact:** support@luckycathsk.com
 
 ---
 
@@ -41,9 +34,21 @@ preferences are saved in your device's local storage (`nbhsk.*`). This data is
   the cloud so they survive reinstalls and sync across your devices.
 
 **c) Purchases (only if you buy something).**
-In-app purchases (the one-time Supporter unlock and coin packs) are processed by
-**Apple App Store / Google Play** via **RevenueCat**. We receive a purchase/
-entitlement confirmation and a purchase token — **we do not receive or store
+Who processes your payment depends on where you buy:
+
+- **On the web** (luckycathsk.com) — payments are processed by **Stripe**, using
+  Stripe's own hosted checkout page. You enter your payment details on Stripe's
+  page, not ours. We ask Stripe to create the checkout, and Stripe tells our
+  server that a payment succeeded so we can grant what you bought. Stripe
+  processes your payment details as an independent controller under Stripe's
+  privacy policy (https://stripe.com/privacy). If you pay by **PromptPay**, your
+  bank shows and confirms the transfer — we never see your banking credentials.
+- **In the Android app** — purchases are processed by **Google Play** via
+  **RevenueCat**. We receive a purchase/entitlement confirmation and a purchase
+  token.
+
+On both paths we receive only a confirmation that payment succeeded, an
+order/session reference, and the product bought — **we do not receive or store
 your payment card details.**
 
 **d) Ads (only if ads are shown).**
@@ -98,8 +103,12 @@ handles data under its own privacy policy:
 - **Supabase** — authentication, database, cloud storage, and our own analytics
   event store (hosting region: Singapore, `ap-southeast-1`).
   Policy: https://supabase.com/privacy
-- **RevenueCat** — purchase validation and entitlement management (only if you
-  buy something). Policy: https://www.revenuecat.com/privacy
+- **Stripe** — payment processing for purchases made on the web, including
+  PromptPay and card (only if you buy something on luckycathsk.com).
+  Policy: https://stripe.com/privacy
+- **RevenueCat** — purchase validation and entitlement management for purchases
+  made in the Android app (only if you buy something there).
+  Policy: https://www.revenuecat.com/privacy
 - **Google AdMob** — ad serving and, with consent, measurement (only if ads are
   shown). Policy: https://policies.google.com/privacy
 - **Apple / Google** — sign-in and payment processing for their platforms.
@@ -127,7 +136,7 @@ personal data, **object to or restrict** processing, and **withdraw consent**
   two-step confirm) that permanently erases your cloud account and all
   associated data. (Available in the web/PWA app now; the Android app gains it
   with its next release. On any build, the email path below also works.)
-- **By email:** sarach.northbear@gmail.com. We respond within the statutory timeframe
+- **By email:** support@luckycathsk.com. We respond within the statutory timeframe
   (PDPA/GDPR: without undue delay, and within 30 days).
 
 Withdrawing consent or deleting your account does not affect the lawfulness of
@@ -143,9 +152,9 @@ required for tax/audit purposes.
 ## 8. International transfers
 
 Your data may be processed outside your country. Our cloud/analytics data is
-hosted with Supabase in **Singapore** (`ap-southeast-1`); RevenueCat and Google
-AdMob (only if you buy something or ads are shown) process data on **US**-based
-infrastructure. Where a transfer requires it (e.g., from the EU/UK), we and our
+hosted with Supabase in **Singapore** (`ap-southeast-1`); Stripe, RevenueCat and
+Google AdMob (only if you buy something or ads are shown) process data on
+**US**-based infrastructure. Where a transfer requires it (e.g., from the EU/UK), we and our
 providers rely on appropriate safeguards such as the Standard Contractual
 Clauses. Each provider's own policy (§4) describes its transfer mechanisms.
 
@@ -163,6 +172,6 @@ here; material changes will be surfaced in-app.
 
 ## 11. Contact
 
-Questions or requests: **sarach.northbear@gmail.com** — Sarach Sriklab, Bangkok 10400, Thailand.
+Questions or requests: **support@luckycathsk.com** — Sarach Sriklab, Bangkok 10400, Thailand.
 Thailand users may also lodge a complaint with the PDPC; EU/UK users with their
 local supervisory authority.

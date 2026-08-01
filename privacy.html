@@ -50,14 +50,6 @@
     font-size:0.95rem;
   }
   .meta p{margin:4px 0;}
-  .draft-notice{
-    background:#FDEFD2;
-    border:1px solid var(--lc-brown);
-    border-radius:10px;
-    padding:12px 16px;
-    margin-bottom:24px;
-    font-size:0.9rem;
-  }
   table{
     width:100%;
     border-collapse:collapse;
@@ -93,20 +85,11 @@
 
 <h1>Lucky Cat HSK — Privacy Policy</h1>
 
-<div class="draft-notice">
-  <strong>DRAFT — not legal advice.</strong> Developer-authored working draft. All identity
-  and policy placeholders are now filled; before publishing it still MUST be reviewed by a
-  qualified privacy professional (Thailand PDPA + EU GDPR). It reflects the intended data
-  practices per the Monetization &amp; Production PRD (§6.4, §9); confirm each claim against
-  the shipped build (the §2e analytics and §6 sign-out claims were checked against the
-  current code).
-</div>
-
 <div class="meta">
-  <p><strong>Effective date:</strong> 2026-07-17</p>
+  <p><strong>Effective date:</strong> 2026-08-01</p>
   <p><strong>App:</strong> Lucky Cat HSK</p>
   <p><strong>Provider / data controller:</strong> Sarach Sriklab, Bangkok 10400, Thailand</p>
-  <p><strong>Contact:</strong> <a href="mailto:sarach.northbear@gmail.com">sarach.northbear@gmail.com</a></p>
+  <p><strong>Contact:</strong> <a href="mailto:support@luckycathsk.com">support@luckycathsk.com</a></p>
 </div>
 
 <h2>1. Who this applies to and our approach</h2>
@@ -139,10 +122,25 @@ are saved in your device's local storage (<code>nbhsk.*</code>). This data is
 </ul>
 
 <p><strong>c) Purchases (only if you buy something).</strong><br>
-In-app purchases (the one-time Supporter unlock and coin packs) are processed by
-<strong>Apple App Store / Google Play</strong> via <strong>RevenueCat</strong>. We receive a
-purchase/entitlement confirmation and a purchase token —
-<strong>we do not receive or store your payment card details.</strong></p>
+Who processes your payment depends on where you buy:</p>
+<ul>
+  <li><strong>On the web</strong> (luckycathsk.com) — payments are processed by
+    <strong>Stripe</strong>, using Stripe's own hosted checkout page. You enter your payment
+    details on Stripe's page, not ours. We ask Stripe to create the checkout, and Stripe tells
+    our server that a payment succeeded so we can grant what you bought. Stripe processes your
+    payment details as an independent controller under
+    <a href="https://stripe.com/privacy">Stripe's privacy policy</a>. If you pay by
+    <strong>PromptPay</strong>, your bank shows and confirms the transfer — we never see your
+    banking credentials.</li>
+  <li><strong>In the Android app</strong> — purchases are processed by
+    <strong>Google Play</strong> via <strong>RevenueCat</strong>. We receive a
+    purchase/entitlement confirmation and a purchase token.</li>
+</ul>
+<p>
+  On both paths we receive only a confirmation that payment succeeded, an order/session
+  reference, and the product bought —
+  <strong>we do not receive or store your payment card details.</strong>
+</p>
 
 <p><strong>d) Ads (only if ads are shown).</strong><br>
 We show ads via <strong>Google AdMob</strong>. Depending on your consent choice, AdMob may
@@ -212,8 +210,11 @@ game is used and improve it:</p>
   <li><strong>Supabase</strong> — authentication, database, cloud storage, and our own
     analytics event store (hosting region: Singapore, <code>ap-southeast-1</code>).
     Policy: <a href="https://supabase.com/privacy" target="_blank" rel="noopener">https://supabase.com/privacy</a></li>
-  <li><strong>RevenueCat</strong> — purchase validation and entitlement management (only if
-    you buy something).
+  <li><strong>Stripe</strong> — payment processing for purchases made on the web, including
+    PromptPay and card (only if you buy something on luckycathsk.com).
+    Policy: <a href="https://stripe.com/privacy" target="_blank" rel="noopener">https://stripe.com/privacy</a></li>
+  <li><strong>RevenueCat</strong> — purchase validation and entitlement management for
+    purchases made in the Android app (only if you buy something there).
     Policy: <a href="https://www.revenuecat.com/privacy" target="_blank" rel="noopener">https://www.revenuecat.com/privacy</a></li>
   <li><strong>Google AdMob</strong> — ad serving and, with consent, measurement (only if ads
     are shown).
@@ -253,7 +254,7 @@ game is used and improve it:</p>
     erases your cloud account and all associated data. (Available in the web/PWA app now; the
     Android app gains it with its next release. On any build, the email path below also
     works.)</li>
-  <li><strong>By email:</strong> <a href="mailto:sarach.northbear@gmail.com">sarach.northbear@gmail.com</a>.
+  <li><strong>By email:</strong> <a href="mailto:support@luckycathsk.com">support@luckycathsk.com</a>.
     We respond within the statutory timeframe (PDPA/GDPR: without undue delay, and within 30
     days).</li>
 </ul>
@@ -273,9 +274,9 @@ game is used and improve it:</p>
 <h2>8. International transfers</h2>
 <p>
   Your data may be processed outside your country. Our cloud/analytics data is hosted with
-  Supabase in <strong>Singapore</strong> (<code>ap-southeast-1</code>); RevenueCat and Google
-  AdMob (only if you buy something or ads are shown) process data on <strong>US</strong>-based
-  infrastructure. Where a transfer requires it (e.g., from the EU/UK), we and our providers
+  Supabase in <strong>Singapore</strong> (<code>ap-southeast-1</code>); Stripe, RevenueCat and
+  Google AdMob (only if you buy something or ads are shown) process data on
+  <strong>US</strong>-based infrastructure. Where a transfer requires it (e.g., from the EU/UK), we and our providers
   rely on appropriate safeguards such as the Standard Contractual Clauses. Each provider's
   own policy (§4) describes its transfer mechanisms.
 </p>
@@ -296,7 +297,7 @@ game is used and improve it:</p>
 
 <h2>11. Contact</h2>
 <p>
-  Questions or requests: <strong><a href="mailto:sarach.northbear@gmail.com">sarach.northbear@gmail.com</a></strong>
+  Questions or requests: <strong><a href="mailto:support@luckycathsk.com">support@luckycathsk.com</a></strong>
   — Sarach Sriklab, Bangkok 10400, Thailand.
   Thailand users may also lodge a complaint with the PDPC; EU/UK users with their local
   supervisory authority.

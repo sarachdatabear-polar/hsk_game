@@ -1,14 +1,22 @@
 # Owner actions
 
-The **v136** release is on `main` and deployed to the web/PWA at **https://luckycathsk.com** (and still at github.io during the migration). Since the last
-revision of this doc: **v133** fixed the pre-launch intro/rest-day issues,
-**v134** repaired the Cat Journey Shop/Profile path, and **v135 retired the
-Street surface entirely** (11 modules / ~2,700 LOC, 44 assets, 159 i18n keys ×
-2 locales, and the 15 decoration catalog entries deleted; `features.catJourney`
-collapsed — Cat Journey is now the only screen). Today's Picks shows three
-obtainable Word Quest cosmetics, Profile counts 20 reusable cosmetics, Cat
-Journey links directly to customization, and new-sticker Results feedback opens
-the Album. The remaining gates are the quick on-device checks (§A), the web
+The **v142** release is on `main` and deployed to the web/PWA at **https://luckycathsk.com** (and still at github.io during the migration). Since the last
+revision of this doc six releases have shipped: **v137** Stripe PromptPay web
+billing (dark) + two accessibility fixes, **v138** guided first quest and
+supporter sheet, **v139** profile and friend progress UX, **v140** regenerated
+Lucky Cat profile art, **v141** the cache bump carrying the billing +
+canonical-origin-gate work, and **v142** button clarity and navigation (centered
+wrapping labels, distinct semantic icons for previously-duplicated actions, and
+Home **Flashcards** now opening the current Cards deck directly).
+
+Earlier context still worth carrying: **v135 retired the Street surface
+entirely** (11 modules / ~2,700 LOC, 44 assets, 159 i18n keys × 2 locales, and
+the 15 decoration catalog entries deleted; `features.catJourney` collapsed —
+Cat Journey is now the only screen). Today's Picks shows three obtainable Word
+Quest cosmetics, Profile counts 20 reusable cosmetics, Cat Journey links
+directly to customization, and new-sticker Results feedback opens the Album.
+
+The remaining gates are the quick on-device checks (§A), the web
 go-live track (§B), cross-device acceptance of the v129 cloud flip (§0), the
 signed Android artifact, native Thai sign-off, and store/legal work.
 
@@ -29,18 +37,29 @@ launch does not wait on it.
 
 ## Current handoff snapshot
 
-- Current committed/deployed source: `main` == **`335f24c2`** (v136, the URL
-  sweep — see §B3); service-worker cache version **`v136`**, live on
-  **both** `luckycathsk.com` and `github.io`.
-- Recorded release gates at the v135/v136 cuts: 103 files / 9,484 tests, ESLint,
-  production build, 131 validated assets, responsive sweep EN+TH 10/10 plus
-  all Cat Journey, Results, onboarding, Cards-resume, format, and accessibility
-  probes. (Test count fell 9,820 → 9,484 because the Street test files were
-  deleted with the feature; the delta is reconciled per-file in `../HANDOFF.md`.)
-- Precache headroom is **no longer thin**: 10,056,341 of the 11,010,048 B cap —
-  **931 KB free**, up from ~36 KB, because the Street retirement shrank
-  `dist/app.js` and dropped 3 dead precached assets. This is what unblocks the
-  11 pending keepsake bitmaps.
+- Current committed/deployed source: `main` == `development` ==
+  **`288e9c05`** (v142, button clarity and navigation); service-worker cache
+  version **`v142`**, live on **both** `luckycathsk.com` and `github.io`.
+  Live-verified 2026-08-01: `https://luckycathsk.com/sw.js` serves
+  `CACHE_VERSION = "v142"`. Both working trees are clean and there are no open
+  PRs.
+- Recorded release gates at the v142 cut: **111 files / 9,662 tests**, ESLint,
+  production build, asset validation, and `git diff --check` all green; CI run
+  **30697291296**, Pages deploy **30697325515**, Cloudflare deploy
+  **30697325514**. Focused live-DOM verification passed 4/4 (EN + TH at 320×568
+  and 844×390). Re-run on the VPS 2026-08-01: **111 files / 9,662 tests
+  passed.**
+  > **⚠ THE FULL ART-HEAVY RESPONSIVE MATRIX WAS NOT RE-RUN AT v142.** It could
+  > not finish on the VPS — unrelated Windows EdgeWebView2/MetaTrader processes
+  > were consuming most of the 8 GB host RAM and Chromium targets crashed at
+  > battle. **Do not kill those trading processes.** The matrix had passed
+  > immediately before the v142 changes, and the changed surfaces passed the
+  > focused browser gate above.
+- Precache headroom (**measured at v136, not re-measured since**): 10,056,341 of
+  the 11,010,048 B cap — **931 KB free**, up from ~36 KB, because the Street
+  retirement shrank `dist/app.js` and dropped 3 dead precached assets. This is
+  what unblocks the 11 pending keepsake bitmaps. Six releases have landed since,
+  so re-measure before relying on the exact figure.
 - **⚠ THERE IS NO ROLLBACK FLAG FOR CAT JOURNEY ANY MORE.** `features.catJourney`
   was deleted in v135. If Cat Journey is wrong on a device, the rollback is
   **revert the release merge on `main` + a SHELL v137 bump** — not a
@@ -50,8 +69,8 @@ launch does not wait on it.
 - **The cloud-sync flag is a different flag and it survived.**
   `CAT_JOURNEY_CLOUD_ENABLED` lives in `src/cloud-config.js` (still `true`) and
   gates only whether `catJourney` is a synced key — see §0.
-- Latest signed artifact remains Profile v74; **no v127–v136 APK/AAB exists
-  yet** — the Android track is ~60 shell versions behind the web.
+- Latest signed artifact remains Profile v74; **no v127–v142 APK/AAB exists
+  yet** — the Android track is ~68 shell versions behind the web.
 - **Post-release browser verification of v135 is done** (2026-07-30): the
   legacy-install migration ladder (15/15, idempotent), fresh install, Cat
   Journey + all five of its sub-surfaces in EN and TH (36/36), and the
@@ -66,7 +85,9 @@ Google/RevenueCat/backend store tracks can overlap once the accounts exist.
 
 ## B3. URL sweep — SHIPPED (plan step 3)
 
-**v136 is live on both hosts (2026-07-31).** Merge `335f24c2` on `main`; runs
+**The sweep shipped as v136 on 2026-07-31** (prod has since advanced to v142 —
+the verification figures in this section are the v136 record, kept as the
+evidence that the sweep landed). Merge `335f24c2` on `main`; runs
 **30567020748** (Cloudflare) and **30567021056** (Pages) both SUCCESS. All 7
 occurrences of the `github.io` origin in shipped code now point at
 `luckycathsk.com`: `REMOTE_AUDIO_BASE` (`src/main.js:1193`), the native privacy
@@ -177,15 +198,30 @@ let it run in the background while you do steps 1–2.
    harmless extra hop), retired `assets/bg-street.png` **404**, TLS
    `ssl_verify_result=0` over HTTP/2.
 
-   **TWO GAPS FOUND DURING VERIFICATION — owner-side, both quick:**
+   **⚠ NEW AND BLOCKING (2026-08-01): create `support@luckycathsk.com`.**
+   The Terms of Service, Refund Policy and Privacy Policy all now publish that
+   address, and Stripe shows the support contact to every buyer on receipts.
+   **It does not exist yet**, so the v143 legal-pages release MUST NOT ship
+   until it routes — publishing a dead support address is worse than the
+   personal Gmail it replaced. Fix: Cloudflare dashboard → **Email → Email
+   Routing** → enable, add a custom address `support@luckycathsk.com`
+   forwarding to your Gmail, and confirm the verification mail Cloudflare sends
+   to the destination. Free, ~2 minutes, same dashboard as the `www` item
+   below. Reply to a test message once before release so the forward is proven
+   in both directions.
+
+   **TWO GAPS FOUND DURING VERIFICATION — ONE REMAINS (the `www` one) as of
+   2026-08-01; the HTTPS-redirect gap is closed:**
    - **`www.luckycathsk.com` does not resolve** (NXDOMAIN — only the apex was
      attached). Add it as a second custom domain on the same Worker, or a
      redirect rule to the apex. Anyone typing `www.` currently gets nothing.
-   - **Plain `http://luckycathsk.com` serves content instead of redirecting to
-     HTTPS** (returns 200 on port 80, no 301). Turn on **SSL/TLS → Edge
-     Certificates → Always Use HTTPS.** This matters more than usual here: the
-     PWA's service worker requires a secure context, and an HTTP surface on the
-     canonical domain is exactly the thing the store/legal review will ask about.
+   - ~~**Plain `http://luckycathsk.com` serves content instead of redirecting to
+     HTTPS**~~ **— DONE, verified 2026-08-01.** `http://luckycathsk.com` now
+     returns **301 → `https://luckycathsk.com/`**; Always Use HTTPS is on.
+     **Nothing to do here — do not go looking for the setting.**
+     *(Original note, kept for the reasoning: the PWA's service worker requires
+     a secure context, and an HTTP surface on the canonical domain is exactly
+     the thing the store/legal review will ask about.)*
 3. **Upgrade Supabase to Pro** ($25/mo) — plan step 5, immediately **before**
    the billing key flip (step 6), **not before that**. Nothing in steps 1–4
    needs it; buying early just starts the meter. The free tier is fine until
@@ -234,6 +270,39 @@ let it run in the background while you do steps 1–2.
       migration first and re-check before moving on to step 1.
    1. Create a **Thailand-based Stripe account** and complete its
       verification (this is the external clock — start it early).
+      **✅ PASSED 2026-08-01 — the external clock is CLEARED.** Submitted with
+      `sarach.northbear@gmail.com` as the contact, not
+      `support@luckycathsk.com`, so Stripe's public support contact and the
+      v143 legal pages currently disagree. Reconcile by creating the address
+      and then editing Stripe's **public/support** details — the legal entity
+      and country are locked after activation, public business info is not.
+      **What this unlocks, in order:** live keys → a **LIVE webhook endpoint**
+      (test-mode endpoints and their `whsec_` do NOT carry over; create a fresh
+      one on the same three `checkout.session.*` events and take its new
+      signing secret) → confirm **PromptPay reads active in LIVE mode**, not
+      pending → Supabase Pro → `STRIPE_CHECKOUT_URL` → the live gate in §6.
+      *(Historical, kept because it is what the form needed:)*
+      Reference values, taken from the shipped files rather than guessed:
+      legal name/address per the privacy policy (**Sarach Sriklab, Bangkok
+      10400, Thailand**) but **the Thai ID wins if they differ**, and Stripe
+      also wants the name in Thai script; website `https://luckycathsk.com`;
+      support `support@luckycathsk.com`; statement descriptor `LUCKYCATHSK`;
+      Supporter price **฿79 / 2,000 coins** (`src/monetization/products.js:11`,
+      matching the `7900 thb` the rehearsal actually created).
+      **⚠ COUNTRY IS IRREVERSIBLE** — Stripe: *"After activating a Stripe
+      service on a live account, you can't change the business origin
+      country."* PromptPay requires a Thai account, so confirm it reads
+      Thailand before submitting.
+      **Business type: Individual / sole proprietor**, unless a registered Thai
+      company genuinely exists — the company path needs a DBD affidavit
+      (หนังสือรับรองนิติบุคคล) issued within the last 6 months. Individuals
+      need the Thai national ID (บัตรประจำตัวประชาชน): legal name in Thai
+      script, the 13-digit ID number, and **the laser code from the back of the
+      card**, on an image carrying no signatures or annotations.
+      **The site the reviewer will visit is now covered** — Terms, Refund and
+      Privacy pages all ship in v143, and the privacy policy no longer names
+      the wrong payment processor. That release is gated on the support address
+      above.
    2. In the Stripe Dashboard → **Payment methods**, enable **PromptPay**.
    3. Create the **webhook endpoint** — Stripe Dashboard → **Developers →
       Webhooks → Add endpoint** — pointed at
@@ -293,15 +362,25 @@ let it run in the background while you do steps 1–2.
       `granted` branch writing ledger + wallet + entitlement atomically;
       and the **replay dedupe** — the same event resent granted exactly
       once (1 ledger row, +2000, 1 entitlement).
-      **⚠ STILL NOT EXERCISED, do NOT read the green run as covering
-      it:** test-mode PromptPay settled **synchronously** — the grant
-      rode a `checkout.session.completed` that already carried
-      `payment_status: "paid"`. So the `{"ignored":"not-paid"}` branch
-      and the whole `async_payment_succeeded` path **never ran**, and
-      those are exactly what a real Thai buyer scanning a QR will hit.
-      Also unexercised: the card leg, an abandoned checkout, and the
-      client-side return leg (`SITE_ORIGIN` is pinned to the canonical
-      domain, so a localhost rehearsal cannot receive its own return).
+      **Not exercised — but the gap turned out to be a non-gap:**
+      test-mode PromptPay settled **synchronously**, so the grant rode a
+      `checkout.session.completed` that already carried
+      `payment_status: "paid"`, and neither the `{"ignored":"not-paid"}`
+      branch nor `async_payment_succeeded` ever ran.
+      **⚠ THIS WAS ORIGINALLY WRITTEN AS "exactly what a real Thai buyer
+      scanning a QR will hit." THAT WAS WRONG — corrected 2026-08-01.**
+      Direct measurement plus Stripe's own docs (PromptPay is classified
+      **"Real-time payments"**, not delayed-notification) establish that
+      PromptPay-on-Checkout does not produce the two-event async pattern
+      at all: the session stays `open`/`unpaid` and emits no
+      `checkout.session.completed` until the money has actually arrived.
+      Full evidence in the §6 live-gate bullet below. So the synchronous
+      test-mode run **is** representative of the real buyer's path, and
+      those two branches are dead code rather than an untested risk.
+      Still genuinely unexercised: the card leg, an abandoned checkout,
+      and the client-side return leg (`SITE_ORIGIN` is pinned to the
+      canonical domain, so a localhost rehearsal cannot receive its own
+      return).
       **IT CAUGHT A LAUNCH-BLOCKING BUG.** The supporter sheet's checkout
       button could never start a purchase — the sheet disabled the button
       before awaiting its handler and `iapBuy` refused already-disabled
@@ -350,8 +429,10 @@ let it run in the background while you do steps 1–2.
       session creation fail and `stripe-checkout` return a 502
       `stripe-error`. **If PromptPay is not yet available in test mode that
       does NOT block this rehearsal** — run the card leg and get everything
-      else proven; PromptPay's async double-delivery is then the only thing
-      left for the live gate.
+      else proven; confirming PromptPay surfaces and grants is then the only
+      thing left for the live gate. *(This line used to say "PromptPay's
+      async double-delivery is then the only thing left." There is no async
+      double-delivery — see the correction in §6.)*
    5. Fill **`STRIPE_CHECKOUT_URL`** in `src/monetization/stripe-config.js`
       and ship. The client code is already merged dark; a blank
       `STRIPE_CHECKOUT_URL` is a pure no-op.
@@ -382,16 +463,49 @@ let it run in the background while you do steps 1–2.
       origin will make a working feature look broken.
       - **One real PromptPay checkout** — confirm PromptPay actually
         surfaces at Stripe Checkout for a THB one-time purchase.
-        **PromptPay settles ASYNCHRONOUSLY, so expect TWO webhook
-        deliveries and do not read the success page as a pass.** The first,
-        `checkout.session.completed`, normally arrives with
-        `payment_status: "unpaid"` — the QR has been shown, the money has
-        not arrived — and is correctly IGNORED with
-        `{"ignored":"not-paid"}`. The grant rides the *later*
-        `checkout.session.async_payment_succeeded` delivery.
-        **PASS = that second delivery returns `{"ok":true}` in the Stripe
+        **EXPECT ONE webhook delivery, not two — and do not read the
+        success page as a pass.**
+        > **⚠ CORRECTED 2026-08-01. This bullet previously said PromptPay
+        > settles asynchronously, that `checkout.session.completed` arrives
+        > `payment_status: "unpaid"`, and that the grant rides a later
+        > `checkout.session.async_payment_succeeded`. That is WRONG for this
+        > integration, and following it means waiting for a second delivery
+        > that never fires and scoring a correct pass as a failure.**
+        >
+        > **Measured** (2026-07-31, a real test-mode PromptPay session driven
+        > to the QR screen on a throwaway anon uid): while the QR was
+        > displayed and unpaid, Stripe emitted only `payment_intent.created`
+        > and `payment_intent.requires_action` — **no
+        > `checkout.session.completed` fired at all**, and the session stayed
+        > `open`/`unpaid`. Across the account's entire test-mode event
+        > history: `checkout.session.completed` ×2, **both already
+        > `payment_status: "paid"`**; `async_payment_succeeded` ×0;
+        > `async_payment_failed` ×0.
+        >
+        > **The docs agree, so this is not just an inference:** Stripe
+        > classifies PromptPay under **"Payment method family: Real-time
+        > payments"**, not delayed-notification. The session simply does not
+        > complete until the buyer has actually paid.
+        >
+        > **Consequence:** `{"ignored":"not-paid"}` and the whole
+        > `async_payment_succeeded` branch are dead code on this path. They
+        > are harmless defensive handling — do **not** delete them on the
+        > strength of this note — but their never firing is the expected
+        > result, not a missed delivery.
+
+        **PASS = a single `checkout.session.completed`, already carrying
+        `payment_status: "paid"`, returns `{"ok":true}` in the Stripe
         delivery log AND the in-game wallet balance actually increases AND
-        Supporter status appears.** A rendered Stripe success page proves
+        Supporter status appears.**
+        **⚠ DO NOT DECLARE FAILURE IN THE FIRST FEW MINUTES.** Stripe's
+        delivery log **lags by minutes**, so "one synchronous delivery"
+        does not mean "instantly visible." If the wallet has not moved,
+        check the delivery log for the `completed` event and give it a few
+        minutes before concluding the grant failed — log lag is the likely
+        cause early on, a genuinely missing grant is not. (The old wording
+        implied a wait, so this warning used to be implicit; the corrected
+        wording removes it, hence stating it outright.)
+        A rendered Stripe success page proves
         only that the buyer paid, not that anything was granted — and
         "paid but not granted" is the one failure that costs real money.
       - **One real card checkout** — confirm the card path also grants.
@@ -485,20 +599,27 @@ The two anonymous identities created by that production verification have been
 carrying the `cat_journey = {}` backfill, and no orphaned `profiles` rows. That
 8 is the real baseline for any future backfill check.
 
-## 1. Build and accept the current (v136) APK/AAB
+## 1. Build and accept the current (v142) APK/AAB
 
-**Entry criteria: §0 passed.** Use the current `main` release (**v136**) for
-Android. It passes 103 test files / 9,484 tests, ESLint, production build, 131
-asset checks, and the deterministic EN+TH viewport/format/accessibility gates.
-**It has not been signed on Windows.**
+**Entry criteria: §0 passed.** Use the current `main` release — **v142,
+commit `288e9c05`** — for Android. It passes 111 test files / 9,662 tests,
+ESLint, production build, asset validation, and the deterministic EN+TH
+viewport/format/accessibility gates. **It has not been signed on Windows.**
 
-> **⚠ USE v136 OR LATER — NOT v135.** The go-live URL sweep has now SHIPPED
+> **⚠ PULL `main` BEFORE SIGNING — SIGN v142, NOT v136.** This section used to
+> name v136 and that number is now six releases stale; signing it would ship an
+> artifact missing v137–v142 (Stripe web billing dark, guided first quest and
+> supporter sheet, profile/friend progress UX, regenerated profile art, and the
+> button clarity pass). **Whatever `main` is when you sign, verify it — do not
+> trust this number either.** Check with `git -C game log -1 --format=%h main`
+> and `grep CACHE_VERSION game/sw.js` before building.
+>
+> **⚠ AND NOT v135 OR EARLIER, EVER.** The go-live URL sweep shipped at v136
 > (§B3, merge `335f24c2`), so `REMOTE_AUDIO_BASE` (`src/main.js:1193`) is
 > `https://luckycathsk.com/audio/` and that origin is **baked into the APK**.
 > An artifact signed from v135 or earlier points at `github.io` forever and
-> would be stranded when that host retires at plan step 9. Pull `main` again
-> before signing — the earlier plan to sign v135 as a throwaway acceptance
-> artifact and re-sign later is now unnecessary: sign once, from v136+.
+> would be stranded when that host retires at plan step 9. Sign once, from
+> current `main`.
 
 **Emulator vs real hardware.** A Google-Play-image emulator runs the signed APK
 and covers nearly all of the matrix below. Four things are physically
@@ -506,7 +627,7 @@ hardware-bound and must wait for a real phone (see §8): **vibration feel, audio
 routing/volume, real notification delivery, and battery/mid-range performance.**
 The Android Lens QR scan (§A.2) is also impractical on an emulator.
 
-Pull `main` v136 onto the Windows release checkout, then open a
+Pull current `main` (v142, `288e9c05`) onto the Windows release checkout, then open a
 fresh PowerShell in
 `C:\Users\sarac\Desktop\HSK\game` and run these as separate lines:
 
