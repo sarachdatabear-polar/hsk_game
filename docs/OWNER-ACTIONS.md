@@ -270,7 +270,18 @@ let it run in the background while you do steps 1–2.
       migration first and re-check before moving on to step 1.
    1. Create a **Thailand-based Stripe account** and complete its
       verification (this is the external clock — start it early).
-      **IN PROGRESS 2026-08-01 — Jordan is on the Business details page.**
+      **✅ PASSED 2026-08-01 — the external clock is CLEARED.** Submitted with
+      `sarach.northbear@gmail.com` as the contact, not
+      `support@luckycathsk.com`, so Stripe's public support contact and the
+      v143 legal pages currently disagree. Reconcile by creating the address
+      and then editing Stripe's **public/support** details — the legal entity
+      and country are locked after activation, public business info is not.
+      **What this unlocks, in order:** live keys → a **LIVE webhook endpoint**
+      (test-mode endpoints and their `whsec_` do NOT carry over; create a fresh
+      one on the same three `checkout.session.*` events and take its new
+      signing secret) → confirm **PromptPay reads active in LIVE mode**, not
+      pending → Supabase Pro → `STRIPE_CHECKOUT_URL` → the live gate in §6.
+      *(Historical, kept because it is what the form needed:)*
       Reference values, taken from the shipped files rather than guessed:
       legal name/address per the privacy policy (**Sarach Sriklab, Bangkok
       10400, Thailand**) but **the Thai ID wins if they differ**, and Stripe
