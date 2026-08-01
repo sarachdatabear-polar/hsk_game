@@ -359,8 +359,25 @@ let it run in the background while you do steps 1–2.
         **"Successful payments"** is ON so buyers actually receive a receipt.
         A receipt is the buyer's proof, and it is also the first thing you will
         ask them to forward when something goes wrong.
-   2. In the Stripe Dashboard → **Payment methods**, enable **PromptPay**.
-   3. Create the **webhook endpoint** — Stripe Dashboard → **Developers →
+   2. ~~In the Stripe Dashboard → **Payment methods**, enable **PromptPay**.~~
+      **✅ DONE 2026-08-01 — PromptPay reads *Enabled* in LIVE mode**, not
+      pending. The Thai payment path is genuinely open, which was the one thing
+      that could have made the whole flip pointless.
+   3. **✅ DONE 2026-08-01 — live webhook created and the secrets are set.**
+      Verified from here, not taken on trust:
+      - An **unsigned POST to `stripe-webhook` now returns 401 `unauthorized`**,
+        where it returned the function's own 503 before. That is the proof the
+        signing secret took *and* that signature verification is actually
+        running — a 503 would have meant it was still failing closed.
+      - Checkout CORS preflight 200; `verify_jwt` still `true` on
+        `stripe-checkout` and `false` on `stripe-webhook`; `grant_purchase`
+        present; both `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` listed.
+      - Owner confirmed the key begins **`sk_live_`**. This is worth asking
+        explicitly every time: the Management API returns secret values hashed,
+        so a test key pasted into a live slot is invisible from the outside and
+        would only surface when a real buyer's payment silently went nowhere.
+      *(Original instructions, kept for a rebuild:)*
+      Create the **webhook endpoint** — Stripe Dashboard → **Developers →
       Webhooks → Add endpoint** — pointed at
       `https://<project>.supabase.co/functions/v1/stripe-webhook`, subscribed
       to `checkout.session.completed`,
