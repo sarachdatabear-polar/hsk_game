@@ -598,6 +598,58 @@ let it run in the background while you do steps 1–2.
 
 ## 0. Accept the v129 cloud flip on two devices (blocks §1)
 
+> ### ✅ STEPS 1–3 PASSED 2026-08-01 (day one). Steps 4–5 still owed on 2 Aug.
+>
+> Run headlessly on the VPS against **production** `luckycathsk.com`, on a
+> throwaway account **`support@luckycathsk.com`** (uid
+> `fedcaeed-d3f9-4ade-8190-001e5c5955e7`) — deliberately *not* Jordan's own
+> account, so his real save file was never touched. Two Playwright
+> **persistent** profiles are two genuine devices for this purpose: separate
+> `userDataDir` ⇒ separate `localStorage` ⇒ two authenticated sessions on one
+> account, which is exactly what the check asks for. **The claim that this
+> "cannot be driven headlessly" was wrong** — only the OTP needs a human, and
+> that is two relayed codes.
+>
+> - **Step 1** — Device A completed a journey. Keepsake **Green book ribbon**
+>   (`keepsakeId: "book-ribbon"`, word 了, `bg-home`), Cat Bond **2 · 13 to
+>   Curious Paws**.
+> - **Step 2** — Device B, same account, foregrounded, opened Cat Journey.
+> - **Step 3 — PASS.** B showed **Memories 1, Study Buddy 2 bond, 13 to Curious
+>   Paws, Daily goal complete ✓** — identical to A. Verified **granted exactly
+>   once** the hard way, not by eye: after repeated cold reloads and
+>   foregrounds, `nbhsk.catJourney.claims` on **both** devices is a
+>   single entry, byte-identical down to `departedAt`/`returnedAt`. The cloud
+>   row agrees. B also converged on the rest of the account (Lv 3, 364 coins,
+>   streak 1, 40 due words).
+>
+> **Two things learned that the old text got wrong, and that cost time:**
+> 1. **The app pushes on `pushEdge("hide")` and pulls on
+>    `syncEdge("foreground")`** — both fired from `visibilitychange`
+>    (`src/main.js:2434`, `:2463`). Closing or reloading a headless page fires
+>    *neither*. Until the page was deliberately backgrounded, the claim sat
+>    unsynced and `public.progress.cat_journey` read `{}` — which looks exactly
+>    like a sync bug and is not one. **Background, then re-foreground.**
+> 2. **B never clobbered the cloud row.** Loading a stale second device did not
+>    overwrite A's claim, which is the reassuring half of the union question.
+>
+> **Minor divergence, not a blocker:** `nbhsk.catJourneyWord` differed between
+> the two devices (A 了, B 很) — it is device-local and not synced. Invisible
+> after a claim, since the claim carries its own `wordKey`. Worth a decision
+> later, not now.
+>
+> **Harness:** `game/.pw-cloud.mjs` (sign-in; polls `otp-<A|B>.txt` for the
+> relayed code) and `game/.pw-nav.mjs` (navigate/quest/claim/foreground), both
+> **uncommitted** and listed in `.git/info/exclude`. Traps for whoever reruns
+> them: modals (`[role=dialog].on`, `#format-intro`) swallow clicks; answer
+> buttons carry multi-line `innerText` so `text-is()` never matches them (scope
+> to **`#opts button`** and click the handle); the home CTA is `START` *or*
+> `REVIEW n DUE WORDS`; and the Cat tab must be clicked via
+> `[data-go="cat-journey"]`, not by its label.
+>
+> **Tomorrow (2 Aug), steps 4–5:** complete a journey on **Device B**, then
+> foreground **Device A** and confirm A shows **both** claims. A replacement
+> rather than a union is the P0.
+
 The v129 merge algebra is pinned by unit tests and the single-session round-trip
 is verified against production, but the real two-device round-trip is not — it
 needs two authenticated sessions on **one** account, which cannot be driven
