@@ -198,15 +198,18 @@ let it run in the background while you do steps 1–2.
    harmless extra hop), retired `assets/bg-street.png` **404**, TLS
    `ssl_verify_result=0` over HTTP/2.
 
-   **TWO GAPS FOUND DURING VERIFICATION — owner-side, both quick:**
+   **TWO GAPS FOUND DURING VERIFICATION — ONE REMAINS (the `www` one) as of
+   2026-08-01; the HTTPS-redirect gap is closed:**
    - **`www.luckycathsk.com` does not resolve** (NXDOMAIN — only the apex was
      attached). Add it as a second custom domain on the same Worker, or a
      redirect rule to the apex. Anyone typing `www.` currently gets nothing.
-   - **Plain `http://luckycathsk.com` serves content instead of redirecting to
-     HTTPS** (returns 200 on port 80, no 301). Turn on **SSL/TLS → Edge
-     Certificates → Always Use HTTPS.** This matters more than usual here: the
-     PWA's service worker requires a secure context, and an HTTP surface on the
-     canonical domain is exactly the thing the store/legal review will ask about.
+   - ~~**Plain `http://luckycathsk.com` serves content instead of redirecting to
+     HTTPS**~~ **— DONE, verified 2026-08-01.** `http://luckycathsk.com` now
+     returns **301 → `https://luckycathsk.com/`**; Always Use HTTPS is on.
+     **Nothing to do here — do not go looking for the setting.**
+     *(Original note, kept for the reasoning: the PWA's service worker requires
+     a secure context, and an HTTP surface on the canonical domain is exactly
+     the thing the store/legal review will ask about.)*
 3. **Upgrade Supabase to Pro** ($25/mo) — plan step 5, immediately **before**
    the billing key flip (step 6), **not before that**. Nothing in steps 1–4
    needs it; buying early just starts the meter. The free tier is fine until
@@ -448,7 +451,16 @@ let it run in the background while you do steps 1–2.
         **PASS = a single `checkout.session.completed`, already carrying
         `payment_status: "paid"`, returns `{"ok":true}` in the Stripe
         delivery log AND the in-game wallet balance actually increases AND
-        Supporter status appears.** A rendered Stripe success page proves
+        Supporter status appears.**
+        **⚠ DO NOT DECLARE FAILURE IN THE FIRST FEW MINUTES.** Stripe's
+        delivery log **lags by minutes**, so "one synchronous delivery"
+        does not mean "instantly visible." If the wallet has not moved,
+        check the delivery log for the `completed` event and give it a few
+        minutes before concluding the grant failed — log lag is the likely
+        cause early on, a genuinely missing grant is not. (The old wording
+        implied a wait, so this warning used to be implicit; the corrected
+        wording removes it, hence stating it outright.)
+        A rendered Stripe success page proves
         only that the buyer paid, not that anything was granted — and
         "paid but not granted" is the one failure that costs real money.
       - **One real card checkout** — confirm the card path also grants.
