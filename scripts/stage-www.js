@@ -16,7 +16,7 @@ const WWW = path.join(ROOT, "www");
 
 // files/dirs the running game actually references (index.html + bundle + data + pwa).
 // Audio is staged separately below — its set depends on the target (APK vs Pages).
-const ITEMS = ["index.html", "privacy.html", "dist", "data", "pwa", "sw.js", "assets"];
+const ITEMS = ["index.html", "privacy.html", "terms.html", "refund.html", "dist", "data", "pwa", "sw.js", "assets"];
 
 fs.rmSync(WWW, { recursive: true, force: true });
 fs.mkdirSync(WWW, { recursive: true });

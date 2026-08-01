@@ -9,7 +9,7 @@
 // audio name each release (v80..v105) wiped every cached mp3 on every
 // update, leaving installed PWAs silent offline until words re-fetched.
 // Bump AUDIO_VERSION only when build_audio.py regenerates the mp3 set.
-const CACHE_VERSION = "v142";
+const CACHE_VERSION = "v143";
 const AUDIO_VERSION = "v1";
 const SHELL = `nbhsk-shell-${CACHE_VERSION}`;
 const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`;
@@ -22,7 +22,8 @@ const AUDIO = `nbhsk-audio-${AUDIO_VERSION}`;
 // runtime-caches it after first use (like the optional art) — offline-capable
 // from the second launch on, degrading to no-example before then / on file://.
 const PRECACHE = [
-  "index.html", "privacy.html", "dist/app.js", "data/words.js", "data/cloze.js", "audio/index.json",
+  "index.html", "privacy.html", "terms.html", "refund.html",
+  "dist/app.js", "data/words.js", "data/cloze.js", "audio/index.json",
   "pwa/manifest.webmanifest", "pwa/icons/icon-192.png", "pwa/icons/icon-512.png",
   "pwa/icons/apple-touch-icon.png",
 

@@ -4555,8 +4555,14 @@ initNative({ getScreen: ()=>currentScreen, goHome: ()=>{ if(B.on){ endBattle(tru
 // absolute URL instead — Capacitor's Bridge opens different-host links via the external
 // ACTION_VIEW intent, which is the correct behavior here. Web/file:// keep the relative href.
 if(isNative()){
-  const privacyLink = document.querySelector('a[data-i18n="settings.privacy"]');
-  if(privacyLink) privacyLink.href = "https://luckycathsk.com/privacy.html";
+  for(const [key, page] of [
+    ["settings.privacy", "privacy.html"],
+    ["settings.terms", "terms.html"],
+    ["settings.refund", "refund.html"],
+  ]){
+    const link = document.querySelector(`a[data-i18n="${key}"]`);
+    if(link) link.href = `https://luckycathsk.com/${page}`;
+  }
 }
 // SW is at the app root so its scope covers the whole app; http(s) only (no-op on file://).
 // Never on localhost: the cache-first SW would keep serving a stale shell across dev
