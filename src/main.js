@@ -803,7 +803,7 @@ function updateSmartBtn(){
   btn.classList.toggle("locked", deck.length === 0);
   // below the 8-word minimum, show progress toward it ("6/8") so the disabled
   // button reads as "not enough yet" rather than broken
-  setIconLabel(btn, "target", !deck.length ? t("scope.smartReview")
+  setIconLabel(btn, "mastery", !deck.length ? t("scope.smartReview")
     : deck.length < 8 ? t("scope.smartReviewProgress", { have: deck.length, min: 8 })
     : t("scope.smartReviewReady", { n: deck.length }));
 }
@@ -1482,7 +1482,13 @@ function show(name){
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click", ()=>{
   const tab = b.dataset.go;
   if(tab==="scope"){ renderScope(); applyScopeView(); show("scope"); }
-  else if(tab==="scope-learn"){ renderScope(); applyScopeView(); show("scope"); }
+  else if(tab==="scope-learn"){
+    // Home's Flashcards shortcut should do what its label promises. The
+    // adjacent scope chip remains the explicit customization route.
+    renderScope();
+    if(pool.length >= 8){ learnDeck = null; startLearn("home"); }
+    else { applyScopeView(); show("scope"); }
+  }
   else if(tab==="scores"){ renderScores(); show("scores"); }
   else if(tab==="progress"){ renderProgress(); show("progress"); }
   else if(tab==="shop"){

@@ -153,6 +153,46 @@
     <rect x="3.5" y="13" width="4" height="7" rx="2" fill="currentColor"/>
     <rect x="16.5" y="13" width="4" height="7" rx="2" fill="currentColor"/>
   </symbol>
+  <symbol id="customize" viewBox="0 0 24 24">
+    <path d="M5 6h14M5 12h14M5 18h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="9" cy="6" r="2" fill="currentColor"/>
+    <circle cx="15" cy="12" r="2" fill="currentColor"/>
+    <circle cx="11" cy="18" r="2" fill="currentColor"/>
+  </symbol>
+  <symbol id="backdrop" viewBox="0 0 24 24">
+    <rect x="3.5" y="4" width="17" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+    <circle cx="8" cy="9" r="2" fill="currentColor"/>
+    <path d="M5.5 18l4.5-5 3.2 3 2.3-2.5 3 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="compare" viewBox="0 0 24 24">
+    <circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+    <circle cx="16" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M3.5 19c.4-3.4 2-5 4.5-5s4.1 1.6 4.5 5M11.5 19c.4-3.4 2-5 4.5-5s4.1 1.6 4.5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="account" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+    <circle cx="12" cy="9" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M6.5 18c1-2.8 2.8-4.2 5.5-4.2s4.5 1.4 5.5 4.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="album" viewBox="0 0 24 24">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M8 4v16" stroke="currentColor" stroke-width="2"/>
+    <path d="M14.5 8.2l1.1 2.2 2.4.4-1.8 1.7.5 2.4-2.2-1.2-2.2 1.2.5-2.4-1.8-1.7 2.4-.4z" fill="currentColor"/>
+  </symbol>
+  <symbol id="replay" viewBox="0 0 24 24">
+    <path d="M18.5 9A7 7 0 1 0 19 15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M18.5 5v4h-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10 8.5v7l5-3.5z" fill="currentColor"/>
+  </symbol>
+  <symbol id="missed-review" viewBox="0 0 24 24">
+    <rect x="4" y="5" width="12" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+    <rect x="8" y="3" width="12" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M14 7v4M14 14v.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="missed-practice" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M12 7v6M12 17v.1" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+  </symbol>
   <symbol id="secondary-coin" viewBox="0 0 24 24"><use href="#coin"/></symbol>
   <symbol id="focus-heart" viewBox="0 0 24 24"><use href="#heart"/></symbol>
   <symbol id="collection" viewBox="0 0 24 24">

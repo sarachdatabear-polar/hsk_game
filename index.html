@@ -454,12 +454,14 @@
   .cat-drawer h3{margin:0 0 8px; color:var(--lc-green-deep); font-size:13px;}
   .cat-background-list{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px;}
   .cat-bg-choice{min-width:0; min-height:44px; padding:4px; border:2px solid transparent; border-radius:12px;
-    background:var(--lc-cream); color:var(--lc-ink); text-align:left;}
+    display:flex; flex-direction:column; align-items:center;
+    background:var(--lc-cream); color:var(--lc-ink); text-align:center;}
   .cat-bg-choice.on{border-color:var(--lc-green); background:rgba(78,174,138,.12);}
   .cat-bg-choice.locked{opacity:.58; filter:saturate(.55);}
   .cat-bg-preview{display:block; width:100%; aspect-ratio:4/3; border-radius:8px; background-position:center; background-size:cover;}
-  .cat-bg-label{display:block; margin-top:4px; overflow:hidden; font-size:9px; font-weight:900; text-overflow:ellipsis; white-space:nowrap;}
-  .cat-bg-choice small{display:block; min-height:12px; color:var(--lc-brown); font-size:8px;}
+  .cat-bg-label{display:block; width:100%; min-height:21px; margin-top:4px; font-size:9px; font-weight:900;
+    line-height:1.15; overflow-wrap:anywhere; white-space:normal; text-align:center;}
+  .cat-bg-choice small{display:block; width:100%; min-height:12px; color:var(--lc-brown); font-size:8px; text-align:center;}
   .cat-memory-empty{margin:3px 0; color:var(--lc-brown); font-size:11px; text-align:center;}
   .cat-memory-empty[hidden]{display:none;}
   .cat-memory-list{display:flex; flex-direction:column; gap:7px; max-height:50vh; overflow-y:auto;}
@@ -1102,10 +1104,10 @@
   #friend-panel .fr-avatar-heart{position:absolute; right:-3px; bottom:-3px; font-size:13px;
     line-height:1; color:#b3474d; text-shadow:0 0 2px #fff, 0 0 2px #fff; pointer-events:none;}
   #friend-panel .fr-recent-row{display:flex; gap:10px; align-items:center; min-height:44px; width:100%;
-    padding:4px 6px; border-radius:10px; border:0; background:none; font:inherit; text-align:left; cursor:pointer;}
+    padding:4px 6px; border-radius:10px; border:0; background:none; font:inherit; text-align:center; cursor:pointer;}
   #friend-panel .fr-recent-row:active{background:var(--panel-wash);}
-  #friend-panel .fr-recent-name{flex:1; min-width:0; overflow-wrap:anywhere; color:var(--ink); font-weight:700;}
-  #friend-panel .fr-fresh{font-size:12px; color:var(--muted);}
+  #friend-panel .fr-recent-name{flex:1; min-width:0; overflow-wrap:anywhere; color:var(--ink); font-weight:700; text-align:center;}
+  #friend-panel .fr-fresh{font-size:12px; color:var(--muted); text-align:center;}
   #friend-panel .fr-clear{min-height:44px; border-radius:10px;}
   #friend-panel .fr-compare-head{display:flex; gap:10px; align-items:center;}
   #friend-panel .fr-their-name{font-weight:800; color:var(--ink); overflow-wrap:anywhere;}
@@ -1362,17 +1364,18 @@
     font-size:11px; font-weight:900; letter-spacing:.08em; text-transform:uppercase;}
   .journey-level{border:1px solid var(--panel-border); border-radius:14px; overflow:hidden;
     background:var(--panel-wash);}
-  .journey-level-toggle{display:flex; align-items:center; justify-content:space-between; gap:10px;
-    width:100%; min-height:50px; padding:10px 13px; text-align:left; background:transparent;
+  .journey-level-toggle{position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
+    width:100%; min-height:50px; padding:8px 38px; text-align:center; background:transparent;
     color:var(--ink); font-weight:900;}
-  .journey-level-toggle small{color:var(--muted); font-size:11px; font-weight:700;}
-  .journey-level-toggle::after{content:"›"; color:var(--lc-green); font-size:23px; transform:rotate(90deg);
+  .journey-level-toggle small{color:var(--muted); font-size:11px; font-weight:700; text-align:center;}
+  .journey-level-toggle::after{content:"›"; position:absolute; right:13px; top:50%; margin-top:-12px;
+    color:var(--lc-green); font-size:23px; transform:rotate(90deg);
     transition:transform .18s ease;}
   .journey-level.collapsed .journey-level-toggle::after{transform:rotate(0);}
   .journey-level-body{padding:0 8px 8px;}
   .journey-level-body[hidden]{display:none;}
   .journey-level .j-node{margin:5px 0;}
-  .j-node{display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+  .j-node{display:flex; align-items:center; gap:10px; width:100%; text-align:center;
     background-color:var(--panel-wash); border:1px solid var(--panel-border); border-radius:14px;
     padding:10px 12px; margin:3px 0; box-shadow:0 2px 6px rgba(46,42,36,.08); position:relative;}
   .j-node:active{transform:scale(.98);}
@@ -1383,13 +1386,13 @@
     justify-content:center; background-color:var(--lc-sand); border:2px solid var(--lc-brown);
     font-weight:800; font-size:12px; color:var(--lc-brown);}
   .j-node.done .j-dot{background-color:var(--lc-green); border-color:var(--lc-green-deep); color:var(--lc-cream);}
-  .j-copy{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;}
+  .j-copy{flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:2px; text-align:center;}
   .j-copy b{font-size:13.5px; color:var(--ink);}
   .j-stars{font-size:12px; letter-spacing:.1em; color:var(--lc-sun-deep);}
   .j-stars .off{color:var(--lc-gray);}
   .j-here{display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:800;
     color:var(--lc-teal); background-color:var(--lc-sky); border-radius:999px; padding:2px 8px;
-    align-self:flex-start;}
+    align-self:center;}
   .j-here .asset-icon{width:12px; height:12px;}
   .j-play{background-color:var(--lc-sun);
     background-image:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-sun) 55%,var(--lc-sun-deep));
@@ -1753,9 +1756,9 @@
 
     <!-- Smart Review moved to Progress (2026-07-11 audit F1) — row is 3-up now -->
     <div class="home-secondary-row">
-      <button class="sec-btn" data-go="scope-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg><span data-i18n="home.flashcards">Flashcards</span></span></button>
+      <button class="sec-btn" id="home-flashcards-btn" data-go="scope-learn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg><span data-i18n="home.flashcards">Flashcards</span></span></button>
       <button class="sec-btn" data-go="shop"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#shop"></use></svg><span data-i18n="home.shop">Shop</span></span></button>
-      <button class="sec-btn" data-go="tones" id="home-tones-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#flashcards"></use></svg><span data-i18n="home.tones">Tone Trainer</span></span></button>
+      <button class="sec-btn" data-go="tones" id="home-tones-btn"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#headphones"></use></svg><span data-i18n="home.tones">Tone Trainer</span></span></button>
     </div>
   </div>
 
@@ -1822,7 +1825,7 @@
     <button class="cat-primary" id="cat-primary">Study now</button>
     <div class="cat-secondary-actions">
       <button id="cat-backgrounds-toggle" aria-controls="cat-background-panel" aria-expanded="false">
-        <svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#collection"></use></svg>
+        <svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#backdrop"></use></svg>
         <span data-i18n="cat.backgrounds">Backgrounds</span>
       </button>
       <button data-go="progress">
@@ -1830,7 +1833,7 @@
         <span data-i18n="cat.profile">My progress</span>
       </button>
       <button data-go="shop">
-        <svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#shop"></use></svg>
+        <svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#customize"></use></svg>
         <span data-i18n="cat.customizeQuests">Customize Word Quest</span>
       </button>
       <!-- Quest entry (v128, review finding 2): same #quest sprite +
@@ -1838,7 +1841,7 @@
            .cat-secondary-actions rules so it sits with its siblings. Opens
            the top-level #quest-overlay via the openQuests callback wired in
            src/ui/cat-journey-screen.js. -->
-      <button class="sec-btn" id="cat-quests-btn"><span class="icon-text"><svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#quest"></use></svg><span data-i18n="quests.button">Quests</span></span></button>
+      <button class="sec-btn" id="cat-quests-btn"><span class="icon-text"><svg class="asset-icon" aria-hidden="true"><use href="assets/ui-icons.svg#quests"></use></svg><span data-i18n="quests.button">Quests</span></span></button>
     </div>
 
     <section class="cat-drawer" id="cat-background-panel" hidden>
@@ -1859,7 +1862,7 @@
     <h2 data-i18n="nav.more">More</h2>
     <div class="sect" data-i18n="more.learnHelp">Play &amp; help</div>
     <div class="menu">
-      <button class="big" data-go="scores"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="home.best">Best Sessions</span></span></button>
+      <button class="big" data-go="scores"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#trophy"></use></svg><span data-i18n="home.best">Best Sessions</span></span></button>
       <button class="big" data-go="howto"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#help"></use></svg><span data-i18n="home.howto">How to play</span></span></button>
     </div>
     <div class="sect" data-i18n="more.settings">Settings</div>
@@ -2074,9 +2077,9 @@
     <div class="sect" id="r-misshead" data-i18n="results.missed">Needed extra practice</div>
     <div class="misslist" id="r-miss"></div>
     <div class="startrow">
-      <button class="big" id="r-review"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#review"></use></svg><span data-i18n="results.reviewWords">Review Words</span></span></button>
-      <button class="big" id="r-fight-miss"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#retry"></use></svg><span data-i18n="results.practiceMissed">Practice these words again</span></span></button>
-      <button class="big primary" id="r-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#play"></use></svg><span data-i18n="results.playAgain">Play again</span></span></button>
+      <button class="big" id="r-review"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#missed-review"></use></svg><span data-i18n="results.reviewWords">Review Words</span></span></button>
+      <button class="big" id="r-fight-miss"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#missed-practice"></use></svg><span data-i18n="results.practiceMissed">Practice these words again</span></span></button>
+      <button class="big primary" id="r-again"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#replay"></use></svg><span data-i18n="results.playAgain">Play again</span></span></button>
     </div>
     <p class="results-next-review" id="r-next-review"></p>
     <div class="results-supporter" id="r-supporter" hidden></div>
@@ -2168,14 +2171,14 @@
           <b id="profile-friend-title" data-i18n="friend.progressTitle">Compare progress with friends</b>
           <p data-i18n="friend.progressSummary">Compare level, streak, mastered words, and stickers with a friend.</p>
         </div>
-        <button class="big" id="go-friend" type="button"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#progress"></use></svg><span data-i18n="friend.compareCta">Compare progress</span></span></button>
+        <button class="big" id="go-friend" type="button"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#compare"></use></svg><span data-i18n="friend.compareCta">Compare progress</span></span></button>
       </section>
       <section class="profile-feature-card" aria-labelledby="profile-account-title">
         <div>
           <b id="profile-account-title" data-i18n="profile.accountTitle">Account &amp; backup</b>
           <p data-i18n="profile.accountSummary">Back up your progress or manage your connected email.</p>
         </div>
-        <button class="big" data-go="account"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="account.row">Account</span></span></button>
+        <button class="big" data-go="account"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#account"></use></svg><span data-i18n="account.row">Account</span></span></button>
       </section>
     </div>
     <section class="profile-empty" id="profile-empty" hidden>
@@ -2190,8 +2193,8 @@
       <div class="profile-collection-main"><b id="profile-collection-count"></b><span id="profile-sticker-count"></span></div>
       <div class="profile-equipped"><span id="profile-skin"></span><span id="profile-backdrop"></span></div>
       <div class="profile-actions">
-        <button class="big" data-go="shop"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#shop"></use></svg><span data-i18n="profile.viewCollection">View Collection</span></span></button>
-        <button class="big" data-go="album"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#star"></use></svg><span data-i18n="profile.viewAlbum">Sticker Album</span></span></button>
+        <button class="big" data-go="shop"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#collection"></use></svg><span data-i18n="profile.viewCollection">View Collection</span></span></button>
+        <button class="big" data-go="album"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#album"></use></svg><span data-i18n="profile.viewAlbum">Sticker Album</span></span></button>
       </div>
     </section>
     </div>
@@ -2207,7 +2210,7 @@
     <div class="misslist" id="needswork-list"></div>
     <div class="startrow">
       <button class="big" id="nw-review"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#review"></use></svg><span data-i18n="progress.reviewThese">Review these</span></span></button>
-      <button class="big" id="nw-fight"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#retry"></use></svg><span data-i18n="progress.practiceThese">Practice These</span></span></button>
+      <button class="big" id="nw-fight"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#fight"></use></svg><span data-i18n="progress.practiceThese">Practice These</span></span></button>
     </div>
     </div>
   </div>
