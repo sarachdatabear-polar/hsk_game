@@ -327,8 +327,38 @@ let it run in the background while you do steps 1–2.
       card**, on an image carrying no signatures or annotations.
       **The site the reviewer will visit is now covered** — Terms, Refund and
       Privacy pages all ship in v143, and the privacy policy no longer names
-      the wrong payment processor. That release is gated on the support address
-      above.
+      the wrong payment processor. ✅ **v143 SHIPPED 2026-08-01**, and
+      `support@luckycathsk.com` routes to Gmail, so that gate is cleared.
+      **➤ STEP 1b (do now — it is free, reversible, and buyer-facing):
+      reconcile Stripe's public details with the shipped site.** Dashboard →
+      **Settings** (gear, top right) → **Business** → **Public details**. These
+      are editable after activation — the legal entity and country are not.
+      Set all four; three of them are what a buyer sees, and the fourth is what
+      they see on their bank statement:
+      - **Customer support email → `support@luckycathsk.com`.** Stripe prints
+        this on every receipt. It currently reads `sarach.northbear@gmail.com`,
+        which disagrees with all three v143 legal pages.
+      - **Business website → `https://luckycathsk.com`** (apex, no `www` — www
+        is a redirect, not an origin).
+      - **Statement descriptor → `LUCKYCATHSK`.** 5–22 chars, ≥5 letters, no
+        `< > \ ' " *`. **Do not leave this as the default.** An unrecognisable
+        line on a Thai bank statement is the single most common cause of a
+        "I don't recognise this charge" dispute, and disputes cost the fee plus
+        the goods whether or not you win them.
+      - **Shortened descriptor → `LUCKYCAT`** (≤10 chars) if Stripe asks; some
+        Thai card networks truncate to the short form.
+
+      While in Settings, two more that cost a minute each and both face the
+      buyer directly:
+      - **Branding** (Settings → Business → Branding): the icon and accent
+        colour render on the **hosted Checkout page**. Checkout is the one
+        screen between wanting the game and paying for it, and by default it is
+        an unbranded Stripe page — which reads as "is this a real store?" to
+        someone about to send ฿79 by PromptPay.
+      - **Customer emails** (Settings → Business → Customer emails): confirm
+        **"Successful payments"** is ON so buyers actually receive a receipt.
+        A receipt is the buyer's proof, and it is also the first thing you will
+        ask them to forward when something goes wrong.
    2. In the Stripe Dashboard → **Payment methods**, enable **PromptPay**.
    3. Create the **webhook endpoint** — Stripe Dashboard → **Developers →
       Webhooks → Add endpoint** — pointed at
@@ -737,8 +767,7 @@ the repository.
 ## 2. Obtain native Thai sign-off
 
 Give the reviewer **`docs/i18n/thai-review-sheet.csv`** — the machine-readable
-queue, **753 rows** (P0 unchanged at 71; regenerated 2026-07-29 — the 25 v130
-friend/avatar strings joined at P3 and 3 dead rows were dropped), sorted so
+queue, **670 rows, P0 = 95** (regenerated 2026-08-01), sorted so
 money, account, cloud-backup, and notification copy is first in the file. They fill the
 `corrected_thai` and `notes` columns; engineering applies the result with
 `node docs/i18n/scripts/apply-thai-review-sheet.mjs`. Alternatively they can edit
@@ -783,6 +812,29 @@ because the numbers in the older text were off:
   stated policy; the per-family `notify.streak.`/`notify.comeback.` rules have
   been replaced with one prefix-wide `notify.` → P0 rule so the next family
   added cannot repeat it.
+
+**⚠ THE SHEET YOU WERE ABOUT TO SEND WAS STALE — FIXED 2026-08-01.** It claimed
+a 2026-07-29 regeneration but carried **81 missing keys, 164 dead keys, and
+English source text that had since changed**. Worse, all **18 `supporter.*`
+keys — the purchase sheet a Thai buyer reads immediately before paying ฿79**
+(price, "secure checkout", the benefits being sold, the restore-purchase
+promise) — had no priority rule and sat at **P3**, below 180 rows of minor copy.
+So did the three v143 legal-policy links. A reviewer would have billed for dead
+copy and left the money copy for last.
+
+Both are fixed and, more importantly, **now pinned by
+`test/thai-review-sheet.test.js`** — the build fails if the sheet drifts out of
+sync with `src/i18n.js`, if a money/account key lands at P3, or if the
+reviewer's columns arrive pre-filled. This was the *fourth* time this exact
+drift was found by hand (after `cat.*`, `quests.*`, `notify.cat.*`); it should
+be the last. **Regenerate with:**
+`node docs/i18n/scripts/extract-thai-review-sheet.mjs > docs/i18n/thai-review-sheet.csv`
+
+**Scoping the ask:** the file is sorted by priority, so the P0 block is
+**rows 2–96** of the CSV. Commissioning that block alone is a defensible first
+engagement — it is the money, account, cloud-backup, notification and legal
+copy, and it clears the launch-blocking half of the queue. The remaining 575
+rows can follow.
 
 What remains here is **owner work only**: get a native reviewer through the
 queue and record the sign-off.
