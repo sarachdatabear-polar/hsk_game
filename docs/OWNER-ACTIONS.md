@@ -198,6 +198,18 @@ let it run in the background while you do steps 1–2.
    harmless extra hop), retired `assets/bg-street.png` **404**, TLS
    `ssl_verify_result=0` over HTTP/2.
 
+   **⚠ NEW AND BLOCKING (2026-08-01): create `support@luckycathsk.com`.**
+   The Terms of Service, Refund Policy and Privacy Policy all now publish that
+   address, and Stripe shows the support contact to every buyer on receipts.
+   **It does not exist yet**, so the v143 legal-pages release MUST NOT ship
+   until it routes — publishing a dead support address is worse than the
+   personal Gmail it replaced. Fix: Cloudflare dashboard → **Email → Email
+   Routing** → enable, add a custom address `support@luckycathsk.com`
+   forwarding to your Gmail, and confirm the verification mail Cloudflare sends
+   to the destination. Free, ~2 minutes, same dashboard as the `www` item
+   below. Reply to a test message once before release so the forward is proven
+   in both directions.
+
    **TWO GAPS FOUND DURING VERIFICATION — ONE REMAINS (the `www` one) as of
    2026-08-01; the HTTPS-redirect gap is closed:**
    - **`www.luckycathsk.com` does not resolve** (NXDOMAIN — only the apex was
@@ -258,6 +270,28 @@ let it run in the background while you do steps 1–2.
       migration first and re-check before moving on to step 1.
    1. Create a **Thailand-based Stripe account** and complete its
       verification (this is the external clock — start it early).
+      **IN PROGRESS 2026-08-01 — Jordan is on the Business details page.**
+      Reference values, taken from the shipped files rather than guessed:
+      legal name/address per the privacy policy (**Sarach Sriklab, Bangkok
+      10400, Thailand**) but **the Thai ID wins if they differ**, and Stripe
+      also wants the name in Thai script; website `https://luckycathsk.com`;
+      support `support@luckycathsk.com`; statement descriptor `LUCKYCATHSK`;
+      Supporter price **฿79 / 2,000 coins** (`src/monetization/products.js:11`,
+      matching the `7900 thb` the rehearsal actually created).
+      **⚠ COUNTRY IS IRREVERSIBLE** — Stripe: *"After activating a Stripe
+      service on a live account, you can't change the business origin
+      country."* PromptPay requires a Thai account, so confirm it reads
+      Thailand before submitting.
+      **Business type: Individual / sole proprietor**, unless a registered Thai
+      company genuinely exists — the company path needs a DBD affidavit
+      (หนังสือรับรองนิติบุคคล) issued within the last 6 months. Individuals
+      need the Thai national ID (บัตรประจำตัวประชาชน): legal name in Thai
+      script, the 13-digit ID number, and **the laser code from the back of the
+      card**, on an image carrying no signatures or annotations.
+      **The site the reviewer will visit is now covered** — Terms, Refund and
+      Privacy pages all ship in v143, and the privacy policy no longer names
+      the wrong payment processor. That release is gated on the support address
+      above.
    2. In the Stripe Dashboard → **Payment methods**, enable **PromptPay**.
    3. Create the **webhook endpoint** — Stripe Dashboard → **Developers →
       Webhooks → Add endpoint** — pointed at
