@@ -198,7 +198,16 @@ let it run in the background while you do steps 1–2.
    harmless extra hop), retired `assets/bg-street.png` **404**, TLS
    `ssl_verify_result=0` over HTTP/2.
 
-   **⚠ NEW AND BLOCKING (2026-08-01): create `support@luckycathsk.com`.**
+   ~~**⚠ NEW AND BLOCKING (2026-08-01): create `support@luckycathsk.com`.**~~
+   **— DONE 2026-08-01.** Cloudflare Email Routing enabled; MX
+   (`route1/2/3.mx.cloudflare.net`), SPF and DKIM verified from the VPS, and a
+   test message confirmed received in Gmail. v143 shipped on the strength of
+   it. **⚠ EMAIL ROUTING IS INBOUND ONLY** — you can receive at `support@` but
+   cannot reply *as* it; that needs the separate **Email Sending** beta
+   (Workers Paid, SMTP `smtps://smtp.mx.cloudflare.net:465`) wired into Gmail's
+   "Send mail as". Until then replies go out from the personal Gmail, which is
+   acceptable but means the buyer sees a different address than they wrote to.
+   *(Original instructions, kept because they are how you re-do this:)*
    The Terms of Service, Refund Policy and Privacy Policy all now publish that
    address, and Stripe shows the support contact to every buyer on receipts.
    **It does not exist yet**, so the v143 legal-pages release MUST NOT ship
@@ -210,11 +219,28 @@ let it run in the background while you do steps 1–2.
    below. Reply to a test message once before release so the forward is proven
    in both directions.
 
-   **TWO GAPS FOUND DURING VERIFICATION — ONE REMAINS (the `www` one) as of
-   2026-08-01; the HTTPS-redirect gap is closed:**
-   - **`www.luckycathsk.com` does not resolve** (NXDOMAIN — only the apex was
-     attached). Add it as a second custom domain on the same Worker, or a
-     redirect rule to the apex. Anyone typing `www.` currently gets nothing.
+   **TWO GAPS FOUND DURING VERIFICATION — BOTH NOW CLOSED (2026-08-01):**
+   - ~~**`www.luckycathsk.com` does not resolve**~~ **— DONE, verified
+     2026-08-01.** Proxied `CNAME www → luckycathsk.com` plus a wildcard single
+     redirect rule (`https://www.luckycathsk.com/*` → `https://luckycathsk.com/${1}`,
+     301, preserve query string). Verified end-to-end: every www URL lands 200
+     on the apex, path and query string preserved, `http://www` upgraded first;
+     apex unchanged (200, v143, `dist/app.js` sha `c0fc449d…`).
+     **⚠ DELIBERATELY A REDIRECT, NOT A SECOND WORKER CUSTOM DOMAIN.** The doc
+     used to present those as equivalent. They are not: attaching `www` to the
+     Worker would serve the real app on two origins, and the browser gives each
+     origin its own `localStorage` — so the same person would get two separate
+     profiles, streaks, wallets and journey states depending on how they typed
+     the URL. It would also mean a second service-worker registration to
+     version. The canonical tag already points at the apex; `www` has no reason
+     to serve anything.
+     **Two traps hit while doing this, recorded so the next person doesn't:**
+     (1) the redirect rule's **Target URL must NOT contain `www`** — entering
+     `https://www.luckycathsk.com/${1}` makes www redirect to itself, an
+     infinite loop (caught live; apex was unaffected throughout). (2) After
+     redeploying the fix, edge nodes disagreed for ~15s — some URLs correct,
+     others still looping. **Poll until consistent; do not diagnose a second
+     config error from a single stale reading.**
    - ~~**Plain `http://luckycathsk.com` serves content instead of redirecting to
      HTTPS**~~ **— DONE, verified 2026-08-01.** `http://luckycathsk.com` now
      returns **301 → `https://luckycathsk.com/`**; Always Use HTTPS is on.
