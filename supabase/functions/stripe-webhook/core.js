@@ -6,9 +6,17 @@
 // Stripe body shape: { id, type, data: { object: <CheckoutSession> } }.
 // Docs: docs.stripe.com/payments/checkout/fulfill-orders
 
-// PromptPay is a DELAYED-NOTIFICATION method: checkout.session.completed can
-// arrive with payment_status "unpaid", and the money only lands later on
-// async_payment_succeeded. Both types are candidates; payment_status decides.
+// Both types are candidates; payment_status decides. Never the event type.
+//
+// ⚠ The original comment here claimed PromptPay is a delayed-notification
+// method that arrives "unpaid" and settles later on async_payment_succeeded.
+// That is WRONG, and it was wrong in OWNER-ACTIONS too. Stripe classifies
+// PromptPay-on-Checkout as a REAL-TIME payment method; the 2026-07-31 test-mode
+// rehearsal measured a single checkout.session.completed already carrying
+// payment_status "paid", and no async_payment_* event ever fired. Keying the
+// grant off async_payment_succeeded would take the money and grant nothing.
+// The both-types set stays anyway: it costs nothing, and it is what makes this
+// correct if a genuinely delayed method (bank debits) is ever enabled.
 const GRANTABLE_TYPES = new Set([
   "checkout.session.completed",
   "checkout.session.async_payment_succeeded",

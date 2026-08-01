@@ -33,6 +33,15 @@ const RULES = [
   ["P0", (k) => k.startsWith("notify.")],
   ["P0", (k) => k === "shop.getCoins"],
   ["P0", (k) => k.startsWith("shop.supporter")],
+  // The Supporter purchase sheet — price, "secure checkout", the benefits
+  // being sold, the restore-purchase promise. This is the last copy a Thai
+  // buyer reads before paying ฿79, and it had no rule at all: all 18 keys sat
+  // at P3, below 180 rows of minor copy. Exactly the burial this file's own
+  // comment warns about for shop.*/item.*.
+  ["P0", (k) => k.startsWith("supporter.")],
+  // Links to the Terms, Refund and Privacy pages (shipped v143). Mistranslating
+  // the label on a refund policy is a consumer-protection problem, not polish.
+  ["P0", (k) => ["settings.privacy", "settings.terms", "settings.refund"].includes(k)],
   ["P0", (k) => k === "item.supporter"],
   ["P0", (k) => ["item.coins_s", "item.coins_m", "item.coins_l", "item.coins_xl"].includes(k)],
   ["P0", (k) => k === "toast.freeze-used"],
