@@ -1,7 +1,7 @@
 "use strict";
 // Single authority on what an avatar value IS: which ids exist, who owns
-// what, the wire encoding, and how an id becomes pixels (a dedicated Lucky
-// Cat portrait or a pure CSS crop of a costume sprite sheet). Pure: no DOM,
+// what, the wire encoding, and how an id becomes pixels (a pure CSS crop of
+// the same happy sprite sheets used by the game). Pure: no DOM,
 // storage, Date, or network. Imports neither profile.js nor
 // friend-compare.js (they import us), so there are no cycles.
 //
@@ -14,11 +14,10 @@ import { CATALOG, SKIN_PALETTES, isAvailable } from "./shop.js";
 import { SPRITE_METRICS } from "./sprite-metrics.js";
 
 export const AVATAR_DEFAULT_CAT_ID = "lucky";
-// "lucky" is a reserved id for the default cat (no SKIN_PALETTES entry). It
-// uses a dedicated front-facing portrait generated for Profile rather than a
-// recycled gameplay/boss sprite.
+// "lucky" is a reserved id for the default cat (no SKIN_PALETTES entry).
+// Its avatar comes from cat-happy so Home, Battle, Profile, the picker, and
+// friend cards all show the same cream-and-orange book-holding character.
 export const AVATAR_CAT_IDS = [AVATAR_DEFAULT_CAT_ID, ...Object.keys(SKIN_PALETTES)];
-const LUCKY_PORTRAIT = "assets/cat-lucky-profile-v2.png";
 
 const SHEET_W = 1024;   // 4 frames of FRAME px
 const FRAME = 256;
@@ -55,7 +54,7 @@ export function catAvatarChoices(ownedIds, dateStr = "") {
 export function avatarSheetFor(avatar) {
   const a = normalizeAvatar(avatar);
   if (a.kind !== "cat") return null;
-  if (a.id === AVATAR_DEFAULT_CAT_ID) return null;
+  if (a.id === AVATAR_DEFAULT_CAT_ID) return "cat-happy";
   return SKIN_PALETTES[a.id].sprite + "-happy";
 }
 
@@ -68,10 +67,6 @@ const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 // background-position is container-size independent, so one style serves the
 // 112px hero circle, 64px picker tiles, and 36px friend rows.
 export function avatarPortraitStyle(avatar) {
-  const a = normalizeAvatar(avatar);
-  if (a.kind === "cat" && a.id === AVATAR_DEFAULT_CAT_ID) {
-    return { image: LUCKY_PORTRAIT, sizePct: [112, 112], posPct: [50, 50] };
-  }
   const sheet = avatarSheetFor(avatar);
   if (!sheet) return null;
   const m = SPRITE_METRICS[sheet];

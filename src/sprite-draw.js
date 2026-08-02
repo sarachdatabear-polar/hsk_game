@@ -14,16 +14,11 @@ import { SPRITE_METRICS } from "./sprite-metrics.js";
 // constant so the two characters read as the same size.
 export const CONTENT_H = 64;
 
-/* Audit #7 — pose sheets of the SAME character must render at the SAME scale.
-   Per-sheet height-normalization shrinks a pose whose alpha bbox is taller: the
-   default cat's sitting "happy" pose (upright tail) has a taller bbox than the
-   mid-stride "walk" pose, so normalizing both to CONTENT_H made the cat visibly
-   shrink on a correct answer. Anchor such a pose to a sibling sheet's bbox height
-   so the pair shares ONE scale factor; the taller pose then renders proportionally
-   taller (bottom-anchored) instead of shrinking. Kept in this hand-edited module
-   (not the generated metrics) so a metrics regen can't drop it. Skins fill their
-   frames uniformly (walk/happy bboxes already match → no-op), so only the default
-   cat pair needs an anchor today. */
+/* Pose sheets of the SAME character must render at the SAME scale. Anchor the
+   happy sheet to its walking sibling so both always share one scale factor.
+   The Home-matched default sheets are normalized to the same 232px content
+   height today (making this a deliberate no-op), but keeping the anchor prevents
+   a future pose-only art refresh from making the cat shrink on a correct answer. */
 export const SCALE_ANCHOR = { "cat-happy": "cat-walk" };
 
 /* drawSpriteFrame — draw frame `frame` (0-indexed, 256px-wide source column)

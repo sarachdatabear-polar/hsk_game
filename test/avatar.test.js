@@ -65,8 +65,8 @@ describe("ownsCatAvatar / catAvatarChoices", () => {
 });
 
 describe("avatarSheetFor", () => {
-  it("keeps Lucky Cat on its dedicated portrait and resolves costumes through SKIN_PALETTES", () => {
-    expect(avatarSheetFor({ kind: "cat", id: "lucky" })).toBeNull();
+  it("uses the in-game happy sheet for Lucky Cat and resolves costumes through SKIN_PALETTES", () => {
+    expect(avatarSheetFor({ kind: "cat", id: "lucky" })).toBe("cat-happy");
     expect(avatarSheetFor({ kind: "cat", id: "mooncake-rabbit" })).toBe("cat-mooncake-happy");
     expect(avatarSheetFor({ kind: "cat", id: "panda" })).toBe("cat-panda-happy");
   });
@@ -79,13 +79,15 @@ describe("avatarSheetFor", () => {
 });
 
 describe("avatarPortraitStyle", () => {
-  it("uses the new dedicated square portrait for Lucky Cat", () => {
+  // Home-matched default cat bbox: l30 t12 r226 b244 -> bw 196,
+  // bh/side 232, cl=12, ct=12.
+  it("crops Lucky Cat from the same happy sprite used by the game", () => {
     const s = avatarPortraitStyle({ kind: "cat", id: "lucky" });
-    expect(s).toEqual({
-      image: "assets/cat-lucky-profile-v2.png",
-      sizePct: [112, 112],
-      posPct: [50, 50],
-    });
+    expect(s.image).toBe("assets/cat-happy.png");
+    expect(s.sizePct[0]).toBeCloseTo(102400 / 232, 6);
+    expect(s.sizePct[1]).toBeCloseTo(25600 / 232, 6);
+    expect(s.posPct[0]).toBeCloseTo((100 * 12) / (1024 - 232), 6);
+    expect(s.posPct[1]).toBeCloseTo((100 * 12) / (256 - 232), 6);
   });
   // beach bbox: l9 t12 r246 b244 -> bw 237, bh 232, side 237, cl=9, ct=9.5.
   it("computes the crop for a near-full-frame skin", () => {
@@ -96,7 +98,7 @@ describe("avatarPortraitStyle", () => {
     expect(s.posPct[1]).toBeCloseTo((100 * 9.5) / (256 - 237), 6);
   });
   it("keeps sizePct at an exact 4:1 ratio for every cat id (uniform scale)", () => {
-    for (const id of AVATAR_CAT_IDS.filter(id => id !== "lucky")) {
+    for (const id of AVATAR_CAT_IDS) {
       const s = avatarPortraitStyle({ kind: "cat", id });
       expect(s.sizePct[0] / s.sizePct[1]).toBeCloseTo(4, 9);
       expect(s.posPct[0]).toBeGreaterThanOrEqual(0);
