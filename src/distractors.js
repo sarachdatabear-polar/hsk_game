@@ -47,6 +47,28 @@ const sameThai = (a, b) => {
   return sa.some(x => sb.includes(x));
 };
 
+// Two candidates collide when they'd render the same gloss to the player —
+// either their English first-senses share a content token, or (Thai present
+// on both) their Thai first-senses share a synonym.
+function collide(a, b) {
+  return sameMeaning(a.e, b.e) || !!(a.t && b.t && sameThai(a.t, b.t));
+}
+
+// Greedily pick up to 3 mutually non-colliding candidates from an already-
+// shuffled list, skipping any candidate that collides with one already
+// picked. Returns both the picks and the shuffled order so a caller that
+// falls short can top back up from the same order as a last resort.
+function pickMutuallyDistinct(cands, rand) {
+  const shuffled = shuffle([...cands], rand);
+  const picked = [];
+  for (const c of shuffled) {
+    if (picked.some(p => collide(p, c))) continue;
+    picked.push(c);
+    if (picked.length === 3) break;
+  }
+  return { picked, shuffled };
+}
+
 // fullPool widens the search when pool itself is a small custom deck (e.g. a
 // "Fight weak words" review of near-synonyms): a meaning-homogeneous deck can
 // have <3 non-conflicting candidates even pool-wide, so fullPool (the scoped
@@ -54,8 +76,26 @@ const sameThai = (a, b) => {
 export function pickDistractors(pool, target, rand = Math.random, fullPool = pool) {
   const i = pool.findIndex(w => w.h === target.h);
   const ok = w => w.h !== target.h && !sameMeaning(w.e, target.e) && !(target.t && w.t && sameThai(w.t, target.t));
+
   let cands = pool.slice(Math.max(0, i - 40), i + 41).filter(ok);
-  if (cands.length < 3) cands = pool.filter(ok);
-  if (cands.length < 3) cands = fullPool.filter(ok);
-  return shuffle([...cands], rand).slice(0, 3);
+  let { picked, shuffled } = pickMutuallyDistinct(cands, rand);
+  if (picked.length < 3) {
+    cands = pool.filter(ok);
+    ({ picked, shuffled } = pickMutuallyDistinct(cands, rand));
+  }
+  if (picked.length < 3) {
+    cands = fullPool.filter(ok);
+    ({ picked, shuffled } = pickMutuallyDistinct(cands, rand));
+  }
+  if (picked.length < 3) {
+    // Absolute last resort: even fullPool can't yield 3 mutually distinct
+    // glosses. Top back up with colliding candidates so the function still
+    // returns 3 whenever 3 candidates exist at all (prior worst-case behavior).
+    for (const c of shuffled) {
+      if (picked.includes(c)) continue;
+      picked.push(c);
+      if (picked.length === 3) break;
+    }
+  }
+  return picked;
 }
