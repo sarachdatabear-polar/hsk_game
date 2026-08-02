@@ -63,6 +63,31 @@ describe("accessibility markup contract", () => {
     expect(main).toContain('el.setAttribute("aria-pressed", String(!!on))');
   });
 
+  it("gives the custom session-length field a name, full target, and visible focus", () => {
+    expect(html).toMatch(/<input\s+id="len-custom"[^>]*data-i18n-aria="scope\.customLen"/);
+    expect(html).toMatch(/#len-custom\{[^}]*min-height:45px/);
+    expect(html).not.toMatch(/#len-custom:focus\{[^}]*outline:none/);
+  });
+
+  it("implements complete keyboard-operable tabs and exposes Album choices as filters", () => {
+    for (const [tab, panel] of [
+      ["profile-tab-overview", "profile-overview-pane"],
+      ["profile-tab-progress", "profile-progress-pane"],
+      ["profile-tab-collection", "profile-collection-pane"],
+      ["shop-tab-featured", "shop-panel-featured"],
+      ["shop-tab-supplies", "shop-panel-supplies"],
+    ]) {
+      expect(html).toMatch(new RegExp(`id="${tab}"[^>]*role="tab"[^>]*aria-(?:selected|controls)=[^>]*aria-controls="${panel}"`));
+      expect(html).toMatch(new RegExp(`id="${panel}"[^>]*role="tabpanel"[^>]*aria-labelledby="${tab}"`));
+    }
+    expect(html).toContain('id="album-filters" role="group" aria-label="Sticker filters"');
+    expect(main).toContain("function wireTabKeys(tablist, selector)");
+    expect(main).toContain('event.key === "ArrowRight"');
+    expect(main).toContain('event.key === "ArrowLeft"');
+    expect(main).toContain('event.key === "Home"');
+    expect(main).toContain('event.key === "End"');
+  });
+
   // An author `display:` rule beats the UA `[hidden]{display:none}` rule, so
   // any JS-toggled element whose class declares a display needs an explicit
   // `[hidden]` override or setting `.hidden = true` silently does nothing.

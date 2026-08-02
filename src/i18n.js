@@ -298,6 +298,7 @@ export const STRINGS = {
     "scope.stepSession": "3 · Session",
     "scope.startQuest": "Start {n}-word quest",
     "scope.custom": "Custom",
+    "scope.customLen": "Custom session length",
     "scope.customPh": "5–500",
     "scope.endless": "Endless",
     "scope.cards": "Cards",
@@ -1001,6 +1002,7 @@ export const STRINGS = {
     "scope.stepSession": "3 · จำนวนคำต่อรอบ", // TH-REVIEW
     "scope.startQuest": "เริ่มภารกิจ {n} คำ", // TH-REVIEW
     "scope.custom": "กำหนดเอง",
+    "scope.customLen": "จำนวนคำต่อรอบแบบกำหนดเอง", // TH-REVIEW
     "scope.customPh": "5–500",
     "scope.endless": "ไม่จำกัด",
     "scope.cards": "บัตรคำ",

@@ -133,7 +133,9 @@ function probeScreen([screenName, tol, minTap]) {
     .slice(0, 5)
     .map(el => el.id || el.className?.toString().slice(0, 30) || el.tagName);
 
-  const small = [...document.querySelectorAll(".screen:not([hidden]) button, .nav-bar button")]
+  const small = [...document.querySelectorAll(
+    ".screen button, .screen a[href], .screen input:not([type=hidden]), .screen select, .screen textarea, #bottom-nav button"
+  )]
     .filter(el => el.offsetParent !== null)
     .filter(el => {
       const r = el.getBoundingClientRect();
@@ -317,9 +319,10 @@ async function goToProfile(page) {
 }
 
 async function goToAccount(page) {
-  await page.evaluate(() => document.querySelector('#bottom-nav [data-go="more"], [data-go="more"]')?.click());
+  await page.evaluate(() => document.querySelector('#bottom-nav [data-go="progress"]')?.click());
   await page.waitForTimeout(150);
-  await page.evaluate(() => document.querySelector('#s-more [data-go="account"]')?.click());
+  await page.evaluate(() => document.querySelector('#profile-tabs [data-profile-view="overview"]')?.click());
+  await page.evaluate(() => document.querySelector('#s-progress [data-go="account"]')?.click());
   await page.waitForTimeout(250);
 }
 
@@ -834,6 +837,22 @@ async function runAccessibilityProbe(browser) {
     .find(b => !b.disabled && !b._correct && !b.classList.contains("replay"))?.click());
   await page.waitForTimeout(50);
   const canvasAfter = await page.evaluate(() => document.querySelector("#cv")?.getAttribute("aria-label") || "");
+  await goToProfile(page);
+  await page.focus("#profile-tab-overview");
+  await page.keyboard.press("ArrowRight");
+  const profileTabs = await page.evaluate(() => ({
+    active:document.activeElement?.id || "",
+    selected:document.querySelector('#profile-tabs [aria-selected="true"]')?.id || "",
+    panel:document.querySelector('#s-progress [role="tabpanel"]:not([hidden])')?.id || "",
+  }));
+  await goToShop(page);
+  await page.focus("#shop-tab-featured");
+  await page.keyboard.press("End");
+  const shopTabs = await page.evaluate(() => ({
+    active:document.activeElement?.id || "",
+    selected:document.querySelector('#shop-category-tabs [aria-selected="true"]')?.id || "",
+    panel:document.querySelector('#s-shop [role="tabpanel"]:not([hidden])')?.id || "",
+  }));
 
   const failures = [];
   if (navState.current !== "home" || navState.count !== 1)
@@ -845,10 +864,18 @@ async function runAccessibilityProbe(browser) {
   if (pauseClosed.on || pauseClosed.active !== "hud-pause")
     failures.push(`pause close=${JSON.stringify(pauseClosed)}`);
   if (!canvasAfter || canvasAfter === canvasBefore) failures.push("canvas reveal label did not change");
+  if (profileTabs.active !== "profile-tab-progress" ||
+      profileTabs.selected !== "profile-tab-progress" ||
+      profileTabs.panel !== "profile-progress-pane")
+    failures.push(`profile tabs=${JSON.stringify(profileTabs)}`);
+  if (shopTabs.active !== "shop-tab-supplies" ||
+      shopTabs.selected !== "shop-tab-supplies" ||
+      shopTabs.panel !== "shop-panel-supplies")
+    failures.push(`shop tabs=${JSON.stringify(shopTabs)}`);
   if (errs.length) failures.push(`JSERR:${errs[0]}`);
 
   const line = `[${failures.length ? "FAIL" : "PASS"}] accessibility 390x844: ` +
-    `nav=${navState.current} focus=${pauseOpen.active}->${pauseClosed.active} canvas=dynamic` +
+    `nav=${navState.current} focus=${pauseOpen.active}->${pauseClosed.active} canvas=dynamic tabs=keyboard` +
     (failures.length ? ` | FAILURES: ${failures.join("; ")}` : "");
   await page.close();
   return { line, failed:failures.length > 0 };
