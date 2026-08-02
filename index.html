@@ -253,21 +253,26 @@
     padding:14px; margin-bottom:12px; border:1px solid var(--panel-border); border-radius:16px;
     background:var(--panel-wash); border-image:var(--f-ui-card-paper, none); box-shadow:0 3px 10px rgba(132,96,67,.16);}
   .profile-avatar{width:112px; height:112px; border-radius:50%; display:flex; align-items:center;
-    justify-content:center; overflow:hidden; background:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-cream));
+    justify-content:center;}
+  .profile-avatar-clip{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    overflow:hidden; border-radius:50%; background:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-cream));
     border:2px solid var(--lc-sun-deep);}
   .profile-avatar-initial{display:none; color:var(--lc-green); font-size:44px; font-weight:900;
     line-height:1; text-transform:none;}
-  .profile-avatar.has-initial .profile-avatar-initial{display:block;}
-  .profile-avatar.has-initial .profile-avatar-fallback{display:none;}
+  .profile-avatar-clip.has-initial:not(.has-art) .profile-avatar-initial{display:block;}
+  .profile-avatar-clip.has-initial .profile-avatar-fallback,
+  .profile-avatar-clip.has-art .profile-avatar-fallback{display:none;}
   .profile-avatar-fallback{width:54px; height:54px; color:var(--lc-green); opacity:.9;}
-  /* Avatar-picker feature: keep every portrait layer and the edit badge inside
-     the circular button so neither can overlap the Profile card background. */
-  button.profile-avatar{position:relative; padding:0; font:inherit; cursor:pointer; overflow:hidden;}
-  .profile-avatar-art{position:absolute; inset:0; border-radius:50%; background-repeat:no-repeat; z-index:1;}
-  .profile-avatar-edit{position:absolute; right:4px; bottom:4px; z-index:2; width:24px; height:24px;
-    display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:12px;
-    background:var(--lc-cream); border:1px solid var(--lc-brown); color:var(--lc-green);
-    box-shadow:0 1px 4px rgba(46,42,36,.2);}
+  /* The portrait owns the circular clipping mask; the button deliberately
+     does not clip so the edit badge stays crisp above (not under) its rim. */
+  button.profile-avatar{position:relative; padding:0; font:inherit; cursor:pointer; overflow:visible;
+    border:0; background:transparent;}
+  .profile-avatar-art{position:absolute; inset:2px; border-radius:50%; background-repeat:no-repeat; z-index:1;}
+  .profile-avatar-edit{position:absolute; right:-3px; bottom:7px; z-index:2; width:30px; height:30px;
+    display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:14px;
+    background:var(--lc-cream); border:3px solid var(--panel-wash); color:var(--lc-green);
+    box-shadow:0 1px 5px rgba(46,42,36,.28);}
+  .profile-avatar:focus-visible .profile-avatar-clip{outline:3px solid var(--lc-sky); outline-offset:3px;}
   .profile-avatar-initial{position:relative;}
   /* Avatar picker grid (body of #avatar-overlay, built by avatar-picker.js) */
   #avatar-panel{display:flex; flex-direction:column; gap:10px;}
@@ -1251,9 +1256,19 @@
   .home-status{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:2px;}
   .status-cap{display:flex; align-items:center; gap:8px; min-height:44px; padding:4px 14px 4px 4px;
     border-radius:999px; box-shadow:inset 0 1px 0 rgba(255,255,255,.45), 0 3px 8px rgba(31,77,74,.28);}
-  .level-cap{background-color:var(--lc-teal); border:2px solid var(--lc-sun); color:var(--lc-cream);}
-  .level-avatar{width:34px; height:34px; border-radius:50%; border:2px solid var(--lc-cream);
-    background:var(--lc-cream); object-fit:cover; flex:0 0 auto;}
+  .level-cap{background-color:var(--lc-teal); border:2px solid var(--lc-sun); color:var(--lc-cream);
+    font:inherit; text-align:left; cursor:pointer;}
+  .level-cap:active{transform:scale(.97);}
+  .level-cap:focus-visible{outline:3px solid var(--lc-sky); outline-offset:2px;}
+  .level-avatar{position:relative; width:34px; height:34px; border-radius:50%; border:2px solid var(--lc-cream);
+    background:linear-gradient(180deg,var(--lc-sun-hi),var(--lc-cream)); overflow:hidden;
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+  .level-avatar-art{position:absolute; inset:0; border-radius:50%; background-repeat:no-repeat; z-index:1;}
+  .level-avatar-initial{display:none; color:var(--lc-green); font-size:14px; font-weight:900; line-height:1;}
+  .level-avatar.has-initial:not(.has-art) .level-avatar-initial{display:block;}
+  .level-avatar.has-initial .level-avatar-fallback,
+  .level-avatar.has-art .level-avatar-fallback{display:none;}
+  .level-avatar-fallback{width:17px; height:17px; color:var(--lc-green); opacity:.9;}
   .level-info{display:flex; flex-direction:column; gap:3px; min-width:66px;}
   .level-text{font-weight:800; font-size:13px; line-height:1;}
   .xp-bar{height:5px; width:66px;}
@@ -1711,13 +1726,21 @@
   <!-- HOME (M3 rebuild — visual PRD §6.1) -->
   <div class="screen on" id="s-home">
     <div class="home-status">
-      <div class="status-cap level-cap" id="home-level">
-        <img class="level-avatar" src="assets/cat-portrait.png" alt="" aria-hidden="true">
+      <button type="button" class="status-cap level-cap" id="home-level" data-go="progress"
+        aria-label="Profile" data-i18n-aria="nav.progress">
+        <span class="level-avatar" aria-hidden="true">
+          <span class="level-avatar-art"></span>
+          <span class="level-avatar-initial"></span>
+          <svg class="level-avatar-fallback" viewBox="0 0 64 64">
+            <circle cx="32" cy="22" r="12" fill="currentColor"></circle>
+            <path d="M10 56c1-14 9-22 22-22s21 8 22 22" fill="currentColor"></path>
+          </svg>
+        </span>
         <div class="level-info">
           <span class="level-text">Lv 1</span>
           <div class="mbar xp-bar"><i style="width:0%"></i></div>
         </div>
-      </div>
+      </button>
       <div class="status-right">
         <span class="status-cap wallet-cap" id="home-wallet"><svg class="asset-icon"><use href="assets/ui-icons.svg#secondary-coin"></use></svg><span>0</span></span>
         <button class="gear-btn" data-go="more" title="Settings" data-i18n-title="home.settings" aria-label="Settings"><svg class="asset-icon"><use href="assets/ui-icons.svg#settings"></use></svg></button>
@@ -2134,12 +2157,14 @@
     <div class="profile-pane" id="profile-overview-pane" data-profile-pane="overview">
     <section class="profile-hero" aria-labelledby="profile-name">
       <button type="button" class="profile-avatar" id="profile-avatar" aria-label="Change profile picture">
-        <span class="profile-avatar-art" id="profile-avatar-art" aria-hidden="true"></span>
-        <span class="profile-avatar-initial" id="profile-avatar-initial" aria-hidden="true"></span>
-        <svg class="profile-avatar-fallback" viewBox="0 0 64 64" aria-hidden="true">
-          <circle cx="32" cy="22" r="12" fill="currentColor"></circle>
-          <path d="M10 56c1-14 9-22 22-22s21 8 22 22" fill="currentColor"></path>
-        </svg>
+        <span class="profile-avatar-clip" id="profile-avatar-clip" aria-hidden="true">
+          <span class="profile-avatar-art" id="profile-avatar-art"></span>
+          <span class="profile-avatar-initial" id="profile-avatar-initial"></span>
+          <svg class="profile-avatar-fallback" viewBox="0 0 64 64">
+            <circle cx="32" cy="22" r="12" fill="currentColor"></circle>
+            <path d="M10 56c1-14 9-22 22-22s21 8 22 22" fill="currentColor"></path>
+          </svg>
+        </span>
         <span class="profile-avatar-edit" aria-hidden="true">✎</span>
       </button>
       <div class="profile-identity">
