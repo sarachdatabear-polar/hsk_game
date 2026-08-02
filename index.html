@@ -206,9 +206,9 @@
     background-image:linear-gradient(180deg,var(--lc-green-hi),var(--lc-green) 60%,var(--lc-green-deep));
     color:var(--lc-cream); font-weight:700;}
   .chip.preset{background:transparent; border-style:dashed; color:var(--muted); font-weight:500;}
-  #len-custom{width:86px; padding:9px 14px; border-radius:999px; background:var(--chip);
+  #len-custom{width:86px; min-height:45px; padding:9px 14px; border-radius:999px; background:var(--chip);
     color:var(--ink); font-size:15px; font-weight:600; border:1px solid var(--panel-border); text-align:center;}
-  #len-custom:focus{outline:none; border-color:var(--lc-sky);}
+  #len-custom:focus{border-color:var(--lc-sky);}
   #len-custom{appearance:textfield; -moz-appearance:textfield;}
   #len-custom::-webkit-outer-spin-button, #len-custom::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
   .screen-card,
@@ -1207,8 +1207,9 @@
   .scope-advanced summary{display:flex; align-items:center; min-height:44px; padding:8px 12px;
     color:var(--lc-green-deep); font-size:13px; font-weight:900; cursor:pointer;}
   .scope-advanced-body{padding:0 12px 12px;}
-  .more-meta{margin:10px 2px 0; color:var(--muted); font-size:11px; line-height:1.5;}
-  .more-meta a{color:var(--lc-green-deep);}
+  .more-meta{margin:10px 2px 0; color:var(--muted); font-size:11px; line-height:1.3;}
+  .more-meta a{display:inline-flex; align-items:center; justify-content:center; min-height:45px;
+    padding:0 4px; color:var(--lc-green-deep);}
   .account-step{margin:4px 0; color:var(--lc-green-deep); font-size:13px; font-weight:900;}
   .account-email-note{margin:0 0 4px; color:var(--muted); font-size:12px; overflow-wrap:anywhere;}
   /* production screen backgrounds */
@@ -1584,6 +1585,9 @@
     #s-home{padding:5px 12px 3px;}
     .home-status{margin-bottom:0;}
     .status-cap{min-height:28px; padding:2px 8px 2px 2px;}
+    /* The level capsule is interactive, unlike the adjacent wallet readout.
+       Keep its full touch target while compacting the landscape status row. */
+    .level-cap{min-height:44px;}
     .level-avatar{width:24px; height:24px;}
     .level-info{min-width:52px;}
     .level-text{font-size:11px;}
@@ -1961,7 +1965,9 @@
       <button class="chip" data-len="40">40</button>
       <button class="chip" data-len="100">100</button>
       <button class="chip" data-len="custom"><span class="icon-text"><svg class="asset-icon"><use href="assets/ui-icons.svg#pencil"></use></svg><span data-i18n="scope.custom">Custom</span></span></button>
-      <input id="len-custom" type="number" inputmode="numeric" min="5" max="500" placeholder="5–500" data-i18n-ph="scope.customPh" hidden>
+      <input id="len-custom" type="number" inputmode="numeric" min="5" max="500"
+        aria-label="Custom session length" data-i18n-aria="scope.customLen"
+        placeholder="5–500" data-i18n-ph="scope.customPh" hidden>
     </div>
     <div class="readout" id="readout"></div>
     <div class="startrow" id="r-standard-actions">
@@ -2150,11 +2156,18 @@
     <button class="back" data-go="home" data-i18n="common.back">← Home</button>
     <h2 data-i18n="progress.title">Profile</h2>
     <div class="profile-tabs" id="profile-tabs" role="tablist" aria-label="Profile sections">
-      <button class="chip on" role="tab" data-profile-view="overview" data-i18n="profile.tabOverview">Overview</button>
-      <button class="chip" role="tab" data-profile-view="progress" data-i18n="profile.tabProgress">Progress</button>
-      <button class="chip" role="tab" data-profile-view="collection" data-i18n="profile.tabCollection">Collection</button>
+      <button class="chip on" id="profile-tab-overview" type="button" role="tab"
+        aria-selected="true" aria-controls="profile-overview-pane" tabindex="0"
+        data-profile-view="overview" data-i18n="profile.tabOverview">Overview</button>
+      <button class="chip" id="profile-tab-progress" type="button" role="tab"
+        aria-selected="false" aria-controls="profile-progress-pane" tabindex="-1"
+        data-profile-view="progress" data-i18n="profile.tabProgress">Progress</button>
+      <button class="chip" id="profile-tab-collection" type="button" role="tab"
+        aria-selected="false" aria-controls="profile-collection-pane" tabindex="-1"
+        data-profile-view="collection" data-i18n="profile.tabCollection">Collection</button>
     </div>
-    <div class="profile-pane" id="profile-overview-pane" data-profile-pane="overview">
+    <div class="profile-pane" id="profile-overview-pane" role="tabpanel"
+      aria-labelledby="profile-tab-overview" data-profile-pane="overview">
     <section class="profile-hero" aria-labelledby="profile-name">
       <button type="button" class="profile-avatar" id="profile-avatar" aria-label="Change profile picture">
         <span class="profile-avatar-clip" id="profile-avatar-clip" aria-hidden="true">
@@ -2212,7 +2225,8 @@
       <button class="big primary" id="profile-first-quest" data-i18n="profile.emptyCta">Play your first quest</button>
     </section>
     </div>
-    <div class="profile-pane" id="profile-collection-pane" data-profile-pane="collection" hidden>
+    <div class="profile-pane" id="profile-collection-pane" role="tabpanel"
+      aria-labelledby="profile-tab-collection" data-profile-pane="collection" hidden>
     <div class="sect" data-i18n="profile.collectionTitle">Your collection</div>
     <section class="profile-collection">
       <div class="profile-collection-main"><b id="profile-collection-count"></b><span id="profile-sticker-count"></span></div>
@@ -2223,7 +2237,8 @@
       </div>
     </section>
     </div>
-    <div class="profile-pane" id="profile-progress-pane" data-profile-pane="progress" hidden>
+    <div class="profile-pane" id="profile-progress-pane" role="tabpanel"
+      aria-labelledby="profile-tab-progress" data-profile-pane="progress" hidden>
     <div class="sect" data-i18n="profile.learningTitle">Learning progress</div>
     <!-- Smart Review moved here from the home quick row (2026-07-11 audit F1)
          — same #go-smart element, same updateSmartBtn() label states
@@ -2249,7 +2264,7 @@
       <b id="album-progress"></b>
       <span id="album-next"></span>
     </div>
-    <div class="album-filters" id="album-filters" role="tablist" aria-label="Sticker filters">
+    <div class="album-filters" id="album-filters" role="group" aria-label="Sticker filters">
       <button class="chip on" data-album-filter="next" data-i18n="album.filterNext">Next</button>
       <button class="chip" data-album-filter="earned" data-i18n="album.filterEarned">Earned</button>
       <button class="chip" data-album-filter="1">HSK1</button>
@@ -2270,15 +2285,28 @@
     <div class="shop-browser-head">
       <div class="readout" id="shop-wallet"></div>
       <div class="shop-category-tabs" id="shop-category-tabs" role="tablist" aria-label="Shop categories">
-        <button class="chip on" data-shop-category-tab="featured" data-i18n="shop.categoryFeatured">Featured</button>
-        <button class="chip" data-shop-category-tab="skins" data-i18n="shop.categoryCats">Cats</button>
-        <button class="chip" data-shop-category-tab="backdrops" data-i18n="shop.categoryBackdrops">Backdrops</button>
-        <button class="chip" data-shop-category-tab="effects" data-i18n="shop.categoryEffects">Effects</button>
-        <button class="chip" data-shop-category-tab="sounds" data-i18n="shop.categorySounds">Sounds</button>
-        <button class="chip" data-shop-category-tab="supplies" data-i18n="shop.categorySupplies">Supplies</button>
+        <button class="chip on" id="shop-tab-featured" type="button" role="tab"
+          aria-selected="true" aria-controls="shop-panel-featured" tabindex="0"
+          data-shop-category-tab="featured" data-i18n="shop.categoryFeatured">Featured</button>
+        <button class="chip" id="shop-tab-skins" type="button" role="tab"
+          aria-selected="false" aria-controls="shop-panel-skins" tabindex="-1"
+          data-shop-category-tab="skins" data-i18n="shop.categoryCats">Cats</button>
+        <button class="chip" id="shop-tab-backdrops" type="button" role="tab"
+          aria-selected="false" aria-controls="shop-panel-backdrops" tabindex="-1"
+          data-shop-category-tab="backdrops" data-i18n="shop.categoryBackdrops">Backdrops</button>
+        <button class="chip" id="shop-tab-effects" type="button" role="tab"
+          aria-selected="false" aria-controls="shop-panel-effects" tabindex="-1"
+          data-shop-category-tab="effects" data-i18n="shop.categoryEffects">Effects</button>
+        <button class="chip" id="shop-tab-sounds" type="button" role="tab"
+          aria-selected="false" aria-controls="shop-panel-sounds" tabindex="-1"
+          data-shop-category-tab="sounds" data-i18n="shop.categorySounds">Sounds</button>
+        <button class="chip" id="shop-tab-supplies" type="button" role="tab"
+          aria-selected="false" aria-controls="shop-panel-supplies" tabindex="-1"
+          data-shop-category-tab="supplies" data-i18n="shop.categorySupplies">Supplies</button>
       </div>
     </div>
-    <div class="shop-category-panel" data-shop-category-panel="featured">
+    <div class="shop-category-panel" id="shop-panel-featured" role="tabpanel"
+      aria-labelledby="shop-tab-featured" data-shop-category-panel="featured">
     <!-- IAP (mock-provider v1): ships dark — unhidden by renderIapSections()
          only when the nbhsk.dev.iap flag is set. -->
     <div class="sect" id="shop-coins-sect" data-shop-general data-i18n="shop.getCoins" hidden>Get Coins</div>
@@ -2292,27 +2320,32 @@
     <div class="scorelist" id="shop-season" data-shop-general></div>
     <p class="shop-note" id="shop-season-note" data-shop-general></p>
     </div>
-    <div class="shop-category-panel" data-shop-category-panel="skins" hidden>
+    <div class="shop-category-panel" id="shop-panel-skins" role="tabpanel"
+      aria-labelledby="shop-tab-skins" data-shop-category-panel="skins" hidden>
     <div class="sect" data-shop-general data-i18n="shop.skins">Word Quest cats</div>
     <p class="shop-note" data-shop-general data-i18n="shop.catsNote">Changes the cat and kitten you see during Word Quest.</p>
     <div class="scorelist" id="shop-skins" data-shop-general></div>
     </div>
-    <div class="shop-category-panel" data-shop-category-panel="backdrops" hidden>
+    <div class="shop-category-panel" id="shop-panel-backdrops" role="tabpanel"
+      aria-labelledby="shop-tab-backdrops" data-shop-category-panel="backdrops" hidden>
     <div class="sect" data-shop-general data-i18n="shop.backdrops">Quest backdrops</div>
     <p class="shop-note" data-shop-general data-i18n="shop.backdropsNote">Changes the scene behind your Word Quest.</p>
     <div class="scorelist" id="shop-backdrops" data-shop-general></div>
     </div>
-    <div class="shop-category-panel" data-shop-category-panel="effects" hidden>
+    <div class="shop-category-panel" id="shop-panel-effects" role="tabpanel"
+      aria-labelledby="shop-tab-effects" data-shop-category-panel="effects" hidden>
     <div class="sect" data-shop-general data-i18n="shop.effects">Effects</div>
     <p class="shop-note" data-shop-general data-i18n="shop.effectsNote">Changes the celebration burst after a correct answer.</p>
     <div class="scorelist" id="shop-effects" data-shop-general></div>
     </div>
-    <div class="shop-category-panel" data-shop-category-panel="sounds" hidden>
+    <div class="shop-category-panel" id="shop-panel-sounds" role="tabpanel"
+      aria-labelledby="shop-tab-sounds" data-shop-category-panel="sounds" hidden>
     <div class="sect" data-shop-general data-i18n="shop.sounds">Sounds</div>
     <p class="shop-note" data-shop-general data-i18n="shop.soundsNote">Changes game sound effects, not Chinese pronunciation.</p>
     <div class="scorelist" id="shop-sounds" data-shop-general></div>
     </div>
-    <div class="shop-category-panel" data-shop-category-panel="supplies" hidden>
+    <div class="shop-category-panel" id="shop-panel-supplies" role="tabpanel"
+      aria-labelledby="shop-tab-supplies" data-shop-category-panel="supplies" hidden>
     <div class="sect" data-shop-general data-i18n="shop.supplies">Supplies</div>
     <div class="scorelist" id="shop-supplies" data-shop-general></div>
     </div>

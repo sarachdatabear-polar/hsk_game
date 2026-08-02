@@ -116,6 +116,32 @@ function setPressed(el, on){
   el.classList.toggle("on", !!on);
   el.setAttribute("aria-pressed", String(!!on));
 }
+function setTabSelected(el, on){
+  if(!el) return;
+  el.classList.toggle("on", !!on);
+  el.setAttribute("aria-selected", String(!!on));
+  el.tabIndex = on ? 0 : -1;
+}
+// Horizontal tablists use automatic activation: arrow/Home/End both move
+// focus and reveal the associated panel, matching native-feeling mobile tabs
+// while preserving the standard click/tap path.
+function wireTabKeys(tablist, selector){
+  if(!tablist) return;
+  tablist.addEventListener("keydown", event => {
+    const tabs = [...tablist.querySelectorAll(selector)].filter(tab => !tab.disabled);
+    const current = tabs.indexOf(document.activeElement);
+    if(current < 0) return;
+    let next = current;
+    if(event.key === "ArrowRight") next = (current + 1) % tabs.length;
+    else if(event.key === "ArrowLeft") next = (current - 1 + tabs.length) % tabs.length;
+    else if(event.key === "Home") next = 0;
+    else if(event.key === "End") next = tabs.length - 1;
+    else return;
+    event.preventDefault();
+    tabs[next].focus();
+    tabs[next].click();
+  });
+}
 // Thai-primary answers (battle-interface round T2): Thai-locale players see
 // Thai as the bold main line, English as the smaller sub line — everywhere
 // else keeps English-main/Thai-sub (or single-language en/th modes, which
@@ -3797,7 +3823,7 @@ function applyShopCategory(){
   const tabs = $("#shop-category-tabs");
   if(tabs) tabs.style.display = "flex";
   document.querySelectorAll("[data-shop-category-tab]").forEach(button =>
-    setPressed(button, button.dataset.shopCategoryTab === active));
+    setTabSelected(button, button.dataset.shopCategoryTab === active));
   document.querySelectorAll("[data-shop-category-panel]").forEach(panel =>
     panel.hidden = panel.dataset.shopCategoryPanel !== active);
 }
@@ -3808,6 +3834,7 @@ document.querySelectorAll("[data-shop-category-tab]").forEach(button =>
     applyShopCategory();
     $("#shop-category-tabs").scrollIntoView({ block:"nearest" });
   }));
+wireTabKeys($("#shop-category-tabs"), "[data-shop-category-tab]");
 function renderShop(){
   sfx.pack = shopState.soundpack || "default";  // keep sfx in sync with the equipped slot
   $("#shop-wallet").innerHTML = t("shop.wallet", { coins: wallet.toLocaleString() });
@@ -4318,8 +4345,7 @@ function applyProfileView(){
   if(!["overview","progress","collection"].includes(profileView)) profileView = "overview";
   document.querySelectorAll("#profile-tabs [data-profile-view]").forEach(button => {
     const on = button.dataset.profileView === profileView;
-    setPressed(button, on);
-    button.setAttribute("aria-selected", String(on));
+    setTabSelected(button, on);
   });
   document.querySelectorAll("#s-progress [data-profile-pane]").forEach(pane =>
     pane.hidden = pane.dataset.profilePane !== profileView);
@@ -4331,6 +4357,7 @@ document.querySelectorAll("#profile-tabs [data-profile-view]").forEach(button =>
     applyProfileView();
     window.scrollTo(0, 0);
   }));
+wireTabKeys($("#profile-tabs"), "[data-profile-view]");
 function renderProfileDashboard(){
   const level = levelForXp(xp);
   const prog = xpToNext(xp);

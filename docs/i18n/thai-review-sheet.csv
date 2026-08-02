@@ -122,6 +122,7 @@
 "P1","scope.stepSession","3 · Session","3 · จำนวนคำต่อรอบ","",""
 "P1","scope.startQuest","Start {n}-word quest","เริ่มภารกิจ {n} คำ","",""
 "P1","scope.custom","Custom","กำหนดเอง","",""
+"P1","scope.customLen","Custom session length","จำนวนคำต่อรอบแบบกำหนดเอง","",""
 "P1","scope.customPh","5–500","5–500","",""
 "P1","scope.endless","Endless","ไม่จำกัด","",""
 "P1","scope.cards","Cards","บัตรคำ","",""
