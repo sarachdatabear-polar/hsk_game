@@ -319,6 +319,38 @@ let freezes = Math.min(2, Number(store.get("freezes")) || 0);
 let xp = Number(store.get("xp", 0)) || 0;
 // #home-level is the whole status capsule (avatar + level text + XP bar, M3);
 // fill its children directly rather than replacing them like setPill does.
+function renderPlayerAvatar(root, art, initialEl){
+  if(!root || !art || !initialEl) return;
+  const initial = profileInitial(playerProfile.displayName);
+  initialEl.textContent = initial;
+  let hasArt = false;
+  if(playerProfile.avatar.kind === "photo"){
+    // Photo kind + missing/empty pixels -> monogram/neutral fallback WITHOUT
+    // rewriting the stored choice; a transient storage read must not destroy it.
+    const dataUrl = store.get("profilePhoto", "");
+    if(typeof dataUrl === "string" && dataUrl.startsWith("data:image/")){
+      art.style.backgroundImage = `url("${dataUrl}")`;
+      art.style.backgroundSize = "cover";
+      art.style.backgroundPosition = "center";
+      hasArt = true;
+    }
+  }else{
+    const style = avatarPortraitStyle(playerProfile.avatar);
+    if(style){
+      art.style.backgroundImage = `url("${style.image}")`;
+      art.style.backgroundSize = `${style.sizePct[0]}% ${style.sizePct[1]}%`;
+      art.style.backgroundPosition = `${style.posPct[0]}% ${style.posPct[1]}%`;
+      hasArt = true;
+    }
+  }
+  if(!hasArt){
+    art.style.backgroundImage = "";
+    art.style.backgroundSize = "";
+    art.style.backgroundPosition = "";
+  }
+  root.classList.toggle("has-art", hasArt);
+  root.classList.toggle("has-initial", !!initial);
+}
 function updateLevelChip(){
   const el = $("#home-level");
   if(!el) return;
@@ -327,6 +359,8 @@ function updateLevelChip(){
   const pct = prog.need ? Math.round(100*prog.into/prog.need) : 100;
   const txt = el.querySelector(".level-text");
   const bar = el.querySelector(".xp-bar i");
+  renderPlayerAvatar(el.querySelector(".level-avatar"), el.querySelector(".level-avatar-art"),
+    el.querySelector(".level-avatar-initial"));
   if(txt) txt.textContent = t("home.levelChip", { lv });
   if(bar) bar.style.width = pct + "%";
 }
@@ -4307,32 +4341,7 @@ function renderProfileDashboard(){
   const supChip = $("#profile-supporter-chip");
   if (supChip) supChip.hidden = !isSupporter(ent);
   const avatar = $("#profile-avatar");
-  const initial = profileInitial(playerProfile.displayName);
-  $("#profile-avatar-initial").textContent = initial;
-  const art = $("#profile-avatar-art");
-  let hasArt = false;
-  if (playerProfile.avatar.kind === "photo") {
-    // Photo kind + missing/empty pixels -> monogram degrade WITHOUT rewriting
-    // the stored profile (a transient read glitch must not destroy the choice).
-    const dataUrl = store.get("profilePhoto", "");
-    if (typeof dataUrl === "string" && dataUrl.startsWith("data:image/")) {
-      art.style.backgroundImage = `url("${dataUrl}")`;
-      art.style.backgroundSize = "cover";
-      art.style.backgroundPosition = "center";
-      hasArt = true;
-    }
-  } else {
-    const style = avatarPortraitStyle(playerProfile.avatar);
-    if (style) {
-      art.style.backgroundImage = `url("${style.image}")`;
-      art.style.backgroundSize = `${style.sizePct[0]}% ${style.sizePct[1]}%`;
-      art.style.backgroundPosition = `${style.posPct[0]}% ${style.posPct[1]}%`;
-      hasArt = true;
-    }
-  }
-  if (!hasArt) art.style.backgroundImage = "";
-  avatar.classList.toggle("has-art", hasArt);
-  avatar.classList.toggle("has-initial", !!initial);
+  renderPlayerAvatar($("#profile-avatar-clip"), $("#profile-avatar-art"), $("#profile-avatar-initial"));
   avatar.setAttribute("aria-label", t("avatar.change"));
   avatar.onclick = () => avatarPicker.open();
   $("#profile-level").textContent = t("profile.level", { lv: level });

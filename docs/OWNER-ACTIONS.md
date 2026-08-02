@@ -198,7 +198,16 @@ let it run in the background while you do steps 1–2.
    harmless extra hop), retired `assets/bg-street.png` **404**, TLS
    `ssl_verify_result=0` over HTTP/2.
 
-   **⚠ NEW AND BLOCKING (2026-08-01): create `support@luckycathsk.com`.**
+   ~~**⚠ NEW AND BLOCKING (2026-08-01): create `support@luckycathsk.com`.**~~
+   **— DONE 2026-08-01.** Cloudflare Email Routing enabled; MX
+   (`route1/2/3.mx.cloudflare.net`), SPF and DKIM verified from the VPS, and a
+   test message confirmed received in Gmail. v143 shipped on the strength of
+   it. **⚠ EMAIL ROUTING IS INBOUND ONLY** — you can receive at `support@` but
+   cannot reply *as* it; that needs the separate **Email Sending** beta
+   (Workers Paid, SMTP `smtps://smtp.mx.cloudflare.net:465`) wired into Gmail's
+   "Send mail as". Until then replies go out from the personal Gmail, which is
+   acceptable but means the buyer sees a different address than they wrote to.
+   *(Original instructions, kept because they are how you re-do this:)*
    The Terms of Service, Refund Policy and Privacy Policy all now publish that
    address, and Stripe shows the support contact to every buyer on receipts.
    **It does not exist yet**, so the v143 legal-pages release MUST NOT ship
@@ -210,11 +219,28 @@ let it run in the background while you do steps 1–2.
    below. Reply to a test message once before release so the forward is proven
    in both directions.
 
-   **TWO GAPS FOUND DURING VERIFICATION — ONE REMAINS (the `www` one) as of
-   2026-08-01; the HTTPS-redirect gap is closed:**
-   - **`www.luckycathsk.com` does not resolve** (NXDOMAIN — only the apex was
-     attached). Add it as a second custom domain on the same Worker, or a
-     redirect rule to the apex. Anyone typing `www.` currently gets nothing.
+   **TWO GAPS FOUND DURING VERIFICATION — BOTH NOW CLOSED (2026-08-01):**
+   - ~~**`www.luckycathsk.com` does not resolve**~~ **— DONE, verified
+     2026-08-01.** Proxied `CNAME www → luckycathsk.com` plus a wildcard single
+     redirect rule (`https://www.luckycathsk.com/*` → `https://luckycathsk.com/${1}`,
+     301, preserve query string). Verified end-to-end: every www URL lands 200
+     on the apex, path and query string preserved, `http://www` upgraded first;
+     apex unchanged (200, v143, `dist/app.js` sha `c0fc449d…`).
+     **⚠ DELIBERATELY A REDIRECT, NOT A SECOND WORKER CUSTOM DOMAIN.** The doc
+     used to present those as equivalent. They are not: attaching `www` to the
+     Worker would serve the real app on two origins, and the browser gives each
+     origin its own `localStorage` — so the same person would get two separate
+     profiles, streaks, wallets and journey states depending on how they typed
+     the URL. It would also mean a second service-worker registration to
+     version. The canonical tag already points at the apex; `www` has no reason
+     to serve anything.
+     **Two traps hit while doing this, recorded so the next person doesn't:**
+     (1) the redirect rule's **Target URL must NOT contain `www`** — entering
+     `https://www.luckycathsk.com/${1}` makes www redirect to itself, an
+     infinite loop (caught live; apex was unaffected throughout). (2) After
+     redeploying the fix, edge nodes disagreed for ~15s — some URLs correct,
+     others still looping. **Poll until consistent; do not diagnose a second
+     config error from a single stale reading.**
    - ~~**Plain `http://luckycathsk.com` serves content instead of redirecting to
      HTTPS**~~ **— DONE, verified 2026-08-01.** `http://luckycathsk.com` now
      returns **301 → `https://luckycathsk.com/`**; Always Use HTTPS is on.
@@ -301,10 +327,57 @@ let it run in the background while you do steps 1–2.
       card**, on an image carrying no signatures or annotations.
       **The site the reviewer will visit is now covered** — Terms, Refund and
       Privacy pages all ship in v143, and the privacy policy no longer names
-      the wrong payment processor. That release is gated on the support address
-      above.
-   2. In the Stripe Dashboard → **Payment methods**, enable **PromptPay**.
-   3. Create the **webhook endpoint** — Stripe Dashboard → **Developers →
+      the wrong payment processor. ✅ **v143 SHIPPED 2026-08-01**, and
+      `support@luckycathsk.com` routes to Gmail, so that gate is cleared.
+      **➤ STEP 1b (do now — it is free, reversible, and buyer-facing):
+      reconcile Stripe's public details with the shipped site.** Dashboard →
+      **Settings** (gear, top right) → **Business** → **Public details**. These
+      are editable after activation — the legal entity and country are not.
+      Set all four; three of them are what a buyer sees, and the fourth is what
+      they see on their bank statement:
+      - **Customer support email → `support@luckycathsk.com`.** Stripe prints
+        this on every receipt. It currently reads `sarach.northbear@gmail.com`,
+        which disagrees with all three v143 legal pages.
+      - **Business website → `https://luckycathsk.com`** (apex, no `www` — www
+        is a redirect, not an origin).
+      - **Statement descriptor → `LUCKYCATHSK`.** 5–22 chars, ≥5 letters, no
+        `< > \ ' " *`. **Do not leave this as the default.** An unrecognisable
+        line on a Thai bank statement is the single most common cause of a
+        "I don't recognise this charge" dispute, and disputes cost the fee plus
+        the goods whether or not you win them.
+      - **Shortened descriptor → `LUCKYCAT`** (≤10 chars) if Stripe asks; some
+        Thai card networks truncate to the short form.
+
+      While in Settings, two more that cost a minute each and both face the
+      buyer directly:
+      - **Branding** (Settings → Business → Branding): the icon and accent
+        colour render on the **hosted Checkout page**. Checkout is the one
+        screen between wanting the game and paying for it, and by default it is
+        an unbranded Stripe page — which reads as "is this a real store?" to
+        someone about to send ฿79 by PromptPay.
+      - **Customer emails** (Settings → Business → Customer emails): confirm
+        **"Successful payments"** is ON so buyers actually receive a receipt.
+        A receipt is the buyer's proof, and it is also the first thing you will
+        ask them to forward when something goes wrong.
+   2. ~~In the Stripe Dashboard → **Payment methods**, enable **PromptPay**.~~
+      **✅ DONE 2026-08-01 — PromptPay reads *Enabled* in LIVE mode**, not
+      pending. The Thai payment path is genuinely open, which was the one thing
+      that could have made the whole flip pointless.
+   3. **✅ DONE 2026-08-01 — live webhook created and the secrets are set.**
+      Verified from here, not taken on trust:
+      - An **unsigned POST to `stripe-webhook` now returns 401 `unauthorized`**,
+        where it returned the function's own 503 before. That is the proof the
+        signing secret took *and* that signature verification is actually
+        running — a 503 would have meant it was still failing closed.
+      - Checkout CORS preflight 200; `verify_jwt` still `true` on
+        `stripe-checkout` and `false` on `stripe-webhook`; `grant_purchase`
+        present; both `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` listed.
+      - Owner confirmed the key begins **`sk_live_`**. This is worth asking
+        explicitly every time: the Management API returns secret values hashed,
+        so a test key pasted into a live slot is invisible from the outside and
+        would only surface when a real buyer's payment silently went nowhere.
+      *(Original instructions, kept for a rebuild:)*
+      Create the **webhook endpoint** — Stripe Dashboard → **Developers →
       Webhooks → Add endpoint** — pointed at
       `https://<project>.supabase.co/functions/v1/stripe-webhook`, subscribed
       to `checkout.session.completed`,
@@ -542,6 +615,58 @@ let it run in the background while you do steps 1–2.
 
 ## 0. Accept the v129 cloud flip on two devices (blocks §1)
 
+> ### ✅ STEPS 1–3 PASSED 2026-08-01 (day one). Steps 4–5 still owed on 2 Aug.
+>
+> Run headlessly on the VPS against **production** `luckycathsk.com`, on a
+> throwaway account **`support@luckycathsk.com`** (uid
+> `fedcaeed-d3f9-4ade-8190-001e5c5955e7`) — deliberately *not* Jordan's own
+> account, so his real save file was never touched. Two Playwright
+> **persistent** profiles are two genuine devices for this purpose: separate
+> `userDataDir` ⇒ separate `localStorage` ⇒ two authenticated sessions on one
+> account, which is exactly what the check asks for. **The claim that this
+> "cannot be driven headlessly" was wrong** — only the OTP needs a human, and
+> that is two relayed codes.
+>
+> - **Step 1** — Device A completed a journey. Keepsake **Green book ribbon**
+>   (`keepsakeId: "book-ribbon"`, word 了, `bg-home`), Cat Bond **2 · 13 to
+>   Curious Paws**.
+> - **Step 2** — Device B, same account, foregrounded, opened Cat Journey.
+> - **Step 3 — PASS.** B showed **Memories 1, Study Buddy 2 bond, 13 to Curious
+>   Paws, Daily goal complete ✓** — identical to A. Verified **granted exactly
+>   once** the hard way, not by eye: after repeated cold reloads and
+>   foregrounds, `nbhsk.catJourney.claims` on **both** devices is a
+>   single entry, byte-identical down to `departedAt`/`returnedAt`. The cloud
+>   row agrees. B also converged on the rest of the account (Lv 3, 364 coins,
+>   streak 1, 40 due words).
+>
+> **Two things learned that the old text got wrong, and that cost time:**
+> 1. **The app pushes on `pushEdge("hide")` and pulls on
+>    `syncEdge("foreground")`** — both fired from `visibilitychange`
+>    (`src/main.js:2434`, `:2463`). Closing or reloading a headless page fires
+>    *neither*. Until the page was deliberately backgrounded, the claim sat
+>    unsynced and `public.progress.cat_journey` read `{}` — which looks exactly
+>    like a sync bug and is not one. **Background, then re-foreground.**
+> 2. **B never clobbered the cloud row.** Loading a stale second device did not
+>    overwrite A's claim, which is the reassuring half of the union question.
+>
+> **Minor divergence, not a blocker:** `nbhsk.catJourneyWord` differed between
+> the two devices (A 了, B 很) — it is device-local and not synced. Invisible
+> after a claim, since the claim carries its own `wordKey`. Worth a decision
+> later, not now.
+>
+> **Harness:** `game/.pw-cloud.mjs` (sign-in; polls `otp-<A|B>.txt` for the
+> relayed code) and `game/.pw-nav.mjs` (navigate/quest/claim/foreground), both
+> **uncommitted** and listed in `.git/info/exclude`. Traps for whoever reruns
+> them: modals (`[role=dialog].on`, `#format-intro`) swallow clicks; answer
+> buttons carry multi-line `innerText` so `text-is()` never matches them (scope
+> to **`#opts button`** and click the handle); the home CTA is `START` *or*
+> `REVIEW n DUE WORDS`; and the Cat tab must be clicked via
+> `[data-go="cat-journey"]`, not by its label.
+>
+> **Tomorrow (2 Aug), steps 4–5:** complete a journey on **Device B**, then
+> foreground **Device A** and confirm A shows **both** claims. A replacement
+> rather than a union is the P0.
+
 The v129 merge algebra is pinned by unit tests and the single-session round-trip
 is verified against production, but the real two-device round-trip is not — it
 needs two authenticated sessions on **one** account, which cannot be driven
@@ -711,8 +836,7 @@ the repository.
 ## 2. Obtain native Thai sign-off
 
 Give the reviewer **`docs/i18n/thai-review-sheet.csv`** — the machine-readable
-queue, **753 rows** (P0 unchanged at 71; regenerated 2026-07-29 — the 25 v130
-friend/avatar strings joined at P3 and 3 dead rows were dropped), sorted so
+queue, **670 rows, P0 = 95** (regenerated 2026-08-01), sorted so
 money, account, cloud-backup, and notification copy is first in the file. They fill the
 `corrected_thai` and `notes` columns; engineering applies the result with
 `node docs/i18n/scripts/apply-thai-review-sheet.mjs`. Alternatively they can edit
@@ -757,6 +881,29 @@ because the numbers in the older text were off:
   stated policy; the per-family `notify.streak.`/`notify.comeback.` rules have
   been replaced with one prefix-wide `notify.` → P0 rule so the next family
   added cannot repeat it.
+
+**⚠ THE SHEET YOU WERE ABOUT TO SEND WAS STALE — FIXED 2026-08-01.** It claimed
+a 2026-07-29 regeneration but carried **81 missing keys, 164 dead keys, and
+English source text that had since changed**. Worse, all **18 `supporter.*`
+keys — the purchase sheet a Thai buyer reads immediately before paying ฿79**
+(price, "secure checkout", the benefits being sold, the restore-purchase
+promise) — had no priority rule and sat at **P3**, below 180 rows of minor copy.
+So did the three v143 legal-policy links. A reviewer would have billed for dead
+copy and left the money copy for last.
+
+Both are fixed and, more importantly, **now pinned by
+`test/thai-review-sheet.test.js`** — the build fails if the sheet drifts out of
+sync with `src/i18n.js`, if a money/account key lands at P3, or if the
+reviewer's columns arrive pre-filled. This was the *fourth* time this exact
+drift was found by hand (after `cat.*`, `quests.*`, `notify.cat.*`); it should
+be the last. **Regenerate with:**
+`node docs/i18n/scripts/extract-thai-review-sheet.mjs > docs/i18n/thai-review-sheet.csv`
+
+**Scoping the ask:** the file is sorted by priority, so the P0 block is
+**rows 2–96** of the CSV. Commissioning that block alone is a defensible first
+engagement — it is the money, account, cloud-backup, notification and legal
+copy, and it clears the launch-blocking half of the queue. The remaining 575
+rows can follow.
 
 What remains here is **owner work only**: get a native reviewer through the
 queue and record the sign-off.
