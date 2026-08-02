@@ -39,7 +39,13 @@ export function createAnalytics({ store, fetchImpl, now, gen, isOnline, isNative
         if (!batch.length) break;
         const r = await send(batch, { url: config.url, key: config.key, fetchImpl });
         if (!r.ok) {
-          for (const e of batch) enqueue(store, e);
+          // Consent may have been revoked (setConsent(false)) while this send
+          // was in flight — that already cleared the queue and anon id. Only
+          // re-enqueue the drained batch if analytics is still enabled;
+          // otherwise a failed send would resurrect pre-revocation events.
+          if (isEnabled(store)) {
+            for (const e of batch) enqueue(store, e);
+          }
           break;
         }
       }

@@ -226,6 +226,33 @@ describe("mergeShop", () => {
     expect(m).toEqual(local);
     expect(m.owned).not.toBe(local.owned);
   });
+
+  // BUG: v7->v8 migration prunes 15 retired Street deco ids out of local
+  // `owned`, but a stale pre-migration cloud row still lists them; a bare
+  // union resurrected them forever. mergeShop must filter them back out.
+  it("filters retired deco ids out of owned when only the cloud side has them", () => {
+    const l = { owned: ["skin-a"], skin: "skin-a", backdrop: "", effect: "", soundpack: "" };
+    const c = { owned: ["skin-a", "red-lantern"], skin: "skin-a", backdrop: "", effect: "", soundpack: "" };
+    const m = mergeShop(l, c, false);
+    expect(m.owned).not.toContain("red-lantern");
+  });
+  it("filters retired deco ids out of owned when only the local side has them", () => {
+    const l = { owned: ["skin-a", "red-lantern"], skin: "skin-a", backdrop: "", effect: "", soundpack: "" };
+    const c = { owned: ["skin-a"], skin: "skin-a", backdrop: "", effect: "", soundpack: "" };
+    const m = mergeShop(l, c, false);
+    expect(m.owned).not.toContain("red-lantern");
+  });
+  it("filters retired deco ids out of owned even with no cloud row", () => {
+    const l = { owned: ["skin-a", "red-lantern"], skin: "skin-a", backdrop: "", effect: "", soundpack: "" };
+    const m = mergeShop(l, null, false);
+    expect(m.owned).not.toContain("red-lantern");
+  });
+  it("leaves non-retired ids untouched", () => {
+    const l = { owned: ["skin-a", "deco-1"], skin: "skin-a", backdrop: "", effect: "", soundpack: "" };
+    const c = { owned: ["skin-b", "red-lantern"], skin: "skin-b", backdrop: "", effect: "", soundpack: "" };
+    const m = mergeShop(l, c, false);
+    expect(m.owned.sort()).toEqual(["deco-1", "skin-a", "skin-b"]);
+  });
 });
 
 describe("mergeMastery", () => {

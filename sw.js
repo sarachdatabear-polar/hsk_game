@@ -9,7 +9,7 @@
 // audio name each release (v80..v105) wiped every cached mp3 on every
 // update, leaving installed PWAs silent offline until words re-fetched.
 // Bump AUDIO_VERSION only when build_audio.py regenerates the mp3 set.
-const CACHE_VERSION = "v146";
+const CACHE_VERSION = "v147";
 const AUDIO_VERSION = "v1";
 const SHELL = `nbhsk-shell-${CACHE_VERSION}`;
 const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`;
@@ -90,7 +90,10 @@ async function cacheFullResponse(cacheName, request, response) {
 
 async function cacheAfterFetch(cacheName, request) {
   const response = await fetch(request);
-  await cacheFullResponse(cacheName, request, response);
+  const cached = await cacheFullResponse(cacheName, request, response);
+  // Only the RUNTIME cache is bounded here — the audio route calls
+  // cacheFullResponse directly and manages its own bound via trimAudioCache.
+  if (cached && cacheName === RUNTIME) trimRuntimeCache();   // fire-and-forget bound
   return response;
 }
 
@@ -99,6 +102,17 @@ async function cacheAfterFetch(cacheName, request) {
 // insertion order): overflow past 600 drops the oldest 100.
 async function trimAudioCache(max = 600, drop = 100) {
   const cache = await caches.open(AUDIO);
+  const keys = await cache.keys();
+  if (keys.length <= max) return;
+  await Promise.all(keys.slice(0, drop).map(k => cache.delete(k)));
+}
+
+// Cosmetic art, shop previews, and Cat Journey backgrounds enter RUNTIME
+// cache-first with no other bound, unlike AUDIO above — a heavy session
+// browsing costume/scene previews shouldn't grow it without limit either.
+// FIFO approximation of LRU: overflow past 300 drops the oldest 50.
+async function trimRuntimeCache(max = 300, drop = 50) {
+  const cache = await caches.open(RUNTIME);
   const keys = await cache.keys();
   if (keys.length <= max) return;
   await Promise.all(keys.slice(0, drop).map(k => cache.delete(k)));
