@@ -37,7 +37,7 @@ describe("drawSpriteFrame", () => {
     expect(dy).toBe(groundY - CONTENT_H);
   });
 
-  it("anchored pose (cat-happy) shares the anchor's (cat-walk) scale factor and renders taller, bottom-anchored", () => {
+  it("anchored pose (cat-happy) shares the walk scale and stays bottom-aligned", () => {
     const ctx = fakeCtx();
     const img = { fake: "img" };
     const x = 100, groundY = 200, frame = 0;
@@ -49,8 +49,9 @@ describe("drawSpriteFrame", () => {
 
     const [, , , , , dx, dy, dw, dh] = ctx.calls[0];
     expect(dw).toBeCloseTo(swH * k, 6);
-    expect(dh).toBeCloseTo(shH * k, 6);       // NOT clamped to CONTENT_H
-    expect(dh).toBeGreaterThan(CONTENT_H);    // sitting pose renders taller than walk
+    expect(dh).toBeCloseTo(shH * k, 6);
+    expect(shH).toBe(refH);                   // current sheets were normalized together
+    expect(dh).toBe(CONTENT_H);
     expect(dx).toBeCloseTo(x - (swH * k) / 2, 6);
     expect(dy).toBeCloseTo(groundY - shH * k, 6);
   });

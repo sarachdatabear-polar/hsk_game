@@ -16,8 +16,8 @@ describe("authored cat artwork", () => {
     expect(catSource).not.toContain('fillStyle = "#b3262a"');
   });
 
-  it("locks the scarf-free default mascot sheets", () => {
-    expect(assetHash("cat-walk.png")).toBe("927188c21a36f12c2e818d6781047cc351d2d765b31ba28bfa659253eed756d7");
-    expect(assetHash("cat-happy.png")).toBe("8fa2de4ceceb74ea35d8ff92f86962d55673548d7d69dffc32b2ab6680eb27ef");
+  it("locks the Home-matched default mascot sheets", () => {
+    expect(assetHash("cat-walk.png")).toBe("ef0538d295a2ba96e864c0e6d19f637d94654480627d17baa2478a5b35e0fa37");
+    expect(assetHash("cat-happy.png")).toBe("6f64ce58d6b9fbead8fe25adf8452152d3bd63464a1b23e09c564e5d6e79eae1");
   });
 });
