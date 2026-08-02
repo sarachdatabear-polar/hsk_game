@@ -266,8 +266,13 @@ async function ensureIapUserId(){
   renderAccount();
   return r.session.user.id;
 }
-function provider(){
-  if(!iapProvider) iapProvider = getProvider({
+// Shared base options every getProvider() call needs (get/set/remove/
+// ensureUserId/stripe block) — provider() and ensureWebBilling() must build
+// from the SAME base so a Stripe provider (getProvider's stripe-beats-rcweb
+// precedence) never gets constructed with stub deps: isAnonymous defaulting
+// true would fail every purchase with "needs-account".
+function providerOpts(){
+  return {
     get: (k,d)=>store.get(k,d),
     set: (k,v)=>store.set(k,v),
     remove: (k)=>store.remove(k),
@@ -289,7 +294,10 @@ function provider(){
         return rows;
       },
     },
-  });
+  };
+}
+function provider(){
+  if(!iapProvider) iapProvider = getProvider(providerOpts());
   return iapProvider;
 }
 let webBillingLoaded = false;
@@ -309,12 +317,7 @@ async function ensureWebBilling(){
   webBillingLoaded = true;             // set before await so a second shop-open can't double-load
   try {
     const sdk = await loadWebBillingSdk();
-    iapProvider = getProvider({
-      get: (k,d)=>store.get(k,d),
-      set: (k,v)=>store.set(k,v),
-      ensureUserId: ensureIapUserId,
-      revenuecatWeb: { sdk },
-    });
+    iapProvider = getProvider({ ...providerOpts(), revenuecatWeb: { sdk } });
     iapOn = await iapVisible(iapProvider, iapEnabled());
     renderIapSections();
     renderAccount();                   // reveals the restore button once web provider is available
@@ -501,6 +504,12 @@ function setDialogSiblings(dialog, inert){
 
 function openDialog(dialog, initialFocus, onEscape){
   if(!dialog) return;
+  // Re-entrant: a second openDialog(sameDialog) (e.g. double-tap while a
+  // chunk fetch is in flight) must not redo sibling/focus bookkeeping — the
+  // second setDialogSiblings(dialog,true) would overwrite each sibling's
+  // dataset.preDialogAriaHidden with "true", and closeDialog would then
+  // restore aria-hidden="true" onto every sibling permanently.
+  if(activeDialog && activeDialog.dialog === dialog){ activeDialog.onEscape = onEscape; return; }
   if(activeDialog && activeDialog.dialog !== dialog) closeDialog(activeDialog.dialog, false);
   const returnFocus = document.activeElement;
   dialog.classList.add("on");
@@ -614,8 +623,10 @@ if(incomingFriendCard) requestAnimationFrame(() => friendCompare.open(incomingFr
 function noteDaily(count){
   const wasGoalMet = streakInfo(daily, todayStr(), freezes).goalMet;
   const r = noteActivity(daily, todayStr(), count, freezes);
-  // persist the same shape as before — freezesUsed is transient, not stored
-  daily = { last: r.last, streak: r.streak, today: r.today, restWeek: r.restWeek, restDay: r.restDay };
+  // persist the same shape as before, plus restNoteDay (needed by streakInfo
+  // for the "🍵 rest day used" note — see daily.js:82-86) — freezesUsed is
+  // transient, not stored
+  daily = { last: r.last, streak: r.streak, today: r.today, restWeek: r.restWeek, restDay: r.restDay, restNoteDay: r.restNoteDay };
   store.set("daily", daily);
   if(r.freezesUsed > 0){
     freezes = Math.max(0, freezes - r.freezesUsed);
@@ -2462,8 +2473,14 @@ function resumeBattleWithAudio(){
   // re-show it now that resumeBattle() has closed the pause overlay, so
   // openDialog() has nothing left to displace.
   const z = B.zombie;
-  if(z && z.frozen && z.introFree && z.state === "walk" && !formatIntros[z.format]){
-    showFormatIntro(FORMATS[z.format].intro);
+  if(z && z.frozen && z.introFree && z.state === "walk"){
+    if(z.guideFreeze){
+      // Guided onboarding freeze — always "meaning", whose intro is null, so
+      // this must never fall into the showFormatIntro(null) path below.
+      showGuidedFirstWord(z, z.w);
+    }else if(!formatIntros[z.format] && FORMATS[z.format].intro){
+      showFormatIntro(FORMATS[z.format].intro);
+    }
   }
 }
 function resumeBattle(){
@@ -2521,6 +2538,11 @@ document.addEventListener("visibilitychange", ()=>{
   if(!document.hidden){
     armAudioUnlock();
     syncEdge("foreground");
+    // Reset the session clock on every foreground so the NEXT
+    // session_complete measures this foreground span, not the time since
+    // boot — otherwise every event after the first background/foreground
+    // cycle over-reports its duration.
+    analyticsSessionStart = Date.now();
   }
 });
 window.addEventListener("online", ()=>{ analytics.flush(); syncEdge("online"); });
@@ -2557,6 +2579,25 @@ function syncQuestOutcome(correct, timedOut=false){
   }
   return result;
 }
+// Named so the stranded-recovery path in resumeBattleWithAudio can re-invoke
+// it for the SAME zombie after a bare-close strands the guide mid-flow —
+// showFirstWord's card-flow always restarts at card 1, which is safe (it
+// resets its own onNext handlers and reopens its dialog idempotently) even
+// though any progress into card 2 is lost.
+function showGuidedFirstWord(z, w){
+  onboardingQuestGuide.showFirstWord(w,
+    tip => saveOnboarding(noteQuestTip(onboardingState, tip)),
+    () => {
+      const current = B.zombie;
+      if(!current || current !== z || current.state !== "walk") return;
+      current.x = B.w + 30;
+      current.frozen = false;
+      if(FORMATS[current.format].audio === "always"
+        || (FORMATS[current.format].audio === "setting" && settings.autoSpeak)){
+        speakWhenReady(current.w.h);
+      }
+    });
+}
 function spawnZombie(){
   setQuestContinue(false);
   const encounter = B.quest.next();
@@ -2591,7 +2632,11 @@ function spawnZombie(){
     && onboardingState.stage === "quest" && onboardingState.questTip < 2;
   const introKey = FORMATS[z.format].intro;
   if(guidedFirstPrompt){
-    z.frozen = true; z.introFree = true;
+    // Marker so a background/foreground cycle mid-guide (see
+    // resumeBattleWithAudio's stranded-intro recovery) knows to re-show the
+    // guide rather than treat this freeze as a format intro — the guided
+    // format is always "meaning", whose FORMATS.meaning.intro is null.
+    z.frozen = true; z.introFree = true; z.guideFreeze = true;
   }else if(introKey && !formatIntros[z.format]){
     z.frozen = true; z.introFree = true;
     showFormatIntro(introKey);
@@ -2601,18 +2646,7 @@ function spawnZombie(){
   if(!z.frozen && (pol === "always" || (pol === "setting" && settings.autoSpeak))) speakWhenReady(w.h);
   renderQuestion(w, z.format, z.format === "reverse" ? "battle.reversePrompt" : null);
   if(guidedFirstPrompt){
-    onboardingQuestGuide.showFirstWord(w,
-      tip => saveOnboarding(noteQuestTip(onboardingState, tip)),
-      () => {
-        const current = B.zombie;
-        if(!current || current !== z || current.state !== "walk") return;
-        current.x = B.w + 30;
-        current.frozen = false;
-        if(FORMATS[current.format].audio === "always"
-          || (FORMATS[current.format].audio === "setting" && settings.autoSpeak)){
-          speakWhenReady(current.w.h);
-        }
-      });
+    showGuidedFirstWord(z, w);
   }
   showQuestFeedback(encounter.reviewChallenge ? "challenge" : "choose", z.format);
   updateHud();   // round capsule tracks B.spawned — refresh as each word enters
@@ -3281,8 +3315,12 @@ function drawWordPlate(z, vis, now){
   const w = z.w, boss = z.boss, level = w.lv;
   const format = z.format || "meaning";
   const hanzi = vis.mask ? "？？" : vis.icon ? "🔊" : w.h;
-  // pinyin off when: the format hides it (reverse/listen/tone while live), OR the player toggled it off
-  const pinyin = (!vis.py || !settings.showPinyin) ? "" : w.p;
+  // pinyin off when: the format hides it (reverse/listen/tone while live —
+  // vis.py already flips true once resolved, see draw()'s `!live || fl.py`),
+  // OR the player toggled it off — but a resolved word (z.revealed) must
+  // still show its pinyin regardless of that setting, or a typed-format
+  // timeout never shows the answer's reading anywhere.
+  const pinyin = (!vis.py || (!settings.showPinyin && !z.revealed)) ? "" : w.p;
   // T4: per-format instruction line, always shown, above the pinyin row.
   const instruction = t("battle.instruction." + format);
 
@@ -4189,12 +4227,18 @@ async function iapBuy(p, btn){
   // decision, go-live plan §6.1) — but this branch stays wired for when it
   // un-darks, so entitlement purchases already work end-to-end.
   if(p.entitlement){
-    const rr = await prov.restore();
-    if(rr.ok){
-      ent = restoreFrom(ent, rr.ownedProductIds);
-      store.set("ent", ent);
-      renderAccount();
-    }
+    // Isolated from the outer try/catch (matches checkout-return.js's restore
+    // isolation): a restore fault must not reclassify a purchase that already
+    // succeeded server-side as a failure — it would land in the outer catch,
+    // which shows iap.failed and fires purchase_fail AFTER delivery.
+    try{
+      const rr = await prov.restore();
+      if(rr.ok){
+        ent = restoreFrom(ent, rr.ownedProductIds);
+        store.set("ent", ent);
+        renderAccount();
+      }
+    }catch{ /* leave it to the Restore button — purchase already succeeded */ }
   }
   }catch(e){
     // Provider plugins promise a never-throw contract, but a bridge/SDK fault

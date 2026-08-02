@@ -89,9 +89,18 @@ describe("sw.js precache list", () => {
       "assets/bg-cat-garden-v1.webp", "assets/bg-cat-market-v1.webp",
       "assets/bg-cat-lantern-v1.webp", "assets/bg-cat-scholar-gate-v1.webp",
     ]) expect(precacheSet.has(entry), entry).toBe(false);
-    expect(swSrc).toContain('const CACHE_VERSION = "v146"');
+    expect(swSrc).toContain('const CACHE_VERSION = "v147"');
     expect(swSrc).toContain("const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`");
     expect(swSrc).toContain("cacheAfterFetch(RUNTIME, request)");
+  });
+
+  it("bounds the runtime cache like the audio cache, so a heavy session doesn't grow it forever", () => {
+    // Mirrors trimAudioCache: cosmetic art/shop previews/Cat Journey scenes
+    // enter RUNTIME cache-first with no other eviction, so cacheAfterFetch
+    // must trim it after a successful insert (audio manages its own bound
+    // separately and must not be double-trimmed here).
+    expect(swSrc).toContain("async function trimRuntimeCache(max = 300, drop = 50)");
+    expect(swSrc).toMatch(/if \(cached && cacheName === RUNTIME\) trimRuntimeCache\(\);/);
   });
 
   it("versions shell and runtime caches from the release value", () => {

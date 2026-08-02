@@ -140,6 +140,20 @@ export function shopPreferencesOf(shop) {
   return { slots: slotsOf(shop) };
 }
 
+// The v7->v8 migration (migrations.js) prunes these 15 retired Street
+// decoration ids out of local `owned` on upgrade. A pre-migration cloud row
+// still lists them, so a bare union would resurrect them into `owned` on
+// every reconcile and push them right back to cloud forever. The id list is
+// inlined ON PURPOSE (copied from migrations.js, not imported): shop.js no
+// longer exports these, and merge must never depend on live catalog data —
+// the same trap the old to:2 entry documented about STREET_LAYOUT_VERSION.
+const RETIRED_DECOS = new Set([
+  "red-lantern", "noodle-stall", "tea-sign", "foo-dog", "golden-arch",
+  "mahjong-table", "koi-pond", "drum-tower", "bubble-tea",
+  "paper-umbrella", "goldfish-banner", "neon-cat-sign",
+  "shaved-ice-cart", "mooncake-stall", "firecracker-arch",
+]);
+
 // Equipped slots resolve by dirty-bit LWW: local wins iff the equip slots
 // themselves changed locally since the last successful sync (sync.js diffs
 // slotsOf(local.shop) against the meta.shopSlots baseline) — so a fresh
@@ -151,11 +165,13 @@ export function mergeShop(a, b, localPreferenceDirty = false) {
     ? !!localPreferenceDirty.slotsDirty
     : !!localPreferenceDirty;
   if (!b) {
-    return { owned: [...(A.owned || [])], skin: A.skin, backdrop: A.backdrop,
+    const owned = (A.owned || []).filter(id => !RETIRED_DECOS.has(id));
+    return { owned, skin: A.skin, backdrop: A.backdrop,
              effect: A.effect, soundpack: A.soundpack };
   }
   const B = Object.assign(defaultShop(), b);
-  const owned = [...new Set([...(A.owned || []), ...(B.owned || [])])];
+  const owned = [...new Set([...(A.owned || []), ...(B.owned || [])])]
+    .filter(id => !RETIRED_DECOS.has(id));
   const slots = slotsDirty ? A : B;
   return { owned, skin: slots.skin, backdrop: slots.backdrop,
            effect: slots.effect, soundpack: slots.soundpack };

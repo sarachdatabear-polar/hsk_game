@@ -185,4 +185,105 @@ describe("pickDistractors", () => {
       expect(pickDistractors(pool, pool[0], Math.random).map(w => w.h)).not.toContain("望");
     }
   });
+
+  // BUG: the old ok() predicate only rejected candidates colliding with the
+  // TARGET, never with each other, so two distractors could render the same
+  // gloss to the player (real-data examples: 但/却 both "but; yet"; Thai
+  // 没/没有 both "ไม่มี; ยังไม่").
+  describe("mutual distractor collisions", () => {
+    it("never picks two distractors that share an English gloss, even when the window puts both first under a crafted rand", () => {
+      // Pool order (target excluded) is ["吃","但","却","水"]. With rand=()=>0,
+      // shuffle() rotates left by 1 -> ["但","却","水","吃"]; the OLD code's
+      // naive slice(0,3) would return 但+却+水, resurrecting the same "but;
+      // yet" gloss twice.
+      const target = mk("大", "big", "ใหญ่", 100);
+      const pool = [
+        target,
+        mk("吃", "to eat", "กิน", 90),
+        mk("但", "but; yet", "แต่", 80),
+        mk("却", "but; yet", "แต่", 70),
+        mk("水", "water", "น้ำ", 60),
+      ];
+      const d = pickDistractors(pool, target, firstRand);
+      expect(d).toHaveLength(3);
+      const hanzi = d.map(w => w.h);
+      expect(hanzi.includes("但") && hanzi.includes("却")).toBe(false);
+    });
+
+    it("never picks two distractors that share a Thai gloss, even when the window puts both first under a crafted rand", () => {
+      const target = mk2("大", "big", "ใหญ่", 100);
+      const pool = [
+        target,
+        mk2("吃", "to eat", "กิน", 90),
+        mk2("没", "not have", "ไม่มี; ยังไม่", 80),
+        mk2("没有", "to not have", "ไม่มี; ยังไม่", 70),
+        mk2("水", "water", "น้ำ", 60),
+      ];
+      const d = pickDistractors(pool, target, firstRand);
+      expect(d).toHaveLength(3);
+      const hanzi = d.map(w => w.h);
+      expect(hanzi.includes("没") && hanzi.includes("没有")).toBe(false);
+    });
+
+    it("holds under many random shuffles: no two returned distractors ever collide", () => {
+      const target = mk("大", "big", "ใหญ่", 100);
+      const pool = [
+        target,
+        mk("吃", "to eat", "กิน", 90),
+        mk("但", "but; yet", "แต่", 80),
+        mk("却", "but; yet", "แต่", 70),
+        mk("可是", "but; however", "แต่", 65),
+        mk("水", "water", "น้ำ", 60),
+        mk("大狗", "big dog", "หมาใหญ่", 55),
+      ];
+      for (let i = 0; i < 50; i++) {
+        const d = pickDistractors(pool, target, Math.random);
+        expect(d).toHaveLength(3);
+        const hanzi = d.map(w => w.h);
+        // at most one of the three mutually-colliding "but" synonyms
+        const butCount = ["但", "却", "可是"].filter(h => hanzi.includes(h)).length;
+        expect(butCount).toBeLessThanOrEqual(1);
+      }
+    });
+
+    it("widens window -> pool -> fullPool when the passed deck is mutually collision-homogeneous", () => {
+      // deck's only non-target candidates all share the same "but" gloss, so
+      // no 3 mutually-distinct picks exist within the deck at all; the
+      // function must widen out to fullPool to find fillers.
+      const target = mk("大", "big", "ใหญ่", 100);
+      const deck = [
+        target,
+        mk("但", "but; yet", "A", 90),
+        mk("却", "but; yet", "B", 80),
+        mk("可是", "but; however", "C", 70),
+      ];
+      const fullPool = [
+        ...deck,
+        mk("吃", "to eat", "D", 60),
+        mk("水", "water", "E", 50),
+        mk("狗", "dog", "F", 40),
+      ];
+      const d = pickDistractors(deck, target, firstRand, fullPool);
+      expect(d).toHaveLength(3);
+      const hanzi = d.map(w => w.h);
+      const butCount = ["但", "却", "可是"].filter(h => hanzi.includes(h)).length;
+      expect(butCount).toBeLessThanOrEqual(1);
+    });
+
+    it("degenerate case: only mutually-colliding candidates exist anywhere -- still returns 3", () => {
+      // Even fullPool == deck here, so no non-colliding filler exists at all;
+      // the function must fall back to topping up with colliding candidates
+      // rather than returning fewer than 3.
+      const target = mk("大", "big", "ใหญ่", 100);
+      const deck = [
+        target,
+        mk("但", "but; yet", "A", 90),
+        mk("却", "but; yet", "B", 80),
+        mk("可是", "but; however", "C", 70),
+      ];
+      const d = pickDistractors(deck, target, firstRand, deck);
+      expect(d).toHaveLength(3);
+      expect(d.map(w => w.h).sort()).toEqual(["但", "却", "可是"]);
+    });
+  });
 });

@@ -87,6 +87,28 @@ describe("createAnalytics", () => {
     expect(a.isEnabled()).toBe(false);
   });
 
+  it("does not re-enqueue a failed batch if consent was revoked mid-flight", async () => {
+    let online = false;
+    const store = memStore();
+    let resolveFetch;
+    const fetchImpl = vi.fn().mockImplementation(() => new Promise(r => { resolveFetch = r; }));
+    const { a } = make({ store, fetchImpl, isOnline: () => online });
+    a.setConsent(true);
+    a.track("session_start"); // offline: just enqueues, no auto-flush
+    expect(store._dump().analyticsQueue.length).toBe(1);
+
+    online = true;
+    const p = a.flush(); // drains the queue synchronously, then awaits the pending send
+    expect(store._dump().analyticsQueue.length).toBe(0);
+
+    a.setConsent(false); // revocation mid-flight: clears queue (already empty) + anon id
+    resolveFetch({ ok: false, status: 500 }); // send fails AFTER revocation
+    await p;
+
+    expect(store._dump().analyticsQueue.length).toBe(0); // must not resurrect pre-revocation events
+    expect(a.isEnabled()).toBe(false);
+  });
+
   it("platform is android when isNative()", () => {
     const store = memStore();
     const { a } = make({ store, isNative: () => true, isOnline: () => false });
