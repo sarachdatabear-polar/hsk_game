@@ -3,13 +3,13 @@
 import {
   SUPPORTER_BUCKET,
   SUPPORTER_OBJECT,
+  SIGNED_URL_SECONDS,
   sendSupporterEmail,
 } from "./core.js";
 
 // Link-based delivery: the URL goes in the email BODY, so its life is the
 // buyer's download window, not a Resend fetch race. "7 days" is promised in
-// the copy (core.js) — keep the two in sync.
-const SIGNED_URL_SECONDS = 7 * 24 * 60 * 60;
+// the email copy — keep the two in sync.
 
 async function finish(supabase, orderId, messageId, error) {
   const result = await supabase.rpc("finish_supporter_delivery", {

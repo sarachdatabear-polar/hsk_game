@@ -5,6 +5,10 @@ export const SUPPORTER_OBJECT = "Lucky_Cat_HSK_Supporter_Gift_HSK1-6_PDFs.zip";
 export const SUPPORTER_FILENAME = SUPPORTER_OBJECT;
 export const RESEND_ENDPOINT = "https://api.resend.com/emails";
 
+// One lifetime for BOTH delivery legs (email link and self-serve download):
+// the email copy promises "7 days" — keep copy and constant in sync.
+export const SIGNED_URL_SECONDS = 7 * 24 * 60 * 60;
+
 // Delivery is LINK-BASED, not an attachment. The 2026-08-03 live purchase
 // failed at Resend with "Invalid Attachment Paths": handing Resend a signed
 // URL to fetch (attachments: [{path}]) makes the send depend on a second,
