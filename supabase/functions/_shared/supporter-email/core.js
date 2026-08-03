@@ -15,7 +15,7 @@ export const SIGNED_URL_SECONDS = 7 * 24 * 60 * 60;
 // remote fetch racing the URL's TTL — accepted by the API, failed afterward,
 // recorded as sent. A link in the body removes that failure mode entirely and
 // avoids the deliverability penalty of an 18MB ZIP from a young domain.
-// "7 days" below must stay in sync with SIGNED_URL_SECONDS in service.js.
+// "7 days" below must stay in sync with SIGNED_URL_SECONDS defined above.
 // TH copy edited without a native pass — queue for the Thai reviewer.
 // Inline styles only — email clients strip <style> blocks. One consistent
 // type scale (16px body / 20px heading / 13px fine print) in the game's

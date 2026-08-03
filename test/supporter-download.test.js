@@ -34,6 +34,7 @@ describe("parseDownloadResponse", () => {
 
   it("maps everything else to failed", () => {
     expect(parseDownloadResponse(500, null)).toEqual({ ok: false, reason: "failed" });
+    expect(parseDownloadResponse(402, null)).toEqual({ ok: false, reason: "failed" });
     expect(parseDownloadResponse(503, "service unavailable")).toEqual({ ok: false, reason: "failed" });
     expect(parseDownloadResponse(0, null)).toEqual({ ok: false, reason: "failed" });
   });
