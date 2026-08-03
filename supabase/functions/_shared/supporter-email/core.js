@@ -5,13 +5,17 @@ export const SUPPORTER_OBJECT = "Lucky_Cat_HSK_Supporter_Gift_HSK1-6_PDFs.zip";
 export const SUPPORTER_FILENAME = SUPPORTER_OBJECT;
 export const RESEND_ENDPOINT = "https://api.resend.com/emails";
 
+// One lifetime for BOTH delivery legs (email link and self-serve download):
+// the email copy promises "7 days" — keep copy and constant in sync.
+export const SIGNED_URL_SECONDS = 7 * 24 * 60 * 60;
+
 // Delivery is LINK-BASED, not an attachment. The 2026-08-03 live purchase
 // failed at Resend with "Invalid Attachment Paths": handing Resend a signed
 // URL to fetch (attachments: [{path}]) makes the send depend on a second,
 // remote fetch racing the URL's TTL — accepted by the API, failed afterward,
 // recorded as sent. A link in the body removes that failure mode entirely and
 // avoids the deliverability penalty of an 18MB ZIP from a young domain.
-// "7 days" below must stay in sync with SIGNED_URL_SECONDS in service.js.
+// "7 days" below must stay in sync with SIGNED_URL_SECONDS defined above.
 // TH copy edited without a native pass — queue for the Thai reviewer.
 // Inline styles only — email clients strip <style> blocks. One consistent
 // type scale (16px body / 20px heading / 13px fine print) in the game's
