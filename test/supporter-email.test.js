@@ -39,11 +39,32 @@ function fakeSupabase({ claim = "claimed", email = "learner@example.com", confir
 }
 
 describe("supporter email copy", () => {
+  const URL = "https://storage.example/gift.zip?token=a&b=c";
   it("has distinct Thai and English transactional copy", () => {
-    expect(supporterEmail("th").subject).toContain("ของขวัญ");
-    expect(supporterEmail("en").subject).toContain("Supporter gift");
-    expect(supporterEmail("th").text).toContain("6 ไฟล์");
-    expect(supporterEmail("en").text).toContain("six frequency-ranked PDF");
+    expect(supporterEmail("th", URL).subject).toContain("ของขวัญ");
+    expect(supporterEmail("en", URL).subject).toContain("Supporter gift");
+    expect(supporterEmail("th", URL).text).toContain("6 ไฟล์");
+    expect(supporterEmail("en", URL).text).toContain("six frequency-ranked PDF");
+  });
+
+  it("is link-based: the download URL is in both text and html, with the 7-day promise", () => {
+    for (const locale of ["en", "th"]) {
+      const copy = supporterEmail(locale, URL);
+      expect(copy.text).toContain(URL);
+      // href is attribute-escaped, so & becomes &amp;
+      expect(copy.html).toContain('href="https://storage.example/gift.zip?token=a&amp;b=c"');
+    }
+    expect(supporterEmail("en", URL).text).toContain("7 days");
+    expect(supporterEmail("th", URL).text).toContain("7 วัน");
+  });
+
+  it("html is inline-styled in BOTH locales (email clients strip <style>; a bare template shipped once)", () => {
+    for (const locale of ["en", "th"]) {
+      const html = supporterEmail(locale, URL).html;
+      expect(html).toContain("font-family:Arial");            // shell applied
+      expect(html).toContain("background:#C95A41");           // styled button
+      expect(html).not.toMatch(/<(h1|p)>/);                   // no unstyled tags
+    }
   });
 
   it("derives a stable, bounded idempotency key from the order", () => {
@@ -51,10 +72,16 @@ describe("supporter email copy", () => {
     expect(supporterIdempotencyKey("")).toBeNull();
     expect(supporterIdempotencyKey("x".repeat(221))).toBeNull();
   });
+
+  it("scopes the key to the claim when a nonce is given (Resend refuses reused keys for 24h)", () => {
+    expect(supporterIdempotencyKey("cs_123", "n-1")).toBe("supporter-gift/cs_123/n-1");
+    expect(supporterIdempotencyKey("cs_123", "n-1")).not.toBe(supporterIdempotencyKey("cs_123", "n-2"));
+    expect(supporterIdempotencyKey("x".repeat(200), "y".repeat(30))).toBeNull();
+  });
 });
 
 describe("sendSupporterEmail", () => {
-  it("sends the six-PDF ZIP as an idempotent Resend attachment", async () => {
+  it("sends an idempotent link-based email with NO attachment (the 2026-08-03 failure class)", async () => {
     const fetchImpl = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ id: "email_1" }) }));
     const result = await sendSupporterEmail({
       fetchImpl,
@@ -62,7 +89,7 @@ describe("sendSupporterEmail", () => {
       from: "Lucky Cat HSK <support@luckycathsk.com>",
       to: "learner@example.com",
       locale: "th",
-      attachmentUrl: "https://storage.example/gift.zip?token=secret",
+      downloadUrl: "https://storage.example/gift.zip?token=secret",
       orderId: "cs_123",
     });
     expect(result).toEqual({ ok: true, messageId: "email_1" });
@@ -73,10 +100,11 @@ describe("sendSupporterEmail", () => {
     expect(init.headers["User-Agent"]).toContain("Lucky-Cat-HSK");
     const body = JSON.parse(init.body);
     expect(body.to).toEqual(["learner@example.com"]);
-    expect(body.attachments).toEqual([{
-      path: "https://storage.example/gift.zip?token=secret",
-      filename: SUPPORTER_FILENAME,
-    }]);
+    // No attachments, ever: Resend fetching a signed URL raced its TTL and
+    // failed AFTER api acceptance ("Invalid Attachment Paths"), leaving the
+    // delivery row 'sent' with no email. The link lives in the body instead.
+    expect(body.attachments).toBeUndefined();
+    expect(body.text).toContain("https://storage.example/gift.zip?token=secret");
   });
 
   it("fails closed on missing configuration or provider rejection", async () => {
@@ -84,8 +112,8 @@ describe("sendSupporterEmail", () => {
     const fetchImpl = async () => ({ ok: false, status: 422, json: async () => ({ message: "bad" }) });
     await expect(sendSupporterEmail({
       fetchImpl, apiKey: "re_test", from: "x@y.co", to: "a@b.co", locale: "en",
-      attachmentUrl: "https://storage.example/gift.zip", orderId: "o1",
-    })).resolves.toEqual({ ok: false, reason: "provider", status: 422 });
+      downloadUrl: "https://storage.example/gift.zip", orderId: "o1",
+    })).resolves.toEqual({ ok: false, reason: "provider", status: 422, detail: "bad" });
   });
 });
 
@@ -103,13 +131,17 @@ describe("deliverSupporterGift", () => {
     expect(calls.storage).toEqual([{
       bucket: "supporter-assets",
       object: SUPPORTER_FILENAME,
-      seconds: 600,
+      seconds: 7 * 24 * 60 * 60,   // the copy promises "7 days" — keep in sync
     }]);
     expect(calls.rpc.map(call => call.name)).toEqual([
       "claim_supporter_delivery",
       "finish_supporter_delivery",
     ]);
     expect(calls.rpc[1].args.p_provider_message_id).toBe("email_7");
+    // The Resend idempotency key must be claim-scoped: same order, fresh
+    // nonce per claim, so a failed send can actually be retried.
+    const key = fetchImpl.mock.calls[0][1].headers["Idempotency-Key"];
+    expect(key).toMatch(/^supporter-gift\/o1\/[0-9a-f-]{36}$/);
   });
 
   it("does not resend an order already marked sent", async () => {
