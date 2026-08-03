@@ -179,6 +179,40 @@ go-live flip (§6). Optional hardening: roll the Stripe webhook signing secret
 and the Resend API key, since both transited an owner chat/shell session
 during the gate run.
 
+### B.1 Resend delivery-status webhook — 2-minute setup (not gating)
+
+Delivery truth for the guide email: today `supporter_deliveries.status='sent'`
+means only "Resend accepted the send," not "the buyer's inbox actually got
+it." This webhook lets `resend-webhook` flip a row to `delivered` or
+`failed` (+ an owner alert) as Resend reports real outcomes. It does **not**
+gate anything already live — see the note at the bottom.
+
+- [ ] **⚠ Use the right Resend account.** Log into the **guides** account —
+      the one that verified `mail.luckycathsk.com` and sends the six-PDF ZIP
+      (§B.0 above) — **NOT** the separate auth-SMTP account (the
+      `send.luckycathsk.com` sender, once that SMTP flip lands) used for
+      sign-in emails. The two accounts have separate logins, API keys, and
+      webhook lists; adding this to the wrong one produces silence with no
+      error on either side.
+- [ ] In that account: Dashboard → **Webhooks** → **Add endpoint**.
+      URL: `https://eqsodiufgjecoqgxdisn.supabase.co/functions/v1/resend-webhook`.
+      Events: `email.delivered`, `email.bounced`, `email.failed`.
+- [ ] Copy the new endpoint's signing secret (`whsec_…`) to the VPS as a
+      root-only file — **not into chat**:
+
+          umask 077; cat > /root/.resend-webhook-secret
+
+      paste the secret, then Ctrl-D. Tell the agent it's there; the agent
+      sets it as the `RESEND_WEBHOOK_SECRET` function secret and runs the
+      verify block in `docs/supabase/README.md` §Supporter self-serve
+      download deployment prerequisites.
+- [ ] Note: until this webhook is live, `status='sent'` still only means
+      "Resend accepted the send" — the row never advances to `delivered` or
+      `failed` on its own. This does not block anything: the in-game
+      self-serve download button (shop owned-card + account panel) checks
+      the `entitlements` table, not delivery status, so it works for every
+      Supporter regardless of this webhook's state.
+
 **Start the payment-rails setup on day one, out of order.** Everything else here
 is under our control; Stripe account verification is the only item with an
 **external approval clock**. **RC Web Billing PromptPay was checked and ruled
