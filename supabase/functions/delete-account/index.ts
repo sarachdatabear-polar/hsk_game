@@ -1,7 +1,8 @@
 // Delete-account — Deno Edge Function. Thin I/O wrapper: authorization logic
 // lives in core.js (vitest-tested). This file resolves the caller's own uid
 // from their verified JWT and does the service-role delete that cascades to
-// every user table (profiles/progress/wallet/entitlements/ledger).
+// every user table (profiles/progress/wallet/entitlements/ledger/
+// supporter_deliveries).
 //
 // CORS is REQUIRED here (unlike rc-webhook, which RevenueCat's server calls):
 // this function's only caller is the browser client via supabase-js

@@ -9,6 +9,7 @@
 // stripe-checkout, which IS browser-called and needs a preflight handler.)
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { processStripeEvent, verifyStripeSignature } from "./core.js";
+import { deliverSupporterGift } from "../_shared/supporter-email/service.js";
 import { PRODUCTS } from "../../../src/monetization/products.js";
 
 Deno.serve(async (req) => {
@@ -49,6 +50,22 @@ Deno.serve(async (req) => {
     p_entitlement: entitlement,
   });
   if (error) return new Response("storage error", { status: 500 }); // real failure — let Stripe retry
+
+  // The grant is already server-confirmed at this point. Deliver from BOTH
+  // `granted` and `duplicate`: a retry after an email/provider outage sees a
+  // duplicate purchase grant, then resumes the separate idempotent delivery
+  // row instead of silently stranding the buyer. Resend also receives a stable
+  // order-based idempotency key, so retries cannot send the same gift twice.
+  if ((data === "granted" || data === "duplicate") && entitlement === "supporter") {
+    const delivery = await deliverSupporterGift({
+      supabase,
+      apiKey: Deno.env.get("RESEND_API_KEY"),
+      from: Deno.env.get("SUPPORTER_EMAIL_FROM"),
+      userId,
+      orderId,
+    });
+    if (!delivery.ok) return new Response("delivery error", { status: 500 });
+  }
 
   switch (data) {
     case "granted": return new Response(JSON.stringify({ ok: true }), { status: 200 });

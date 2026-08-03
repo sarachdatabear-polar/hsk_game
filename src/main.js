@@ -4090,9 +4090,11 @@ function makeSupporterCard(){
     const btn = document.createElement("button");
     btn.className = "chip buy-chip";
     btn.textContent = supporterDisplayPrice();
-    btn.onclick = () => isNative()
-      ? iapBuy(productById("supporter"), btn)
-      : openSupporterOffer();
+    // Every Supporter purchase — web AND native — goes through the same
+    // offer/account sheet. Store providers do not expose the buyer's private
+    // store email to us, so a verified Lucky Cat account is the only reliable
+    // address for the automatic six-guide delivery.
+    btn.onclick = () => openSupporterOffer();
     if(iapPending){
       btn.disabled = true;
       if(iapPending === "supporter") btn.textContent = t("iap.pending");

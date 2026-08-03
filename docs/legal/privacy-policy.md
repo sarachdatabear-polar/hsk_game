@@ -1,6 +1,6 @@
 # Lucky Cat HSK — Privacy Policy
 
-**Effective date:** 2026-08-01
+**Effective date:** 2026-08-02
 **App:** Lucky Cat HSK
 **Provider / data controller:** Sarach Sriklab, Bangkok 10400, Thailand
 **Contact:** support@luckycathsk.com
@@ -51,6 +51,13 @@ On both paths we receive only a confirmation that payment succeeded, an
 order/session reference, and the product bought — **we do not receive or store
 your payment card details.**
 
+If you buy the Supporter Pack, we use the verified email on your Lucky Cat
+account to send the six HSK frequency-guide PDFs included with the purchase.
+The archive is stored privately in Supabase and sent as a transactional
+attachment through **Resend**. We retain the order reference, delivery status,
+attempt timestamps, and Resend message id so failed deliveries can be retried;
+we do not use this purchase email to subscribe you to marketing.
+
 **d) Ads (only if ads are shown).**
 We show ads via **Google AdMob**. Depending on your consent choice, AdMob may
 process an advertising identifier, coarse device/usage signals, and your consent
@@ -89,6 +96,7 @@ data.
 | Run the game / save progress locally | §2a | Contract / necessary to provide the service |
 | Optional cloud save & cross-device sync | §2b | Contract (you chose to sign in) |
 | Process purchases & restore entitlements | §2c | Contract |
+| Deliver the Supporter Pack's six PDF guides and retry failed delivery | §2c | Contract |
 | Show ads to support the free app | §2d | **Consent** (personalized) / legitimate interest (non-personalized), per your choice |
 | Optional product analytics to improve the game | §2e | **Consent** (opt-in, off by default; withdraw any time in Settings) |
 | Keep the app stable and secure (store/OS crash diagnostics) | §2e | Legitimate interest |
@@ -109,6 +117,9 @@ handles data under its own privacy policy:
 - **RevenueCat** — purchase validation and entitlement management for purchases
   made in the Android app (only if you buy something there).
   Policy: https://www.revenuecat.com/privacy
+- **Resend** — transactional delivery of the six-guide Supporter gift to the
+  verified account email (only if you buy the Supporter Pack).
+  Policy: https://resend.com/legal/privacy-policy
 - **Google AdMob** — ad serving and, with consent, measurement (only if ads are
   shown). Policy: https://policies.google.com/privacy
 - **Apple / Google** — sign-in and payment processing for their platforms.
@@ -146,14 +157,14 @@ processing already carried out, and you may continue to play as an offline guest
 
 Cloud data is kept while your account is active and deleted within 30 days
 after you request account deletion or after 24 months of inactivity. Local device
-data persists until you clear it or uninstall. Purchase records are retained as
-required for tax/audit purposes.
+data persists until you clear it or uninstall. Purchase and Supporter-delivery
+records are retained as required to provide support and meet tax/audit obligations.
 
 ## 8. International transfers
 
 Your data may be processed outside your country. Our cloud/analytics data is
-hosted with Supabase in **Singapore** (`ap-southeast-1`); Stripe, RevenueCat and
-Google AdMob (only if you buy something or ads are shown) process data on
+hosted with Supabase in **Singapore** (`ap-southeast-1`); Stripe, RevenueCat, Resend and
+Google AdMob (only if you buy something, receive the Supporter gift, or ads are shown) process data on
 **US**-based infrastructure. Where a transfer requires it (e.g., from the EU/UK), we and our
 providers rely on appropriate safeguards such as the Standard Contractual
 Clauses. Each provider's own policy (§4) describes its transfer mechanisms.

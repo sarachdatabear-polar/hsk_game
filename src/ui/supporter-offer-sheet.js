@@ -56,6 +56,7 @@ export function createSupporterOfferSheet({
       panel.appendChild(node("p", "supporter-sheet-lead", t("supporter.sheet.lead")));
       const list = node("ul", "supporter-benefits");
       for(const text of [
+        t("supporter.sheet.benefitGuides"),
         t("supporter.sheet.benefitCoins"),
         t("supporter.sheet.benefitBadge"),
         t("supporter.sheet.benefitAds"),
