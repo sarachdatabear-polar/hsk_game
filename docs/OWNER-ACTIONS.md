@@ -336,7 +336,10 @@ let it run in the background while you do steps 1–2.
       (test-mode endpoints and their `whsec_` do NOT carry over; create a fresh
       one on the same three `checkout.session.*` events and take its new
       signing secret) → confirm **PromptPay reads active in LIVE mode**, not
-      pending → Supabase Pro → `STRIPE_CHECKOUT_URL` → the live gate in §6.
+      pending → ~~Supabase Pro~~ **(replaced 2026-08-03 by the hardened free
+      tier: owned daily backup + dual keep-alive + external alerting — see
+      `../../../ops/RUNBOOK.md` in the parent repo; pre-agreed Pro tripwires
+      live there)** → `STRIPE_CHECKOUT_URL` → the live gate in §6.
       *(Historical, kept because it is what the form needed:)*
       Reference values, taken from the shipped files rather than guessed:
       legal name/address per the privacy policy (**Sarach Sriklab, Bangkok
