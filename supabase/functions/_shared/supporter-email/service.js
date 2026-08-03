@@ -6,7 +6,10 @@ import {
   sendSupporterEmail,
 } from "./core.js";
 
-const SIGNED_URL_SECONDS = 10 * 60;
+// Link-based delivery: the URL goes in the email BODY, so its life is the
+// buyer's download window, not a Resend fetch race. "7 days" is promised in
+// the copy (core.js) — keep the two in sync.
+const SIGNED_URL_SECONDS = 7 * 24 * 60 * 60;
 
 async function finish(supabase, orderId, messageId, error) {
   const result = await supabase.rpc("finish_supporter_delivery", {
@@ -52,10 +55,10 @@ export async function deliverSupporterGift({
 
   const signed = await supabase.storage.from(SUPPORTER_BUCKET)
     .createSignedUrl(SUPPORTER_OBJECT, SIGNED_URL_SECONDS);
-  const attachmentUrl = signed.data && signed.data.signedUrl;
-  if (signed.error || !attachmentUrl) {
-    await finish(supabase, orderId, null, "attachment-unavailable");
-    return { ok: false, reason: "attachment-unavailable" };
+  const downloadUrl = signed.data && signed.data.signedUrl;
+  if (signed.error || !downloadUrl) {
+    await finish(supabase, orderId, null, "download-unavailable");
+    return { ok: false, reason: "download-unavailable" };
   }
 
   const sent = await sendSupporterEmail({
@@ -64,7 +67,7 @@ export async function deliverSupporterGift({
     from,
     to: user.email,
     locale,
-    attachmentUrl,
+    downloadUrl,
     orderId,
   });
   const recorded = await finish(
