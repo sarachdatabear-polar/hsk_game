@@ -16,9 +16,15 @@ remain operational owner actions.
 - **`migrations/2026-08-02-supporter-email-delivery.sql`** — permanent
   order-level delivery idempotency, service-only claim/finish RPCs, and the
   private Storage bucket used for the six-PDF ZIP.
+- **`migrations/2026-08-03-supporter-delivery-status.sql`** — widens
+  `supporter_deliveries.status` to add `'delivered'`, so `resend-webhook` can
+  record real delivery truth past `sent`. Additive + idempotent.
 - **`../../supabase/functions/_shared/supporter-email/`** — localized
   transactional email, Resend transport, private signed-asset attachment, and
   retry orchestration shared by both purchase webhooks.
+- **`../../supabase/functions/_shared/resend-webhook/`** — pure svix
+  signature verification and Resend event classification for
+  `resend-webhook` (vitest-tested, see `test/resend-webhook.test.js`).
 - **`../../supabase/functions/rc-webhook/`** — bearer + HMAC authenticated
   RevenueCat webhook that grants through `grant_purchase`.
 - **`../../supabase/functions/stripe-webhook/`** — signature-verified Stripe
@@ -27,6 +33,14 @@ remain operational owner actions.
 - **`../../supabase/functions/stripe-checkout/`** — authenticated Checkout
   Session creator called by the browser client. See §Stripe deployment
   prerequisites below.
+- **`../../supabase/functions/supporter-download/`** — JWT-verified endpoint
+  that issues a fresh signed URL for the six-guide ZIP to a signed-in
+  Supporter, for self-serve re-download. See §Supporter self-serve download
+  deployment prerequisites below.
+- **`../../supabase/functions/resend-webhook/`** — svix-signature-verified
+  Resend delivery webhook that moves `supporter_deliveries` rows past `sent`
+  to `delivered`/`failed` and alerts on failure. See §Supporter self-serve
+  download deployment prerequisites below.
 
 ## Apply to a project
 
@@ -274,3 +288,162 @@ setting in the Dashboard → **Edge Functions → function → Details** — the
 does not prompt or warn if you deploy `stripe-webhook` without
 `--no-verify-jwt`, it just silently ships a function that will 401 every real
 Stripe delivery.
+
+## Supporter self-serve download deployment prerequisites
+
+Two more functions, opposite JWT settings again — same rule as the Stripe
+pair above: get this backwards and either a real Resend delivery 401s before
+`resend-webhook`'s own code ever runs, or `supporter-download` accepts calls
+from anyone with no Supabase session at all.
+
+**Migration first.** `migrations/2026-08-03-supporter-delivery-status.sql`
+widens `supporter_deliveries.status` to accept `'delivered'` in addition to
+`pending`/`sending`/`sent`/`failed`. Apply it (SQL editor or `supabase db
+push`) **before** deploying `resend-webhook` — its `deliver` branch updates a
+row to that new value and errors against an unmigrated table.
+
+### supporter-download
+
+Deploy normally (JWT verification ON — it authenticates the caller itself,
+same pattern as `stripe-checkout`):
+
+    npx supabase@latest functions deploy supporter-download --project-ref eqsodiufgjecoqgxdisn
+
+No new secret — it reuses `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and
+`SUPABASE_SERVICE_ROLE_KEY`, already set for the other functions. It resolves
+the caller from their **own** verified bearer token (never the request
+body), checks `entitlements` for `product_id = 'supporter'` server-side, and
+only then signs a fresh URL for the guide ZIP. The client's "owned" state
+that shows the in-game download button is cosmetic; the server is the real
+gate — an anonymous session simply fails the entitlement check like any
+other non-supporter (403 `not_supporter`).
+
+### resend-webhook
+
+> **⚠ DEPLOY WITH `--no-verify-jwt` — DO NOT MISS THIS FLAG.** Resend sends
+> svix signature headers, not a Supabase JWT. Forgetting the flag means the
+> gateway 401s every real Resend delivery before the function's own svix
+> check ever runs — the exact same failure shape as `stripe-webhook` above,
+> and just as silent: delivery-status rows simply stop advancing past `sent`,
+> with nothing in the Supabase logs to explain why.
+
+    npx supabase@latest functions deploy resend-webhook --project-ref eqsodiufgjecoqgxdisn --no-verify-jwt
+
+New secret: `RESEND_WEBHOOK_SECRET` — the svix signing secret (`whsec_…`)
+from the Resend dashboard webhook (see `docs/OWNER-ACTIONS.md` §B.1 for the
+owner-side steps that produce it). Never commit it. The function fails
+closed on a missing secret — an unset `RESEND_WEBHOOK_SECRET`,
+`SUPABASE_URL`, or `SUPABASE_SERVICE_ROLE_KEY` returns 503
+`service unavailable`, the same guard shape as `stripe-webhook`.
+
+It also reuses `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (already set
+for the other functions); the failure-alert leg additionally reuses
+`RESEND_API_KEY` and `SUPPORTER_EMAIL_FROM`, both already set per the
+Automatic Supporter gift delivery prerequisites above. If either of those
+two is unset, the row still flips to `failed` correctly — the alert is
+best-effort and only ever adds `alerted: false` to the response, it never
+turns the row-flip itself into a failure.
+
+**⚠ Create the webhook in the right Resend account.** `resend-webhook`
+subscribes to the **guides** Resend account — the one that verified
+`mail.luckycathsk.com` and sends the six-PDF ZIP (§Automatic Supporter gift
+delivery prerequisites above) — **not** the separate auth-SMTP Resend
+account (the `send.luckycathsk.com` sender) used for sign-in emails. The two
+accounts have separate logins, separate API keys, and separate webhook
+lists; adding the webhook to the wrong one produces silence with no error on
+either side. See `docs/OWNER-ACTIONS.md` §B.1.
+
+### Verify
+
+Deno TS cannot run under vitest and `eslint.config.mjs` ignores
+`supabase/`, so this manual gate is the only verification either function
+gets before it faces real traffic. This documents exactly what the code
+returns — see `supabase/functions/resend-webhook/index.ts` and
+`supabase/functions/_shared/resend-webhook/core.js` for the logic being
+exercised — not a generic "should 401."
+
+**(a) Unsigned POST to `resend-webhook` → 401.** No svix headers at all
+means `verifySvixSignature` fails immediately (missing `id`/`timestamp`/
+`signature`), before any database call is made:
+
+    curl -i -X POST "https://eqsodiufgjecoqgxdisn.supabase.co/functions/v1/resend-webhook" \
+      -H "Content-Type: application/json" -d '{}'
+
+Three possible results, same three-way read as the `stripe-webhook` probe
+above:
+
+- **`401` plain-text `unauthorized`** — pass. This is the *function's own*
+  rejection: the gateway forwarded the unsigned POST (proving
+  `--no-verify-jwt` took) and the svix check then failed it.
+- **`503 service unavailable`** — `RESEND_WEBHOOK_SECRET` (or
+  `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`) is not set yet, or did not
+  take. Run this probe again **after** the owner's §B.1 step lands the
+  secret, not before.
+- **JSON `{"code":…,"message":…}` 401** (not the plain-text shape above) —
+  the *gateway* answered, meaning the deploy dropped `--no-verify-jwt`.
+  Re-deploy with the flag and re-probe.
+
+**(b) Synthetic svix-signed `email.delivered` for a fake message id → 200
+`{"ok":true}`.** The deliver path runs `update … where provider_message_id =
+<id> and status = 'sent'` and only checks for a database *error*, not for
+rows actually matched — so a message id that matches nothing still returns
+success. This is deliberate (Resend must not be told to retry a
+well-formed, correctly-signed event just because our id happens to be
+stale), but it means `{"ok":true}` here is **not** proof any row moved; only
+a real purchase's `provider_message_id` proves that.
+
+**This check is also migration-blind: passing it does not confirm
+`migrations/2026-08-03-supporter-delivery-status.sql` landed.** A zero-row
+`update` never evaluates the table's `CHECK` constraint — Postgres only runs
+`CHECK` against rows it actually writes — so (b) returns the same
+`{"ok":true}` whether or not `'delivered'` is a legal status yet. Confirm
+the migration separately, by query, e.g.
+`select pg_get_constraintdef(oid) from pg_constraint where conname =
+'supporter_deliveries_status_check';` and check `'delivered'` is in the
+returned list.
+
+    SECRET="whsec_<the RESEND_WEBHOOK_SECRET value>"
+    SECRET_HEX=$(printf '%s' "${SECRET#whsec_}" | base64 -d | xxd -p -c 256)
+    ID="msg_verify_1"; TS=$(date +%s)
+    PAYLOAD='{"type":"email.delivered","data":{"email_id":"re_does-not-exist"}}'
+    SIG=$(printf '%s' "${ID}.${TS}.${PAYLOAD}" \
+      | openssl dgst -sha256 -mac hmac -macopt hexkey:"$SECRET_HEX" -binary | base64)
+    curl -i -X POST "https://eqsodiufgjecoqgxdisn.supabase.co/functions/v1/resend-webhook" \
+      -H "svix-id: $ID" -H "svix-timestamp: $TS" -H "svix-signature: v1,$SIG" \
+      -H "Content-Type: application/json" -d "$PAYLOAD"
+
+**(c) Synthetic svix-signed `email.bounced` for a fake message id → 200
+`{"ignored":"no-matching-row"}`.** Unlike the deliver path, the fail path
+`.select()`s the row it just tried to update; a fake id matches nothing, so
+`data[0]` is `undefined` and the function reports the no-match explicitly
+instead of silently swallowing it — that asymmetry between (b) and (c) is
+in the code, not a bug in this verify script. Re-run the same recipe as (b)
+with a different payload — **regenerate `TS` too, not just `SIG`**: the
+verifier rejects anything outside a 300-second tolerance, so reusing an old
+timestamp from a copy-pasted (b) run 401s and reads as a broken signature
+rather than the stale clock it actually is:
+
+    ID="msg_verify_2"; TS=$(date +%s)
+    PAYLOAD='{"type":"email.bounced","data":{"email_id":"re_does-not-exist","bounce":{"message":"test"}}}'
+    SIG=$(printf '%s' "${ID}.${TS}.${PAYLOAD}" \
+      | openssl dgst -sha256 -mac hmac -macopt hexkey:"$SECRET_HEX" -binary | base64)
+    curl -i -X POST "https://eqsodiufgjecoqgxdisn.supabase.co/functions/v1/resend-webhook" \
+      -H "svix-id: $ID" -H "svix-timestamp: $TS" -H "svix-signature: v1,$SIG" \
+      -H "Content-Type: application/json" -d "$PAYLOAD"
+
+(`SECRET_HEX` is the same value computed in (b) — reuse the shell session
+rather than recomputing it.)
+
+**(d) `supporter-download` without a token → gateway 401.** JWT verification
+is ON, so a request with no `Authorization` header never reaches the
+function body at all — same gateway rejection already documented for
+`stripe-checkout` above:
+
+    curl -i -X POST "https://eqsodiufgjecoqgxdisn.supabase.co/functions/v1/supporter-download"
+
+Expect `401` with the *gateway's* JSON body
+(`{"code":"UNAUTHORIZED_NO_AUTH_HEADER",…}`), not the function's own
+`{"error":"unauthorized"}` shape (`index.ts:43`). Seeing the function's shape
+instead means JWT verification did not actually take — re-check Dashboard →
+**Edge Functions → function → Details**, the same trap called out for
+`stripe-webhook` above.

@@ -580,6 +580,9 @@ export const STRINGS = {
     "supporter.sheet.accountReady": "Account ready — you can continue to secure checkout",
     "supporter.sheet.active": "Supporter active ✓",
     "supporter.sheet.activeBody": "Thank you! Your permanent Supporter benefits are active on this account.",
+    "supporter.download.btn": "Download your guides",
+    "supporter.download.failed": "Download failed — please try again",
+    "supporter.download.signin": "Sign in with the account you bought Supporter on to download",
     "account.supporterChip": "Supporter ♥",
     "item.supporter": "Supporter Pack",
     "item.coins_s": "Coin Pouch",
@@ -1284,6 +1287,9 @@ export const STRINGS = {
     "supporter.sheet.accountReady": "บัญชีพร้อมแล้ว — ไปยังหน้าชำระเงินที่ปลอดภัยได้เลย", // TH-REVIEW
     "supporter.sheet.active": "Supporter เปิดใช้งานแล้ว ✓", // TH-REVIEW
     "supporter.sheet.activeBody": "ขอบคุณ! สิทธิ์ Supporter แบบถาวรเปิดใช้งานในบัญชีนี้แล้ว", // TH-REVIEW
+    "supporter.download.btn": "ดาวน์โหลดคู่มือของคุณ", // TH-REVIEW
+    "supporter.download.failed": "ดาวน์โหลดไม่สำเร็จ — โปรดลองอีกครั้ง", // TH-REVIEW
+    "supporter.download.signin": "เข้าสู่ระบบด้วยบัญชีที่ซื้อ Supporter เพื่อดาวน์โหลด", // TH-REVIEW
     "account.supporterChip": "ผู้สนับสนุน ♥",
     "item.supporter": "แพ็กผู้สนับสนุน",
     "item.coins_s": "ถุงเหรียญ",

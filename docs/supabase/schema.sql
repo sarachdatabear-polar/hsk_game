@@ -320,13 +320,14 @@ grant execute on function public.grant_purchase(uuid, integer, text, text, text,
 -- Revision 2026-08-02 — automatic Supporter gift email delivery.
 -- Mirrors migrations/2026-08-02-supporter-email-delivery.sql
 -- so a fresh project and an upgraded project expose the same server surface.
+-- rev 2026-08-03: + 'delivered' status (resend-webhook delivery truth).
 -- ---------------------------------------------------------------------------
 
 create table if not exists public.supporter_deliveries (
   order_id             text primary key,
   user_id              uuid not null references auth.users (id) on delete cascade,
   status               text not null default 'pending'
-                       check (status in ('pending', 'sending', 'sent', 'failed')),
+                       check (status in ('pending', 'sending', 'sent', 'failed', 'delivered')),
   attempts             integer not null default 0 check (attempts >= 0),
   provider_message_id  text,
   last_error           text,
