@@ -643,9 +643,30 @@ let it run in the background while you do steps 1–2.
    bridge retires), subscriptions, web ads, or new SKUs before placement
    (step 7) ships.
 
-## 0. Accept the v129 cloud flip on two devices (blocks §1)
+## 0. ✅ COMPLETE 2026-08-03 — v129 cloud flip accepted on two devices (no longer blocks §1)
 
-> ### ✅ STEPS 1–3 PASSED 2026-08-01 (day one). Steps 4–5 still owed on 2 Aug.
+> ### ✅ §0 COMPLETE — STEPS 4–5 (the union check) PASSED 2026-08-03.
+>
+> Same rig as steps 1–3, resumed 2026-08-03 with **no new OTP** — both
+> persistent profiles still held valid Supabase sessions (refresh tokens
+> renewed on load). Device B met the 20-word daily goal (35 resolved), sent
+> the cat out (`Go exploring`), claimed on return (day `2026-08-03`, keepsake
+> **paper-kite**, story `sunny-window`, word 时候), then backgrounded to push.
+> Cloud row then held **both** claims. Device A — which locally had only the
+> 1 Aug claim — foregrounded and showed **the union**: both claims present,
+> the 1 Aug entry byte-identical down to `departedAt`/`returnedAt`, Cat
+> screen **Memories 2**. The P0 this check exists to detect (B's newer row
+> *replacing* A's claim) did not occur. Exactly-once held through two cold
+> reloads + screen re-entry on A: still exactly 2 claims, one keepsake each.
+> **§0 no longer blocks §1 — the signed APK is unblocked.**
+>
+> Driver for reruns: `game/.pw-win.mjs` (uncommitted, `.pw-*` excluded) —
+> plays battles by clicking the option whose `_correct` property is set
+> (atomically inside the page; a locator round-trip races the re-render),
+> dismisses `#format-intro` explicitly, and waits out reveal/transition
+> moments instead of declaring stuck on the first idle pass.
+>
+> ### ✅ STEPS 1–3 PASSED 2026-08-01 (day one).
 >
 > Run headlessly on the VPS against **production** `luckycathsk.com`, on a
 > throwaway account **`support@luckycathsk.com`** (uid
