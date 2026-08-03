@@ -89,7 +89,7 @@ describe("sw.js precache list", () => {
       "assets/bg-cat-garden-v1.webp", "assets/bg-cat-market-v1.webp",
       "assets/bg-cat-lantern-v1.webp", "assets/bg-cat-scholar-gate-v1.webp",
     ]) expect(precacheSet.has(entry), entry).toBe(false);
-    expect(swSrc).toContain('const CACHE_VERSION = "v148"');
+    expect(swSrc).toContain('const CACHE_VERSION = "v149"');
     expect(swSrc).toContain("const RUNTIME = `nbhsk-runtime-${CACHE_VERSION}`");
     expect(swSrc).toContain("cacheAfterFetch(RUNTIME, request)");
   });

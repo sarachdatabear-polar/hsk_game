@@ -20,9 +20,12 @@
 // THE SINGLE GO-LIVE SWITCH IS STRIPE_CHECKOUT_URL BELOW.
 export const STRIPE_PUBLISHABLE_KEY = "";
 
-// Supabase edge function endpoint, e.g.
-// https://<project>.supabase.co/functions/v1/stripe-checkout
-export const STRIPE_CHECKOUT_URL = "";
+// Supabase edge function endpoint. FILLED 2026-08-03 (owner: "go with
+// supporter only flip the checkout url") — billing is LIVE from this commit.
+// Blanking this string is the kill switch: the provider becomes unavailable,
+// iapVisible() goes false and the whole purchase surface hides again.
+export const STRIPE_CHECKOUT_URL =
+  "https://eqsodiufgjecoqgxdisn.supabase.co/functions/v1/stripe-checkout";
 
 // The ONE origin a Checkout Session can return to. This MUST stay byte-equal
 // to SITE_ORIGIN in supabase/functions/stripe-checkout/index.ts, which builds

@@ -4,23 +4,30 @@ import { STRIPE_SITE_ORIGIN } from "../src/monetization/stripe-config.js";
 
 // Injected RevenueCat opts so no test touches the real SDK or Capacitor.
 const rcOpts = (over) => ({ revenuecat: { apiKey: "rc_test_key", isNative: () => true, sdk: {}, ...over } });
+// Since the 2026-08-03 go-live flip the SHIPPED checkout URL is non-blank, so
+// tests exercising RC/mock gating must dark the Stripe branch explicitly or
+// getProvider falls through to stripe-web instead of the branch under test.
+const darkStripe = { stripe: { checkoutUrl: "" } };
 
 describe("getProvider selection", () => {
   it("blank key -> mock, even on native", () => {
-    expect(getProvider(rcOpts({ apiKey: "" })).kind).toBe("mock");
+    expect(getProvider({ ...rcOpts({ apiKey: "" }), ...darkStripe }).kind).toBe("mock");
   });
   it("whitespace-only key -> mock (key must be meaningfully set)", () => {
-    expect(getProvider(rcOpts({ apiKey: "   " })).kind).toBe("mock");
+    expect(getProvider({ ...rcOpts({ apiKey: "   " }), ...darkStripe }).kind).toBe("mock");
   });
   it("key set but not native (browser/file://) -> mock", () => {
-    expect(getProvider(rcOpts({ isNative: () => false })).kind).toBe("mock");
+    expect(getProvider({ ...rcOpts({ isNative: () => false }), ...darkStripe }).kind).toBe("mock");
   });
   it("key set + native -> revenuecat", () => {
     expect(getProvider(rcOpts({})).kind).toBe("revenuecat");
   });
-  it("no opts at all -> mock (shipped config has a blank key)", () => {
-    // Safe in node: the blank shipped key short-circuits before isNative runs.
-    expect(getProvider().kind).toBe("mock");
+  it("no opts at all -> stripe-web (BILLING LIVE 2026-08-03: shipped checkout URL is set)", () => {
+    // This is the go-live pin: shipped defaults on web now select Stripe.
+    // If this fails with "mock", someone blanked STRIPE_CHECKOUT_URL — that
+    // is the kill switch, so a failure here after a deliberate darkening is
+    // expected and this pin should be flipped back then.
+    expect(getProvider().kind).toBe("stripe-web");
   });
   it("constructs synchronously and cheaply (boot-path contract)", () => {
     const p = getProvider(rcOpts({}));
@@ -32,6 +39,7 @@ describe("getProvider selection", () => {
 // Web-billing selection. Inject a non-empty web key + not-native + not-file://.
 const webOpts = (over) => ({
   revenuecat: { apiKey: "", isNative: () => false },   // keep native branch off
+  ...darkStripe,                                       // stripe outranks RC-web; dark it
   revenuecatWeb: { apiKey: "rcb_web_key", isNative: () => false, isFileProtocol: () => false, sdk: {}, ...over },
 });
 
@@ -53,8 +61,8 @@ describe("getProvider web selection", () => {
   it("file:// -> mock (never web)", () => {
     expect(getProvider(webOpts({ isFileProtocol: () => true })).kind).toBe("mock");
   });
-  it("no opts -> mock (shipped keys are blank)", () => {
-    expect(getProvider().kind).toBe("mock");
+  it("no opts -> stripe-web (shipped checkout URL is live; blank URL is the kill switch)", () => {
+    expect(getProvider().kind).toBe("stripe-web");
   });
 });
 
@@ -118,5 +126,29 @@ describe("provider selection — stripe web", () => {
   it("never selects stripe-web on file://", () => {
     const p = getProvider({ stripe: { checkoutUrl: "https://fn/x", isNative: () => false, isFileProtocol: () => true } });
     expect(p.kind).not.toBe("stripe-web");
+  });
+});
+
+// ── GO-LIVE PIN (2026-08-03, owner decision: "go with supporter only") ──────
+// Shipped defaults on web must sell the Supporter and NOTHING else. Web coin
+// packs are go-live step 8 and open by widening STRIPE_WEB_PRODUCT_IDS — when
+// that decision is made, this pin is the test to update.
+import { STRIPE_CHECKOUT_URL, STRIPE_WEB_PRODUCT_IDS } from "../src/monetization/stripe-config.js";
+
+describe("shipped go-live config (supporter-only)", () => {
+  it("checkout URL points at the live project's stripe-checkout function", () => {
+    expect(STRIPE_CHECKOUT_URL).toBe(
+      "https://eqsodiufgjecoqgxdisn.supabase.co/functions/v1/stripe-checkout");
+  });
+  it("shipped provider is stripe-web and supports exactly the supporter", () => {
+    const p = getProvider();
+    expect(p.kind).toBe("stripe-web");
+    expect(p.supports("supporter")).toBe(true);
+    for (const id of ["coins_s", "coins_m", "coins_l", "coins_xl"]) {
+      expect(p.supports(id)).toBe(false);
+    }
+  });
+  it("web product list is exactly [supporter]", () => {
+    expect(STRIPE_WEB_PRODUCT_IDS).toEqual(["supporter"]);
   });
 });
