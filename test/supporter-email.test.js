@@ -58,6 +58,15 @@ describe("supporter email copy", () => {
     expect(supporterEmail("th", URL).text).toContain("7 วัน");
   });
 
+  it("html is inline-styled in BOTH locales (email clients strip <style>; a bare template shipped once)", () => {
+    for (const locale of ["en", "th"]) {
+      const html = supporterEmail(locale, URL).html;
+      expect(html).toContain("font-family:Arial");            // shell applied
+      expect(html).toContain("background:#C95A41");           // styled button
+      expect(html).not.toMatch(/<(h1|p)>/);                   // no unstyled tags
+    }
+  });
+
   it("derives a stable, bounded idempotency key from the order", () => {
     expect(supporterIdempotencyKey("cs_123")).toBe("supporter-gift/cs_123");
     expect(supporterIdempotencyKey("")).toBeNull();

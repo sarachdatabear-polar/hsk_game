@@ -13,6 +13,22 @@ export const RESEND_ENDPOINT = "https://api.resend.com/emails";
 // avoids the deliverability penalty of an 18MB ZIP from a young domain.
 // "7 days" below must stay in sync with SIGNED_URL_SECONDS in service.js.
 // TH copy edited without a native pass — queue for the Thai reviewer.
+// Inline styles only — email clients strip <style> blocks. One consistent
+// type scale (16px body / 20px heading / 13px fine print) in the game's
+// palette, wrapped in a centered card on the app's cream background.
+const P = "margin:0 0 16px;font-size:16px;line-height:1.55;color:#3a3126;";
+const H1 = "margin:0 0 20px;font-size:20px;line-height:1.3;color:#3a3126;font-weight:700;";
+const FINE = "margin:0 0 16px;font-size:13px;line-height:1.5;color:#8a8177;";
+const LINK = "color:#C95A41;";
+const BTN = "display:inline-block;padding:12px 22px;background:#C95A41;color:#ffffff;" +
+  "font-size:16px;font-weight:700;text-decoration:none;border-radius:8px;";
+
+function emailShell(inner) {
+  return `<div style="margin:0;padding:24px 12px;background:#FBF5E8;">` +
+    `<div style="max-width:560px;margin:0 auto;padding:28px 24px;background:#ffffff;` +
+    `border-radius:12px;font-family:Arial,Helvetica,sans-serif;">${inner}</div></div>`;
+}
+
 function escapeHtmlAttr(v) {
   return String(v).replace(/&/g, "&amp;").replace(/"/g, "&quot;")
     .replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -39,18 +55,18 @@ function copyFor(locale, downloadUrl) {
         "ทีม Lucky Cat HSK",
         "support@luckycathsk.com",
       ].join("\n"),
-      html: `
-        <h1>ขอบคุณที่เป็น Supporter ♥</h1>
-        <p>ของขวัญสำหรับคุณ: <strong>คู่มือ PDF ศัพท์ออกบ่อยจำนวน 6 ไฟล์</strong>
+      html: emailShell(`
+        <h1 style="${H1}">ขอบคุณที่เป็น Supporter ♥</h1>
+        <p style="${P}">ของขวัญสำหรับคุณ: <strong>คู่มือ PDF ศัพท์ออกบ่อยจำนวน 6 ไฟล์</strong>
         แยกตั้งแต่ HSK1 ถึง HSK6</p>
-        <p><a href="${href}"><strong>ดาวน์โหลดคู่มือทั้งหมด (ZIP)</strong></a><br>
-        <small>ลิงก์ใช้ได้ 7 วัน — หากหมดอายุ ตอบกลับอีเมลนี้ได้เลย เราจะส่งลิงก์ใหม่ให้</small></p>
-        <p>แต่ละเล่มมีอักษรจีน พินอิน ความหมายภาษาอังกฤษและภาษาไทย
+        <p style="margin:24px 0;"><a href="${href}" style="${BTN}">ดาวน์โหลดคู่มือทั้งหมด (ZIP)</a></p>
+        <p style="${FINE}">ลิงก์ใช้ได้ 7 วัน — หากหมดอายุ ตอบกลับอีเมลนี้ได้เลย เราจะส่งลิงก์ใหม่ให้</p>
+        <p style="${P}">แต่ละเล่มมีอักษรจีน พินอิน ความหมายภาษาอังกฤษและภาษาไทย
         พร้อมข้อมูลความถี่จากชุดข้อสอบจำลอง</p>
-        <p><small>สถิติอ้างอิงข้อความในชุดข้อสอบจำลองที่วิเคราะห์ ไม่รวมเสียง Listening
-        และไม่ได้รับประกันคะแนนสอบ</small></p>
-        <p>ขอบคุณที่ช่วยให้ Lucky Cat HSK เปิดให้ทุกคนเรียนฟรีต่อไป</p>
-        <p>ทีม Lucky Cat HSK<br><a href="mailto:support@luckycathsk.com">support@luckycathsk.com</a></p>`,
+        <p style="${FINE}">สถิติอ้างอิงข้อความในชุดข้อสอบจำลองที่วิเคราะห์ ไม่รวมเสียง Listening
+        และไม่ได้รับประกันคะแนนสอบ</p>
+        <p style="${P}">ขอบคุณที่ช่วยให้ Lucky Cat HSK เปิดให้ทุกคนเรียนฟรีต่อไป</p>
+        <p style="${P}">ทีม Lucky Cat HSK<br><a href="mailto:support@luckycathsk.com" style="${LINK}">support@luckycathsk.com</a></p>`),
     };
   }
   return {
@@ -71,19 +87,19 @@ function copyFor(locale, downloadUrl) {
       "The Lucky Cat HSK team",
       "support@luckycathsk.com",
     ].join("\n"),
-    html: `
-      <h1>Thank you for becoming a Supporter ♥</h1>
-      <p>Your gift is <strong>six frequency-ranked PDF study guides</strong>,
+    html: emailShell(`
+      <h1 style="${H1}">Thank you for becoming a Supporter ♥</h1>
+      <p style="${P}">Your gift is <strong>six frequency-ranked PDF study guides</strong>,
       one for each level from HSK1 through HSK6.</p>
-      <p><a href="${href}"><strong>Download all six guides (ZIP)</strong></a><br>
-      <small>The link is valid for 7 days — if it has expired, just reply to
-      this email and we will send a fresh one.</small></p>
-      <p>Each guide includes Chinese, pinyin, English, Thai, and recurrence data
+      <p style="margin:24px 0;"><a href="${href}" style="${BTN}">Download all six guides (ZIP)</a></p>
+      <p style="${FINE}">The link is valid for 7 days — if it has expired, just reply to
+      this email and we will send a fresh one.</p>
+      <p style="${P}">Each guide includes Chinese, pinyin, English, Thai, and recurrence data
       from the analyzed mock-exam papers.</p>
-      <p><small>Statistics cover the analyzed printed mock-exam text only.
-      Listening audio is not included, and no exam score is guaranteed.</small></p>
-      <p>Thank you for helping keep Lucky Cat HSK free for every learner.</p>
-      <p>The Lucky Cat HSK team<br><a href="mailto:support@luckycathsk.com">support@luckycathsk.com</a></p>`,
+      <p style="${FINE}">Statistics cover the analyzed printed mock-exam text only.
+      Listening audio is not included, and no exam score is guaranteed.</p>
+      <p style="${P}">Thank you for helping keep Lucky Cat HSK free for every learner.</p>
+      <p style="${P}">The Lucky Cat HSK team<br><a href="mailto:support@luckycathsk.com" style="${LINK}">support@luckycathsk.com</a></p>`),
   };
 }
 
