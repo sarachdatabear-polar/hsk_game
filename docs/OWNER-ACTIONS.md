@@ -539,9 +539,19 @@ let it run in the background while you do steps 1–2.
       thing left for the live gate. *(This line used to say "PromptPay's
       async double-delivery is then the only thing left." There is no async
       double-delivery — see the correction in §6.)*
-   5. Fill **`STRIPE_CHECKOUT_URL`** in `src/monetization/stripe-config.js`
-      and ship. The client code is already merged dark; a blank
-      `STRIPE_CHECKOUT_URL` is a pure no-op.
+   5. ✅ **DONE 2026-08-03 — v149 LIVE, BILLING IS ON (supporter-only).**
+      Owner decision: "go with supporter only flip the checkout url."
+      `STRIPE_CHECKOUT_URL` filled (game `f066208a`, release merge
+      `7d0f47d9`), SHELL v148→v149, suite 9,728 green after repinning the
+      provider-selection tests to the live config + a new supporter-only
+      go-live pin (`test/provider.test.js` "shipped go-live config").
+      Live-verified: sw v149 on luckycathsk.com, dist byte-identical
+      (sha `62828e72…`), and a prod Chromium probe shows the Supporter card
+      rendering with the web-honest pitch + ฿79 button while the coins
+      section stays hidden. Blanking the URL remains the kill switch.
+      *(Original instruction, for the record:)* Fill **`STRIPE_CHECKOUT_URL`**
+      in `src/monetization/stripe-config.js` and ship. The client code is
+      already merged dark; a blank `STRIPE_CHECKOUT_URL` is a pure no-op.
       **`STRIPE_CHECKOUT_URL` is the ONLY go-live switch** (verified
       2026-07-31). `STRIPE_PUBLISHABLE_KEY` sits in the same file but is
       **read by nothing** — that file is its only mention in `src/` and
