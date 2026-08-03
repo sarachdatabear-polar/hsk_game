@@ -100,6 +100,12 @@ describe("privacy policy — payment processors", () => {
     expect(html).toContain("Google Play");
   });
 
+  it("discloses transactional Supporter delivery through Resend", () => {
+    expect(html).toContain("Resend");
+    expect(html).toMatch(/six HSK frequency-guide PDFs/i);
+    expect(html).toMatch(/do not use this purchase email to subscribe you\s+to marketing/i);
+  });
+
   it("states that card details never reach us on either path", () => {
     expect(html).toMatch(/do not receive or store your (payment )?card details/i);
   });

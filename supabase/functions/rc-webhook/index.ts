@@ -4,6 +4,7 @@
 // Supabase service-role writes that core.js can't do (no Deno APIs there).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { authorizeWebhook, processEvent, verifyWebhookSignature } from "./core.js";
+import { deliverSupporterGift } from "../_shared/supporter-email/service.js";
 import { PRODUCTS } from "../../../src/monetization/products.js";
 
 Deno.serve(async (req) => {
@@ -61,6 +62,20 @@ Deno.serve(async (req) => {
     p_entitlement: entitlement,
   });
   if (error) return new Response("storage error", { status: 500 }); // real failure — let RC retry
+
+  // Resume delivery even when grant_purchase says duplicate: webhook retries
+  // are the recovery mechanism for transient email/storage failures, while
+  // the delivery table + Resend Idempotency-Key prevent duplicate messages.
+  if ((data === "granted" || data === "duplicate") && entitlement === "supporter") {
+    const delivery = await deliverSupporterGift({
+      supabase,
+      apiKey: Deno.env.get("RESEND_API_KEY"),
+      from: Deno.env.get("SUPPORTER_EMAIL_FROM"),
+      userId,
+      orderId,
+    });
+    if (!delivery.ok) return new Response("delivery error", { status: 500 });
+  }
 
   switch (data) {
     case "granted": return new Response(JSON.stringify({ ok: true }), { status: 200 });

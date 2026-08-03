@@ -34,6 +34,17 @@ describe("supporter checkout wiring — the two guards must not deadlock", () =>
     expect(main).toMatch(/onCheckout:\s*button\s*=>\s*iapBuy\(/);
   });
 
+  it("routes every Supporter card through the verified-email offer sheet", () => {
+    const card = main.match(/function makeSupporterCard\(\)\{[\s\S]*?\n}\n\n\/\/ Buy flow/)?.[0] ?? "";
+    expect(card).not.toBe("");
+    expect(card).toContain("btn.onclick = () => openSupporterOffer()");
+    expect(card).not.toMatch(/isNative\(\)[\s\S]*iapBuy\(productById\("supporter"\)/);
+  });
+
+  it("shows the emailed six-guide benefit before checkout", () => {
+    expect(sheet).toContain('t("supporter.sheet.benefitGuides")');
+  });
+
   it("iapBuy does NOT refuse an already-disabled button", () => {
     const guard = main.match(/async function iapBuy\(p, btn\)\{[\s\S]*?\n {2}iapPending = p\.id;/)?.[0] ?? "";
     expect(guard).not.toBe("");
