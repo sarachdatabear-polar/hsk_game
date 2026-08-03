@@ -8,10 +8,17 @@ remain operational owner actions.
 ## Files
 
 - **`schema.sql`** — tables (`profiles`, `progress`, `wallet`, `entitlements`,
-  `ledger`), the `updated_at` trigger, and Row-Level Security policies. Each
+  `ledger`, `supporter_deliveries`), the `updated_at` trigger, the private
+  `supporter-assets` bucket, and Row-Level Security policies. Each
   column is commented with the `nbhsk.*` localStorage key it mirrors.
 - **`migrations/2026-07-12-iap-golive.sql`** — idempotent purchase ledger,
   atomic `grant_purchase`, and service-role privileges required before IAP.
+- **`migrations/2026-08-02-supporter-email-delivery.sql`** — permanent
+  order-level delivery idempotency, service-only claim/finish RPCs, and the
+  private Storage bucket used for the six-PDF ZIP.
+- **`../../supabase/functions/_shared/supporter-email/`** — localized
+  transactional email, Resend transport, private signed-asset attachment, and
+  retry orchestration shared by both purchase webhooks.
 - **`../../supabase/functions/rc-webhook/`** — bearer + HMAC authenticated
   RevenueCat webhook that grants through `grant_purchase`.
 - **`../../supabase/functions/stripe-webhook/`** — signature-verified Stripe
@@ -53,6 +60,61 @@ Supabase satisfies.)
 Device preferences and transient UI state stay on-device and are absent from the
 schema by design: `nbhsk.settings`, `nbhsk.sfx`, `nbhsk.scope`,
 `nbhsk.scopeView`, `nbhsk.formatIntros`, `nbhsk.introDone`.
+
+## Automatic Supporter gift delivery prerequisites
+
+The Stripe and RevenueCat webhooks send the six-guide ZIP only **after**
+`grant_purchase` confirms the Supporter entitlement. Delivery is separately
+idempotent: `supporter_deliveries.order_id` prevents permanent duplicates and
+Resend receives `Idempotency-Key: supporter-gift/<order-id>` for transport
+retries. A delivery failure returns HTTP 500 so the payment provider retries;
+a duplicate grant resumes the unfinished delivery without re-crediting coins.
+
+Complete these in order before advertising automatic delivery:
+
+1. Create a Resend account and verify a sending subdomain such as
+   `mail.luckycathsk.com`. Using a subdomain avoids disturbing Cloudflare Email
+   Routing's existing inbound MX/SPF configuration on the apex domain.
+2. Apply `migrations/2026-08-02-supporter-email-delivery.sql` to the live
+   Supabase project. Confirm both RPCs exist and the `supporter-assets` bucket
+   is **private**.
+3. In Supabase Dashboard → Storage → `supporter-assets`, upload the root-repo
+   artifact with this exact object name:
+
+       Lucky_Cat_HSK_Supporter_Gift_HSK1-6_PDFs.zip
+
+   Source file:
+
+       ../product/supporter-pack/Lucky_Cat_HSK_Supporter_Gift_HSK1-6_PDFs.zip
+
+   The Edge Function signs a ten-minute URL and gives it to Resend as the
+   attachment source. The bucket must not be made public. The migration sets a
+   25 MiB object limit for the approximately 18.8 MB redesigned ZIP.
+4. Set both Edge Function secrets (never commit their values):
+
+       supabase secrets set RESEND_API_KEY=re_... SUPPORTER_EMAIL_FROM='Lucky Cat HSK <support@mail.luckycathsk.com>'
+
+5. Re-deploy **both** purchase webhooks with JWT verification disabled:
+
+       supabase functions deploy stripe-webhook --no-verify-jwt
+       supabase functions deploy rc-webhook --no-verify-jwt
+
+6. Run one test purchase using a verified Lucky Cat email. Gate success on all
+   of these: entitlement + 2,000 coins granted, one email received, ZIP opens
+   with exactly six PDFs, and the database row reads `status='sent'`:
+
+       select order_id, status, attempts, provider_message_id, last_error, sent_at
+       from public.supporter_deliveries
+       order by created_at desc
+       limit 10;
+
+7. Replay the same Stripe/RevenueCat event. It must return success without a
+   second email; the row remains `sent` and its attempt count does not grow.
+
+Do not flip the Supporter product live if `RESEND_API_KEY`, the verified sender,
+the private object, or either delivery RPC is missing. The code fails closed
+and payment webhooks retry, but configuration should be proven before a buyer
+is allowed to pay.
 
 ## RevenueCat deployment prerequisites
 

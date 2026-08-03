@@ -539,15 +539,15 @@ export const STRINGS = {
     // iap (IAP purchase flow v1 — mock provider; spec 2026-07-11)
     "shop.getCoins": "Get Coins",
     "shop.supporterTitle": "Supporter",
-    "shop.supporterDesc": "Remove ads forever · +2,000 coins · Supporter badge",
+    "shop.supporterDesc": "6 HSK PDF guides by email · Android ad-free · +2,000 coins · Supporter badge",
     "shop.supporterOwned": "Thank you for supporting Lucky Cat! ♥",
     "iap.amount": "{coins} coins",
     "iap.pending": "Processing…",
     "iap.failed": "Purchase failed — nothing was charged. Try again.",
     "iap.wrongOrigin": "Purchases only work at {site}. Open the game there to become a Supporter — nothing was charged.",
     "iap.success": "+{coins} coins added!",
-    "iap.supporterThanks": "You're a Supporter now — thank you! ♥",
-    "iap.supporterThanksSave": "You're a Supporter now ♥ — add your email to keep it on every device.",
+    "iap.supporterThanks": "You're a Supporter now — thank you! Your six HSK guides are on the way by email. ♥",
+    "iap.supporterThanksSave": "You're a Supporter now ♥ — add your email to receive the six HSK guides and keep your purchase on every device.",
     "iap.restore": "Restore Purchases",
     "iap.restored": "Supporter restored ♥",
     "iap.nothingToRestore": "Nothing to restore",
@@ -559,11 +559,12 @@ export const STRINGS = {
     "iap.supporterProcessing": "Supporter is processing — it will activate automatically when payment completes.",
     // Web Supporter offer + account save-unlock copy (Task 5, web IAP billing)
     "iap.supporter.web.title": "Become a Supporter",
-    "iap.supporter.web.blurb": "Support the project — a thank-you cosmetic, a Supporter badge, 2,000 coins, and ad-free on the mobile app. One payment, yours everywhere.",
+    "iap.supporter.web.blurb": "Support the project — six HSK1–6 PDF guides by email, a thank-you cosmetic, a Supporter badge, 2,000 coins, and Android ad-free. One payment.",
     "iap.needsAccountBody": "Create a free account so your purchase follows you to any device.",
     "supporter.sheet.eyebrow": "Optional support",
     "supporter.sheet.title": "Support Lucky Cat — once",
     "supporter.sheet.lead": "Lucky Cat stays free for everyone. Support the project and receive a permanent thank-you pack.",
+    "supporter.sheet.benefitGuides": "6 frequency-ranked PDF guides — one each for HSK1–6 — sent to your email",
     "supporter.sheet.benefitCoins": "2,000 Lucky Coins now",
     "supporter.sheet.benefitBadge": "Permanent Supporter badge and thank-you cosmetic",
     "supporter.sheet.benefitAds": "Ad-free in the Android app",
@@ -575,7 +576,7 @@ export const STRINGS = {
     "supporter.sheet.notNow": "Not now — keep playing free",
     "supporter.sheet.help": "Purchase help",
     "supporter.sheet.saveTitle": "Save your Supporter purchase",
-    "supporter.sheet.saveBody": "Enter your email so your badge and purchase can be restored on another device. No password required.",
+    "supporter.sheet.saveBody": "Enter your email so we can send your six HSK guides and restore your Supporter purchase on another device. No password required.",
     "supporter.sheet.accountReady": "Account ready — you can continue to secure checkout",
     "supporter.sheet.active": "Supporter active ✓",
     "supporter.sheet.activeBody": "Thank you! Your permanent Supporter benefits are active on this account.",
@@ -1243,7 +1244,7 @@ export const STRINGS = {
     // iap (IAP purchase flow v1 — mock provider; spec 2026-07-11)
     "shop.getCoins": "เติมเหรียญ",
     "shop.supporterTitle": "ผู้สนับสนุน",
-    "shop.supporterDesc": "ปิดโฆษณาถาวร · รับ 2,000 เหรียญ · แบดจ์ผู้สนับสนุน",
+    "shop.supporterDesc": "คู่มือ PDF HSK 6 ระดับทางอีเมล · ไม่มีโฆษณาใน Android · 2,000 เหรียญ · ตราผู้สนับสนุน",
     "shop.supporterOwned": "ขอบคุณที่สนับสนุน Lucky Cat! ♥",
     "iap.amount": "{coins} เหรียญ",
     "iap.pending": "กำลังดำเนินการ…",
@@ -1252,8 +1253,8 @@ export const STRINGS = {
     // the Phase 0 item 4 sign-off pass before billing activates.
     "iap.wrongOrigin": "การซื้อใช้ได้ที่ {site} เท่านั้น เปิดเกมที่นั่นเพื่อเป็นผู้สนับสนุน — ยังไม่มีการเรียกเก็บเงิน",
     "iap.success": "ได้รับ +{coins} เหรียญแล้ว!",
-    "iap.supporterThanks": "คุณเป็นผู้สนับสนุนแล้ว — ขอบคุณ! ♥",
-    "iap.supporterThanksSave": "คุณเป็นผู้สนับสนุนแล้ว ♥ — เพิ่มอีเมลเพื่อใช้ได้ทุกเครื่อง", // TH-REVIEW: machine-drafted, queued for native spot-check
+    "iap.supporterThanks": "คุณเป็นผู้สนับสนุนแล้ว — ขอบคุณ! คู่มือ HSK ทั้ง 6 ระดับกำลังส่งไปทางอีเมล ♥", // TH-REVIEW
+    "iap.supporterThanksSave": "คุณเป็นผู้สนับสนุนแล้ว ♥ — เพิ่มอีเมลเพื่อรับคู่มือ HSK ทั้ง 6 ระดับและใช้สิทธิ์ได้ทุกเครื่อง", // TH-REVIEW
     "iap.restore": "กู้คืนการซื้อ",
     "iap.restored": "กู้คืนสถานะผู้สนับสนุนแล้ว ♥",
     "iap.nothingToRestore": "ไม่มีรายการให้กู้คืน",
@@ -1262,11 +1263,12 @@ export const STRINGS = {
     "iap.supporterProcessing": "กำลังดำเนินการ Supporter — ระบบจะเปิดใช้งานอัตโนมัติเมื่อชำระเงินเสร็จ", // TH-REVIEW
     // Web Supporter offer + account save-unlock copy (Task 5, web IAP billing) — TH-REVIEW: queued for native spot-check
     "iap.supporter.web.title": "เป็นผู้สนับสนุน",
-    "iap.supporter.web.blurb": "สนับสนุนโปรเจกต์ — รับไอเทมขอบคุณ ตราผู้สนับสนุน เหรียญ 2,000 และไม่มีโฆษณาบนแอปมือถือ จ่ายครั้งเดียว ใช้ได้ทุกเครื่อง",
+    "iap.supporter.web.blurb": "สนับสนุนโปรเจกต์ — รับคู่มือ PDF HSK1–6 ทางอีเมล ไอเทมขอบคุณ ตราผู้สนับสนุน เหรียญ 2,000 และไม่มีโฆษณาใน Android จ่ายครั้งเดียว", // TH-REVIEW
     "iap.needsAccountBody": "สร้างบัญชีฟรี เพื่อให้การซื้อของคุณติดตามไปได้ทุกอุปกรณ์",   // TH-REVIEW
     "supporter.sheet.eyebrow": "การสนับสนุนแบบเลือกได้", // TH-REVIEW
     "supporter.sheet.title": "สนับสนุน Lucky Cat ครั้งเดียว", // TH-REVIEW
     "supporter.sheet.lead": "Lucky Cat ยังเล่นฟรีสำหรับทุกคน สนับสนุนโปรเจกต์และรับแพ็กขอบคุณแบบถาวร", // TH-REVIEW
+    "supporter.sheet.benefitGuides": "คู่มือ PDF จัดอันดับคำศัพท์ 6 ไฟล์ แยก HSK1–6 ส่งไปทางอีเมล", // TH-REVIEW
     "supporter.sheet.benefitCoins": "รับ 2,000 เหรียญนำโชคทันที", // TH-REVIEW
     "supporter.sheet.benefitBadge": "ตราผู้สนับสนุนและไอเทมขอบคุณแบบถาวร", // TH-REVIEW
     "supporter.sheet.benefitAds": "ไม่มีโฆษณาในแอป Android", // TH-REVIEW
@@ -1278,7 +1280,7 @@ export const STRINGS = {
     "supporter.sheet.notNow": "ไว้ทีหลัง — เล่นฟรีต่อ", // TH-REVIEW
     "supporter.sheet.help": "ความช่วยเหลือเรื่องการซื้อ", // TH-REVIEW
     "supporter.sheet.saveTitle": "บันทึกการซื้อ Supporter", // TH-REVIEW
-    "supporter.sheet.saveBody": "กรอกอีเมลเพื่อกู้คืนตราและการซื้อบนอุปกรณ์อื่นได้ ไม่ต้องใช้รหัสผ่าน", // TH-REVIEW
+    "supporter.sheet.saveBody": "กรอกอีเมลเพื่อรับคู่มือ HSK ทั้ง 6 ระดับ และกู้คืนสิทธิ์ Supporter บนอุปกรณ์อื่นได้ ไม่ต้องใช้รหัสผ่าน", // TH-REVIEW
     "supporter.sheet.accountReady": "บัญชีพร้อมแล้ว — ไปยังหน้าชำระเงินที่ปลอดภัยได้เลย", // TH-REVIEW
     "supporter.sheet.active": "Supporter เปิดใช้งานแล้ว ✓", // TH-REVIEW
     "supporter.sheet.activeBody": "ขอบคุณ! สิทธิ์ Supporter แบบถาวรเปิดใช้งานในบัญชีนี้แล้ว", // TH-REVIEW

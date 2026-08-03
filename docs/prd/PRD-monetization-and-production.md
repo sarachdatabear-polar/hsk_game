@@ -196,7 +196,7 @@ nutrition label** disclosures (§9).
 
 | Product | Type | Thailand | Global base | Grants |
 |---|---|---|---|---|
-| **Supporter (Remove Ads)** | Non-consumable | **79฿** | $2.99 | remove ads + thank-you skin + supporter badge + **2,000 coins** |
+| **Supporter (Remove Ads)** | Non-consumable | **79฿** | $2.99 | remove ads + thank-you skin + supporter badge + **2,000 coins** + six emailed HSK1–6 frequency-guide PDFs |
 | **Coins S** | Consumable | 29฿ | $0.99 | 1,000 |
 | **Coins M** | Consumable | 99฿ | $2.99 | 3,500 (+17%) |
 | **Coins L** | Consumable | 169฿ | $4.99 | 6,500 (+30%) |

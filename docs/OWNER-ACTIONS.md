@@ -149,6 +149,26 @@ Owner steps from the locked
 Engineering steps 3 (URL sweep), 4 (migration bridge), 7 (placement) and
 8 (web coin packs) are built or unblocked and wait only on these:
 
+### B.0 Automatic Supporter guide email — required before the 79 THB offer goes live
+
+The code now delivers the six HSK1–6 PDF guides from the server-confirmed
+Supporter grant through Resend. It is **implemented and locally tested but not
+live** until the owner completes the external configuration below:
+
+- [ ] Verify a Resend sending subdomain (`mail.luckycathsk.com` recommended).
+- [ ] Apply `docs/supabase/migrations/2026-08-02-supporter-email-delivery.sql`.
+- [ ] Upload the exact ZIP to the migration-created private
+      `supporter-assets` bucket.
+- [ ] Set `RESEND_API_KEY` and `SUPPORTER_EMAIL_FROM` as Supabase secrets.
+- [ ] Re-deploy `stripe-webhook` and `rc-webhook`, both with
+      `--no-verify-jwt`.
+- [ ] Complete the purchase + received-attachment + duplicate-replay gate in
+      `docs/supabase/README.md`.
+
+This is a hard promise gate. Until every box passes, pre-purchase copy must say
+manual delivery within 24 hours or the Supporter purchase must remain dark; it
+must not promise automatic email.
+
 **Start the payment-rails setup on day one, out of order.** Everything else here
 is under our control; Stripe account verification is the only item with an
 **external approval clock**. **RC Web Billing PromptPay was checked and ruled
