@@ -152,22 +152,32 @@ Engineering steps 3 (URL sweep), 4 (migration bridge), 7 (placement) and
 ### B.0 Automatic Supporter guide email — required before the 79 THB offer goes live
 
 The code now delivers the six HSK1–6 PDF guides from the server-confirmed
-Supporter grant through Resend. It is **implemented and locally tested but not
-live** until the owner completes the external configuration below:
+Supporter grant through Resend. **GATE PASSED 2026-08-03 — every box verified
+on the live project; pre-purchase copy may promise automatic email delivery:**
 
-- [ ] Verify a Resend sending subdomain (`mail.luckycathsk.com` recommended).
-- [ ] Apply `docs/supabase/migrations/2026-08-02-supporter-email-delivery.sql`.
-- [ ] Upload the exact ZIP to the migration-created private
-      `supporter-assets` bucket.
-- [ ] Set `RESEND_API_KEY` and `SUPPORTER_EMAIL_FROM` as Supabase secrets.
-- [ ] Re-deploy `stripe-webhook` and `rc-webhook`, both with
-      `--no-verify-jwt`.
-- [ ] Complete the purchase + received-attachment + duplicate-replay gate in
-      `docs/supabase/README.md`.
+- [x] Verify a Resend sending subdomain — `mail.luckycathsk.com` verified
+      (dedicated free Resend account, send-only key, region ap-northeast-1;
+      free tier = 100 emails/day ≈ 100 sales/day before an upgrade is needed).
+- [x] Apply `docs/supabase/migrations/2026-08-02-supporter-email-delivery.sql`
+      — table + both RPCs confirmed live by query.
+- [x] Upload the exact ZIP to the private `supporter-assets` bucket —
+      signed-URL round-trip sha256 matches the repo artifact byte-for-byte;
+      anonymous access returns 400.
+- [x] Set `RESEND_API_KEY` and `SUPPORTER_EMAIL_FROM` as Supabase secrets.
+- [x] Re-deploy `stripe-webhook` and `rc-webhook`, both with
+      `--no-verify-jwt` (rc-webhook's first-ever deploy; both probed
+      fail-closed without their auth secrets).
+- [x] Purchase + received-attachment + duplicate-replay gate — passed via a
+      real-signature synthetic `checkout.session.completed` against the live
+      webhook: grant `{"ok":true}`, delivery row `status='sent'` attempts=1,
+      owner received the email and the ZIP opened with all six PDFs; replay
+      returned `{"duplicate":true}` with no second email and attempts still 1.
+      Throwaway test user deleted afterward (cascade verified clean).
 
-This is a hard promise gate. Until every box passes, pre-purchase copy must say
-manual delivery within 24 hours or the Supporter purchase must remain dark; it
-must not promise automatic email.
+Remaining before a buyer can pay: only the standing `STRIPE_CHECKOUT_URL`
+go-live flip (§6). Optional hardening: roll the Stripe webhook signing secret
+and the Resend API key, since both transited an owner chat/shell session
+during the gate run.
 
 **Start the payment-rails setup on day one, out of order.** Everything else here
 is under our control; Stripe account verification is the only item with an
