@@ -15,23 +15,22 @@ export async function verifySvixSignature({ payload, id, timestamp, signature, s
   const now = Number.isFinite(nowSeconds) ? nowSeconds : Math.floor(Date.now() / 1000);
   if (Math.abs(now - ts) > TOLERANCE_SECONDS) return false;
   const secretB64 = secret.startsWith("whsec_") ? secret.slice(6) : secret;
-  let keyBytes;
   try {
-    keyBytes = Uint8Array.from(atob(secretB64), (c) => c.charCodeAt(0));
+    const keyBytes = Uint8Array.from(atob(secretB64), (c) => c.charCodeAt(0));
+    const key = await crypto.subtle.importKey(
+      "raw", keyBytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+    );
+    const mac = await crypto.subtle.sign(
+      "HMAC", key, new TextEncoder().encode(`${id}.${timestamp}.${payload}`),
+    );
+    const expected = btoa(String.fromCharCode(...new Uint8Array(mac)));
+    return signature.split(" ").some((entry) => {
+      const [version, sig] = entry.split(",");
+      return version === "v1" && !!sig && sig === expected;
+    });
   } catch {
     return false;
   }
-  const key = await crypto.subtle.importKey(
-    "raw", keyBytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
-  );
-  const mac = await crypto.subtle.sign(
-    "HMAC", key, new TextEncoder().encode(`${id}.${timestamp}.${payload}`),
-  );
-  const expected = btoa(String.fromCharCode(...new Uint8Array(mac)));
-  return signature.split(" ").some((entry) => {
-    const [version, sig] = entry.split(",");
-    return version === "v1" && !!sig && sig === expected;
-  });
 }
 
 export function classifyResendEvent(event) {

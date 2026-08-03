@@ -78,6 +78,66 @@ describe("verifySvixSignature", () => {
       })).toBe(false);
     }
   });
+
+  it("known-answer: verifies hardcoded svix signature (independent node:crypto validation)", async () => {
+    // This test is the known-answer vector: signature was computed independently
+    // using Node's crypto.createHmac("sha256", ...), not the same Web Crypto path
+    // as the module under test. Prevents both test helper and implementation
+    // from drifting together (e.g., wrong delimiter, swapped id/timestamp order).
+    const ka_id = "msg_ka";
+    const ka_timestamp = "1754300000";
+    const ka_payload = '{"type":"email.delivered"}';
+    const ka_secret = `whsec_${btoa("test-webhook-secret-32-bytes-long!")}`;
+    const ka_signature = "BxcUKNY8kqoyf2ScBpZ4VOExnILz35GQhCqQOz/dA54=";
+
+    expect(await verifySvixSignature({
+      payload: ka_payload,
+      id: ka_id,
+      timestamp: ka_timestamp,
+      signature: `v1,${ka_signature}`,
+      secret: ka_secret,
+      nowSeconds: 1754300000,
+    })).toBe(true);
+
+    // Verify rejection when any single character is changed
+    expect(await verifySvixSignature({
+      payload: ka_payload,
+      id: ka_id + "x",
+      timestamp: ka_timestamp,
+      signature: `v1,${ka_signature}`,
+      secret: ka_secret,
+      nowSeconds: 1754300000,
+    })).toBe(false);
+
+    expect(await verifySvixSignature({
+      payload: ka_payload,
+      id: ka_id,
+      timestamp: String(1754300001),
+      signature: `v1,${ka_signature}`,
+      secret: ka_secret,
+      nowSeconds: 1754300001,
+    })).toBe(false);
+
+    expect(await verifySvixSignature({
+      payload: ka_payload + "x",
+      id: ka_id,
+      timestamp: ka_timestamp,
+      signature: `v1,${ka_signature}`,
+      secret: ka_secret,
+      nowSeconds: 1754300000,
+    })).toBe(false);
+  });
+
+  it("never throws; empty secret (whsec_ only) returns false", async () => {
+    expect(await verifySvixSignature({
+      payload: '{"type":"email.delivered"}',
+      id: "msg_1",
+      timestamp: String(NOW),
+      signature: "v1,anything",
+      secret: "whsec_",
+      nowSeconds: NOW,
+    })).toBe(false);
+  });
 });
 
 describe("classifyResendEvent", () => {
