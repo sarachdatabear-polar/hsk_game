@@ -152,22 +152,32 @@ Engineering steps 3 (URL sweep), 4 (migration bridge), 7 (placement) and
 ### B.0 Automatic Supporter guide email — required before the 79 THB offer goes live
 
 The code now delivers the six HSK1–6 PDF guides from the server-confirmed
-Supporter grant through Resend. It is **implemented and locally tested but not
-live** until the owner completes the external configuration below:
+Supporter grant through Resend. **GATE PASSED 2026-08-03 — every box verified
+on the live project; pre-purchase copy may promise automatic email delivery:**
 
-- [ ] Verify a Resend sending subdomain (`mail.luckycathsk.com` recommended).
-- [ ] Apply `docs/supabase/migrations/2026-08-02-supporter-email-delivery.sql`.
-- [ ] Upload the exact ZIP to the migration-created private
-      `supporter-assets` bucket.
-- [ ] Set `RESEND_API_KEY` and `SUPPORTER_EMAIL_FROM` as Supabase secrets.
-- [ ] Re-deploy `stripe-webhook` and `rc-webhook`, both with
-      `--no-verify-jwt`.
-- [ ] Complete the purchase + received-attachment + duplicate-replay gate in
-      `docs/supabase/README.md`.
+- [x] Verify a Resend sending subdomain — `mail.luckycathsk.com` verified
+      (dedicated free Resend account, send-only key, region ap-northeast-1;
+      free tier = 100 emails/day ≈ 100 sales/day before an upgrade is needed).
+- [x] Apply `docs/supabase/migrations/2026-08-02-supporter-email-delivery.sql`
+      — table + both RPCs confirmed live by query.
+- [x] Upload the exact ZIP to the private `supporter-assets` bucket —
+      signed-URL round-trip sha256 matches the repo artifact byte-for-byte;
+      anonymous access returns 400.
+- [x] Set `RESEND_API_KEY` and `SUPPORTER_EMAIL_FROM` as Supabase secrets.
+- [x] Re-deploy `stripe-webhook` and `rc-webhook`, both with
+      `--no-verify-jwt` (rc-webhook's first-ever deploy; both probed
+      fail-closed without their auth secrets).
+- [x] Purchase + received-attachment + duplicate-replay gate — passed via a
+      real-signature synthetic `checkout.session.completed` against the live
+      webhook: grant `{"ok":true}`, delivery row `status='sent'` attempts=1,
+      owner received the email and the ZIP opened with all six PDFs; replay
+      returned `{"duplicate":true}` with no second email and attempts still 1.
+      Throwaway test user deleted afterward (cascade verified clean).
 
-This is a hard promise gate. Until every box passes, pre-purchase copy must say
-manual delivery within 24 hours or the Supporter purchase must remain dark; it
-must not promise automatic email.
+Remaining before a buyer can pay: only the standing `STRIPE_CHECKOUT_URL`
+go-live flip (§6). Optional hardening: roll the Stripe webhook signing secret
+and the Resend API key, since both transited an owner chat/shell session
+during the gate run.
 
 **Start the payment-rails setup on day one, out of order.** Everything else here
 is under our control; Stripe account verification is the only item with an
@@ -326,7 +336,10 @@ let it run in the background while you do steps 1–2.
       (test-mode endpoints and their `whsec_` do NOT carry over; create a fresh
       one on the same three `checkout.session.*` events and take its new
       signing secret) → confirm **PromptPay reads active in LIVE mode**, not
-      pending → Supabase Pro → `STRIPE_CHECKOUT_URL` → the live gate in §6.
+      pending → ~~Supabase Pro~~ **(replaced 2026-08-03 by the hardened free
+      tier: owned daily backup + dual keep-alive + external alerting — see
+      `../../../ops/RUNBOOK.md` in the parent repo; pre-agreed Pro tripwires
+      live there)** → `STRIPE_CHECKOUT_URL` → the live gate in §6.
       *(Historical, kept because it is what the form needed:)*
       Reference values, taken from the shipped files rather than guessed:
       legal name/address per the privacy policy (**Sarach Sriklab, Bangkok
@@ -633,9 +646,30 @@ let it run in the background while you do steps 1–2.
    bridge retires), subscriptions, web ads, or new SKUs before placement
    (step 7) ships.
 
-## 0. Accept the v129 cloud flip on two devices (blocks §1)
+## 0. ✅ COMPLETE 2026-08-03 — v129 cloud flip accepted on two devices (no longer blocks §1)
 
-> ### ✅ STEPS 1–3 PASSED 2026-08-01 (day one). Steps 4–5 still owed on 2 Aug.
+> ### ✅ §0 COMPLETE — STEPS 4–5 (the union check) PASSED 2026-08-03.
+>
+> Same rig as steps 1–3, resumed 2026-08-03 with **no new OTP** — both
+> persistent profiles still held valid Supabase sessions (refresh tokens
+> renewed on load). Device B met the 20-word daily goal (35 resolved), sent
+> the cat out (`Go exploring`), claimed on return (day `2026-08-03`, keepsake
+> **paper-kite**, story `sunny-window`, word 时候), then backgrounded to push.
+> Cloud row then held **both** claims. Device A — which locally had only the
+> 1 Aug claim — foregrounded and showed **the union**: both claims present,
+> the 1 Aug entry byte-identical down to `departedAt`/`returnedAt`, Cat
+> screen **Memories 2**. The P0 this check exists to detect (B's newer row
+> *replacing* A's claim) did not occur. Exactly-once held through two cold
+> reloads + screen re-entry on A: still exactly 2 claims, one keepsake each.
+> **§0 no longer blocks §1 — the signed APK is unblocked.**
+>
+> Driver for reruns: `game/.pw-win.mjs` (uncommitted, `.pw-*` excluded) —
+> plays battles by clicking the option whose `_correct` property is set
+> (atomically inside the page; a locator round-trip races the re-render),
+> dismisses `#format-intro` explicitly, and waits out reveal/transition
+> moments instead of declaring stuck on the first idle pass.
+>
+> ### ✅ STEPS 1–3 PASSED 2026-08-01 (day one).
 >
 > Run headlessly on the VPS against **production** `luckycathsk.com`, on a
 > throwaway account **`support@luckycathsk.com`** (uid

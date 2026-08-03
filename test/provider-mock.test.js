@@ -60,7 +60,7 @@ describe("mock provider", () => {
 describe("getProvider", () => {
   it("returns the mock while RevenueCat is not configured (same interface)", async () => {
     const s = memStore();
-    const p = getProvider({ get: s.get, set: s.set, delayMs: 0 });
+    const p = getProvider({ get: s.get, set: s.set, delayMs: 0, stripe: { checkoutUrl: "" } });
     expect(await p.available()).toBe(true);
     expect((await p.purchase("coins_s")).ok).toBe(true);
   });
@@ -70,7 +70,7 @@ describe("getProvider", () => {
   // mock reads as a real provider and un-darks the purchase UI in prod.
   it("is tagged kind: \"mock\" (gating.js relies on this)", () => {
     const s = memStore();
-    expect(getProvider({ get: s.get, set: s.set, delayMs: 0 }).kind).toBe("mock");
+    expect(getProvider({ get: s.get, set: s.set, delayMs: 0, stripe: { checkoutUrl: "" } }).kind).toBe("mock");
   });
 
   it("selects RevenueCat only for a configured native build", () => {
@@ -84,7 +84,7 @@ describe("getProvider", () => {
 
   it("keeps the mock on web even when a key is present", () => {
     const s = memStore();
-    const p = getProvider({ get: s.get, set: s.set, revenuecat: { apiKey: "public", isNative: () => false } });
+    const p = getProvider({ get: s.get, set: s.set, revenuecat: { apiKey: "public", isNative: () => false }, stripe: { checkoutUrl: "" } });
     expect(p.kind).toBe("mock");
   });
 });
