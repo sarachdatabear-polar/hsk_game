@@ -69,12 +69,14 @@ export async function deliverSupporterGift({
     locale,
     downloadUrl,
     orderId,
+    claimNonce: globalThis.crypto.randomUUID(),
   });
   const recorded = await finish(
     supabase,
     orderId,
     sent.ok ? sent.messageId : null,
-    sent.ok ? null : `resend-${sent.reason || "failed"}`,
+    sent.ok ? null : [`resend-${sent.reason || "failed"}`, sent.status, sent.detail]
+      .filter(Boolean).join(" "),
   );
   if (!recorded) return { ok: false, reason: "storage" };
   return sent;

@@ -91,10 +91,17 @@ export function supporterEmail(locale, downloadUrl) {
   return copyFor(locale === "th" ? "th" : "en", downloadUrl);
 }
 
-export function supporterIdempotencyKey(orderId) {
+// Keyed per CLAIM, not per order: Resend refuses a reused idempotency key
+// with a different payload for 24h, which turned the 2026-08-03 re-delivery
+// into a hard "provider" rejection. Double-send protection lives in the DB
+// claim (claim_supporter_delivery serializes senders); the nonce scopes the
+// Resend key to this claim so retries after a failure are actually possible.
+export function supporterIdempotencyKey(orderId, claimNonce = "") {
   const id = typeof orderId === "string" ? orderId.trim() : "";
-  if (!id || id.length > 220) return null;
-  return `supporter-gift/${id}`;
+  const nonce = typeof claimNonce === "string" ? claimNonce.trim() : "";
+  const key = nonce ? `supporter-gift/${id}/${nonce}` : `supporter-gift/${id}`;
+  if (!id || key.length > 220) return null;
+  return key;
 }
 
 export async function sendSupporterEmail({
@@ -105,8 +112,9 @@ export async function sendSupporterEmail({
   locale,
   downloadUrl,
   orderId,
+  claimNonce,
 }) {
-  const key = supporterIdempotencyKey(orderId);
+  const key = supporterIdempotencyKey(orderId, claimNonce);
   if (typeof fetchImpl !== "function" || !apiKey || !from || !to || !key ||
       !/^https:\/\//.test(String(downloadUrl || ""))) {
     return { ok: false, reason: "invalid-config" };
@@ -137,7 +145,11 @@ export async function sendSupporterEmail({
   let data = null;
   try { data = await response.json(); } catch { /* error body may not be JSON */ }
   if (!response.ok || !data || !data.id) {
-    return { ok: false, reason: "provider", status: response.status };
+    // Surface Resend's own words — "resend-provider" alone cost a diagnosis
+    // round-trip on 2026-08-03.
+    const detail = data && (data.message || data.name)
+      ? String(data.message || data.name).slice(0, 140) : "";
+    return { ok: false, reason: "provider", status: response.status, detail };
   }
   return { ok: true, messageId: data.id };
 }

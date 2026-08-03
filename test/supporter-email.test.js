@@ -63,6 +63,12 @@ describe("supporter email copy", () => {
     expect(supporterIdempotencyKey("")).toBeNull();
     expect(supporterIdempotencyKey("x".repeat(221))).toBeNull();
   });
+
+  it("scopes the key to the claim when a nonce is given (Resend refuses reused keys for 24h)", () => {
+    expect(supporterIdempotencyKey("cs_123", "n-1")).toBe("supporter-gift/cs_123/n-1");
+    expect(supporterIdempotencyKey("cs_123", "n-1")).not.toBe(supporterIdempotencyKey("cs_123", "n-2"));
+    expect(supporterIdempotencyKey("x".repeat(200), "y".repeat(30))).toBeNull();
+  });
 });
 
 describe("sendSupporterEmail", () => {
@@ -98,7 +104,7 @@ describe("sendSupporterEmail", () => {
     await expect(sendSupporterEmail({
       fetchImpl, apiKey: "re_test", from: "x@y.co", to: "a@b.co", locale: "en",
       downloadUrl: "https://storage.example/gift.zip", orderId: "o1",
-    })).resolves.toEqual({ ok: false, reason: "provider", status: 422 });
+    })).resolves.toEqual({ ok: false, reason: "provider", status: 422, detail: "bad" });
   });
 });
 
@@ -123,6 +129,10 @@ describe("deliverSupporterGift", () => {
       "finish_supporter_delivery",
     ]);
     expect(calls.rpc[1].args.p_provider_message_id).toBe("email_7");
+    // The Resend idempotency key must be claim-scoped: same order, fresh
+    // nonce per claim, so a failed send can actually be retried.
+    const key = fetchImpl.mock.calls[0][1].headers["Idempotency-Key"];
+    expect(key).toMatch(/^supporter-gift\/o1\/[0-9a-f-]{36}$/);
   });
 
   it("does not resend an order already marked sent", async () => {
