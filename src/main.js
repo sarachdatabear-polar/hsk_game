@@ -86,6 +86,7 @@ import { createOnboardingQuestGuide } from "./ui/onboarding-quest-guide.js";
 import { createOnboardingResults } from "./ui/onboarding-results.js";
 import { createAppTour } from "./ui/app-tour.js";
 import { createSupporterOfferSheet } from "./ui/supporter-offer-sheet.js";
+import { createSupporterDownload } from "./ui/supporter-download.js";
 import {
   chooseJourneyWord,
   journeyStatus as catJourneyStatus,
@@ -616,6 +617,7 @@ const supporterRow = createSupporterMomentRow({
   getToday: todayStr,
   goShopSupporter: () => openSupporterOffer(),
 });
+const supporterDownload = createSupporterDownload({ getSession, toast });
 // Deep link: opening a shared `#f=<code>` link lands straight in the compare view.
 const incomingFriendCard = friendCardFromHash(location.hash);
 if(incomingFriendCard) requestAnimationFrame(() => friendCompare.open(incomingFriendCard));
@@ -973,6 +975,7 @@ function renderAccount(){
     chip.className = "account-explain";
     chip.textContent = t("account.supporterChip");
     p.appendChild(chip);
+    p.appendChild(accountBtn(t("supporter.download.btn"), () => supporterDownload.download()));
   }
   if(v.showSignOut) p.appendChild(accountBtn(t("account.signOut"), onAccountSignOut));
   if(v.showSignOut && deleteAccountEnabled()) renderDeleteAccount(p);
@@ -4079,6 +4082,9 @@ function makeSupporterCard(){
     ? `<b>${t("shop.supporterTitle")} ♥</b><small>${t("shop.supporterOwned")}</small>`
     : `<b>${webPitch ? t("iap.supporter.web.title") : t("shop.supporterTitle")}</b><small>${webPitch ? t("iap.supporter.web.blurb") : t("shop.supporterDesc")}</small>`;
   row.appendChild(copy);
+  if(owned){
+    row.appendChild(supporterDownload.button());
+  }
   if(!owned){
     if(!shopViewedProducts.has("supporter")){
       shopViewedProducts.add("supporter");
