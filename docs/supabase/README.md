@@ -348,11 +348,10 @@ turns the row-flip itself into a failure.
 subscribes to the **guides** Resend account — the one that verified
 `mail.luckycathsk.com` and sends the six-PDF ZIP (§Automatic Supporter gift
 delivery prerequisites above) — **not** the separate auth-SMTP Resend
-account (the `send.luckycathsk.com` sender, once that SMTP flip lands) used
-for sign-in emails. The two accounts have separate logins, separate API
-keys, and separate webhook lists; adding the webhook to the wrong one
-produces silence with no error on either side. See
-`docs/OWNER-ACTIONS.md` §B.1.
+account (the `send.luckycathsk.com` sender) used for sign-in emails. The two
+accounts have separate logins, separate API keys, and separate webhook
+lists; adding the webhook to the wrong one produces silence with no error on
+either side. See `docs/OWNER-ACTIONS.md` §B.1.
 
 ### Verify
 
@@ -392,6 +391,16 @@ success. This is deliberate (Resend must not be told to retry a
 well-formed, correctly-signed event just because our id happens to be
 stale), but it means `{"ok":true}` here is **not** proof any row moved; only
 a real purchase's `provider_message_id` proves that.
+
+**This check is also migration-blind: passing it does not confirm
+`migrations/2026-08-03-supporter-delivery-status.sql` landed.** A zero-row
+`update` never evaluates the table's `CHECK` constraint — Postgres only runs
+`CHECK` against rows it actually writes — so (b) returns the same
+`{"ok":true}` whether or not `'delivered'` is a legal status yet. Confirm
+the migration separately, by query, e.g.
+`select pg_get_constraintdef(oid) from pg_constraint where conname =
+'supporter_deliveries_status_check';` and check `'delivered'` is in the
+returned list.
 
     SECRET="whsec_<the RESEND_WEBHOOK_SECRET value>"
     SECRET_HEX=$(printf '%s' "${SECRET#whsec_}" | base64 -d | xxd -p -c 256)

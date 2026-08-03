@@ -190,10 +190,9 @@ gate anything already live — see the note at the bottom.
 - [ ] **⚠ Use the right Resend account.** Log into the **guides** account —
       the one that verified `mail.luckycathsk.com` and sends the six-PDF ZIP
       (§B.0 above) — **NOT** the separate auth-SMTP account (the
-      `send.luckycathsk.com` sender, once that SMTP flip lands) used for
-      sign-in emails. The two accounts have separate logins, API keys, and
-      webhook lists; adding this to the wrong one produces silence with no
-      error on either side.
+      `send.luckycathsk.com` sender) used for sign-in emails. The two
+      accounts have separate logins, API keys, and webhook lists; adding
+      this to the wrong one produces silence with no error on either side.
 - [ ] In that account: Dashboard → **Webhooks** → **Add endpoint**.
       URL: `https://eqsodiufgjecoqgxdisn.supabase.co/functions/v1/resend-webhook`.
       Events: `email.delivered`, `email.bounced`, `email.failed`.
