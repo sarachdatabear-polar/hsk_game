@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { resolvePendingCheckout } from "../src/ui/checkout-return.js";
-import { writePending, readPending } from "../src/monetization/checkout-pending.js";
+import { writePending, readPending, claimResolution } from "../src/monetization/checkout-pending.js";
 
 function fakeStore() {
   const map = new Map();
@@ -140,5 +140,108 @@ describe("resolvePendingCheckout", () => {
       track: () => calls.push("track"),
     });
     expect(calls).toEqual(["poll", "credited", "restore", "entitlement", "clear", "track"]);
+  });
+});
+
+// Cross-tab resolution lock (audit finding): two open tabs/PWA windows both
+// run resolvePendingCheckout at boot. The in-memory `resumingCheckout` guard
+// in main.js is per-tab and useless across tabs; server-side idempotency
+// protects the coins either way, but without a lock the buyer sees the
+// success toast twice and purchase_success double-counts.
+describe("resolvePendingCheckout — cross-tab claim", () => {
+  it("single-tab behavior is unchanged when no competing claim exists (default tabId)", async () => {
+    // No tabId passed — must behave exactly like before the claim existed.
+    const s = setup();
+    const r = await resolvePendingCheckout(s);
+    expect(r).toEqual({ resolved: true, credited: true, delta: 2000 });
+    expect(s.onCredited).toHaveBeenCalledWith(2000);
+    expect(s.track).toHaveBeenCalledWith("purchase_success", { product: "supporter" });
+  });
+
+  it("a tab that loses the claim to another tab's fresh claim does nothing (no poll, no toast, no track)", async () => {
+    const store = fakeStore();
+    writePending(store, { sessionId: "cs_1", productId: "supporter", now: T0 });
+    // Tab A already holds the resolution claim (as if its own boot call ran a moment earlier).
+    claimResolution(store, "tab-A", T0 + 10);
+
+    const reconcileB = vi.fn(async () => ({ ok: true, credits: [{ orderId: "cs_1", delta: 2000 }] }));
+    const onCreditedB = vi.fn();
+    const trackB = vi.fn();
+    const rB = await resolvePendingCheckout({
+      store, tabId: "tab-B",
+      provider: { restore: vi.fn(async () => ({ ok: true, ownedProductIds: ["supporter"] })) },
+      reconcile: reconcileB,
+      sleep: async () => {},
+      now: () => T0 + 20,
+      onCredited: onCreditedB,
+      onEntitlement: vi.fn(),
+      track: trackB,
+    });
+    expect(rB).toEqual({ resolved: false, credited: false, delta: 0 });
+    expect(reconcileB).not.toHaveBeenCalled();
+    expect(onCreditedB).not.toHaveBeenCalled();
+    expect(trackB).not.toHaveBeenCalled();
+    // The record is untouched, so tab A (the claim holder) can still finish it.
+    expect(readPending(store, T0 + 20).sessionId).toBe("cs_1");
+  });
+
+  it("cross-tab: while tab A is mid-poll, tab B's concurrent boot call does not double-announce", async () => {
+    const store = fakeStore();
+    writePending(store, { sessionId: "cs_1", productId: "supporter", now: T0 });
+
+    let resolveReconcileA;
+    const reconcileA = vi.fn(() => new Promise(res => { resolveReconcileA = res; }));
+    const onCreditedA = vi.fn();
+    const trackA = vi.fn();
+    const pA = resolvePendingCheckout({
+      store, tabId: "tab-A",
+      provider: { restore: vi.fn(async () => ({ ok: true, ownedProductIds: ["supporter"] })) },
+      reconcile: reconcileA,
+      sleep: async () => {},
+      now: () => T0 + 100,
+      onCredited: onCreditedA,
+      onEntitlement: vi.fn(),
+      track: trackA,
+    });
+
+    // Tab B's boot call runs concurrently, before tab A's poll has resolved.
+    const reconcileB = vi.fn(async () => ({ ok: true, credits: [{ orderId: "cs_1", delta: 2000 }] }));
+    const onCreditedB = vi.fn();
+    const trackB = vi.fn();
+    const rB = await resolvePendingCheckout({
+      store, tabId: "tab-B",
+      provider: { restore: vi.fn(async () => ({ ok: true, ownedProductIds: ["supporter"] })) },
+      reconcile: reconcileB,
+      sleep: async () => {},
+      now: () => T0 + 150,
+      onCredited: onCreditedB,
+      onEntitlement: vi.fn(),
+      track: trackB,
+    });
+    expect(rB.resolved).toBe(false);
+    expect(reconcileB).not.toHaveBeenCalled();
+    expect(onCreditedB).not.toHaveBeenCalled();
+    expect(trackB).not.toHaveBeenCalled();
+
+    // Now let tab A's reconcile land the credit — it owns the resolution.
+    resolveReconcileA({ ok: true, credits: [{ orderId: "cs_1", delta: 2000 }] });
+    const rA = await pA;
+    expect(rA).toEqual({ resolved: true, credited: true, delta: 2000 });
+    expect(onCreditedA).toHaveBeenCalledTimes(1);
+    expect(trackA).toHaveBeenCalledTimes(1);
+    // Across BOTH tabs: exactly one toast, exactly one analytics fire.
+    expect(onCreditedB).not.toHaveBeenCalled();
+    expect(trackB).not.toHaveBeenCalled();
+  });
+
+  it("a claim past its TTL does not block a later tab from finishing an abandoned resolution", async () => {
+    const s = setup({ tabId: "tab-B", now: () => T0 + 100_000 });
+    // Tab A claimed but (say) its process died mid-poll — the claim goes stale.
+    // Set AFTER setup() so its own writePending() doesn't wipe this out.
+    claimResolution(s.store, "tab-A", T0);
+
+    const r = await resolvePendingCheckout(s);
+    expect(r).toEqual({ resolved: true, credited: true, delta: 2000 });
+    expect(s.onCredited).toHaveBeenCalledTimes(1);
   });
 });

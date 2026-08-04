@@ -20,18 +20,20 @@ import { writePending, readPending } from "./checkout-pending.js";
 // A BLANK canonical origin allows everything — an unconfigured pin must not be
 // read as "refuse all purchases".
 //
-// ⚠ WHAT THIS DELIBERATELY DOES NOT DO: it does not hide the offer. Visibility
-// runs through webSupporterConfigured() (main.js), which checks the checkout
-// URL, native and file: — NOT the origin. So once the key is filled, a visitor
-// on the github.io bridge still sees the supporter moment, the results line,
-// the offer sheet and the ฿79 price, and can complete the sheet's whole
-// email/OTP flow; the refusal lands at the checkout tap. That satisfies the
-// audit's criterion 5 ("a purchase cannot START on an origin that cannot
-// receive its authenticated return") and keeps the fix in one pure module
-// instead of spreading origin-awareness through the render path. It is a
-// RECORDED TRADE, not an oversight: acceptable because there are no users yet
-// and the bridge retires at go-live plan step 9. If the bridge outlives that,
-// hide the offer there instead of refusing at the tap.
+// available() FOLDS THE ORIGIN CHECK IN (audit follow-up, monetization P0):
+// billing went LIVE 2026-08-03, and the earlier design here (refuse only at
+// the purchase() tap) let a visitor on the github.io bridge see the supporter
+// moment, the results line, the offer sheet and the ฿79 price, and complete
+// the sheet's whole email/OTP signup flow before dead-ending at the last
+// step. Now a non-returnable origin makes this provider report unavailable —
+// main.js's iapVisible()/renderIapSections() and the shop's supporter card go
+// dark exactly as if the provider had no checkout URL configured (see
+// gating.js). Deliberately NOT folded into usable(): purchase() and restore()
+// both read usable() directly, and restore() must keep working off-origin —
+// it is a returning Supporter's ONLY route to an entitlement this device
+// never saw bought (see supportsRestore below and the purchase() guard). The
+// purchase()-time origin refusal below stays too, as defense in depth for any
+// caller that reaches purchase() without checking available() first.
 const DEV_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
 
 export function isReturnableOrigin(origin, canonicalOrigin) {
@@ -75,7 +77,9 @@ export function stripeWebProvider(opts = {}) {
     kind: "stripe-web",
 
     async available() {
-      try { return usable() && productIds.length > 0; } catch { return false; }
+      try {
+        return usable() && productIds.length > 0 && isReturnableOrigin(getOrigin(), canonicalOrigin);
+      } catch { return false; }
     },
 
     supports(productId) { return productIds.includes(productId); },
@@ -95,11 +99,15 @@ export function stripeWebProvider(opts = {}) {
     async purchase(productId) {
       try {
         if (!usable() || !productIds.includes(productId)) return { ok: false, reason: "unavailable" };
-        // Deliberately gated HERE and not in usable(): available(), supports()
-        // and restore() must keep working on the bridge. Restore is a returning
-        // Supporter's ONLY route to an entitlement this device never saw bought
-        // (see supportsRestore below) — refusing it on a non-canonical origin
-        // would be a worse bug than the stranded return this check prevents.
+        // Defense in depth: available() already folds this same check in, so
+        // the offer shouldn't have rendered off-origin at all. Kept here too
+        // for any caller reaching purchase() without checking available()
+        // first (e.g. a stale render, or a race between the two). Deliberately
+        // NOT folded into usable(): restore() reads usable() directly and must
+        // keep working on the bridge — it is a returning Supporter's ONLY
+        // route to an entitlement this device never saw bought (see
+        // supportsRestore below); refusing it on a non-canonical origin would
+        // be a worse bug than the stranded return this check prevents.
         if (!isReturnableOrigin(getOrigin(), canonicalOrigin)) return { ok: false, reason: "wrong-origin" };
         // Refuse anonymous buyers CLIENT-side too. The server refuses as well,
         // but a server-only refusal surfaces as a generic failure toast; this

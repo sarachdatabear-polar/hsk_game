@@ -245,13 +245,46 @@ describe("stripeWebProvider origin gate", () => {
     expect(redirect).toHaveBeenCalledWith("https://stripe/pay");
   });
 
-  it("keeps restore working on a non-canonical origin — a returning Supporter's only recovery route", async () => {
+  // FLIPPED DELIBERATELY (audit finding, monetization P0): available() used to
+  // stay true off-origin so the supporter offer rendered right up to the
+  // purchase tap, where it alone refused. That let a visitor on the
+  // github.io bridge sign up, verify OTP by email, and only dead-end at the
+  // last step — now that billing is LIVE, the offer must not render there at
+  // all. available() folds isReturnableOrigin in so the shop/results
+  // placements go dark exactly like an unconfigured provider (see
+  // gating.js's iapVisible). supports() and restore() are UNCHANGED — restore
+  // stays reachable off-origin on purpose, it's a returning Supporter's only
+  // route to an entitlement this device never saw bought (see usable()'s doc
+  // and purchase()'s own origin check, kept as defense in depth).
+  it("goes unavailable (offer hidden) on a non-canonical origin, but keeps restore working — a returning Supporter's only recovery route", async () => {
     const p = make({
       canonicalOrigin: CANON,
       getOrigin: () => "https://sarachdatabear-polar.github.io",
     });
-    await expect(p.available()).resolves.toBe(true);
+    await expect(p.available()).resolves.toBe(false);
     expect(p.supports("supporter")).toBe(true);
     await expect(p.restore()).resolves.toEqual({ ok: true, ownedProductIds: ["supporter"] });
+  });
+
+  it("stays available on the canonical origin when a pin IS configured", async () => {
+    const p = make({ canonicalOrigin: CANON, getOrigin: () => CANON });
+    await expect(p.available()).resolves.toBe(true);
+  });
+
+  it("stays available when no canonical origin is configured (blank pin allows all)", async () => {
+    const p = make({ canonicalOrigin: "", getOrigin: () => "https://sarachdatabear-polar.github.io" });
+    await expect(p.available()).resolves.toBe(true);
+  });
+
+  it("stays available on localhost even with a pin configured — the live gate must be rehearsable", async () => {
+    const p = make({ canonicalOrigin: CANON, getOrigin: () => "http://localhost:8000" });
+    await expect(p.available()).resolves.toBe(true);
+  });
+
+  it("available() still honors the native/file/checkout-url guards on the canonical origin", async () => {
+    await expect(make({ canonicalOrigin: CANON, getOrigin: () => CANON, isNative: () => true }).available())
+      .resolves.toBe(false);
+    await expect(make({ canonicalOrigin: CANON, getOrigin: () => CANON, checkoutUrl: "" }).available())
+      .resolves.toBe(false);
   });
 });
