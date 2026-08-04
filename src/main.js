@@ -29,7 +29,7 @@ import { initAudio, speak, speakWhenReady, audioAvailable, hasMp3, setVoiceVolum
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder,
          syncReengageReminder, syncCatJourneyReminder, requestNotifPermission,
          isNative } from "./native.js";
-import { CATALOG, SKIN_PALETTES, SEASONS, defaultShop, canAfford, buy, buyConsumable, equipItem, isAvailable, seasonStatus, catJourneyStock } from "./shop.js";
+import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, isAvailable, catJourneyStock } from "./shop.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
@@ -598,7 +598,6 @@ const avatarPicker = createAvatarPicker({
   getProfile: () => playerProfile,
   setProfile: (profile) => { playerProfile = profile; store.set("profile", playerProfile); },
   getOwned: () => shopState.owned,
-  getToday: () => todayStr(),
   onChanged: () => renderProfileDashboard(),
 });
 // Supporter placement (go-live step 7): quiet line at peak moments on results.
@@ -3897,9 +3896,9 @@ function renderShop(){
   sfx.pack = shopState.soundpack || "default";  // keep sfx in sync with the equipped slot
   $("#shop-wallet").innerHTML = t("shop.wallet", { coins: wallet.toLocaleString() });
   const today = todayStr();
-  const dailyBox = $("#shop-daily"), seasonBox = $("#shop-season");
+  const dailyBox = $("#shop-daily");
   const skinBox = $("#shop-skins"), bdBox = $("#shop-backdrops"), fxBox = $("#shop-effects"), sndBox = $("#shop-sounds"), supBox = $("#shop-supplies");
-  for(const b of [dailyBox, seasonBox, skinBox, bdBox, fxBox, sndBox, supBox]) b.innerHTML = "";
+  for(const b of [dailyBox, skinBox, bdBox, fxBox, sndBox, supBox]) b.innerHTML = "";
 
   // Today's Stock — the 3 featured pool items; once owned they live in their type section
   const stock = catJourneyStock(today, shopState);
@@ -3912,26 +3911,10 @@ function renderShop(){
     dailyBox.innerHTML = `<div class="scorerow" style="color:var(--muted)">${t("shop.dailyCatEmpty")}</div>`;
   }
 
-  // Season Corner — active set is buyable; off-season shows the next set's teaser
-  const st = seasonStatus(today);
-  const seasonNote = $("#shop-season-note");
-  if(st.active){
-    for(const item of CATALOG.filter(i => i.season === st.active.id
-      && !stock.includes(i.id)
-      && !shopState.owned.includes(i.id))){
-      seasonBox.appendChild(makeShopRow(item, today));
-    }
-    seasonNote.textContent = t("shop.seasonUntil", { date: fmtMonthDay(st.active.to) });
-  }else{
-    seasonNote.textContent = t("shop.seasonReturns", { name: t("season." + st.next.id), date: fmtMonthDay(st.next.from) });
-  }
-
-  // Category shelves are the complete catalog for their category. Every cat
-  // stays visible in Cats even outside its season; unavailable seasonal cats
-  // render as previews rather than misleading Buy actions.
+  // Category shelves are the complete catalog for their category (every
+  // cosmetic is buyable year-round — the Season Corner is retired).
   for(const item of CATALOG){
     if(item.pool && !shopState.owned.includes(item.id)) continue;
-    if(item.season && item.type !== "skin" && !shopState.owned.includes(item.id)) continue;
     const box = item.type==="skin" ? skinBox : item.type==="backdrop" ? bdBox : item.type==="effect" ? fxBox : item.type==="soundpack" ? sndBox : supBox;
     box.appendChild(makeShopRow(item, today));
   }
@@ -3939,13 +3922,6 @@ function renderShop(){
   renderIapSections();
   applyShopCategory();
 }
-
-// "Jul 1" / "1 ก.ค." for a [month, day] pair, in the active locale.
-// The fixed 2026 year is inert: only month/day are rendered (see the
-// { month: "short", day: "numeric" } options below), and there's no leap-day
-// window in play, so the hardcoded year never affects the output.
-const fmtMonthDay = ([m, d]) =>
-  new Date(2026, m - 1, d).toLocaleDateString(getLocale() === "th" ? "th-TH" : "en-US", { month: "short", day: "numeric" });
 
 // Counted consumables live outside shopState.owned; each id maps to its own
 // counter so a future second consumable can never render the freeze count.
@@ -3968,12 +3944,8 @@ function makeShopRow(item, today){
   copy.className = "shop-copy";
   const ownedCount = item.type === "consumable" ? `<small>${t("shop.owned-count", { n: consumableCount(item), cap: item.cap })}</small>` : "";
   const desc = item.type === "consumable" ? tOr("item." + item.id + ".desc", "") : "";
-  const season = item.season ? SEASONS.find(entry => entry.id === item.season) : null;
-  const seasonalNote = !owned && !available && season
-    ? t("shop.seasonalReturns", { date:fmtMonthDay(season.from) }) : "";
   const descHtml = desc ? `<small class="item-desc">${desc}</small>` : "";
-  const seasonHtml = seasonalNote ? `<small class="item-desc">${seasonalNote}</small>` : "";
-  copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}</b>${descHtml}${seasonHtml}<small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
+  copy.innerHTML = `<b>${tOr("item."+item.id, item.name)}</b>${descHtml}<small>${t("shop.coins", { coins: item.price.toLocaleString() })}</small>${ownedCount}`;
   if(!owned && available && wallet < item.price){
     const shortage = document.createElement("small");
     shortage.className = "shop-shortage";
@@ -4026,9 +3998,6 @@ function makeShopRow(item, today){
     }else if(owned){
       btn.textContent = t("shop.equip");
       btn.onclick = ()=>{ shopState = equipItem(shopState, item.id); store.set("shop", shopState); renderShop(); };
-    }else if(!available){
-      btn.textContent = t("shop.seasonal");
-      btn.disabled = true;
     }else{
       btn.className = "chip buy-chip";
       btn.textContent = t("shop.buy");

@@ -19,7 +19,7 @@ export const PHOTO_DATA_URL_MAX = 98304;
 const JPEG_QUALITY_LADDER = [0.82, 0.66, 0.5];
 
 export function createAvatarPicker({
-  $, openDialog, closeDialog, store, toast, getProfile, setProfile, getOwned, getToday, onChanged,
+  $, openDialog, closeDialog, store, toast, getProfile, setProfile, getOwned, onChanged,
 }) {
   const overlay = $("#avatar-overlay");
   const panel = $("#avatar-panel");
@@ -89,11 +89,11 @@ export function createAvatarPicker({
       },
       onPick: () => pick({ kind: "monogram" }),
     }));
-    for (const { id, locked, seasonal } of catAvatarChoices(getOwned(), getToday())) {
+    for (const { id, locked } of catAvatarChoices(getOwned())) {
       const style = avatarPortraitStyle({ kind: "cat", id });
       grid.appendChild(makeTile({
         label: catLabel(id),
-        status: locked ? t(seasonal ? "avatar.seasonal" : "avatar.locked") : "",
+        status: locked ? t("avatar.locked") : "",
         selected: current.kind === "cat" && current.id === id,
         disabled: locked,
         fill: art => {

@@ -47,20 +47,23 @@ describe("ownsCatAvatar / catAvatarChoices", () => {
     expect(ownsCatAvatar("not-a-cat", ["not-a-cat"])).toBe(false);
   });
   it("always shows all seven cat models in display order", () => {
-    const choices = catAvatarChoices(["panda", "dragon"], "2026-07-31");
+    const choices = catAvatarChoices(["panda", "dragon"]);
     expect(choices.map(c => c.id)).toEqual(AVATAR_CAT_IDS);
     expect(choices.find(c => c.id === "lucky").locked).toBe(false);
     expect(choices.find(c => c.id === "panda").locked).toBe(false);
     expect(choices.find(c => c.id === "dragon").locked).toBe(false);
     expect(choices.find(c => c.id === "ninja").locked).toBe(true);
   });
-  it("marks unavailable unowned seasonal cats without hiding them", () => {
-    const july = catAvatarChoices([], "2026-07-31");
-    expect(july.find(c => c.id === "beach").seasonal).toBe(false);
-    expect(july.find(c => c.id === "mooncake-rabbit").seasonal).toBe(true);
-    expect(july.find(c => c.id === "dragon").seasonal).toBe(true);
-    const ownedDragon = catAvatarChoices(["dragon"], "2026-07-31").find(c => c.id === "dragon");
-    expect(ownedDragon).toMatchObject({ locked:false, seasonal:false });
+  // Formerly-seasonal cats (Season Corner retired — owner call: "I don't
+  // think we need it") unlock the same way as any other skin: own it, it's
+  // unlocked, on any date. No more third "seasonal" state.
+  it("formerly-seasonal cats are locked/unlocked by ownership only, on an arbitrary off-season date", () => {
+    const unowned = catAvatarChoices([]);
+    expect(unowned.find(c => c.id === "beach")).toEqual({ id: "beach", locked: true });
+    expect(unowned.find(c => c.id === "mooncake-rabbit")).toEqual({ id: "mooncake-rabbit", locked: true });
+    expect(unowned.find(c => c.id === "dragon")).toEqual({ id: "dragon", locked: true });
+    const ownedDragon = catAvatarChoices(["dragon"]).find(c => c.id === "dragon");
+    expect(ownedDragon).toEqual({ id: "dragon", locked: false });
   });
 });
 

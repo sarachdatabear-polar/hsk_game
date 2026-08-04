@@ -205,6 +205,13 @@
   .chip.buy-chip:not(:disabled){background-color:var(--lc-green); border-color:var(--lc-green-deep);
     background-image:linear-gradient(180deg,var(--lc-green-hi),var(--lc-green) 60%,var(--lc-green-deep));
     color:var(--lc-cream); font-weight:700;}
+  /* Buy/claim chips sit in flex rows (.scorerow.shoprow, .quest-row) next to a
+     flexible left-hand column. .chip's explicit min-width:44px (below its own
+     padded content width) lets the default flex-shrink:1 squeeze a buy-chip
+     down to that floor, overflowing short labels like "฿79" off-center in a
+     near-circular button. Buy-chips are always short, price-bearing labels —
+     size them to their content and never let them wrap or shrink. */
+  .chip.buy-chip{flex:none; white-space:nowrap; text-align:center;}
   .chip.preset{background:transparent; border-style:dashed; color:var(--muted); font-weight:500;}
   #len-custom{width:86px; min-height:45px; padding:9px 14px; border-radius:999px; background:var(--chip);
     color:var(--ink); font-size:15px; font-weight:600; border:1px solid var(--panel-border); text-align:center;}
@@ -2316,9 +2323,6 @@
     <div class="sect" data-shop-general data-i18n="shop.daily">Today's Picks</div>
     <div class="scorelist" id="shop-daily" data-shop-general></div>
     <p class="shop-note" id="shop-daily-note" data-shop-general data-i18n="shop.dailyNote">New picks at midnight</p>
-    <div class="sect" data-shop-general data-i18n="shop.season">Season Corner</div>
-    <div class="scorelist" id="shop-season" data-shop-general></div>
-    <p class="shop-note" id="shop-season-note" data-shop-general></p>
     </div>
     <div class="shop-category-panel" id="shop-panel-skins" role="tabpanel"
       aria-labelledby="shop-tab-skins" data-shop-category-panel="skins" hidden>

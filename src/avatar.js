@@ -10,7 +10,7 @@
 // shop.owned were transiently missing the id (ownership never lapses; the
 // avatar must not flicker to monogram on an unloaded shop state). A *removed*
 // id falls out via the allowlist in normalizeAvatar -> monogram.
-import { CATALOG, SKIN_PALETTES, isAvailable } from "./shop.js";
+import { SKIN_PALETTES } from "./shop.js";
 import { SPRITE_METRICS } from "./sprite-metrics.js";
 
 export const AVATAR_DEFAULT_CAT_ID = "lucky";
@@ -38,16 +38,8 @@ export function ownsCatAvatar(id, ownedIds) {
   return Array.isArray(ownedIds) && ownedIds.includes(id);
 }
 
-export function catAvatarChoices(ownedIds, dateStr = "") {
-  return AVATAR_CAT_IDS.map(id => {
-    const locked = !ownsCatAvatar(id, ownedIds);
-    const item = CATALOG.find(entry => entry.id === id);
-    return {
-      id,
-      locked,
-      seasonal: !!(locked && item?.season && !isAvailable(item, dateStr)),
-    };
-  });
+export function catAvatarChoices(ownedIds) {
+  return AVATAR_CAT_IDS.map(id => ({ id, locked: !ownsCatAvatar(id, ownedIds) }));
 }
 
 // THE id -> asset-sheet resolution. Never string-munges the id itself.

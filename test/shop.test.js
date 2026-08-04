@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { CATALOG, defaultShop, canAfford, buy, equipItem, SEASONS, catJourneyStock, isAvailable, seasonStatus, buyConsumable } from "../src/shop.js";
+import { CATALOG, defaultShop, canAfford, buy, equipItem, catJourneyStock, isAvailable, buyConsumable } from "../src/shop.js";
 
 
 describe("catJourneyStock", () => {
@@ -214,74 +214,57 @@ describe("shop", () => {
   // The daily pool used to be six items (four Street decos + lion-drum +
   // star-shower); the Street retirement dropped the four decos, so the pool
   // is now just the two survivors.
-  
-  // Each season set used to be three items (two prestige cosmetics + one
-  // Street deco); the deco third slot is gone.
-  it("v7 catalog: three season sets, two items each after the deco slot retired", () => {
+
+  // The Season Corner set used to gate these six ids to a date window (owner
+  // call: "I don't think we need it" — retired). They're now ordinary
+  // catalog entries: no `season` field, same ids/prices/types as before.
+  it("formerly-seasonal items: no season field, same ids/prices/types", () => {
     const byId = id => CATALOG.find(i => i.id === id);
-    expect(CATALOG.filter(i => i.season === "summer").map(i => i.id))
-      .toEqual(["beach", "island-sunset"]);
-    expect(CATALOG.filter(i => i.season === "midautumn").map(i => i.id))
-      .toEqual(["mooncake-rabbit", "lantern-festival"]);
-    expect(CATALOG.filter(i => i.season === "cny").map(i => i.id))
-      .toEqual(["dragon", "dragon-gate"]);
-    expect(byId("dragon").price).toBe(25000);
-    expect(byId("beach").price).toBe(12000);
-    expect(byId("mooncake-rabbit").price).toBe(15000);
+    for (const id of ["beach", "island-sunset", "mooncake-rabbit", "lantern-festival", "dragon", "dragon-gate"]) {
+      expect(byId(id).season).toBeUndefined();
+    }
+    expect(byId("beach")).toMatchObject({ type: "skin", price: 12000 });
+    expect(byId("island-sunset")).toMatchObject({ type: "backdrop", price: 8000 });
+    expect(byId("mooncake-rabbit")).toMatchObject({ type: "skin", price: 15000 });
+    expect(byId("lantern-festival")).toMatchObject({ type: "backdrop", price: 9000 });
+    expect(byId("dragon")).toMatchObject({ type: "skin", price: 25000 });
+    expect(byId("dragon-gate")).toMatchObject({ type: "backdrop", price: 10000 });
   });
 });
 
 describe("shop v7 availability", () => {
   const byId = id => CATALOG.find(i => i.id === id);
 
-  it("SEASONS windows match the PRD", () => {
-    expect(SEASONS.map(s => s.id)).toEqual(["summer", "midautumn", "cny"]);
-    expect(SEASONS[0]).toMatchObject({ from: [7, 1], to: [8, 15] });
-    expect(SEASONS[1]).toMatchObject({ from: [9, 1], to: [10, 5] });
-    expect(SEASONS[2]).toMatchObject({ from: [1, 20], to: [2, 24] });
-  });
-
   // The Street retirement shrank the daily pool to 2 items (lion-drum,
   // star-shower), below the 3 daily slots — so a slot always repeats and
   // only 2 unique ids show up per day (was 3 of 6 before the retirement).
-  
+
   // With only 2 pool ids across 3 slots, every day's stock already covers
   // the full pool (3 consecutive slot indices mod 2 always hit both
   // residues) — full-cycle coverage now happens within a single day, not
   // over ceil(pool/3) days. The slot *order* still alternates with period 2.
-  
+
   // Same shrink: since both pool ids are always featured every day now,
   // nextFeaturedIn is always 0 for a pool id — there's no longer an
   // "absent from today's stock" pool item to test a positive wait against.
-  
+
   it("isAvailable: permanent items always, even with no date", () => {
     expect(isAvailable(byId("panda"), undefined)).toBe(true);
     expect(isAvailable(byId("market"), "2026-07-07")).toBe(true);
   });
 
-  
-  it("isAvailable: season window edges (PRD success criteria)", () => {
+  // Season Corner retired: a formerly-seasonal item is available on any date
+  // (including dates well outside its old window) and with no date at all.
+  it("isAvailable: formerly-seasonal items are available year-round, date or no date", () => {
     const beach = byId("beach"), dragon = byId("dragon");
-    expect(isAvailable(beach, "2026-07-01")).toBe(true);   // first day
-    expect(isAvailable(beach, "2026-08-15")).toBe(true);   // last day
-    expect(isAvailable(beach, "2026-06-30")).toBe(false);
-    expect(isAvailable(beach, "2026-08-16")).toBe(false);
-    expect(isAvailable(dragon, "2026-01-20")).toBe(true);
-    expect(isAvailable(dragon, "2026-02-24")).toBe(true);
-    expect(isAvailable(dragon, "2026-02-25")).toBe(false);
-    expect(isAvailable(dragon, undefined)).toBe(false);
+    expect(isAvailable(beach, "2026-07-01")).toBe(true);
+    expect(isAvailable(beach, "2026-12-25")).toBe(true);    // well outside the old summer window
+    expect(isAvailable(beach, undefined)).toBe(true);
+    expect(isAvailable(dragon, "2026-06-01")).toBe(true);   // well outside the old CNY window
+    expect(isAvailable(dragon, undefined)).toBe(true);
   });
 
-  it("seasonStatus: active summer on launch day; teaser after it ends; year wrap to cny", () => {
-    expect(seasonStatus("2026-07-07").active.id).toBe("summer");
-    const after = seasonStatus("2026-08-16");
-    expect(after.active).toBe(null);
-    expect(after.next.id).toBe("midautumn");
-    expect(after.nextInDays).toBe(16);                     // Aug 16 -> Sep 1
-    expect(seasonStatus("2026-11-01").next.id).toBe("cny"); // wraps into January
-  });
-
-  it("a season item bought in-window equips out-of-window (no date gating on equip)", () => {
+  it("a formerly-seasonal item bought equips regardless of date (no date gating on equip)", () => {
     const shop = { ...defaultShop(), owned: ["dragon"] };
     expect(equipItem(shop, "dragon").skin).toBe("dragon");
   });
@@ -298,14 +281,14 @@ describe("shop v7 tiers", () => {
     expect(buy(99999, shop, "panda").ok).toBe(false);
   });
 
-  it("gated first purchases respect availability", () => {
-    const today = "2026-07-07"; // summer active
-    const r = buy(12000, defaultShop(), "beach", today);
+  // Season Corner retired: a formerly-seasonal item's first purchase now
+  // succeeds any day of the year, and even with no date at all — there is no
+  // more "gated" first purchase.
+  it("a formerly-seasonal item is buyable on an arbitrary off-season date", () => {
+    const r = buy(12000, defaultShop(), "beach", "2026-07-07"); // was in-window
     expect(r.ok).toBe(true);
-    // a first purchase out of window fails
-    expect(buy(99999, defaultShop(), "beach", "2026-12-01").ok).toBe(false);
-    // and a gated first purchase with no date fails
-    expect(buy(99999, defaultShop(), "beach").ok).toBe(false);
+    expect(buy(99999, defaultShop(), "beach", "2026-12-01").ok).toBe(true); // well off-season
+    expect(buy(99999, defaultShop(), "beach").ok).toBe(true);               // and with no date at all
   });
 
   // With the daily pool shrunk to 2 ids across 3 slots, every pool item is
