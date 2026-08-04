@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { DAY, wordWeight, weakWords, dueWords, smartDeck } from "../src/srs.js";
+import { MASTERY_STREAK } from "../src/mastery.js";
 
 const NOW = 1_700_000_000_000;
 
@@ -29,6 +30,14 @@ describe("srs: wordWeight", () => {
   it("empty store (undefined record) always weighs 1", () => {
     const store = {};
     expect(wordWeight(store["水"], NOW)).toBe(1);
+  });
+
+  it("mastery gating flips exactly at MASTERY_STREAK: below it, weight is 1 regardless of age; at it, becomes eligible for due/fresh weighting", () => {
+    const veryOld = NOW - 1000 * DAY; // long past any due interval
+    const belowMastery = { s: MASTERY_STREAK, k: MASTERY_STREAK - 1, r: MASTERY_STREAK - 1, ls: veryOld };
+    expect(wordWeight(belowMastery, NOW)).toBe(1);
+    const atMastery = { s: MASTERY_STREAK, k: MASTERY_STREAK, r: MASTERY_STREAK, ls: veryOld };
+    expect(wordWeight(atMastery, NOW)).toBe(2); // mastered + due
   });
 
   describe("due-interval boundaries", () => {

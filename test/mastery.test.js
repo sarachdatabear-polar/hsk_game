@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { recordAnswer, wordStreak, isMastered, levelMastery, pickKeepsakeWord, masteredCount } from "../src/mastery.js";
+import { recordAnswer, wordStreak, isMastered, levelMastery, pickKeepsakeWord, masteredCount, MASTERY_STREAK } from "../src/mastery.js";
 
 describe("mastery", () => {
   it("three correct in a row masters a word", () => {
@@ -44,6 +44,12 @@ describe("mastery", () => {
     const after = Date.now();
     expect(s["水"].ls).toBeGreaterThanOrEqual(before);
     expect(s["水"].ls).toBeLessThanOrEqual(after);
+  });
+  it("isMastered flips to true exactly at MASTERY_STREAK, not before", () => {
+    const s = { "水": { s: MASTERY_STREAK - 1, k: MASTERY_STREAK - 1, r: MASTERY_STREAK - 1 } };
+    expect(isMastered(s, "水")).toBe(false);
+    s["水"].r = MASTERY_STREAK;
+    expect(isMastered(s, "水")).toBe(true);
   });
   it("old v1 records without ls keep working with existing helpers", () => {
     const s = { "水": { s: 3, k: 3, r: 3 } };  // pre-M2 shape, no ls

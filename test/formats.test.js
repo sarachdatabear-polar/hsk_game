@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { formatFor, FORMATS } from "../src/formats.js";
+import { MASTERY_STREAK } from "../src/mastery.js";
 
 const mk = (h, p, e, t) => ({ h, p, e, t, lv: 1, f: 50 });
 const word = mk("你好", "nǐ hǎo", "hello", "สวัสดี");
@@ -29,6 +30,10 @@ describe("formatFor — the mastery ladder", () => {
   it("streak 3-4 get reverse recall", () => {
     expect(formatFor(word, rec(3), caps)).toBe("reverse");
     expect(formatFor(word, rec(4), caps)).toBe("reverse");
+  });
+  it("the listen->reverse boundary sits exactly at MASTERY_STREAK", () => {
+    expect(formatFor(word, rec(MASTERY_STREAK - 1), caps)).toBe("listen");
+    expect(formatFor(word, rec(MASTERY_STREAK), caps)).toBe("reverse");
   });
   it("streak 5-6 get tone recall", () => {
     expect(formatFor(word, rec(5), caps)).toBe("tone");
