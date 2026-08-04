@@ -16,25 +16,51 @@ const STOPWORDS = new Set([
 ]);
 
 // First sense only: multi-sense glosses like "one; single" are separated by ";".
+// Used by the Thai comparison below only — the English comparison (sameMeaning)
+// must NOT use this; see the sense-pair comparison below for why.
 const firstSense = s => (s || "").split(";")[0];
 
-// Content tokens of the first sense: strip parentheticals, lowercase, split on
+// Every sense of a gloss, trimmed, dropping empties ("one; single" -> ["one", "single"]).
+const senses = s => (s || "").split(";").map(x => x.trim()).filter(Boolean);
+
+// Content tokens of a SINGLE sense: strip parentheticals, lowercase, split on
 // non-letter/apostrophe runs, drop stopwords.
-const contentTokens = s =>
-  firstSense(s)
+const senseTokens = s =>
+  (s || "")
     .replace(/\([^)]*\)/g, "")
     .toLowerCase()
     .split(/[^a-z']+/)
     .filter(Boolean)
     .filter(t => !STOPWORDS.has(t));
 
-function sameMeaning(a, b) {
-  const ta = contentTokens(a);
-  const tb = contentTokens(b);
-  if (ta.length === 0 && tb.length === 0) {
-    return firstSense(a).trim().toLowerCase() === firstSense(b).trim().toLowerCase();
-  }
+// Two senses collide when their content tokens overlap, or — degenerate case —
+// when a sense is entirely stopwords (e.g. "or", "lit") and both sides' raw
+// sense text matches exactly (so "or" vs "or" still collides even though "or"
+// itself is filtered as a stopword).
+function sensesCollide(sa, sb) {
+  const ta = senseTokens(sa);
+  const tb = senseTokens(sb);
+  if (ta.length === 0 && tb.length === 0) return sa.toLowerCase() === sb.toLowerCase();
   return ta.some(t => tb.includes(t));
+}
+
+// Same meaning across the FULL gloss: check every sense of a against every
+// sense of b (not just the two first senses), because the game DISPLAYS the
+// whole multi-sense string to the player — the reverse-format prompt renders
+// all of w.e, and the meaning/listen formats show full glosses as the 4
+// answer options. A candidate colliding on ANY displayed sense pair is a
+// player-visible ambiguity and must be excluded. This is the old first-sense
+// comparison generalized to every sense pair (sense[0] vs sense[0] is one of
+// the pairs checked), so it's a strict superset of the old behavior: nothing
+// the old code excluded stops being excluded now, it can only exclude more.
+function sameMeaning(a, b) {
+  const sa = senses(a), sb = senses(b);
+  for (const x of sa) {
+    for (const y of sb) {
+      if (sensesCollide(x, y)) return true;
+    }
+  }
+  return false;
 }
 
 // Thai has no spaces: compare sense-level, not token-level. First sense of a Thai
@@ -48,8 +74,8 @@ const sameThai = (a, b) => {
 };
 
 // Two candidates collide when they'd render the same gloss to the player —
-// either their English first-senses share a content token, or (Thai present
-// on both) their Thai first-senses share a synonym.
+// either their full English glosses share a content token (any sense vs any
+// sense), or (Thai present on both) their Thai first-senses share a synonym.
 function collide(a, b) {
   return sameMeaning(a.e, b.e) || !!(a.t && b.t && sameThai(a.t, b.t));
 }
