@@ -19,6 +19,11 @@ remain operational owner actions.
 - **`migrations/2026-08-03-supporter-delivery-status.sql`** — widens
   `supporter_deliveries.status` to add `'delivered'`, so `resend-webhook` can
   record real delivery truth past `sent`. Additive + idempotent.
+- **`migrations/2026-08-04-refund-revoke.sql`** — new `revoke_purchase` RPC,
+  the atomic mirror of `grant_purchase`: negative ledger row, wallet
+  decrement clamped at zero, and entitlement delete, so a refunded Stripe
+  purchase actually loses the Supporter status refund.html §4 promises it
+  loses. See §Refund revocation deployment prerequisites below.
 - **`../../supabase/functions/_shared/supporter-email/`** — localized
   transactional email, Resend transport, private signed-asset attachment, and
   retry orchestration shared by both purchase webhooks.
@@ -28,8 +33,9 @@ remain operational owner actions.
 - **`../../supabase/functions/rc-webhook/`** — bearer + HMAC authenticated
   RevenueCat webhook that grants through `grant_purchase`.
 - **`../../supabase/functions/stripe-webhook/`** — signature-verified Stripe
-  webhook that grants through `grant_purchase`. See §Stripe deployment
-  prerequisites below.
+  webhook that grants through `grant_purchase` and revokes on a full refund
+  through `revoke_purchase`. See §Stripe deployment prerequisites and
+  §Refund revocation deployment prerequisites below.
 - **`../../supabase/functions/stripe-checkout/`** — authenticated Checkout
   Session creator called by the browser client. See §Stripe deployment
   prerequisites below.
@@ -288,6 +294,51 @@ setting in the Dashboard → **Edge Functions → function → Details** — the
 does not prompt or warn if you deploy `stripe-webhook` without
 `--no-verify-jwt`, it just silently ships a function that will 401 every real
 Stripe delivery.
+
+## Refund revocation deployment prerequisites
+
+`stripe-webhook` now also handles `charge.refunded`: it maps the refunded
+charge back to its Checkout Session (charges carry no session id, and our
+sessions set no `payment_intent` metadata, so a `GET
+/v1/checkout/sessions?payment_intent=…` lookup is the only way in), derives
+the same grant the original purchase would have produced, and calls
+`revoke_purchase` — the atomic mirror of `grant_purchase`: a negative ledger
+row, the wallet decremented and clamped at zero, and the entitlement row
+deleted. Until all three steps below are done, the handler is **inert** — a
+refund issued in the Stripe Dashboard changes nothing on our side.
+
+The session→grant derivation (`grantFromSession`, core.js) is shared with the
+grant path but called with `{ requirePaid: false }` here: a `charge.refunded`
+event is itself proof the charge settled, so re-checking the Session's
+checkout-time `payment_status` would only ever risk a silent, permanent
+`{ignored:"not-paid"}` if Stripe ever reflected a refund back onto that field
+(undocumented either way — the enum has no "refunded" state today). The grant
+path is unaffected: `requirePaid` defaults to `true`.
+
+1. Apply `migrations/2026-08-04-refund-revoke.sql` to the live Supabase
+   project (SQL editor or `supabase db push`). Confirm it took: `select 1
+   from pg_proc where proname = 'revoke_purchase';` in the SQL editor.
+2. Re-deploy `stripe-webhook` with JWT verification disabled, same as any
+   other change to this function:
+
+       supabase functions deploy stripe-webhook --no-verify-jwt
+
+3. In the Stripe Dashboard, open the existing webhook endpoint (Developers →
+   Webhooks) and add `charge.refunded` to its enabled events — it is not one
+   of the events subscribed when the endpoint was first created. Until this
+   is added, Stripe never sends the event at all, regardless of whether the
+   SQL and the redeployed function are ready.
+
+Apply order matters the same way it does for `grant_purchase`: the SQL must
+land **before** the redeployed function's first `charge.refunded` delivery.
+An un-redeployed `stripe-webhook` never reaches the `revoke_purchase` call at
+all (it doesn't know the refund branch exists), so applying the SQL first is
+always safe; redeploying the function before the SQL lands is not — every
+refund event would 500 (Stripe retries, then gives up) until the migration is
+applied. See the migration file's own header comment for the full
+idempotency contract (the ledger insert is the claim, via the same
+`ledger_event_id_uidx` `grant_purchase` uses, keyed to `refund:<charge id>`
+so a redelivered Stripe event dedupes instead of double-revoking).
 
 ## Supporter self-serve download deployment prerequisites
 

@@ -1114,4 +1114,68 @@ cleared. To re-check without printing secret values:
 [string]::IsNullOrEmpty([Environment]::GetEnvironmentVariable("NBHSK_KEY_PASS", "User"))
 ```
 
+## Refunding a purchase
+
+Once `migrations/2026-08-04-refund-revoke.sql` is applied and `stripe-webhook`
+is redeployed (`docs/supabase/README.md` §Refund revocation deployment
+prerequisites), refunding a Stripe purchase from the Dashboard automatically
+revokes it on our side. Requires the one-time setup below.
+
+**One-time setup:**
+
+- [ ] Stripe Dashboard → **Developers → Webhooks** → open the existing
+      `stripe-webhook` endpoint → add `charge.refunded` to its enabled
+      events. Not subscribed by default; refunds are silently ignored on our
+      side until this is added, even with the SQL applied and the function
+      redeployed.
+
+**Per-refund flow:**
+
+1. Stripe Dashboard → **Payments** → search by the buyer's email.
+2. Open the payment → **Refund payment**.
+3. **Issue a FULL refund only.** A partial refund deliberately revokes
+   nothing — `processStripeRefund` (core.js) only acts on `refunded: true`,
+   which Stripe never sets on a partial refund. If a buyer is owed a partial
+   amount for some other reason, that is a manual case outside this flow;
+   do not use a partial refund expecting it to pull back part of the grant.
+
+**What happens automatically** once the full refund posts and Stripe
+delivers `charge.refunded`: a negative ledger entry is recorded, the
+buyer's coin wallet is decremented and clamped at zero (never chased into
+negative — refund.html §4), and their `entitlements` row for the product is
+deleted. Supporter-download and the client's `restore()` both check that
+row server-side, so they stop honoring the purchase immediately. The buyer
+can re-purchase afterward if they choose to.
+
+**Verification:** in the SQL editor, joined from the buyer's email (the
+Dashboard flow above never surfaces their uid directly):
+
+    select e.* from public.entitlements e
+      join auth.users u on u.id = e.user_id
+      where u.email = '<buyer email>';
+
+should return no `supporter` row after the refund lands (allow a few seconds
+for Stripe's webhook delivery). The buyer's coin wallet decrements correctly
+too — the client's ledger-cursor reconcile sums signed deltas, so a refund's
+negative row folds in exactly like a purchase's positive one does, not just
+the entitlement side.
+
+**Known limitations, both accepted per policy:**
+
+- **The local Supporter flag never clears itself on an already-synced
+  device — reopening the app does not fix it.** `restoreFrom()`
+  (`src/monetization/purchases.js`) ORs the local flag with the server
+  check (`supporter: e.supporter || …`), so once a device has set it, no
+  client code path — restore, foreground, or otherwise — ever unsets it
+  again. Do not tell a refunded buyer "reopen the app and it'll sync"; it
+  won't. What DOES stop working immediately is the part that matters:
+  `supporter-download` checks the `entitlements` table server-side on every
+  call, so self-serve re-download stops working the moment the row is
+  deleted, regardless of what the local UI still shows. The local flag is
+  cosmetic; the server is the real gate (same design note as
+  `docs/supabase/README.md`'s `supporter-download` section).
+- The six guide PDFs already emailed on purchase are not recoverable. This
+  is stated in refund.html §4 as an accepted cost of the refund policy, the
+  same as it would be for any digital-goods refund.
+
 Both should return `True`.

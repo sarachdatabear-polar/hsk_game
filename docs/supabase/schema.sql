@@ -337,6 +337,46 @@ revoke execute on function public.grant_purchase(uuid, integer, text, text, text
 grant execute on function public.grant_purchase(uuid, integer, text, text, text, text, text) to service_role;
 
 -- ---------------------------------------------------------------------------
+-- Revision 2026-08-04b — automatic revocation on a Stripe refund. Mirrors
+-- migrations/2026-08-04-refund-revoke.sql — see that file's header comment
+-- for the full idempotency contract and apply-order rationale (SQL before
+-- webhook redeploy). revoke_purchase is the atomic mirror of grant_purchase
+-- above: negative ledger row + wallet decrement clamped at zero (refund
+-- policy §4 — never chase a difference the buyer already spent) +
+-- entitlement delete, all in one transaction, idempotent via the same
+-- ledger_event_id_uidx unique index grant_purchase relies on.
+-- ---------------------------------------------------------------------------
+create or replace function public.revoke_purchase(
+  p_user_id uuid, p_delta integer, p_reason text, p_event_id text,
+  p_order_id text, p_entitlement text
+) returns text language plpgsql as $$
+begin
+  insert into public.ledger (user_id, delta, reason, event_id, order_id)
+  values (p_user_id, -abs(p_delta), p_reason, p_event_id, p_order_id); -- event idempotency + client transaction attribution
+  update public.wallet set coins = greatest(0, coins - abs(p_delta))
+    where user_id = p_user_id; -- refund policy §4: clamp at zero, never chase the difference
+  if p_entitlement is not null then
+    delete from public.entitlements
+      where user_id = p_user_id and product_id = p_entitlement; -- no source filter — see migration header comment
+  end if;
+  return 'revoked';
+exception
+  when unique_violation then                                   -- event already processed: DO NOT re-debit...
+    if p_entitlement is not null then                           -- ...but heal a prior partial (delete is naturally idempotent)
+      delete from public.entitlements
+        where user_id = p_user_id and product_id = p_entitlement;
+    end if;
+    return 'duplicate';
+  when foreign_key_violation then                                -- deleted account: permanent, ack so Stripe stops retrying
+    return 'unknown-user';
+end;
+$$;
+
+-- Server-authoritative surface only, same rule as grant_purchase.
+revoke execute on function public.revoke_purchase(uuid, integer, text, text, text, text) from public, anon, authenticated;
+grant execute on function public.revoke_purchase(uuid, integer, text, text, text, text) to service_role;
+
+-- ---------------------------------------------------------------------------
 -- Revision 2026-08-02 — automatic Supporter gift email delivery.
 -- Mirrors migrations/2026-08-02-supporter-email-delivery.sql
 -- so a fresh project and an upgraded project expose the same server surface.

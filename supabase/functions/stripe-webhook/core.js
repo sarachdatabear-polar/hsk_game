@@ -67,15 +67,26 @@ export async function verifyStripeSignature(rawBody, header, secret, nowSeconds 
   }
 }
 
-export function processStripeEvent(body, catalog) {
+// The session→grant decision, split out of processStripeEvent so the refund
+// path (which maps a charge to a session itself, see index.ts) can reuse the
+// exact same rules without going through the checkout.session.* type-gate.
+//
+// requirePaid defaults true (byte-identical to the pre-extraction behavior
+// for the grant path). The refund path passes requirePaid:false: a
+// charge.refunded event IS proof the charge settled — you cannot refund a
+// charge that never took money — so re-checking checkout-time payment_status
+// there would only ever risk a spurious "not-paid" if Stripe ever reflects a
+// refund back onto the Session object (undocumented; the enum today is only
+// paid/unpaid/no_payment_required, with no "refunded" state). That failure
+// mode is silent and permanent (a 200 ack tells Stripe never to retry), so
+// this path does not depend on that field at all rather than assume it's safe.
+export function grantFromSession(session, catalog, { requirePaid = true } = {}) {
   const fail = reason => ({ ok: false, reason });
-  if (!body || typeof body !== "object") return fail("not-an-event");
-  if (!GRANTABLE_TYPES.has(body.type)) return fail("ignored-event-type");
-  const session = body.data && body.data.object;
   if (!session || typeof session !== "object") return fail("not-an-event");
-  // The ONLY safe grant trigger. A completed-but-unpaid session is a PromptPay
-  // QR that has been shown, not money that has arrived.
-  if (session.payment_status !== "paid") return fail("not-paid");
+  // The ONLY safe grant trigger for the checkout.session.* path. A
+  // completed-but-unpaid session is a PromptPay QR that has been shown, not
+  // money that has arrived.
+  if (requirePaid && session.payment_status !== "paid") return fail("not-paid");
   if (!session.id) return fail("missing-session-id");
   if (!session.client_reference_id) return fail("missing-user");
   const productId = session.metadata && session.metadata.product_id;
@@ -94,6 +105,43 @@ export function processStripeEvent(body, catalog) {
       orderId: session.id,
       coins: product.coins,
       entitlement: product.entitlement || null,
+    },
+  };
+}
+
+export function processStripeEvent(body, catalog) {
+  const fail = reason => ({ ok: false, reason });
+  if (!body || typeof body !== "object") return fail("not-an-event");
+  if (!GRANTABLE_TYPES.has(body.type)) return fail("ignored-event-type");
+  return grantFromSession(body.data && body.data.object, catalog);
+}
+
+// Refund handling — the mirror image of the grant path. Stripe's
+// `charge.refunded` event carries a CHARGE, not a checkout session, so this
+// stays a separate decision function; index.ts maps charge→session (via the
+// Stripe API, since a charge carries no session id) and then reuses
+// grantFromSession/PRODUCTS to figure out WHAT to revoke.
+export function processStripeRefund(body) {
+  const fail = reason => ({ ok: false, reason });
+  if (!body || typeof body !== "object") return fail("not-an-event");
+  if (body.type !== "charge.refunded") return fail("ignored-event-type");
+  const charge = body.data && body.data.object;
+  if (!charge || typeof charge !== "object") return fail("not-an-event");
+  // Published policy (refund.html §4) only ever revokes on a FULL refund.
+  // A partial-refund delivery of this same event type carries refunded:false
+  // — a Stripe partial-refund charge object never has refunded:true — so
+  // this check alone is what keeps a partial refund from revoking anything.
+  if (charge.refunded !== true) return fail("not-fully-refunded");
+  if (typeof charge.id !== "string" || !charge.id) return fail("missing-charge-id");
+  if (typeof charge.payment_intent !== "string" || !charge.payment_intent) return fail("missing-payment-intent");
+  return {
+    ok: true,
+    refund: {
+      paymentIntent: charge.payment_intent,
+      // Keyed to the CHARGE id, not body.id (the Stripe event id): Stripe can
+      // redeliver the same event, and a fresh event id per redelivery must
+      // still dedupe on ledger_event_id_uidx instead of double-revoking.
+      eventId: `refund:${charge.id}`,
     },
   };
 }
