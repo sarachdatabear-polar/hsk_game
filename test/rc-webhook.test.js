@@ -14,7 +14,7 @@ function rcEvent(overrides) {
     event: {
       id: "evt-1",
       type: "INITIAL_PURCHASE",
-      app_user_id: "user-1",
+      app_user_id: "11111111-1111-4111-8111-111111111111",
       product_id: "coins_s",
       transaction_id: "GPA.1234-5678",
       ...overrides,
@@ -38,7 +38,7 @@ describe("processEvent — grants per product", () => {
     expect(r).toEqual({
       ok: true,
       grant: {
-        userId: "user-1",
+        userId: "11111111-1111-4111-8111-111111111111",
         productId: "coins_s",
         eventId: "evt-1",
         orderId: "GPA.1234-5678",
@@ -103,6 +103,27 @@ describe("processEvent — malformed / unresolvable events", () => {
   it("rejects a missing app_user_id", () => {
     const r = processEvent(rcEvent({ app_user_id: undefined }), PRODUCTS);
     expect(r).toEqual({ ok: false, reason: "missing-user" });
+  });
+
+  // Non-UUID app_user_ids are by-design ungrantable: the client app never
+  // configures the RC SDK without a Supabase UUID (see
+  // src/monetization/provider-revenuecat.js), so a dashboard TEST event's
+  // $RCAnonymousID, an out-of-app store redemption, or a misconfigured
+  // client can't ever pass grant_purchase's uuid cast. Must ack, not retry.
+  it("rejects a non-UUID app_user_id (e.g. RC's $RCAnonymousID test identity)", () => {
+    const r = processEvent(rcEvent({ app_user_id: "$RCAnonymousID:abc123" }), PRODUCTS);
+    expect(r).toEqual({ ok: false, reason: "invalid-user" });
+  });
+
+  it("still grants for a well-formed UUID app_user_id", () => {
+    const r = processEvent(rcEvent({ app_user_id: "11111111-1111-4111-8111-111111111111" }), PRODUCTS);
+    expect(r.ok).toBe(true);
+    expect(r.grant.userId).toBe("11111111-1111-4111-8111-111111111111");
+  });
+
+  it("accepts an uppercase UUID app_user_id", () => {
+    const r = processEvent(rcEvent({ app_user_id: "11111111-1111-4111-8111-111111111111".toUpperCase() }), PRODUCTS);
+    expect(r.ok).toBe(true);
   });
 
   it("rejects a missing event id", () => {

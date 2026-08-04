@@ -18,6 +18,11 @@
 // Everything else (RENEWAL, CANCELLATION, TEST, ...) is not a grant trigger.
 const GRANTABLE_TYPES = new Set(["INITIAL_PURCHASE", "NON_RENEWING_PURCHASE"]);
 
+// Same regex as src/monetization/provider-revenuecat.js (copied, not
+// imported — core.js is deliberately import-free from src/ except what
+// index.ts passes in) — the app_user_id must be a Supabase UUID.
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 // Fail closed when deployment configuration is incomplete. Without the
 // explicit non-empty check, an unset secret would accept the literal header
 // "Bearer undefined".
@@ -66,6 +71,11 @@ export function processEvent(body, catalog) {
   const product = (catalog || []).find(p => p.id === event.product_id) || null;
   if (!product) return fail("unknown-product");
   if (!event.app_user_id) return fail("missing-user");
+  // Non-UUID app_user_ids are by-design ungrantable: the client app never
+  // configures the RC SDK without a Supabase UUID (see
+  // src/monetization/provider-revenuecat.js), so grant_purchase's uuid cast
+  // would always fail for these. Ack rather than let RC retry-loop forever.
+  if (!UUID.test(event.app_user_id)) return fail("invalid-user");
   if (!event.id) return fail("missing-event-id");
   if (!event.transaction_id) return fail("missing-transaction-id");
   return {
