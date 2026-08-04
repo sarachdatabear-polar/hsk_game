@@ -648,6 +648,175 @@ describe("pushDirty", () => {
     expect(store.get("sync", {}).dirty).toEqual({ wallet: true });
   });
 
+  describe("wallet delta fold lifecycle (2026-08-04-wallet-delta-fold, stage 2)", () => {
+    it("row 1 (THE headline regression, bug #1): cold-boot spend then first-settle redirect must NOT refund", async () => {
+      // Signed-in session with a pushed base of 5000 matching cloud; local
+      // spent 500 (wallet 4500, item bought) before any reconcile ran this
+      // session (reconciledUid unset) — the exact cold-boot-spend-then-hide
+      // sequence from the spec. OLD max() fold gives cloud 5000 back (refund);
+      // the delta fold must give cloud - 500 = 4500, item kept.
+      const { client, calls } = fakeClient({ session: SESSION,
+        progressRow: { user_id: "u1", xp: 0, mastery: {},
+          daily: { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" },
+          quests: {}, monthly: {}, best: {}, cosmetics: { owned: [], skin: "", backdrop: "", effect: "", soundpack: "", tiers: {} },
+          stickers: { earned: {} } },
+        walletRow: { user_id: "u1", coins: 5000, freezes: 0 } });
+      __setClientForTests(client);
+      const store = memStore({
+        wallet: 4500,
+        shop: { owned: ["deco-x"], skin: "", backdrop: "", effect: "", soundpack: "", tiers: {} },
+        sync: { dirty: { wallet: true }, lastSyncAt: 0, lastLedgerAt: "",
+                walletSync: { uid: "u1", base: 5000, pushed: true } },
+      });
+      const r = await pushDirty(store, "hide");   // no reconciledUid yet -> first-settle redirect
+      expect(r.ok).toBe(true);
+      expect(store.get("wallet", 0)).toBe(4500);   // NOT 5000 (no refund)
+      expect(store.get("shop", null).owned).toContain("deco-x");   // item kept
+      const pushedWallet = calls.upserts.find(u => u.table === "wallet").row;
+      expect(pushedWallet.coins).toBe(4500);
+    });
+
+    it("row 7: unpushed base above a stale cloud value keeps our own delta (max(cloud, base) + delta)", async () => {
+      // The prior fold's push failed (pushed:false, base 5200) and the cloud
+      // row is still at the pre-fold 5000. Since then local earned 100 more
+      // (wallet 5300). The unpushed branch must not let the stale cloud value
+      // clobber our own unconfirmed delta.
+      const { client } = fakeClient({ session: SESSION,
+        progressRow: { user_id: "u1", xp: 0, mastery: {},
+          daily: { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" },
+          quests: {}, monthly: {}, best: {}, cosmetics: {}, stickers: { earned: {} } },
+        walletRow: { user_id: "u1", coins: 5000, freezes: 0 } });
+      __setClientForTests(client);
+      const store = memStore({ wallet: 5300,
+        sync: { dirty: { wallet: true }, lastSyncAt: 0, lastLedgerAt: "",
+                walletSync: { uid: "u1", base: 5200, pushed: false } } });
+      const r = await reconcile(store, "sign-in", 2000000);
+      expect(r.ok).toBe(true);
+      expect(store.get("wallet", 0)).toBe(5300);   // max(5000,5200) + (5300-5200) = 5300
+    });
+
+    it("row 8/10: uid mismatch on walletSync falls back to legacy max — byte-identical to no-walletSync", async () => {
+      const { client } = fakeClient({ session: SESSION,
+        progressRow: { user_id: "u1", xp: 0, mastery: {},
+          daily: { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" },
+          quests: {}, monthly: {}, best: {}, cosmetics: {}, stickers: { earned: {} } },
+        walletRow: { user_id: "u1", coins: 300, freezes: 0 } });
+      __setClientForTests(client);
+      const store = memStore({ wallet: 250,
+        sync: { dirty: { wallet: true }, lastSyncAt: 0, lastLedgerAt: "",
+                // Snapshot belongs to a DIFFERENT uid (e.g. a prior account on
+                // this device) -- meaningless for this session, must not fold.
+                walletSync: { uid: "other-uid", base: 9999, pushed: true } } });
+      const r = await reconcile(store, "sign-in", 2000000);
+      expect(r.ok).toBe(true);
+      expect(store.get("wallet", 0)).toBe(300);   // plain max(250,300), NOT the delta fold
+    });
+
+    it("row 6: reconcile whose push FAILS stamps pushed:false; a later successful blind push stamps pushed:true with base = the pushed wallet", async () => {
+      const { client: failClient } = fakeClient({ session: SESSION,
+        progressRow: { user_id: "u1", xp: 0, mastery: {},
+          daily: { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" },
+          quests: {}, monthly: {}, best: {}, cosmetics: {}, stickers: { earned: {} } },
+        walletRow: { user_id: "u1", coins: 1000, freezes: 0 }, failPush: true });
+      __setClientForTests(failClient);
+      const store = memStore({ wallet: 1500,
+        sync: { dirty: { wallet: true }, lastSyncAt: 0, lastLedgerAt: "" } });
+      const r1 = await reconcile(store, "sign-in", 2000000);
+      expect(r1.ok).toBe(false);
+      expect(store.get("wallet", 0)).toBe(1500);   // legacy max(1500,1000), fold still lands locally
+      expect(store.get("sync", {}).walletSync).toEqual({ uid: "u1", base: 1500, pushed: false });
+
+      const { client: okClient } = fakeClient({ session: SESSION, failPush: false });
+      __setClientForTests(okClient);
+      const r2 = await pushDirty(store, "hide");   // reconciledUid already latched by r1
+      expect(r2.ok).toBe(true);
+      expect(store.get("sync", {}).walletSync).toEqual({ uid: "u1", base: 1500, pushed: true });
+    });
+
+    it("row 13: a wallet write races the push — dirty bit survives AND walletSync.base is the pushed (pre-race) value, not the raced one", async () => {
+      let store;
+      const client = {
+        auth: { getSession: async () => ({ data: { session: SESSION } }) },
+        from: (table) => ({
+          select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }),
+          upsert: async () => {
+            if (table === "wallet") {
+              // Simulate a gameplay write landing while this push is in flight.
+              store.set("wallet", 999);
+              store.set("sync", { ...store.get("sync", {}), dirty: { wallet: true } });
+            }
+            return { error: null };
+          },
+        }),
+      };
+      __setClientForTests(client);
+      store = memStore({ wallet: 300, sync: { dirty: { wallet: true }, lastSyncAt: 777 } });
+      __setReconciledUidForTests(SESSION.user.id);
+      const r = await pushDirty(store, "hide");
+      expect(r.ok).toBe(true);
+      expect(store.get("wallet", 0)).toBe(999);                 // raced value stands in the store
+      expect(store.get("sync", {}).dirty).toEqual({ wallet: true });   // dirty bit survives (existing behavior)
+      expect(store.get("sync", {}).walletSync).toEqual({ uid: "u1", base: 300, pushed: true }); // pushed value, not raced
+    });
+
+    it("malformed walletSync (base undefined/NaN/string) is treated as legacy, doesn't crash, and is replaced by a well-formed stamp", async () => {
+      const malformedBases = [undefined, NaN, "5000"];
+      for (const base of malformedBases) {
+        __resetForTests();
+        const { client } = fakeClient({ session: SESSION,
+          progressRow: { user_id: "u1", xp: 0, mastery: {},
+            daily: { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" },
+            quests: {}, monthly: {}, best: {}, cosmetics: {}, stickers: { earned: {} } },
+          walletRow: { user_id: "u1", coins: 300, freezes: 0 } });
+        __setClientForTests(client);
+        const store = memStore({ wallet: 250,
+          sync: { dirty: { wallet: true }, lastSyncAt: 0, lastLedgerAt: "",
+                  walletSync: { uid: "u1", base, pushed: true } } });
+        const r = await reconcile(store, "sign-in", 2000000);
+        expect(r.ok).toBe(true);
+        expect(store.get("wallet", 0)).toBe(300);   // legacy max(250,300), no crash on the malformed base
+        expect(store.get("sync", {}).walletSync).toEqual({ uid: "u1", base: 300, pushed: true });
+      }
+    });
+
+    it("row 10: guest plays, signs into an existing account — first contact is legacy max, then base is adopted for the next fold", async () => {
+      const { client } = fakeClient({ session: SESSION,
+        progressRow: { user_id: "u1", xp: 0, mastery: {},
+          daily: { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" },
+          quests: {}, monthly: {}, best: {}, cosmetics: {}, stickers: { earned: {} } },
+        walletRow: { user_id: "u1", coins: 800, freezes: 0 } });
+      __setClientForTests(client);
+      // No walletSync at all yet -- guest device signing into an account it
+      // has never folded a wallet snapshot against.
+      const store = memStore({ wallet: 50,
+        sync: { dirty: { wallet: true }, lastSyncAt: 0, lastLedgerAt: "" } });
+      const r = await reconcile(store, "sign-in", 2000000);
+      expect(r.ok).toBe(true);
+      expect(store.get("wallet", 0)).toBe(800);   // legacy max(50,800) on first contact
+      // The fold now stamps a base for the NEXT reconcile to fold against.
+      expect(store.get("sync", {}).walletSync).toEqual({ uid: "u1", base: 800, pushed: true });
+    });
+
+    it("regression (review 2026-07-19 lineage, row 8): no walletSync at all stays byte-identical legacy max — unmodified coverage of the ~line-607 test", async () => {
+      // Pinning the exact scenario already covered at "first non-monthly push
+      // of a session redirects through reconcile" -- this test exists
+      // specifically so a future change can't silently narrow that coverage
+      // while editing this describe block.
+      const { client, calls } = fakeClient({ session: SESSION,
+        progressRow: { user_id: "u1", xp: 0, mastery: {},
+          daily: { last: "", streak: 0, today: { date: "", resolved: 0 }, restWeek: "", restDay: "" },
+          quests: {}, monthly: {}, best: {}, cosmetics: {}, stickers: { earned: {} } },
+        walletRow: { user_id: "u1", coins: 5000, freezes: 0 } });
+      __setClientForTests(client);
+      const store = memStore({ wallet: 200, sync: { dirty: { wallet: true }, lastSyncAt: 0 } });
+      const r = await pushDirty(store, "hide");
+      expect(r.ok).toBe(true);
+      const pushedWallet = calls.upserts.find(u => u.table === "wallet").row;
+      expect(pushedWallet.coins).toBe(5000);   // max(200, 5000) — legacy path, byte-identical
+      expect(store.get("wallet", 0)).toBe(5000);
+    });
+  });
+
   it("regression (review 2026-07-27 P0): a uid switch invalidates the latch — pushDirty redirects through reconcile instead of blind-upserting guest-era state onto the new account's rows", async () => {
     // The verified data-loss sequence: (1) boot as guest -> the guest uid's
     // sign-in reconcile latches; (2) sign into the real account -> THAT uid's

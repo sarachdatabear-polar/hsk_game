@@ -11,6 +11,7 @@
 // session means genuinely signed out. Mirrors the discrimination pattern at
 // src/sync.js:325.
 import { t } from "../i18n.js";
+import { isNative as isNativePlatform } from "../native.js";
 import {
   SUPPORTER_DOWNLOAD_URL,
   parseDownloadResponse,
@@ -21,9 +22,21 @@ export function createSupporterDownload({
   toast,
   fetchImpl = (...args) => fetch(...args),
   navigate = (url) => window.location.assign(url),
+  isNative = isNativePlatform,
 }) {
+  // The WebView must never top-level-navigate to the signed download URL: on
+  // Android this currently avoids escaping the app only because Capacitor
+  // happens to externalize foreign-host top-level navigations — an
+  // unenforced platform default, not a guarantee, that would silently stop
+  // applying if capacitor.config.json's server.allowNavigation is ever
+  // widened. usable() is the explicit gate; mirrors the isNative/usable()
+  // pattern in src/monetization/provider-stripe-web.js:54,71.
+  function usable() {
+    return !isNative();
+  }
   let busy = false; // double-tap guard; module state like iapPending
   async function download() {
+    if (!usable()) return; // defense in depth — see usable() above
     if (busy) return;
     busy = true;
     try {
@@ -61,5 +74,5 @@ export function createSupporterDownload({
     el.onclick = download;
     return el;
   }
-  return { download, button };
+  return { download, button, usable };
 }

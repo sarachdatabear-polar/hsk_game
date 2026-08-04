@@ -48,6 +48,10 @@ Deno.serve(async (req) => {
     p_event_id: eventId,
     p_order_id: orderId,
     p_entitlement: entitlement,
+    // entitlements.source (2026-08-04-entitlement-source.sql) — without this
+    // every grant here would default to 'revenuecat' and mislabel Stripe
+    // Supporter purchases as RC-originated.
+    p_source: "stripe",
   });
   if (error) return new Response("storage error", { status: 500 }); // real failure — let Stripe retry
 

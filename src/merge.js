@@ -1,11 +1,18 @@
 "use strict";
 // Pure two-state merge folds for cloud-save reconcile (design doc 2026-07-10 §2).
 // Convention: first arg = local, second = cloud. Every fold tolerates
-// null/undefined on either side and returns a normalized value. All rules are
-// additive-safe: no fold can lose progress in either direction.
+// null/undefined on either side and returns a normalized value. Most folds
+// here are max-based — safe for monotonic counters, but max CAN absorb value
+// across a mismatched pair (a spend, an unrelated numeric lead) whenever the
+// state isn't monotonic. The wallet is the sharpest case: its legacy fold
+// (mergeWallet, still used for uid switches/fresh installs/legacy meta — see
+// mergeAll) is exactly this kind of max and is NOT additive-safe. The
+// walletBase delta path (mergeWalletDelta, design doc
+// 2026-08-04-wallet-delta-fold.md) is what actually makes the wallet
+// additive-safe in both directions; see mergeAll's comment below for why.
 import { defaultShop } from "./shop.js";
 import { defaultStickers } from "./stickers.js";
-import { defaultQuestState, defaultMonthly, MONTHLY_TARGET, settleMonthly } from "./quests.js";
+import { defaultQuestState, defaultMonthly, MONTHLY_TARGET, settleMonthly, monthKey } from "./quests.js";
 import { defaultDaily } from "./daily.js";
 import { normalizeCatJourney } from "./cat-journey.js";
 import { CAT_JOURNEY_CLOUD_ENABLED } from "./cloud-config.js";
@@ -18,13 +25,35 @@ export function syncKeysFor(catJourneyCloudEnabled = CAT_JOURNEY_CLOUD_ENABLED) 
 export const SYNC_KEYS = syncKeysFor();
 
 export function defaultSyncMeta() {
-  return { dirty: {}, lastSyncAt: 0, lastLedgerAt: "", shopSlots: null, shopPreferences: null };
+  return { dirty: {}, lastSyncAt: 0, lastLedgerAt: "", shopSlots: null, shopPreferences: null,
+           // { uid, base, pushed } — wallet snapshot at the last local/cloud
+           // agreement (the delta fold's reference point; see mergeWalletDelta).
+           walletSync: null };
 }
 
 const num = v => Number(v) || 0;
 
 export function mergeXp(a, b) { return Math.max(num(a), num(b), 0); }
+// Legacy wallet fold: symmetric max, kept for the legacy path in mergeAll
+// (uid switch / legacy meta / fresh install / baseline changed-detection —
+// see mergeAll's comment). NOT additive-safe: see mergeWalletDelta for the
+// fold that is.
 export function mergeWallet(a, b) { return Math.max(num(a), num(b), 0); }
+// The additive-safe wallet fold (walletBase present in mergeAll — design doc
+// 2026-08-04-wallet-delta-fold.md). `base` is the local wallet value both
+// sides last agreed on; `pushed` says whether the cloud row is known to
+// already include that base. cloud + (local - base): earns on either side
+// add, a real remote spend subtracts, and neither side's independent history
+// gets max()'d away. `pushed:false` means our own last delta may still be
+// missing from the cloud row (that push failed) — max(cloudSide, base)
+// treats a cloud value below base as our own unpushed state rather than a
+// remote spend, so it isn't refunded away; with `pushed:true`, cloud below
+// base is a real remote spend and is honored. Floor at 0 either way.
+export function mergeWalletDelta(localSide, cloudSide, base, pushed) {
+  const b = num(base);
+  const cloudEff = pushed ? num(cloudSide) : Math.max(num(cloudSide), b);
+  return Math.max(0, cloudEff + (num(localSide) - b));
+}
 export function mergeFreezes(a, b) {
   return Math.min(2, Math.max(num(a), num(b), 0));
 }
@@ -196,11 +225,36 @@ export function mergeMastery(a, b) {
 
 // Daily-quest state is per-day scratch (progress/done roll over on date
 // change), so cross-date comparison is meaningless: newer date wins wholesale.
-export function mergeQuests(a, b) {
+// `today` (optional "YYYY-MM-DD", cross-device clock-skew guard, audit
+// finding 2026-08-04): a side dated LATER than today is device-clock skew,
+// not real progress — wholesale-adopting it wipes a correctly-clocked
+// sibling's actual today, and because it wipes `done` too it reopens the
+// same-day replay-for-coins door that quests.js's LOCAL backward-clock clamp
+// already closed (this is the cross-DEVICE path that clamp doesn't cover).
+// When exactly one side is <= today, that side wins wholesale even if it's
+// the lexicographically OLDER date. Two devices in different timezones can
+// legitimately disagree by a day; each now keeps its own local day (the
+// future-dated cloud side loses on each) instead of one wiping the other —
+// strictly less lossy than a bare newer-wins. When both (or neither) side is
+// <= today there's nothing trustworthy to prefer, so it falls back to
+// newer-wins — the same fallback `today` omitted always takes, so omitting
+// `today` is byte-identical to the pre-guard behavior. An EMPTY date
+// (defaultQuestState's `""` — fresh install / legacy meta / `localFromRows`'s
+// `p.quests` defaulting on an absent cloud row) is "no state", not a
+// trustworthy day to protect: it always satisfies "<= today" trivially, so
+// without this carve-out a bare fresh install would beat a genuine (if
+// future-skewed) cloud row and discard it instead of the legacy
+// adopt-cloud-wholesale fallback — override only fires when the <= today
+// side actually has quest state to lose.
+export function mergeQuests(a, b, today = null) {
   const A = Object.assign(defaultQuestState(), a || {});
   const B = Object.assign(defaultQuestState(), b || {});
   if (A.date !== B.date) {
-    const w = A.date > B.date ? A : B;
+    let w = A.date > B.date ? A : B; // fallback: lexicographically newer wins
+    if (today && (A.date > today) !== (B.date > today)) {
+      const trusted = A.date > today ? B : A;
+      if (trusted.date) w = trusted;
+    }
     return { date: w.date, progress: { ...(w.progress || {}) }, done: [...(w.done || [])] };
   }
   const progress = {};
@@ -210,10 +264,26 @@ export function mergeQuests(a, b) {
   return { date: A.date, progress, done: [...new Set([...(A.done || []), ...(B.done || [])])] };
 }
 
-export function mergeMonthly(a, b) {
+// Same cross-device clock-skew guard as mergeQuests, at month granularity
+// (see its comment for the full rationale, including the empty-side carve-out
+// below). `today` is a "YYYY-MM-DD" day; compared against each side's `month`
+// via monthKey(today).
+export function mergeMonthly(a, b, today = null) {
   const A = Object.assign(defaultMonthly(), a || {});
   const B = Object.assign(defaultMonthly(), b || {});
-  if (A.month !== B.month) return A.month > B.month ? A : B;
+  if (A.month !== B.month) {
+    let w = A.month > B.month ? A : B; // fallback: lexicographically newer wins
+    const todayMonth = today ? monthKey(today) : null;
+    if (todayMonth && (A.month > todayMonth) !== (B.month > todayMonth)) {
+      const trusted = A.month > todayMonth ? B : A;
+      // Empty month ("" — fresh install/legacy meta) is "no state"; see
+      // mergeQuests's comment. A real-but-unsettled future cloud month must
+      // fall through to legacy adopt-cloud-wholesale, not lose its 1500-coin
+      // unclaimed value to a bare fresh-install default.
+      if (trusted.month) w = trusted;
+    }
+    return w;
+  }
   return { month: A.month,
            done: Math.min(MONTHLY_TARGET, Math.max(num(A.done), num(B.done))),
            claimed: !!(A.claimed || B.claimed) };
@@ -294,21 +364,50 @@ export function mergeDaily(a, b) {
 //
 // unseenPurchased defaults to 0, at which point this is a 0-subtract/0-add
 // no-op: byte-identical to the pre-fold formula (test-asserted in merge.test.js).
+//
+// WALLET DELTA PATH (`walletBase`, design doc 2026-08-04-wallet-delta-fold.md,
+// stage 1). `walletBase = { base, pushed } | null`. `null`/absent is the
+// LEGACY path above, byte-identical to today — used for uid switch, legacy
+// meta, fresh install/reinstall (consumables-never-restore rides on this),
+// guest-sign-in first contact, and the `baseline = mergeAll(local, null, …)`
+// changed-detection call. When `walletBase` is present, the wallet key uses
+// mergeWalletDelta(localSide, cloudSide, base, pushed) instead of the max
+// fold: `localSide = local.wallet + lm.earned` (lm.earned is a genuine local
+// earn event and belongs in the delta — idempotent with settleMonthly, same
+// as the legacy path), `cloudSide = cloud.wallet` with NO cm.earned and NO
+// unseenPurchased folded in. Both are dropped on purpose, not by oversight:
+// - cm.earned would double-pay. The cloud's stale month is always a COPY of
+//   some device's local state; that device settles it into its own wallet at
+//   its next boot and the coins ride ITS delta. Crediting cm here on top of
+//   that would pay the same reward twice. `settleMonthly(cm)` is still
+//   CALLED — cm.state still feeds mergeMonthly so a stale month can't win
+//   the month pick — only cm.earned is excluded from the wallet.
+// - unseenPurchased's subtract-then-add dance exists only to protect webhook
+//   credits from the max fold; in `cloudEff + delta` the credit already sits
+//   inside the cloud term exactly once, so folding unseen in again would
+//   double it. The ledger fetch/cursor/credits-attribution machinery is
+//   unchanged — a fresh cursor with no walletSync is a legacy-path case.
+// mergeWallet stays exported for the legacy path; mergeWalletDelta is the
+// pure fold for this one (see its own comment for the pushed/unpushed split).
 export function mergeAll(local, cloud, {
   shopDirty = false,
-  today = null, unseenPurchased = 0,
+  today = null, unseenPurchased = 0, walletBase = null,
 } = {}) {
   const l = local || {}, c = cloud || {};
   const lm = today ? settleMonthly(Object.assign(defaultMonthly(), l.monthly || {}), today) : { state: l.monthly, earned: 0 };
   const cm = today ? settleMonthly(Object.assign(defaultMonthly(), c.monthly || {}), today) : { state: c.monthly, earned: 0 };
   const unseen = num(unseenPurchased);
+  const localSide = num(l.wallet) + lm.earned;
+  const wallet = walletBase
+    ? mergeWalletDelta(localSide, num(c.wallet), walletBase.base, walletBase.pushed)
+    : mergeWallet(localSide, num(c.wallet) + cm.earned - unseen) + unseen;
   const merged = {
     mastery: mergeMastery(l.mastery, c.mastery),
     xp: mergeXp(l.xp, c.xp),
     daily: mergeDaily(l.daily, c.daily),
-    quests: mergeQuests(l.quests, c.quests),
-    monthly: mergeMonthly(lm.state, cm.state),
-    wallet: mergeWallet(num(l.wallet) + lm.earned, num(c.wallet) + cm.earned - unseen) + unseen,
+    quests: mergeQuests(l.quests, c.quests, today),
+    monthly: mergeMonthly(lm.state, cm.state, today),
+    wallet,
     freezes: mergeFreezes(l.freezes, c.freezes),
     shop: mergeShop(l.shop, c.shop, { slotsDirty: shopDirty }),
     stickers: mergeStickers(l.stickers, c.stickers),

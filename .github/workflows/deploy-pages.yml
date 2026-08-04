@@ -21,6 +21,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0 (full history) so the shell-bump guard below can
+          # diff against github.event.before — a depth-1 (default) checkout
+          # would be missing that commit on every push.
+          fetch-depth: 0
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -30,6 +35,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Guard PWA shell cache-version bump
+        run: node scripts/check-shell-bump.mjs "${{ github.event.before }}"
 
       - name: Run tests
         run: npm test

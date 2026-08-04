@@ -14,7 +14,7 @@ function rcEvent(overrides) {
     event: {
       id: "evt-1",
       type: "INITIAL_PURCHASE",
-      app_user_id: "user-1",
+      app_user_id: "11111111-1111-4111-8111-111111111111",
       product_id: "coins_s",
       transaction_id: "GPA.1234-5678",
       ...overrides,
@@ -38,7 +38,7 @@ describe("processEvent — grants per product", () => {
     expect(r).toEqual({
       ok: true,
       grant: {
-        userId: "user-1",
+        userId: "11111111-1111-4111-8111-111111111111",
         productId: "coins_s",
         eventId: "evt-1",
         orderId: "GPA.1234-5678",
@@ -105,6 +105,27 @@ describe("processEvent — malformed / unresolvable events", () => {
     expect(r).toEqual({ ok: false, reason: "missing-user" });
   });
 
+  // Non-UUID app_user_ids are by-design ungrantable: the client app never
+  // configures the RC SDK without a Supabase UUID (see
+  // src/monetization/provider-revenuecat.js), so a dashboard TEST event's
+  // $RCAnonymousID, an out-of-app store redemption, or a misconfigured
+  // client can't ever pass grant_purchase's uuid cast. Must ack, not retry.
+  it("rejects a non-UUID app_user_id (e.g. RC's $RCAnonymousID test identity)", () => {
+    const r = processEvent(rcEvent({ app_user_id: "$RCAnonymousID:abc123" }), PRODUCTS);
+    expect(r).toEqual({ ok: false, reason: "invalid-user" });
+  });
+
+  it("still grants for a well-formed UUID app_user_id", () => {
+    const r = processEvent(rcEvent({ app_user_id: "11111111-1111-4111-8111-111111111111" }), PRODUCTS);
+    expect(r.ok).toBe(true);
+    expect(r.grant.userId).toBe("11111111-1111-4111-8111-111111111111");
+  });
+
+  it("accepts an uppercase UUID app_user_id", () => {
+    const r = processEvent(rcEvent({ app_user_id: "11111111-1111-4111-8111-111111111111".toUpperCase() }), PRODUCTS);
+    expect(r.ok).toBe(true);
+  });
+
   it("rejects a missing event id", () => {
     const r = processEvent(rcEvent({ id: undefined }), PRODUCTS);
     expect(r).toEqual({ ok: false, reason: "missing-event-id" });
@@ -162,12 +183,52 @@ describe("webhook authorization", () => {
 });
 
 describe("grant_purchase migration privileges", () => {
-  it.each([
-    "docs/supabase/schema.sql",
-    "docs/supabase/migrations/2026-07-12-iap-golive.sql",
-  ])("explicitly grants only the six-argument function to service_role in %s", file => {
-    const sql = readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
+  // 2026-07-12-iap-golive.sql is immutable history: it applied the six-arg
+  // signature and stays exactly as it shipped. schema.sql is the fresh-
+  // install mirror of CURRENT state, so it moved to the seven-arg signature
+  // (p_source, 2026-08-04-entitlement-source.sql) — these must not share a
+  // regex, or a future signature change could loosen both without anyone
+  // noticing one of them regressed.
+  it("explicitly grants only the historical six-argument function to service_role in the 2026-07-12 migration", () => {
+    const sql = readFileSync(new URL("../docs/supabase/migrations/2026-07-12-iap-golive.sql", import.meta.url), "utf8");
     expect(sql).toMatch(/grant execute on function public\.grant_purchase\(uuid, integer, text, text, text, text\) to service_role;/i);
     expect(sql).toMatch(/revoke execute on function public\.grant_purchase\(uuid, integer, text, text, text, text\) from public, anon, authenticated;/i);
+  });
+
+  it("explicitly grants only the current seven-argument function to service_role in schema.sql", () => {
+    const sql = readFileSync(new URL("../docs/supabase/schema.sql", import.meta.url), "utf8");
+    expect(sql).toMatch(/grant execute on function public\.grant_purchase\(uuid, integer, text, text, text, text, text\) to service_role;/i);
+    expect(sql).toMatch(/revoke execute on function public\.grant_purchase\(uuid, integer, text, text, text, text, text\) from public, anon, authenticated;/i);
+  });
+});
+
+describe("entitlements.source migration (2026-08-04-entitlement-source.sql)", () => {
+  const migration = readFileSync(
+    new URL("../docs/supabase/migrations/2026-08-04-entitlement-source.sql", import.meta.url), "utf8");
+  const schema = readFileSync(new URL("../docs/supabase/schema.sql", import.meta.url), "utf8");
+
+  it.each([
+    ["migration", migration],
+    ["schema.sql mirror", schema],
+  ])("adds a defaulted trailing p_source param and drops the stale six-arg overload — %s", (_label, sql) => {
+    expect(sql).toMatch(/drop function if exists public\.grant_purchase\(uuid, integer, text, text, text, text\);/i);
+    expect(sql).toMatch(
+      /create or replace function public\.grant_purchase\(\s*p_user_id uuid, p_delta integer, p_reason text, p_event_id text,\s*p_order_id text, p_entitlement text, p_source text default 'revenuecat'\s*\)/i);
+  });
+
+  it.each([
+    ["migration", migration],
+    ["schema.sql mirror", schema],
+  ])("records source on BOTH the happy-path insert and the unique_violation heal — %s", (_label, sql) => {
+    const inserts = [...sql.matchAll(/insert into public\.entitlements \(user_id, product_id, source\)\s*values \(p_user_id, p_entitlement, coalesce\(p_source, 'revenuecat'\)\)/gi)];
+    expect(inserts.length).toBe(2);
+  });
+
+  it("keeps first-writer-wins on conflict (never relabels an existing row's source)", () => {
+    // Both entitlement inserts in this function must stay "do nothing" — a
+    // "do update set source = ..." would let a later duplicate delivery
+    // rewrite an already-recorded grant's source.
+    expect((migration.match(/on conflict \(user_id, product_id\) do nothing;/gi) || []).length).toBe(2);
+    expect(migration).not.toMatch(/on conflict \(user_id, product_id\) do update/i);
   });
 });

@@ -9,22 +9,51 @@
 // purchase (main.js:3910-3917) — unreachable here, because purchase() returns
 // "pending" and iapBuy exits before the page navigates away. Deliver both, or
 // the buyer pays 79฿, receives 2,000 coins, and is never a Supporter.
-import { readPending, clearPending, markAnnounced } from "../monetization/checkout-pending.js";
+import { readPending, clearPending, markAnnounced, claimResolution } from "../monetization/checkout-pending.js";
 import { pollForCredit } from "../monetization/purchase-poll.js";
+
+// Per-JS-context identity for the cross-tab resolution claim (see
+// checkout-pending.js's claimResolution doc). One id per tab/PWA window,
+// stable across repeated calls in the same tab (main.js calls this at boot
+// AND on shop-open) so a tab always re-claims its own earlier claim rather
+// than contesting it. Memoized, not per-call, so it costs nothing on the
+// hot path once generated.
+let cachedTabId = "";
+function defaultTabId() {
+  if (!cachedTabId) cachedTabId = `t${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
+  return cachedTabId;
+}
 
 export async function resolvePendingCheckout({
   store, provider, reconcile, sleep, now = Date.now,
-  onCredited, onEntitlement, track,
+  onCredited, onEntitlement, track, tabId = defaultTabId(),
 }) {
   const idle = { resolved: false, credited: false, delta: 0 };
   let pending;
   try { pending = readPending(store, now()); } catch { return idle; }
   if (!pending) return idle;
 
+  // Cross-tab lock: another tab's fresh claim means it is already driving
+  // this exact pending record to completion. Do nothing here rather than
+  // double-poll, double-toast, and double-count purchase_success — server
+  // idempotency already protects the coins, this protects the UX/analytics.
+  // Narrows, not eliminates, the race — see claimResolution's doc.
+  let claimed = true;
+  try { claimed = claimResolution(store, tabId, now()); } catch { claimed = true; }
+  if (!claimed) return idle;
+
   let credited = false;
   let delta = 0;
   try {
-    const result = await pollForCredit({ reconcile, orderId: pending.sessionId, sleep });
+    const result = await pollForCredit({
+      reconcile, orderId: pending.sessionId,
+      // Refresh the claim each tick so a long poll can't let its ~30s TTL
+      // lapse and let a second tab jump in mid-flight.
+      sleep: async (ms) => {
+        await sleep(ms);
+        try { claimResolution(store, tabId, now()); } catch { /* fail open */ }
+      },
+    });
     credited = !!(result && result.credited);
     delta = Number(result && result.delta) || 0;
   } catch {

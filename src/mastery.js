@@ -5,8 +5,15 @@ export function recordAnswer(store, hanzi, correct, now = Date.now()) {
   w.ls = now;
 }
 
+// THE definition of "mastered": a correct-answer streak of 3. Consumers:
+// srs.js (isMasteredRec — due-interval/weight gating), formats.js (the
+// ladder boundary where a word graduates from "listen" into "reverse"), and
+// this file's own isMastered/pickKeepsakeWord checks below.
+// Change this value here only; other modules import it.
+export const MASTERY_STREAK = 3;
+
 export const wordStreak = (store, hanzi) => (store[hanzi] ? store[hanzi].r : 0);
-export const isMastered = (store, hanzi) => wordStreak(store, hanzi) >= 3;
+export const isMastered = (store, hanzi) => wordStreak(store, hanzi) >= MASTERY_STREAK;
 
 export function masteredCount(store) {
   const s = store || {};
@@ -27,7 +34,7 @@ export function pickKeepsakeWord(store, exclude) {
   let bestLs = -Infinity;
   for (const hanzi in store) {
     const w = store[hanzi];
-    if (!w || w.r < 3 || skip.has(hanzi)) continue;
+    if (!w || w.r < MASTERY_STREAK || skip.has(hanzi)) continue;
     const ls = typeof w.ls === "number" ? w.ls : -Infinity;
     if (best === null || ls > bestLs || (ls === bestLs && hanzi.localeCompare(best) < 0)) {
       best = hanzi;

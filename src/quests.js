@@ -55,14 +55,18 @@ export function defaultQuestState() {
 // `earned` is the coin total from any quest(s) that just crossed their target
 // in this call; `completed` lists the matching quest objects (for toasts).
 export function noteQuestEvent(state, dateStr, eventId, n = 1) {
-  const rollover = state.date !== dateStr;
+  // Backward local-date jump guard (mirrors daily.js:49's effectiveDate): a
+  // dateStr earlier than the stored date must not wipe progress/done or let
+  // the day re-pay after a clock rollback.
+  const effectiveDate = state.date && dateStr < state.date ? state.date : dateStr;
+  const rollover = state.date !== effectiveDate;
   let progress = rollover ? {} : { ...state.progress };
   let done = rollover ? [] : state.done.slice();
   let earned = 0;
   const completed = [];
 
   const questId = EVENT_QUEST[eventId];
-  const quest = questId && questsForDate(dateStr).find(q => q.id === questId);
+  const quest = questId && questsForDate(effectiveDate).find(q => q.id === questId);
   if (quest) {
     const before = progress[quest.id] || 0;
     const raw = HIGH_WATER.has(quest.id) ? Math.max(before, n) : before + n;
@@ -74,14 +78,17 @@ export function noteQuestEvent(state, dateStr, eventId, n = 1) {
     }
   }
 
-  return { state: { date: dateStr, progress, done }, earned, completed };
+  return { state: { date: effectiveDate, progress, done }, earned, completed };
 }
 
 // Today's 3 quests, each annotated with the player's current progress/done
 // flag (0/false if the stored state is from a different date).
 export function questStatus(state, dateStr) {
-  const sameDay = state.date === dateStr;
-  return questsForDate(dateStr).map(q => ({
+  // Backward local-date jump guard (mirrors daily.js:49): display must agree
+  // with the stored progress instead of blanking after a clock rollback.
+  const effectiveDate = state.date && dateStr < state.date ? state.date : dateStr;
+  const sameDay = state.date === effectiveDate;
+  return questsForDate(effectiveDate).map(q => ({
     ...q,
     progress: sameDay ? (state.progress[q.id] || 0) : 0,
     done: sameDay ? state.done.includes(q.id) : false,
@@ -101,13 +108,20 @@ export function defaultMonthly() { return { month: "", done: 0, claimed: false }
 
 export function noteMonthlyProgress(m, dateStr, completedCount) {
   const month = monthKey(dateStr);
-  const rollover = m.month !== month;
+  // Backward local-date jump guard (mirrors daily.js:49): a month earlier
+  // than the stored month must not wipe done/claimed or let it re-pay.
+  const effectiveMonth = m.month && month < m.month ? m.month : month;
+  const rollover = m.month !== effectiveMonth;
   const done = Math.min(MONTHLY_TARGET, (rollover ? 0 : m.done) + completedCount);
-  return { month, done, claimed: rollover ? false : m.claimed };
+  return { month: effectiveMonth, done, claimed: rollover ? false : m.claimed };
 }
 
 export function monthlyStatus(m, dateStr) {
-  const same = m.month === monthKey(dateStr);
+  // Backward local-date jump guard (mirrors daily.js:49): report the stored
+  // month's status instead of zeros after a clock rollback.
+  const month = monthKey(dateStr);
+  const effectiveMonth = m.month && month < m.month ? m.month : month;
+  const same = m.month === effectiveMonth;
   const done = same ? m.done : 0;
   return { done, target: MONTHLY_TARGET, reward: MONTHLY_REWARD,
            complete: done >= MONTHLY_TARGET, claimed: same ? m.claimed : false };
@@ -127,7 +141,9 @@ export function claimMonthly(m) {
 // wipe the unclaimed state. Same-month and fresh-default states pass through.
 export function settleMonthly(m, dateStr) {
   const month = monthKey(dateStr);
-  if (m.month === month || m.month === "") return { state: m, earned: 0 };
+  // Only settle on a genuine forward month change (mirrors daily.js:49's
+  // backward-clock guard) — a backward clock must not re-pay a stale month.
+  if (m.month === month || m.month === "" || month < m.month) return { state: m, earned: 0 };
   const earned = m.done >= MONTHLY_TARGET && !m.claimed ? MONTHLY_REWARD : 0;
   return { state: { month, done: 0, claimed: false }, earned };
 }

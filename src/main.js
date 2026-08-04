@@ -64,6 +64,7 @@ import { getProvider } from "./monetization/provider.js";
 import { REVENUECAT_WEB_PUBLIC_KEY } from "./monetization/revenuecat-config.js";
 import { loadWebBillingSdk } from "./monetization/revenuecat-web-sdk.js";
 import { STRIPE_CHECKOUT_URL, STRIPE_SITE_ORIGIN } from "./monetization/stripe-config.js";
+import { isReturnableOrigin } from "./monetization/provider-stripe-web.js";
 import { iapVisible } from "./monetization/gating.js";
 import { pollForCredit } from "./monetization/purchase-poll.js";
 import { resolvePendingCheckout } from "./ui/checkout-return.js";
@@ -606,8 +607,22 @@ const avatarPicker = createAvatarPicker({
 // through the shop, which loads it). Follows whichever web billing path is
 // configured: Stripe is the live one, RC-web stays checked until that path
 // is deleted. Both blank => always hidden.
+//
+// STRIPE CLAUSE IS ORIGIN-GATED (audit follow-up, monetization P0): this
+// closure lives outside provider-stripe-web.js's available(), so folding the
+// origin check in there (P0-4 fix) doesn't reach it on its own — supporterOn
+// below ORs straight past `iapOn` to this function. Without the same check
+// here, a visitor on the github.io bridge would still see this results-screen
+// offer even though the shop card and the provider itself have gone dark.
+// Only the Stripe clause is origin-gated: the origin problem is specific to
+// Stripe's redirect-to-hosted-Checkout return leg (see isReturnableOrigin's
+// doc), and RC-web has no such return trip.
 const webSupporterConfigured = () =>
-  (!!STRIPE_CHECKOUT_URL.trim() || !!REVENUECAT_WEB_PUBLIC_KEY.trim())
+  (
+    (!!STRIPE_CHECKOUT_URL.trim()
+      && isReturnableOrigin(typeof location !== "undefined" ? location.origin : "", STRIPE_SITE_ORIGIN))
+    || !!REVENUECAT_WEB_PUBLIC_KEY.trim()
+  )
   && !isNative()
   && (typeof location === "undefined" || location.protocol !== "file:");
 const supporterRow = createSupporterMomentRow({
@@ -975,7 +990,9 @@ function renderAccount(){
     chip.className = "account-explain";
     chip.textContent = t("account.supporterChip");
     p.appendChild(chip);
-    p.appendChild(accountBtn(t("supporter.download.btn"), () => supporterDownload.download()));
+    if(supporterDownload.usable()){
+      p.appendChild(accountBtn(t("supporter.download.btn"), () => supporterDownload.download()));
+    }
   }
   if(v.showSignOut) p.appendChild(accountBtn(t("account.signOut"), onAccountSignOut));
   if(v.showSignOut && deleteAccountEnabled()) renderDeleteAccount(p);
@@ -4082,7 +4099,7 @@ function makeSupporterCard(){
     ? `<b>${t("shop.supporterTitle")} ♥</b><small>${t("shop.supporterOwned")}</small>`
     : `<b>${webPitch ? t("iap.supporter.web.title") : t("shop.supporterTitle")}</b><small>${webPitch ? t("iap.supporter.web.blurb") : t("shop.supporterDesc")}</small>`;
   row.appendChild(copy);
-  if(owned){
+  if(owned && supporterDownload.usable()){
     row.appendChild(supporterDownload.button());
   }
   if(!owned){

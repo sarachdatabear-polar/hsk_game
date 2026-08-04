@@ -75,6 +75,8 @@ shell.
 
 Android build details: `docs/build/ANDROID_BUILD.md`.
 
+Production tech-stack/architecture reference (hosting, backend, billing, CI/CD, data flow): `docs/TECH_STACK.md`.
+
 ## Conventions & gotchas
 
 - **file:// constraint:** the game must run when opened directly (no server). `fetch` for

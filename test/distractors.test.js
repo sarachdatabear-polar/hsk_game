@@ -86,19 +86,91 @@ describe("pickDistractors", () => {
     expect(d.map(w => w.h)).toContain("王");
   });
 
-  it("only compares the first sense of a multi-sense gloss", () => {
-    // target's first sense is "one" (before the ";"); its second sense "single" must not
-    // be used for comparison, so a word glossed plainly "single" is still a valid distractor.
+  // These three use Math.random across many draws rather than firstRand, on
+  // purpose: with firstRand's deterministic shuffle order, the un-fixed old
+  // code happens to rotate the colliding candidate out of the top 3 anyway
+  // (a shuffle-order coincidence), so a firstRand assertion would pass for
+  // the wrong reason and never actually go red pre-fix. Looping over random
+  // shuffles makes the collision surface regardless of draw order.
+  it("compares the FULL multi-sense gloss, not just the first sense (fairness fix)", () => {
+    // FLIPPED from the old "only compares the first sense" test. The displayed
+    // reverse-format prompt and meaning/listen option labels both render the whole
+    // gloss ("one; single"), so a candidate that matches the target's SECOND sense
+    // is a player-visible ambiguity too, and must now be excluded rather than allowed.
     const sensePool = [
       mk("一", "one; single", "A", 100), // target
-      mk("单", "single", "B", 90),
+      mk("单", "single", "B", 90), // shares target's 2nd sense "single" -> now excluded
       mk("吃", "to eat", "C", 80),
-      mk("水", "water", "D", 70)
+      mk("水", "water", "D", 70),
+      mk("大", "big", "E", 60)
     ];
     const t = sensePool[0];
-    const d = pickDistractors(sensePool, t, firstRand);
-    expect(d).toHaveLength(3);
-    expect(d.map(w => w.h)).toContain("单");
+    for (let i = 0; i < 30; i++) {
+      const d = pickDistractors(sensePool, t, Math.random);
+      expect(d).toHaveLength(3);
+      expect(d.map(w => w.h)).not.toContain("单");
+    }
+  });
+
+  // Real ±40-index-window collisions found by the fairness audit (108 in HSK1-3,
+  // 956 across HSK1-6): the target's first sense doesn't overlap the candidate's
+  // first sense, but a later sense on one or both sides does -- old code (first-
+  // sense-only) missed these entirely.
+  it("excludes a candidate whose first sense matches the target's SECOND sense (不/没)", () => {
+    const notPool = [
+      mk("不", "no; not so", "A", 100), // target
+      mk("没", "not; haven't", "B", 90), // "not" shared with target's 2nd sense -> excluded
+      mk("吃", "to eat", "C", 80),
+      mk("水", "water", "D", 70),
+      mk("大", "big", "E", 60)
+    ];
+    const t = notPool[0];
+    for (let i = 0; i < 30; i++) {
+      const d = pickDistractors(notPool, t, Math.random);
+      expect(d).toHaveLength(3);
+      expect(d.map(w => w.h)).not.toContain("没");
+    }
+  });
+
+  it("excludes a candidate whose second sense matches the target's second sense (也/太)", () => {
+    const alsoPool = [
+      mk("也", "also; too", "A", 100), // target
+      mk("太", "too; extremely", "B", 90), // "too" shared -> excluded
+      mk("吃", "to eat", "C", 80),
+      mk("水", "water", "D", 70),
+      mk("大", "big", "E", 60)
+    ];
+    const t = alsoPool[0];
+    for (let i = 0; i < 30; i++) {
+      const d = pickDistractors(alsoPool, t, Math.random);
+      expect(d).toHaveLength(3);
+      expect(d.map(w => w.h)).not.toContain("太");
+    }
+  });
+
+  // Guards the sense-by-sense (Cartesian) design against a regression back to a
+  // flat whole-gloss token bag. A flat bag would still pass all the tests above
+  // (they all collide on a real content token like "single"/"not"/"too"), but it
+  // silently reintroduces real-data collisions where the ONLY shared sense is
+  // entirely stopwords ("or", "and", "lit" are all in STOPWORDS): a flat bag
+  // drops those tokens everywhere and never sees the match. Real collisions this
+  // guards: 或/或者 ("or"), 及/以及 ("and"), 束手无策/杯弓蛇影 ("lit"). This is a
+  // design guard, not a TDD bug-fix test -- it's green against the ORIGINAL
+  // pre-fix (first-sense-only) code too, since first-sense-only also hits its
+  // own degenerate stopword-string-equality fallback for these pairs.
+  it("excludes a candidate colliding only on a stopword-only sense (或/或者)", () => {
+    const orPool = [
+      mk("或", "or; maybe; perhaps", "A", 100), // target
+      mk("或者", "or; possibly", "B", 90), // shares bare sense "or" -> excluded
+      mk("吃", "to eat", "C", 80),
+      mk("水", "water", "D", 70),
+      mk("大", "big", "E", 60)
+    ];
+    for (let i = 0; i < 30; i++) {
+      const d = pickDistractors(orPool, orPool[0], Math.random);
+      expect(d).toHaveLength(3);
+      expect(d.map(w => w.h)).not.toContain("或者");
+    }
   });
 
   it("widens to fullPool when a small custom deck is meaning-homogeneous", () => {
@@ -184,6 +256,78 @@ describe("pickDistractors", () => {
     for (let i = 0; i < 30; i++) {
       expect(pickDistractors(pool, pool[0], Math.random).map(w => w.h)).not.toContain("望");
     }
+  });
+
+  // Thai fairness fix (mirrors the English full-gloss fix): the game displays
+  // the WHOLE Thai gloss (reverse prompt / meaning options render all of w.t
+  // when scope.lang is "th"), so comparing only the first Thai sense misses
+  // real collisions on later senses. Real-data example: 是 "คือ; ใช่" (is; yes)
+  // vs 对 "ถูกต้อง; ใช่" (correct; yes) -- both share "ใช่" as their SECOND
+  // sense, invisible to a first-sense-only comparison.
+  it("compares the FULL multi-sense Thai gloss, not just the first sense (fairness fix)", () => {
+    const thaiSensePool = [
+      mk2("是", "to be", "คือ; ใช่", 100), // target
+      mk2("对", "correct", "ถูกต้อง; ใช่", 90), // shares target's 2nd Thai sense "ใช่" -> excluded
+      mk2("吃", "to eat", "กิน", 80),
+      mk2("水", "water", "น้ำ", 70),
+      mk2("大", "big", "ใหญ่", 60),
+    ];
+    const t = thaiSensePool[0];
+    for (let i = 0; i < 30; i++) {
+      const d = pickDistractors(thaiSensePool, t, Math.random);
+      expect(d).toHaveLength(3);
+      expect(d.map(w => w.h)).not.toContain("对");
+    }
+  });
+
+  // Real ±40-index-window-scale collision: candidate's SECOND sense matches
+  // the target's (only) sense. Real-data example: 去 "ไป" (to go) vs 走
+  // "เดิน; ไป, จากไป" (to walk; to go, to leave) -- 走's second sense contains
+  // the synonym "ไป", identical to 去's whole gloss. Old first-sense-only code
+  // compared "ไป" against "เดิน" only and missed this entirely.
+  it("excludes a candidate whose second Thai sense matches the target's first (去/走)", () => {
+    const goWalkPool = [
+      mk2("去", "to go", "ไป", 100), // target
+      mk2("走", "to walk", "เดิน; ไป, จากไป", 90), // 2nd sense synonym "ไป" matches target -> excluded
+      mk2("吃", "to eat", "กิน", 80),
+      mk2("水", "water", "น้ำ", 70),
+      mk2("大", "big", "ใหญ่", 60),
+    ];
+    const t = goWalkPool[0];
+    for (let i = 0; i < 30; i++) {
+      const d = pickDistractors(goWalkPool, t, Math.random);
+      expect(d).toHaveLength(3);
+      expect(d.map(w => w.h)).not.toContain("走");
+    }
+  });
+
+  // Regression: single-sense Thai glosses (no ";") must behave exactly as
+  // before -- the Cartesian generalization degenerates to the old single-pair
+  // comparison when there's only one sense on each side.
+  it("still excludes single-sense Thai synonym overlap (regression)", () => {
+    const singleSensePool = [
+      mk2("看", "to look", "ดู, มอง", 100), // target, single sense, two synonyms
+      mk2("望", "to gaze", "มอง", 90), // shares synonym "มอง" -> excluded
+      mk2("吃", "to eat", "กิน", 80),
+      mk2("水", "water", "น้ำ", 70),
+    ];
+    for (let i = 0; i < 30; i++) {
+      expect(
+        pickDistractors(singleSensePool, singleSensePool[0], Math.random).map(w => w.h)
+      ).not.toContain("望");
+    }
+  });
+
+  // Regression: single-sense, non-colliding Thai glosses must still be
+  // allowed as distractors of each other.
+  it("still allows single-sense Thai non-colliding glosses (regression)", () => {
+    const singleSenseDistinctPool = [
+      mk2("看", "to look", "ดู", 100),
+      mk2("门", "door", "ประตู", 90),
+      mk2("吃", "to eat", "กิน", 80),
+      mk2("水", "water", "น้ำ", 70),
+    ];
+    expect(pickDistractors(singleSenseDistinctPool, singleSenseDistinctPool[0], firstRand)).toHaveLength(3);
   });
 
   // BUG: the old ok() predicate only rejected candidates colliding with the

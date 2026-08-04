@@ -1,3 +1,5 @@
+import { MASTERY_STREAK } from "./mastery.js";
+
 export const DAY = 86400000;
 
 // Due interval grows with mastery streak: 1d/3d/7d/14d for streak 3/4/5/6+.
@@ -11,7 +13,7 @@ function dueInterval(streak) {
 const seenOf = rec => (rec && rec.s) || 0;
 const streakOf = rec => (rec && rec.r) || 0;
 const isWeak = rec => !!rec && streakOf(rec) <= 1 && seenOf(rec) >= 2;
-const isMasteredRec = rec => streakOf(rec) >= 3;
+const isMasteredRec = rec => streakOf(rec) >= MASTERY_STREAK;
 // Missing `ls` (pre-M2 records) counts as due once mastered.
 // Exported for analytics' delayed_recall wiring (main.js snapshots this at
 // spawn time, before the answer mutates `ls`); dueWords/smartDeck below use

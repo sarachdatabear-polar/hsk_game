@@ -6,6 +6,7 @@ import { pickDistractors } from "./distractors.js";
 import { meaning } from "./pool.js";
 import { toneSlots, toneVariants, syllableTones } from "./pinyin.js";
 import { clozeOptions } from "./cloze.js";
+import { MASTERY_STREAK } from "./mastery.js";
 
 function shuffle(a, rand) {
   for (let i = a.length - 1; i > 0; i--) {
@@ -18,10 +19,13 @@ function shuffle(a, rand) {
 // Ladder: streak 0/unseen -> meaning, 1-2 -> listen, 3-4 -> reverse,
 // 5-6 -> tone, 7-8 -> cloze, 9+ -> typed. Recognition-in-context (cloze)
 // comes before full recall (typed). A miss resets the streak (mastery.js), so
-// failures self-heal down the ladder.
+// failures self-heal down the ladder. The listen->reverse boundary IS the
+// mastery threshold (MASTERY_STREAK, mastery.js): recall-style formats only
+// start once a word counts as mastered. The other boundaries (5/7/9) are
+// ladder-only tuning, not tied to the mastery definition.
 export function formatFor(word, rec, caps = { audio: true }) {
   const r = (rec && rec.r) || 0;
-  let f = r >= 9 ? "typed" : r >= 7 ? "cloze" : r >= 5 ? "tone" : r >= 3 ? "reverse" : r >= 1 ? "listen" : "meaning";
+  let f = r >= 9 ? "typed" : r >= 7 ? "cloze" : r >= 5 ? "tone" : r >= MASTERY_STREAK ? "reverse" : r >= 1 ? "listen" : "meaning";
   if (f === "listen" && !caps.audio) f = "meaning";      // no MP3 + no TTS
   if (f === "tone" && toneSlots(word.p).length === 0) f = "meaning"; // 吗/呢-style
   // no-sentence words skip cloze and keep today's 7+ typed behavior; the

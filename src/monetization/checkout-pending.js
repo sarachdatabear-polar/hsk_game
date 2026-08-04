@@ -50,3 +50,41 @@ export function markAnnounced(store) {
   const raw = store.get(KEY, null);
   if (raw && typeof raw === "object") store.set(KEY, { ...raw, announced: true });
 }
+
+// Cross-tab resolution lock: two open tabs/PWA windows can both boot into
+// resolvePendingCheckout (src/ui/checkout-return.js) and both pass readPending
+// before either markAnnounced lands — pollForCredit's gap is up to ~6s. The
+// server-side grant is idempotent either way, but without a lock the buyer
+// sees the success toast twice and purchase_success double-counts.
+//
+// localStorage has NO compare-and-swap. Two tabs can both read "no fresh
+// claim" and both write. So this NARROWS the race rather than eliminating it:
+// after writing, re-read and only report success if OUR write is the one that
+// settled (last-writer-wins). That is good enough — today there is no lock at
+// all, and the worst remaining case (both writes land in the same tick, one
+// wins) is rarer than the window this closes.
+//
+// Same tab re-entering (boot's resumeCheckout(), then shop-open's) always
+// re-claims regardless of age — this is a refresh, not a contest.
+export const CLAIM_TTL_MS = 30 * 1000;
+
+export function claimResolution(store, tabId, now) {
+  try {
+    const raw = store.get(KEY, null);
+    if (!raw || typeof raw !== "object" || typeof raw.sessionId !== "string" || !raw.sessionId) return false;
+    const nowMs = Number(now) || 0;
+    const claim = raw.claim && typeof raw.claim === "object" ? raw.claim : null;
+    const claimAge = claim ? nowMs - (Number(claim.at) || 0) : Infinity;
+    // <=, matching readPending's own TTL convention (expires only once
+    // STRICTLY past the window, so age-equals-TTL is still fresh).
+    const heldByOther = !!claim && claim.tab !== tabId && claimAge <= CLAIM_TTL_MS;
+    if (heldByOther) return false;
+    store.set(KEY, { ...raw, claim: { tab: tabId, at: nowMs } });
+    const settled = store.get(KEY, null);
+    return !!(settled && settled.claim && settled.claim.tab === tabId && settled.claim.at === nowMs);
+  } catch {
+    // Fail OPEN: the worst case of proceeding unclaimed is a duplicate toast;
+    // the worst case of failing closed is never announcing a real purchase.
+    return true;
+  }
+}
