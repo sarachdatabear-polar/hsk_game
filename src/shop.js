@@ -99,6 +99,11 @@ export function isAvailable(item, dateStr) {
   return !!item;
 }
 
+// Shelf display order: cheapest first; stable so equal prices keep catalog order.
+export function byPriceAsc(items) {
+  return [...items].sort((a, b) => a.price - b.price);
+}
+
 function byId(id) { return CATALOG.find(it => it.id === id); }
 
 export function defaultShop() {
