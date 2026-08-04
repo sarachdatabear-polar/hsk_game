@@ -1176,10 +1176,13 @@ opening the SQL editor.
   NOT the buyer's account email. If the refund hangs with no response,
   check the refund's `next_action.display_details.email_sent_to` — the
   live test found a typo'd `…@gmail.con` there, meaning the buyer never
-  received the form (nor, on such a purchase, the Supporter PDF gift —
-  point them at the in-app self-serve download). A typo'd address can't be
+  received the form. (The Supporter PDF gift is NOT affected by a checkout
+  typo: `_shared/supporter-email/service.js` sends to the buyer's VERIFIED
+  account email, never the checkout-typed one.) A typo'd address can't be
   edited on the charge; cancel the refund (allowed in `requires_action`)
-  and arrange the refund with the buyer another way.
+  and contact the buyer at their account email — that address is always
+  known-good (checkout refuses anonymous/email-less accounts) — to arrange
+  the refund another way.
 
 **Known limitations, both accepted per policy:**
 
