@@ -12,7 +12,8 @@
 --     These tables are a *mirror*, reconciled on foreground / sign-in / post-
 --     purchase — never the source of truth during play.
 --   * Purchased coins + entitlements are SERVER-authoritative: written only by
---     the RevenueCat webhook (service_role), never by the client (§3.1, §7.2).
+--     the RevenueCat and Stripe webhooks (service_role), never by the client
+--     (§3.1, §7.2). entitlements.source records which one (revision 2026-08-04).
 --   * Earned coins are local-first and reconciled max(local, cloud) within a
 --     server-enforced daily anti-cheat cap (§3.3, §6.3) — that clamp lives in
 --     an Edge Function / trigger, NOT in the client.
@@ -91,12 +92,16 @@ create or replace trigger wallet_touch before update on public.wallet
 
 -- ---------------------------------------------------------------------------
 -- entitlements — non-consumable purchases (Supporter, future subs). (PRD §6.2, §7)
--- WRITTEN BY THE REVENUECAT WEBHOOK ONLY (service_role). The client never
--- self-grants — RLS below gives users read-only access to their own rows.
+-- WRITTEN BY THE REVENUECAT AND STRIPE WEBHOOKS ONLY (service_role, via
+-- grant_purchase). The client never self-grants — RLS below gives users
+-- read-only access to their own rows.
 -- ---------------------------------------------------------------------------
 create table if not exists public.entitlements (
   user_id    uuid  not null references auth.users (id) on delete cascade,
   product_id text  not null,                    -- e.g. 'supporter'
+  -- 'revenuecat' | 'stripe' — which webhook granted this row. grant_purchase
+  -- (revision 2026-08-04) passes p_source explicitly; the default here only
+  -- covers direct/legacy writes that predate that parameter.
   source     text  not null default 'revenuecat',
   granted_at timestamptz not null default now(),
   primary key (user_id, product_id)
@@ -278,16 +283,27 @@ create unique index if not exists ledger_order_id_uidx
 -- calls it after this change (grep confirmed) — no reason to ship dead code.
 drop function if exists public.increment_wallet(uuid, integer);
 drop function if exists public.grant_purchase(uuid, integer, text, text, text);
+-- Revision 2026-08-04 (below) replaces the six-arg signature with a seven-arg
+-- one (+ p_source) — drop it too so a re-run against an already-migrated
+-- project can't leave both overloads defined (see that revision's comment).
+drop function if exists public.grant_purchase(uuid, integer, text, text, text, text);
 
 -- grant_purchase — atomic ledger + wallet + entitlement write for the
--- webhook. See the "Revision 2026-07-12b" comment above for why atomicity
+-- webhooks. See the "Revision 2026-07-12b" comment above for why atomicity
 -- matters (the I1 race). event_id carries the idempotency key: the ledger
 -- insert is the one step that can conflict (ledger_event_id_uidx, above),
 -- so it doubles as the "claim this event" step — if it succeeds, the other
 -- two writes are guaranteed to commit in the same transaction.
+--
+-- Revision 2026-08-04 (entitlement source, audit fix — mirrors
+-- migrations/2026-08-04-entitlement-source.sql): p_source, trailing +
+-- defaulted so old-deployed webhooks that omit it behave exactly as before.
+-- Recorded on both entitlement writes (happy path + unique_violation heal),
+-- first-writer-wins via the unchanged `on conflict ... do nothing` — a later
+-- duplicate delivery can never relabel an already-recorded row's source.
 create or replace function public.grant_purchase(
   p_user_id uuid, p_delta integer, p_reason text, p_event_id text,
-  p_order_id text, p_entitlement text
+  p_order_id text, p_entitlement text, p_source text default 'revenuecat'
 ) returns text language plpgsql as $$
 begin
   insert into public.ledger (user_id, delta, reason, event_id, order_id)
@@ -295,14 +311,16 @@ begin
   insert into public.wallet (user_id, coins) values (p_user_id, p_delta)
     on conflict (user_id) do update set coins = wallet.coins + excluded.coins;
   if p_entitlement is not null then
-    insert into public.entitlements (user_id, product_id) values (p_user_id, p_entitlement)
+    insert into public.entitlements (user_id, product_id, source)
+      values (p_user_id, p_entitlement, coalesce(p_source, 'revenuecat'))
       on conflict (user_id, product_id) do nothing;
   end if;
   return 'granted';
 exception
   when unique_violation then                                 -- event already processed: DO NOT re-credit...
     if p_entitlement is not null then                        -- ...but heal a prior partial (entitlement is PK-idempotent)
-      insert into public.entitlements (user_id, product_id) values (p_user_id, p_entitlement)
+      insert into public.entitlements (user_id, product_id, source)
+        values (p_user_id, p_entitlement, coalesce(p_source, 'revenuecat'))
         on conflict (user_id, product_id) do nothing;
     end if;
     return 'duplicate';
@@ -312,9 +330,11 @@ end;
 $$;
 
 -- Server-authoritative surface only: clients never write purchased coins
--- (schema header rule), so client roles may not call this at all.
-revoke execute on function public.grant_purchase(uuid, integer, text, text, text, text) from public, anon, authenticated;
-grant execute on function public.grant_purchase(uuid, integer, text, text, text, text) to service_role;
+-- (schema header rule), so client roles may not call this at all. Dropping +
+-- recreating grant_purchase (above) resets privileges to the Postgres
+-- default (EXECUTE to PUBLIC) — re-issue against the new seven-type signature.
+revoke execute on function public.grant_purchase(uuid, integer, text, text, text, text, text) from public, anon, authenticated;
+grant execute on function public.grant_purchase(uuid, integer, text, text, text, text, text) to service_role;
 
 -- ---------------------------------------------------------------------------
 -- Revision 2026-08-02 — automatic Supporter gift email delivery.

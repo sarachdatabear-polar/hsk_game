@@ -60,6 +60,10 @@ Deno.serve(async (req) => {
     p_event_id: eventId,
     p_order_id: orderId,
     p_entitlement: entitlement,
+    // entitlements.source (2026-08-04-entitlement-source.sql) — explicit
+    // even though it's also the function's default, so this call site never
+    // silently depends on that default matching this webhook's origin.
+    p_source: "revenuecat",
   });
   if (error) return new Response("storage error", { status: 500 }); // real failure — let RC retry
 
