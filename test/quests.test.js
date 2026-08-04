@@ -153,6 +153,27 @@ describe("quests: noteQuestEvent", () => {
     expect(s.done.sort()).toEqual(["boss1", "review1"].sort());
   });
 
+  it("a backward date (device clock rolled back) does not reset progress or re-pay a completed quest", () => {
+    let date, s = defaultQuestState();
+    for (let d = 1; d <= 60; d++) {
+      const cand = `2026-04-${String((d % 28) + 1).padStart(2, "0")}`;
+      if (questsForDate(cand).some(q => q.id === "boss1")) { date = cand; break; }
+    }
+    expect(date).toBeTruthy();
+    let r = noteQuestEvent(s, date, "boss", 1);
+    s = r.state;
+    expect(r.earned).toBe(150);
+    expect(s.done).toContain("boss1");
+    const earlier = "2020-01-01"; // clock rolled backward, well before `date`
+    r = noteQuestEvent(s, earlier, "boss", 1); // same quest event replayed after rollback
+    s = r.state;
+    expect(r.earned).toBe(0);          // must not re-pay
+    expect(r.completed).toEqual([]);
+    expect(s.date).toBe(date);         // stored date never moves backward
+    expect(s.done).toContain("boss1"); // progress/done survives
+    expect(s.progress.boss1).toBe(1);
+  });
+
   it("an event for a quest not in today's 3 is silently ignored", () => {
     // force a date whose 3 quests do NOT include perfect1
     let date;
@@ -193,6 +214,22 @@ describe("quests: questStatus", () => {
       expect(correctEntry.done).toBe(false);
     }
   });
+
+  it("a backward date (device clock rolled back) still shows the stored day's progress, not blanked", () => {
+    let date, s = defaultQuestState();
+    for (let d = 1; d <= 60; d++) {
+      const cand = `2026-04-${String((d % 28) + 1).padStart(2, "0")}`;
+      if (questsForDate(cand).some(q => q.id === "boss1")) { date = cand; break; }
+    }
+    expect(date).toBeTruthy();
+    const r = noteQuestEvent(s, date, "boss", 1);
+    s = r.state;
+    const earlier = "2020-01-01"; // clock rolled backward, well before `date`
+    const list = questStatus(s, earlier);
+    const bossEntry = list.find(q => q.id === "boss1");
+    expect(bossEntry.progress).toBe(1);
+    expect(bossEntry.done).toBe(true);
+  });
 });
 
 describe("monthly quest layer", () => {
@@ -208,11 +245,25 @@ describe("monthly quest layer", () => {
     const m = noteMonthlyProgress({ month: "2026-06", done: 40, claimed: true }, "2026-07-01", 1);
     expect(m).toEqual({ month: "2026-07", done: 1, claimed: false });
   });
+  it("a backward month (device clock rolled back) does not reset done or claimed — progress still accrues to the stored month", () => {
+    const m = noteMonthlyProgress({ month: "2026-07", done: 20, claimed: false }, "2026-06-15", 5);
+    expect(m).toEqual({ month: "2026-07", done: 25, claimed: false });
+  });
+  it("a backward month leaves an already-claimed month claimed", () => {
+    const m = noteMonthlyProgress({ month: "2026-07", done: 40, claimed: true }, "2026-06-01", 0);
+    expect(m).toEqual({ month: "2026-07", done: 40, claimed: true });
+  });
   it("status reports zeros for a stale month and completeness at target", () => {
     expect(monthlyStatus({ month: "2026-06", done: 12, claimed: false }, "2026-07-09").done).toBe(0);
     const s = monthlyStatus({ month: "2026-07", done: 40, claimed: false }, "2026-07-09");
     expect(s.complete).toBe(true);
     expect(s.reward).toBe(1500);
+  });
+  it("a backward month (device clock rolled back) still reports the stored month's status, not zeros", () => {
+    const s = monthlyStatus({ month: "2026-07", done: 25, claimed: false }, "2026-06-01");
+    expect(s.done).toBe(25);
+    expect(s.complete).toBe(false);
+    expect(s.claimed).toBe(false);
   });
   it("claim pays once and only when complete", () => {
     const done = { month: "2026-07", done: 40, claimed: false };
@@ -245,6 +296,12 @@ describe("monthly quest layer", () => {
     // both still reset to the new month
     expect(settleMonthly({ month: "2026-06", done: 39, claimed: false }, "2026-07-01").state)
       .toEqual({ month: "2026-07", done: 0, claimed: false });
+  });
+  it("settleMonthly does NOT settle or pay on a backward month change (device clock rolled back)", () => {
+    const m = { month: "2026-07", done: 40, claimed: false };
+    const r = settleMonthly(m, "2026-06-01"); // backward vs. the stored month
+    expect(r.earned).toBe(0);
+    expect(r.state).toEqual(m); // stored month/state untouched, not reset
   });
   it("settleMonthly is a no-op within the same month and on the fresh default", () => {
     const same = { month: "2026-07", done: 12, claimed: false };
