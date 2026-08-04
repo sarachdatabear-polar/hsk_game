@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { CATALOG, defaultShop, canAfford, buy, equipItem, catJourneyStock, isAvailable, buyConsumable } from "../src/shop.js";
+import { CATALOG, defaultShop, canAfford, buy, equipItem, catJourneyStock, isAvailable, buyConsumable, byPriceAsc } from "../src/shop.js";
 
 
 describe("catJourneyStock", () => {
@@ -344,5 +344,45 @@ describe("buyConsumable", () => {
     const before = JSON.stringify(freeze);
     buyConsumable(freeze, 1000, 0);
     expect(JSON.stringify(freeze)).toBe(before);
+  });
+});
+
+describe("byPriceAsc", () => {
+  it("sorts a new array ascending by price", () => {
+    const items = [{ id: "b", price: 3000 }, { id: "a", price: 1000 }, { id: "c", price: 2000 }];
+    expect(byPriceAsc(items).map(i => i.id)).toEqual(["a", "c", "b"]);
+  });
+
+  it("is stable for equal prices — snow-festival stays before island-sunset", () => {
+    const backdrops = CATALOG.filter(i => i.type === "backdrop");
+    const sorted = byPriceAsc(backdrops).map(i => i.id);
+    const snowIdx = sorted.indexOf("snow-festival");
+    const islandIdx = sorted.indexOf("island-sunset");
+    expect(snowIdx).toBeGreaterThanOrEqual(0);
+    expect(islandIdx).toBeGreaterThanOrEqual(0);
+    expect(snowIdx).toBeLessThan(islandIdx);
+  });
+
+  it("full CATALOG sort keeps snow-festival before island-sunset (both 8000)", () => {
+    const sorted = byPriceAsc(CATALOG).map(i => i.id);
+    expect(sorted.indexOf("snow-festival")).toBeLessThan(sorted.indexOf("island-sunset"));
+  });
+
+  it("does not mutate the input array", () => {
+    const items = [{ id: "b", price: 3000 }, { id: "a", price: 1000 }];
+    const before = items.map(i => i.id);
+    byPriceAsc(items);
+    expect(items.map(i => i.id)).toEqual(before);
+  });
+
+  it("every per-type subset of byPriceAsc(CATALOG) is ascending by price", () => {
+    const sorted = byPriceAsc(CATALOG);
+    const types = [...new Set(CATALOG.map(i => i.type))];
+    for(const type of types){
+      const prices = sorted.filter(i => i.type === type).map(i => i.price);
+      for(let i = 1; i < prices.length; i++){
+        expect(prices[i]).toBeGreaterThanOrEqual(prices[i - 1]);
+      }
+    }
   });
 });

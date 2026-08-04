@@ -29,7 +29,7 @@ import { initAudio, speak, speakWhenReady, audioAvailable, hasMp3, setVoiceVolum
 import { initNative, hapticKill, hapticWrong, keepAwake, syncStreakReminder,
          syncReengageReminder, syncCatJourneyReminder, requestNotifPermission,
          isNative } from "./native.js";
-import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, isAvailable, catJourneyStock } from "./shop.js";
+import { CATALOG, SKIN_PALETTES, defaultShop, canAfford, buy, buyConsumable, equipItem, isAvailable, catJourneyStock, byPriceAsc } from "./shop.js";
 import { iconSvg, setIconLabel, setPill } from "./icons.js";
 import { t, setLocale, getLocale, detectLocale } from "./i18n.js";
 import { HANZI_STACK, LATIN_STACK, fontString } from "./fonts.js";
@@ -3902,18 +3902,17 @@ function renderShop(){
 
   // Today's Stock — the 3 featured pool items; once owned they live in their type section
   const stock = catJourneyStock(today, shopState);
-  for(const id of stock){
-    const item = CATALOG.find(i => i.id === id);
-    if(item) dailyBox.appendChild(makeShopRow(item, today));
-  }
+  const stockItems = byPriceAsc(stock.map(id => CATALOG.find(i => i.id === id)).filter(item => item));
+  for(const item of stockItems) dailyBox.appendChild(makeShopRow(item, today));
   if(!stock.length){
     // all featured items owned — cosmetic empty state instead of a bare shelf
     dailyBox.innerHTML = `<div class="scorerow" style="color:var(--muted)">${t("shop.dailyCatEmpty")}</div>`;
   }
 
   // Category shelves are the complete catalog for their category (every
-  // cosmetic is buyable year-round — the Season Corner is retired).
-  for(const item of CATALOG){
+  // cosmetic is buyable year-round — the Season Corner is retired), sorted
+  // cheapest first so a shelf always reads as ascending price.
+  for(const item of byPriceAsc(CATALOG)){
     if(item.pool && !shopState.owned.includes(item.id)) continue;
     const box = item.type==="skin" ? skinBox : item.type==="backdrop" ? bdBox : item.type==="effect" ? fxBox : item.type==="soundpack" ? sndBox : supBox;
     box.appendChild(makeShopRow(item, today));
