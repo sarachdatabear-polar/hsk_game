@@ -15,11 +15,6 @@ const STOPWORDS = new Set([
   "used", "form", "particle", "classifier", "prefix", "suffix", "abbr", "lit", "fig"
 ]);
 
-// First sense only: multi-sense glosses like "one; single" are separated by ";".
-// Used by the Thai comparison below only — the English comparison (sameMeaning)
-// must NOT use this; see the sense-pair comparison below for why.
-const firstSense = s => (s || "").split(";")[0];
-
 // Every sense of a gloss, trimmed, dropping empties ("one; single" -> ["one", "single"]).
 const senses = s => (s || "").split(";").map(x => x.trim()).filter(Boolean);
 
@@ -63,19 +58,38 @@ function sameMeaning(a, b) {
   return false;
 }
 
-// Thai has no spaces: compare sense-level, not token-level. First sense of a Thai
-// gloss is everything before ";" ; within it, comma-separated synonyms. Two glosses
-// share meaning when any first-sense synonym matches exactly (whole synonym — Thai
-// substring matching would false-positive on prefixes like น้ำ in น้ำแข็ง).
-const thaiSenses = s => firstSense(s).split(",").map(x => x.trim()).filter(Boolean);
-const sameThai = (a, b) => {
-  const sa = thaiSenses(a), sb = thaiSenses(b);
-  return sa.some(x => sb.includes(x));
-};
+// Thai has no spaces: compare sense-level, not token-level, with synonyms
+// (comma-separated within a sense) matched by exact whole-string equality —
+// Thai substring matching would false-positive on prefixes like น้ำ in
+// น้ำแข็ง. Real data confirms Thai glosses use the same "; "-separated
+// multi-sense format as English (e.g. "คือ; ใช่"): 1,106 of 13,921 words'
+// `t` fields contain ";" (2026-08-04 data-inspection). Same-meaning across
+// the FULL Thai gloss: check every sense of a against every sense of b (not
+// just the first), mirroring sameMeaning above, because the game displays
+// the whole Thai gloss too (reverse prompt / meaning options when
+// scope.lang is "th"). Real-data example this catches that first-sense-only
+// missed: 是 "คือ; ใช่" vs 对 "ถูกต้อง; ใช่" collide on their shared 2nd sense
+// "ใช่". Degenerates to the old single-pair comparison when both sides have
+// only one sense, so single-sense Thai behavior is unchanged.
+const thaiSynonyms = s => s.split(",").map(x => x.trim()).filter(Boolean);
+function thaiSensesCollide(sa, sb) {
+  const xa = thaiSynonyms(sa), xb = thaiSynonyms(sb);
+  return xa.some(x => xb.includes(x));
+}
+function sameThai(a, b) {
+  const sa = senses(a), sb = senses(b);
+  for (const x of sa) {
+    for (const y of sb) {
+      if (thaiSensesCollide(x, y)) return true;
+    }
+  }
+  return false;
+}
 
 // Two candidates collide when they'd render the same gloss to the player —
 // either their full English glosses share a content token (any sense vs any
-// sense), or (Thai present on both) their Thai first-senses share a synonym.
+// sense), or (Thai present on both) any sense of one Thai gloss shares a
+// synonym with any sense of the other.
 function collide(a, b) {
   return sameMeaning(a.e, b.e) || !!(a.t && b.t && sameThai(a.t, b.t));
 }

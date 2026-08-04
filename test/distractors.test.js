@@ -258,6 +258,78 @@ describe("pickDistractors", () => {
     }
   });
 
+  // Thai fairness fix (mirrors the English full-gloss fix): the game displays
+  // the WHOLE Thai gloss (reverse prompt / meaning options render all of w.t
+  // when scope.lang is "th"), so comparing only the first Thai sense misses
+  // real collisions on later senses. Real-data example: 是 "คือ; ใช่" (is; yes)
+  // vs 对 "ถูกต้อง; ใช่" (correct; yes) -- both share "ใช่" as their SECOND
+  // sense, invisible to a first-sense-only comparison.
+  it("compares the FULL multi-sense Thai gloss, not just the first sense (fairness fix)", () => {
+    const thaiSensePool = [
+      mk2("是", "to be", "คือ; ใช่", 100), // target
+      mk2("对", "correct", "ถูกต้อง; ใช่", 90), // shares target's 2nd Thai sense "ใช่" -> excluded
+      mk2("吃", "to eat", "กิน", 80),
+      mk2("水", "water", "น้ำ", 70),
+      mk2("大", "big", "ใหญ่", 60),
+    ];
+    const t = thaiSensePool[0];
+    for (let i = 0; i < 30; i++) {
+      const d = pickDistractors(thaiSensePool, t, Math.random);
+      expect(d).toHaveLength(3);
+      expect(d.map(w => w.h)).not.toContain("对");
+    }
+  });
+
+  // Real ±40-index-window-scale collision: candidate's SECOND sense matches
+  // the target's (only) sense. Real-data example: 去 "ไป" (to go) vs 走
+  // "เดิน; ไป, จากไป" (to walk; to go, to leave) -- 走's second sense contains
+  // the synonym "ไป", identical to 去's whole gloss. Old first-sense-only code
+  // compared "ไป" against "เดิน" only and missed this entirely.
+  it("excludes a candidate whose second Thai sense matches the target's first (去/走)", () => {
+    const goWalkPool = [
+      mk2("去", "to go", "ไป", 100), // target
+      mk2("走", "to walk", "เดิน; ไป, จากไป", 90), // 2nd sense synonym "ไป" matches target -> excluded
+      mk2("吃", "to eat", "กิน", 80),
+      mk2("水", "water", "น้ำ", 70),
+      mk2("大", "big", "ใหญ่", 60),
+    ];
+    const t = goWalkPool[0];
+    for (let i = 0; i < 30; i++) {
+      const d = pickDistractors(goWalkPool, t, Math.random);
+      expect(d).toHaveLength(3);
+      expect(d.map(w => w.h)).not.toContain("走");
+    }
+  });
+
+  // Regression: single-sense Thai glosses (no ";") must behave exactly as
+  // before -- the Cartesian generalization degenerates to the old single-pair
+  // comparison when there's only one sense on each side.
+  it("still excludes single-sense Thai synonym overlap (regression)", () => {
+    const singleSensePool = [
+      mk2("看", "to look", "ดู, มอง", 100), // target, single sense, two synonyms
+      mk2("望", "to gaze", "มอง", 90), // shares synonym "มอง" -> excluded
+      mk2("吃", "to eat", "กิน", 80),
+      mk2("水", "water", "น้ำ", 70),
+    ];
+    for (let i = 0; i < 30; i++) {
+      expect(
+        pickDistractors(singleSensePool, singleSensePool[0], Math.random).map(w => w.h)
+      ).not.toContain("望");
+    }
+  });
+
+  // Regression: single-sense, non-colliding Thai glosses must still be
+  // allowed as distractors of each other.
+  it("still allows single-sense Thai non-colliding glosses (regression)", () => {
+    const singleSenseDistinctPool = [
+      mk2("看", "to look", "ดู", 100),
+      mk2("门", "door", "ประตู", 90),
+      mk2("吃", "to eat", "กิน", 80),
+      mk2("水", "water", "น้ำ", 70),
+    ];
+    expect(pickDistractors(singleSenseDistinctPool, singleSenseDistinctPool[0], firstRand)).toHaveLength(3);
+  });
+
   // BUG: the old ok() predicate only rejected candidates colliding with the
   // TARGET, never with each other, so two distractors could render the same
   // gloss to the player (real-data examples: 但/却 both "but; yet"; Thai
