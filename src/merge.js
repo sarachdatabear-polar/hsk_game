@@ -12,7 +12,7 @@
 // additive-safe in both directions; see mergeAll's comment below for why.
 import { defaultShop } from "./shop.js";
 import { defaultStickers } from "./stickers.js";
-import { defaultQuestState, defaultMonthly, MONTHLY_TARGET, settleMonthly } from "./quests.js";
+import { defaultQuestState, defaultMonthly, MONTHLY_TARGET, settleMonthly, monthKey } from "./quests.js";
 import { defaultDaily } from "./daily.js";
 import { normalizeCatJourney } from "./cat-journey.js";
 import { CAT_JOURNEY_CLOUD_ENABLED } from "./cloud-config.js";
@@ -225,11 +225,36 @@ export function mergeMastery(a, b) {
 
 // Daily-quest state is per-day scratch (progress/done roll over on date
 // change), so cross-date comparison is meaningless: newer date wins wholesale.
-export function mergeQuests(a, b) {
+// `today` (optional "YYYY-MM-DD", cross-device clock-skew guard, audit
+// finding 2026-08-04): a side dated LATER than today is device-clock skew,
+// not real progress — wholesale-adopting it wipes a correctly-clocked
+// sibling's actual today, and because it wipes `done` too it reopens the
+// same-day replay-for-coins door that quests.js's LOCAL backward-clock clamp
+// already closed (this is the cross-DEVICE path that clamp doesn't cover).
+// When exactly one side is <= today, that side wins wholesale even if it's
+// the lexicographically OLDER date. Two devices in different timezones can
+// legitimately disagree by a day; each now keeps its own local day (the
+// future-dated cloud side loses on each) instead of one wiping the other —
+// strictly less lossy than a bare newer-wins. When both (or neither) side is
+// <= today there's nothing trustworthy to prefer, so it falls back to
+// newer-wins — the same fallback `today` omitted always takes, so omitting
+// `today` is byte-identical to the pre-guard behavior. An EMPTY date
+// (defaultQuestState's `""` — fresh install / legacy meta / `localFromRows`'s
+// `p.quests` defaulting on an absent cloud row) is "no state", not a
+// trustworthy day to protect: it always satisfies "<= today" trivially, so
+// without this carve-out a bare fresh install would beat a genuine (if
+// future-skewed) cloud row and discard it instead of the legacy
+// adopt-cloud-wholesale fallback — override only fires when the <= today
+// side actually has quest state to lose.
+export function mergeQuests(a, b, today = null) {
   const A = Object.assign(defaultQuestState(), a || {});
   const B = Object.assign(defaultQuestState(), b || {});
   if (A.date !== B.date) {
-    const w = A.date > B.date ? A : B;
+    let w = A.date > B.date ? A : B; // fallback: lexicographically newer wins
+    if (today && (A.date > today) !== (B.date > today)) {
+      const trusted = A.date > today ? B : A;
+      if (trusted.date) w = trusted;
+    }
     return { date: w.date, progress: { ...(w.progress || {}) }, done: [...(w.done || [])] };
   }
   const progress = {};
@@ -239,10 +264,26 @@ export function mergeQuests(a, b) {
   return { date: A.date, progress, done: [...new Set([...(A.done || []), ...(B.done || [])])] };
 }
 
-export function mergeMonthly(a, b) {
+// Same cross-device clock-skew guard as mergeQuests, at month granularity
+// (see its comment for the full rationale, including the empty-side carve-out
+// below). `today` is a "YYYY-MM-DD" day; compared against each side's `month`
+// via monthKey(today).
+export function mergeMonthly(a, b, today = null) {
   const A = Object.assign(defaultMonthly(), a || {});
   const B = Object.assign(defaultMonthly(), b || {});
-  if (A.month !== B.month) return A.month > B.month ? A : B;
+  if (A.month !== B.month) {
+    let w = A.month > B.month ? A : B; // fallback: lexicographically newer wins
+    const todayMonth = today ? monthKey(today) : null;
+    if (todayMonth && (A.month > todayMonth) !== (B.month > todayMonth)) {
+      const trusted = A.month > todayMonth ? B : A;
+      // Empty month ("" — fresh install/legacy meta) is "no state"; see
+      // mergeQuests's comment. A real-but-unsettled future cloud month must
+      // fall through to legacy adopt-cloud-wholesale, not lose its 1500-coin
+      // unclaimed value to a bare fresh-install default.
+      if (trusted.month) w = trusted;
+    }
+    return w;
+  }
   return { month: A.month,
            done: Math.min(MONTHLY_TARGET, Math.max(num(A.done), num(B.done))),
            claimed: !!(A.claimed || B.claimed) };
@@ -364,8 +405,8 @@ export function mergeAll(local, cloud, {
     mastery: mergeMastery(l.mastery, c.mastery),
     xp: mergeXp(l.xp, c.xp),
     daily: mergeDaily(l.daily, c.daily),
-    quests: mergeQuests(l.quests, c.quests),
-    monthly: mergeMonthly(lm.state, cm.state),
+    quests: mergeQuests(l.quests, c.quests, today),
+    monthly: mergeMonthly(lm.state, cm.state, today),
     wallet,
     freezes: mergeFreezes(l.freezes, c.freezes),
     shop: mergeShop(l.shop, c.shop, { slotsDirty: shopDirty }),

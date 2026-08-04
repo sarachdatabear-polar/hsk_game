@@ -297,6 +297,58 @@ describe("mergeQuests", () => {
     expect(m.progress).not.toBe(newer.progress);
     expect(m.done).not.toBe(newer.done);
   });
+
+  // Cross-device clock-skew guard (`today` option, audit finding 2026-08-04):
+  // without it, "lexicographically newer date wins wholesale" lets a
+  // future-clocked device wipe a correctly-clocked sibling's real today.
+  describe("clock-skew guard (`today` option)", () => {
+    const TODAY = "2026-07-10";
+
+    it("future-dated cloud side loses wholesale to today-dated local", () => {
+      const local = { date: TODAY, progress: { correct30: 12 }, done: ["boss1"] };
+      const cloudFuture = { date: "2026-07-15", progress: {}, done: [] }; // skewed clock
+      expect(mergeQuests(local, cloudFuture, TODAY)).toEqual(local);
+    });
+
+    it("future-dated local side loses wholesale to today-dated cloud (guard is symmetric)", () => {
+      const localFuture = { date: "2026-07-15", progress: {}, done: [] }; // skewed clock
+      const cloud = { date: TODAY, progress: { correct30: 12 }, done: ["boss1"] };
+      expect(mergeQuests(localFuture, cloud, TODAY)).toEqual(cloud);
+    });
+
+    it("both sides <= today: newer date still wins (regression)", () => {
+      const older = { date: "2026-07-08", progress: { correct30: 30 }, done: ["correct30"] };
+      const newer = { date: "2026-07-09", progress: {}, done: [] };
+      expect(mergeQuests(older, newer, TODAY)).toEqual(newer);
+      expect(mergeQuests(newer, older, TODAY)).toEqual(newer);
+    });
+
+    it("both sides > today: nothing trustworthy to prefer, falls back to newer-wins", () => {
+      const nearFuture = { date: "2026-07-11", progress: { a: 1 }, done: ["a"] };
+      const farFuture = { date: "2026-07-12", progress: {}, done: [] };
+      expect(mergeQuests(nearFuture, farFuture, TODAY)).toEqual(farFuture);
+      expect(mergeQuests(farFuture, nearFuture, TODAY)).toEqual(farFuture);
+    });
+
+    it("no `today` passed: legacy newer-wins-wholesale behavior, unaffected by the guard", () => {
+      const local = { date: TODAY, progress: { correct30: 12 }, done: ["boss1"] };
+      const cloudFuture = { date: "2026-07-15", progress: {}, done: [] };
+      // Without `today`, the future-dated side is just "newer" and wins —
+      // this is the exact case the guard changes when `today` IS supplied.
+      expect(mergeQuests(local, cloudFuture)).toEqual(cloudFuture);
+    });
+
+    // Regression (advisor-caught during review): an EMPTY date trivially
+    // satisfies "<= today" too, so a naive guard would let a bare fresh
+    // install/legacy-meta side beat a genuine future-skewed cloud row and
+    // discard it, instead of the legacy adopt-cloud-wholesale fallback.
+    it("empty-date side (fresh install) does not out-trust a genuinely future cloud row: legacy adopt-cloud wins", () => {
+      const freshInstall = { date: "", progress: {}, done: [] };
+      const cloudFuture = { date: "2026-07-20", progress: { correct30: 30 }, done: ["correct30"] };
+      expect(mergeQuests(freshInstall, cloudFuture, TODAY)).toEqual(cloudFuture);
+      expect(mergeQuests(cloudFuture, freshInstall, TODAY)).toEqual(cloudFuture);
+    });
+  });
 });
 
 describe("mergeMonthly", () => {
@@ -309,6 +361,75 @@ describe("mergeMonthly", () => {
     expect(mergeMonthly({ month: "2026-06", done: 40, claimed: false },
                         { month: "2026-07", done: 3, claimed: false }))
       .toEqual({ month: "2026-07", done: 3, claimed: false }));
+
+  // Same clock-skew guard as mergeQuests, at month granularity.
+  describe("clock-skew guard (`today` option)", () => {
+    const TODAY = "2026-07-15"; // month 2026-07
+
+    it("future-month cloud side loses wholesale to today-month local", () => {
+      const local = { month: "2026-07", done: 12, claimed: false };
+      const cloudFuture = { month: "2026-09", done: 0, claimed: false }; // skewed clock
+      expect(mergeMonthly(local, cloudFuture, TODAY)).toEqual(local);
+    });
+
+    it("future-month local side loses wholesale to today-month cloud (guard is symmetric)", () => {
+      const localFuture = { month: "2026-09", done: 0, claimed: false }; // skewed clock
+      const cloud = { month: "2026-07", done: 12, claimed: false };
+      expect(mergeMonthly(localFuture, cloud, TODAY)).toEqual(cloud);
+    });
+
+    it("both sides <= today's month: newer month still wins (regression)", () => {
+      expect(mergeMonthly({ month: "2026-06", done: 40, claimed: false },
+                          { month: "2026-07", done: 3, claimed: false }, TODAY))
+        .toEqual({ month: "2026-07", done: 3, claimed: false });
+    });
+
+    it("both sides > today's month: nothing trustworthy to prefer, falls back to newer-wins", () => {
+      const near = { month: "2026-08", done: 1, claimed: false };
+      const far = { month: "2026-09", done: 2, claimed: false };
+      expect(mergeMonthly(near, far, TODAY)).toEqual(far);
+      expect(mergeMonthly(far, near, TODAY)).toEqual(far);
+    });
+
+    it("no `today` passed: legacy newer-wins-wholesale behavior, unaffected by the guard", () => {
+      const local = { month: "2026-07", done: 12, claimed: false };
+      const cloudFuture = { month: "2026-09", done: 0, claimed: false };
+      expect(mergeMonthly(local, cloudFuture)).toEqual(cloudFuture);
+    });
+
+    // Regression (advisor-caught during review): an EMPTY month trivially
+    // satisfies "<= today" too. Without the carve-out, a bare fresh-install
+    // side would beat a genuinely future-skewed but real cloud row and wipe
+    // its unclaimed value (1500 coins here), instead of the legacy
+    // adopt-cloud-wholesale fallback.
+    it("empty-month side (fresh install) does not out-trust a genuinely future cloud row: legacy adopt-cloud wins", () => {
+      const freshInstall = { month: "", done: 0, claimed: false };
+      const cloudFuture = { month: "2026-09", done: 40, claimed: false };
+      expect(mergeMonthly(freshInstall, cloudFuture, TODAY)).toEqual(cloudFuture);
+      expect(mergeMonthly(cloudFuture, freshInstall, TODAY)).toEqual(cloudFuture);
+    });
+  });
+});
+
+// mergeAll threads `today` into both cross-date folds (audit finding
+// 2026-08-04): sync.js already passes `today` as an mergeAll option, but
+// mergeQuests/mergeMonthly weren't receiving it — this is the end-to-end
+// assertion that the wiring actually reaches both folds.
+describe("mergeAll threads `today` into the quests/monthly clock-skew guard", () => {
+  const TODAY = "2026-07-15";
+
+  it("future-dated cloud quests do not wipe local's real today's progress", () => {
+    const local = { quests: { date: TODAY, progress: { correct30: 30 }, done: ["correct30"] }, wallet: 100 };
+    const cloud = { quests: { date: "2026-07-20", progress: {}, done: [] }, wallet: 100 };
+    expect(mergeAll(local, cloud, { today: TODAY }).quests).toEqual(local.quests);
+  });
+
+  it("future-month cloud monthly does not wipe local's real month progress", () => {
+    const local = { monthly: { month: "2026-07", done: 12, claimed: false }, wallet: 100 };
+    const cloud = { monthly: { month: "2026-09", done: 0, claimed: false }, wallet: 100 };
+    expect(mergeAll(local, cloud, { today: TODAY }).monthly)
+      .toEqual({ month: "2026-07", done: 12, claimed: false });
+  });
 });
 
 // P1 2026-07-12: e7ce6d0's staleMonthlyOwed() credited the stale-month reward
