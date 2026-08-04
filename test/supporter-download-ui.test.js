@@ -73,3 +73,41 @@ describe("createSupporterDownload().download()", () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 });
+
+// Native-platform gate (fix round 2): the WebView must never top-level-navigate
+// to the signed download URL — see src/ui/supporter-download.js header comment
+// and src/monetization/provider-stripe-web.js:71 for the established pattern.
+describe("createSupporterDownload().usable()", () => {
+  it("is true when isNative() is false (web/PWA)", () => {
+    const { usable } = createSupporterDownload({
+      getSession: vi.fn(), toast: vi.fn(), isNative: () => false,
+    });
+    expect(usable()).toBe(true);
+  });
+
+  it("is false when isNative() is true (Capacitor WebView)", () => {
+    const { usable } = createSupporterDownload({
+      getSession: vi.fn(), toast: vi.fn(), isNative: () => true,
+    });
+    expect(usable()).toBe(false);
+  });
+});
+
+describe("createSupporterDownload().download() native gate", () => {
+  it("refuses on native: no fetch, no navigate, no toast", async () => {
+    const getSession = vi.fn(async () => ({ ok: true, session: { access_token: "jwt-abc" } }));
+    const toast = vi.fn();
+    const fetchImpl = vi.fn();
+    const navigate = vi.fn();
+    const { download } = createSupporterDownload({
+      getSession, toast, fetchImpl, navigate, isNative: () => true,
+    });
+
+    await download();
+
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+    expect(toast).not.toHaveBeenCalled();
+    expect(getSession).not.toHaveBeenCalled();
+  });
+});

@@ -975,7 +975,9 @@ function renderAccount(){
     chip.className = "account-explain";
     chip.textContent = t("account.supporterChip");
     p.appendChild(chip);
-    p.appendChild(accountBtn(t("supporter.download.btn"), () => supporterDownload.download()));
+    if(supporterDownload.usable()){
+      p.appendChild(accountBtn(t("supporter.download.btn"), () => supporterDownload.download()));
+    }
   }
   if(v.showSignOut) p.appendChild(accountBtn(t("account.signOut"), onAccountSignOut));
   if(v.showSignOut && deleteAccountEnabled()) renderDeleteAccount(p);
@@ -4082,7 +4084,7 @@ function makeSupporterCard(){
     ? `<b>${t("shop.supporterTitle")} ♥</b><small>${t("shop.supporterOwned")}</small>`
     : `<b>${webPitch ? t("iap.supporter.web.title") : t("shop.supporterTitle")}</b><small>${webPitch ? t("iap.supporter.web.blurb") : t("shop.supporterDesc")}</small>`;
   row.appendChild(copy);
-  if(owned){
+  if(owned && supporterDownload.usable()){
     row.appendChild(supporterDownload.button());
   }
   if(!owned){
