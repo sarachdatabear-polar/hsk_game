@@ -1158,7 +1158,28 @@ should return no `supporter` row after the refund lands (allow a few seconds
 for Stripe's webhook delivery). The buyer's coin wallet decrements correctly
 too — the client's ledger-cursor reconcile sums signed deltas, so a refund's
 negative row folds in exactly like a purchase's positive one does, not just
-the entitlement side.
+the entitlement side. `scripts/check-supporter-state.py <buyer email>` prints
+the same picture (entitlement, wallet, recent ledger) from the VPS without
+opening the SQL editor.
+
+**PromptPay refunds — the money leg needs the CUSTOMER to act** (live-verified
+2026-08-04 by refunding a real ฿79 PromptPay purchase):
+
+- Stripe cannot push funds back to a PromptPay QR, so the refund sits in
+  `requires_action` while Stripe emails the buyer a bank-details form
+  (expires if ignored). The Dashboard shows this as "needs a response from
+  the customer".
+- **Our revocation does NOT wait for that**: `charge.refunded` fires at
+  refund *creation*, so the entitlement/coins are already revoked while the
+  money leg is still pending. Correct and verified — don't re-trigger.
+- The form goes to the email typed at checkout (`billing_details.email`),
+  NOT the buyer's account email. If the refund hangs with no response,
+  check the refund's `next_action.display_details.email_sent_to` — the
+  live test found a typo'd `…@gmail.con` there, meaning the buyer never
+  received the form (nor, on such a purchase, the Supporter PDF gift —
+  point them at the in-app self-serve download). A typo'd address can't be
+  edited on the charge; cancel the refund (allowed in `requires_action`)
+  and arrange the refund with the buyer another way.
 
 **Known limitations, both accepted per policy:**
 
