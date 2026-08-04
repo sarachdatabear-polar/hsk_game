@@ -11,10 +11,10 @@
 // direction, which is why it has its own test.
 const THB_MINOR_UNITS = 100;
 
-export function buildSessionParams({ product, userId, successUrl, cancelUrl }) {
+export function buildSessionParams({ product, userId, successUrl, cancelUrl, customerEmail }) {
   if (!product || !product.id || !Number.isFinite(product.priceTHB)) return null;
   if (typeof userId !== "string" || !userId) return null;
-  return {
+  const params = {
     mode: "payment",
     // PromptPay first so the QR is the default tab for Thai buyers; card is
     // the fallback and the only option for customers outside Thailand.
@@ -30,6 +30,11 @@ export function buildSessionParams({ product, userId, successUrl, cancelUrl }) {
     success_url: successUrl,
     cancel_url: cancelUrl,
   };
+  // Prefilling AND locking the email field means receipts and the PromptPay
+  // refund bank-details form always reach a deliverable address — a typo at
+  // the payment page becomes impossible.
+  if (typeof customerEmail === "string" && customerEmail) params.customer_email = customerEmail;
+  return params;
 }
 
 export function encodeForm(params) {

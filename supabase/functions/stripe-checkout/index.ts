@@ -87,6 +87,7 @@ Deno.serve(async (req) => {
     userId: user.id,
     successUrl: `${SITE_ORIGIN}/?session_id={CHECKOUT_SESSION_ID}`,
     cancelUrl: `${SITE_ORIGIN}/`,
+    customerEmail: user.email,
   });
   if (!params) return reply({ error: "bad-request" }, 400);
 

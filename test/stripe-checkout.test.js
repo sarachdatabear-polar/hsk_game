@@ -38,6 +38,18 @@ describe("buildSessionParams", () => {
     expect(buildSessionParams({ ...base, product: null })).toBeNull();
     expect(buildSessionParams({ ...base, userId: "" })).toBeNull();
   });
+
+  it("prefills customer_email when a verified email is given", () => {
+    const p = buildSessionParams({ ...base, customerEmail: "buyer@example.com" });
+    expect(p.customer_email).toBe("buyer@example.com");
+  });
+
+  it("omits customer_email when absent, undefined, non-string, or empty", () => {
+    expect(buildSessionParams(base)).not.toHaveProperty("customer_email");
+    expect(buildSessionParams({ ...base, customerEmail: undefined })).not.toHaveProperty("customer_email");
+    expect(buildSessionParams({ ...base, customerEmail: 7 })).not.toHaveProperty("customer_email");
+    expect(buildSessionParams({ ...base, customerEmail: "" })).not.toHaveProperty("customer_email");
+  });
 });
 
 describe("parseCheckoutRequest", () => {
