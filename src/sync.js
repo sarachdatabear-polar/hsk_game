@@ -120,7 +120,7 @@ function localDateStr(ms) {
 
 // Clear dirty flags for keys whose stored value still equals what we pushed —
 // a gameplay write that raced the push keeps its flag for the next edge.
-function settleDirty(store, expected, lastSyncAt) {
+function settleDirty(store, expected, lastSyncAt, uid) {
   const meta = Object.assign(defaultSyncMeta(), store.get("sync", {}));
   meta.dirty = meta.dirty || {};
   for (const k of Object.keys(expected)) {
@@ -132,6 +132,15 @@ function settleDirty(store, expected, lastSyncAt) {
   if ("shop" in expected) {
     meta.shopSlots = slotsOf(expected.shop); // retained for legacy readers
     meta.shopPreferences = shopPreferencesOf(expected.shop);
+  }
+  // Wallet delta-fold snapshot (2026-08-04-wallet-delta-fold): a confirmed
+  // push means the cloud row now holds `expected.wallet` exactly, so that's
+  // the new base and it's known-pushed. Use expected.wallet (what we just
+  // confirmed cloud has), NOT the live store value — a gameplay write that
+  // raced this push (see the dirty-bit loop above) stays out of the base and
+  // rides the NEXT delta instead (spec row 13).
+  if ("wallet" in expected && uid) {
+    meta.walletSync = { uid, base: Number(expected.wallet) || 0, pushed: true };
   }
   if (lastSyncAt) meta.lastSyncAt = lastSyncAt;
   store.set("sync", meta);
@@ -149,6 +158,17 @@ export async function reconcile(store, reason, now = Date.now(), expectedOrderId
     if (!s.ok) return { ok: false, reason: s.reason };
     if (!s.session) return { ok: false, reason: "no-session" };
     const uid = s.session.user.id;
+    // Wallet delta-fold matching (2026-08-04-wallet-delta-fold): a snapshot
+    // only means something for the uid it was taken against — a uid switch
+    // (or legacy meta, or a device that has never folded a wallet snapshot)
+    // must fall through to the legacy max fold. A malformed base (missing,
+    // NaN, or a string from some future bad write) must ALSO fall through:
+    // num(undefined) coerces to 0 inside mergeWalletDelta, which would
+    // silently treat the entire local wallet as pure unconfirmed delta and
+    // double-count it against the cloud side. Only a genuine finite number
+    // is trusted.
+    const matched = meta.walletSync && meta.walletSync.uid === uid &&
+      typeof meta.walletSync.base === "number" && Number.isFinite(meta.walletSync.base);
     const rows = await fetchSyncRows(uid);
     if (!rows.ok) return { ok: false, reason: rows.reason };
     // Ledger-cursor fetch (coin-purchase go-live, THE FOLD — merge.js's
@@ -249,8 +269,13 @@ export async function reconcile(store, reason, now = Date.now(), expectedOrderId
       : freshCursor ? (expectedCredit ? expectedCredit.delta : 0)
       : unseen;
     const merged = mergeAll(local, localFromRows(rows.progress, rows.wallet),
-      { shopDirty, today, unseenPurchased: foldUnseen });
-    const baseline = mergeAll(local, null, { shopDirty, today });
+      { shopDirty, today, unseenPurchased: foldUnseen,
+        walletBase: matched ? { base: meta.walletSync.base, pushed: !!meta.walletSync.pushed } : null });
+    // walletBase is explicitly null here (not omitted): a delta fold against
+    // a null cloud side would clamp the wallet toward zero (cloudEff would
+    // fall back to `base` at best) — the baseline is local-only by
+    // definition and must stay `local + lm.earned`, same as the legacy path.
+    const baseline = mergeAll(local, null, { shopDirty, today, walletBase: null });
     const changed = !eq(merged, baseline);
     // CURSOR ORDERING (THE FOLD): advance + persist meta.lastLedgerAt BEFORE
     // writing the merged keys to the store below. This file already has a
@@ -277,6 +302,19 @@ export async function reconcile(store, reason, now = Date.now(), expectedOrderId
       store.set("sync", cursorMeta);
     }
     for (const k of Object.keys(merged)) store.set(k, merged[k]);
+    // Wallet delta-fold snapshot (2026-08-04-wallet-delta-fold): the fold
+    // above just consumed the delta, so `base` moves with the merged wallet
+    // that landed in the store on the line above. `pushed` starts false —
+    // it flips true only once settleDirty (below) confirms the push that's
+    // about to be attempted actually reached the cloud row; on push failure
+    // we return before settleDirty runs, so it stays false and the NEXT fold
+    // takes the unpushed branch. This write must come AFTER the merged
+    // wallet lands in the store (never before): they move together, and a
+    // crash between the cursor write above and this point leaves the OLD
+    // cursor/walletSync pair intact, which self-heals like today.
+    const walletSyncMeta = Object.assign(defaultSyncMeta(), store.get("sync", {}));
+    walletSyncMeta.walletSync = { uid, base: merged.wallet, pushed: false };
+    store.set("sync", walletSyncMeta);
     reconciledUid = uid;
     const built = rowsFromLocal(uid, merged);
     const push = await pushSyncRows(built.progress, built.wallet);
@@ -286,7 +324,7 @@ export async function reconcile(store, reason, now = Date.now(), expectedOrderId
     // especially important when the progress-row upsert succeeds but the
     // wallet-row upsert fails after a stale-month reward was settled.
     if (!push.ok) return { ok: false, reason: "network", localChanged: true, credits };
-    settleDirty(store, merged, now);
+    settleDirty(store, merged, now, uid);
     return { ok: true, changed, credits };
   } catch (e) {
     return { ok: false, reason: "network" };
@@ -341,7 +379,7 @@ export async function pushDirty(store, reason, now = Date.now(), midRound = fals
     const local = localSnapshot(store);
     const built = rowsFromLocal(uid, local);
     const r = await pushSyncRows(built.progress, built.wallet);
-    if (r.ok) settleDirty(store, local, 0);
+    if (r.ok) settleDirty(store, local, 0, uid);
     return { ok: r.ok };
   } catch (e) {
     return { ok: false };

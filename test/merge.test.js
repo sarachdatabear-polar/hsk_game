@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { SYNC_KEYS, defaultSyncMeta, slotsOf, mergeXp, mergeWallet, mergeFreezes,
+import { SYNC_KEYS, defaultSyncMeta, slotsOf, mergeXp, mergeWallet, mergeWalletDelta, mergeFreezes,
          mergeBest, mergeStickers, mergeShop, mergeMastery, mergeQuests,
          mergeMonthly, mergeAll, mergeCatJourney, syncKeysFor } from "../src/merge.js";
 import { defaultShop } from "../src/shop.js";
@@ -20,7 +20,7 @@ describe("merge: scalars", () => {
     expect(SYNC_KEYS).toEqual([...BASE_10, "catJourney"]);
   });
   it("defaultSyncMeta shape", () =>
-    expect(defaultSyncMeta()).toEqual({ dirty: {}, lastSyncAt: 0, lastLedgerAt: "", shopSlots: null, shopPreferences: null }));
+    expect(defaultSyncMeta()).toEqual({ dirty: {}, lastSyncAt: 0, lastLedgerAt: "", shopSlots: null, shopPreferences: null, walletSync: null }));
   it("xp/wallet take max; nullish sides are 0", () => {
     expect(mergeXp(120, 80)).toBe(120);
     expect(mergeXp(undefined, 80)).toBe(80);
@@ -392,11 +392,11 @@ describe("merge: stale monthly settle (P1 2026-07-12, race-safe)", () => {
     expect(m.wallet).toBe(2500);          // max(1000+1500, 1000+1500), not summed
   });
 
-  it("both sides stale on DIFFERENT months: each self-credits its own, max-fold absorbs one (wallet fold is max-never-sum)", () => {
+  it("legacy path: both sides stale on DIFFERENT months — each self-credits its own, max-fold absorbs one (legacy wallet fold is max-never-sum; see the walletBase delta-fold tests below for the additive fix)", () => {
     const local = { monthly: { month: "2026-05", done: 40, claimed: false }, wallet: 1000 };
     const cloud = { monthly: juneDone, wallet: 1000 };
     const m = mergeAll(local, cloud, { today: TODAY });
-    expect(m.wallet).toBe(2500);          // max(1000+1500, 1000+1500) — universal max, never a sum
+    expect(m.wallet).toBe(2500);          // max(1000+1500, 1000+1500) — legacy path: max, never a sum
   });
 
   it("omitting `today` preserves the old pure behavior: no settle, wallet is the plain max", () => {
@@ -461,6 +461,119 @@ describe("slotsOf", () => {
 describe("defaultSyncMeta shopSlots", () => {
   it("defaults shopSlots to null (pre-upgrade metas adopt it via Object.assign)", () => {
     expect(defaultSyncMeta().shopSlots).toBeNull();
+  });
+});
+
+// Wallet delta fold (stage 1, docs/superpowers/specs/2026-08-04-wallet-delta-fold.md).
+// walletBase = { base, pushed } | null. Absent/null keeps the legacy max fold
+// (byte-identical, covered above); present switches the wallet key onto
+// `cloudEff + (localSide - base)`, clamped at 0 — cloud + (local − base),
+// additive both ways instead of max's one-side-wins.
+describe("merge: wallet delta fold (stage 1, walletBase)", () => {
+  const juneDone = { month: "2026-06", done: 40, claimed: false };
+  const july     = { month: "2026-07", done: 0,  claimed: false };
+  const TODAY = "2026-07-15";
+
+  it("row 1: cold-boot spend before the first-settle reconcile — no refund", () => {
+    // base = pushed cloud value (1000, agreed). Local spent 500 locally;
+    // cloud hasn't seen the spend push yet (still 1000).
+    const local = { wallet: 500 };
+    const cloud = { wallet: 1000 };
+    const m = mergeAll(local, cloud, { walletBase: { base: 1000, pushed: true } });
+    expect(m.wallet).toBe(500);   // cloud - 500 spend, NOT refunded back to 1000
+  });
+
+  it("row 2: device B spent remotely and pushed; A reconciles idle — cloud's lower value is adopted, no refund", () => {
+    const local = { wallet: 1000 };   // A idle: local == base
+    const cloud = { wallet: 700 };    // B spent 300, pushed (pushed:true)
+    const m = mergeAll(local, cloud, { walletBase: { base: 1000, pushed: true } });
+    expect(m.wallet).toBe(700);
+  });
+
+  it("row 3: independent earns on both sides sum instead of one side eating the other", () => {
+    // A earned 30 offline; cloud already carries B's independent +50 on top
+    // of the shared base.
+    const local = { wallet: 1030 };
+    const cloud = { wallet: 1050 };
+    const m = mergeAll(local, cloud, { walletBase: { base: 1000, pushed: true } });
+    expect(m.wallet).toBe(1080);  // cloud(1050) + local delta(30) — both kept
+  });
+
+  it("row 4: monthly settles inside this fold (lm.earned), cloud still stale-same month — credited exactly once", () => {
+    const local = { monthly: juneDone, wallet: 1000 };   // pre-settle wallet == base
+    const cloud = { monthly: juneDone, wallet: 1000 };   // stale, unpushed settle
+    const m = mergeAll(local, cloud, { today: TODAY, walletBase: { base: 1000, pushed: true } });
+    expect(m.wallet).toBe(2500);  // base(1000) + lm.earned(1500), once
+  });
+
+  it("row 5 (bug #9): lm.earned survives even when the other side is numerically ahead for unrelated reasons", () => {
+    const local = { monthly: juneDone, wallet: 1000 };   // settles +1500 in this fold
+    const cloud = { monthly: juneDone, wallet: 5000 };   // ahead, unrelated to the reward
+    const m = mergeAll(local, cloud, { today: TODAY, walletBase: { base: 1000, pushed: true } });
+    expect(m.wallet).toBe(6500);  // 5000 (cloudEff) + 1500 (lm.earned) — reward not absorbed
+  });
+
+  it("row 7 (unpushed branch): a prior fold whose push failed keeps our own delta via max(cloud, base)", () => {
+    // Prior fold agreed base=1000; the push never landed, so cloud is still
+    // 1000. Local earned another 100 since.
+    const local = { wallet: 1100 };
+    const cloud = { wallet: 1000 };
+    const m = mergeAll(local, cloud, { walletBase: { base: 1000, pushed: false } });
+    expect(m.wallet).toBe(1100);  // max(1000,1000) + 100
+  });
+
+  it("unpushed branch: cloud lower than base is our OWN stale row, not a remote spend — not refunded away, not treated as spend", () => {
+    const local = { wallet: 1000 };
+    const cloud = { wallet: 400 };   // our push never landed; cloud still shows the old value
+    const m = mergeAll(local, cloud, { walletBase: { base: 1000, pushed: false } });
+    expect(m.wallet).toBe(1000);     // max(400,1000) + (1000-1000) = 1000, not 400
+  });
+
+  it("row 12: webhook credit lands inside the cloud term with pushed:true — credited once, unseenPurchased plays no role", () => {
+    const local = { wallet: 1000 };
+    const cloud = { wallet: 2000 };   // base + 1000 webhook credit, already pushed
+    const m = mergeAll(local, cloud, { unseenPurchased: 1000, walletBase: { base: 1000, pushed: true } });
+    expect(m.wallet).toBe(2000);      // not 3000 — the delta path never adds unseen on top
+  });
+
+  it("delta path clamps at 0", () => {
+    const local = { wallet: 0 };
+    const cloud = { wallet: 100 };
+    const m = mergeAll(local, cloud, { walletBase: { base: 5000, pushed: true } });
+    expect(m.wallet).toBe(0);   // cloudEff(100) + (0-5000) = -4900 -> clamped to 0
+  });
+
+  it("unseenPurchased is ignored entirely in delta mode, even when nonzero", () => {
+    const local = { wallet: 1000 };
+    const cloud = { wallet: 1000 };
+    const withUnseen = mergeAll(local, cloud, { unseenPurchased: 9999, walletBase: { base: 1000, pushed: true } });
+    const without = mergeAll(local, cloud, { walletBase: { base: 1000, pushed: true } });
+    expect(withUnseen.wallet).toBe(without.wallet);
+    expect(withUnseen.wallet).toBe(1000);
+  });
+
+  it("legacy byte-identity: walletBase absent vs explicit null produce identical output on a representative state", () => {
+    const local = { monthly: july, wallet: 2500, xp: 40, mastery: { "你": { s: 1, k: 1, r: 0, ls: 5 } } };
+    const cloud = { monthly: juneDone, wallet: 1000, xp: 30 };
+    const withNull = mergeAll(local, cloud, { today: TODAY, unseenPurchased: 0, walletBase: null });
+    const omitted  = mergeAll(local, cloud, { today: TODAY, unseenPurchased: 0 });
+    expect(withNull).toEqual(omitted);
+  });
+
+  it("delta mode: cloud's stale month still settles into merged.monthly, but its reward is NOT credited to the wallet", () => {
+    const local = { monthly: july, wallet: 1000 };      // current month: lm.earned = 0
+    const cloud = { monthly: juneDone, wallet: 1000 };  // stale: cm.earned = 1500, dropped from wallet
+    const m = mergeAll(local, cloud, { today: TODAY, walletBase: { base: 1000, pushed: true } });
+    expect(m.wallet).toBe(1000);   // cloud(1000) + (local delta 0); cm.earned excluded
+    expect(m.monthly).toEqual({ month: "2026-07", done: 0, claimed: false }); // cm.state still settled, feeds the month pick
+  });
+
+  it("mergeWalletDelta is the pure fold underneath mergeAll's delta path, unit-testable in isolation", () => {
+    expect(mergeWalletDelta(500, 1000, 1000, true)).toBe(500);
+    expect(mergeWalletDelta(1000, 700, 1000, true)).toBe(700);
+    expect(mergeWalletDelta(1100, 1000, 1000, false)).toBe(1100);
+    expect(mergeWalletDelta(1000, 400, 1000, false)).toBe(1000);
+    expect(mergeWalletDelta(0, 100, 5000, true)).toBe(0);
   });
 });
 
